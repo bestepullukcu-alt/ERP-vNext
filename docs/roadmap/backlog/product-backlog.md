@@ -895,6 +895,16 @@ cd frontend/Diten.Web && npx vitest run tests/validation-reason-code-bridge.test
 ### BL-057 — 🔴 TEMEL: şirket (Legal Entity) kapsamı örtük; açık hâle gelmeli
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
 
+**⚠ ATAMA TARAFI SUNUCUDA DA KAPANDI (KISMİ) — 2026-09-10, commit `01bc0915`.** Kural artık yalnız
+seçicilerde değil, her yazma yolunda soruluyor: `TaskAssigneeEligibility.Judge` (aktif pozisyon + canlı birim
++ kapsam) tek kural; `TaskAssignmentGuard` oluşturma (kişi: `platform.tasks.assign` + uygunluk + kapsam ·
+havuz: uygunluk + kapsam), şablondan oluşturma, yeniden atama ve tekrarlayan kural oluştur/güncelle
+yollarında kayıt yazılmadan önce çağrılıyor; zamanlanmış üretim muaf (`IsScheduledGeneration`, yalnız
+komutta). Kanıt E3: görev testleri 1234/1234 (97 yeni); CT sabotajı — oluşturmadaki koruma çağrısı kaynakta
+durup hiç çalışmayınca 13 kırmızı, geri konunca 97/97. **Canlı oturumla doğrulanmadı** → ✅ sahibin kontrol
+turunda. Sonuçları: BL-352 (kural kapatılamıyor) · BL-356 (pozisyonsuz kullanıcı iş veremiyor) · BL-353,
+BL-354, BL-355 (aynı kuralın hâlâ sorulmadığı üç yol). Listeleme yarısı hâlâ AÇIK; BL-349 (detay erişimi) ona bağlı.
+
 **⚠ ÖLÇÜM DÜZELTMESİ — 2026-08-29, kayıt İKİYE AYRILIYOR.**
 - **Atama tarafı ARTIK AÇIK (bu yarı kapandı):** kural tek yerde — `TaskAssignmentScopeResolver.cs:112-116` (aynı şirket **veya** ast pozisyon **veya** verilmiş birim), `IDataScopeResolver`'dan besleniyor; iki arama işleyicisi de `scope.Allows(position, unit, legalEntityId)` çağırıyor. Kaydın "yeniden ölç" ipuçları da bayatlamış: `AssignablePersonDto` `LegalEntityId` TAŞIYOR (`TaskModels.cs:816`).
 - **LİSTELEME tarafı hâlâ örtük (bu yarı AÇIK):** repository yüklemleri kiracı + atanan, ya da kiracı + havuz pozisyonu — **hiçbir yerde şirket koşulu yok** (`TaskRepositories.cs:34-40`, `:82-99`). Projeksiyonda ve `WorkItemActor`'da `LegalEntityId` YOK (grep: 0). `TaskItem`'da da yok — yalnız `OrganizationUnitId`, yani şirket iki sıçramalık bir birleştirme. Ekranda şirket seçici yok.
@@ -4482,7 +4492,7 @@ satırlık ekleme olarak değil — önce aktör tipini doğru yazan bir yazıc�
 
 **Docs yol muhafızı: `docs/` altında beşli dışına işaret eden kod artık derlemede değil testte düşer**
 
-DURUM: ✅ KAPANDI · SAHİP: ali.tufanoglu · KOD: 2026-09-10 (commit: CONTROL TOWER alacak)
+DURUM: ✅ KAPANDI · SAHİP: ali.tufanoglu · KOD: 2026-09-10 · COMMIT: `fe8aaa6e` (CT doğruladı: yeşil → kendi sabotajı `scripts/ct-sabotage-docsguard.ps1:2 → docs/audits` kırmızı → yeşil)
 
 **Ne yapıldı.** `tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs`
 — kod dosyalarında (`.cs .cshtml .js .py .sh .ps1 .json .csproj .css .html .yaml .yml .xml
@@ -4517,3 +4527,205 @@ bu muhafızın kapsamı dışında; ayrı iş. Metin taraması — iki ifadeye b
 **Ölçüm komutu:**
 
     dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter "FullyQualifiedName~DocsPathGuardTests"
+
+### BL-349
+
+**Görev detayı: kimliğini bilen herkes açabiliyor — liste süzülüyor, detay süzülmüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`GetTaskItemListHandler` yalnız bana atanan + havuzumdaki görevleri döner. `GetTaskItemByIdHandler` ise
+yalnız kiracı filtresi + `platform.tasks.read` ister: görevle hiçbir ilişkisi olmayan kullanıcı, kimliğini
+bilirse (bağlantı, tahmin, başka ekrandan kopya) kiracıdaki her görevin başlığını, açıklamasını ve alanlarını
+okur. Toplantı modülü görev bağlarını göstermeye başlayınca bu yol görünür olur.
+
+**Karar gerekli:** "kim hangi görevi görebilir" — atanan/talep eden/izleyen mi, birim/şirket kapsamı mı,
+yoksa okuma yetkisi olan herkes mi (bugünkü fiilî durum). Cevap BL-057'nin listeleme yarısıyla aynı yerden
+çıkmalı; iki ayrı kural yazılmamalı.
+
+**Ölçüm komutu:**
+
+    grep -n "GetByIdAsync\|_actor" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/GetTaskItemByIdHandler.cs
+
+### BL-350
+
+**Tekrarlayan kural formunda kişi listesi hep boş — ekran düz liste bekliyor, sunucu zarf gönderiyor**
+
+DURUM: AÇIK · SAHİP: CT (alt ajan) · ÖLÇÜLDÜ: 2026-09-10 (kod; canlıda denenmedi)
+
+`Tasks/RecurrenceRules/form.js:17-30` `fetchJson` yalnız dizi kabul ediyor (`Array.isArray(rows) ? rows : []`).
+`GET api/v1/tasks/lookups/assignable-people` ise `AssignablePersonLookupDto { People, Excluded }` döner
+(`TaskModels.cs:975`). Sonuç: kişi seçici boş; kural yalnız havuza yazılabiliyor. Görev formu aynı uca
+`Tasks/api.js:307` üzerinden gidiyor ve zarfı açıyor — kural formu onu kullanmıyor.
+
+**Ölçüm komutu:**
+
+    sed -n 17,30p frontend/Diten.Web/wwwroot/assets/js/Tasks/RecurrenceRules/form.js
+    grep -n "record AssignablePersonLookupDto" -A2 services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/TaskModels.cs
+
+### BL-351
+
+**`Tasks/api.js`: aynı hata kodu iki mesaja bağlı — "bekleme kişisi" reddinde yanlış cümle**
+
+DURUM: AÇIK · SAHİP: CT (alt ajan) · ÖLÇÜLDÜ: 2026-09-10
+
+`REASON_CODE_MESSAGE_KEYS` içinde `TASK_ASSIGNEE_NOT_ASSIGNABLE` iki kez: satır 68 (`errorWaitingOnNotAssignable`)
+ve 155 (`errorAssigneeNotAssignable`). JavaScript nesne sabitinde sonraki kazanır; `InquireTaskItemHandler`
+(`TaskItemTransitionHandlers.cs`, bekleme kişisi reddi) aynı kodu döndüğünde kullanıcı "Bu kişiye iş atanamaz.
+Listeden birini seçin." okur, oysa beklediği kişiyi seçiyordu. `ErrorWaitingOnNotAssignable` 7 dilde var ama
+hiç gösterilmiyor (ölü anahtar).
+
+**Ölçüm komutu:**
+
+    grep -n "TASK_ASSIGNEE_NOT_ASSIGNABLE" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
+
+### BL-352
+
+**Atananı uygunluğunu kaybetmiş tekrarlayan kural kapatılamıyor — koruma her kayıtta soruyor**
+
+DURUM: AÇIK · SAHİP: CT (alt ajan) · KARAR: sahip, 2026-09-10
+
+`01bc0915` ile `UpdateTaskRecurrenceRuleHandler` (`TaskRecurrenceRuleHandlers.cs:162`) her kayıtta
+atama korumasını çağırıyor. Kuralın kişisi pozisyonunu kaybettiyse kural **pasife almak için bile**
+kaydedilemiyor (400 `TASK_ASSIGNEE_NOT_ASSIGNABLE`); önce başkasına atamak gerekiyor.
+
+**Karar (sahip):** koruma yalnız atama hedefi (tür/kişi/havuz) **değiştiğinde** sorulur; kuralı kapatmak her
+zaman serbesttir. Atamayı değiştirmeden kaydeden, o atamadan sorumlu değildir (yeniden atama ile aynı ilke).
+Açık kalan: BL-354 — aktif kalan ama atananı uygunsuz kural üretmeye devam eder.
+
+**Ölçüm komutu:**
+
+    grep -n "_assignmentGuard.CheckTargetAsync" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskRecurrenceRuleHandlers.cs
+
+### BL-353
+
+**Şablon kaydında varsayılan havuz kapsamdan geçmiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`TaskTemplateHandlers.cs:98,134` (oluştur) ve `:216,240` (güncelle) `DefaultPoolPositionId`'yi yalnız biçim
+olarak doğruluyor (`TaskTemplateRules.ValidateAssignment`): pozisyon aktif mi, birimi canlı mı, kaydedenin
+kapsamında mı sorulmuyor. Şablondan görev açma `01bc0915`'ten beri soruyor; yani kapsam dışı havuzlu şablon
+kaydedilebilir ama ondan görev açılamaz — kullanıcıya "şablon bozuk" diye görünür. Şablonun kişi alanı yok.
+
+**Ölçüm komutu:**
+
+    grep -n "DefaultPoolPositionId\|_assignmentGuard" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskTemplateHandlers.cs
+
+### BL-354
+
+**Zamanlanmış üretim atananın uygunluğunu yeniden sormuyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`GenerateDueRecurringTasksHandler.cs:87-99` yalnız "atama hedefi söylenmiş mi" (`TaskAssignmentIntentRules`)
+bakıyor; havuz için "pozisyon aktif mi" `CreateTaskItemHandler`'ın havuz dalında kalıyor; kişi için
+pozisyon/birim, her ikisi için kapsam sorulmuyor (`IsScheduledGeneration` muafiyeti — bilinçli: çağıran yok).
+Kural kaydedilirken kapsam soruldu; kişi sonradan ayrılırsa üretim ona görev açmaya devam eder. Kabul
+edilebilir davranış: hedef uygunsuzsa dönemi yakmadan atla ve `task.recurrence.rule_unassigned` gibi logla;
+kimin kapsamıyla sorulacağı (kuralı kaydeden mi?) karar ister. BL-352 ile birlikte ele alınmalı.
+
+**Ölçüm komutu:**
+
+    grep -n "IsScheduledGeneration\|TaskAssignmentIntentRules" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/GenerateDueRecurringTasksHandler.cs
+
+### BL-355
+
+**Görev oluşturmada istekle gelen `OrganizationUnitId` kapsamdan geçmiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10 (`01bc0915` öncesi de böyleydi)
+
+`CreateTaskItemHandler.cs:193` (havuz) ve `:200` (kişi) `request.OrganizationUnitId` verilmişse olduğu gibi
+alıyor; birimin var/aktif olduğu ve çağıranın kapsamında olduğu sorulmuyor. Ekran birim göndermiyor
+(pack §12 K6: "kullanıcı birim seçmez"), yani yalnız doğrudan API çağrısı; ama görev başka şirketin birimine
+kaydedilebilir ve BL-057'nin şirket raporları yanlış şirkete yazar.
+
+**Ölçüm komutu:**
+
+    grep -n "request.OrganizationUnitId" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/CreateTaskItemHandler.cs
+
+### BL-356
+
+**Pozisyonsuz kullanıcı başkasına iş veremiyor — "sorumluluk alanı" kavramı yok**
+
+DURUM: KARAR VERİLDİ (sahip, 2026-09-10) · SAHİP: sahip (veri) · ÖLÇÜLDÜ: 2026-09-10
+
+`01bc0915` sonrası sunucu, seçicinin zaten uyguladığı kuralı uyguluyor: kapsam (`OrgDataScopeResolver.cs:9-24,
+65-78`) yalnız **aktif pozisyon atamasından** türetiliyor; pozisyonu olmayan kullanıcı (yerel `admin@diten.com`
+dahil) boş kapsamla başkasına kişi/havuz ataması, yeniden atama ve kural yazamıyor; kendine açabiliyor.
+
+**Karar:** iş dağıtacak gerçek kullanıcılara pozisyon tanımlanır (SAP: iş dağıtan herkes org şemasında bir
+pozisyondadır). `admin@diten.com` kurulum hesabıdır, iş dağıtmaz. **Ertelenen:** Oracle'daki "sorumluluk alanı"
+gibi hatta olmayan birimlere (Kalite, İK) elle verilen kapsam — gerektiğinde `EntitlementDataScope` üzerinden;
+`Allows`'ın (3) bacağı zaten "bana verilmiş birim/pozisyon" diye okuyor, yalnız kaynağı yok.
+
+**Ölçüm komutu:**
+
+    sed -n 9,24p services/Diten.Platform/src/Diten.Platform.Application/Authorization/OrgDataScopeResolver.cs
+
+### BL-357
+
+**Devir bayrağı görevi açana da uygulanıyor — canlıdan gelen bug**
+
+DURUM: AÇIK · SAHİP: CT (Antigravity WP) · KARAR: sahip, 2026-09-10
+
+`ReassignTaskItemHandler` (`TaskItemTransitionHandlers.cs:1220`) `DelegationAllowed` kapalıysa aktör kim
+olursa olsun 409 `TASK_DELEGATION_NOT_ALLOWED` döner; holder/requester ayrımı (`:1227`) ondan SONRA; kapsam
+koruması (`:1256`) en sonda. Görev Merkezi de aynı bayrakla düğmeyi herkese kapatıyor
+(`TaskWorkItemProvider.cs:1924-1928`). Bayrağın kodda tanımı "policy flag only" (`TaskItem.cs:232`) — kime
+uygulanacağı yazılmamış. Sonuç: görevi açan (talep sahibi) kendi görevini başkasına veremiyor; kendine açtığı
+görevi de.
+
+**Karar (sahip):** bayrak **alan kişinin** ileri devrini sınırlar; **açan kişi** her zaman yeniden atar (Assign
+yetkisi + `01bc0915` kapsam koruması yine sorulur). Kendi açtığı kendi görevi → bayrak gerekmez. SAP'de iletme
+kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi her zaman reassign yapabilir.
+
+**Ölçüm komutu:**
+
+    grep -n "DelegationAllowed" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskItemTransitionHandlers.cs services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-358
+
+**Canlı bildirim: "kişi kendine görev açamıyor" — kanıt bekliyor**
+
+DURUM: AÇIK · KANIT BEKLİYOR · SAHİP: sahip (ortam · kullanıcı · tam hata mesajı) · KAYIT: 2026-09-10
+
+Testlerde kendine açma 201 (`TaskAssignmentWriteGuardHttpTests.A_task_for_MYSELF_is_201_without_assign`);
+canlıdaki kod `01bc0915`'i içermiyor. Koddaki tek aday: pozisyonsuz kullanıcının görevi kök birime düşer
+(`CreateTaskItemHandler.cs:587-600`, HQ öncelikli tek kök); aktif kök yoksa `ORGANIZATION_UNIT_UNRESOLVED`.
+Tahmin değil ölçüm için ekran görüntüsü + kullanıcı + ortam gerekiyor.
+
+### BL-359
+
+**PPM `assign-owner` izni otomatik grant yollarından dışlanmıyor — altyapı (AuthService) işi**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10 · ÖLÇÜLDÜ: 2026-09-10
+
+Anahtar `ppm.portfolios.assign-owner` henüz hiçbir dalda/pakette yok (`git log --all -S'assign-owner'` boş;
+MOD-0117/DCP-006 kapsamı genişletilmeli). Eklendiğinde: `FullCatalogPermissionGrantService` ve
+`DefaultRolePermissionTemplate` PPM politikasına hiç bakmıyor (`_ppmPolicy.Applies` yalnız
+`TenantEffectivePermissionResolver.cs:51` ve `EntitlementPermissionSyncService.cs:55,75,185`'te) → SuperAdmin
+tam katalogla, kiracı Admin modül eşitlemesiyle anahtarı otomatik alır; onaylı karar "portföy sahibi ataması
+yalnız açık grant". Genel dışlama mekanizması yok. Sıra: PPM yönetişim genişletmesi (anahtar) → Auth dışlama +
+BL-360 aynı WP'de. Auth, PPM için korumalı yol; iş CT'nin altyapı kulvarında.
+
+**Ölçüm komutu:**
+
+    grep -rn "_ppmPolicy.Applies\|IPpmEntitlementPermissionPolicy" services/Diten.AuthService/src --include=*.cs
+
+### BL-360
+
+**PPM toplu-grant kapısında harf tutarsızlığı: `Applies` "PPM" (Ordinal) sorulur, kod sonra küçültülür**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+
+`PpmEntitlementPermissionPolicy.Applies` (`:16-17`) `StringComparison.Ordinal` ile `"PPM"` arar.
+`EntitlementPermissionSyncService` (`:55,:75,:185`) kapıyı `NormalizeModuleCode` (trim + lowercase,
+`ModulePermissionResolver.cs:50-51`) çağrısından ÖNCE soruyor; Auth DB'de modül `"ppm"`. `"ppm"`/`"Ppm"` gelen
+kod kapıyı geçer → PPM izinleri kiracı Admin'e toplu grant edilir; `"PPM"` gelen reddedilir. Düzeltme: kapıyı
+normalize edilmiş kodla sor **ve** `Applies`'ı harf duyarsız yap; resolver (`TenantEffectivePermissionResolver.cs:51`)
+aynı `Applies`'ı paylaştığından süzme sonucunun değişmediği testle gösterilir (sessiz genişleme yok).
+
+**Ölçüm komutu:**
+
+    grep -n "_ppmPolicy.Applies\|NormalizeModuleCode" services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs
