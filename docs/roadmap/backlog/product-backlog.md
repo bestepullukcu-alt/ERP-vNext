@@ -4756,3 +4756,63 @@ aynı `Applies`'ı paylaştığından süzme sonucunun değişmediği testle gö
 **Ölçüm komutu:**
 
     grep -n "_ppmPolicy.Applies\|NormalizeModuleCode" services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs
+
+### BL-361
+
+**Görev üzerindeki yazma yolları ilişki sormuyor: yetkisi olan herkes, kimliğini bildiği her görevi başlatıp tamamlayabiliyor**
+
+DURUM: AÇIK · KARAR GEREKLİ · SAHİP: sahip (ürün kuralı) · ÖLÇÜLDÜ: 2026-09-11 (alt ajan tablosu; CT handler ve projeksiyonu doğruladı; canlı değil)
+
+`TransitionTaskItemHandler` (`TaskItemTransitionHandlers.cs:201-707`) tek aktör kontrolünü iptal için yapıyor (talep sahibi,
+`:296-303`); **başlat** (`platform.tasks.update`), **sürdür**, **tamamla** (`platform.tasks.complete`) holder/talep sahibi sormuyor.
+`SubmitTaskForReviewHandler` (`:708-834`) ve `PlanTaskItemHandler` (`:835-921`) hiç aktör sormuyor. Update/Delete/BulkDelete
+(`TaskItemWriteHandlers.cs`), bağımlılık ekle/çıkar (`TaskDependencyHandlers.cs`), kontrol listesi işaretle/sırala: aynı —
+yalnız yetki + kiracı filtresi. Görünür kılan: **Ekibim** kapsamı (BL-023; `WorkItemsController.cs:77-88`,
+`TaskWorkItemProvider.cs:217-240`) astların görevlerini listeliyor ve projeksiyon başlat/tamamla düğmelerini `isHolder`'a bakmadan
+etkin çiziyor (`TaskWorkItemProvider.cs:1741-1752, 1781-1826`) → yönetici astının görevini tek tıkla başlatır/tamamlar; geçiş
+kaydı yöneticinin adıyla yazılır, kapanış kaydını işi yapan yazmamış olur (kapanış paketinin "yazarlık tersine dönmesin"
+ilkesine aykırı). Task-User rolünde Güncelle çipi var → her görev kullanıcısı için geçerli. Kod düzeyinde kesin; kimin hangi
+yetkiyi taşıdığı canlıda ölçülmedi.
+
+**Karar:** görev erişim modeli — (a) yalnız yetki + kiracı (bugün) · (b) ilişki şart. **CT önerisi:** başlat / sürdür /
+tamamla / incelemeye gönder = yalnız holder · planla = holder veya talep sahibi · güncelle / sil = talep sahibi (yönetim yetkisi
+ayrı, açık) · "X adına" işlem ileride açık ve damgalı bir özellik (rebuild spec'teki "X adına" damgaları). SAP: iş kalemini yalnız
+olası ajanı yürütür, yönetici vekâlet/yönlendirme ile; Oracle: sahip/yönetici "on behalf" yalnız açık yetkiyle. Okuma tarafı
+BL-349 ve listeleme BL-057 ile aynı karardan çıkmalı; BL-362 aynı WP'de. Tablo:
+`docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.
+
+**Ölçüm komutu:**
+
+    awk 'NR>=201 && NR<=921' services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskItemTransitionHandlers.cs | grep -n "AssigneeUserId\|CreatedByUserId\|403"
+    grep -n "Build(\"start\"\|Build(\"complete\"\|var isHolder" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-362
+
+**Projeksiyon holder'a bakmıyor: kabul et / sor / bırak düğmeleri holder olmayana etkin çiziliyor, sunucu 403 diyor**
+
+DURUM: AÇIK · SAHİP: CT (BL-361 ile aynı WP) · ÖLÇÜLDÜ: 2026-09-11 (CT doğruladı; canlı değil)
+
+Handler'lar doğru: Accept (`TaskItemTransitionHandlers.cs:28-31`), Release (`:133-137`), Inquire (`:966-971`) holder değilse 403.
+Projeksiyon `isHolder`'ı hesaplıyor (`TaskWorkItemProvider.cs:1648`) ama accept (`:1712`), inquire (`:1847`), release (`:1877`)
+yapılarında kullanmıyor → Ekibim'de yönetici tıklar, 403 alır ("düğme açık, sunucu reddediyor"; K5 üretici ≠ tüketici).
+Düzeltme: holder olmayana bu üçü hiç sunulmaz (gizle; gri değil — "senin değil" için sebep metni gerekmez, yeni resx yok).
+BL-361 kararından bağımsız; aynı fonksiyon değiştiği için aynı WP'de.
+
+**Ölçüm komutu:**
+
+    grep -n "Build(\"accept\"\|Build(\"inquire\"\|Build(\"release\"\|var isHolder" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-363
+
+**Görev motorunda üç küçük tutarsızlık (alt ajan tablosu; CT doğrulamadı)**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · KAYIT: 2026-09-11
+
+- Bağımlılık ekleme: döngü/çift kontrolü oku-sonra-yaz, kilit/versiyon yok (`TaskDependencyHandlers.cs:65-140`) — dar yarış:
+  iki eşzamanlı ekleme tek tek geçip birlikte döngü kurabilir.
+- `ChecklistWriteGuards` yorumu "ekle fiilinde kapalı görev kontrolü yok (BL-093)" diyor; `AddChecklistItemHandler` kontrolü
+  yapıyor (`ChecklistHandlers.cs:126-139` vs `:391-393`) — bayat yorum.
+- Yorum güncelle/geri çek kapalı görevde `Lifecycle` sormuyor, ekleme soruyor (`TaskCommentHandlers.cs:78-83` vs `:170-243`) —
+  kasıtlıysa belgelenmeli.
+
+Tablo: `docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.
