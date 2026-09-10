@@ -929,8 +929,8 @@ new index or entity/schema change blocks implementation and requires pack revisi
 
 - `.antigravity/**`
 - `AGENTS.md`
-- `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`
-- `docs/product-backlog.md`
+- `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
+- `docs/roadmap/backlog/product-backlog.md`
 - `execution/domains/master-data-management/**`
 - `services/Diten.MdmService/**`, except only the exact code-start-authorized `Verified GSKU Resolver` MDM files in
   Section 5

@@ -1,0 +1,136 @@
+@using Diten.Web.Views.Tasks.WorkReport
+@using Diten.Web.Views.WorkCenterNext
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<WorkReportIndex> Localizer
+@* ⚠ THE OUTCOME LABELS COME FROM THE WORKCENTERNEXT RESX, NOT THIS SCREEN'S.
+   `WorkAggregation_ClosureOutcome_*` already exists there in all seven languages — the projection emits those
+   keys, the Task Center resolves them, and the l10n guard holds the prefix as a domain. A second copy here
+   would let the two screens disagree about what an outcome is called the day one of them is corrected. *@
+@inject IHtmlLocalizer<WorkCenterNextIndex> OutcomeLocalizer
+
+@*
+    The l10n bridge, in the shape the sibling screens use (_DocumentListL10n): one JSON island the script reads
+    once. Payload keys are camelCase — MVC's Json.Serialize policy — and the reader normalises them.
+*@
+<script id="work-report-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        From = Localizer["From"].Value,
+        To = Localizer["To"].Value,
+        GroupBy = Localizer["GroupBy"].Value,
+        Apply = Localizer["Apply"].Value,
+        ScopeScoped = Localizer["ScopeScoped"].Value,
+        ScopeTenant = Localizer["ScopeTenant"].Value,
+        ScopeScopedHint = Localizer["ScopeScopedHint"].Value,
+        ScopeTenantHint = Localizer["ScopeTenantHint"].Value,
+        NoData = Localizer["NoData"].Value,
+        NoDataScoped = Localizer["NoDataScoped"].Value,
+        Loading = Localizer["Loading"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+        PeriodInvalid = Localizer["PeriodInvalid"].Value,
+        FlowTitle = Localizer["FlowTitle"].Value,
+        FlowQuestion = Localizer["FlowQuestion"].Value,
+        Opened = Localizer["Opened"].Value,
+        Closed = Localizer["Closed"].Value,
+        Completed = Localizer["Completed"].Value,
+        Cancelled = Localizer["Cancelled"].Value,
+        OutcomesTitle = Localizer["OutcomesTitle"].Value,
+        SummaryTitle = Localizer["SummaryTitle"].Value,
+        SummaryPeriod = Localizer["SummaryPeriod"].Value,
+        SummaryDays = Localizer["SummaryDays"].Value,
+        SummaryScopeNote = Localizer["SummaryScopeNote"].Value,
+        OutcomesQuestion = Localizer["OutcomesQuestion"].Value,
+        OutcomesEmpty = Localizer["OutcomesEmpty"].Value,
+        TimelinessTitle = Localizer["TimelinessTitle"].Value,
+        SharePercent = Localizer["SharePercent"].Value,
+        TimelinessQuestion = Localizer["TimelinessQuestion"].Value,
+        OnTime = Localizer["OnTime"].Value,
+        Late = Localizer["Late"].Value,
+        WithoutDueDate = Localizer["WithoutDueDate"].Value,
+        GroupsTitle = Localizer["GroupsTitle"].Value,
+        GroupsQuestion = Localizer["GroupsQuestion"].Value,
+        GroupUnnamed = Localizer["GroupUnnamed"].Value,
+        GroupByNone = Localizer["GroupByNone"].Value,
+        GroupByTaskType = Localizer["GroupByTaskType"].Value,
+        GroupByOrganizationUnit = Localizer["GroupByOrganizationUnit"].Value,
+        GroupByAssignee = Localizer["GroupByAssignee"].Value,
+        GroupByPriority = Localizer["GroupByPriority"].Value,
+        CycleTimeTitle = Localizer["CycleTimeTitle"].Value,
+        CycleTimeDays = Localizer["CycleTimeDays"].Value,
+        CycleTimeOver = Localizer["CycleTimeOver"].Value,
+        ReworkTitle = Localizer["ReworkTitle"].Value,
+        UnattendedTitle = Localizer["UnattendedTitle"].Value,
+        UnattendedHint = Localizer["UnattendedHint"].Value,
+        EffortTitle = Localizer["EffortTitle"].Value,
+        UnitDays = Localizer["UnitDays"].Value,
+        UnitTasks = Localizer["UnitTasks"].Value,
+        UnitOpenWork = Localizer["UnitOpenWork"].Value,
+        ReworkQualifier = Localizer["ReworkQualifier"].Value,
+        UnattendedQualifier = Localizer["UnattendedQualifier"].Value,
+        LabelMedian = Localizer["LabelMedian"].Value,
+        LabelUntilCancelled = Localizer["LabelUntilCancelled"].Value,
+        LabelCancelled = Localizer["LabelCancelled"].Value,
+        LabelTotalReturns = Localizer["LabelTotalReturns"].Value,
+        LabelEstimated = Localizer["LabelEstimated"].Value,
+        AgingUpTo7Label = Localizer["AgingUpTo7Label"].Value,
+        AgingFrom8To30Label = Localizer["AgingFrom8To30Label"].Value,
+        AgingOlderThan30Label = Localizer["AgingOlderThan30Label"].Value,
+        EffortSpentUnit = Localizer["EffortSpentUnit"].Value,
+        Hours = Localizer["Hours"].Value,
+        EffortOver = Localizer["EffortOver"].Value,
+        EffortHint = Localizer["EffortHint"].Value,
+        // Dilim 1b — median, the cancellation span, ageing, and the direction against the previous period.
+        TrendSame = Localizer["TrendSame"].Value,
+        TrendUp = Localizer["TrendUp"].Value,
+        TrendDown = Localizer["TrendDown"].Value,
+        // Dilim 1c — the items panel: from a number to the work behind it.
+        ItemsClose = Localizer["ItemsClose"].Value,
+        ItemsEmpty = Localizer["ItemsEmpty"].Value,
+        ItemsEmptyHint = Localizer["ItemsEmptyHint"].Value,
+        ItemsLoadFailed = Localizer["ItemsLoadFailed"].Value,
+        ItemsCount = Localizer["ItemsCount"].Value,
+        ItemsShowMore = Localizer["ItemsShowMore"].Value,
+        ItemsStatusOpen = Localizer["ItemsStatusOpen"].Value,
+        ItemsUnassigned = Localizer["ItemsUnassigned"].Value,
+        ItemsSubtitleRange = Localizer["ItemsSubtitleRange"].Value,
+        ItemsSubtitleWithGroup = Localizer["ItemsSubtitleWithGroup"].Value,
+        ItemsAging0to7 = Localizer["ItemsAging0to7"].Value,
+        ItemsAging8to30 = Localizer["ItemsAging8to30"].Value,
+        ItemsAging30plus = Localizer["ItemsAging30plus"].Value,
+        ItemsColDue = Localizer["ItemsColDue"].Value,
+        ItemsColClosed = Localizer["ItemsColClosed"].Value,
+        // Dilim 1d — layout only: the filter toggle's tooltip, and the folded outcomes tail.
+        FiltersToggle = Localizer["FiltersToggle"].Value,
+        OutcomesOther = Localizer["OutcomesOther"].Value,
+
+
+        NotMeasured = Localizer["NotMeasured"].Value,
+        GroupByLegalEntity = Localizer["GroupByLegalEntity"].Value,
+        GroupUnassigned = Localizer["GroupUnassigned"].Value,
+        GroupOther = Localizer["GroupOther"].Value,
+        GroupsTruncated = Localizer["GroupsTruncated"].Value,
+        FilterAny = Localizer["FilterAny"].Value,
+        PriorityHigh = Localizer["PriorityHigh"].Value,
+        PriorityMedium = Localizer["PriorityMedium"].Value,
+        PriorityLow = Localizer["PriorityLow"].Value
+    })
+</script>
+
+@*
+    THE SYSTEM CLOSURE OUTCOMES, translated once, keyed by the CODE the report returns.
+
+    `outcomes[].code` is an IDENTITY, not a label — it is what the engine stored on the task. The five system
+    codes have translations; a TENANT's own outcome has only the words its administrator typed, in one language,
+    and there is nothing to translate. The script falls back to the raw code for anything not in this map, which
+    is the honest answer for a tenant outcome and a visible one for a system outcome somebody forgot to name.
+*@
+<script id="work-report-outcomes-l10n" type="application/json">
+    @Json.Serialize(new Dictionary<string, string>
+    {
+        ["COMPLETED_AS_REQUESTED"] = OutcomeLocalizer["WorkAggregation_ClosureOutcome_CompletedAsRequested"].Value,
+        ["COMPLETED_PARTIALLY"] = OutcomeLocalizer["WorkAggregation_ClosureOutcome_CompletedPartially"].Value,
+        ["CANCELLED_NOT_REQUIRED"] = OutcomeLocalizer["WorkAggregation_ClosureOutcome_CancelledNotRequired"].Value,
+        ["CANCELLED_SUPERSEDED"] = OutcomeLocalizer["WorkAggregation_ClosureOutcome_CancelledSuperseded"].Value,
+        ["CANCELLED_DUPLICATE"] = OutcomeLocalizer["WorkAggregation_ClosureOutcome_CancelledDuplicate"].Value
+    })
+</script>

@@ -9,9 +9,9 @@ owner_domain: platform-shared-services
 owner: enterprise-architect / platform-team
 branch: feature/governance/blueprint-module-id-reconciliation
 created: 2026-06-04
-canonical_source: "docs/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data"
+canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data"
 inputs:
-  - "docs/audits/blueprint-module-id-reconciliation-2026-06-03.md"
+  - "docs/records/audits/2026-06/blueprint-module-id-reconciliation-2026-06-03.md"
 status_note: "Promoted draft → approved by AG-STEP-002 after read-only verification (verify_module_id.py --check-all exit 0, 0 hard violations; deprecated-alias chains resolve; CAND-CAP-0001…0005 recorded)."
 ---
 
@@ -38,7 +38,7 @@ status_note: "Promoted draft → approved by AG-STEP-002 after read-only verific
 A single canonical `MOD-xxxx` namespace aligned to the enterprise Blueprint, eliminating ID drift and collisions, with full historical traceability via deprecated aliases, and a durable preflight gate that prevents future drift.
 
 ## 3. Problem statement
-Repository module IDs had drifted from the Blueprint: some repo IDs occupied Blueprint numbers reserved for different (SRE/resilience/correlation) modules, several names diverged from Blueprint canonical names, and a parallel legacy namespace (`PSS-*`, `NEW-*`) and repo-only IDs existed without explicit Blueprint reservation. See audit `docs/audits/blueprint-module-id-reconciliation-2026-06-03.md`.
+Repository module IDs had drifted from the Blueprint: some repo IDs occupied Blueprint numbers reserved for different (SRE/resilience/correlation) modules, several names diverged from Blueprint canonical names, and a parallel legacy namespace (`PSS-*`, `NEW-*`) and repo-only IDs existed without explicit Blueprint reservation. See audit `docs/records/audits/2026-06/blueprint-module-id-reconciliation-2026-06-03.md`.
 
 ## 4. Capability boundary
 In scope: documentation-only canonical alignment of module identities and names; deprecated-alias governance; the unresolved EA reservation ledger; the prevention gate. **Out of scope:** runtime code, Hangfire recurring job IDs, `AuditEvent.SourceModule`, appsettings keys, test assertions, API routes, permission codes — none are modified by this pack.
@@ -138,9 +138,9 @@ None at runtime. Documentation consumers (master plan, DCP-001, domain configs) 
 **Single remaining decision, owned by the Enterprise Architect:** the future allocation of canonical `MOD-xxxx` for the temporary candidates `CAND-CAP-0001…0005` (§16a). This is a **separate downstream decision** and does **not** block DCP-002 approval — the candidates are recorded with deprecated-alias chains and governed by the prevention gate today. PR-2 (runtime-sensitive migration) stays blocked until any runtime-bearing ID receives an exact new allocation; runtime literals `MOD-0297` / `MOD-0299` remain legacy compatibility literals until then.
 
 ## 20. Audit and reconciliation notes
-Grounded in `docs/audits/blueprint-module-id-reconciliation-2026-06-03.md` and a read-only backend-architect architecture analysis. This pass is documentation-only; the No-Change proof for runtime paths is recorded in the executing handoff report.
+Grounded in `docs/records/audits/2026-06/blueprint-module-id-reconciliation-2026-06-03.md` and a read-only backend-architect architecture analysis. This pass is documentation-only; the No-Change proof for runtime paths is recorded in the executing handoff report.
 
-**Workbook supersession (Enterprise Architect decision, 2026-07-28).** `docs/System Capability & Implementation Blueprint - master 8.1.xlsx` (`Blueprint_Data`) is the authoritative canonical enterprise module-ID source. Its immutable external provenance record is SHA-256 `f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c`; the workbook-internal abbreviated checksum is not authoritative. Master 7 remains historical predecessor evidence only. The earlier retirement of `execution/modules_pages_planning_v3.xlsx` remains unchanged.
+**Workbook supersession (Enterprise Architect decision, 2026-07-28).** `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` (`Blueprint_Data`) is the authoritative canonical enterprise module-ID source. Its immutable external provenance record is SHA-256 `f37120b0b0edfefe97a8baf6232da6a6bb47629ca7d285097d26993f1ee2c98c`; the workbook-internal abbreviated checksum is not authoritative. Master 7 remains historical predecessor evidence only. The earlier retirement of `execution/modules_pages_planning_v3.xlsx` remains unchanged.
 
 `verify_module_id.py` enforces this external SHA-256 before opening the workbook and fails closed on a missing, unreadable or checksum-mismatched canonical source.
 

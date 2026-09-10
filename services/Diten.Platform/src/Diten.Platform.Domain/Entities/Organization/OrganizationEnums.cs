@@ -3,7 +3,9 @@ namespace Diten.Platform.Domain.Entities.Organization;
 // MOD-0288 v1 — fixed, code-owned enums for the Organization module (localized on the frontend via resx, NOT
 // reference-data). Order/values are a stable contract; append new members at the end.
 
-public enum OrgUnitType { Department, Division, Branch, Team, HQ }
+// MOD-0288-FU03 — `GroupFunction` is APPENDED, never inserted. The enum is persisted by value, so moving an
+// existing member rewrites the type of every stored unit silently.
+public enum OrgUnitType { Department, Division, Branch, Team, HQ, GroupFunction }
 
 public enum OrgUnitStatus { Active, Inactive }
 

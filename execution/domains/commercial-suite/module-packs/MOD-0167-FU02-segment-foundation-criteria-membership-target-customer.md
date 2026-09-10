@@ -530,7 +530,7 @@ frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml                       
 
 # --- doğrulama ---
 scripts/smoke-mod0167-fu02-segment-foundation-authenticated.ps1                                             (yeni; MOD-0162-FU05 script'i şablon)
-docs/audits/mod-0167-fu02-segment-foundation-*.md                                                           (evidence)
+docs/records/audits/mod-0167-fu02-segment-foundation-*.md                                                           (evidence)
 ```
 
 > **Repo scope'a HİÇ girmeyenler:** materialized membership collection'ı · refresh job / hosted service / scheduler ·

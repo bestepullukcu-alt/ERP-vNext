@@ -28,14 +28,39 @@ public sealed class Permission : GlobalEntityBase
     // tenant/platform classification it had under the old Module-name logic. moduleOverride is unchanged (Faz 2 removes it).
     public Permission(string module, string resource, string action, string displayName, string? description, string? moduleOverride = null, PermissionScope? scope = null)
     {
-        Module = moduleOverride ?? module;
-        Resource = resource;
-        Action = action;
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the Module attribution and the Scope basis are now two DIFFERENT
+        // values, and keeping them apart is the whole point of this change:
+        //
+        //   Module      = the module that owns the feature (grouping / filtering on Role Permissions). When no
+        //                 explicit attribution is given it is DERIVED, so a key minted under a SERVICE namespace
+        //                 ("platform") is attributed to the module in its second segment instead of the service.
+        //   Scope       = the tenant/platform-admin escalation boundary. It is classified from the attribution
+        //                 this permission had BEFORE the derivation (`moduleOverride ?? module`), so wiring the
+        //                 derivation in changes ZERO permissions' Scope — a derived Module can never widen who
+        //                 may hold the permission.
+        //
+        // Deleting the legacyAttribution line and classifying from the derived Module would silently downgrade
+        // every platform.* key to Tenant scope. PermissionScopePreservationTests fails if that happens.
+        var legacyAttribution = moduleOverride ?? module;
+
+        // FIX-PERM-ACTION-SPELLING — the Key is computed FIRST and from the RAW arguments, because ADR-001 §1
+        // froze it: "Platform.BusinessReferenceData.Version.PublishOverride" must keep resolving to
+        // platform.businessreferencedata.version.publishoverride, whatever the stored segments end up spelling.
+        // Only the stored Resource/Action are normalized, so the catalog stops carrying the same verb four ways
+        // (PascalCase from the BRD seed, snake_case from MOD-0251, kebab everywhere else) while every
+        // [HasPermission] attribute in the repository stays untouched.
         Key = $"{module}.{resource}.{action}".ToLowerInvariant();
+
+        // Module derivation reads the RAW resource on purpose — it is the pre-existing behaviour, and feeding it
+        // the normalized form would change the derived head for a PascalCase resource
+        // ("businessreferencedata" → "business-reference-data") and silently re-group permissions.
+        Module = moduleOverride ?? PermissionModuleAttribution.Derive(module, resource);
+        Resource = PermissionSegmentNormalizer.Normalize(resource);
+        Action = PermissionSegmentNormalizer.Normalize(action);
         DisplayName = displayName;
         Description = description;
         IsSystem = true;
-        Scope = scope ?? DefaultRolePermissionTemplate.ClassifyScope(Module);
+        Scope = scope ?? DefaultRolePermissionTemplate.ClassifyScope(legacyAttribution);
         CreatedAt = DateTimeOffset.UtcNow;
     }
 

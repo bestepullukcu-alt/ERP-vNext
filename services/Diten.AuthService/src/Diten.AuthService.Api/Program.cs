@@ -14,6 +14,19 @@ using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/*
+ * ⚠ HEADER BUDGET RAISED FROM KESTREL'S 32 KB DEFAULT (2026-09-04). The access token carries
+ * one claim per permission (AuthService TokenService.cs:50-52) and the tenant admin holds 408,
+ * so the JWT is ~21.5 KB. The gateway forwards the caller's headers, so raising the ceiling at
+ * the edge alone was NOT enough -- measured: gateway answered 200 while every service behind it
+ * still answered 431. Symptom fix; the real repair is to stop shipping permissions as claims.
+ */
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestHeadersTotalSize = 64 * 1024;
+});
+
+
 var observabilityOptions = builder.Configuration
     .GetSection(ObservabilityOptions.SectionName)
     .Get<ObservabilityOptions>() ?? new ObservabilityOptions();

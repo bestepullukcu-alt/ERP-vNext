@@ -256,8 +256,8 @@ internal-key components and any additional configuration/authentication file rem
 
 - `.antigravity/**`
 - `AGENTS.md`
-- `docs/System Capability & Implementation Blueprint - master 8.1.xlsx`
-- `docs/product-backlog.md`
+- `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx`
+- `docs/roadmap/backlog/product-backlog.md`
 - `execution/portfolio/delivery-capability-packs/**`
 - `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md`
 - `services/Diten.MdmService/**`, except the seven exact MDM module-registration implementation/test files in Section 5

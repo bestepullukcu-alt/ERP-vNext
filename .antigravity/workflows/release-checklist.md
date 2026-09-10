@@ -39,8 +39,29 @@ Her yeni sürüm, modül veya kritik hata düzeltmesi (hotfix) yayına alınmada
 - [ ] **Boş Durum:** Tablo boşsa "No records found" mesajı düzgün gösteriliyor mu?
 
 ## 📝 6. Dokümantasyon
-- [ ] **API Dokümanı:** Yeni modülün Swagger/README dokümanı güncellenmiş mi?
-- [ ] **Kullanıcı Kılavuzu:** Son kullanıcı için ekran rehberi hazırlanmış mı?
+- [ ] **API Dokümanı:** `docs/reference/architecture/api/` altında güncellenmiş mi?
+      Servis README'si `services/<servis>/README.md` yerinde mi?
+- [ ] **Kullanıcı Kılavuzu:** `docs/guides/<modül>/index.html` — resimli, tek dosya HTML olarak var mı?
+- [ ] **Yol kontrolü:** Yukarıdaki maddeler **dosya yolu yazılmadan** işaretlenemez
+      (bkz. `.antigravity/rules/docs-organization.md` §3.1).
+
+- [ ] **Yetkisiz kullanıcı (UAS-001):** Sayfa, iznine sahip olmayan kullanıcıya iskelet
+      çizmiyor mu — başlık, kart, boş tablo, eylem butonu yok mu? Tek bir açıklama ve
+      ne yapılacağı var mı? **Canlı denendi mi** — test kullanıcısı genellikle her
+      yetkiye sahiptir, bu kusuru testler göstermez.
+      (`.antigravity/rules/unauthorized-surface-standard.md`)
+
+## 🚦 7. Canlıya Çıkış Sonrası Operatör Adımları
+
+- [ ] `docs/guides/operations/post-deploy-steps.md` **okundu** ve bu sürümü ilgilendiren
+      satırlar belirlendi.
+- [ ] Bu modül canlıda **elle** bir adım gerektiriyor mu — yetki satırı, tanım girişi,
+      ayar değişikliği? Gerektiriyorsa o dosyaya **satırı yazıldı**.
+- [ ] Deploy sonrası adımlar uygulandı ve "Tamamlananlar" bölümüne taşındı.
+
+⚠ Kodun deploy edilmiş olması özelliğin çalıştığı anlamına gelmez. Açılmamış bir yetki
+satırı, kullanıcıya "menüde yok" diye görünür ve geliştirici koda bakar — kod yerindedir.
+Bu bölüm o kaybı önlemek içindir.
 - [ ] **CHANGELOG:** Breaking change varsa `CHANGELOG.md`'ye kaydedilmiş mi?
 
 ---

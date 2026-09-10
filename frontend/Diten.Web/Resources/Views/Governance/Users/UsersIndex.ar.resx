@@ -34,6 +34,8 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>تعديل المستخدم</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>معلومات عامة</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>مثال: user@example.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>مثال: أحمد</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>مثال: محمد</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>لا يمكن تغيير البريد الإلكتروني بعد الإنشاء.</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>إجمالي المستخدمين</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>نشط</value></data>

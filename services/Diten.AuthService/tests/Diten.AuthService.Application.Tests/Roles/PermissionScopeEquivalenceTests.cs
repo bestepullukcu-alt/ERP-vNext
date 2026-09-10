@@ -4,15 +4,29 @@ using Diten.AuthService.Domain.Entities;
 namespace Diten.AuthService.Application.Tests.Roles;
 
 // İŞ3-FAZ0 — equivalence net (the project's hard condition). Proves that moving the escalation boundary from the
-// Module NAME to the derived Permission.Scope changes NOTHING in Faz 0: for a catalog spanning every distinct seed
-// Module, the new Scope-based predicates and grant sets are byte-identical to the old Module-based ones. The old
-// logic is reproduced verbatim below as Legacy* reference methods and must stay in lock-step with the live code.
+// Module NAME to the derived Permission.Scope changes NOTHING: for a catalog spanning every distinct seed Module,
+// the new Scope-based predicates and grant sets are byte-identical to the old Module-based ones. The old logic is
+// reproduced verbatim below as Legacy* reference methods and must stay in lock-step with the live code.
+//
+// FIX-RBAC-PERM-MODULE-ATTRIBUTION — the legacy oracle can no longer read Permission.Module, because Module is no
+// longer the Scope basis: a permission minted under a SERVICE namespace is now attributed to the module that owns
+// it ("platform.tenants.read" → Module "tenants"), while its Scope stays classified from the attribution it had
+// before ("platform"). Reading the NEW Module here would make the oracle claim platform-admin keys are tenant
+// permissions and the equivalence would "pass" by drifting with the code. So every fixture row states its own
+// LEGACY attribution and the oracle reads that — the equivalence proves what it always claimed: re-attribution
+// moves no permission across the boundary.
 public sealed class PermissionScopeEquivalenceTests
 {
     // ---- Legacy reference implementation (EXACT pre-Faz-0 Module-name logic; DO NOT "modernise") ----
 
+    // The attribution each fixture permission carried BEFORE the module re-attribution — i.e. `moduleOverride ??
+    // keyNamespace`, exactly the ctor's Scope basis. Stated per row in FullCatalog, never recomputed from the rule.
+    private static readonly Dictionary<string, string> LegacyModuleByKey = new(StringComparer.Ordinal);
+
+    private static string LegacyModule(Permission p) => LegacyModuleByKey[p.Key];
+
     private static bool LegacyIsPlatform(Permission p) =>
-        DefaultRolePermissionTemplate.PlatformAdminModules.Contains(p.Module);
+        DefaultRolePermissionTemplate.PlatformAdminModules.Contains(LegacyModule(p));
 
     private static bool LegacyIsTenantAssignable(Permission p) =>
         !LegacyIsPlatform(p) || DefaultRolePermissionTemplate.TenantSelfServicePermissions.Contains(p.Key);
@@ -38,55 +52,64 @@ public sealed class PermissionScopeEquivalenceTests
 
     // ---- A catalog covering EVERY distinct DataSeeder Module class + read/non-read + self-service + a deleted row ----
 
+    // Builds a permission AND records its legacy (pre-re-attribution) module attribution in one place, so a fixture
+    // row cannot be added without stating which side of the escalation boundary it used to sit on.
+    private static Permission P(string module, string resource, string action, string displayName, string? moduleOverride = null)
+    {
+        var permission = new Permission(module, resource, action, displayName, null, moduleOverride: moduleOverride);
+        LegacyModuleByKey[permission.Key] = moduleOverride ?? module;
+        return permission;
+    }
+
     private static List<Permission> FullCatalog()
     {
-        var deleted = new Permission("platform", "obsolete", "read", "Obsolete", null); // platform-admin + deleted
+        var deleted = P("platform", "obsolete", "read", "Obsolete"); // platform-admin + deleted
         deleted.IsDeleted = true;
 
         return
         [
             // auth / mdm — Tenant, AdminModules
-            new("auth", "users", "read", "Read User", null),
-            new("auth", "users", "create", "Create User", null),
-            new("auth", "roles", "assign-permission", "Assign Permission", null),
-            new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-            new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
-            new("mdm", "legal-entities", "bulk-delete", "Bulk Delete", null),
-            new("mdm", "legal-entities", "export", "Export", null),
+            P("auth", "users", "read", "Read User"),
+            P("auth", "users", "create", "Create User"),
+            P("auth", "roles", "assign-permission", "Assign Permission"),
+            P("mdm", "legal-entities", "read", "Read Legal Entity"),
+            P("mdm", "legal-entities", "delete", "Delete Legal Entity"),
+            P("mdm", "legal-entities", "bulk-delete", "Bulk Delete"),
+            P("mdm", "legal-entities", "export", "Export"),
 
             // organization — Tenant, NOT AdminModules (the delta-sensitive case the zero-delta guard protects)
-            new("platform", "positions", "read", "Read Positions", null, moduleOverride: "organization"),
-            new("platform", "positions", "delete", "Delete Positions", null, moduleOverride: "organization"),
-            new("platform", "organization", "read-manager-chain", "Read Manager Chain", null, moduleOverride: "organization"),
+            P("platform", "positions", "read", "Read Positions", moduleOverride: "organization"),
+            P("platform", "positions", "delete", "Delete Positions", moduleOverride: "organization"),
+            P("platform", "organization", "read-manager-chain", "Read Manager Chain", moduleOverride: "organization"),
 
             // goldenslim — Tenant, NOT AdminModules (delta-sensitive)
-            new("goldenslim", "records", "read", "Read Golden Slim", null),
-            new("goldenslim", "records", "create", "Create Golden Slim", null),
+            P("goldenslim", "records", "read", "Read Golden Slim"),
+            P("goldenslim", "records", "create", "Create Golden Slim"),
 
             // İŞ3-FAZ0-FIX — self-registered/synced modules that are NOT in the DataSeeder seed list. The seed-list
             // Scope reconcile left these without a Scope (limbo), dropping them from tenant-assignable (the regressed
             // 9). Their Module is their own module code (tenant-facing) → ClassifyScope = Tenant → tenant-assignable.
-            new("goldenslim", "records", "export", "Export Golden Slim", null),
-            new("goldenslim", "reports", "view", "View Golden Slim Reports", null),
-            new("goldencompact", "records", "read", "Read Golden Compact", null),
-            new("goldencompact", "records", "create", "Create Golden Compact", null),
-            new("test-beta-mod", "test", "read", "Read Test Beta", null),
-            new("test-beta-mod", "test", "create", "Create Test Beta", null),
+            P("goldenslim", "records", "export", "Export Golden Slim"),
+            P("goldenslim", "reports", "view", "View Golden Slim Reports"),
+            P("goldencompact", "records", "read", "Read Golden Compact"),
+            P("goldencompact", "records", "create", "Create Golden Compact"),
+            P("test-beta-mod", "test", "read", "Read Test Beta"),
+            P("test-beta-mod", "test", "create", "Create Test Beta"),
 
             // reference-data — PlatformAdmin (via override), incl. a read (must NOT reach Viewer)
-            new("platform", "BusinessReferenceData", "Read", "Read BRD", null, moduleOverride: "reference-data"),
-            new("platform", "BusinessReferenceData", "Create", "Create BRD", null, moduleOverride: "reference-data"),
+            P("platform", "BusinessReferenceData", "Read", "Read BRD", moduleOverride: "reference-data"),
+            P("platform", "BusinessReferenceData", "Create", "Create BRD", moduleOverride: "reference-data"),
 
             // platform — PlatformAdmin, incl. a read + workflow + document-management (all Module="platform")
-            new("platform", "tenants", "read", "Read Tenant", null),
-            new("platform", "tenants", "create", "Create Tenant", null),
-            new("platform", "workflow.definitions", "view", "View Workflow", null),
-            new("platform", "document-management.contract", "view", "View DM Contract", null),
+            P("platform", "tenants", "read", "Read Tenant"),
+            P("platform", "tenants", "create", "Create Tenant"),
+            P("platform", "workflow.definitions", "view", "View Workflow"),
+            P("platform", "document-management.contract", "view", "View DM Contract"),
 
             // tenant-settings — Tenant (via override) AND the curated self-service keys (Admin yes, Viewer no)
-            new("platform", "tenant-security", "read", "Read Tenant Security", null, moduleOverride: "tenant-settings"),
-            new("platform", "tenant-security", "manage", "Manage Tenant Security", null, moduleOverride: "tenant-settings"),
-            new("platform", "tenant-navigation", "manage", "Manage Tenant Navigation", null, moduleOverride: "tenant-settings"),
+            P("platform", "tenant-security", "read", "Read Tenant Security", moduleOverride: "tenant-settings"),
+            P("platform", "tenant-security", "manage", "Manage Tenant Security", moduleOverride: "tenant-settings"),
+            P("platform", "tenant-navigation", "manage", "Manage Tenant Navigation", moduleOverride: "tenant-settings"),
 
             deleted
         ];
@@ -183,7 +206,10 @@ public sealed class PermissionScopeEquivalenceTests
     {
         var p = new Permission(module, "res", "read", "x", null, moduleOverride: moduleOverride);
         Assert.Equal(expected, p.Scope);
-        Assert.Equal(expected, DefaultRolePermissionTemplate.ClassifyScope(p.Module));
+
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the Scope basis is the attribution BEFORE derivation. Classifying
+        // p.Module instead would read "res" for the un-overridden platform row and wrongly call it Tenant.
+        Assert.Equal(expected, DefaultRolePermissionTemplate.ClassifyScope(moduleOverride ?? module));
     }
 
     [Fact]
@@ -222,14 +248,34 @@ public sealed class PermissionScopeEquivalenceTests
         Assert.True(scope is PermissionScope.Tenant or PermissionScope.PlatformAdmin);
     }
 
-    // Post-reconcile invariant (logic level): every permission's Scope equals ClassifyScope(its Module) — the exact
-    // state the whole-collection reconcile enforces on Mongo. Covers the synced-only modules too.
+    // Post-reconcile invariant (logic level): every permission's Scope equals ClassifyScope of the attribution it was
+    // MINTED under. FIX-RBAC-PERM-MODULE-ATTRIBUTION — this used to read p.Module, which was the same value; the two
+    // parted company when a service-namespaced key started being attributed to the module that owns it. Scope is the
+    // half that must not move, so the invariant now names it explicitly.
     [Fact]
-    public void Every_permission_scope_equals_classify_of_its_module()
+    public void Every_permission_scope_equals_classify_of_its_minted_attribution()
     {
         foreach (var p in FullCatalog().Where(p => !p.IsDeleted))
         {
-            Assert.Equal(DefaultRolePermissionTemplate.ClassifyScope(p.Module), p.Scope);
+            Assert.Equal(DefaultRolePermissionTemplate.ClassifyScope(LegacyModule(p)), p.Scope);
+        }
+    }
+
+    // The companion the split makes necessary: re-attribution changed the GROUPING for exactly the rows minted under
+    // a service namespace, and left the boundary alone. If the ctor ever classified Scope from the derived Module,
+    // these platform-admin keys would come back Tenant.
+    [Fact]
+    public void Reattributed_permissions_keep_their_platform_admin_scope()
+    {
+        var catalog = FullCatalog();
+
+        foreach (var key in new[] { "platform.tenants.read", "platform.tenants.create", "platform.document-management.contract.view" })
+        {
+            var p = catalog.Single(x => x.Key == key);
+            Assert.NotEqual("platform", p.Module);                          // grouping moved to the owning module
+            Assert.Equal(PermissionScope.PlatformAdmin, p.Scope);           // boundary did not
+            Assert.True(DefaultRolePermissionTemplate.IsPlatform(p));
+            Assert.False(DefaultRolePermissionTemplate.IsTenantAssignable(p));
         }
     }
 

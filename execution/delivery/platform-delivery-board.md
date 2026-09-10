@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: Platform Delivery Board
 - **Canonical Path**: [platform-delivery-board.md](./platform-delivery-board.md)
-- **Legacy Source**: [master-plan.md](../../docs/platform/master-plan.md)
+- **Legacy Source**: [master-plan.md](../../docs/reference/modules/platform/master-plan.md)
 - **Migration Phase**: IA Phase 3B-2A
 - **Status**: Seeded from active delivery, progress, and gap sections
 - **Usage Warning**: This is an active work coordination board. It is **not** a canonical module registry, not a high-level roadmap, and not a linter rules definition source.
@@ -20,7 +20,7 @@ For other phases of governance, consult the relevant source of truth:
 * **Canonical Module ID Allocation**: [module-id-registry.md](../registries/module-id-registry.md)
 * **High-Level Roadmap & Wave sequencing**: [master-development-plan.md](../portfolio/master-development-plan.md)
 * **Module specifications & design contracts**: `execution/domains/{domain}/module-packs/`
-* **Test results and evidence**: `docs/qa/acceptance-reports/`
+* **Test results and evidence**: `docs/records/acceptance-reports/`
 * **Static code style guidelines**: `.antigravity/rules/`
 
 ---
@@ -106,7 +106,7 @@ The following milestones are officially marked as completed:
 ---
 
 ## Migration Notes
-- **Migration Scope**: This board has been seeded solely from Section 2.1, Section 9, and Section 13 of the legacy `docs/platform/master-plan.md`.
+- **Migration Scope**: This board has been seeded solely from Section 2.1, Section 9, and Section 13 of the legacy `docs/reference/modules/platform/master-plan.md`.
 - **Status of Specs**: Functional module specs are not part of this document. It serves strictly as a task and blocker queue.
 - **Contract Boundary**: The tasks outlined here do not replace Module Packs. A developer or agent cannot initiate coding without an approved Module Pack matching the work item.
 

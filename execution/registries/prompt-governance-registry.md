@@ -8,7 +8,7 @@ Lists approved system prompts, developer guidance prompts, and agent/tool config
 
 ## Not the source for
 - Running developer workflows directly (use `.antigravity/workflows/`).
-- General developer documentation (use `docs/agent-usage-guide.md`).
+- General developer documentation (use `docs/guides/operations/agent-usage-guide.md`).
 
 ## Current status
 Placeholder.

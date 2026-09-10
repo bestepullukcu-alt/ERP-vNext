@@ -20,7 +20,15 @@ builder.Configuration
     .AddEnvironmentVariables()
     .AddCommandLine(args);
 
-builder.WebHost.UseKestrel();
+builder.WebHost.UseKestrel(options =>
+{
+    /*
+     * ⚠ 32 KB Kestrel default raised (2026-09-04): the access token carries one claim per
+     * permission and the tenant admin holds 408, so the JWT is ~21.5 KB and the gateway
+     * forwards it here. Symptom fix; see AuthService TokenService.cs:50-52 for the cause.
+     */
+    options.Limits.MaxRequestHeadersTotalSize = 64 * 1024;
+});
 builder.WebHost.UseUrls(
     builder.Configuration["urls"]
     ?? builder.Configuration["ASPNETCORE_URLS"]

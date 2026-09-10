@@ -4,21 +4,22 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>Role Permissions</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove permissions for a role.</value></data>
-  <data name="SelectRole" xml:space="preserve"><value>Role</value></data>
-  <data name="SearchPermissions" xml:space="preserve"><value>Search permissions…</value></data>
-  <data name="SelectRolePrompt" xml:space="preserve"><value>Select a role to manage its permissions.</value></data>
-  <data name="NoPermissions" xml:space="preserve"><value>No permissions are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="BadgeBaseline" xml:space="preserve"><value>Baseline</value></data>
+  <data name="Title" xml:space="preserve"><value>Autorisations des rôles</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Attribuez ou retirez des autorisations pour un rôle.</value></data>
+  <data name="SelectRole" xml:space="preserve"><value>Rôle</value></data>
+  <data name="SearchPermissions" xml:space="preserve"><value>Rechercher des autorisations…</value></data>
+  <data name="SelectRolePrompt" xml:space="preserve"><value>Sélectionnez un rôle pour gérer ses autorisations.</value></data>
+  <data name="NoPermissions" xml:space="preserve"><value>Aucune autorisation disponible.</value></data>
+  <data name="Assign" xml:space="preserve"><value>Attribuer</value></data>
+  <data name="BadgeBaseline" xml:space="preserve"><value>Socle</value></data>
   <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
-  <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
-  <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="BadgeManual" xml:space="preserve"><value>Manuel</value></data>
+  <data name="LockedHint" xml:space="preserve"><value>Les autorisations du socle et celles accordées par un module ne se modifient pas ici.</value></data>
   <data name="LockedHintSystem" xml:space="preserve"><value>Cette autorisation fait partie du socle système et ne peut pas être modifiée ici.</value></data>
   <data name="LockedHintModule" xml:space="preserve"><value>Cette autorisation a été accordée automatiquement par le module {0} et ne peut pas être modifiée ici.</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>Module</value></data>
   <data name="AllModulesOption" xml:space="preserve"><value>Tous les modules</value></data>
+  <data name="ModuleFilterSearchPlaceholder" xml:space="preserve"><value>Rechercher un module…</value></data>
   <data name="ModuleUngrouped" xml:space="preserve"><value>Autre</value></data>
   <data name="FilterStateGroupLabel" xml:space="preserve"><value>Filtrer par état d'attribution</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Tout</value></data>
@@ -44,6 +45,16 @@
   <data name="ShowingCount" xml:space="preserve"><value>{0} autorisations affichées</value></data>
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>Tout le locataire</value></data>
+  <data name="ActionVerb_Claim" xml:space="preserve"><value>Prendre en charge</value></data>
+  <data name="ActionVerb_Complete" xml:space="preserve"><value>Terminer</value></data>
+  <data name="ActionVerb_Review" xml:space="preserve"><value>Examiner</value></data>
+  <data name="ActionVerb_Reconcile" xml:space="preserve"><value>Rapprocher</value></data>
+  <data name="ActionVerb_Record" xml:space="preserve"><value>Enregistrer</value></data>
+  <data name="ActionVerb_Search" xml:space="preserve"><value>Rechercher</value></data>
+  <data name="ActionVerb_Verify" xml:space="preserve"><value>Vérifier</value></data>
+  <data name="ActionVerb_Request" xml:space="preserve"><value>Demander</value></data>
+  <data name="ActionVerb_ChangeLifecycle" xml:space="preserve"><value>Changer le cycle de vie</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>Consulter</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>Consulter</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>Créer</value></data>

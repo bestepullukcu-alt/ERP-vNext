@@ -53,8 +53,15 @@ public sealed class TaskManifestProviderTests
     {
         // A key the manifest never mentions would be created by the A1 worker as Module="platform" +
         // Scope=PlatformAdmin — a scope AuthService cannot downgrade, permanently unassignable to a tenant role.
-        var declared = Manifest.Pages.Select(p => p.RequiredPermission)
-            .Concat(Manifest.Pages.SelectMany(p => p.Actions).Select(a => a.PermissionKey))
+        //
+        // The home does not have to be THIS manifest — it has to be A manifest. The Work Report was moved into
+        // its own module (the sidebar groups by module, so a report could not leave "Görev Tanımları" any other
+        // way), and it took its two keys with it. Asserting against this manifest alone would have called them
+        // orphans while they were declared one file over, and the fix for that red would have been to re-declare
+        // them here — publishing the page into two sidebar groups.
+        var declared = new[] { Manifest, new WorkReportManifestProvider().GetManifest() }
+            .SelectMany(m => m.Pages)
+            .SelectMany(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey)))
             .ToHashSet(StringComparer.Ordinal);
 
         var orphans = KnownPermissionKeys.Except(declared).ToList();

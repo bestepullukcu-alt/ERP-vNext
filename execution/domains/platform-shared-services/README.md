@@ -37,11 +37,11 @@ Platform & Shared Services domain'i; tenant yönetimi, subscription, RBAC/ABAC, 
 2. **Domain Config** — [domain-config.md](domain-config.md)
 3. **AGENTS.md** — repo kontratı
 4. **`.antigravity/rules/`** — engineering NASIL (`response-envelope`, `handler-design`, `views-organization`, ...)
-5. **`docs/platform/master-plan.md`** — modül envanteri, MVP scope, cross-cutting standartlar (§7)
+5. **`docs/reference/modules/platform/master-plan.md`** — modül envanteri, MVP scope, cross-cutting standartlar (§7)
 
 ## Yeni Modül Eklerken
 
-Tam akış için: [docs/agent-usage-guide.md](../../../docs/agent-usage-guide.md). Kısa hâli:
+Tam akış için: [docs/guides/operations/agent-usage-guide.md](../../../docs/guides/operations/agent-usage-guide.md). Kısa hâli:
 
 1. `/prepare-module-pack` çağır (modül adı + alan sayısı + iş kuralları)
 2. Üretilen registry-controlled `{ID}-{slug}.md` pack'ini incele, gerekirse düzelt

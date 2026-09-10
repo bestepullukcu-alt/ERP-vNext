@@ -85,4 +85,16 @@
   <data name="MoveCycleBlocked" xml:space="preserve">
     <value>单位不能移动到其自身的子单位下。</value>
   </data>
+  <data name="FunctionalParentLabel" xml:space="preserve"><value>职能上级单位</value></data>
+  <data name="AdministrativeParentLabel" xml:space="preserve"><value>行政上级单位</value></data>
+  <data name="AdministrativeParentNone" xml:space="preserve"><value>（无行政线）</value></data>
+  <data name="AdministrativeParentHelp" xml:space="preserve"><value>留空表示没有行政线。不会回退到职能上级单位。</value></data>
+  <data name="OrgUnitTypeGroupFunction" xml:space="preserve"><value>集团职能</value></data>
+  <data name="CustomFieldsSectionTitle" xml:space="preserve"><value>自定义字段</value></data>
+  <data name="CustomFieldRequiredError" xml:space="preserve"><value>此字段为必填项</value></data>
+  <data name="CustomFieldTypeError" xml:space="preserve"><value>值与字段类型不匹配</value></data>
+  <data name="CustomFieldSelectPlaceholder" xml:space="preserve"><value>请选择…</value></data>
+  <data name="CustomFieldTextPlaceholder" xml:space="preserve"><value>请输入一个值</value></data>
+  <data name="CustomFieldNumberPlaceholder" xml:space="preserve"><value>请输入一个数字</value></data>
+  <data name="CustomFieldDatePlaceholder" xml:space="preserve"><value>请选择日期</value></data>
 </root>

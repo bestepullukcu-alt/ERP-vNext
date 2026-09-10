@@ -42,7 +42,8 @@
     };
 
     const typeLabel = (t) => ({
-        DEPARTMENT: L.TypeDepartment, DIVISION: L.TypeDivision, BRANCH: L.TypeBranch, TEAM: L.TypeTeam, HQ: L.TypeHQ
+        DEPARTMENT: L.TypeDepartment, DIVISION: L.TypeDivision, BRANCH: L.TypeBranch, TEAM: L.TypeTeam, HQ: L.TypeHQ,
+        GROUPFUNCTION: L.TypeGroupFunction
     }[String(t || '').toUpperCase()] || t || '-');
 
     const statusLabel = (s) => ({
@@ -98,6 +99,16 @@
         const parentId = d.parentOrganizationUnitId || d.ParentOrganizationUnitId;
         setText('ouDetailParent', parentId ? (maps.orgUnits[String(parentId)] || parentId) : (L.NoParent || '-'));
 
+        /*
+         * ⚠ NO FALLBACK, HERE LEAST OF ALL. A details page is where somebody checks who a unit reports to; if an
+         * absent administrative line borrowed the functional parent's name, this page would state a reporting
+         * relationship that does not exist. Empty means empty — the same '-' every other unset field uses, and
+         * never the other line's value (FU02 §8 decision 2).
+         */
+        const administrativeParentId = d.administrativeParentOrganizationUnitId || d.AdministrativeParentOrganizationUnitId;
+        setText('ouDetailAdministrativeParent',
+            administrativeParentId ? (maps.orgUnits[String(administrativeParentId)] || administrativeParentId) : null);
+
         const managerId = d.managerPositionId || d.ManagerPositionId;
         setText('ouDetailManager', managerId ? (maps.positions[String(managerId)] || managerId) : (L.NoManager || '-'));
         setText('ouDetailEffectiveFrom', fmtDate(d.effectiveFrom || d.EffectiveFrom));
@@ -140,6 +151,29 @@
         }
     };
 
+    /*
+     * MOD-0288-FU03 — custom field values, read-only. The section stays hidden when the tenant authored no
+     * definitions, and a value this actor may not read is omitted rather than shown blank (§10.6, §10.8);
+     * both of those decisions live in renderCustomFieldValues, which reports how many fields it drew.
+     */
+    const loadCustomFields = async () => {
+        const cf = window.OrgUnitCustomFields;
+        const section = byId('ou-detail-custom-fields-section');
+        const host = byId('ou-detail-custom-fields');
+        if (!cf || !section || !host || !cf.hasPermission('platform.organization-units.custom-fields.read')) return;
+
+        try {
+            const [definitions, values] = await Promise.all([
+                fetchJson(`${endpoint}/field-definitions`).then(unwrapList),
+                fetchJson(`${endpoint}/${encodeURIComponent(entityId)}/field-values`).then(unwrapList).catch(() => [])
+            ]);
+            const count = cf.renderCustomFieldValues(host, definitions, values, { booleanYes: L.Yes, booleanNo: L.No });
+            if (count > 0) section.classList.remove('d-none');
+        } catch (error) {
+            console.error('[OU Details] Custom fields could not be loaded.', error);
+        }
+    };
+
     const runAction = (url, method, confirmMsg, toastMsg) => {
         const doAction = async () => {
             try {
@@ -161,4 +195,5 @@
 
     loadL10n();
     load();
+    loadCustomFields();
 })();

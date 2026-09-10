@@ -585,6 +585,9 @@
   <data name="Nav.Module.WORKAGGREGATION" xml:space="preserve">
     <value>مركز المهام</value>
   </data>
+  <data name="Nav.Module.WORKREPORT" xml:space="preserve">
+    <value>تقرير العمل</value>
+  </data>
   <data name="Nav.Page.WORKCENTER" xml:space="preserve">
     <value>مركز المهام</value>
   </data>
@@ -620,6 +623,9 @@
   </data>
   <data name="Nav.Page.TASKTYPES" xml:space="preserve">
     <value>أنواع المهام</value>
+  </data>
+  <data name="Nav.Page.TASKWORKREPORT" xml:space="preserve">
+    <value>تقرير العمل</value>
   </data>
   <data name="Nav.Page.TASKDOCUMENTLIST" xml:space="preserve">
     <value>الوثائق الخاضعة للرقابة</value>
@@ -707,4 +713,86 @@
   </data>
   <data name="PlannedVisitsMenu" xml:space="preserve"><value>الزيارات المخططة</value></data>
   <data name="Nav.Page.PLANNEDVISITS" xml:space="preserve"><value>الزيارات المخططة</value></data>
+  <data name="Nav.Domain.PORTFOLIODELIVERY" xml:space="preserve">
+    <value>تنفيذ المحافظ</value>
+  </data>
+  <data name="Nav.Module.PPM" xml:space="preserve">
+    <value>إدارة المشاريع والمحافظ</value>
+  </data>
+  <data name="Nav.Page.PORTFOLIOS" xml:space="preserve">
+    <value>المحافظ</value>
+  </data>
+  <data name="Nav.Page.INITIATIVES" xml:space="preserve">
+    <value>المبادرات</value>
+  </data>
+  <data name="Nav.Page.PROGRAMS" xml:space="preserve">
+    <value>البرامج</value>
+  </data>
+  <data name="Nav.Page.PROJECTS" xml:space="preserve">
+    <value>المشاريع</value>
+  </data>
+  <data name="Nav.Page.INVESTMENTCASES" xml:space="preserve">
+    <value>حالات الاستثمار</value>
+  </data>
+  <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
+    <value>التزامات المنافع</value>
+  </data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>المستأجرون</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>الإشعارات</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>المسؤولون</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>التدقيق</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>كتالوج الوحدات</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>مجالات الوحدات</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>خدمات الوحدات</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>سجل الواجهات</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>خطط الاشتراك</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>ميزات الاشتراك</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>دليل الأشخاص</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>قوائم المراجع</value></data>
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>المهام</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>المنتجات</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>الحساب</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>الحملة</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>لقطة الحملة</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>هدف الحملة</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>الموافقة</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>جهة الاتصال</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>سعة الدورة</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>فترة الدورة</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>مفهوم المعرفة</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>رحلة التفاعل مع المحتوى</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>مسار المعرفة</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>موضوع المعرفة</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>الزيارة المخططة</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>التفضيل</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>الشريحة</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>قالب الاستراتيجية</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>نموذج المنطقة</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>عقدة المنطقة</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>السمة</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>التسلسل الهرمي</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>نظرة عامة</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>جهة اتصال الحساب</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>علاقة الحساب</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>النموذج</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>العقدة</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>التقارير</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>جودة البيانات</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>الموظف</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>الحقول المخصصة</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>خط التقارير</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>السلع التامة</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>وحدات SKU المحلية</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>اختصارات المنتج</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>قائمة المستندات</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>قواعد التكرار</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>إعدادات القائمة</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>إعدادات الأمان</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>صندوق الوارد</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>تجاوز</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
 </root>

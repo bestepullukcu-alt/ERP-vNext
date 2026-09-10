@@ -57,6 +57,10 @@ public static class DependencyInjection
         services.AddScoped<IPlatformCatalogContract, PlatformCatalogContract>();
         services.AddSingleton<ITemporaryAccessProvider, NoOpTemporaryAccessProvider>();
         services.AddScoped<IDataScopeResolver, OrgDataScopeResolver>();
+        // ⚠ ONE scope resolution for the work report, shared by its two endpoints — the numbers and the lists.
+        // See IWorkReportScopeSource for why a second copy in the items handler would be the dangerous shape.
+        services.AddScoped<Features.Tasks.Services.IWorkReportScopeSource,
+            Features.Tasks.Services.WorkReportScopeSource>();
         /*
          * The ONE surface MOD-0024 asks "who sits in which seat" through. Nine files used to inject the
          * assignment repository directly and each re-wrote the active-window rule; BL-071 moves that fact to
@@ -414,6 +418,9 @@ public static class DependencyInjection
         // MOD-0024 — Task Engine. Declares its permission keys (so the manifest, not the A1 reflection worker,
         // owns their Module/Scope attribution) and its email notification events.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.TaskManifestProvider>();
+        // MOD-0024 / İş Raporu — the Work Report is its OWN module, not a page under "Görev Tanımları": the
+        // sidebar groups by module, so no ParentPageCode could have moved it out of the settings group.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.WorkReportManifestProvider>();
 
         return services;
     }

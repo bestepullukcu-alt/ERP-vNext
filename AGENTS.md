@@ -1,6 +1,17 @@
 # AGENTS.md — Diten ERP vNext Execution Contract
 
-Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır. Repo root'tan çalışıldığında otomatik yüklenir.
+Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması gereken yürütme kontratıdır.
+
+⚠ **Claude Code bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
+canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
+`.antigravity/` altındaki 39 kural / 20 ajan / 18 akış da yoktu.
+
+Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
+göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve
+`core.symlinks=false` altında bağ "AGENTS.md" yazan düz bir metin dosyasına dönüşerek
+sessizce işlevsiz kalıyor — dosya var görünür, içerik yoktur.
+
+`CLAUDE.md` bir kopya değildir ve olmamalıdır; çakışmada **bu dosya kazanır**.
 
 > **Otorite:** Bu dosya, `.antigravity/` içindeki global standartlardan üstündür. Domain veya module seviyesinde yazılmış bir kural bu dosyadan üstündür.
 
@@ -70,6 +81,8 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | Auth Service | 5056 | `services/Diten.AuthService/src/Diten.AuthService.Api` |
 | Platform Service | 5057 | `services/Diten.Platform/src/Diten.Platform.API` |
 | DevEnablement Service | 5058 | `services/Diten.DevEnablementService/src/Diten.DevEnablementService.Api` |
+| MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
+| HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
@@ -146,10 +159,11 @@ Bu kararlar repo genelinde **zorunludur**. Bir modül bunlardan muaf olmak ister
 | Mimari | 5 katman (Api/Application/Domain/Persistence/Infrastructure) + CQRS (MediatR) | [.antigravity/rules/erp-architecture.md](.antigravity/rules/erp-architecture.md) |
 | API Yanıt | `Response<T>` envelope + `CustomBaseController` | [.antigravity/rules/response-envelope.md](.antigravity/rules/response-envelope.md) |
 | Pipeline Behaviors | 4 zorunlu (Validation, Logging, Exception, Performance) | [.antigravity/rules/pipeline-behaviors.md](.antigravity/rules/pipeline-behaviors.md) |
-| Yerelleştirme | 7 dil (en, fr, es, zh, ar, ru, tr) — `.resx` + `window.L10n` bridge | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
+| Yerelleştirme | **Platform modülleri 2 dil** (en, tr) · **Tenant modülleri 7 dil** (en, tr, fr, es, zh, ar, ru) — `.resx` + `window.L10n` bridge. Ölçüldü 2026-09-07: `Views/Platform/*` 2 dosya, `Views/Organization/*` 7 dosya taşır. | [.antigravity/rules/localization-standard.md](.antigravity/rules/localization-standard.md) |
 | UI Layout | Admin modülleri `_LayoutPlatformAdmin.cshtml`; tenant modülleri `_LayoutTenantShell.cshtml`; `_Layout.cshtml` FROZEN | [.antigravity/rules/views-organization.md](.antigravity/rules/views-organization.md) |
 | DataTable | v2 kontratı zorunlu (`data-dt-standard="v2"`) + Golden Slim/Compact seçimi | [.antigravity/rules/frontend-datatable-template.md](.antigravity/rules/frontend-datatable-template.md) |
 | Modaller & Uyarılar | Premium SweetAlert2 Standardı (MOD-0013) zorunlu | [.antigravity/rules/premium-modal-standard.md](.antigravity/rules/premium-modal-standard.md) |
+| Yetkisiz Ekran | İzni olmayan kullanıcıya sayfa iskeleti çizilmez — başlık, kart, boş tablo, eylem butonu yok; tek açıklama + ne yapılacağı. Yönlendirme YASAK (UAS-001) | [.antigravity/rules/unauthorized-surface-standard.md](.antigravity/rules/unauthorized-surface-standard.md) |
 
 ### Golden Reference DataTable Kararı
 
@@ -161,6 +175,61 @@ DataTable tabanlı yeni modüllerde resmi referans iki canlı DevEnablement mod�
 | `8'den fazla` | `GoldenReferenceCompact` | Ayrı `Create.cshtml`, `Edit.cshtml`, `Details.cshtml`, `_Form.cshtml` |
 
 Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül alanlarıdır. `Id`, `TenantId`, `IsDeleted`, `CreatedAt`, `UpdatedAt`, audit alanları ve DataTable checkbox/action kolonları sayılmaz.
+
+---
+
+## 6.1 Kural Haritası — hangi işte hangi kural
+
+`.antigravity/rules/` altında 39 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
+ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
+da yüklenen tek dosyadır, bu yüzden harita burada durur.
+
+Kural, ona atıf verildiği kadar görünür. **İşe başlamadan önce satırını bul ve o
+kuralların dosyasını aç** — harita kuralın yerini söyler, içeriğini değil.
+
+### Daima — istisnasız
+`multi-tenancy` kiracı izolasyonu · `security-jwt` token ve yetki ·
+`git-safety` dal ve commit güvenliği · `code-style` kod stili ·
+`docs-organization` belge nereye yazılır
+
+### Backend / handler yazıyorsan
+`handler-design` · `repository-standard` · `response-envelope` ·
+`pipeline-behaviors` · `entity-base-template` · `entity-versioning` ·
+`mongo-indexing` · `api-conventions` · `routes` · `ports`
+
+### Ekran / sayfa yazıyorsan
+`frontend-standards` genel · `views-organization` dosya yerleşimi ·
+`unauthorized-surface-standard` yetkisiz kullanıcı ne görür (UAS-001) ·
+`frontend-js-standard` · `premium-modal-standard` uyarı ve modal ·
+liste → `frontend-datatable-template` · detay → `frontend-details-template` ·
+create/edit → `frontend-form-template`
+
+### Kullanıcıya görünen metin varsa
+`localization-standard` (Platform 2 dil · Tenant 7 dil) ·
+`dynamic-localization-standard` çalışma zamanı çeviri
+
+### Yetki, izin, lookup dokunuyorsan
+`permission-key-standard` izin anahtarı · `business-module-enforcement-standard`
+modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
+`platform-global-search-registry` Ctrl+K kaydı
+
+### Yeni modül / pack açıyorsan
+`module-pack-standard` · `capability-pack-standard` ·
+`module-self-registration-standard` manifest
+
+### Ortam, çalıştırma, kayıt
+`dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
+`logging-observability` log · `git-backup-policy` yedek ve isimlendirme
+
+### Mimari kararlar
+`erp-architecture` · `diten_standards`
+
+### Görev Merkezi'ne bağlanıyorsan
+`workcenter-bridge-standard` — köprü yasakları (WC-D1)
+
+⚠ Bu harita eksikse kural görünmez olur. Yeni bir kural dosyası eklendiğinde
+**aynı commit'te** buraya satırı yazılır; yazılmayan kural yetimdir.
 
 ---
 

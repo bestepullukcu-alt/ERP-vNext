@@ -132,11 +132,67 @@ Bu kurallar, projedeki görsel tutarlılığı (consistency) korumak için ZORUN
 - Full-page wrapper class'ı `{module-slug}-details` veya `{module-slug}-preview` formatında olmalı ve shared CSS standardına dahil edilmelidir; örnekler: `module-catalog-details`, `module-page-details`, `golden-reference-compact-details`.
 - Bordered layout/card varyantı gerekiyorsa CSS ile elle çoğaltılmaz; Sneat settings/layout seçeneği kullanılmalıdır.
 
+### UI-027: Çalışmayan Kontrol Konmaz (ZORUNLU)
+
+Ekrana, basıldığında hiçbir şey yapmayan bir kontrol (buton, menü, sekme, bağlantı)
+**konulmaz**. Bir kontrolün varlığı kullanıcıya bir söz verir; tutulmayan söz, olmayan
+özellikten daha kötüdür — kullanıcı ekranın bozuk olduğunu düşünür ve sebebini bulamaz.
+
+**Ölçülmüş vaka (2026-09-04, İş Raporu).** Sayfaya bir "İşlem" açılır menüsü kondu.
+Ölçüm: menü açılıyor, `çocuk sayısı 0`, `innerHTML ""`, yükseklik 16px — tamamen boş.
+Kodun kendi yorumu bunu bilerek yaptığını söylüyordu: *"VISUAL SHELL ONLY … the menu
+stays empty rather than guessing at a behaviour nobody asked for."* Tahmin etmekten
+kaçınmak doğru içgüdüydü; **seçilen çözüm yanlıştı.**
+
+Gerekçe olarak yazılan "sayfanın silüeti DataTable kardeşlerine benzesin" bir kullanıcı
+değeri değildir — kullanıcı silüet karşılaştırmaz, butona basar.
+
+**Bir davranışa henüz karar verilmediyse üç meşru yol vardır:**
+
+1. **Kontrolü hiç koyma.** Özellik geldiğinde kontrol de birlikte gelir. (Tercih edilen.)
+2. **İçine gerçek bir şey koy.** Bugün yapılabilen ne varsa o.
+3. **Devre dışı bırak ve SEBEBİNİ SÖYLE.** Pasif buton + neden pasif olduğunu anlatan
+   ipucu. Görünür bir eksiklik, sessiz bir vaatten dürüsttür.
+
+**Dördüncü yol — koy ve boş bırak — YASAKTIR.**
+
+⚠ Bu kural, bu üründe tekrar eden bir kusur ailesinin üyesidir: EKRAN BİR ŞEYİN NEDEN
+OLMADIĞINI SÖYLEMİYOR. Kardeşleri: kiracı tarafındaki "Şifremi unuttum" bağlantısının
+hiçbir yere gitmemesi ([[BL-328]]), alt görev kartının sessizce yok olması ([[BL-326]]),
+birim/pozisyonun taslak doğup sebebinin söylenmemesi ([[BL-327]]). Hepsinde ekran bir
+söz veriyor ve tutmuyor.
+
+**Kabul ölçütü:** teslimden önce ekrandaki HER kontrole bas. Hiçbir şey yapmayan bir
+kontrol kaldıysa iş bitmemiştir.
+
 ### UI-026: KPI Kartı (KPI Cards) Tasarım Standartları
-- **Padding (İç Boşluk)**: KPI kartlarındaki iç boşluklar varsayılan 24px yerine daima **16px** olmalıdır. Bunun için özel CSS yazılmamalı, doğrudan Bootstrap'in yerleşik **`p-3`** (`card-body p-3`) sınıfı kullanılmalıdır.
+- **Padding (İç Boşluk)**: KPI kartlarındaki iç boşluklar varsayılan 24px yerine daima **16px** olmalıdır. Bunun için özel CSS yazılmamalı, doğrudan Bootstrap'in yerleşik **`p-4`** (`card-body p-4`) sınıfı kullanılmalıdır.
+  - ⚠ ÖLÇÜLDÜ (2026-09-04): Bu kural daha önce `p-3` diyordu, ama `p-3` **12px** üretir; hedeflenen 16px `p-4`'ün değeridir (`card-body` varsayılanı 24px). Sınıf ile değer birbirini tutmuyordu: kuralın harfine uyan 12px alıyor, amacına uyan 16px. Golden Reference ve proje geneli (271 kullanım) zaten `p-4`; kural onlara hizalandı.
 - **Responsive Kolon Yapısı (Responsive Column Layout)**: Mobil ekranlarda metinlerin sıkışmasını, üst üste binmesini engellemek ve okunabilirliği en üst düzeyde tutmak için KPI kartları mobilde tam genişlik kaplayacak şekilde sıralanmalıdır.
   - *Kural*: KPI kartlarının sarmalayıcı kolon sınıfları daima **`col-12 col-sm-6 col-xl-3`** (veya modül tasarımına göre masaüstü için `col-lg-3`) şeklinde tanımlanmalıdır.
   - Mobilde `col-6` veya `col-3` gibi sıkışık yerleşimler kesinlikle kullanılmamalıdır.
+
+- **Tek büyük rakam kuralı (ZORUNLU).** Bir KPI kartında **tam olarak BİR** büyük rakam bulunur;
+  o kartın cevapladığı soru odur. Kartın taşıdığı ikinci, üçüncü değer büyük rakamın **altında,
+  küçük puntoda** durur.
+  - ⚠ Bir kartta iki değer birden gösterilecekse **ikisini yan yana sıkıştırıp puntoyu küçültmek
+    YASAKTIR.** Ölçüldü (2026-09-04, İş Raporu): dört kartın üçü büyük rakam taşırken dördüncüsü
+    iki sayıyı tek satıra sığdırmak için `--sm` değiştiricisiyle küçültülmüştü. Sonuç, dört eş
+    kartın birinin diğer üçüne benzememesi oldu — okuyan göz sıranın bozulduğunu fark eder,
+    sebebini bulamaz.
+  - Doğru çözüm: **hangi değerin kartın cevabı olduğuna karar ver**, onu büyük yaz, diğerini
+    altına küçük satır olarak koy. Karar verilemiyorsa kart iki soru soruyordur; ikiye bölünür.
+  - Büyük rakam için `--sm` benzeri küçültme değiştiricisi tanımlanmaz. Böyle bir sınıfın var
+    olması, kuralın ilk ihlalinde kalıcılaşmasını sağlar.
+
+- **Açıklama satırı taban hizası (ZORUNLU).** Bir satırdaki KPI kartlarının en alttaki açıklama /
+  dipnot metinleri **aynı yatay hizada** biter. Kart gövdeleri farklı uzunlukta içerik taşıdığı
+  için bu kendiliğinden olmaz.
+  - Uygulama: kart gövdesi `display:flex; flex-direction:column`, dipnot elemanı `margin-top:auto`.
+    Böylece dipnot içerik ne kadar kısa olursa olsun kartın dibine yaslanır.
+  - Bu stil sayfa içine yazılmaz; paylaşılan sınıf olarak `backbone-custom.css` içinde tutulur
+    (FG-003). Kart başına ayrı yükseklik/padding hesabı YASAKTIR — sabit yükseklik ilk uzun
+    metinde taşar.
 
 ---
 

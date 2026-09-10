@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>Определения полей организации</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Определите поля, которые несут ваши организационные единицы, без изменения кода.</value></data>
+  <data name="AddNewFieldDefinition" xml:space="preserve"><value>Добавить определение поля</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="Showing" xml:space="preserve"><value>Показано</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>напр. REG_ROLE</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>напр. Регуляторная роль</value></data>
+  <data name="DataType" xml:space="preserve"><value>Тип поля</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательное</value></data>
+  <data name="Queryable" xml:space="preserve"><value>Доступно как фильтр</value></data>
+  <data name="Classification" xml:space="preserve"><value>Классификация</value></data>
+  <data name="DisplayOrder" xml:space="preserve"><value>Порядок отображения</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Создать определение поля</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить определение поля</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Сведения об определении поля</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="TypeSection" xml:space="preserve"><value>Тип и ограничения</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>Отображение</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>Управление</value></data>
+  <data name="ConstraintsSection" xml:space="preserve"><value>Ограничения значений</value></data>
+  <data name="CodeImmutableHelp" xml:space="preserve"><value>Код нельзя изменить после создания поля</value></data>
+  <data name="InactiveDefinitionHelp" xml:space="preserve"><value>Сохранённые значения остаются доступными для чтения; новые значения не принимаются</value></data>
+  <data name="DefinitionLimitReached" xml:space="preserve"><value>Достигнут предел в 50 определений</value></data>
+  <data name="RemainingCapacity" xml:space="preserve"><value>Осталось {0} из 50 определений</value></data>
+  <data name="QueryableHelp" xml:space="preserve"><value>Это применяет сервер: поле без этой отметки отклоняется как фильтр, а не просто скрывается.</value></data>
+  <data name="ClassificationHelp" xml:space="preserve"><value>Значение выше «Обычного» доступно для чтения только с соответствующим разрешением; без него поле скрывается, а не показывается пустым.</value></data>
+  <data name="TypeChangeHelp" xml:space="preserve"><value>Тип больше нельзя изменить, как только для этого поля сохранено значение.</value></data>
+  <data name="FieldTypeText" xml:space="preserve"><value>Текст</value></data>
+  <data name="FieldTypeMultilineText" xml:space="preserve"><value>Многострочный текст</value></data>
+  <data name="FieldTypeInteger" xml:space="preserve"><value>Целое число</value></data>
+  <data name="FieldTypeDecimal" xml:space="preserve"><value>Десятичное число</value></data>
+  <data name="FieldTypeBoolean" xml:space="preserve"><value>Да / Нет</value></data>
+  <data name="FieldTypeDate" xml:space="preserve"><value>Дата</value></data>
+  <data name="FieldTypeSingleSelect" xml:space="preserve"><value>Единственный выбор</value></data>
+  <data name="FieldTypeReference" xml:space="preserve"><value>Ссылка</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>Обычный</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>Внутренний</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>Конфиденциальный</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>Ограниченный</value></data>
+  <data name="OptionsLabel" xml:space="preserve"><value>Варианты</value></data>
+  <data name="OptionsHelp" xml:space="preserve"><value>Полю с единственным выбором нужен хотя бы один вариант; сервер отклоняет поле без вариантов.</value></data>
+  <data name="OptionAdd" xml:space="preserve"><value>Добавить вариант</value></data>
+  <data name="OptionRemove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="OptionPlaceholder" xml:space="preserve"><value>Вариант</value></data>
+  <data name="MinLength" xml:space="preserve"><value>Минимальная длина</value></data>
+  <data name="MaxLength" xml:space="preserve"><value>Максимальная длина</value></data>
+  <data name="MinValue" xml:space="preserve"><value>Минимальное значение</value></data>
+  <data name="MaxValue" xml:space="preserve"><value>Максимальное значение</value></data>
+  <data name="ReferenceTarget" xml:space="preserve"><value>Указывает на</value></data>
+  <data name="ReferenceTargetOrganizationUnit" xml:space="preserve"><value>Организационная единица</value></data>
+  <data name="ReferenceTargetPosition" xml:space="preserve"><value>Должность</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>Деактивировать</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>Это поле перестанет принимать новые значения. Сохранённые значения останутся доступными для чтения. Продолжить?</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>Определение поля деактивировано.</value></data>
+  <data name="BulkDeactivate" xml:space="preserve"><value>Деактивировать выбранные</value></data>
+  <data name="BulkDeactivateConfirm" xml:space="preserve"><value>Выбранные поля перестанут принимать новые значения. Сохранённые значения останутся доступными для чтения. Продолжить?</value></data>
+  <data name="BulkDeactivateSuccess" xml:space="preserve"><value>Выбранные определения полей деактивированы.</value></data>
+  <data name="NoReactivateHelp" xml:space="preserve"><value>Деактивацию нельзя отменить на этом экране; вместо этого создайте новое поле.</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>Вы можете видеть, какие поля существуют, но не можете их изменять.</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>Не удалось загрузить определения полей.</value></data>
+</root>

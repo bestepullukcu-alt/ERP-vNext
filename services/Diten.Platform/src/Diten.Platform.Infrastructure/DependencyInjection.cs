@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.Tasks;
 using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.BuildingBlocks.Security.Secrets;
@@ -324,7 +325,15 @@ public static class DependencyInjection
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
-        services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
+        // ONE instance answers both contracts: the unit repository and, for MOD-0288-FU02, the reporting
+        // graph. Registering the concrete type first is what keeps them the same object per request — two
+        // registrations of the same class would give the graph guard a different tenant-scoped instance.
+        services.AddScoped<OrganizationUnitRepository>();
+        services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        // MOD-0288-FU02 — tenant-defined Organization Unit field definitions and values.
+        services.AddScoped<IOrganizationFieldDefinitionRepository, OrganizationFieldDefinitionRepository>();
+        services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
@@ -349,6 +358,9 @@ public static class DependencyInjection
         // goes through TaskItemRepository, and TaskItemRepository is what records the history (WC-1).
         services.AddScoped<ITaskTransitionRepository, TaskTransitionRepository>();
         services.AddScoped<ITaskItemRepository, TaskItemRepository>();
+        // Faz 5a — the work report's own read. Separate from ITaskItemRepository on purpose: it returns
+        // AGGREGATES rather than tasks, and mixing the two would invite a caller to reach for GetAllForTenantAsync.
+        services.AddScoped<IWorkReportRepository, WorkReportRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
@@ -545,8 +557,16 @@ public static class DependencyInjection
         // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
         // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
         TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // DEV-ONLY SEEDS — these two write MOCK organization data: five invented positions
+        // (CEO/CTO/HR_MGR/DEV_LEAD/DEV_ENG) and an assignment binding a named developer's personal
+        // mailbox to the CEO position of one hardcoded tenant. PositionAssignmentSeed already
+        // declared itself "DEV-ONLY" in its header, but nothing enforced it: both ran in EVERY
+        // environment, production included. The gate below is what makes the header true.
+        if (environment.IsDevelopment())
+        {
+            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        }
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
@@ -604,7 +624,8 @@ public static class DependencyInjection
         RunMongoStartupInitialization(
             database,
             mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
+            environment.IsDevelopment());
 
         return services;
     }
@@ -639,7 +660,8 @@ public static class DependencyInjection
     private static void RunMongoStartupInitialization(
         IMongoDatabase database,
         MongoDbSettings mongoSettings,
-        SmtpOptions smtpOptions)
+        SmtpOptions smtpOptions,
+        bool isDevelopment)
     {
         try
         {
@@ -679,8 +701,12 @@ public static class DependencyInjection
             // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
             // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
             TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // DEV-ONLY SEEDS — see the gate in AddInfrastructure; same reason, same rule.
+            if (isDevelopment)
+            {
+                PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+                PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            }
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {

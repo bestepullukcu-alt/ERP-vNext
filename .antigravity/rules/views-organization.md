@@ -50,6 +50,49 @@ Kullanıcının veri yüklenirken boş bir ekran görmesini engellemek için Ske
 - Davranış: `window.DtDefaults.create()` wrapper'ı AJAX başlangıcında skeleton'ı gösterir (`preXhr`) ve her draw sonunda otomatik kapatır (`drawCallback`).
 - Kural: ID mutlaka `skeleton-loader` olmalıdır. Sayfa özelinde ekstra show/hide JS yazmak ancak özel UX ihtiyacı varsa kabul edilir.
 
+### 3.1 Kapsam: DataTable'a ÖZGÜ DEĞİL (ZORUNLU, 2026-09-04 ölçümüyle eklendi)
+
+Yukarıdaki kural "DataTable içeren liste sayfası" diyor ve davranışı
+`DtDefaults.create()`'in `preXhr`'ına bağlıyor. **Bu kapsam dardır ve boşluk
+üretmiştir.**
+
+⚠ ÖLÇÜLDÜ (2026-09-04): DataTable OLMAYAN veri sayfaları hiçbir yükleme
+göstergesi taşımıyordu — `/Tasks/WorkReport` 18 boş kap çiziyor, kullanıcı
+boş ekran görüyor; `/WorkCenterNext` yalnız çevrilmemiş "Loading" metni
+gösteriyordu. İkisi de kural ihlali sayılmıyordu, çünkü DataTable değiller.
+Aynı ölçümde projede **5 farklı yükleme deseni** ve **22 çevrilmemiş ham
+"Loading" metni** bulundu.
+
+**Genişletilmiş kural: VERİ BEKLEYEN HER SAYFA iskelet gösterir.**
+
+| sayfa tipi | iskelet |
+|---|---|
+| DataTable listesi | satır iskeletleri (`#skeleton-loader`, yukarıdaki standart) |
+| Kart / grafik sayfası | **kart iskeletleri** — kartlar yerinde, içleri gri blok; grafik kabı kendi yüksekliğinde gri dikdörtgen |
+| Özel liste (DataTable değil) | **satır iskeletleri** — 5–6 sahte satır |
+
+**İlke: iskelet, gelecek içeriğin ŞEKLİNDE olur.** Spinner "bir şey oluyor"
+der; iskelet "ne geleceğini" gösterir ve içerik gelince sayfa ZIPLAMAZ.
+Kart sayısı, yerleşim ve yükseklik baştan doğru olmalıdır.
+
+**Üç yasak:**
+
+1. **Boş kap gösterme.** "Yükleniyor", "veri yok" ve "hata/yetki yok" ÜÇ AYRI
+   durumdur ve üçü farklı görünmelidir. Bugün üçü de boş ekran veriyorsa
+   kullanıcı hangisinde olduğunu ayırt edemez.
+2. **Yeni sayfada `spinner-border` kullanma.** İskelet varken spinner ikinci
+   bir dildir. Mevcut 19 kullanım zamanla dönüştürülür.
+3. **"Loading" / "Yükleniyor" METNİ yazma.** İskelet zaten bunu söylüyor, ve
+   ölçüldü: bu metinlerin 22'si `Localizer` kullanmadan ham İngilizce yazılmış
+   — tenant tarafında l10n ihlali.
+
+**Yeniden kullan, icat etme:** `backbone-skeleton` sınıfı 81 sayfada zaten var.
+İkinci bir iskelet dili açmak sorunu büyütür. Stil `backbone-custom.css`'te
+tutulur (FG-003).
+
+**Kabul ölçütü:** ağı yavaşlatarak (DevTools → Slow 3G) sayfayı aç. İskelet
+görünmeli ve veri gelince yerleşim ZIPLAMAMALI.
+
 ---
 
 ## 🚨 Önemli Notlar

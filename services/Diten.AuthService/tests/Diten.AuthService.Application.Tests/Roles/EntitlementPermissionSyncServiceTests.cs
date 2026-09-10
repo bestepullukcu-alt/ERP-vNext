@@ -19,9 +19,9 @@ public sealed class EntitlementPermissionSyncServiceTests
     // the SAME permission id below.
     private static List<Permission> Catalog() =>
     [
-        new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-        new("mdm", "legal-entities", "create", "Create Legal Entity", null),
-        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
+        new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "create", "Create Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 
@@ -44,7 +44,9 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var (svc, roles, rolePerms, catalog) = Build();
 
-        await svc.GrantModuleAsync(TenantA, "MDM", Actor, CancellationToken.None);
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the entitlement code is the manifest ModuleCode the catalog carries
+        // ("legal-entity"), not the service namespace. "MDM" has resolved nothing since the manifest flip.
+        await svc.GrantModuleAsync(TenantA, "LEGAL-ENTITY", Actor, CancellationToken.None);
 
         var adminId = roles.IdOf(TenantA, "Admin");
         var viewerId = roles.IdOf(TenantA, "Viewer");
@@ -57,7 +59,7 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         // All written as Module grants tagged with the normalized module code; platform.* never added.
         Assert.All(rolePerms.Rows, rp => Assert.Equal(GrantSource.Module, rp.GrantSource));
-        Assert.All(rolePerms.Rows, rp => Assert.Equal("mdm", rp.SourceModuleCode));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal("legal-entity", rp.SourceModuleCode));
         Assert.DoesNotContain(rolePerms.Rows, rp => catalog.Single(p => p.Id == rp.PermissionId).Key.StartsWith("platform."));
     }
 

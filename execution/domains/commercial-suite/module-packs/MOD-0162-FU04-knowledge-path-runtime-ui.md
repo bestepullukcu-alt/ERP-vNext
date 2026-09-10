@@ -362,7 +362,7 @@ frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml                       
 
 # --- doğrulama ---
 scripts/smoke-mod0162-fu04-knowledge-path-authenticated.ps1                                           (yeni; FU03 script'i şablon)
-docs/audits/mod-0162-fu04-knowledge-path-runtime-ui-*.md                                              (evidence)
+docs/records/audits/mod-0162-fu04-knowledge-path-runtime-ui-*.md                                              (evidence)
 ```
 
 > **D2 ile repo scope'tan ÇIKARILANLAR:** `IKnowledgePathStepRepository` · `KnowledgePathStepRepository` ·

@@ -8,7 +8,7 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// <summary>
 /// DCP-005 slice 2 — reads the counterparty's controlled-document register into lookup rows.
 ///
-/// <para><b>⚠ THE FILE IS NEVER EDITED.</b> Everything under <c>docs/integration/gmg-qms/</c> is the other
+/// <para><b>⚠ THE FILE IS NEVER EDITED.</b> Everything under <c>docs/reference/integrations/gmg-qms/</c> is the other
 /// side's input. A column "corrected" on the way in is an edit to somebody else's register, made invisibly.
 /// Values are trimmed and passed through; nothing is normalised into a different word.</para>
 /// </summary>

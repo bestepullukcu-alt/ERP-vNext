@@ -53,7 +53,7 @@ Bu domain'de `Workflow`, `WorkflowTask`, `WorkflowCategory` ve türevleri **hiç
 
 ## Yeni Modül Eklerken
 
-Tam akış için: [docs/agent-usage-guide.md](../../../docs/agent-usage-guide.md). Kısa hâli:
+Tam akış için: [docs/guides/operations/agent-usage-guide.md](../../../docs/guides/operations/agent-usage-guide.md). Kısa hâli:
 
 1. DCP-003'ün ilgili candidate'inin sırasının geldiğini ve bloklayıcılarının kapandığını doğrula
 2. FU kimliği için preflight çalıştır: `py -3 .antigravity/scripts/verify_module_id.py . --check-id MOD-0117-FUxx --name "..." --parent MOD-0117`

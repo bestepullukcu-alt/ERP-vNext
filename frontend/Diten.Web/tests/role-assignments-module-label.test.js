@@ -25,6 +25,58 @@ describe("ModuleLabel.resolve (Role Permissions module names)", () => {
     // Slugs the tenant-assignable permission catalog actually emits.
     const RAW_SLUGS = ["work-aggregation", "product-item-sku-master", "tasks", "test-beta-mod"];
 
+    // ADR-001 §2 — the fourth layer. One module name has to answer two questions: the sidebar shows only the
+    // settings screens `tasks` publishes, while the permission group holds every key it owns. These three tests
+    // pin the whole precedence, so removing the layer (or reordering it) fails here rather than on the screen.
+    describe("Perm.Module.* — the screen-specific name", () => {
+        it("wins over every menu name when it is present", () => {
+            const ML = load();
+            const map = ML.buildMap(
+                { TASKS: "Görev Tanımları" },
+                [{ moduleCode: "tasks", moduleDisplayName: "Task Settings", moduleDisplayNameIsOverride: false }],
+                { TASKS: "Görevler" }
+            );
+
+            expect(ML.resolve("tasks", map)).toBe("Görevler");
+        });
+
+        it("LOSES to a tenant override — ADR-002: our default never outranks the operator's own word", () => {
+            const ML = load();
+            const map = ML.buildMap(
+                { TASKS: "Görev Tanımları" },
+                [{ moduleCode: "tasks", moduleDisplayName: "Bizim Görevler", moduleDisplayNameIsOverride: true }],
+                { TASKS: "Görevler" }
+            );
+
+            // The first implementation had this the other way round, which inverted the precedence asserted a few
+            // lines below ("tenant override > resx > nav default"): a tenant who renamed the module would have seen
+            // the sidebar obey and this one screen refuse. Perm.Module.* is OUR name for one surface; an override is
+            // THEIR name for the module. It outranks the menu default and yields to the operator.
+            expect(ML.resolve("tasks", map)).toBe("Bizim Görevler");
+        });
+
+        it("falls back to the MENU name when the module has no screen-specific one", () => {
+            const ML = load();
+            const map = ML.buildMap({ ORGANIZATION: "Organizasyon" }, [], { TASKS: "Görevler" });
+
+            // The bridge stays one line long: a module that needs no second name is simply absent from it.
+            expect(ML.resolve("organization", map)).toBe("Organizasyon");
+        });
+
+        it("falls back to HUMANIZE when neither name exists — still never a raw slug", () => {
+            const ML = load();
+            const map = ML.buildMap({}, [], { TASKS: "Görevler" });
+
+            expect(ML.resolve("work-aggregation", map)).toBe("Work Aggregation");
+        });
+
+        it("is absent-safe: an omitted screen-name map changes nothing", () => {
+            const ML = load();
+
+            expect(ML.resolve("tasks", ML.buildMap({ TASKS: "Görev Tanımları" }, []))).toBe("Görev Tanımları");
+        });
+    });
+
     it("resolves a known code to its friendly name — the raw slug never reaches the screen", () => {
         const ML = load();
         const map = ML.buildMap(RESX, []);

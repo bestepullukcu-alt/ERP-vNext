@@ -1,0 +1,52 @@
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="active">@SharedLocalizer["Active"]</option>
+                            <option value="inactive">@SharedLocalizer["Passive"]</option>
+                        </select>
+                    </div>
+
+                    @* Only the eight FU02 types, in the order the form offers them. *@
+                    <div class="filter-chip filter-data-type">
+                        <select id="filterDataType" class="form-select form-select-sm select2" data-placeholder="@Localizer["DataType"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Text">@Localizer["FieldTypeText"]</option>
+                            <option value="MultilineText">@Localizer["FieldTypeMultilineText"]</option>
+                            <option value="Integer">@Localizer["FieldTypeInteger"]</option>
+                            <option value="Decimal">@Localizer["FieldTypeDecimal"]</option>
+                            <option value="Boolean">@Localizer["FieldTypeBoolean"]</option>
+                            <option value="Date">@Localizer["FieldTypeDate"]</option>
+                            <option value="SingleSelect">@Localizer["FieldTypeSingleSelect"]</option>
+                            <option value="Reference">@Localizer["FieldTypeReference"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-classification">
+                        <select id="filterClassification" class="form-select form-select-sm select2" data-placeholder="@Localizer["Classification"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                            <option value="Normal">@Localizer["ClassificationNormal"]</option>
+                            <option value="Internal">@Localizer["ClassificationInternal"]</option>
+                            <option value="Confidential">@Localizer["ClassificationConfidential"]</option>
+                            <option value="Restricted">@Localizer["ClassificationRestricted"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

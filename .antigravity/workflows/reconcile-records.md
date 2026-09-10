@@ -36,7 +36,7 @@ Tavsiyeli ajan: `@read-only-auditor`.
 
 ## 🔍 1. Backlog gövdesi ↔ kod
 
-`docs/product-backlog.md` içindeki her `BL-xxx` ve `WC-x` maddesini oku.
+`docs/roadmap/backlog/product-backlog.md` içindeki her `BL-xxx` ve `WC-x` maddesini oku.
 
 **Madde adı ezberleme — DESENE bak.** Bir maddeyi şu üç işaretten biri taşıyorsa
 doğrulanması gerekir:
@@ -77,7 +77,7 @@ Yalnız uyuşmayanları listele; uyuşanları tek satırda say.
 
 ## 🔗 3. Seam register ↔ kod
 
-`docs/product-backlog.md` sonundaki "WorkCenter ön-koşulları (seam register)" bölümü
+`docs/roadmap/backlog/product-backlog.md` sonundaki "WorkCenter ön-koşulları (seam register)" bölümü
 ve benzeri "bu branch'te yapılmıyor" ifadeleri taşıyan her kayıt.
 
 Her seam için: arayüz/uygulama kodda var mı? Varsa hangi commit'te?
@@ -126,7 +126,7 @@ sayar; ihlal listesine **karıştırmaz**.
 | Dosya başına birden çok public sınıf (`Features/Tasks`) | Aynı; modül geneli | BL kaydı bekliyor |
 | `Response<T>` zarfı, ProblemDetails değil | `response-envelope.md` ile `api-conventions.md` çelişiyor; repo geneli pratik | iki kural dosyası |
 | SLA "yaklaşıyor" sınırının yarım gün kayması | Gerçek takvim gelince "gün başı" anlamını yitirir | BL-041 |
-| `docs/platform/` altında tenant modülü | İsim tarihsel; taşıma 21 dosyanın linkini kırar | CT kararı bekliyor |
+| `docs/reference/modules/platform/` altında tenant modülü | İsim tarihsel; taşıma 21 dosyanın linkini kırar | CT kararı bekliyor |
 
 > ⛔ **Bu listeye ekleme yalnız CONTROL TOWER kararıyla yapılır.** Ajan kendi kararıyla
 > bir bulguyu "kabul edilmiş" sayamaz.

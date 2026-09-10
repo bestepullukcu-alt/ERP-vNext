@@ -172,7 +172,201 @@ public static class DataSeeder
     private static async Task SeedPermissionsAsync(IMongoDatabase database)
     {
         var col = database.GetCollection<Permission>("permissions");
-        var permissions = new List<Permission>
+        var permissions = BuildCanonicalPermissions();
+
+        foreach (var p in permissions)
+        {
+            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
+            var exists = await col.Find(filter).AnyAsync();
+            if (!exists) await col.InsertOneAsync(p);
+        }
+
+        await ReconcilePermissionModulesAsync(col, permissions);
+        await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
+        await ReconcilePermissionScopesAsync(col, permissions);
+        await ReconcilePermissionModuleCasingAsync(col);
+        await ReconcileServiceNamespaceModuleAttributionAsync(col);
+        await ReconcilePermissionSegmentSpellingAsync(col);
+    }
+
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — the one-time (idempotent) spelling migration for rows already in the database.
+    ///
+    /// <para>
+    /// The constructor now normalizes <c>Resource</c>/<c>Action</c>, but a row inserted before that keeps whatever
+    /// it was created with, and the catalog-sync UPDATE path deliberately refreshes display metadata only. Measured
+    /// in the live catalog: the BRD seed stored fourteen PascalCase actions (<c>Read</c>, <c>PublishOverride</c>, …)
+    /// and MOD-0251 eight snake_case ones, so the same verb rendered as two verbs — two labels, two colours, two
+    /// bars in the action-distribution panel.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ SEGMENTS ONLY. <c>Key</c> is absent from the update because ADR-001 §1 froze it — the key is the identity
+    /// every grant row and every <c>[HasPermission]</c> attribute resolves through. <c>Scope</c> is absent because
+    /// it is the tenant/platform escalation boundary and this migration has no business moving it. Adding either
+    /// field to this update is the dangerous edit in this method; PermissionScopePreservationTests guards the second.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — for a key the SEED declares, the seed owns the segment spelling.
+    ///
+    /// <para>
+    /// The whole-collection normalizer below can only clean up what is still separable. Once a boundary is gone
+    /// from the stored data it is gone for good: <c>platform.businessreferencedata.fixture.manage</c> reached the
+    /// catalog through the A1 reflection worker, which parses the lowercased KEY, so its Resource was stored as
+    /// <c>businessreferencedata.fixture</c> — one unreadable word that no rule can split back apart, sitting next
+    /// to fourteen siblings reading <c>business-reference-data.*</c>. The seed literal still knows where the words
+    /// are, so for seeded keys it is the authority — the same key-exact, Module-and-Scope pattern already used
+    /// above, extended to the two segments.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ Segments only, and only for keys the seed declares. <c>Key</c> and <c>Scope</c> are absent for the reasons
+    /// given on the migration below; a synced-only permission is not the seed's to rewrite.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcilePermissionSegmentsFromSeedAsync(IMongoCollection<Permission> col, List<Permission> permissions)
+    {
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in permissions)
+        {
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.And(
+                    Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
+                    Builders<Permission>.Filter.Or(
+                        Builders<Permission>.Filter.Ne(x => x.Resource, p.Resource),
+                        Builders<Permission>.Filter.Ne(x => x.Action, p.Action))),
+                Builders<Permission>.Update
+                    .Set(x => x.Resource, p.Resource)
+                    .Set(x => x.Action, p.Action)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Aligned Resource/Action to the seed literal for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    /// <summary>
+    /// One row's spelling correction. The type carries the Id and the two SEGMENTS and nothing else — no
+    /// <c>Key</c>, no <c>Scope</c>, no <c>Module</c> — so the migration is incapable of writing them. That is the
+    /// point: a field this record does not have cannot be added to the update by accident, and
+    /// <c>PermissionSegmentNormalizerTests</c> asserts the shape so it cannot be added on purpose either without
+    /// a test going red. (Precedent: <c>TaskModuleDisplayNameRenameMigration.Plan</c>.)
+    /// </summary>
+    public sealed record SegmentSpellingRewrite(Guid Id, string? Resource, string? Action);
+
+    /// <summary>
+    /// Pure, unit-testable core of <see cref="ReconcilePermissionSegmentSpellingAsync"/>: decides which rows need
+    /// a spelling correction. No IO, so a test can drive it with a hand-built catalog.
+    /// </summary>
+    public static IReadOnlyList<SegmentSpellingRewrite> PlanSegmentSpellingRewrites(IEnumerable<Permission> permissions)
+    {
+        var plan = new List<SegmentSpellingRewrite>();
+
+        foreach (var p in permissions ?? Enumerable.Empty<Permission>())
+        {
+            var resource = PermissionSegmentNormalizer.Normalize(p.Resource);
+            var action = PermissionSegmentNormalizer.Normalize(p.Action);
+
+            // A normalization that empties a segment is refused rather than written: an empty Action would make the
+            // row unreadable on every screen, and the row is better left ugly than left broken.
+            var newResource = resource.Length > 0 && !string.Equals(resource, p.Resource, StringComparison.Ordinal) ? resource : null;
+            var newAction = action.Length > 0 && !string.Equals(action, p.Action, StringComparison.Ordinal) ? action : null;
+
+            if (newResource is null && newAction is null)
+            {
+                continue; // already canonical
+            }
+
+            plan.Add(new SegmentSpellingRewrite(p.Id, newResource, newAction));
+        }
+
+        return plan;
+    }
+
+    private static async Task ReconcilePermissionSegmentSpellingAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+        var plan = PlanSegmentSpellingRewrites(all);
+        if (plan.Count == 0) return;
+
+        var writes = plan.Select(rewrite =>
+        {
+            var sets = new List<UpdateDefinition<Permission>>(2);
+            if (rewrite.Resource is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Resource, rewrite.Resource));
+            if (rewrite.Action is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Action, rewrite.Action));
+
+            return (WriteModel<Permission>)new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, rewrite.Id),
+                Builders<Permission>.Update.Combine(sets));
+        }).ToList();
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Normalized Resource/Action spelling for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    /// <summary>
+    /// FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one-time (idempotent) migration for rows already in the database.
+    ///
+    /// <para>
+    /// The seed-list reconcile above only reaches keys the seed declares; the catalog sync and the A1 auto-registration
+    /// worker create keys it has never heard of. Those rows kept <c>Module = "platform"</c> forever — 168 of them at
+    /// the time of writing, 40% of the catalog in one box. This scans the WHOLE collection and re-attributes any row
+    /// whose Module is a SERVICE namespace to the module in its Key, via the same
+    /// <see cref="PermissionModuleAttribution"/> rule the constructor uses. Rows with a real module attribution
+    /// (including deliberate overrides like <c>tenant-settings</c>) are not candidates and are never touched.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ MODULE-ONLY. <c>Scope</c> is deliberately absent from the update — the tenant/platform escalation boundary
+    /// must survive this migration bit-for-bit, so a re-attributed permission keeps exactly the Scope it already had.
+    /// Adding Scope to this update is the single most dangerous edit in this file; PermissionScopePreservationTests
+    /// exists to catch it.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcileServiceNamespaceModuleAttributionAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in all)
+        {
+            if (!PermissionModuleAttribution.IsServiceNamespace(p.Module))
+            {
+                continue; // already attributed to a real module (derived, seeded override, or manifest ModuleCode)
+            }
+
+            var derived = PermissionModuleAttribution.DeriveFromKey(p.Key);
+            if (derived.Length == 0 || string.Equals(derived, p.Module, StringComparison.Ordinal))
+            {
+                continue; // nothing safe to derive, or already correct
+            }
+
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, p.Id),
+                Builders<Permission>.Update.Set(x => x.Module, derived)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Re-attributed Module (service namespace -> owning module) for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the canonical seed catalog, lifted out of SeedPermissionsAsync so a
+    // guard test can read the REAL list (PermissionModuleAttributionGuardTests) instead of re-deriving the rule
+    // against a copy. Pure: it constructs Permission objects and touches no database.
+    public static List<Permission> BuildCanonicalPermissions() => new List<Permission>
         {
             new("auth", "users", "create", "Create User", "Permission to create a new user", moduleOverride: "access-governance"),
             new("auth", "users", "read", "Read User", "Permission to view user lists and details", moduleOverride: "access-governance"),
@@ -308,6 +502,12 @@ public static class DataSeeder
             new("platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values", moduleOverride: "reference-data"),
+            // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one BRD key the seed never declared (it reached the catalog via
+            // the A1 controller-reflection worker), so it stayed on Module="platform" while its 14 siblings were
+            // corrected. Left to the generic derivation it would land in its own "businessreferencedata" group,
+            // one row away from the reference-data module that actually owns it. Declared here so the key-exact
+            // seed reconcile puts it with its siblings.
+            new("platform", "BusinessReferenceData.Fixture", "Manage", "Manage Business Reference Data Fixtures", "Permission to manage BusinessReferenceData fixtures", moduleOverride: "reference-data"),
 
             // MOD-0288 — Organization, Person & Position Directory (platform-admin screens).
             // FIX-PERM-MODULE-ATTRIBUTION — organization-units.* is owned by the organization module
@@ -317,6 +517,16 @@ public static class DataSeeder
             new("platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units", moduleOverride: "organization"),
+            // MOD-0288-FU02 — the second reporting line and the custom field mechanism. These four MUST carry
+            // moduleOverride: "organization" for the same reason the five above do. Without it they reach the
+            // catalog with Module = "platform", DefaultRolePermissionTemplate refuses platform.* to tenant roles
+            // as a privilege-escalation boundary, and the keys become undelegable: the seeded Admin holds them,
+            // every tenant role is refused, and FU02's whole point — that renaming a unit must not silently
+            // permit re-parenting it — cannot be handed to anyone.
+            new("platform", "organization-units.reporting-line", "update", "Update Reporting Line", "Permission to change a unit's functional or administrative reporting line", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "read", "Read Organization Custom Fields", "Permission to view organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "manage", "Manage Organization Custom Fields", "Permission to create, update and deactivate organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "write-value", "Write Organization Custom Field Value", "Permission to record a custom field value on an organization unit", moduleOverride: "organization"),
             // FIX-PERM-ATTRIBUTION-2 — positions.* and position-assignments.* are the same tenant-side
             // Organization/Position Directory as organization-units.* (all served by /OrganizationUnits,
             // /Positions, /PositionAssignments — none under /Platform/); Key stays platform.positions.* /
@@ -562,17 +772,6 @@ public static class DataSeeder
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
         };
 
-        foreach (var p in permissions)
-        {
-            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
-            var exists = await col.Find(filter).AnyAsync();
-            if (!exists) await col.InsertOneAsync(p);
-        }
-
-        await ReconcilePermissionModulesAsync(col, permissions);
-        await ReconcilePermissionScopesAsync(col, permissions);
-        await ReconcilePermissionModuleCasingAsync(col);
-    }
 
     // FIX-PERM-MODULE-CASE-CONSISTENCY — the seed writes Module lowercase, but the catalog sync historically stored
     // the Platform-uppercased ModuleCode (ACCESS-GOVERNANCE, GOLDENCOMPACT, WORKFLOW...), so the same module appeared

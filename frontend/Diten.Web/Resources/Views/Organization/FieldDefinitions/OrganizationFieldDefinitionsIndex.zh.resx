@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="FieldDefinitionsTitle" xml:space="preserve"><value>组织字段定义</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>无需修改代码即可定义组织单元所承载的字段。</value></data>
+  <data name="AddNewFieldDefinition" xml:space="preserve"><value>添加字段定义</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="Showing" xml:space="preserve"><value>显示</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="CodePlaceholder" xml:space="preserve"><value>例如 REG_ROLE</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如 监管角色</value></data>
+  <data name="DataType" xml:space="preserve"><value>字段类型</value></data>
+  <data name="Required" xml:space="preserve"><value>必填</value></data>
+  <data name="Queryable" xml:space="preserve"><value>可用作筛选条件</value></data>
+  <data name="Classification" xml:space="preserve"><value>分类</value></data>
+  <data name="DisplayOrder" xml:space="preserve"><value>显示顺序</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>创建字段定义</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑字段定义</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>字段定义详情</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="TypeSection" xml:space="preserve"><value>类型与约束</value></data>
+  <data name="PresentationSection" xml:space="preserve"><value>呈现</value></data>
+  <data name="GovernanceSection" xml:space="preserve"><value>治理</value></data>
+  <data name="ConstraintsSection" xml:space="preserve"><value>值约束</value></data>
+  <data name="CodeImmutableHelp" xml:space="preserve"><value>字段创建后代码不可更改</value></data>
+  <data name="InactiveDefinitionHelp" xml:space="preserve"><value>已保存的值仍可读取；不再接受新值</value></data>
+  <data name="DefinitionLimitReached" xml:space="preserve"><value>已达到 50 个定义的上限</value></data>
+  <data name="RemainingCapacity" xml:space="preserve"><value>50 个定义中还剩 {0} 个</value></data>
+  <data name="QueryableHelp" xml:space="preserve"><value>此规则由服务器强制执行：未在此勾选的字段将被拒绝用作筛选条件，而不仅仅是被隐藏。</value></data>
+  <data name="ClassificationHelp" xml:space="preserve"><value>高于「普通」的分类仅在具备相应授权时可读；没有授权时字段会被隐藏，而不是显示为空。</value></data>
+  <data name="TypeChangeHelp" xml:space="preserve"><value>一旦该字段已保存值，类型便无法再更改。</value></data>
+  <data name="FieldTypeText" xml:space="preserve"><value>文本</value></data>
+  <data name="FieldTypeMultilineText" xml:space="preserve"><value>多行文本</value></data>
+  <data name="FieldTypeInteger" xml:space="preserve"><value>整数</value></data>
+  <data name="FieldTypeDecimal" xml:space="preserve"><value>小数</value></data>
+  <data name="FieldTypeBoolean" xml:space="preserve"><value>是 / 否</value></data>
+  <data name="FieldTypeDate" xml:space="preserve"><value>日期</value></data>
+  <data name="FieldTypeSingleSelect" xml:space="preserve"><value>单选</value></data>
+  <data name="FieldTypeReference" xml:space="preserve"><value>引用</value></data>
+  <data name="ClassificationNormal" xml:space="preserve"><value>普通</value></data>
+  <data name="ClassificationInternal" xml:space="preserve"><value>内部</value></data>
+  <data name="ClassificationConfidential" xml:space="preserve"><value>机密</value></data>
+  <data name="ClassificationRestricted" xml:space="preserve"><value>受限</value></data>
+  <data name="OptionsLabel" xml:space="preserve"><value>选项</value></data>
+  <data name="OptionsHelp" xml:space="preserve"><value>单选字段至少需要一个选项；服务器会拒绝没有选项的字段。</value></data>
+  <data name="OptionAdd" xml:space="preserve"><value>添加选项</value></data>
+  <data name="OptionRemove" xml:space="preserve"><value>移除</value></data>
+  <data name="OptionPlaceholder" xml:space="preserve"><value>选项</value></data>
+  <data name="MinLength" xml:space="preserve"><value>最小长度</value></data>
+  <data name="MaxLength" xml:space="preserve"><value>最大长度</value></data>
+  <data name="MinValue" xml:space="preserve"><value>最小值</value></data>
+  <data name="MaxValue" xml:space="preserve"><value>最大值</value></data>
+  <data name="ReferenceTarget" xml:space="preserve"><value>指向</value></data>
+  <data name="ReferenceTargetOrganizationUnit" xml:space="preserve"><value>组织单元</value></data>
+  <data name="ReferenceTargetPosition" xml:space="preserve"><value>职位</value></data>
+  <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
+  <data name="DeactivateConfirm" xml:space="preserve"><value>该字段将不再接受新值。已保存的值仍可读取。是否继续？</value></data>
+  <data name="RecordDeactivated" xml:space="preserve"><value>字段定义已停用。</value></data>
+  <data name="BulkDeactivate" xml:space="preserve"><value>停用所选</value></data>
+  <data name="BulkDeactivateConfirm" xml:space="preserve"><value>所选字段将不再接受新值。已保存的值仍可读取。是否继续？</value></data>
+  <data name="BulkDeactivateSuccess" xml:space="preserve"><value>所选字段定义已停用。</value></data>
+  <data name="NoReactivateHelp" xml:space="preserve"><value>停用无法在本页面撤销；请改为创建新字段。</value></data>
+  <data name="ReadOnlyNotice" xml:space="preserve"><value>您可以查看存在哪些字段，但无法更改它们。</value></data>
+  <data name="LoadFailed" xml:space="preserve"><value>无法加载字段定义。</value></data>
+</root>

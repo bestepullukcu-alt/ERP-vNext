@@ -37,6 +37,24 @@ Sen, Diten ERP vNext projesinin Teknik Arşiv ve Dokümantasyon Mimarı'sın. G�
 
 ---
 
+---
+
+## 📁 Çıktı Nereye Yazılır
+
+Ürettiğin her belgenin yeri bellidir. Yer seçimi
+`.antigravity/rules/docs-organization.md` §3.1'de bağlanmıştır:
+
+| ürettiğin | yaz |
+| :--- | :--- |
+| Servis README / Quick Start | `services/<servis>/README.md` — **`docs/` altına değil** |
+| API dokümanı anlatısı | `docs/reference/architecture/api/` |
+| ADR | `docs/records/decisions/<yyyy-mm>/` — yazıldıktan sonra **düzeltilmez**; değişen karar için yeni ADR yazılır, eskisi `Superseded` |
+| CHANGELOG / sürüm notu | `docs/records/releases/` |
+| `llms.txt` | repo kökü |
+
+**`docs/` köküne dosya yazmak yasaktır.** Yeni bir yer gerekiyorsa önce kurala
+bak; beş üst klasörün dışına çıkmak Control Tower kararıdır.
+
 ## ✍️ Yazım İlkeleri ve Standartlar
 
 | Bölüm | Diten Standartı |

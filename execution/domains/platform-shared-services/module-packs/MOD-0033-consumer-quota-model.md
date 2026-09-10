@@ -564,7 +564,7 @@ This module is not a CRUD DataTable module. Future read-only quota summary UI be
 - Do not log or audit sensitive internal token/API key values.
 
 ## Open Questions / Risks
-- `execution/domains/platform-shared-services/domain-config.md` does not currently list `MOD-0033` in PSS in-scope modules, while `docs/platform/master-plan.md` places Consumer / Quota Model in the platform plan. This is recorded as a domain config gap; do not edit domain-config as part of this pack revision.
+- `execution/domains/platform-shared-services/domain-config.md` does not currently list `MOD-0033` in PSS in-scope modules, while `docs/reference/modules/platform/master-plan.md` places Consumer / Quota Model in the platform plan. This is recorded as a domain config gap; do not edit domain-config as part of this pack revision.
 - Gateway-level `api.calls.per.month` enforcement crosses protected gateway ownership and needs integration-agent coordination.
 - Future quota summary UI must stay bounded to `MOD-0046+ Tenant Core UI Extensions`.
 - Atomic consume behavior is the highest-risk implementation detail and requires concurrency tests.

@@ -104,7 +104,7 @@ Module Pack > Domain Config > AGENTS.md > .antigravity/
 Notlar:
 - `batches/` katmani bu repoda kullanilmaz.
 - `snapshots/` katmani bu repoda kullanilmaz.
-- `controls/` ve `decisions/` katmanlari kullanilmaz; tarihsel icerikler `archive/domains/` altinda. Engineering standartlari `.antigravity/rules/`'de, scope kararlari `execution/portfolio/master-development-plan.md`'dedir (eski `docs/platform/master-plan.md` legacy kaynaktir).
+- `controls/` ve `decisions/` katmanlari kullanilmaz; tarihsel icerikler `archive/domains/` altinda. Engineering standartlari `.antigravity/rules/`'de, scope kararlari `execution/portfolio/master-development-plan.md`'dedir (eski `docs/reference/modules/platform/master-plan.md` legacy kaynaktir).
 - Orkestrasyon asamasi `.antigravity/workflows/add-module.md` uzerinden ilerler.
 - `.antigravity/scripts/auto_preview.py`, `checklist.py` ve `session_manager.py` legacy / generic-kit utility olarak kalir; ERP deployment-readiness icin authoritative gate degildir.
 
