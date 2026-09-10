@@ -57,7 +57,10 @@
 ### DM-2b — Citation port gerçek implementasyon
 - `SearchAsync` (register repo term filtresi; lookup'ın blocked-görünür/seçilemez davranışını aynala) + `ResolveAsync` (batch `$in` — **`GetByPermanentUidsAsync` reuse**, bu branch'te MEVCUT). Ingest indikten sonra canlı doğrulanır.
 
-### DM-3 — Effectiveness · hazır, reuse (kod yok)
+### DM-3 — ✅ **CT-VERIFIED (E4 authenticated, 2026-09-10) — kod yok, reuse**
+> `effectiveness:batch` canlı authenticated (dev-token, seed'li 97c5/358) → gerçek **Blocked/Unresolved döndü, 0 Effective** (UID-0000161/200/201→Blocked(Draft) · yok→Unresolved). Disjoint + fail-closed kanıtlı. DM-2b `citations:resolve`/`search` de aynı turda HTTP 200 gerçek veriyle doğrulandı. Bugünkü doğru gerçek: 0 Effective → hepsi non-citable.
+
+### DM-3 (orijinal) — Effectiveness · hazır, reuse (kod yok)
 - effectiveness resolver + `GetByPermanentUidsAsync` **bu branch'te mevcut**. Tohumdan sonra `effectiveness:batch` gerçek Effective/Blocked döndüğünü doğrula. Onların Adım 2'si bu portu tüketir → **imza değiştirme, stabil tut**.
 
 ### DM-4 — Gerçek dosyalar (PDF/Word) · ayrı WP, sonra
