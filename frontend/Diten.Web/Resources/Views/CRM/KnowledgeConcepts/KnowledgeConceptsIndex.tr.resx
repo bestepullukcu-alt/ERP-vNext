@@ -155,4 +155,31 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Araniyor...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>Eslesen global urun yok.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Referans verilen sistemdeki serbest metin tanimlayici.</value></data>
+  <data name="Color" xml:space="preserve"><value>Renk</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>Grup Tipi</value></data>
+  <data name="IsList" xml:space="preserve"><value>Liste Tipi</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>Üst Kavram Tipi</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>Aynı konu içindeki üst tip. Tipin kendisi ve alt tipleri seçilemez.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>Bağlantı Modu</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>Var olan iki düğümü bağla</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>Yeni düğüm oluştur ve bağla</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>Yeni Düğüm</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>Bağlanacak Düğüm</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>Yön</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>Yeni düğüm → karşı düğüm</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>Karşı düğüm → yeni düğüm</value></data>
+  <data name="Branches" xml:space="preserve"><value>Dallar</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Dal ekle</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Dalı kaldır</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Dal adı</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Her dal, sıralı bir kavram tipi dizisidir. Omurga (en az iki farklı tip) tüm dallardan türetilir.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>Henüz dal yok. Başlamak için bir dal ekleyin.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>Bu dalda henüz adım yok.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>En az</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>En çok</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderatör rolleri</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Virgülle ayrılmış referanslar</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Yeni versiyon</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>dal</value></data>
 </root>

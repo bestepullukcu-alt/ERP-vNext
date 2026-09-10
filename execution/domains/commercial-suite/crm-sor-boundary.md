@@ -18,7 +18,7 @@
 | Consent / Preference / consent history | MOD-0164 | Contact değil, **Consent** sahiplenir |
 | Campaign / CyclePeriod / campaign execution & results | MOD-0165 | Segment sahiplenmez |
 | Journey / Automation | MOD-0166 | Campaign execution ≠ Journey automation |
-| Segment / TargetCustomer / UCLN / SubjectList / StrategyTemplate | MOD-0167 | Segment burada **sahiplenilir** |
+| Segment / TargetCustomer / SubjectList / StrategyTemplate | MOD-0167 | Segment burada **sahiplenilir**; UCLN/SCMM → CAND-CAP-0011 (DEC-SCMM-01, 2026-09-07) |
 
 ## CRM sahiplenmez (does NOT own — yalnız tüketir)
 

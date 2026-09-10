@@ -6,20 +6,88 @@ using MediatR;
 
 namespace Diten.CrmService.Application.Features.Knowledge.Concept.Type;
 
+/// <summary>SCMM-09 (①) — shared parent-type guard for create and update (RM1, DEC-SCMM-03). The type hierarchy stays
+/// inside one subject and can never hold a self-parent, an archived / cross-subject parent or a cycle.</summary>
+internal static class ConceptTypeParentGuard
+{
+    public static async Task<string?> ValidateAsync(
+        IConceptTypeRepository types,
+        Guid tenantId,
+        Guid subjectId,
+        Guid? selfId,
+        Guid? parentConceptTypeId,
+        CancellationToken cancellationToken)
+    {
+        if (parentConceptTypeId is not { } parentId || parentId == Guid.Empty)
+        {
+            return null;
+        }
+
+        if (selfId is { } id && parentId == id)
+        {
+            return "A concept type cannot be its own parent.";
+        }
+
+        var parent = await types.GetByIdAsync(tenantId, parentId, cancellationToken);
+        if (parent is null)
+        {
+            return "ParentConceptTypeId does not reference an existing concept type.";
+        }
+
+        if (parent.IsArchived())
+        {
+            return "ParentConceptTypeId cannot reference an archived concept type.";
+        }
+
+        if (parent.SubjectId != subjectId)
+        {
+            return "ParentConceptTypeId must reference a concept type of the same subject.";
+        }
+
+        // Walk up from the proposed parent. If we reach selfId, this parent would close a cycle.
+        var all = (await types.ListBySubjectAsync(tenantId, subjectId, cancellationToken)).ToDictionary(t => t.Id);
+        var cursor = parent.ParentConceptTypeId;
+        var guard = 0;
+        while (cursor is { } current && current != Guid.Empty)
+        {
+            if (selfId is { } sid && current == sid)
+            {
+                return "The parent assignment would create a cycle in the concept type hierarchy.";
+            }
+
+            if (!all.TryGetValue(current, out var node))
+            {
+                break;
+            }
+
+            cursor = node.ParentConceptTypeId;
+            if (++guard > 1000)
+            {
+                return "The concept type hierarchy is too deep to validate.";
+            }
+        }
+
+        return null;
+    }
+}
+
 public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptTypeCommand, Response<Guid>>
 {
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
     private readonly ISubjectRepository _subjects;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptTypeHandler(
-        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types, ISubjectRepository subjects)
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
         _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateConceptTypeCommand request, CancellationToken cancellationToken)
@@ -32,6 +100,7 @@ public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptType
         var error = KnowledgeValidation.ValidateCode(request.ConceptTypeCode, "ConceptTypeCode")
             ?? KnowledgeValidation.ValidateName(request.ConceptTypeName, "ConceptTypeName")
             ?? ConceptGraphValidation.ValidateConceptStatus(request.Status)
+            ?? ConceptGraphValidation.ValidateColor(request.Color)
             ?? KnowledgeValidation.ValidateRequiredSubject(request.SubjectId);
         if (error is not null)
         {
@@ -58,6 +127,14 @@ public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptType
                 $"A non-archived concept type already uses ConceptTypeCode '{code}' (conceptTypeId={duplicate.Id}).", 409);
         }
 
+        // SCMM-09 (①) — RM1 hierarchical parent guard (self / archived / cross-subject / cycle).
+        var parentError = await ConceptTypeParentGuard.ValidateAsync(
+            _types, tenantId, request.SubjectId, null, request.ParentConceptTypeId, cancellationToken);
+        if (parentError is not null)
+        {
+            return Response<Guid>.Fail(parentError, 400);
+        }
+
         var now = DateTimeOffset.UtcNow;
         var entity = new ConceptType
         {
@@ -67,12 +144,22 @@ public sealed class CreateConceptTypeHandler : IRequestHandler<CreateConceptType
             ConceptTypeName = request.ConceptTypeName.Trim(),
             Description = KnowledgeValidation.Trim(request.Description),
             SortOrder = request.SortOrder,
+            Color = KnowledgeValidation.Trim(request.Color),
+            IsGroup = request.IsGroup,
+            IsList = request.IsList,
+            ParentConceptTypeId = request.ParentConceptTypeId == Guid.Empty ? null : request.ParentConceptTypeId,
             Status = ConceptStatuses.Normalize(request.Status),
             CreatedAt = now,
             CreatedBy = _actor.ActorName
         };
 
         await _types.InsertAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeCreated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(entity.Id, 201);
     }
 }
@@ -82,12 +169,16 @@ public sealed class UpdateConceptTypeHandler : IRequestHandler<UpdateConceptType
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
-    public UpdateConceptTypeHandler(ITenantContext tenant, IActorContext actor, IConceptTypeRepository types)
+    public UpdateConceptTypeHandler(
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateConceptTypeCommand request, CancellationToken cancellationToken)
@@ -114,21 +205,41 @@ public sealed class UpdateConceptTypeHandler : IRequestHandler<UpdateConceptType
         }
 
         var error = KnowledgeValidation.ValidateName(request.ConceptTypeName, "ConceptTypeName")
-            ?? ConceptGraphValidation.ValidateConceptStatus(request.Status);
+            ?? ConceptGraphValidation.ValidateConceptStatus(request.Status)
+            ?? ConceptGraphValidation.ValidateColor(request.Color);
         if (error is not null)
         {
             return Response<bool>.Fail(error, 400);
+        }
+
+        // SCMM-09 (①) — RM1 hierarchical parent guard (self / archived / cross-subject / cycle). SubjectId is immutable,
+        // so the parent must belong to the type's own subject.
+        var parentError = await ConceptTypeParentGuard.ValidateAsync(
+            _types, tenantId, entity.SubjectId, entity.Id, request.ParentConceptTypeId, cancellationToken);
+        if (parentError is not null)
+        {
+            return Response<bool>.Fail(parentError, 400);
         }
 
         var now = DateTimeOffset.UtcNow;
         entity.ConceptTypeName = request.ConceptTypeName.Trim();
         entity.Description = KnowledgeValidation.Trim(request.Description);
         entity.SortOrder = request.SortOrder;
+        entity.Color = KnowledgeValidation.Trim(request.Color);
+        entity.IsGroup = request.IsGroup;
+        entity.IsList = request.IsList;
+        entity.ParentConceptTypeId = request.ParentConceptTypeId == Guid.Empty ? null : request.ParentConceptTypeId;
         entity.Status = ConceptStatuses.Normalize(request.Status ?? entity.Status);
         entity.UpdatedAt = now;
         entity.UpdatedBy = _actor.ActorName;
 
         await _types.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeUpdated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -138,12 +249,16 @@ public sealed class ArchiveConceptTypeHandler : IRequestHandler<ArchiveConceptTy
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IConceptTypeRepository _types;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
-    public ArchiveConceptTypeHandler(ITenantContext tenant, IActorContext actor, IConceptTypeRepository types)
+    public ArchiveConceptTypeHandler(
+        ITenantContext tenant, IActorContext actor, IConceptTypeRepository types,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _types = types;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(ArchiveConceptTypeCommand request, CancellationToken cancellationToken)
@@ -172,6 +287,12 @@ public sealed class ArchiveConceptTypeHandler : IRequestHandler<ArchiveConceptTy
         entity.UpdatedBy = _actor.ActorName;
 
         await _types.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.TypeArchived, tenantId,
+                KnowledgeConceptAuditEntities.ConceptType, entity.Id, entity.Version, entity.ConceptTypeCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }

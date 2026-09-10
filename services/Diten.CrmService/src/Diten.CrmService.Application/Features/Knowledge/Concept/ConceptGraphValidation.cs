@@ -11,6 +11,14 @@ namespace Diten.CrmService.Application.Features.Knowledge.Concept;
 /// </summary>
 public static class ConceptGraphValidation
 {
+    /// <summary>SCMM-09 (①) — optional display colour. When supplied it must be a CSS hex string (<c>#RGB</c> or
+    /// <c>#RRGGBB</c>); presentation only. Null/blank is allowed (the type simply has no colour).</summary>
+    public static string? ValidateColor(string? color)
+        => string.IsNullOrWhiteSpace(color)
+           || System.Text.RegularExpressions.Regex.IsMatch(color.Trim(), "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+            ? null
+            : "Color must be a hex string in the form #RGB or #RRGGBB.";
+
     public static string? ValidateConceptStatus(string? status)
         => string.IsNullOrWhiteSpace(status) || ConceptStatuses.IsValid(status)
             ? null

@@ -18,7 +18,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
     public KnowledgeConceptChainTemplatesController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-chain-templates")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] string? status,
@@ -31,34 +31,44 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetConceptChainTemplateQuery(templateId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptChainTemplateRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new CreateConceptChainTemplateCommand(
                 request.SubjectId, request.ChainCode, request.ChainName, request.OrderedConceptTypes,
-                request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo),
+                request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo,
+                ToBranchInputs(request.Branches)),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Update(
         Guid templateId, [FromBody] UpdateConceptChainTemplateRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new UpdateConceptChainTemplateCommand(
                 templateId, request.ChainName, request.OrderedConceptTypes, request.EffectiveFrom, request.Description,
-                request.Status, request.ChainVersion, request.EffectiveTo),
+                request.Status, request.ChainVersion, request.EffectiveTo, ToBranchInputs(request.Branches)),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates/{templateId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.TemplateManage)]
     public async Task<IActionResult> Archive(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptChainTemplateCommand(templateId), cancellationToken));
+
+    // SCMM-10 (③) — maps the API branch request shape onto the application command input. Null stays null (legacy mode).
+    private static IReadOnlyList<ConceptChainBranchInput>? ToBranchInputs(IReadOnlyList<ConceptChainBranchRequest>? branches)
+        => branches?.Select(b => new ConceptChainBranchInput(
+            b.BranchCode,
+            (b.Steps ?? Array.Empty<ConceptChainStepRequest>()).Select(s => new ConceptChainStepInput(
+                s.ConceptTypeId, s.MinSelection, s.MaxSelection, s.AllowedRoleRefs, s.AudienceDimensionRefs)).ToList(),
+            b.BranchName,
+            b.SortOrder)).ToList();
 }

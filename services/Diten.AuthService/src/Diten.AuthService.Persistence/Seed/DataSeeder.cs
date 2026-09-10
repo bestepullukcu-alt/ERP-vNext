@@ -136,6 +136,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding tenant-97c5 CRM territory (MOD-0151 FU01) grants...");
             await SeedTenant97c5CrmTerritoryGrantAsync(database);
 
+            Console.WriteLine("Seeding tenant-97c5 CRM knowledge (WP-SCMM-05-S1) grants...");
+            await SeedTenant97c5CrmKnowledgeGrantAsync(database);
+
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
 
@@ -447,6 +450,23 @@ public static class DataSeeder
             new("crm", "territory.model", "manage", "CRM Territory Model Manage", "Permission to create/update draft CRM territory models", moduleOverride: "crm-territory"),
             new("crm", "territory.node", "read", "CRM Territory Node Read", "Permission to view CRM territory hierarchy nodes", moduleOverride: "crm-territory"),
             new("crm", "territory.node", "manage", "CRM Territory Node Manage", "Permission to create/update draft CRM territory nodes", moduleOverride: "crm-territory"),
+
+            // MOD-0162 / SCMM concept-foundation (Commercial Suite / CRM, Diten.CrmService). Tenant-scoped keys
+            // (module code "crm-knowledge" ∉ PlatformAdminModules → Scope=Tenant). Canonical PKS-001 keys for the SCMM
+            // knowledge surface: Concept graph (FU03), Knowledge/Subject taxonomy (FU02) and KnowledgePath (FU04). They
+            // replace the DEV-ONLY crm.territory.* fallback the concept-foundation controllers ran on (WP-SCMM-05-S1).
+            // ContentEngagementJourney (FU05) keys are intentionally NOT seeded here — out of S1 concept-foundation scope.
+            new("crm", "knowledge.concept", "read", "CRM Knowledge Concept Read", "Permission to view the SCMM concept graph (types, nodes, relationships, chain templates, graph)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept", "manage", "CRM Knowledge Concept Manage", "Permission to create/update/archive SCMM concept types, nodes and relationships", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept-template", "manage", "CRM Knowledge Concept Template Manage", "Permission to author SCMM concept chain templates", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept-link", "manage", "CRM Knowledge Concept Link Manage", "Permission to author SCMM content-to-concept links", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge", "read", "CRM Knowledge Read", "Permission to view SCMM knowledge content and the knowledge contract", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge", "manage", "CRM Knowledge Manage", "Permission to create/update/archive SCMM knowledge content", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.subject", "read", "CRM Knowledge Subject Read", "Permission to view the SCMM knowledge taxonomy (subjects, topics, audience profiles)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.subject", "manage", "CRM Knowledge Subject Manage", "Permission to author the SCMM knowledge taxonomy (subjects, topics, audience profiles)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -1245,6 +1265,75 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Granted {granted} missing crm.territory.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    /// <summary>
+    /// WP-SCMM-05-S1 — grants the SCMM concept-foundation canonical <c>crm.knowledge.*</c> permissions to the
+    /// tenant-97c5 Admin role (mirrors <see cref="SeedTenant97c5CrmTerritoryGrantAsync"/>). These go to the SAME role
+    /// that today holds the DEV-ONLY <c>crm.territory.*</c> fallback the SCMM knowledge controllers ran on, so
+    /// switching those controllers to canonical keys causes NO access regression. Idempotent: existing grants are
+    /// skipped; no Mongo hand-edit. EXPLICIT allowlist — ContentEngagementJourney (FU05) keys are NOT granted here
+    /// (out of S1 concept-foundation scope).
+    /// </summary>
+    private static async Task SeedTenant97c5CrmKnowledgeGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM knowledge grant: Admin role not found.");
+            return;
+        }
+
+        // WP-SCMM-05-S1 — the 11 SCMM concept-foundation canonical keys (ConceptPermissions.All +
+        // KnowledgePermissions.All + KnowledgePathPermissions.All). Explicit allowlist; no FU05 journey keys.
+        var knowledgeKeys = new[]
+        {
+            "crm.knowledge.concept.read",
+            "crm.knowledge.concept.manage",
+            "crm.knowledge.concept-template.manage",
+            "crm.knowledge.concept-link.manage",
+            "crm.knowledge.read",
+            "crm.knowledge.manage",
+            "crm.knowledge.subject.read",
+            "crm.knowledge.subject.manage",
+            "crm.knowledge.path.read",
+            "crm.knowledge.path.manage",
+            "crm.knowledge.path.publish"
+        };
+        var knowledgePerms = await permCol
+            .Find(p => !p.IsDeleted && knowledgeKeys.Contains(p.Key))
+            .ToListAsync();
+        if (knowledgePerms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM knowledge grant: no crm.knowledge.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in knowledgePerms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.knowledge.* permission(s) to tenant-97c5 Admin role.");
     }
 
     // MOD-0290-FU02-RBAC — grant the Brand/Product master permissions to the tenant-97c5 operator so the

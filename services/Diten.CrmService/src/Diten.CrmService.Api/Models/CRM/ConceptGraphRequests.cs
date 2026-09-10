@@ -9,13 +9,21 @@ public sealed record CreateConceptTypeRequest(
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null);
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null);
 
 public sealed record UpdateConceptTypeRequest(
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null);
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null);
 
 public sealed record CreateConceptNodeRequest(
     Guid SubjectId,
@@ -61,6 +69,20 @@ public sealed record UpdateConceptRelationshipRequest(
     string? Status = null,
     DateTimeOffset? EffectiveTo = null);
 
+// SCMM-10 (③, RM2) branch request shapes — parallel branches with per-step cardinality + moderator/for-whom refs.
+public sealed record ConceptChainStepRequest(
+    Guid ConceptTypeId,
+    int MinSelection = 1,
+    int? MaxSelection = null,
+    IReadOnlyList<string>? AllowedRoleRefs = null,
+    IReadOnlyList<string>? AudienceDimensionRefs = null);
+
+public sealed record ConceptChainBranchRequest(
+    string BranchCode,
+    IReadOnlyList<ConceptChainStepRequest> Steps,
+    string? BranchName = null,
+    int SortOrder = 0);
+
 public sealed record CreateConceptChainTemplateRequest(
     Guid SubjectId,
     string ChainCode,
@@ -70,7 +92,8 @@ public sealed record CreateConceptChainTemplateRequest(
     string? Description = null,
     string? Status = null,
     string? ChainVersion = null,
-    DateTimeOffset? EffectiveTo = null);
+    DateTimeOffset? EffectiveTo = null,
+    IReadOnlyList<ConceptChainBranchRequest>? Branches = null);
 
 public sealed record UpdateConceptChainTemplateRequest(
     string ChainName,
@@ -79,7 +102,8 @@ public sealed record UpdateConceptChainTemplateRequest(
     string? Description = null,
     string? Status = null,
     string? ChainVersion = null,
-    DateTimeOffset? EffectiveTo = null);
+    DateTimeOffset? EffectiveTo = null,
+    IReadOnlyList<ConceptChainBranchRequest>? Branches = null);
 
 public sealed record CreateContentConceptLinkRequest(
     Guid KnowledgeContentId,
@@ -87,3 +111,28 @@ public sealed record CreateContentConceptLinkRequest(
     Guid? ConceptRelationshipId = null,
     string? LinkRole = null,
     int SortOrder = 0);
+
+// SCMM-09 (②) — combined node+edge write ("New UCLN List" ergonomics). Creates a new node AND its relationship to an
+// existing counterpart node atomically.
+public sealed record CreateConceptNodeWithRelationshipRequest(
+    Guid SubjectId,
+    Guid ConceptTypeId,
+    string ConceptNodeCode,
+    string ConceptNodeName,
+    DateTimeOffset NodeEffectiveFrom,
+    Guid CounterpartConceptNodeId,
+    string RelationshipType,
+    string RelationshipCode,
+    string RelationshipName,
+    DateTimeOffset RelationshipEffectiveFrom,
+    bool NewNodeIsSource = true,
+    string? NodeDescription = null,
+    string? NodeStatus = null,
+    DateTimeOffset? NodeEffectiveTo = null,
+    string? ExternalRefType = null,
+    string? ExternalRefId = null,
+    string? MetadataJson = null,
+    string? Direction = null,
+    int Priority = 0,
+    string? RelationshipStatus = null,
+    DateTimeOffset? RelationshipEffectiveTo = null);

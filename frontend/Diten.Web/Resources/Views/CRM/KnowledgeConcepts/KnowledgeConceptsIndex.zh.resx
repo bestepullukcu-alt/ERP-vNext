@@ -155,4 +155,31 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>颜色</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>分组类型</value></data>
+  <data name="IsList" xml:space="preserve"><value>列表类型</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>父概念类型</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>同一主题下的父类型。该类型本身及其子类型不可选择。</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>连接模式</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>连接两个已有节点</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>新建节点并连接</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>新节点</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>要连接的节点</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>方向</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>新节点 → 对应节点</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>对应节点 → 新节点</value></data>
+  <data name="Branches" xml:space="preserve"><value>分支</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>添加分支</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>移除分支</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>分支名称</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>每个分支是一个有序的概念类型序列。主干（至少两个不同类型）由所有分支推导得出。</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>尚无分支。添加一个分支以开始。</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>此分支尚无步骤。</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>最小</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>最大</value></data>
+  <data name="Moderator" xml:space="preserve"><value>版主角色</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>受众</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>以逗号分隔的引用</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>分支</value></data>
 </root>

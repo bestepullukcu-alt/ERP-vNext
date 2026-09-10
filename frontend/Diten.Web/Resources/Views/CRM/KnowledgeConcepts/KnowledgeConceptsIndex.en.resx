@@ -155,4 +155,31 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>Color</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>Group Type</value></data>
+  <data name="IsList" xml:space="preserve"><value>List Type</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>Parent Concept Type</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>Parent type within the same subject. The type itself and its descendants cannot be selected.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>Connection Mode</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>Connect two existing nodes</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>Create a new node and connect</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>New Node</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>Node to connect</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>Direction</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>New node → counterpart</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>Counterpart → new node</value></data>
+  <data name="Branches" xml:space="preserve"><value>Branches</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Add branch</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Remove branch</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Branch name</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Each branch is an ordered sequence of concept types. The spine (at least two distinct types) is derived from all branches.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>No branches yet. Add a branch to start.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>No steps in this branch yet.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>Min</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>Max</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderator roles</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Audience</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Comma-separated references</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>branch(es)</value></data>
 </root>

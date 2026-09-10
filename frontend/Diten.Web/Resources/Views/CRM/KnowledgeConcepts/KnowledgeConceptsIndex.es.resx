@@ -155,4 +155,31 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>Color</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>Tipo de grupo</value></data>
+  <data name="IsList" xml:space="preserve"><value>Tipo de lista</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>Tipo de concepto principal</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>Tipo principal dentro del mismo tema. El propio tipo y sus descendientes no se pueden seleccionar.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>Modo de conexión</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>Conectar dos nodos existentes</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>Crear un nodo nuevo y conectar</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>Nodo nuevo</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>Nodo a conectar</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>Dirección</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>Nodo nuevo → contraparte</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>Contraparte → nodo nuevo</value></data>
+  <data name="Branches" xml:space="preserve"><value>Ramas</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Añadir rama</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Quitar rama</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Nombre de la rama</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Cada rama es una secuencia ordenada de tipos de concepto. La columna (al menos dos tipos distintos) se deriva de todas las ramas.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>Aún no hay ramas. Añade una rama para empezar.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>Aún no hay pasos en esta rama.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>Mín</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>Máx</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Roles de moderador</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Audiencia</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Referencias separadas por comas</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>rama(s)</value></data>
 </root>

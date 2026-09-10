@@ -143,6 +143,7 @@ public static class ConceptGraphReasonCodes
 
     public const string ChainTemplateCreated = "concept_chain_template_created";
     public const string ChainTemplateUpdated = "concept_chain_template_updated";
+    public const string ChainTemplatePublished = "concept_chain_template_published";
     public const string ChainTemplateArchived = "concept_chain_template_archived";
     public const string ChainTemplateInvalidSequence = "concept_chain_template_invalid_sequence";
     public const string ChainTemplatePublishOverlap = "concept_chain_template_publish_overlap";
