@@ -382,9 +382,9 @@ public sealed class TaskRecurrenceRuleCrudTests
             => request switch
             {
                 CreateTaskRecurrenceRuleCommand command => (Task<TResponse>)(object)
-                    new CreateTaskRecurrenceRuleHandler(rules, tenant, user).Handle(command, ct),
+                    new CreateTaskRecurrenceRuleHandler(rules, tenant, user, TaskAssignmentGuards.AdmitAll()).Handle(command, ct),
                 UpdateTaskRecurrenceRuleCommand command => (Task<TResponse>)(object)
-                    new UpdateTaskRecurrenceRuleHandler(rules, user).Handle(command, ct),
+                    new UpdateTaskRecurrenceRuleHandler(rules, user, TaskAssignmentGuards.AdmitAll()).Handle(command, ct),
                 DeleteTaskRecurrenceRuleCommand command => (Task<TResponse>)(object)
                     new DeleteTaskRecurrenceRuleHandler(rules, user).Handle(command, ct),
                 GetTaskRecurrenceRuleListQuery query => (Task<TResponse>)(object)

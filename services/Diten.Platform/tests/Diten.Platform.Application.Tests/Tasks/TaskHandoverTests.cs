@@ -516,9 +516,12 @@ public sealed class TaskHandoverTests
         => new ReassignTaskItemHandler(
                 tasks,
                 events,
-                new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(TaskTestData.Other)),
-                new FakePositionRepository(ActivePosition()),
-                new FakeOrganizationUnitRepository(LiveUnit()),
+                TaskAssignmentGuards.Over(
+                    new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(TaskTestData.Other)),
+                    new FakePositionRepository(ActivePosition()),
+                    new FakeOrganizationUnitRepository(LiveUnit()),
+                    actingAs ?? TaskTestData.Me,
+                    UnitId),
                 new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant))
             .Handle(

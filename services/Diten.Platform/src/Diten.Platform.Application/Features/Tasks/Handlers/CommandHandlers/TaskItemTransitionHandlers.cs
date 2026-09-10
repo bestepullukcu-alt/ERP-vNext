@@ -1159,26 +1159,20 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskAssignmentRepository _assignments;
-    private readonly ITaskSeatDirectory _seats;
-    private readonly IPositionRepository _positions;
-    private readonly IOrganizationUnitRepository _organizationUnits;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
-        ITaskSeatDirectory seats,
-        IPositionRepository positions,
-        IOrganizationUnitRepository organizationUnits,
+        ITaskAssignmentGuard assignmentGuard,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext)
     {
         _tasks = tasks;
         _assignments = assignments;
-        _seats = seats;
-        _positions = positions;
-        _organizationUnits = organizationUnits;
+        _assignmentGuard = assignmentGuard;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
     }
@@ -1253,18 +1247,16 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
-        // The same rule the people picker uses — see TaskAssigneeEligibility for why it is shared rather than
-        // written twice. Refusing here is what stops work landing on somebody the product will not offer.
-        var assignable = TaskAssigneeEligibility.ResolveAssignableUserIds(
-            await _seats.ActiveAsync(ct),
-            await _positions.GetAllAsync(ct),
-            await _organizationUnits.GetAllAsync(ct));
-
-        if (!assignable.Contains(command.Request.AssigneeUserId))
+        /*
+         * The same rule the people picker uses — eligibility AND scope, through the shared guard. It used to ask
+         * only the position and the unit, so a holder could hand work to anybody in another company whose seat
+         * was live. No self exemption here, unlike create: taking a task over is still an assignment, and the
+         * picker that offers the new holder is the scoped one.
+         */
+        if (await _assignmentGuard.CheckPersonAsync(command.Request.AssigneeUserId, ct) is { } refused)
         {
             return Response<NoContent>.Fail(
-                "That person cannot be assigned work.",
-                400, TaskReasonCodes.AssigneeNotAssignable, command.CorrelationId);
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         /*

@@ -92,7 +92,10 @@ public sealed class CreateTaskItemFromTemplateHandler
                 createRequest,
                 command.CorrelationId,
                 EnforceRequiredFields: false,
-                TemplateSnapshotAt: template.UpdatedAt ?? template.CreatedAt),
+                TemplateSnapshotAt: template.UpdatedAt ?? template.CreatedAt,
+                // A person creating from a template meets the assignment guard like any other create — the
+                // template's default pool included. Only the sweep, which has no caller, is exempt.
+                IsScheduledGeneration: command.IsScheduledGeneration),
             ct);
     }
 }

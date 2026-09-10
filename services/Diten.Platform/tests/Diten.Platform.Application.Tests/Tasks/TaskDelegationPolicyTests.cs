@@ -158,9 +158,12 @@ public sealed class TaskDelegationPolicyTests
             => new ReassignTaskItemHandler(
                     _tasks,
                     new FakeTaskAssignmentRepository(),
-                    new FakePositionAssignmentRepository([.. _seats]),
-                    new FakePositionRepository([.. _positions]),
-                    new FakeOrganizationUnitRepository([.. _units]),
+                    TaskAssignmentGuards.Over(
+                        new FakePositionAssignmentRepository([.. _seats]),
+                        new FakePositionRepository([.. _positions]),
+                        new FakeOrganizationUnitRepository([.. _units]),
+                        actingAs ?? TaskTestData.Me,
+                        _units[0].Id),
                     new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
                     new FakeTenantContext(TaskTestData.Tenant))
                 .Handle(
