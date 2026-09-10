@@ -4678,7 +4678,16 @@ gibi hatta olmayan birimlere (Kalite, İK) elle verilen kapsam — gerektiğinde
 
 **Devir bayrağı görevi açana da uygulanıyor — canlıdan gelen bug**
 
-DURUM: AÇIK · SAHİP: CT (Antigravity WP) · KARAR: sahip, 2026-09-10
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `d35f8f32` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı** (WP-PSS-MOD0024-REASSIGN-REQUESTER-01, Antigravity; CT doğruladı). Sıra: önce "sen kimsin" (üçüncü kişi →
+403 `TASK_REASSIGN_NOT_PERMITTED`, gerçek sebep), sonra bayrak yalnız `isHolder && !isRequester` için (409, mesaj aynı), sonra
+`01bc0915` koruması değişmeden (Assign + uygunluk + kapsam talep sahibine de sorulur). Projeksiyon aynı kural: talep sahibinin
+satırında reassign bayrak kapalıyken de ENABLED; yalnız holder gri + `DELEGATION_NOT_ALLOWED`. **Davranış değişikliği:** üçüncü
+kişi + bayrak kapalı artık 409 değil 403 (eskiden yanlış sebep). `The_policy_answers_before_the_who_are_you_check` testi
+yeniden yazıldı — "rakip" aktörü görevin AÇANIydı, yani test bu hatayı doğru davranış diye kilitliyordu. +5 test; ajanın
+sabotajı 5 kırmızı, CT'nin iki ayrı sabotajı (handler / projeksiyon) 2+2 kırmızı; Tasks+WorkAggregation 1350/1350; yazma
+koruması 97/97. Yeni metin yok. Eski /Tasks ekranında reassign düğmesi hiç yok (tarandı).
 
 `ReassignTaskItemHandler` (`TaskItemTransitionHandlers.cs:1220`) `DelegationAllowed` kapalıysa aktör kim
 olursa olsun 409 `TASK_DELEGATION_NOT_ALLOWED` döner; holder/requester ayrımı (`:1227`) ondan SONRA; kapsam
