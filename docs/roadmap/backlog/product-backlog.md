@@ -4761,7 +4761,13 @@ aynı `Applies`'ı paylaştığından süzme sonucunun değişmediği testle gö
 
 **Görev üzerindeki yazma yolları ilişki sormuyor: yetkisi olan herkes, kimliğini bildiği her görevi başlatıp tamamlayabiliyor**
 
-DURUM: AÇIK · KARAR GEREKLİ · SAHİP: sahip (ürün kuralı) · ÖLÇÜLDÜ: 2026-09-11 (alt ajan tablosu; CT handler ve projeksiyonu doğruladı; canlı değil)
+DURUM: AÇIK · KARAR VERİLDİ (sahip, 2026-09-11: ilişki şart) · SAHİP: CT (Antigravity WP) · ÖLÇÜLDÜ: 2026-09-11 (alt ajan tablosu; CT doğruladı; canlı değil)
+
+**Karar ve bölme (2026-09-11):** başlat / sürdür / tamamla / incelemeye gönder = yalnız holder; planla = holder veya talep
+sahibi; kabul / sor / bırak projeksiyonda holder olmayana sunulmaz (BL-362) — hepsi **WP-PSS-MOD0024-LIFECYCLE-AUTHORITY-01**.
+Güncelle / sil / toplu sil / bağımlılık / kontrol listesi işaretleme **bu WP'de değil**: "talep sahibi + ayrı yönetim yetkisi"
+yeni izin anahtarı (manifest, AuthService eşitlemesi, 7 dilde çip etiketi → l10n kapısı) ister; ayrı karar ve paket. Okuma
+tarafı (BL-349) da o pakette.
 
 `TransitionTaskItemHandler` (`TaskItemTransitionHandlers.cs:201-707`) tek aktör kontrolünü iptal için yapıyor (talep sahibi,
 `:296-303`); **başlat** (`platform.tasks.update`), **sürdür**, **tamamla** (`platform.tasks.complete`) holder/talep sahibi sormuyor.
