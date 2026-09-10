@@ -133,6 +133,8 @@ public static class DependencyInjection
         services.AddScoped<IConceptNodeWithRelationshipUnitOfWork, ConceptNodeWithRelationshipUnitOfWork>();
         // SCMM-11 (CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
+        // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
+        services.AddScoped<IClaimRepository, ClaimRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -550,6 +552,21 @@ public static class DependencyInjection
         if (!BsonClassMap.IsClassMapRegistered(typeof(EligibilityCondition)))
         {
             BsonClassMap.RegisterClassMap<EligibilityCondition>(map => map.AutoMap());
+        }
+
+        // SCMM-12 (CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
+        // EligibilityPolicyId take the string-Guid convention; without it those FKs store binary and every ref lookup
+        // silently returns nothing (the new-aggregate class-map trap).
+        Map<Claim>(map =>
+            map.GetMemberMap(x => x.ComponentRefs)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid)));
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ClaimApplicability)))
+        {
+            BsonClassMap.RegisterClassMap<ClaimApplicability>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(a => a.EligibilityPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
         }
         Map<KnowledgeExternalReference>(_ => { });
 
@@ -1451,6 +1468,12 @@ public static class DependencyInjection
             eligibilityPolicies.Indexes.CreateOne(new CreateIndexModel<EligibilityPolicy>(
                 Builders<EligibilityPolicy>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.PolicyCode),
                 new CreateIndexOptions { Name = "ix_eligibility_policies_tenant_code" }));
+
+            // SCMM-12 (CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
+            var claims = database.GetCollection<Claim>(ClaimRepository.CollectionName);
+            claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
+                Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
+                new CreateIndexOptions { Name = "ix_claims_tenant_code" }));
 
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code

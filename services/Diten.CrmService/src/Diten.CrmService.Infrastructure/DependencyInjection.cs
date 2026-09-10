@@ -42,6 +42,9 @@ public static class DependencyInjection
             // SCMM-09 audit bundle — concept graph events forwarded with SourceModule "MOD-0162".
             services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher>(
                 sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // SCMM-12 audit — claim / composition events forwarded with SourceModule "CAND-CAP-0011".
+            services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
         }
         else
         {
@@ -50,6 +53,9 @@ public static class DependencyInjection
             // SCMM-09 audit bundle — structured-logging fallback for concept graph events.
             services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher,
                 LoggingKnowledgeConceptAuditPublisher>();
+            // SCMM-12 audit — structured-logging fallback for claim / composition events.
+            services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher,
+                LoggingContentCompositionAuditPublisher>();
         }
 
         // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
