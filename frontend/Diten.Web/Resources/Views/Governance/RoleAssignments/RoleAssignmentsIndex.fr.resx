@@ -19,7 +19,6 @@
   <data name="LockedHintModule" xml:space="preserve"><value>Cette autorisation a été accordée automatiquement par le module {0} et ne peut pas être modifiée ici.</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>Module</value></data>
   <data name="AllModulesOption" xml:space="preserve"><value>Tous les modules</value></data>
-  <data name="ModuleFilterSearchPlaceholder" xml:space="preserve"><value>Rechercher un module…</value></data>
   <data name="ModuleUngrouped" xml:space="preserve"><value>Autre</value></data>
   <data name="FilterStateGroupLabel" xml:space="preserve"><value>Filtrer par état d'attribution</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Tout</value></data>

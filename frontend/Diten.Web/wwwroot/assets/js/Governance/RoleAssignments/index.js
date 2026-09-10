@@ -766,15 +766,6 @@ const RoleAssignments = (function () {
             closeOnSelect: false,
             width: '100%'
         });
-        /*
-         * Name the box. DropdownSearch renders a bare input; with 34 modules behind it, an unlabelled field is only
-         * marginally better than the invisible one it replaced. The string is the same key in seven languages.
-         */
-        $select.on('select2:open.ra-search', () => {
-            const field = document.querySelector('.select2-container--open .select2-search--dropdown .select2-search__field')
-                || document.querySelector('.select2-dropdown .select2-search__field');
-            if (field && L.ModuleFilterSearchPlaceholder) field.placeholder = L.ModuleFilterSearchPlaceholder;
-        });
         $select.on('change.ra-summary', () => syncModuleSummary($select));
         // Build the summary synchronously (select2 has rendered the selection by now); a rAF pass is a backstop
         // in case the selection DOM settles a frame later.
