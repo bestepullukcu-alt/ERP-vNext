@@ -1690,7 +1690,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // holder's path applies, read from the same condition.
             if (!isPool)
             {
-                outbox.Add(ReassignAction(task, actor));
+                // This branch IS the requester reading their own outbox (see the comment above `initiatorOnly`) —
+                // BL-357: the flag never gates the requester's own correction, only a holder's further delegation.
+                outbox.Add(ReassignAction(task, actor, isRequester));
                 outboxPrimary = "reassign";
             }
 
@@ -1863,8 +1865,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         if (!isPool && (isHolder || isRequester))
         {
-            // Drawn-and-greyed rather than hidden when the task forbids delegation — see ReassignAction.
-            actions.Add(ReassignAction(task, actor));
+            // Drawn-and-greyed rather than hidden when the task forbids delegation AND the actor is only the
+            // holder — see ReassignAction. A requester (self-assigned, or a Team-scope read of their own opened
+            // work) is never greyed by this flag.
+            actions.Add(ReassignAction(task, actor, isRequester));
         }
 
         // Only a pooled task that someone has taken can be handed back to the pool.
@@ -1914,15 +1918,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// is drawn, greyed, and explains itself. Hiding it would leave the holder wondering why a task they hold
     /// cannot be handed on.</para>
     ///
-    /// <para>The task's own policy is checked BEFORE the permission: "nobody may delegate this" outranks "you may
+    /// <para><b>BL-357 — the flag names the HOLDER, not the requester.</b> `DelegationAllowed` stops a holder from
+    /// passing work along a THIRD leg the requester never asked for; it was never meant to stop the requester from
+    /// correcting their own instruction. <paramref name="isRequester"/> — the same fact <c>BuildActions</c> already
+    /// derived once and passes in here, never a second read — bypasses the flag entirely. The task's own policy is
+    /// still checked BEFORE the permission for a holder-only actor: "nobody may delegate this" outranks "you may
     /// not delegate", and reporting the permission first would send a reader after an authority that would never
     /// help.</para>
     ///
     /// <para>One factory rather than one construction per caller: the holder's path and BL-016's outbox path both
     /// offer this act, and two copies would be free to drift on the policy-before-permission order.</para>
     /// </summary>
-    private static WorkItemActionDto ReassignAction(TaskItem task, WorkItemActor actor)
-        => !task.DelegationAllowed
+    private static WorkItemActionDto ReassignAction(TaskItem task, WorkItemActor actor, bool isRequester)
+        => !isRequester && !task.DelegationAllowed
             ? Disabled("reassign", ActionReassignKey,
                 TaskReasonCodes.DelegationNotAllowed, DisabledDelegationKey)
             : Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true);

@@ -1200,30 +1200,6 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
-        /*
-         * ⚠ THE FLAG NOW DECIDES SOMETHING. `DelegationAllowed` has been collected by the create form since
-         * Phase 1 and was asked NOWHERE: a task explicitly marked "may not be delegated" could be handed to
-         * anybody, and nothing said otherwise.
-         *
-         * The refusal lives HERE, at the write, and not only in the projection. A disabled button is a courtesy;
-         * the rule is the endpoint saying no — a client that posts straight to the route must meet the same
-         * answer, and this module has closed three gaps of exactly that shape already (cancel authority,
-         * dependencies, subtasks).
-         *
-         * BEFORE the who-are-you check, deliberately: "this task cannot be delegated at all" is true whoever is
-         * asking, and answering "not you" to the holder would send them looking for a permission that does not
-         * exist.
-         *
-         * <para>Policy only — see <c>TaskItem.DelegationAllowed</c>. Whether a particular PERSON may receive
-         * work stays MOD-0018's decision, checked further down against the assignable set.</para>
-         */
-        if (!task.DelegationAllowed)
-        {
-            return Response<NoContent>.Fail(
-                "This task is marked as not delegable.",
-                409, TaskReasonCodes.DelegationNotAllowed, command.CorrelationId);
-        }
-
         var isHolder = task.AssigneeUserId == _currentUser.UserId;
         var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == _currentUser.UserId;
         if (!isHolder && !isRequester)
@@ -1231,6 +1207,33 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
             return Response<NoContent>.Fail(
                 "Only the current assignee or the requester can reassign this task.",
                 403, TaskReasonCodes.ReassignNotPermitted, command.CorrelationId);
+        }
+
+        /*
+         * BL-357 — THE FLAG LIMITS THE HOLDER'S FURTHER DELEGATION, NOT THE REQUESTER'S OWN CORRECTION.
+         *
+         * `DelegationAllowed` has been collected by the create form since Phase 1 and was asked NOWHERE: a task
+         * explicitly marked "may not be delegated" could be handed to anybody, and nothing said otherwise. The
+         * first fix for that (2026-08-23) asked the flag for EVERY caller, which closed that gap but opened this
+         * one: the person who OPENED the request — who is not "delegating" anything, they are correcting their
+         * own instruction — was refused their own task by a flag meant to stop a THIRD leg of hand-off. SAP routes
+         * this the same way (the initiator always re-routes; a recipient's forward is what gets policed) and so
+         * does Oracle (task ownership always carries a reassign right).
+         *
+         * So the who-are-you check now comes FIRST: a bystander is told "not you" (403), which is the true
+         * reason and the one that sends them looking for the right authority — Assign, held by someone who
+         * actually has a hand in the task. Only once that passes does the flag speak, and only for the shape it
+         * was always meant to name: HOLDER, not requester. A holder who is also the requester (self-assigned)
+         * never asked anyone else to do it, so there is nothing here to police either.
+         *
+         * <para>Policy only — see <c>TaskItem.DelegationAllowed</c>. Whether a particular PERSON may receive
+         * work stays MOD-0018's decision, checked further down against the assignable set.</para>
+         */
+        if (isHolder && !isRequester && !task.DelegationAllowed)
+        {
+            return Response<NoContent>.Fail(
+                "This task is marked as not delegable.",
+                409, TaskReasonCodes.DelegationNotAllowed, command.CorrelationId);
         }
 
         if (command.Request.AssigneeUserId == Guid.Empty)
