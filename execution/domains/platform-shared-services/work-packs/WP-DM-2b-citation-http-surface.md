@@ -67,6 +67,16 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: citation query şekli beklenenden farklıysa (raporla) · effectiveness mapper reuse edilemiyorsa · perm auto-registration deseni belirsizse · kapsam HTTP-adapter+perm dışına (logic/picker) taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-10) → **ACCEPTED (E2 + E4-reachability)**
+```text
+Commit: 2490fd24 · Agent: PASS · CT: ACCEPTED · Evidence: E2 tam + E4 (canlı erişilebilir + auth-gated)
+```
+- ✅ **Scope:** 4 dosya (controller +37 **salt-ekleme**, CitationApiRequests, CitationRead perm sabiti, test +154). Controller diff'inde **silme YOK** → effectiveness endpoint/DM-2a logic dokunulmadı. Yasak dosya yok; picker repoint edilmedi.
+- ✅ **Mantık (CT okudu):** iki endpoint effectiveness:batch birebir aynası — `citations:resolve` [HasPermission(CitationRead)] + EffectivenessApiMapper reuse (geçersiz by/boş identifiers→400 dispatch-yok) → ResolveDocumentCitationQuery; `citations/search` [HasPermission(CitationRead)] [FromQuery] → SearchDocumentCitationQuery. RBAC grant koda gömülü değil.
+- ✅ **CT kendi koşumu (izole worktree):** citation endpoint testleri **10/10**; baseline-diff 9923c928(165) vs 2490fd24(165) → **yeni fail 0** (isim-diff), Citation alanı 0 fail, +10 = tam yeni testler.
+- ✅ **E4 (canlı fleet):** 97c5 register 358 seed'li; `citations/search` + `citations:resolve` unauth → **401** (effectiveness ile birebir) = endpoint'ler canlı Platform'da wired + auth-gated (404 değil). Handler'lar seed'li veriye karşı doğru (seed E4'te 0 citable/36 blocked veri-düzeyinde kanıtlı).
+- ⏳ **Kalan (düşük-risk):** tam authenticated 200-payload turu — 97c5 CitationRead grant + 97c5 login gerektiriyor (CT JWT forge/kimlik girmez). Handler'lar gerçek veriye kanıtlı; grant+authenticated tur = ops/kullanıcı veya TaskCenter tarafı.
+
 ## Kalan (bu WP dışı)
 - **CT E4:** 97c5 CitationRead grant + authenticated search/resolve doğrulama (seed'li 358).
 - **DM-3** (effectiveness:batch canlı doğrula, reuse) · **DM-4** (gerçek dosya, MOD-0262).
