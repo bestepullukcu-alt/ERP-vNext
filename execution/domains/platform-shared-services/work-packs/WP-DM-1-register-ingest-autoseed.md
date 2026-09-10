@@ -114,6 +114,19 @@ Commits: DM-1a 98738949 · DM-1b 51c16343 · Agent: PASS · Verification: PASS �
 - ✅ **Gold-standard baseline-diff (isim-set, sayı değil):** baseline 8a8190ac **167 fail** vs with-mine 51c16343 **169 fail**. İsim-diff: 3 YENİ = hepsi `BusinessReferenceDataMongoResidueSweeperTests` (Mongo residue env-flake — **izole 5/5 geçer**, kanıtlandı), 1 GONE (Organization Mongo). **DocumentRegister alanı 0 fail → 0 gerçek regresyon.** (Agent'ın "167/167" sayı iddiası env-varyansıyla hafif kaymıştı; CT isim-diff+izolasyon ile "0 gerçek yeni fail" sonucunu bağımsız doğruladı.)
 - ⚠ **Bayrak (agent şeffaf):** "Executed (source on file)" (1 satır) DM-0'da underspecified → muhafazakâr Draft (non-citable) + açıklayıcı StatusReason, 36-blocked'a dahil değil, reversible. Kabul edilebilir; QA firm'lerse re-ingest üzerine yazar.
 
+## §37-E4 CT canlı doğrulama (2026-09-10, fleet + gerçek Mongo) → **PASS**
+CT, seed'i taze test-tenant'ta (`0dc00001-…-358`, boş register) canlı Platform ile koştu (config appsettings.Development.json + Platform.API restart), gerçek Mongo'ya yazımı pymongo ile ölçtü:
+- **358 doc yazıldı** · LifecycleStatus: Draft **350** (320 Draft+23 Planned+6 NOT REG+1 Executed) · InReview **1** · Retired **7** — DM-0 birebir.
+- **Citable (Effective∨UnderRevision)=0** → effectiveness:batch **tümü Blocked/Unresolved** (E4 asıl iddiası, veri-düzeyinde kanıtlı) · **36 blocked** (LinkScope=Invalid) · **358 CollectionInstanceId=Guid.Empty** · **358 IsSystemAllocated=false**.
+- Doğrulama sonrası temizlendi (test doc + marker silindi, config/Program.cs geri alındı, branch temiz).
+- 🔎 **Gerçek davranış bulgusu (E2 fake-repo'nun kaçırdığı):** `BootstrapSeedPolicy.Decide(markerYok, liveRecordVar)=MarkOnly` → **register'da veri varsa seed ATLANIR** (brownfield koruma, doğru). Arkadaşın **boş** env'inde seed çalışır (kanıtlı); local **97c5** (20 pre-existing doc) otomatik seed OLMAZ.
+
+## ⚠ DM-1c gerekli (arkadaşa teslim için — DM-1 seed'i çalışıyor ama "push→otomatik seed" için eksik)
+Seed mekanizması doğrulandı ama **push sonrası arkadaşın env'inde otomatik koşması için** iki şey COMMIT'li olmalı (şu an değil):
+1. **CSV runtime asset:** `docs/…/GMG_ERP_…csv` build output'a kopyalanmıyor → CsvPath portable değil. BRD `Seed/` deseni gibi Platform.API'ye kopyalanmalı (relative CsvPath).
+2. **Portable config:** `DocumentRegisterSeed:{Enabled,TenantId,CsvPath}` `appsettings.Development.json`'a committed (BRD.CatalogLoad deseni — dev tenant + relative path). Prod'da yok → skip.
+> Bu commit edilmeden arkadaş `git pull` yapınca seed KOŞMAZ. DM-1c ayrı küçük WP.
+
 ## Kalan (bu WP dışı)
 - DM-2b (Search/Resolve gerçek impl, seed sonrası canlı) · DM-3 (effectiveness:batch doğrula, reuse) · DM-4 (gerçek dosyalar, MOD-0262 ile koordineli).
 - E4 authenticated fleet turu (auto-seed canlı + effectiveness:batch).
