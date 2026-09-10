@@ -4249,9 +4249,9 @@ cezalandırılan desendir; onun yerine kural tek ve istisnasız tutuldu.
 
 ### BL-343
 
-**Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi ve on üç ön yüz dosyası**
+**Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi, on üç ön yüz dosyası, Platform'da yetmişe yakın test**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08 · GENİŞLETİLDİ: 2026-09-10
 
 RBAC turunun bağımsız doğrulaması sırasında ölçüldü. **Hiçbiri o turun ürünü
 değil**; hepsi dal açılmadan önce kırmızıydı ve bu yüzden ayrı bir madde.
@@ -4289,6 +4289,62 @@ alınıp koşulduklarında **yine kırmızı**. Sebep başka.
 takım "testler geçiyor mu" sorusunu cevaplanamaz hale getirir — her tur bu 13'ü
 elle ayıklamak zorunda kalır ve bir gün biri fazladan bir kırmızıyı da eski
 sanar. Bu maddenin asıl maliyeti budur.
+
+**c) `Platform.Application.Tests` — bu madde onları hiç yazmıyordu**
+
+2026-09-10 tam koşum: **4070 testin 75'i kırmızı**. Dal `fix/workcenter-role-testing`; bu
+dalın `main`'e göre değiştirdiği Platform dosyalarının **hiçbiri** aşağıdaki alanlara
+dokunmuyor (`git diff --name-only main...HEAD -- services/Diten.Platform` → yalnız WorkReport
+dosyaları ve `DocumentReferenceListTests.cs` düzeltmesi). Yani hepsi dal öncesi.
+**Düzeltilmedi, yalnız kaydedildi** — sahipleri başka ekipler.
+
+⚠ Sayılar bu koşumdan; kayar. Her satırın **ölçüm komutu** sayının yerine geçer.
+
+| sebep | sınıflar | 2026-09-10 | sahip |
+|---|---|---:|---|
+| aynı aksiyonda birden çok `[HasPermission]` (`0f71a237`) → `GetCustomAttribute<HasPermissionAttribute>` `AmbiguousMatchException` | `Mod0029Fu29aEndpointAttributionTests` | 3 | Doküman Yönetimi |
+| 2 menü sayfası eklendi, test güncellenmedi (`fb4245f0`) | `DocumentManagementManifestProviderTests` | 3 | Doküman Yönetimi |
+| yaşam döngüsü / onay kapısı / eğitim — disk okumuyor, saf mantık | `DocumentLifecycleStatusTests` · `DocumentReleaseGateTests` · `DocumentTrainingMatrixTests` | 14 | Doküman Yönetimi |
+| **ayrıca:** testin aradığı `Name = CorporateActiveInstanceIndexName` metni index yapılandırmasında artık yok | `CorporateCollectionInstanceFoundationTests.Corporate_unique_index_uses_positive_active_filter_only` | 1 | Doküman Yönetimi |
+| **ayrıca:** 8 abonelik handler'ından yalnız `SuspendTenantSubscriptionCommandHandler`, `Handle` çağrı grafiğinde `TenantSubscriptionTransactionWriter` göstermiyor (test `261f9910`) | `SubscriptionHandlerTransactionArchitectureTests` | 1 | Kiracı abonelikleri |
+| BRD Mongo ailesi — aşağıya bak | `BusinessReferenceData*MongoTests` (sweeper hariç) | 49 | BRD / ortam |
+| flaky — ardışık koşumlar birbirinin artığını süpürüyor | `BusinessReferenceDataMongoResidueSweeperTests` | 4 | BRD |
+
+**BRD ailesi TEK sebep değil, ve dağılımı koşumdan koşuma değişiyor.** Brifingde "≈43, hepsi
+`Timestamp`" deniyordu (tek örnek mesajdan). Her mesaj ölçüldü, iki ayrı belirti çıktı:
+
+- `System.FormatException : ObjectSerializer does not support BSON type 'Timestamp'.` —
+  test Mongo'su **replica set** (`rs0`, `DisposableMongoReplicaSet.cs`), komut yanıtında
+  `Timestamp` taşıyor.
+- `MongoCommandException : Command dropDatabase failed: The database is currently being dropped.`
+  — sınıflar paralel koşarken aynı anda veritabanı düşürüyor.
+
+Aynı test bir koşumda birinden, sonrakinde ötekinden düşüyor: tam koşumda **36 Timestamp +
+13 dropDatabase**, hemen ardından yalnız BRD koşumunda **11 Timestamp + 38 dropDatabase**
+(+3 sweeper). Toplam ~50 sabit, bölüşüm değil. Ayrıca ölçüldü: iki gün önceki koşumlardan
+kalma **4 sahipsiz `diten-platform-mongo-rs-*` `mongod`** süreci hâlâ açık — harness
+süreçlerini her zaman kapatmıyor.
+
+**Ölçüm komutları:**
+
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~Mod0029Fu29aEndpointAttributionTests"
+    git show 0f71a237 -- services/Diten.Platform/src/Diten.Platform.API/Controllers/ | grep "^+.*HasPermission"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~DocumentManagementManifestProviderTests"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~DocumentLifecycleStatusTests|FullyQualifiedName~DocumentReleaseGateTests|FullyQualifiedName~DocumentTrainingMatrixTests"
+    grep -c "Name = CorporateActiveInstanceIndexName" services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Configurations/MongoDbIndexConfigurations.cs
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~SubscriptionHandlerTransactionArchitectureTests"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~BusinessReferenceData" --logger "console;verbosity=normal" | grep -c "BSON type 'Timestamp'"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~BusinessReferenceData" --logger "console;verbosity=normal" | grep -c "currently being dropped"
+    ps -eo command | grep -c '[d]iten-platform-mongo-rs-'
+
+**d) Mimari muhafız da kırmızı — bir test**
+
+    MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun
+      → Audit/PpmAuditRetentionPolicySeedMongoTests.cs · Persistence/DisposableStandaloneMongo.cs
+
+Her koşumda veritabanı adını yeni bir GUID'den kuran iki dosyayı gösteriyor. Ölçüm:
+
+    dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter "FullyQualifiedName~MongoTestDatabaseGuardTests"
 
 ---
 
@@ -4421,3 +4477,43 @@ satırlık ekleme olarak değil — önce aktör tipini doğru yazan bir yazıc�
 
     grep -n "ActorType\|IsPlatformGlobal\|SourceModule" services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/Services/AuditMetaAuditWriter.cs
     grep -n "AuditMetaAuditWriter\|DataExport" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/WorkReportExportQueryHandler.cs
+
+### BL-348
+
+**Docs yol muhafızı: `docs/` altında beşli dışına işaret eden kod artık derlemede değil testte düşer**
+
+DURUM: ✅ KAPANDI · SAHİP: ali.tufanoglu · KOD: 2026-09-10 (commit: CONTROL TOWER alacak)
+
+**Ne yapıldı.** `tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs`
+— kod dosyalarında (`.cs .cshtml .js .py .sh .ps1 .json .csproj .css .html .yaml .yml .xml
+.resx`) `docs/` altında `vendor · records · roadmap · guides · reference` dışındaki bir
+klasöre giden yolu bulur; hata `dosya:satır → docs/<eski> — bkz. docs-organization.md §4`.
+`.antigravity/rules/docs-organization.md` §4 madde 4'e `.ps1` ve testin adı eklendi.
+
+**Neden.** 2026-09-07 taşıması (`9d8551e1`) kodu dört kez kırdı — `.py`, `.css`,
+`.cs` (`DocumentReferenceListTests`, 10 test), `.ps1` — ve kural bunu **hatırlamaya**
+bırakıyordu; listesinde `.ps1` bile yoktu.
+
+**Kararlar.**
+- Klasör sayılan yalnız ayraçla devam eden segment (`docs/x/`, `docs\x\`) ve ardından
+  başka argüman gelen `Path.Combine(…, "docs", "x", …)`. `docs/` kökündeki DOSYA başka soru.
+- `Path.Combine` biçiminde klasör adı boşluk içeremez — ilk yanlış pozitif bir UI etiketiydi
+  (`DemandIdeaCapturePageMapper.cs:197`, `"docs", "Supporting documents attached"`).
+- Servislerin kendi `docs/` klasörleri (`Diten.AuthService`, `Diten.Platform`) diskten
+  bulunur, listelenmez. Yorumlar taranır — kırılan CSS bir yorumdu.
+- `.yml` listeye eklendi (CI iş akışları); brifingde `.yaml` vardı.
+
+**Sabotaj kanıtı.**
+1. `DocumentReferenceListTests.cs`'de `"docs", "integration"` → kırmızı,
+   `…DocumentReferenceListTests.cs:30 → docs/integration`.
+2. `scripts/smoke-mod0155-visit-planning-authenticated.ps1`'e `docs/audits/x.md` → kırmızı,
+   `…:72 → docs/audits` — `.ps1` kapsamını kanıtlar.
+İkisi de geri alındı (sağlama değerleri aynı), muhafız yeşil.
+
+**Kasten yapılmayanlar.** `docs/` kökündeki var olmayan DOSYAYA işaret eden referanslar
+(ör. `ActivateModuleCatalogItemCommandHandler.cs:50` → `docs/workflow-transition-gate-standard.md`)
+bu muhafızın kapsamı dışında; ayrı iş. Metin taraması — iki ifadeye bölünmüş yol kaçar.
+
+**Ölçüm komutu:**
+
+    dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter "FullyQualifiedName~DocsPathGuardTests"
