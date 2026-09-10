@@ -22,7 +22,16 @@
             if (!response.ok) { return []; }
             const payload = await response.json();
             const rows = payload?.data ?? payload?.Data ?? payload;
-            return Array.isArray(rows) ? rows : [];
+            if (Array.isArray(rows)) { return rows; }
+            /*
+             * BL-350 — /assignable-people does NOT answer a bare array like the other two lookups called from
+             * here. It answers AssignablePersonLookupDto { People, Excluded } (BL-057: only the server knows
+             * WHY the rest are missing), so on the wire it is { data: { people: [...], excluded: {...} } }.
+             * Unwrapped the same way Tasks/api.js's own assignablePeople() does — the one place this envelope
+             * shape is documented — so this picker is never left empty by a lookup that was never an array.
+             */
+            const people = rows?.people ?? rows?.People;
+            return Array.isArray(people) ? people : [];
         } catch (error) {
             console.error('[RecurrenceRuleForm] Lookup failed.', url, error);
             return [];
