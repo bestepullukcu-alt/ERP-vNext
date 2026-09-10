@@ -62,4 +62,49 @@ public sealed class DocumentRegisterSeedGateTests
     {
         Assert.False(DocumentRegisterSeedGate.ShouldRun(Options(), isDevelopment: true, FileMissing));
     }
+
+    // ── WP-DM-1c: relative CsvPath resolution via Path.GetFullPath (the real EnsureSeededAsync delegate) ──
+
+    // The committed dev config uses a RELATIVE "Seed/document-management/…" path (runtime asset). The seed resolves it
+    // with Path.GetFullPath before File.Exists — exactly the BRD catalog-loader resolution. These tests exercise that
+    // real delegate rather than the stub.
+    private static readonly Func<string, bool> RealResolve = p => File.Exists(Path.GetFullPath(p));
+
+    [Fact]
+    public void Relative_path_resolves_and_runs_when_the_file_exists()
+    {
+        var absolute = Path.GetTempFileName();
+        try
+        {
+            var relative = Path.GetRelativePath(Environment.CurrentDirectory, absolute);
+            Assert.False(Path.IsPathRooted(relative)); // genuinely relative
+            Assert.True(DocumentRegisterSeedGate.ShouldRun(Options(csv: relative), isDevelopment: true, RealResolve));
+        }
+        finally
+        {
+            File.Delete(absolute);
+        }
+    }
+
+    [Fact]
+    public void Relative_path_to_a_missing_file_is_skipped()
+    {
+        Assert.False(DocumentRegisterSeedGate.ShouldRun(
+            Options(csv: "Seed/document-management/does-not-exist-xyz.csv"), isDevelopment: true, RealResolve));
+    }
+
+    [Fact]
+    public void Absolute_path_is_unchanged_by_getfullpath()
+    {
+        // Path.GetFullPath is idempotent on an absolute path — existing absolute-path behaviour is not broken.
+        var absolute = Path.GetTempFileName();
+        try
+        {
+            Assert.True(DocumentRegisterSeedGate.ShouldRun(Options(csv: absolute), isDevelopment: true, RealResolve));
+        }
+        finally
+        {
+            File.Delete(absolute);
+        }
+    }
 }

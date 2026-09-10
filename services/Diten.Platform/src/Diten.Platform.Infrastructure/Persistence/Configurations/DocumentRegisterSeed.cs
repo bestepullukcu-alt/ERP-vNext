@@ -29,7 +29,10 @@ internal static class DocumentRegisterSeed
     {
         // Every gate must hold; any unmet ⇒ skip. Prod-safe (dev-only), never a guessed/hardcoded tenant. The pure
         // predicate is unit-tested (leakage guard) in DocumentRegisterSeedGate; here we also resolve the tenant id.
-        if (!DocumentRegisterSeedGate.ShouldRun(options, environment.IsDevelopment(), File.Exists)
+        // A relative CsvPath (the committed dev config's "Seed/document-management/…") resolves against the runtime
+        // directory via Path.GetFullPath — the SAME resolution the BRD catalog loader uses. The gate's null/blank
+        // guard runs first, so Path.GetFullPath is only ever handed a non-blank path (it throws on empty).
+        if (!DocumentRegisterSeedGate.ShouldRun(options, environment.IsDevelopment(), p => File.Exists(Path.GetFullPath(p)))
             || !options.TryGetTenantId(out var tenantId))
         {
             return;
@@ -70,7 +73,9 @@ internal static class DocumentRegisterSeed
     private static async Task IngestAsync(
         IMongoCollection<DocumentMasterRegisterEntry> collection, string csvPath, Guid tenantId, CancellationToken ct)
     {
-        var csv = await File.ReadAllTextAsync(csvPath, ct);
+        // Relative path → resolved against the runtime directory (BRD catalog-loader parity); absolute path is
+        // returned unchanged by Path.GetFullPath (idempotent — existing absolute-path behaviour is unaffected).
+        var csv = await File.ReadAllTextAsync(Path.GetFullPath(csvPath), ct);
         var parsed = DocumentReferenceListParser.Parse(csv, tenantId);
         if (parsed.MissingColumns.Count > 0)
         {
