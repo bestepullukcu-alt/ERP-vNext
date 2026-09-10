@@ -4551,7 +4551,12 @@ yoksa okuma yetkisi olan herkes mi (bugünkü fiilî durum). Cevap BL-057'nin li
 
 **Tekrarlayan kural formunda kişi listesi hep boş — ekran düz liste bekliyor, sunucu zarf gönderiyor**
 
-DURUM: AÇIK · SAHİP: CT (alt ajan) · ÖLÇÜLDÜ: 2026-09-10 (kod; canlıda denenmedi)
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `b7d8918b` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** `fetchJson` dizi değilse `rows.people` / `rows.People` zarfını açıyor (`Tasks/api.js`'in kendi `assignablePeople()`
+yolunun aynısı); havuz ve şablon listeleri değişmedi; kayıtlı seçim düzenlemede yine yerine geliyor. 3 test
+(`recurrence-rule-assignable-people-envelope.test.js`) eski kodda 2 kırmızı, yenide yeşil — CT kendi sabotajıyla ölçtü.
+**Not:** aynı kalıp `Tasks/Templates/form.js:26`'da da var; o üç uç bugün zarf döndürmediği için bozuk değil, gizli aynı hata.
 
 `Tasks/RecurrenceRules/form.js:17-30` `fetchJson` yalnız dizi kabul ediyor (`Array.isArray(rows) ? rows : []`).
 `GET api/v1/tasks/lookups/assignable-people` ise `AssignablePersonLookupDto { People, Excluded }` döner
@@ -4567,7 +4572,13 @@ DURUM: AÇIK · SAHİP: CT (alt ajan) · ÖLÇÜLDÜ: 2026-09-10 (kod; canlıda 
 
 **`Tasks/api.js`: aynı hata kodu iki mesaja bağlı — "bekleme kişisi" reddinde yanlış cümle**
 
-DURUM: AÇIK · SAHİP: CT (alt ajan) · ÖLÇÜLDÜ: 2026-09-10
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `be8c3ecf` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** Temel eşleme tek: atama cümlesi (çağıranların hepsi atama). `INQUIRE_REASON_CODE_OVERRIDES`
+bekleme cümlesini taşıyor; `failureMessage(result, overrides)` ikinci argüman aldı; `inquire`'ı gönderen TEK yer
+(`WorkCenterNext/app.js` `submitRealTransition`) onu geçiyor. Yeni resx yok, sunucu değişmedi. Muhafızlar: temel eşlemede
+her kod bir kez · geçersiz kılma yalnız verilince · `submitRealTransition` içindeki her çağrı geçiyor ve inquire'ı başka
+gönderen yok — her biri kendi yarısı çıkarılınca kırmızı (alt ajan + CT sabotajı).
 
 `REASON_CODE_MESSAGE_KEYS` içinde `TASK_ASSIGNEE_NOT_ASSIGNABLE` iki kez: satır 68 (`errorWaitingOnNotAssignable`)
 ve 155 (`errorAssigneeNotAssignable`). JavaScript nesne sabitinde sonraki kazanır; `InquireTaskItemHandler`
