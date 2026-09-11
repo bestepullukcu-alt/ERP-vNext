@@ -455,8 +455,8 @@ Inventory (§13.2) tüm bloğun MVP-1 + MVP-5'i. Tüm Supply Planning bloğu iç
 | **MVP-5** | Warehouse (0178/80/81/82) | ~13 (0173 freeze) | 4–6 | overlap |
 | **MVP-2** | Procurement/P2P (0140-0148) | ~13 (G1) | **6–8** | ★ |
 | **MVP-3** | BOM (0193) | ~13 (G1) | 3–4 | MVP-2 ∥ |
-| **MVP-4** | Planning (0188-0192) | ~21 (G2A/B) | **5–7** | ★ |
-| **MVP-6** | Integrated + Logistics (0183-0187, S&OP) | ~28 (G3) | **8–12** | ★ |
+| **MVP-4** | Planning (0188/0189/0191) | ~21 (G2A/B) | **5–7** | ★ |
+| **MVP-6** | Integrated + Logistics (0190 S&OP · 0192 Capacity · 0183-0187 · 0147/0148) | ~28 (G3) | **8–12** | ★ |
 
 **Rollup:**
 - **Tüm blok (parallel):** ≈ **32–40 hafta (~8–10 ay)**. Kritik yol = MVP-1 → MVP-2 → MVP-4 → MVP-6.
@@ -540,7 +540,7 @@ Inventory (§13.2) tüm bloğun MVP-1 + MVP-5'i. Tüm Supply Planning bloğu iç
 |---|---|
 | 0193 | `BOM` · `BOMVersion` · `BOMComponentLine` · `Routing` · `RoutingStep` |
 
-### 14.8 MOD-0188–0192 · Planning (MVP-4) `[ext]` · MOD-0183–0187 · Logistics (MVP-6) `[ext]`
+### 14.8 MOD-0188/0189/0191 · Planning (MVP-4) `[ext]` · MOD-0190/0192/0183–0187 · Integrated+Logistics (MVP-6) `[ext]`
 | MOD | Object |
 |---|---|
 | 0188 | `DemandPlan / Forecast` |
@@ -611,12 +611,12 @@ LANE A  FOUNDATION (MVP-1) — kritik, tek yazıcı, SIRALI:
    ┌──────────────── 3 PARALEL LANE (MVP-1 freeze sonrası) ────────────────┐
    │ LANE B  PROCUREMENT (MVP-2)          │ LANE C  BOM (MVP-3)  │           │
    │ 0140→0145 ∥ 0141→0142→0143 ∥ 0144    │ 0193                 │           │
-   │ ∥ 0147 ∥ 0148 ∥ 0146                  │ (mfg ise)            │           │
+   │ (0147/0148 = MVP-6)                   │ (mfg ise)            │           │
    │ 0142 GRN → 0173 (consumer seam)      │                      │           │
    └───────────────┬──────────────────────┴──────────┬───────────┘           │
                    │ (B ⇄ C paralel; ikisi de D'yi besler)                    │
                    ▼                                                          │
-LANE D  PLANNING (MVP-4)  0188 → {0189 → 0191} ∥ 0190 ∥ 0192                  │
+LANE D  PLANNING (MVP-4)  0188 → {0189 → 0191}     (0190 S&OP / 0192 Capacity = MVP-6) │
         0188 Demand FREEZE → 0172 ATP ∥ 0176 FEFO ∥ 0189 ∥ 0192 (consumers)  │
                    │                                                          │
 LANE E  WAREHOUSE EXEC (MVP-5)  ← 0173 freeze sonrası, late-MVP-4 ile OVERLAP │
@@ -705,8 +705,8 @@ Her MVP bir developer'a (veya küçük lane-team'e) atanır. **Bir developer = b
 | **MVP-2** Procurement | 0140-0148 | **G1** (0290+0173 freeze) | MVP-3, MVP-5 | **1–2** | ayrı worktree |
 | **MVP-3** BOM | 0193 | **G1** | MVP-2, MVP-5 | **1** | — |
 | **MVP-5** Warehouse | 0178-0182 | 0173 movement freeze | MVP-2, MVP-3, late MVP-4 | **1** | 0173'e post (consumer) |
-| **MVP-4** Planning | 0188-0192 | MVP-2+3 stabil (G2A/B) | late MVP-5 | **1–2** | `0188 demand` tek writer |
-| **MVP-6** Integrated | 0183-0187 · S&OP · supplier | MVP-4 sonrası (G3) | *içinde* 0185∥0186∥0187 | **2–3** | `0183 shipment` tek writer |
+| **MVP-4** Planning | 0188/0189/0191 | MVP-2+3 stabil (G2A/B) | late MVP-5 | **1–2** | `0188 demand` tek writer |
+| **MVP-6** Integrated | 0190 S&OP · 0192 Capacity · 0183-0187 · 0147/0148 | MVP-4 sonrası (G3) | *içinde* 0185∥0186∥0187 | **2–3** | `0183 shipment` tek writer |
 
 ### 19.1 Eşzamanlı developer sayısı (staffing over time)
 
@@ -805,8 +805,8 @@ Amaç: MVP'ler **çakışmadan paralel** geliştirilsin. Sequence değil — her
 | **MVP-2 Procurement** | Supplier · PO (0141) · GRN (0142) · InvoiceMatch (0143) | **PRODUCT-MASTER-BUNDLE (frozen)** · **INVENTORY-BUNDLE (frozen, post GR)** · LOCATION | 0173 balance'a **doğrudan yazma** (sadece movement API) · ürün kimliği uydurma · shadow stock | **G1** |
 | **MVP-3 BOM** | BOM · Routing (0193) | **PRODUCT-MASTER-BUNDLE (frozen)** · Change Control (0209) | ürün kimliği/inventory'e yazma | **G1** |
 | **MVP-5 Warehouse** | WarehouseTask · Scan · Wave · CycleCount (0178/80/81/82) | **INVENTORY-BUNDLE (movement, frozen)** · LOCATION · TRACE | **ikinci balance tutma** (movement API ile post) | 0173 movement freeze |
-| **MVP-4 Planning** | DemandPlan (0188) · MRP/Proposal (0189) · SafetyStock (0191) · Capacity (0192) | INVENTORY **availability query** · PRODUCT · BOM · DWH (0063) | **PO yaratma** (0141'e handoff) · stok tutma | G2A + G2B |
-| **MVP-6 Logistics** | Shipment/Carrier/Load/Reverse/Claims (0183-87) · Supplier Perf/Portal (0147/48) | Warehouse · Shipment · Supplier | source SoR'ları override | G3 |
+| **MVP-4 Planning** | DemandPlan (0188) · MRP/Proposal (0189) · SafetyStock (0191) | INVENTORY **availability query** · PRODUCT · BOM · DWH (0063) | **PO yaratma** (0141'e handoff) · stok tutma | G2A + G2B |
+| **MVP-6 Integrated** | S&OP (0190) · Capacity (0192) · Shipment/Carrier/Load/Reverse/Claims (0183-87) · Supplier Perf/Portal (0147/48) | Warehouse · Shipment · Supplier · Demand/Inventory | source SoR'ları override | G3 |
 | **MOD-0172 ATP** (consumer) | AllocationDecision/ATP/CTP | **INVENTORY availability + reservation (frozen)** · Demand | **ikinci stok balance** | 0173 + 0188 freeze |
 
 ### 21.3 Shared-seam single-writer register

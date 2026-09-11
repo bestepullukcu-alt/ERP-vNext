@@ -1,9 +1,11 @@
-# WORK PACKAGE BRIEF — MVP-4 Planning (0188·0189·0190·0191·0192)
+# WORK PACKAGE BRIEF — MVP-4 Planning (0188·0189·0191)
+
+> **Not:** 0190 S&OP + 0192 Capacity **MVP-6'ya taşındı** (Excel roster). MVP-4 = Demand + MRP + Safety Stock.
 
 > **Dev-prompt DEĞİL** — Control Tower intake. Branch `feature/mvp4-planning` · Gate: MVP-2+3 stabil (G2A/G2B).
 
 ## OWNED (SoR)
-DemandPlan(0188) · MRPRun/NetRequirement/ReplenishmentProposal(0189) · SafetyStockPolicy(0191) · CapacityPlan(0192) · S&OPPlan(0190) · **DEMAND contract** (CT netleştirir; iskelet §CONTRACT-7).
+DemandPlan(0188) · MRPRun/NetRequirement/ReplenishmentProposal(0189) · SafetyStockPolicy(0191) · **DEMAND contract** (CT netleştirir; iskelet §CONTRACT-7). *(0190 S&OP + 0192 Capacity → MVP-6.)*
 
 ## CONSUMED (frozen/mock)
 - INVENTORY `contracts/inventory-bundle.openapi.yaml` (GET /availability)
