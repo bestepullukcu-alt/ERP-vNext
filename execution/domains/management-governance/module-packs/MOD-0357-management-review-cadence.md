@@ -6,7 +6,8 @@ service: Diten.Platform
 shell: tenant
 golden_reference: compact
 entity_base: TenantScopedEntity
-status: draft
+status: ready-for-dev
+status_changed: draft -> ready-for-dev on 2026-09-11 (owner answered the five open questions; see §22)
 owner: ali.tufanoglu
 branch: feature/mg/mod-0357-management-review-cadence
 started: 2026-09-11
@@ -339,7 +340,11 @@ own config says is required before that boundary may be crossed.
   its public commands (`CreateTaskItemCommand`) and its manifest-declared permissions only; no file inside
   this tree is edited by MOD-0357.
 - `services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/**` — WC-1 is consumed;
-  only the one DI registration line adds the fourth provider.
+  only the one DI registration line adds the fourth provider — plus ONE contract completion in S1: the
+  `relatedRecords` field that `fixture-contract.js` and MOD-0024's checklist-engine pack already declare
+  (capability `relatedRecords`, max 20, shape `id · type · title · link`) but no backend emits today
+  (measured 2026-09-11: zero `RelatedRecord` symbols in `WorkAggregationModels.cs`/`TaskWorkItemProvider.cs`).
+  Adding that declared field is not a new contract; anything beyond it is.
 - `services/Diten.AuthService/**` — permission seed/grant is a separate MOD-0018 task; this module's
   permissions arrive through self-registration only (§8).
 - `gateway/Diten.ApiGateway/**/ocelot.json` — integration-agent only (§15).
@@ -514,7 +519,7 @@ Permissions (PKS-001 lowercase-dotted):
   platform.meetings.read          platform.meetings.create      platform.meetings.update
   platform.meetings.delete        platform.meetings.bulk-delete
   platform.meetings.minutes-write platform.meetings.minutes-publish
-  platform.meetings.types-manage
+  platform.meetings.types-manage   platform.meetings.read-all        (§22 D3: every meeting in the tenant, for QA/management)
 ```
 
 - Constants are defined **locally** in `Diten.Platform`; the seed/grant is a separate MOD-0018 task.
@@ -768,3 +773,22 @@ Verbatim from ADR-003 §6, plus the two items ADR-003 names elsewhere in the sam
 - **Retention.** How long do published minutes and their correction history need to be retained? Is this
   governed by the same policy as controlled documents (`GMG-QMS-SOP-0013` review cycle: 24 months) or does
   a meeting record need its own retention rule?
+
+---
+
+## 22. Owner Decisions (2026-09-11) — answers to §21, binding for every slice
+
+- **D1 · Minutes as quality record:** default `IsQualityRecord = false` per meeting type; the *Management review*
+  type (`MGMT-REVIEW`, GMG-QMS-SOP-0013) defaults to `true`. QA may change either through the meeting-type setting;
+  never per meeting instance. SAP/Oracle do the same at TYPE level (a controlled document's type decides its record
+  status), which is why this is a setting, not a checkbox on the meeting.
+- **D2 · Attendees from another company:** allowed — any ACTIVE tenant user may be invited, whatever their legal
+  entity or unit; the people picker groups by company/unit only for findability. Tasks raised in the meeting still
+  obey the task assignment scope (K9); inviting is not assigning. External (non-tenant) attendees stay deferred (§20).
+- **D3 · Visibility (owner undecided → Control Tower default, revisable by ADR):** a meeting is visible to its
+  organizer, its attendees and whoever holds `platform.meetings.read-all` (QA/management, tenant-wide). No
+  company-boundary rule in Stage 1; `read` alone shows only meetings you are part of. Unauthorised readers get 404.
+- **D4 · Organizer leaves:** an explicit *reassign organizer* command (mirrors MOD-0024 reassign); the historical
+  organizer stays in the record and in every published minutes version.
+- **D5 · Retention:** minutes of quality-record types follow the controlled-document retention rule; all other
+  meetings and minutes are never hard-deleted (soft delete only), no separate retention rule in Stage 1.
