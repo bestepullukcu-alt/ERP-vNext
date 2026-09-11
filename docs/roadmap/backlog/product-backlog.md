@@ -4721,7 +4721,15 @@ kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi 
 
 **Canlı bildirim: "kişi kendine görev açamıyor" — kanıt bekliyor**
 
-DURUM: AÇIK · DEV'DE YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla) · SAHİP: sahip (veri) + ürün kararı · KAYIT: 2026-09-10
+DURUM: DEV'DE ÇÖZÜLDÜ (CT, 2026-09-11 gece; sahip onayı) · ÜRÜN SORUSU BL-366 AÇIK · daha önce: YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla) · SAHİP: sahip (veri) + ürün kararı · KAYIT: 2026-09-10
+
+**DEV ÇÖZÜMÜ (CT, 2026-09-11):** `DevSeeds:OrganizationPositions=true` yerelde açılıp Platform bir kez başlatıldı (ayar geri alındı, commit yok): DefaultTenant'a
+1 birim (HEADQUARTERS) + 5 pozisyon (CEO, CTO, HR_MGR, DEV_LEAD, DEV_ENG) yazıldı — tohum pozisyonları **Draft** yazıyor ve atama yazmıyor; CT beş pozisyonu Positions
+API'siyle Active yaptı ve admin@diten.com'a CEO ataması ekledi (Pozisyon Atamaları API'si, sahibin oturumu). Sonuç: toplantı aday listesi "Diten Admin · CEO · Headquarters".
+**Canlı kanıt (E4, aynı oturum):** toplantı oluştur 201 → toplantıdan görev 201 (RecordLink `preparation`) → görevden inceleme toplantısı 201 (RecordLink `reviewMeeting`) →
+bağlı görevler listesinde görünüyor — MOD-0357 S3/S4 canlı doğrulandı. Sahip kontrol turunda bu veriyi silip baştan kurabilir; tohum tekrarlanabilir.
+Tohum notu: `PositionSeed` pozisyonları Draft yazdığı ve `PositionAssignmentSeed` DefaultTenant'a atama yazmadığı için tek başına yetmiyor (BL-366'ya ek: onboarding kök birim + 
+ilk yöneticinin pozisyonu).
 
 **EK (CT, 2026-09-11):** Aynı veri eksiği DCP-005 Adım 2'nin (BL-369) canlı kanıtını da engelliyor — `CreateTaskItemHandler` organizasyon
 birimini alıntı dondurmadan ÖNCE çözer (`:208-219` vs `:331`), dev kiracısında birim olmadığı için görev hiç açılamıyor. Kontrol turu için karar
