@@ -4721,7 +4721,18 @@ kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi 
 
 **Canlı bildirim: "kişi kendine görev açamıyor" — kanıt bekliyor**
 
-DURUM: AÇIK · KANIT BEKLİYOR · SAHİP: sahip (ortam · kullanıcı · tam hata mesajı) · KAYIT: 2026-09-10
+DURUM: AÇIK · DEV'DE YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla) · SAHİP: sahip (veri) + ürün kararı · KAYIT: 2026-09-10
+
+**Yeniden üretim:** Görev Merkezi → + Yeni → Hızlı görev → Kime: Kendim → Oluştur → `POST /Tasks/api` 400, ekranda
+"Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi
+tanımlamasını isteyin." (`ORGANIZATION_UNIT_UNRESOLVED`). Sebep veri: dev kiracısında `organization_units` 0, `positions` 0,
+`position_assignments` 0 (2026-09-10 tohum temizliğinden sonra) → `CreateTaskItemHandler` basamaklı geri düşüşü (istek → pozisyonun birimi
+→ kök birim) hiçbir yerde birim bulamıyor. Kod kural gereği davranıyor (pack §12 K6: her görevin birimi olur, uydurulmaz). Canlıda aynı
+mesaj görülüyorsa o kiracıda ya kullanıcının pozisyonu yok ya da aktif kök birim yok — kontrol turunda bakılacak.
+
+**Ürün sorusu (BL-366):** organizasyon yapısı kurulmamış bir kiracıda görev açmak tümden kilitli mi kalmalı? Öneri: kiracı
+kurulumu (onboarding) bir varsayılan kök birim ("Şirket") oluştursun; böylece pozisyonsuz kullanıcı kendine görev açabilir, başkasına
+atama yine pozisyon ister (BL-356).
 
 Testlerde kendine açma 201 (`TaskAssignmentWriteGuardHttpTests.A_task_for_MYSELF_is_201_without_assign`);
 canlıdaki kod `01bc0915`'i içermiyor. Koddaki tek aday: pozisyonsuz kullanıcının görevi kök birime düşer
@@ -4859,3 +4870,19 @@ fixture ya da sağlayıcı üretmiyor. `related`/`relatedRecords` yakın-kaçı�
 
     grep -n "hasCap(item, 'compliance')\|hasCap(item, 'approvalChain')" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
     grep -n "'compliance'\|'approvalChain'" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js
+
+### BL-366
+
+**Kiracı kurulumu kök organizasyon birimi oluşturmuyor — yapısız kiracıda görev ve toplantı açılamaz**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-11
+
+Görev oluşturma her göreve bir birim ister (`CreateTaskItemHandler` basamağı: istek → atananın pozisyon birimi → aktif kök birim →
+`ORGANIZATION_UNIT_UNRESOLVED`). Toplantı düzenleyeni ve katılımcıları aktif pozisyon ister (MOD-0357 D2). Kiracı oluşturma (Platform
+onboarding, bkz. `project_platform_tenant_onboarding_gaps`) hiçbir organizasyon kaydı yaratmıyor → yeni kiracıda yönetici bile kendine görev
+açamaz (BL-358 dev yeniden üretimi: 0 birim / 0 pozisyon). Öneri: onboarding tek bir aktif kök birim (tüzel kişiliğe bağlı, kod `ROOT`/
+ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD-0288). SAP'ta şirket kodu ve kök org birimi kurulumun parçasıdır.
+
+**Ölçüm komutu:**
+
+    mongosh "mongodb://localhost:27017/diten_personalization_dev" --quiet --eval 'print(db.organization_units.countDocuments({}), db.positions.countDocuments({}), db.position_assignments.countDocuments({}))'
