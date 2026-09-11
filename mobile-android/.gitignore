@@ -1,0 +1,10 @@
+# Android build & IDE outputs (belt-and-braces on top of DitenERP/.gitignore).
+.DS_Store
+**/build/
+**/.gradle/
+**/.kotlin/
+**/local.properties
+**/*.iml
+**/.idea/
+**/.cxx/
+**/.externalNativeBuild/

@@ -1,0 +1,38 @@
+name: mobile-android
+
+on:
+  push:
+    paths:
+      - 'mobile-android/**'
+      - '.github/workflows/mobile-android.yml'
+  pull_request:
+    paths:
+      - 'mobile-android/**'
+      - '.github/workflows/mobile-android.yml'
+
+concurrency:
+  group: mobile-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & verify (Android)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK (launcher)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # The Gradle daemon-JVM toolchain (gradle-daemon-jvm.properties -> JDK 25)
+      # is auto-provisioned via the foojay resolver on first invocation.
+      - name: ktlint, detekt, unit tests, debug + release APKs
+        working-directory: mobile-android/DitenERP
+        run: ./gradlew --no-daemon ktlintCheck detekt testDebugUnitTest assembleDebug assembleRelease
