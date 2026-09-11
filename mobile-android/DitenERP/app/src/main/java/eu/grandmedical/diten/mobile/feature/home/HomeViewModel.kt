@@ -40,6 +40,9 @@ class HomeViewModel @Inject constructor(
 
     init {
         syncScheduler.enqueuePeriodicSync()
+        // Also kick an immediate one-shot pass so records left PENDING from an
+        // offline session are pushed as soon as the user reaches Home.
+        syncScheduler.enqueueOneTimeSync()
         observeSession()
     }
 

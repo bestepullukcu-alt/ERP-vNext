@@ -36,9 +36,11 @@ class SyncScheduler @Inject constructor(
             TimeUnit.MINUTES,
         ).setConstraints(connectedConstraints()).build()
 
+        // UPDATE (not KEEP) so a changed schedule/constraint on a new app version
+        // replaces the persisted request instead of being ignored.
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             PERIODIC_WORK_NAME,
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request,
         )
     }
@@ -49,16 +51,27 @@ class SyncScheduler @Inject constructor(
             .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             .build()
 
+        // REPLACE (not KEEP) so "sync now" always applies the latest request and a
+        // stale/blocked prior request can never suppress a fresh push.
         WorkManager.getInstance(context).enqueueUniqueWork(
             ONE_TIME_WORK_NAME,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.REPLACE,
             request,
         )
     }
 
+    // We intentionally do NOT gate the worker on WorkManager's NetworkType.CONNECTED.
+    // That constraint requires the OS to report a *validated* internet connection,
+    // which yields false negatives in some environments (e.g. emulators whose WiFi
+    // never passes the internet-validation probe) — there the worker is enqueued but
+    // never dispatched, so nothing ever syncs. Instead the sync attempt itself is the
+    // connectivity test: the network layer maps an unreachable server to
+    // NetworkError.Connectivity, the SyncHandler returns Retry, and the row stays
+    // PENDING for the next pass. This makes offline-first robust without depending on
+    // the OS's network-validation signal.
     private fun connectedConstraints(): Constraints =
         Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
             .build()
 
     companion object {

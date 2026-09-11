@@ -39,6 +39,13 @@ object NetworkModule {
         Json {
             ignoreUnknownKeys = true
             explicitNulls = false
+            // Serialize properties even when they equal their default value. Without
+            // this, request DTOs silently omit fields like sourceContractVersion or
+            // the readiness state ints whenever they match the Kotlin default, so the
+            // backend rejects the create ("SourceContractVersion is required.") and the
+            // row is marked FAILED. Sending the full payload keeps create requests
+            // valid across every feature module.
+            encodeDefaults = true
         }
 
     @Provides
