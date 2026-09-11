@@ -1,5 +1,6 @@
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -371,6 +372,71 @@ public sealed class InternalPermissionsControllerTests
         Assert.IsType<UnauthorizedObjectResult>(result);
     }
 
+    // BL-359 — MOD-0117-FU01: wired against the REAL FullCatalogPermissionGrantService (not the fake) so this
+    // proves the create AND reactivate sync paths never auto-grant ppm.portfolios.assign-owner to SuperAdmin,
+    // even though the role is genuinely available and would receive any other first-time/reactivated permission.
+    [Fact]
+    public async Task Create_and_reactivate_sync_never_auto_grant_explicit_grant_only_permission_to_full_catalog_role()
+    {
+        var repo = new FakePermissionRepository();
+        var rolePerms = new WorkingRolePermissionRepository();
+        var realGrantService = new FullCatalogPermissionGrantService(
+            new WorkingRoleRepository(), rolePerms, NullLogger<FullCatalogPermissionGrantService>.Instance);
+        var controller = Build(repo, authorized: true, realGrantService, rolePerms);
+
+        var created = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "ppm.portfolios.assign-owner", "Assign Owner", null), CancellationToken.None);
+        Assert.Equal("created",
+            Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(created).Value).Status);
+        Assert.Empty(rolePerms.Assigned); // create path: no auto-grant
+
+        Assert.IsType<NoContentResult>(await controller.Delete("ppm.portfolios.assign-owner", CancellationToken.None));
+
+        var reactivated = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "ppm.portfolios.assign-owner", "Assign Owner again", null), CancellationToken.None);
+        Assert.Equal("reactivated",
+            Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(reactivated).Value).Status);
+        Assert.Empty(rolePerms.Assigned); // reactivate path: still no auto-grant
+    }
+
+    private sealed class WorkingRoleRepository : IRoleRepository
+    {
+        private readonly Role _superAdmin = new("SuperAdmin", "Super Administrator", null,
+            Guid.Parse("00000000-0000-0000-0000-000000000001"));
+
+        public Task<Role?> GetByNameAndTenantAsync(string name, Guid tenantId, CancellationToken ct) =>
+            Task.FromResult(string.Equals(name, "SuperAdmin", StringComparison.Ordinal) ? _superAdmin : null);
+
+        public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    // A genuinely working (non-throwing) rolePermission repository — unlike the file's other FakeRolePermissionRepository,
+    // which throws on AssignAsync/GetByRoleAsync because those tests never exercise the real grant service.
+    private sealed class WorkingRolePermissionRepository : IRolePermissionRepository
+    {
+        public List<RolePermission> Assigned { get; } = [];
+
+        public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<RolePermission>>(Assigned.Where(rp => rp.RoleId == roleId).ToList());
+
+        public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
+        {
+            Assigned.Add(rolePermission);
+            return Task.CompletedTask;
+        }
+
+        public Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct) => Task.FromResult(0L);
+        public Task<IEnumerable<string>> GetPermissionsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+    }
+
     private static InternalPermissionsController Build(
         FakePermissionRepository repo,
         bool authorized,
@@ -395,10 +461,12 @@ public sealed class InternalPermissionsControllerTests
     private sealed class FakeFullCatalogPermissionGrantService : IFullCatalogPermissionGrantService
     {
         public List<Guid> GrantedPermissionIds { get; } = [];
+        public List<string> GrantedPermissionKeys { get; } = [];
 
-        public Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
+        public Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct)
         {
             GrantedPermissionIds.Add(permissionId);
+            GrantedPermissionKeys.Add(permissionKey);
             return Task.CompletedTask;
         }
     }

@@ -510,25 +510,14 @@
     };
 
     /*
-     * A PERSON'S MONOGRAM — the same rule the assignee picker uses (Tasks/form.js personInitials), because a
-     * person has to look like the same person wherever they appear.
+     * A PERSON'S MONOGRAM — the same rule the assignee picker uses, because a person has to look like the same
+     * person wherever they appear.
      *
-     * Two or more words take the first and last initial; a single word takes its first two characters, which is
-     * what keeps "Ayşe" from rendering as a lone "A" beside "AT". Locale-aware upper-casing, so Turkish dotted
-     * and dotless i do not swap places.
-     *
-     * ⚠ The picker's copy still lives in Tasks/form.js — a different bundle with no export seam. Consolidating
-     * them is raised as its own item rather than smuggled into this round; what matters here is that app.js has
-     * ONE algorithm rather than a second improvised one.
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — this file's own copy (the one the
+     * comment just above used to invite consolidating) and Tasks/form.js's original are the same algorithm, so
+     * both now call the one place it is written.
      */
-    const personInitials = (name) => {
-        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
-        if (!words.length) { return '?'; }
-        const raw = words.length > 1
-            ? words[0].charAt(0) + words[words.length - 1].charAt(0)
-            : words[0].slice(0, 2);
-        return raw.toLocaleUpperCase();
-    };
+    const personInitials = (name) => global.DitenPersonPicker.personInitials(name);
 
     /*
      * WHAT AN EVENT SAYS, in the reader's language.
@@ -4399,10 +4388,17 @@
     };
 
 
+    /*
+     * The row markup delegates to shared/diten-related-records.js (WP-WC-SHARED-UI-01, E3) — this section's own
+     * wrapper (sectionHead + .wcn-related-list) stays here; only "one record → one row" moved, unchanged.
+     */
     const renderRelated = (item) => {
-        if (!hasCap(item, 'related') || !(item.related || []).length) { return ''; }
+        if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = item.related.map((record) => `<a class="wcn-related-row" href="${esc(record.link)}"><span class="wcn-related-type">${esc(t(typeKeys[record.type] || 'RelatedTypeDocument'))}</span><span><strong>${esc(record.title)}</strong><small>${esc(record.id)}</small></span><i class="bx bx-chevron-right"></i></a>`).join('');
+        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+            esc,
+            resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
+        });
         return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-link', 'RelatedRecordsTitle')}<div class="wcn-related-list">${rows}</div></section>`;
     };
 
@@ -7706,84 +7702,36 @@
      * so it renders (the reader still gets to answer the question) and the console says why it looks wrong.
      */
     /*
-     * ── SELECT2 INSIDE A DIALOG (2026-08-24, A2 job 4) ────────────────────────────────────────────────────
+     * ── SELECT2 INSIDE A DIALOG (2026-08-24, A2 job 4; delegated 2026-09-11, WP-WC-SHARED-UI-01 M2b) ────────
      *
-     * The rest of this product picks from a select2; two dialog selects were native `<select>`s. This binds
-     * them with the SAME configuration `mountPanelSelect2` uses — no second wrapper, no new options object.
-     *
-     * ⚠⚠ `dropdownParent` IS THE POPUP, AND THAT IS THE WHOLE POINT.
-     *
-     * select2's default parent is `<body>`, where its list lands at the library's own z-index. That is exactly
-     * how flatpickr's calendar shipped BEHIND this dialog earlier in this session — calendar 1074, SweetAlert
-     * 1090 — and every click on a day reached the page behind. It passed every test and survived days.
-     * Parenting the list INSIDE the popup removes the stacking question rather than answering it with a number:
-     * a descendant cannot be behind its ancestor.
-     *
-     * ⚠ THE `<select>` STAYS A DIRECT CHILD of whatever held it. select2 hides the original in place and
-     * inserts `.select2-container` as its SIBLING, so `Swal.getInput()` (which walks the popup's fixed slot
-     * list) still finds `.swal2-select`. This is measured, not assumed — a wrapper around a dialog input is
-     * the defect that cost this session a whole round.
+     * Delegates to shared/diten-dialog.js's own `bindDialogSelect2` — the SAME dropdownParent-into-the-popup
+     * fix this file worked out first (that file's own top comment carries the full "why", including the
+     * flatpickr-behind-the-dialog measurement that made the fix non-negotiable). This module keeps its OWN
+     * pinned class names (`wcn-dialog-select`/`wcn-dialog-select-dropdown`, styled in backbone-custom.css)
+     * by passing them as options — a shared component does not reach into a module's own CSS hook.
      */
-    const bindDialogSelect2 = (element, popup) => {
-        const jq = global.jQuery;
-        if (!element || !jq || !jq.fn || !jq.fn.select2) { return false; }
-        const $s = jq(element);
-        if ($s.hasClass('select2-hidden-accessible')) { return true; }
-        /*
-         * ⚠ NO `placeholder` KEY UNLESS THERE IS A PLACEHOLDER — MEASURED, and it cost a real sentence.
-         *
-         * Passing `placeholder: ''` still switches select2's placeholder decorator ON, and that decorator
-         * treats the first option with an EMPTY VALUE as the placeholder and renders nothing for it. The
-         * waiting-on picker's first option is not a placeholder at all: "Belirli bir kişi değil" is a REAL
-         * CHOICE (this file's own comment says so), and select2 blanked it — the control opened showing an
-         * empty box where the native select had shown the words.
-         */
-        /*
-         * ⚠ `selectionCssClass` DOES NOTHING ON THIS SELECT2 BUILD — MEASURED, and it shipped a visible defect.
-         *
-         * It was passed as `'form-select'` so the control would wear the product's field styling. The class
-         * never reached the element: the rendered node measured `class="select2-selection
-         * select2-selection--single"` with NO `form-select`, and its text came out at **18px** beside a
-         * textarea, a label and a page full of controls at **15px** — which is what the owner photographed.
-         * (`selectionCssClass` is a 4.1 option; this bundle ignores unknown keys silently.)
-         *
-         * `containerCssClass` IS honoured here, so the hook is a real class and the styling lives in
-         * `backbone-custom.css` under `.wcn-dialog-select` — which is also where it belongs (FG-003), and how
-         * this product already styles select2 on its other surfaces (the filter chips do the same).
-         */
-        const config = {
-            dropdownParent: jq(popup || element.closest('.swal2-popup') || document.body),
+    const bindDialogSelect2 = (element, popup) => (global.DitenDialog
+        ? global.DitenDialog.bindDialogSelect2(element, popup, {
             containerCssClass: 'wcn-dialog-select',
-            dropdownCssClass: 'wcn-dialog-select-dropdown',
-            minimumResultsForSearch: 10,
-            width: '100%',
-            allowClear: false
-        };
-        const declared = String($s.data('placeholder') || '');
-        if (declared) { config.placeholder = declared; }
-        $s.select2(config);
-        return true;
-    };
+            dropdownCssClass: 'wcn-dialog-select-dropdown'
+        })
+        : false);
 
-    const dialogLook = (options) => {
-        if (typeof global.DitenDialogAppearance !== 'function') {
-            console.error('[WorkCenterNext] window.DitenDialogAppearance is unavailable (is _GlobalConfirmation loaded?).');
-            return {};
-        }
-        return global.DitenDialogAppearance(options);
-    };
+    // Delegates to shared/diten-dialog.js (WP-WC-SHARED-UI-01 M2b) — the same appearance-package reader this
+    // file used to keep as its own copy.
+    const dialogLook = (options) => (global.DitenDialog ? global.DitenDialog.dialogLook(options) : {});
     /*
      * THE ICON, for a dialog that cannot go through `showConfirm`. Read from the published builder — the same
      * one the shared confirm uses — so the circle, its tint and the glyph cannot become a second design here.
+     *
+     * Delegates to shared/diten-dialog.js (WP-WC-SHARED-UI-01, E1) — like `dialogLook` and `bindDialogSelect2`
+     * just above, now that WP-WC-SHARED-UI-01 M2b retired their own local bodies too.
      */
-    const dialogIcon = (type, glyph) => (typeof global.DitenDialogAppearance === 'function'
-        && typeof global.DitenDialogAppearance.iconHtml === 'function'
-        ? global.DitenDialogAppearance.iconHtml(type, glyph)
+    const dialogIcon = (type, glyph) => (global.DitenDialog
+        ? global.DitenDialog.dialogIcon(type, glyph)
         : '');
     // The class the product's dialog DESCRIPTION wears — 13px secondary copy, read from the same one place.
-    const dialogDescriptionClass = () => (typeof global.DitenDialogAppearance === 'function'
-        ? global.DitenDialogAppearance.description
-        : '');
+    const dialogDescriptionClass = () => (global.DitenDialog ? global.DitenDialog.dialogDescriptionClass() : '');
 
     const sharedConfirm = (options) => {
         const confirm = global.showConfirm;

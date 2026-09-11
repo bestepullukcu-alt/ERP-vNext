@@ -131,6 +131,7 @@ describe("MOD-0024 module-record field — the whole round trip", () => {
     stubJQuery();
     delete global.TaskForm;
     delete global.TasksApi;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     loadScript("wwwroot/assets/js/Tasks/api.js");
     loadScript("wwwroot/assets/js/Tasks/form-page.js");

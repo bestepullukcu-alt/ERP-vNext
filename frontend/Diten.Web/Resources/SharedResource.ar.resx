@@ -514,6 +514,7 @@
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>الإدارة</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>تمكين المطورين</value></data>
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>إدارة المستندات</value></data>
+  <data name="Nav.Domain.MANAGEMENTGOVERNANCE" xml:space="preserve"><value>الإدارة والحوكمة</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>إدارة البيانات الرئيسية</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>الخدمات المشتركة للمنصة</value></data>
   <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>تقويم العمل</value></data>
@@ -528,6 +529,7 @@
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>المؤسسة</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>إعدادات المهام</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>سير العمل</value></data>
+  <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>المستخدمون</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>الأدوار</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>أذونات الأدوار</value></data>
@@ -793,6 +795,8 @@
   <data name="Nav.Page.INBOX" xml:space="preserve"><value>صندوق الوارد</value></data>
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>تجاوز</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
+  <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
 </root>

@@ -24,6 +24,8 @@ const path = require("path");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+// WP-WC-SHARED-UI-01 M2b (2026-09-11) — dialogLook's body now lives here; app.js delegates to it.
+const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
 const VIEW = fs.readFileSync(web("Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
 const CSS = fs.readFileSync(web("wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
 const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
@@ -165,7 +167,11 @@ describe("eight dialogs, four moved and four dressed", () => {
   });
 
   it("reads the package instead of copying it", () => {
-    expect(APP).toContain("global.DitenDialogAppearance(options)");
+    // WP-WC-SHARED-UI-01 M2b — app.js's own dialogLook is a one-line delegation now; the literal read of the
+    // package lives in shared/diten-dialog.js.
+    expect(SHARED).toContain("global.DitenDialogAppearance(options)");
+    expect(APP, "app.js rebuilt dialogLook's own body instead of delegating to the shared one")
+      .toContain("DitenDialog.dialogLook(options)");
     expect(APP, "the module started writing its own dialog classes")
       .not.toContain("rounded-4 shadow-lg");
   });
@@ -192,10 +198,13 @@ describe("eight dialogs, four moved and four dressed", () => {
     const callers = sourceFiles().filter((f) => f.endsWith(".js") && CALL.test(fs.readFileSync(f, "utf8")));
     expect(callers.length, "nobody calls the shared confirm — the scan is broken").toBeGreaterThan(20);
 
-    // THE RULE: `inputOptions` is opt-in, so no caller outside this module may be passing it.
+    // THE RULE: `inputOptions` is opt-in, so only a caller that names it may pass it.
+    // WP-WC-SHARED-UI-01 (M2) added the second one: Meetings' reassign-organizer dialog, modeled directly on
+    // this module's own `openCreateInSource` (a select seeded through `didOpen`, same as this one).
     const passing = callers.filter((f) => /inputOptions/.test(fs.readFileSync(f, "utf8")));
-    expect(passing.map((f) => path.relative(repoRoot, f)),
-      "a caller outside WorkCenterNext started passing inputOptions").toEqual([
+    expect(passing.map((f) => path.relative(repoRoot, f)).sort(),
+      "an unnamed caller started passing inputOptions").toEqual([
+      "frontend/Diten.Web/wwwroot/assets/js/Meetings/form.js",
       "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js"
     ]);
   });

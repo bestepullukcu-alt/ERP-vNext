@@ -142,6 +142,7 @@ describe("select2 covers the generated controls too", () => {
     global.$ = jq;
     global.jQuery = jq;
 
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     return { window: global, enhanced, settings };
   };

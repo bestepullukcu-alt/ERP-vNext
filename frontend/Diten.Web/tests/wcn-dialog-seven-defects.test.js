@@ -14,6 +14,8 @@ const path = require("path");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+// WP-WC-SHARED-UI-01 M2b (2026-09-11) — bindDialogSelect2's mechanism now lives here; app.js delegates to it.
+const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
 const VIEW = fs.readFileSync(web("Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
 const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
 const resx = (lang) => fs.readFileSync(
@@ -157,44 +159,55 @@ describe("the icon is a thing a raw dialog can have too", () => {
 });
 
 describe("two dialog selects become the product's own picker", () => {
-  it("binds both through one binder, with the list parented INTO the popup", () => {
+  it("delegates to the shared binder, with the list parented INTO the popup", () => {
     /*
-     * MUTATION GUARD #3: remove a `bindDialogSelect2` call and this goes red.
+     * MUTATION GUARD #3: remove a `bindDialogSelect2` call, or the delegation, and this goes red.
      *
      * ⚠⚠ `dropdownParent` IS THE Z-INDEX FIX, and it is a structural one. flatpickr's calendar shipped BEHIND
      * this same dialog earlier in this session (1074 against 1090) and every click reached the page behind it.
      * A descendant cannot be behind its ancestor, so the question is removed rather than answered with a number.
+     * WP-WC-SHARED-UI-01 M2b (2026-09-11) moved the mechanism itself into shared/diten-dialog.js; app.js keeps
+     * declaring `bindDialogSelect2` (so its four call sites below stay unchanged) but now delegates to it.
      */
     expect(APP).toContain("const bindDialogSelect2 =");
+    expect(APP, "app.js rebuilt its own binder body instead of delegating to the shared one")
+      .toContain("DitenDialog.bindDialogSelect2(");
     /*
-     * FOUR CALL SITES: the module picker, the assignee picker, the waiting-on picker, and — since the closure
-     * outcome dictionary — the outcome picker. (The declaration reads `const bindDialogSelect2 = (` and is not
-     * one of them.)
+     * FOUR REAL CALL SITES: the module picker, the assignee picker, the waiting-on picker, and — since the
+     * closure outcome dictionary — the outcome picker. (The delegating wrapper's own internal call to
+     * `DitenDialog.bindDialogSelect2(` is excluded by the negative lookbehind — it is not a fifth dialog.)
      *
      * ⚠ THREE UNTIL THE CLOSURE SLICE. The outcome picker is a dialog select like the other three, so it takes
      * the same binder rather than a native `<select>` — which is the whole reason this count is pinned: the
      * fourth one would otherwise have shipped with its list at the library's z-index, behind the dialog.
      */
-    expect((APP.match(/bindDialogSelect2\(/g) || []).length,
-      "a dialog select lost its picker").toBe(4);
-    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2600);
+    const realCallSites = (APP.match(/(?<!DitenDialog\.)\bbindDialogSelect2\(/g) || []).length;
+    expect(realCallSites, "a dialog select lost its picker").toBe(4);
+
+    // The mechanism itself, read from shared/diten-dialog.js — not app.js, which no longer declares it.
+    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2600);
     expect(fn, "the list is parented to the body again — it will open behind the dialog")
       .toContain("dropdownParent");
     expect(fn).toContain("closest('.swal2-popup')");
+
     /*
      * ⚠ WAS `selectionCssClass: 'form-select'` — REMOVED 2026-08-24 because it did NOTHING. That key belongs to
      * a newer select2 than this app bundles, and unknown keys are dropped in silence: the DOM read back
      * `class="select2-selection select2-selection--single"` with no `form-select`, and the control's text
      * rendered at 18px against the product's 15px. The hook that actually lands is `containerCssClass`, and the
      * sizing lives in the stylesheet (FG-003). See the rhythm test file for the full guard.
+     *
+     * app.js still asks for its OWN pinned class name — now as the option it hands the shared binder, since the
+     * shared module's own default is a DIFFERENT class (`diten-dialog-select`, for every other consumer).
      */
-    expect(fn).toContain("containerCssClass: 'wcn-dialog-select'");
+    const wrapper = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 400);
+    expect(wrapper).toContain("containerCssClass: 'wcn-dialog-select'");
   });
 
   it("never wraps the dialog's own input slot", () => {
     // select2 hides the original in place and inserts its container as a SIBLING, so `Swal.getInput()` still
     // finds `.swal2-select`. Asserted live in the browser too — this pins the intent in code.
-    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2600);
+    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2600);
     expect(fn).not.toContain("wrap(");
     expect(fn).not.toContain("diten-field");
   });

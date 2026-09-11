@@ -193,6 +193,7 @@ describe("every field says what goes in it", () => {
 describe("a hidden field contributes no value", () => {
   const loadStack = () => {
     ["TaskForm", "WcnQuickCreate"].forEach((k) => { delete global[k]; });
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
   };
 

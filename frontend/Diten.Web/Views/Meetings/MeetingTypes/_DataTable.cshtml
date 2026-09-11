@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Meetings.MeetingTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-meeting-types" data-dt-standard="v2" class="datatables-meeting-types table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="all">@Localizer["Name"]</th>
+                    <th>@Localizer["IsQualityRecord"]</th>
+                    <th>@Localizer["RequiresESignature"]</th>
+                    <th>@Localizer["AttendanceMandatory"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
