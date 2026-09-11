@@ -4723,6 +4723,10 @@ kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi 
 
 DURUM: AÇIK · DEV'DE YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla) · SAHİP: sahip (veri) + ürün kararı · KAYIT: 2026-09-10
 
+**EK (CT, 2026-09-11):** Aynı veri eksiği DCP-005 Adım 2'nin (BL-369) canlı kanıtını da engelliyor — `CreateTaskItemHandler` organizasyon
+birimini alıntı dondurmadan ÖNCE çözer (`:208-219` vs `:331`), dev kiracısında birim olmadığı için görev hiç açılamıyor. Kontrol turu için karar
+(elle MOD-0288 ekranları vs tek seferlik `DevSeeds:OrganizationPositions=true`) bu yüzden iki işi birden açıyor.
+
 **Yeniden üretim:** Görev Merkezi → + Yeni → Hızlı görev → Kime: Kendim → Oluştur → `POST /Tasks/api` 400, ekranda
 "Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi
 tanımlamasını isteyin." (`ORGANIZATION_UNIT_UNRESOLVED`). Sebep veri: dev kiracısında `organization_units` 0, `positions` 0,
@@ -4743,8 +4747,17 @@ Tahmin değil ölçüm için ekran görüntüsü + kullanıcı + ortam gerekiyor
 
 **PPM `assign-owner` izni otomatik grant yollarından dışlanmıyor — altyapı (AuthService) işi**
 
-DURUM: AÇIK · KARAR VERİLDİ (sahip, 2026-09-11 — doğrudan onay): assign-owner hiçbir otomatik yolla verilmez — SuperAdmin tam katalog, kiracı Admin
+DURUM: KAPALI (CT, 2026-09-11, `0bf3b283`) · KARAR VERİLDİ (sahip, 2026-09-11 — doğrudan onay): assign-owner hiçbir otomatik yolla verilmez — SuperAdmin tam katalog, kiracı Admin
 modül eşitlemesi, başlangıç rol şablonu dahil; yalnız açık ve yetkili atama · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10
+
+**KAPANIŞ (CT, 2026-09-11, commit `0bf3b283`, dal `feature/mg/mod-0357-management-review-cadence`):** WP-INFRA-PPM-ASSIGN-OWNER-01.
+Tek liste `Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs` (`ppm.portfolios.assign-owner`); dört otomatik yol onu okur:
+`FullCatalogPermissionGrantService` (imza `permissionKey` aldı), `DefaultRolePermissionTemplate.SelectFor` (SuperAdmin dahil; DataSeeder +
+RoleProvisioningService aynı noktadan geçer), `EntitlementPermissionSyncService.GrantPermissionsToRolesAsync` süzgeci, `InternalPermissionsController`
+create/reactivate. Resolver dokunulmadı (anahtar = açık rol grant'i ∩ onaylı PPM entitlement). Platform manifesti: PORTFOLIOS sayfasına `ASSIGN_OWNER`
+RowAction (25 anahtar). Kanıt: liste boşaltılınca 5 test kırmızı (dört yol); Auth 667/670 (3 kırmızı önceden: CRM knowledge baseline-CSV, user-lookup DTO);
+paylaşımlı yerel Mongo'da katalog 429, anahtarı tutan rol 0, SuperAdmin bu anahtar dışında her aktif anahtarı tutuyor, kiracı Admin 77 değişmedi.
+Yayım girdisi FU01 SHA `4a10cd92` (`git show`). Açık: Codex'in "named-human / assignable target" ve SOP-0029 kayıt erişimi (PPM tarafı, FU01 kapsamı dışı).
 
 **Yetki girdisi kuralı (CT, 2026-09-11):** PPM'nin push edilmiş amendment SHA'sı (`git show <sha>:<pack yolu>`) dar Auth işinin
 (dışlama mekanizması + BL-360) girdisi olarak kabul edilir; anahtarın kataloğa/manifeste YAYIMI ise üst paketin
@@ -4766,7 +4779,13 @@ BL-360 aynı WP'de. Auth, PPM için korumalı yol; iş CT'nin altyapı kulvarın
 
 **PPM toplu-grant kapısında harf tutarsızlığı: `Applies` "PPM" (Ordinal) sorulur, kod sonra küçültülür**
 
-DURUM: AÇIK · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPALI (CT, 2026-09-11, `0bf3b283`) · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+
+**KAPANIŞ (CT, 2026-09-11, commit `0bf3b283`):** Önerilen düzeltmenin ilk yarısı uygulandı, ikinci yarısı bilinçli olarak DEĞİL: `Applies`
+(Ordinal "PPM") resolver'a bakan yüzey olduğu için harf duyarsız yapılmadı; yerine dar `IsPpmModuleCodeAnyCase` eklendi ve yalnız
+`EntitlementPermissionSyncService`'in üç kapısında (`GrantModuleAsync`, `GrantModuleWithKeysAsync`, `RevokeModuleAsync`) kullanıldı. Resolver süzme
+matrisi testle birebir. CT bulgusu: ajanın grant-tarafı "PPM/ppm/Ppm" teorileri boş kanıttı (paylaşılan test kataloğunda PPM izni yoktu; iki kapı
+Ordinal'e döndürülünce 38 test yeşil kaldı) → katalog PPM izinleriyle genişletildi, aynı sabotaj 4 vaka kırmızı.
 
 `PpmEntitlementPermissionPolicy.Applies` (`:16-17`) `StringComparison.Ordinal` ile `"PPM"` arar.
 `EntitlementPermissionSyncService` (`:55,:75,:185`) kapıyı `NormalizeModuleCode` (trim + lowercase,
@@ -4953,6 +4972,22 @@ DtDefaults 401'i hata olarak mı loglamalı, sessiz tekrar mı? Görev Merkezi v
 **"Kontrollü Dokümanlar" sayfası (`/Tasks/DocumentList`) ve CSV kütük araması emekli edilecek — taşıma canlıda çalıştıktan SONRA**
 
 DURUM: AÇIK · KARAR: sahip + DM geliştiricisi, 2026-09-10 (G1 = (a), WP-0029-EFFECTIVENESS-P2.md:150) · SAHİP: taşımayı yapan (DM geliştiricisi) · KAYIT: 2026-09-11
+
+**İLERLEME (CT, 2026-09-11):** Devir planı **Adım 2 teslim edildi** — WP-PSS-DCP005-STEP2-CITATION-REPOINT-01, dal `feature/pss/dcp-005-citation-repoint`
+(main `11befc07` üzerinden, commit `ac2a8d54`, worktree `.claude/worktrees/pss+dcp-005-citation-repoint`, sahip push edecek, kendi PR'ı).
+Görev formu seçicisi `GET api/v1/tasks/lookups/document-citations` → `IControlledDocumentCitationPort`; freezer yeni alıntıları kütükten dondurur
+(`ListVersionId` nullable, eski CSV alıntıları olduğu gibi); görev türü yöneten-doküman okuması porta; CSV sayfası ve içe aktarma KALDI (bu maddenin
+emekliliği hâlâ canlı sonrası). **CT düzeltmesi:** WP'nin AC4'ü "engelli doküman durumu donar, görev açılır" demişti — ana daldaki kural geri alındı:
+engelli (Superseded/Retired/Draft…) doküman alıntı anında `DOCUMENT_REFERENCE_BLOCKED` ile reddedilir, ölçüt kütüğün kendi `Citable` yargısı
+(Effective ∨ UnderRevision); ekran ile API tutarlı, Adım 3 (`/active`, Kural 4/G3) ayrı. Sabotaj: `Citable` kontrolü kaldırılınca 1 test kırmızı.
+
+**⚠ CANLIYA ÇIKIŞ KAPISI (CT canlı ölçümü, dev, 2026-09-11):** uç zinciri çalışıyor (Web proxy → gateway → Platform → port, 200) ama
+`document_management_master_register` 358 satırın **tümü kiracı `97c59330-dbc4-4665-b29c-0c26dbb5cc93`'te**, oturumun kiracısı DefaultTenant
+(`…0001`) → seçici boş; ayrıca yaşam döngüsü dağılımı **Draft 350 · InReview 1 · Retired 7 → alıntılanabilir 0/358**. CSV listesi aynı belgeleri
+`linkableInErp=true` sayıyordu. Sonuç: Adım 2 birleşse bile **kütük gerçek yaşam döngüsü durumlarıyla ve doğru kiracıda tohumlanmadan
+(Adım 0 register tohumu — WP-0029:150 "bizim sıradaki WP", DM geliştiricisi) hiçbir doküman alıntılanamaz.** Sıra: Adım 0 → Adım 2 merge → canlı
+doğrulama → bu maddenin emekliliği. Dondurulmuş alıntı kanıtı yerelde alınamadı: `task_items` 0 kayıt ve BL-358 (org birimi yok) freezer'dan önce
+kesiyor.
 
 **Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
 `GET /Tasks/api/document-list/search`) geçicidir; kütük CSV UID'lerini sahiplenir (`PermanentUid = CSV uid`), görev formu `by="uid"` ile
