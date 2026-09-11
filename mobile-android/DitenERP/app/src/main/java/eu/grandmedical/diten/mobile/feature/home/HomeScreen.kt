@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.hilt.navigation.compose.hiltViewModel
+import eu.grandmedical.diten.mobile.core.common.navigation.FeatureEntry
 import eu.grandmedical.diten.mobile.core.design.component.DitenListRow
 import eu.grandmedical.diten.mobile.core.design.component.DitenScaffold
 import eu.grandmedical.diten.mobile.core.design.component.EmptyState
@@ -107,14 +108,17 @@ private fun HomeScreen(
             }
             if (state.modules.isEmpty()) {
                 item {
-                    EmptyState(message = "Erişebileceğiniz bir modül bulunmuyor.")
+                    // No installed feature is permitted for this user (or none is
+                    // installed yet). The menu reflects exactly the installed +
+                    // permitted features, so this is the genuine empty state.
+                    EmptyState(message = "Yetkili modül yok. Modüller yakında.")
                 }
             } else {
                 items(state.modules, key = { it.key }) { module ->
                     DitenListRow(
                         title = module.title,
-                        subtitle = module.resource,
-                        onClick = { onOpenModule(module.key) },
+                        subtitle = module.requiredPermission ?: module.route,
+                        onClick = { onOpenModule(module.route) },
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
@@ -242,7 +246,20 @@ private fun HomeScreenPreview() {
                 tenantId = "diten",
                 selectedLegalEntityId = "GM-HU",
                 availableLegalEntities = listOf("GM-HU", "GM-DE"),
-                modules = HomeModules.all.take(3),
+                modules = listOf(
+                    FeatureEntry(
+                        key = "applicant-intake",
+                        route = "applicant-intake",
+                        title = "Aday Başvuru Alımı",
+                        requiredPermission = "hcm.applicant-intake",
+                    ),
+                    FeatureEntry(
+                        key = "leave-management",
+                        route = "leave-management",
+                        title = "İzin Yönetimi",
+                        requiredPermission = "hcm.leave-management",
+                    ),
+                ),
                 isLoading = false,
             ),
             onEvent = {},

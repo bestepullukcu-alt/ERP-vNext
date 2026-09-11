@@ -28,12 +28,8 @@ sealed interface DitenDestination : NavRoute {
         override val route: String = "home"
     }
 
-    /** Placeholder feature detail for a tapped module, keyed by its module key. */
-    data object ModuleDetail : DitenDestination {
-        const val ARG_MODULE_KEY: String = "moduleKey"
-        override val route: String = "module/{$ARG_MODULE_KEY}"
-
-        /** Concrete route for a specific [moduleKey]. */
-        fun routeFor(moduleKey: String): String = "module/$moduleKey"
-    }
+    // Feature destinations are no longer declared here: each feature module owns
+    // its own routes and contributes them via a FeatureNavGraph (see AppRoot).
+    // The old `module/{moduleKey}` placeholder route was removed with the static
+    // HomeModules catalogue.
 }

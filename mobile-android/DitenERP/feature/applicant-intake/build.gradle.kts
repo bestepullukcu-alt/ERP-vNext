@@ -70,6 +70,8 @@ tasks.withType<Test>().configureEach {
 
 dependencies {
     implementation(project(":core:common"))
+    // Feature-plugin contract (FeatureNavGraph + re-exported FeatureEntry).
+    implementation(project(":core:feature"))
     implementation(project(":core:design"))
     implementation(project(":core:database"))
     implementation(project(":core:network"))

@@ -14,13 +14,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import eu.grandmedical.diten.mobile.core.auth.session.AuthState
-import eu.grandmedical.diten.mobile.feature.applicantintake.presentation.navigation.ApplicantIntakeFeature
-import eu.grandmedical.diten.mobile.feature.applicantintake.presentation.navigation.ApplicantIntakeFeature.registerApplicantIntakeGraph
-import eu.grandmedical.diten.mobile.feature.home.HomeModules
+import eu.grandmedical.diten.mobile.core.feature.FeatureNavGraph
 import eu.grandmedical.diten.mobile.feature.home.HomeRoute
 import eu.grandmedical.diten.mobile.feature.login.LoginRoute
 import eu.grandmedical.diten.mobile.feature.login.MfaRoute
-import eu.grandmedical.diten.mobile.feature.module.ModuleDetailScreen
 
 /**
  * The single-Activity navigation host.
@@ -31,6 +28,12 @@ import eu.grandmedical.diten.mobile.feature.module.ModuleDetailScreen
  * routes back to Login with the whole back stack cleared. Forward navigation into
  * Home is driven by the Login/MFA one-shot effects, so it only happens on an
  * explicit successful login.
+ *
+ * Feature destinations are NOT wired here: after the fixed shell routes
+ * (login/mfa/home) the `NavHost` iterates the injected
+ * `Set<`[FeatureNavGraph]`>` (a Hilt multibinding) and lets each installed
+ * feature register its own destinations. Adding a feature therefore needs zero
+ * edits to this file.
  */
 @Composable
 fun AppRoot(
@@ -38,6 +41,7 @@ fun AppRoot(
 ) {
     val navController = rememberNavController()
     val authState by appViewModel.authState.collectAsState()
+    val featureNavGraphs = appViewModel.featureNavGraphs
 
     val startDestination = remember {
         if (appViewModel.authState.value is AuthState.Authenticated) {
@@ -53,6 +57,8 @@ fun AppRoot(
 
     NavHost(navController = navController, startDestination = startDestination) {
         ditenGraph(navController)
+        // Auto-discovered feature destinations (each contributes via @IntoSet).
+        featureNavGraphs.forEach { graph -> graph.register(this, navController) }
     }
 }
 
@@ -86,7 +92,11 @@ private fun NavController.reactToSession(authState: AuthState) {
     }
 }
 
-/** Declares the shell's destinations. Extracted from [AppRoot] to keep it small. */
+/**
+ * Declares the shell's fixed destinations (login / mfa / home). Feature
+ * destinations are added separately by iterating the injected
+ * [FeatureNavGraph] set — see [AppRoot].
+ */
 private fun NavGraphBuilder.ditenGraph(navController: NavController) {
     val toHomeClearingLogin: () -> Unit = {
         navController.navigate(DitenDestination.Home.route) {
@@ -115,29 +125,9 @@ private fun NavGraphBuilder.ditenGraph(navController: NavController) {
 
     composable(DitenDestination.Home.route) {
         HomeRoute(
-            onOpenModule = { moduleKey ->
-                // The Applicant Intake module now navigates into the real feature
-                // (WP-MOBILE-M1-PILOT); every other module still shows the placeholder.
-                if (moduleKey == HomeModules.APPLICANT_INTAKE_KEY) {
-                    navController.navigate(ApplicantIntakeFeature.ROUTE)
-                } else {
-                    navController.navigate(DitenDestination.ModuleDetail.routeFor(moduleKey))
-                }
-            },
+            // The menu carries each feature's start-destination route directly, so
+            // the shell just navigates to it — no per-feature branching.
+            onOpenModule = { route -> navController.navigate(route) },
         )
-    }
-
-    // The Applicant Intake feature's list -> create / detail sub-graph.
-    registerApplicantIntakeGraph(navController)
-
-    composable(
-        route = DitenDestination.ModuleDetail.route,
-        arguments = listOf(
-            navArgument(DitenDestination.ModuleDetail.ARG_MODULE_KEY) { type = NavType.StringType },
-        ),
-    ) { backStackEntry ->
-        val moduleKey =
-            backStackEntry.arguments?.getString(DitenDestination.ModuleDetail.ARG_MODULE_KEY).orEmpty()
-        ModuleDetailScreen(moduleKey = moduleKey, onBack = { navController.popBackStack() })
     }
 }

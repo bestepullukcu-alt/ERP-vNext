@@ -39,9 +39,14 @@ dependencies {
     implementation(project(":core:auth"))
     implementation(project(":core:design"))
     implementation(project(":core:sync"))
+    // Feature-plugin contract: the shell injects Set<FeatureEntry> (menu) and
+    // Set<FeatureNavGraph> (nav) contributed by feature modules via Hilt.
+    implementation(project(":core:feature"))
 
-    // First real feature module (WP-MOBILE-M1-PILOT). Brings its @IntoSet
-    // SyncHandler onto the app classpath so SyncEngine runs it.
+    // Feature modules are pulled in ONLY to place their @IntoSet contributions
+    // (FeatureEntry + FeatureNavGraph + SyncHandler) on the app classpath. The
+    // shell references NO feature type directly — adding a module needs zero edits
+    // here beyond this one line.
     implementation(project(":feature:applicant-intake"))
 
     implementation(platform(libs.androidx.compose.bom))

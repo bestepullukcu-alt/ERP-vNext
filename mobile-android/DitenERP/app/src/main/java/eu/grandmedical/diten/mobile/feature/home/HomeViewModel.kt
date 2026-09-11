@@ -8,15 +8,21 @@ import eu.grandmedical.diten.mobile.core.auth.session.AuthState
 import eu.grandmedical.diten.mobile.core.auth.session.SessionManager
 import eu.grandmedical.diten.mobile.core.auth.token.EncryptedTokenStore
 import eu.grandmedical.diten.mobile.core.common.mvi.MviViewModel
+import eu.grandmedical.diten.mobile.core.common.navigation.FeatureEntry
 import eu.grandmedical.diten.mobile.core.sync.SyncScheduler
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * Exposes the authenticated session to the dashboard and builds the
- * permission-gated module menu. The permission set is derived from the access
- * token's `permission` claims (decoded via [JwtDecoder]); the session summary is
- * observed from [SessionManager] so a legal-entity switch re-renders live.
+ * permission-gated module menu. The menu is assembled from the installed
+ * features' [FeatureEntry] contributions (injected as a Hilt multibinding —
+ * `Set<@JvmSuppressWildcards FeatureEntry>`), so the shell holds NO static module
+ * list: adding a feature module makes its entry appear here automatically.
+ *
+ * The permission set is derived from the access token's `permission` claims
+ * (decoded via [JwtDecoder]); the session summary is observed from
+ * [SessionManager] so a legal-entity switch re-renders live.
  *
  * On first construction (i.e. the app is authenticated and Home is shown) it
  * enqueues the periodic background sync — [SyncScheduler.enqueuePeriodicSync]
@@ -28,6 +34,7 @@ class HomeViewModel @Inject constructor(
     private val tokenStore: EncryptedTokenStore,
     private val jwtDecoder: JwtDecoder,
     private val authRepository: AuthRepository,
+    private val featureEntries: Set<@JvmSuppressWildcards FeatureEntry>,
     syncScheduler: SyncScheduler,
 ) : MviViewModel<HomeState, HomeEvent, HomeEffect>(HomeState()) {
 
@@ -48,7 +55,7 @@ class HomeViewModel @Inject constructor(
                             selectedLegalEntityId = authState.selectedLegalEntityId,
                             availableLegalEntities = authState.availableLegalEntities,
                             permissions = permissions,
-                            modules = HomeModules.visibleModules(permissions),
+                            modules = HomeMenu.visibleEntries(featureEntries, permissions),
                             isLoading = false,
                         )
                     }
