@@ -4616,3 +4616,216 @@ Required later evidence is pair acceptance and wrong module/key/case/direct-reti
 acceptance and wrong aggregate/operation/case/numeric rejection; enum collision proof preserving 9, 32–35 and
 leaving 36–37 unused; then scoped build/regression evidence. Historical and future test runs must be reported
 separately. P0A readiness is limited to this foundation and does not make the broader §21 lifecycle ready-for-dev.
+
+### 21.13 P1A — Finished Good identity-workflow operation storage — approved bounded code-start (2026-09-11)
+
+This user-approved P1A amendment authorizes only the tenant-scoped storage, immutable admission-snapshot, CAS/lease,
+replay and bounded recovery-discovery foundation for a future Finished Good identity workflow. It is a storage-only
+runtime code-start: it does not approve all P1/P2, start a workflow, apply a terminal decision, mutate a
+`FinishedGood` lifecycle state, activate a worker, or make Finished Good lifecycle ready-for-dev, complete, or live
+accepted. P0A and P-1R evidence remains unchanged.
+
+#### P1A exact runtime/test allow-list
+
+No directory or wildcard authority is implied. A twelfth path is a stop condition and needs a new explicit amendment.
+The eleven exact writable paths are:
+
+1. `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md` — only this §21.13
+   P1A authority and later evidence record.
+2. `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs`
+3. `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FinishedGoodIdentityWorkflowCheckpoint.cs`
+4. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodIdentityWorkflowOperationResults.cs`
+5. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowOperationRepository.cs`
+6. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowTenantPartitionDiscovery.cs`
+7. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs`
+8. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+9. `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs`
+10. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityLifecycleContractTests.cs`
+11. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowStorageMongoTests.cs`
+
+The pre-existing `FinishedGoodCreationAttempt` R1 collection and its `FinishedGood`/`IFinishedGoodRepository`/
+`FinishedGoodRepository` paths are expressly excluded. P1A does not modify Auth, Platform, audit enum/map, API,
+manifest, DI, Program, workflow client/processor/handler/worker, scope coordinator/rollout repository, frontend,
+Gateway, configuration, migration, guard exceptions, a shared test harness, or any business data.
+
+#### P1A frozen storage contract
+
+- `mdm_finished_good_identity_workflow_operations` is a tenant-owned technical operation collection. Its tenant is
+  taken only from trusted server context. It is distinct from the FG creation-attempt collection and is neither a
+  workflow approval nor authority to write a source Finished Good.
+- The first accepted operation atomically race-binds its operation/start-idempotency identity, Finished Good, GSKU,
+  Product Definition Revision, maker, expected Finished Good version, normalized request/fingerprint and immutable
+  admission snapshot. Exact same logical facts replay; every changed fact conflicts. Tombstone and terminal records
+  never release an identity or key for reuse.
+- `FinishedGoodLifecycleAdmissionScopeSnapshot` is typed, versioned and immutable, never an unbounded JSON bag. It
+  binds the tenant, source-product chain and first human-admission facts; it contains at most 200 distinct, non-empty
+  Legal Entity IDs in canonical order plus the required policy/rollout references and integrity fingerprint. It stores
+  neither JWT nor credential. A caller-supplied list is not verified human admission evidence.
+- Missing, malformed or legacy snapshots do not manufacture `GroupWide`, wildcard or `Preparation` fallback under
+  Enforced scope. P1A stores no scope capture/validation handler, and repository test input is not evidence of a
+  verified human admission.
+- Ambiguous insert/update outcomes are success only after exact tenant-scoped persisted read-back proves the immutable
+  facts. Cancellation and programming exceptions propagate. No `ReplaceOne`, upsert, rebind, silent adoption or
+  whole-document overwrite is allowed.
+- Claim/advance is limited by tenant, operation, fingerprint, eligible checkpoint, lease owner, generation and expiry.
+  A stale owner/generation, expired lease, terminal reopen or evidence drift is illegal. The physical Mongo update must
+  check expiry at mutation time using the documented repository/server-time assumption; a caller-provided past
+  `NowUtcTicks` or a cancellation token alone is insufficient proof of a valid lease. A lease is never retained while
+  awaiting a workflow decision, and this local mechanism is not a global Auth revocation guarantee.
+- Every insert, reserve, claim and advance measures the complete BSON document including technical fields against the
+  absolute 1 MiB limit. A reserve-only check or a fixed remaining-byte assumption is insufficient.
+- Temporal fields used for sort/range remain the current scalar representation; P1A adds no global
+  `DateTimeOffset` serializer change or migration. Due-operation and tenant-partition discovery use bounded,
+  deterministic cursors, not an in-memory whole-collection scan. Both discovery surfaces must share exactly the same
+  eligibility semantics and never disclose another tenant's operation contents.
+- `Completed`, manual-reconciliation, `AbandonedBeforeWorkflowStart` and `Superseded` are excluded from automatic
+  discovery. Legacy `AwaitingMakerReplay` is not an active path in the new design; values are not renumbered or
+  silently made actionable.
+
+#### P1A acceptance and evidence gates
+
+Implementation must use the existing test-owned Mongo replica-set fixture, fixed test database and tenant-owned
+cleanup; it must not use application MongoDB at `localhost:27017`, a per-run database, a new harness, Platform schema
+copy, or a Mongo guard exception. Before a later preservation action, run the MDM Release build and non-overlapping
+focused contract/storage tests, reporting discovery/executed/passed/failed/skipped and topology per run without
+claiming old PASS results as fresh evidence.
+
+Required real-Mongo evidence is: unique index and same-key races; different Finished Good/GSKU/maker/scope-fingerprint
+drift rejection; cross-tenant read/write/replay isolation; tombstone/terminal no-reuse; stale owner/generation,
+takeover and expired physical write rejection (including a past caller timestamp); verified ambiguous-write read-back
+with immutable evidence; scalar due-time ordering/range/bounded cursor; exclusion of every terminal/manual/
+abandoned/superseded operation from both discovery surfaces; finite-snapshot max/duplicate/empty-ID/fingerprint
+checks; complete-document BSON limits on reserve and update/claim paths; and tenant-owned cleanup. Existing FG create
+R1, GSKU child-admission and Product Legal Entity Scope regressions must remain covered. Known baseline Mongo guard
+failures are reported as baseline, never converted into a P1A PASS.
+
+The repository-level checkpoint does not prove WorkCenter transport, terminal evidence, background source mutation,
+activation-fence CAS, current tenant status, cancellation evidence, cross-service revocation observation, manifest or
+human authorization. Those contracts, real admission capture and every handler/worker/API surface remain later,
+separately approved slices.
+
+### 21.14 P1A remediation R1 — Control Tower rework contract (2026-09-11)
+
+Control Tower did not accept the initial P1A storage evidence as closure. The earlier `7/7` storage run predates the
+five remediation scenarios below and is historical evidence only; it is not remediation proof. The complete P1A
+working set remains uncommitted at the start of this remediation. This amendment authorizes rework only inside the
+same eleven exact paths listed in §21.13; that list is unchanged, no directory or wildcard is authorized, and any
+twelfth path is a fail-closed stop requiring a new explicit amendment. The pack frontmatter/status, R1/P0A records
+and the broader lifecycle code-start boundary remain unchanged.
+
+The test writer must preserve a RED-before artifact for each defect before the responsible runtime writer applies a
+fix, then execute the same focused behavior as GREEN-after evidence. A test that never reaches the defective
+predicate, weakens the expected result, delays only before calling the method, or substitutes a mock/in-memory store
+does not satisfy this gate. The table below records required observations, not test results; every evidence field is
+`PENDING` until a real command/TRX and inspected runtime diff exist.
+
+| Control Tower defect | Required RED-before observation | Required GREEN-after contract | Guarantee boundary |
+|---|---|---|---|
+| Physical Mongo-evaluated lease expiry | Begin `AdvanceAsync` with a valid lease, pause after the operation has started but before the Mongo update is evaluated, allow the lease to expire, then show that the current update can still mutate checkpoint/version/business facts. A delay wholly before the call is invalid evidence. | The physical update predicate evaluates lease expiry against Mongo server time at update evaluation, while retaining tenant, operation, owner, generation, checkpoint and version fencing. The expired write is rejected and leaves checkpoint/version/business facts unchanged. Claim must use the same scalar-time precision and must never return success with a newly created already-expired lease. | Server-time means the Mongo command/update-filter evaluation boundary only. It is not a claim about commit/ack time, clock-global linearizability or atomic Auth revocation. No production test hook may be added. |
+| Future retry claim eligibility | Persist otherwise claimable operations with `NextAttemptAtUtcTicksV1` in the future and show that the current claim filter can acquire one despite both discovery surfaces treating it as not due. | Tenant discovery, operation discovery and claim share one null/due/future rule: null or due may proceed; future must be rejected even when the lease is absent/expired; once due it may be claimed. Rejection changes no lease, generation or version. | This is local retry eligibility only; it does not activate a worker or promise scheduling latency. |
+| `GroupWide` product policy versus finite human admission | Show that current snapshot validation rejects `Enforced + GroupWide` when a valid finite admitted Legal Entity list is present. Preserve a separate RED case proving empty/missing admission is unsafe. | `ScopeMode.GroupWide` remains the observed product-policy mode while `LegalEntityIds` remains the verified finite human-admission upper bound. `Enforced + GroupWide +` a canonical list of at most 200 distinct non-empty IDs is valid; `Enforced +` empty/missing is fail-closed. Scoped mode and tenant/product/actor bindings remain unchanged. | No wildcard, policy-derived expansion, `Preparation`/legacy inference or authorization is created. Later intersection with current policy may only narrow the admitted set. Capture/evaluator/background authority remains out of scope. |
+| Deterministic snapshot content integrity | Mutate each bound fact while retaining the old syntactically valid 64-hex fingerprint, and show the current format-only check accepts at least one stale fingerprint; separately show any caller-owned list can be mutated after construction if that changes stored meaning. | A versioned, unambiguous canonical encoding deterministically derives the fingerprint from tenant, source identities, admission actor/command, policy/rollout references, observation facts and canonically ordered finite Legal Entity IDs. Construction takes a defensive copy; persisted read-back/replay/claim recomputes and rejects stale, malformed or legacy snapshots. | Content hashing detects drift; it is not an authorization decision, digital signature or cryptographic source-identity attestation. Field boundaries must not rely on ambiguous concatenation. |
+| Actual/full BSON size ceiling | Demonstrate that the current small-document test does not exercise rejection at the 1 MiB boundary, then prove whether a test-owned oversized/unknown-field document can bypass reserve/claim/advance accounting or be silently lost. | Each relevant write preserves unknown BSON fields and proves the complete post-mutation persisted BSON is `<= 1 MiB` under the same atomic/CAS boundary as the write. If valid field limits make the boundary unreachable, calculate and document the maximum serialized valid input and test that maximum instead of weakening production limits. | No whole-document `ReplaceOne`, schema/migration or global serializer change. A typed reserialization that drops unknown fields, a fixed remaining-byte guess, or a pre-read size with an unfenced race is not proof. |
+
+#### P1A remediation R1 evidence gates
+
+The R1 run preserved six exact RED tests across the five Control Tower defects: `6` discovered, `6` executed,
+`0` passed, `6` failed and `0` skipped. The original RED shell command text was not retained after execution-context
+compaction, so it is deliberately not reconstructed here. The exact test identities, outcomes and immutable TRX
+artifacts are the retained RED evidence:
+
+| Defect / exact test | RED result and observed failure | RED TRX / topology |
+|---|---|---|
+| Physical expiry — `Advance_started_with_valid_lease_cannot_mutate_after_mongo_evaluates_expired_lease` | `0/1/0` passed/failed/skipped: the expired advance was accepted and changed checkpoint `1 -> 2` and version `1 -> 2`. | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/lease-expiry-final/lease-expiry-red-final.trx`; test-owned single-node replica set, `127.0.0.1:55185`, fixed `diten_mdm_product_scope_itest`. |
+| Future retry — `Retry_eligibility_null_due_and_future_is_identical_across_discovery_and_claim` | `0/1/0`: a future-due row was claimed and changed. | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/retry-final/retry-red-final.trx`; test-owned single-node replica set, `127.0.0.1:55231`, fixed database. |
+| GroupWide finite admission — `Enforced_groupwide_accepts_finite_human_admission_but_rejects_empty_admission` | `0/1/0`: construction rejected the finite `Enforced + GroupWide` admission that the approved contract permits. | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/groupwide/groupwide-red.trx`; domain contract test, no Mongo topology. |
+| Snapshot content integrity — `Admission_snapshot_fingerprint_binds_every_fact_and_exposed_scope_cannot_be_tampered` | `0/1/0`: caller-input defensive copying passed (`caller-copy=True`), but the snapshot-exposed collection was mutable (`exposed-copy=False`), and thirteen changed bound facts retained an accepted stale fingerprint; malformed and legacy values were rejected. | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/fingerprint-02/fingerprint-red-02.trx`; domain contract test, no Mongo topology. |
+| Persisted snapshot integrity — `Persisted_stale_malformed_and_legacy_admission_snapshots_are_rejected_without_mutation` | `0/1/0`: for each stale, malformed and legacy persisted snapshot, reads and claims were accepted (`readRejected=False`, `claimRejected=False`); replay was already conflict-rejected (`replayRejected=True`). | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/persisted-fingerprint-final/persisted-fingerprint-red-final.trx`; test-owned single-node replica set, `127.0.0.1:55289`, fixed database. |
+| Full BSON — `Full_bson_ceiling_is_atomic_for_claim_and_advance_and_preserves_unknown_fields` | `0/1/0`: claim/advance produced `1,048,685`/`1,048,671` byte documents, changed the row and lost the unknown field. The separately measured maximum valid reservation was `6,686` bytes. | `.testoutput/fg-lifecycle-p1a-remediation-r1-red-20260911-01/bson-final/bson-red-final.trx`; test-owned single-node replica set, `127.0.0.1:55330`, fixed database. |
+
+The retained GREEN command provenance is below. `$wt` was the exact integration worktree, `$proj` was
+`services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj`,
+and `$out` was the named evidence directory. `$set.Filter` was the explicit six-test OR filter for the six identities
+above, `FullyQualifiedName~FinishedGoodIdentityLifecycleContractTests`,
+`FullyQualifiedName~FinishedGoodIdentityWorkflowStorageMongoTests`, the respective
+`FinishedGoodDraftFoundationUnitTests` / `FinishedGoodDraftFoundationMongoTests` class filters, the exact union of
+`FirstGskuIdentityLifecycleUnitTests` plus the four Product Legal Entity Scope classes, or
+`FullyQualifiedName~MongoTestDatabaseGuardTests`, as applicable:
+
+```powershell
+dotnet build (Join-Path $wt 'services\Diten.MdmService\Diten.MdmService.sln') -c Release --no-restore *> (Join-Path $out 'build.log')
+dotnet test $proj -c Release --no-build --list-tests --filter $set.Filter *> (Join-Path $out 'discovery.log')
+dotnet test $proj -c Release --no-build --filter $set.Filter --logger "trx;LogFileName=$($set.Name).trx" --results-directory $out *> (Join-Path $out 'run.log')
+```
+
+The first storage repeat used `--no-restore`; repeats two through five used `--no-build`. All were run after the
+recorded Release build. Results below are separate, overlapping runs and must not be added into one aggregate PASS:
+
+| Gate | Discovery / execution result | Evidence |
+|---|---|---|
+| Exact six RED predicates, final GREEN | `6` discovered, `6` executed, `6/0/0` passed/failed/skipped | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-04/exact-six/exact-six-green-r4.trx` |
+| MDM Release build | Build succeeded with `0` errors and `3` existing warnings | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/mdm-release-build/build.log` |
+| P1A contract | `6` discovered, `6` executed, `6/0/0` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/p1a-contract/p1a-contract.trx` |
+| Full P1A storage repeat 1 | `11` discovered, `11` executed, `11/0/0`; `127.0.0.1:50753` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/storage-run-01/storage-run-01.trx` |
+| Full P1A storage repeat 2 | `11` discovered, `11` executed, `11/0/0`; `127.0.0.1:50826` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/storage-run-02/storage-run-02.trx` |
+| Full P1A storage repeat 3 | `11` discovered, `11` executed, `11/0/0`; `127.0.0.1:50902` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/storage-run-03/storage-run-03.trx` |
+| Full P1A storage repeat 4 | `11` discovered, `11` executed, `11/0/0`; `127.0.0.1:50973` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/storage-run-04/storage-run-04.trx` |
+| Full P1A storage repeat 5 | `11` discovered, `11` executed, `11/0/0`; `127.0.0.1:51044` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/storage-run-05/storage-run-05.trx` |
+| FG create R1 unit regression | `35` discovered, `35` executed, `35/0/0` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/fg-r1-unit/fg-r1-unit.trx` |
+| FG create R1 real-Mongo regression | `25` discovered, `25` executed, `25/0/0` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/fg-r1-mongo/fg-r1-mongo.trx` |
+| GSKU child-admission plus Product Legal Entity Scope regressions | `31` discovered, `31` executed, `31/0/0` | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/gsku-scope/gsku-scope.trx` |
+| Mongo architecture guards | `5` discovered, `5` executed, `3/2/0`; `PerRunDatabaseExceptionListStaysHonest` and `NoTestCreatesItsOwnDatabasePerRun` remain the same two known baseline failure categories, so the general guard suite is not green | `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-05/architecture-mongo-guards/architecture-mongo-guards.trx` |
+
+The final real-Mongo storage repetitions used independent test-owned single-node replica sets on dynamic loopback
+ports, each reporting `primary=True`, the fixed `diten_mdm_product_scope_itest` database and tenant-owned cleanup;
+none used the application service at `localhost:27017`. The exact-six final confirmation used the same topology on
+`127.0.0.1:51250`.
+
+Intermediate evidence remains material and is not superseded by the final GREEN runs. The first GREEN exact-six run
+was `5/1/0`; its physical-expiry test still observed an accepted expired mutation. The testing handoff attributes
+that iteration to using command-start `$$NOW`, but its TRX does not retain an intermediate source diff, so the
+attribution is not presented as independently reconstructed proof. R2 was `4/2/0`: the physical-expiry test surfaced
+the exact Mongo `WriteConflict` code `112`, while the BSON test reported `claimRejected=False` and
+`advanceRejected=False` with both rows unchanged; this did not satisfy the approved GREEN contract, which requires
+rejection. R4 reached exact-six `6/0/0`, but three distinct historical uninstrumented full-storage runs each reached
+only `10/1/0`: `.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-03/p1a-storage/p1a-storage-green.trx`
+at `16:17` (SHA-256 `30bffeaf4d20d64accdcd5de0043fef91d1a07ed2f7127fb63b97a7e60bec256`, execution
+`5e1a8109-a8ce-4622-9058-3d71d6ba9e6c`),
+`.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-03/p1a-storage-rerun/p1a-storage-green-rerun.trx`
+at `16:20` (SHA-256 `2ed3354fb5eef1cbbf482831e6fa55948bad332f74c17afb44347db19c859bbd`, execution
+`267c7456-43f8-4f21-8330-db1d374c6d40`), and
+`.testoutput/fg-lifecycle-p1a-remediation-r1-green-20260911-04/p1a-storage/p1a-storage-green-r4.trx`
+at `16:26` (SHA-256 `1b674ea44f604c0eae1ab771b2051c0ed8805b964f6aa00ff48d078278953ef0`, execution
+`eb74baaf-a4c3-4fe0-b710-75824c8bd4b0`). In each,
+`Lease_claim_is_single_writer_and_stale_or_expired_claim_cannot_physically_advance` observed an all-null concurrent
+claim result. The first run may have used the invalid one-millisecond fixture, but neither the TRXs nor a retained
+intermediate source diff establishes that source-state provenance, so the possibility is not treated as proof or used
+to omit the run. Ten subsequent isolated executions of that test passed, and one instrumented full-storage run passed
+`11/0/0`; neither diagnostic result erases the unexplained historical concurrency flakiness. The five final
+uninstrumented `11/0/0` runs above are the retained repeatability evidence.
+
+The inspected final runtime design uses transaction-local Mongo `$currentDate` evaluation and aborts an expired
+mutation before commit; performs bounded retry for transient transaction failure including the explicitly observed
+`WriteConflict` code `112`; and uses atomic `$mergeObjects`/`$bsonSize` projections so the full BSON document and
+unknown fields remain inside the CAS boundary. This is bounded storage evidence only. It is not evidence of a global
+clock guarantee, instantaneous Auth revocation, authorization, actual human admission capture, workflow start/
+transport, terminal decision application, background authority, source lifecycle mutation, API/manifest/DI/Program
+integration, UI/Gateway behavior, general-suite health, operational readiness, live acceptance or Finished Good
+lifecycle completion.
+
+**Agent Verdict:** `CONDITIONAL PASS` for the bounded P1A storage contract. The exact remediation predicates and five
+final uninstrumented storage repetitions are GREEN, but the unexplained historical concurrency flakiness and the two
+known baseline architecture-guard failures remain visible. This agent verdict is not Control Tower acceptance. The
+earlier `7/7` remains historical pre-remediation evidence and is not R1 proof.
+
+Execution must continue to use only the existing test-owned replica-set fixture, fixed database and tenant-owned
+cleanup. Application MongoDB at `localhost:27017`, per-run databases, a new harness, a guard exception, broad
+write-concern swallowing or evidence-free ambiguous success remain prohibited. Discovery/executed/passed/failed/
+skipped counts and topology must be recorded per non-overlapping run. The two known architecture-guard baseline
+failures remain visible and cannot be represented as a general-suite or unconditional P1A PASS. Real workflow,
+handler, worker, API, manifest, DI/Program and live acceptance were not run or proven by this remediation evidence.
+
+P1A remediation can establish only the bounded storage contract. It cannot establish actual human admission capture,
+workflow start/transport, terminal decision application, background authority, source lifecycle mutation, API/
+manifest/DI/Program integration, UI/Gateway behavior, operational readiness, live acceptance or Finished Good
+lifecycle completion.
