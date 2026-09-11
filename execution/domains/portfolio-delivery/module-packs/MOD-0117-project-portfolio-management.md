@@ -292,6 +292,10 @@ to UTC. Exact serializer registration and cold-start BSON round-trip evidence re
 
 ### 4.2 Portfolio — Phase 2A fields
 
+The Phase 2A baseline below is preserved. Later first-delivery business decisions and future deltas are
+separately recorded in the [2026-09-08 DRAFT / NON-EXECUTABLE amendment](#portfolio-first-delivery-draft);
+they grant no code-start authority and do not assert that the budget/access gates already exist.
+
 | Field | Type | Required | Phase 2A invariant |
 |---|---|---:|---|
 | `Code` | string | Yes | Trim + NFC; max 64; unique per active tenant |
@@ -2186,6 +2190,1204 @@ authorized.
 Passing these gates proves only the default-off backend prerequisite. It does not activate production,
 authorize frontend implementation, close MOD-0023 authority or promote MOD-0117 to `done`.
 
+<a id="portfolio-first-delivery-draft"></a>
+
+### Amendment — 2026-09-08 — Portfolio first delivery — DRAFT / NON-EXECUTABLE
+
+**WP:** `PPM-PORTFOLIO-GOV-01`, prompt v1; narrow correction v2 on 2026-09-09; PPM-GOV / DEV;
+Profile B, governance-only. Technical-report reconciliation: 2026-09-09.
+**Amendment status:** `draft`; **implementation authority:** none; **production authority:**
+`production_authority: none`. This is an amendment of existing canonical `MOD-0117 — Project & Portfolio
+Management (PPM)`, not a new module/FU. Pack-wide `status: review`, earlier scoped approvals, delivered
+slices, Initiative decisions and other surfaces' Golden choices remain unchanged. No implementation-ready
+allowlist is established. Only this pack and the linked control plan are writable in this work package.
+
+#### Source, authority and unresolved source documents
+
+Source: the user's relayed 8 September 2026 “Portfolio İlk Teslimat Kararları” response, attributed by the
+user to **Natig Yusubov / CEO**. The business decisions and activation clarification below are recorded as conveyed; attribution is
+not independent signature verification, an updated v1.5.7 ZIP, formal approval of that external package or
+repository implementation authority. The historical ZIP/checker evidence remains the control plan's §2
+record; it was not rerun in this amendment. Repository authority remains Module Pack > Domain Config >
+AGENTS.md > `.antigravity`; Blueprint Master 8.1 remains the identity authority.
+
+The source-dependent **OD-04/07 (finance) and OD-05 (confidentiality) below belong to the external PPM
+Governance Pack**, not the same-numbered DCP-006 decisions. None is closed by implication here.
+Authoritative SOP-0029 levels and role/visibility mapping, the Portfolio-applicable SOP-0004 scale/version,
+and the Performance Status runtime codes/provider remain OPEN. Repository filename/content checks found
+SOP-number references/registries, not a verified Portfolio-applicable scale or access matrix; similarly
+numbered QMS/PV documents are not substituted. No level, rating value, role, creator-only rule or fallback
+is invented. The control plan tracks execution dependencies and deferred integrations in
+[§10](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-first-delivery-control).
+
+#### Business decisions and first Draft delivery boundary
+
+Correction v2 explicitly preserves the activation requirement conveyed by the user from the 8 September
+response: “Strategic objective, accountable owner, funding ceiling and review frequency all set.” These
+are four cumulative business prerequisites for activation, not proof of current implementation or a rule
+making all four mandatory on Draft save. The financial requirement is governed by the MOD-0136 typed-link
+and external OD-04/07 boundary below; it does not authorize a PPM-native Funding Ceiling field.
+
+| Topic | Conveyed business decision | Remaining boundary / dependency |
+|---|---|---|
+| Budget / activation | Draft record management may be the first partial delivery. Draft → Active must remain closed until a typed reference to a verified MOD-0136 budget/funding commitment is established. No PPM-native Funding Ceiling field before external OD-04/07 close. | Strategic Objective, accountable owner, verified funding condition and Review Frequency are cumulative activation prerequisites; a budget reference alone is insufficient. Other applicable access/approval conditions also remain. Finance custody, approved version, amount/currency, freshness and validation contract remain OPEN. Draft acceptance is neither full Portfolio acceptance nor Budget integration closure. |
+| Review Frequency | A review frequency must be set before activation; this business requirement was explicitly conveyed in correction v2. | Unit, controlled values, default, storage type and create/edit versus separate-action placement are OPEN; no source decision for these details is established. Draft-save requiredness is not decided by activation requiredness. No automatic calendar, notification or Workflow job is implied. |
+| Confidentiality | SOP-0029 governs. Seeing a record is separate from changing or approving it. The conveyed interim intent is the most restrictive level until external OD-05 closes. | Actual levels and role/visibility mapping have not been supplied, so this intent is **not executable**. Draft records also require an authoritative access policy; Draft delivery cannot bypass this dependency. Unknown policy must safely deny the affected operation/disclosure in the future implementation. |
+| Performance Status | Portfolio owner manually chooses **Ahead of Plan / On Track / At Risk / Off Track**, with mandatory rationale and full audit. | These are business labels only, not approved runtime codes, defaults or a selected authoritative vocabulary provider. General update permission does not prove record ownership. Technical provider/code/change-governance design may proceed without waiting for SOP-0004/SOP-0029 sources; risk-scale and access acceptance still need those sources. Automatic calculation is a separate OPEN follow-up. |
+| Portfolio Risk | Portfolio owner manually evaluates against SOP-0004, with mandatory rationale and full audit. | The actual applicable approved scale is OPEN; no values are synthesized. No automatic risk aggregation is included. Record owner/actor validation is a separate prerequisite. |
+| Capacity Allocation | Expected, **not mandatory**; first delivery uses a free-text explanation. | No reservation, person assignment or capacity calculation. Empty explanation does not alone block Draft save. Length/validation and final placement are OPEN technical design; the real resource model/integration is deferred. |
+
+The intended partial delivery comprises governed Draft create/read/update and the above manual assessment
+and descriptive behavior where their contracts are resolved. This is a **scope draft**, not an executable
+subset selected around missing dependencies. Access, owner validation and required vocabularies must be
+resolved before affected behavior can be implemented and accepted. Full activation, finance ownership,
+automatic performance/risk, resource integration, other PPM surfaces and WorkCenter approval/lifecycle
+ownership remain outside this first Draft acceptance. PPM owns lifecycle; MOD-0023 owns approval execution;
+WorkCenter can only display a real approval work item under its own contract and gains no new authority here.
+
+#### Form inputs, separate actions, read-only details and deferred links
+
+| Classification | Portfolio item | Counting / design disposition |
+|---|---|---|
+| Verified current create/edit inputs | `Code`, `Name`, `Description` | **3** user inputs. Code required/max 64; Name required/max 200; Description optional/max 2000; existing normalization and tenant uniqueness retained. |
+| Proposed descriptive input | Capacity Allocation explanation | Expected, optional. Count it if placed in create/edit; final form and validation are OPEN. Do not infer a final total from this row. |
+| Separate assessment actions | Manual Performance Status and Portfolio Risk; each with mandatory rationale | Action inputs do not count in create/edit. Applicable lifecycle states, DTOs, paths, permissions and versioned vocabulary contracts remain OPEN. |
+| Separate lifecycle action | Draft → Active and other existing permitted transitions | No editable status shortcut in create/edit; Strategic Objective, accountable owner, verified funding condition and Review Frequency plus applicable authorization/approval gates remain necessary. |
+| Read-only/system detail | Current lifecycle, technical Version, IDs, tenant, timestamps, audit attribution/history, latest assessment | Not create/edit inputs; authoritative audit/assessment data only. Technical CAS Version is not an approved business revision. |
+| Required before activation; placement OPEN | Review Frequency | Business requirement exists; unit, controlled values, default, storage type and create/edit or separate-action placement are OPEN. Count only if user-entered in create/edit after placement is agreed; no inferred Draft-save requirement or automation. |
+| Typed strategic reference | Strategic Objective — MOD-0352 / ESBP | Required before activation; Portfolio-consumable provider/version/access contract remains unverified/OPEN. Separate from Organization; read-only provider data is not counted. |
+| Typed organization reference | Organization — MOD-0288 / Organization-FU02 (Claude lane) | Typed identity/access/selection contract remains OPEN; it cannot supply Strategic Objective authority. Read-only provider data is not counted. |
+| Record responsibility | Accountable Portfolio owner | Required before activation; PPM record responsibility and authoritative person/account/access validation must be reconciled. `CreatedBy` is not owner identity. Placement and Draft-save requiredness remain OPEN; no free-text identity or mock option. |
+| Deferred connection | MOD-0136 budget/funding commitment and future resource integration | No editable local Funding Ceiling or invented external payload. Budget is tracked only in control-plan §10.5. |
+| Pending access design | SOP-0029 classification/policy | No made-up level selector; existing `VisibilityPolicyKey` is not evidence that OD-05 is implemented. Placement/count awaits the real contract. |
+
+**Full Portfolio form count: OPEN; full-form Golden decision: OPEN.** The first partial user delivery now
+has a [four-input Slim proposal](#portfolio-user-delivery-bundle), pending the single bundled approval.
+The historical 13/15 estimates are not
+used. Current three-input Portfolio is compatible with Slim; after the complete target create/edit inventory
+is settled, ≤8 selects Slim and >8 Compact. Pack frontmatter `form_field_count: 8` remains the existing
+composite-slice maximum and is not repurposed as the target Portfolio count. Tenant shell remains explicit
+`Layout = "_LayoutTenantShell"`, DataTable v2 and seven-language localization remain required. The Slim
+reference pack and live frontend/backend were read as structural references, not as new approval authority.
+
+#### Narrow code evidence, retained behavior and future deltas
+
+Read-only evidence at **`e72701fa565942187e7dd85c1e92fdcc25080969`**, in the user-designated worktree on
+2026-09-08; this is not a claim about a freshly fetched remote main or new runtime test results.
+
+| Observed source | Code reality / retained foundation | Required future delta; not implemented by this amendment |
+|---|---|---|
+| `services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/Portfolio.cs` (`CanTransitionTo`); `services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Services/PortfolioService.cs` (`Transition`) | Code permits Draft → Active, Draft/Active → Archived; Archived is terminal. Service checks general lifecycle permission, tenant lookup and transition matrix. | Enforce Strategic Objective, accountable owner, verified MOD-0136 funding condition and Review Frequency at activation, retaining applicable access/approval conditions. Review Frequency is not present in the inspected Portfolio entity/service; no implementation is claimed. **The new budget block is not currently implemented.** Do not relabel the existing matrix as proof of the new governance model. |
+| Same `PortfolioService.cs` (`Update`, `GetById`, `List`) and Portfolio entity | General resource permissions and tenant lookup exist; entity has no Portfolio owner/assessment model. | Record-specific owner/actor and SOP-0029 visibility decisions for reads and mutations, including Draft; update/read grants are not proof of ownership or confidentiality enforcement. |
+| `frontend/Diten.Web/Views/PPM/Portfolios/_CreateEditOffcanvas.cshtml` → `Views/PPM/Shared/_CreateEditOffcanvas.cshtml` | Code, Name, Description are current user inputs; lifecycle and visibility controls are disabled; IDs/Version are hidden. | Add only later-contracted inputs/actions; disabled UI controls are not server authorization. No field-count extrapolation from shared forms for other types. |
+| `services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/EntityBase.cs`; `services/Diten.PpmService/src/Diten.PpmService.Persistence/Repositories/MongoRepository.cs` | Local PPM EntityBase; authenticated tenant/actor IDs; UTC audit fields; technical Version; tenant/IsDeleted filter and expected-version CAS on replacement. | Preserve the local base, tenant isolation, soft-delete and CAS for every future assessment/lifecycle mutation; no migration or imported base class. |
+| `PortfolioService.cs` (`Persist`, `SoftDelete`); `services/Diten.PpmService/src/Diten.PpmService.Persistence/PpmUnitOfWork.cs` | Mutation and local audit intent share a transaction; exception path aborts; soft-delete retains its InvestmentCase dependency/fence checks. | Full assessment audit needs rationale, previous/new assessment, actor, time, record/tenant and relevant version provenance. Existing minimal mutation audit is not proof of this full history. PPM owns the assessment/rationale business model and atomic mutation/history/intent/Version persistence; the MOD-0021 owner contract governs transport schema and confidentiality/redaction boundaries. Do not silently expand the shared envelope. |
+
+Compatibility with existing **Active/Archived** records is OPEN and belongs to the PPM business/technical
+owners, consulting access/finance owners for their policy/funding constraints: assess read/update/assessment/referenceability
+and archive behavior under the new access/funding rules, including missing historical policy/funding data.
+No auto-demotion, backfill, default classification, grandfathered activation or destructive conversion is
+authorized. Existing history and links must be preserved; no migration is performed. Existing Draft/Active
+referenceability is observed baseline behavior, not proof that the new confidentiality policy is satisfied.
+
+#### PPM responsibilities and shared contracts — no implementation assignment
+
+PPM owns the Portfolio assessment/rationale business model; atomic mutation, relevant local history/audit
+intent and Version persistence; and idempotency/CAS when applying an authoritative Workflow outcome.
+At mutation time PPM rechecks authorization, record version and business prerequisites. Workflow-side
+idempotency does not replace PPM mutation idempotency. Repeated delivery must not apply the same business
+effect twice; no exactly-once delivery guarantee is asserted. Required local transaction failure rolls back
+the mutation; post-commit external audit transport failure uses the agreed durable retry/consumer contract.
+
+#### Technical-report reconciliation — observed contracts and bounded gaps
+
+Source: the user's supplied corrected Claude READ-ONLY AUDIT at reported HEAD b6fcfe97, attachment
+03215463-4a21-469d-b99b-dbb8508123a7/pasted-text.txt, reconciled on 2026-09-09. That report's main/branch
+comparison is its own historical assertion, not a fresh main verification in this worktree. The narrow
+source paths below were also read at this worktree's e72701fa565942187e7dd85c1e92fdcc25080969.
+No runtime tests were run and no reported D1–D10 item becomes an approved work order.
+
+- **Actor semantics:** WorkflowTaskTransitionSupport sets ActionedBy to the action actor on approve/reject;
+  it is not a preparer. StartedBy is the initiator and feeds existing submitter SoD, not authoritative PPM
+  preparer identity. Other task actions also set ActionedBy, so it is not universally an approver field.
+  FU02 does not supply Portfolio record responsibility.
+- **Exact instance read exists:** GET /api/v1/workflow/instances/{id:guid}, protected by
+  WorkflowPermissions.InstancesView, reads the exact instance; GetWorkflowInstanceByIdHandler returns
+  non-leaking 404 for absent/invisible records. TaskApprovalService is an internal MOD-0024 service, not
+  PPM's external contract. EvaluateWorkflowTransitionGateHandler uses GetLatestByObjectRefAsync and cannot
+  substitute for an exact approval binding.
+- **Version/time evidence:** StartWorkflowInstanceHandler requires a Published, Immutable template version
+  and pins TemplateVersionId. This is not PPM record Version. WorkflowInstanceDto has CompletedAt and
+  LastTransitionAt; generic completion time is not a complete approval outcome attesting decision actor,
+  reason, requested operation and relevant PPM revision. Those outcome/binding semantics remain OPEN.
+  Existing conditional InvestmentCase approval-reference governance in §4.9.1 remains non-executable and
+  is neither promoted nor assumed to be a Portfolio contract.
+- **Audit is not absent:** AuditService.BuildPayload redacts BeforeState, AfterState and Metadata via the
+  general pattern-based SensitiveFieldRedactor. This is not SOP-0029 level/role policy evidence.
+  POST /api/v1/platform/audit/events has permission platform.audit.events.append, tenant-mismatch rejection
+  and idempotent append/Duplicate response. GovernedAuditAppendRequest lacks BeforeState/AfterState;
+  that transport shape alone does not mandate a Platform API extension or replace this pack's §8 transport.
+- **BRD consumer/error contract exists:** GET /api/v1/reference-data/sets/{setCode}/published-values
+  (scope_key) and /values (scope_key, version, as_of_date and include flags) use the existing
+  Platform.BusinessReferenceData.Consumer.Read permission. Published payload is SetCode, VersionNumber,
+  PublishedAt and Items(Code, Label, Description, IsActive, SortOrder, Attributes) in Response<T>.
+  BusinessReferenceDataExceptionBehavior is registered in Application DependencyInjection;
+  GetBusinessReferenceDataPublishedValuesQuery implements IBusinessReferenceDataRequest. Coded errors
+  already map, including no_published_version → 404 and specified dependency errors → 503; unknown
+  exceptions go to the global pipeline. Specialized resolver timeout rules are not a blanket guarantee
+  for every published-values failure. The missing Portfolio set/code/version/scope binding is separate.
+- **Identity adapter's proven narrow gap:** AuthServiceUserReferenceValidator forwards caller bearer and
+  tenant to GET /api/users/{userId}/lookup-validation. Invalid/unreferenceable results, non-success HTTP
+  and handled transport/parse failures collapse to the same 404. It is fail-closed but does not preserve
+  definitive-denial versus unavailable/indeterminate semantics; caller cancellation is rethrown.
+
+Source files are under services/Diten.Platform/src/: API/Controllers/WorkflowDefinitionsController.cs,
+API/Controllers/Platform/PlatformAuditAppendController.cs, API/Controllers/BusinessReferenceDataController.cs
+(each project prefix is Diten.Platform.API); Application/Features/Workflow/WorkflowModels.cs and
+Handlers/CommandHandlers/StartWorkflowInstanceHandler.cs, WorkflowTaskTransitionSupport.cs,
+Handlers/QueryHandlers/GetWorkflowInstanceByIdHandler.cs, EvaluateWorkflowTransitionGateHandler.cs;
+Application/Features/Audit/AuditService.cs, AuditAppendApiModels.cs; Application/Features/BusinessReferenceData/
+BusinessReferenceDataExceptionBehavior.cs, Queries/GetBusinessReferenceDataPublishedValuesQuery.cs,
+Models/BusinessReferenceDataStewardshipModels.cs; Application/DependencyInjection.cs and
+Infrastructure/Services/Auth/AuthServiceUserReferenceValidator.cs (project prefixes Diten.Platform.Application
+and Diten.Platform.Infrastructure respectively). These are read-only evidence paths, not a write allowlist.
+
+<a id="portfolio-four-design-proposals"></a>
+
+#### Four concrete Portfolio design proposals — PROPOSED / DRAFT / NON-EXECUTABLE, 2026-09-09
+
+These replace the earlier option sketch with one recommended approach per design. They are not DECIDED,
+implemented fields, published data, endpoint contracts or implementation authority. Every model/field
+name below is **proposed, not existing**, unless explicitly identified as an existing source contract.
+The existing Portfolio Version/CAS and §8 Minimal Mutation Audit v1 are retained, not redesigned.
+Business decisions are listed for approval in the control-plan
+[decision table](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-four-design-decisions).
+This section neither approves a ready subset nor changes earlier scoped approvals.
+
+<a id="portfolio-owner-proposal"></a>
+
+##### 1. Accountable owner — one PPM responsibility with a named User principal
+
+**Recommended approach:** PPM owns the assignment and its history; for this first delivery recommend a
+single named human User account as the typed principal. Existing authenticated actor identity and account
+validation make the actor-to-owner comparison explicit without inventing Person/account or Position/holder
+resolution. This is a business choice about accountability at account level, not proof that User is the
+permanent enterprise responsibility model. Active account validation proves reference eligibility only;
+the PPM assignment plus effective validity and operation authorization prove record responsibility.
+
+| Principal option | Business meaning / limit |
+|---|---|
+| User — recommended for first delivery | A specific named login is accountable and can be compared to the authenticated assessment actor. Account disablement affects ability to act; it does not erase responsibility history. Service/shared accounts must not qualify; authoritative eligibility evidence is still required. |
+| Person | Accountability follows the person across account changes. Requires an authoritative same-tenant Person → active acting-account mapping and validity rules; no automatic link is proven. |
+| Position | Accountability follows an organizational office. Requires effective holder, vacancy, acting/delegated holder and multiple-holder decisions; position membership alone cannot authorize assessment. FU02 is not the PPM assignment. |
+
+**Proposed responsibility record, not existing fields:** stable assignment identity, Portfolio reference,
+typed principal kind/ID, valid-from UTC, optional valid-to UTC, assigning actor/time, assignment/transfer
+reason, and PPM Version before/after. Server-resolved tenant is mandatory; neither tenant nor acting actor
+comes from a caller-supplied identity. Reference IDs cannot silently change meaning across principal kinds.
+
+- Recommend **zero or one effective owner while Draft**, with absence shown truthfully; **exactly one
+  eligible effective owner at activation**. Draft optionality is an approval proposal, not a new decision.
+  Optional owner does not relax SOP-0029 visibility or permit assessment without a verified owner.
+- Recommend assignment/transfer as a separate controlled action, not ordinary metadata edit. Transfer
+  validates the replacement and atomically closes the old interval and opens the new one at server time,
+  with reason/history/CAS. No overlapping effective owners, future scheduling or backdated assignment in
+  the proposed first delivery. These are proposed lifecycle constraints, not implemented restrictions.
+- **APPROVED BUSINESS DECISION — assigning persona only (2026-09-10):** the Portfolio owner is assigned
+  by a person authorized on behalf of portfolio management/PMO. The user confirmed decision authority
+  and explicitly approved this business persona. General system administration, update permission or
+  current ownership does not automatically grant assignment/transfer rights. Transfer semantics remain
+  proposed; no existing PMO role/permission/grant is asserted. Exact permission mapping remains technical
+  preparation. See the [bounded owner implementation proposal](#portfolio-owner-assignment-boundary).
+- Only the effective owner acting through that verified account, with assessment entitlement/permission
+  and SOP-0029 access, performs manual performance/risk assessment. Assignment authority does not itself
+  grant assessment authority. No CreatedBy, general-update, shared-account or unspecified delegation
+  fallback. This preserves the already agreed owner-only manual assessment rule.
+- Disabled/deleted/ineligible account, expired assignment or indeterminate validation prevents new
+  assessment and activation. Preserve the old attribution and show unresolved/ineligible state only to
+  authorized readers; a designated administrator can transfer after independently satisfying access and
+  replacement checks. Do not silently select a replacement, demote Active, delete history or deny every
+  unrelated authorized Draft operation. Existing Active/Archived compatibility remains the existing
+  [§10.6–10.7 decision](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-technical-work-split).
+- Future principal change creates a new typed assignment linked to its predecessor. Earlier assignment,
+  actor and assessment IDs keep their original type, source identity and effective interval; a new
+  Person/Position mapping cannot rewrite who acted historically. Any lawful display/redaction/retention
+  policy is separate; no migration/backfill or permanent replication of the identity directory is proposed.
+
+**Existing mechanism / remaining evidence:** authenticated actor, tenant checks and the inspected
+lookup-validation path can support a User reference. Its fail-closed 404 collapse still needs
+denial-versus-unavailable semantics for the chosen consumer path; named-human/active/tenant eligibility
+and permitted reference access need an authoritative contract, not an inference from the adapter's name.
+PPM owns the relationship, validity and actor comparison. Business approval is needed for User versus
+Person/Position and proposed cardinality/Draft optionality/transfer behavior. The assigning business
+persona is APPROVED BUSINESS DECISION; it is no longer an open item.
+
+<a id="portfolio-performance-proposal"></a>
+
+##### 2. Performance Status — PPM business meaning, MOD-0048 controlled publication
+
+**Recommended approach:** PPM owns assessment semantics and the four already approved business labels
+(Ahead of Plan / On Track / At Risk / Off Track); MOD-0048 is the target SSOT/publication mechanism for the
+controlled values. This follows [domain-config Ownership Boundaries](../domain-config.md#ownership-boundaries).
+The former permanent PPM-local lookup option is not recommended or adopted; no local enum/lookup exception
+is requested. The four labels are not being re-opened as a business vote.
+
+**Proposed binding, not existing data/fields:** configured set identifier, authoritative scope selector,
+published vocabulary version, stable value code and relevant publication provenance. No set code, actual
+runtime value code, scope value or published Portfolio dataset has been found/assigned by this proposal.
+Scope must be derived from approved tenant/global eligibility; a UI-supplied scope cannot cross tenant
+boundaries. Code is a stable machine identity; label is the authorized localized presentation, not the
+saved identifier, an ordinal, a score or a default.
+
+- Use the existing GET /api/v1/reference-data/sets/{setCode}/published-values for the approved current
+  selection, and evaluate existing /values with version/as_of_date/include_deprecated for historical
+  resolution. Existing payload/error evidence is in the reconciliation above. Historical retention,
+  version immutability, retired-value and locale coverage for the intended dataset still need provider
+  confirmation; endpoint existence alone is not that evidence.
+- Recommend that a new assessment use an active value from the current eligible published version.
+  Persist the exact version/code used. Revalidate that binding when saving; if publication changed since
+  selection, reject the stale selection and require a fresh choice, rather than silently remap or accept
+  an obsolete version. Consistent resolution token/as-of semantics and the mutation-time validity window
+  need bilateral agreement; no cross-service atomic publication guarantee is asserted.
+- Unpublished/missing set, wrong scope, inactive/deprecated value, incompatible version or indeterminate
+  provider response prevents a new performance assessment. Existing BRD coded errors remain distinct;
+  the consumer does not turn outage into missing data or supply hardcoded labels/defaults.
+- Never reuse an old code for a different meaning. Meaning changes require a governed new code/version;
+  retirement removes it from new choices but preserves historical meaning. Earlier assessments retain
+  code/version/publication provenance plus the bounded historical display evidence described below.
+  Do not rewrite earlier assessments to the latest label/version or silently change the current stored
+  assessment merely because a value is retired.
+- The PPM server validates and projects authoritative eligible options and permitted historical display
+  through the normal Gateway path; frontend does not build an English array, contact a service port, or
+  infer authorization. Existing BRD Label alone does not prove seven-language coverage. Approved locale
+  presentation/provenance is a provider-consumer contract; historical display evidence is read-only,
+  never a fallback selection list. Missing historical resolution is shown as unavailable where authorized,
+  without inventing a replacement value.
+- PPM process owner governs meaning and retirement impact; MOD-0048's authorized stewardship/publication
+  process governs publication. Exact steward assignment and scope/version/locale binding remain open.
+  A provider change is required only if an identified retention/resolution/locale/validation need cannot
+  be met by the existing mechanisms; configuration, dataset publication and PPM consumption are separate
+  from a proven API defect. No new MOD-0048 endpoint or implementation task is declared.
+
+This design can be prepared without SOP-0004. Risk still waits for its existing approved-scale row and
+SOP-0029 still gates all affected access. The record of those dependencies remains control-plan §10.7;
+there is no new source blocker or newly approved dataset here.
+
+<a id="portfolio-assessment-history-proposal"></a>
+
+##### 3. Assessment history — PPM business record plus existing minimal shared evidence
+
+**Recommended approach:** record every accepted manual assessment as a PPM business-history entry and
+project each assessment kind's current value from its own latest accepted entry; a risk review cannot
+replace the performance projection. History is append-only for business edits:
+a correction is another authorized entry with reason and a link to the superseded entry. This is not a
+second shared audit service, nor an indefinite-retention or exemption-from-erasure decision.
+
+| Proposed field group — not existing assessment fields | Intended traceability |
+|---|---|
+| History identity / context | Stable assessment-entry ID, Portfolio ID, server tenant and assessment kind (performance or risk; proposed categories, not published codes). |
+| Responsibility / actor | Effective responsibility-assignment reference, typed owner reference at action time, authenticated acting account and server UTC action time. |
+| Before / after value | Previous entry reference and previous/new value bindings; a first assessment has explicit no-previous-value. Each nonempty side retains its own set/scope/version/code and publication/scale provenance. |
+| Historical presentation evidence | Bounded label/locale/meaning evidence as actually resolved from the approved source at action time, including its source version. This is a per-assessment fact, not a local vocabulary or an editable source directory. |
+| Rationale / correction | Required reason text, optional predecessor/correction reference; no blank reason and no silent in-place replacement of an earlier business entry. Length, access and retention follow the pending approved policy/schema. |
+| PPM revision / trace | PPM Version before/after, associated local auditIntentId and minimal-mutation classification; no new shared payload field or invented mutation literal. |
+
+The same structure may support manual risk only after SOP-0004 scale/source binding is agreed; it does
+not supply that scale. Earlier owner assignment and original actor attribution remain intact after
+transfer or principal conversion. Sensitive rationale/history read access is checked separately from
+permission to view the Portfolio; generic audit redaction does not provide that SOP-0029 policy.
+
+**Atomic boundary:** after authoritative owner/access/vocabulary validation, compare expected Portfolio
+Version and atomically persist the new assessment entry, that kind's current-assessment pointer/projection,
+business mutation, incremented Version, required local audit intent and accepted-request receipt. A failed
+CAS or required history/intent/receipt write leaves none of those changes committed. If a latest-value projection is stored, it is derived and
+committed with its entry, not an independently editable competing truth. A same-value assessment with a
+new valid rationale is proposed as a new review entry, not a silent no-op; business approval of that
+review/correction behavior remains needed. Retries of the same accepted assessment command use a stable
+PPM request identity and recover its receipt; they do not create another entry or version. A materially
+different request cannot reuse that identity.
+
+**Shared audit choice:** retain §8 Minimal Mutation Audit v1 exactly:
+auditIntentId, actorId, entityType, entityId, mutation, occurredAtUtc.
+Use the same local auditIntentId on the history entry/receipt to correlate the PPM business evidence with
+the existing minimal Portfolio mutation event; entityId still identifies the Portfolio aggregate.
+No rationale, before/after snapshot, assessment-entry ID, vocabulary or owner directory is added to the
+shared payload. Authorized reconciliation resolves the intent to the local history; the shared event
+alone is not full history or proof of authorization. The existing transport and credential gates remain.
+
+Local transaction failure rolls back. A post-commit delivery failure leaves the committed assessment
+intact and follows §8's existing durable retry, stable EventId/bytes, idempotent consumer and authorized
+DLQ/replay contract; it never re-applies the assessment. Do not replace the pack transport with the
+inspected HTTP append endpoint or expand its BeforeState/AfterState model merely to transport full
+history. No sensitive rationale in unlimited Metadata is proposed. Retention/minimization and authorized
+historical display await the existing policy/compatibility decisions, not a new audit backlog.
+
+<a id="portfolio-approval-application-proposal"></a>
+
+##### 4. Approval outcome — exact instance read on an explicit apply request
+
+**Recommended approach:** PPM keeps the exact external WorkflowInstanceId and reads the existing
+GET /api/v1/workflow/instances/{id:guid} when an authorized actor explicitly requests application of the
+approved operation. This on-demand server read avoids assuming a background scheduler/push delivery
+contract and rechecks near the actual mutation. It does not promise automatic activation at workflow
+completion; that user-visible behavior needs approval. A UI refresh may display permitted status without
+applying it. No polling schedule, push subscription, PPM endpoint or new Workflow-prefixed PPM type is
+declared to exist. Only an operation whose approved policy requires approval uses this design.
+
+**Proposed PPM approval-request/application record, not existing fields:** local request/attempt identity,
+server tenant, Portfolio ID, requested operation, frozen target PPM Version, authoritative preparer
+reference/attestation, exact external instance ID when resolved, pinned template-version evidence,
+provider outcome identity/revision/finality evidence, and local application receipt/version.
+The formal bilateral contract and field/schema names are still OPEN.
+
+1. Before external start, PPM captures the complete tenant–Portfolio–operation–Version request and the
+   authorized preparer. Recommend that the authorized human submitting the frozen request explicitly
+   attests that they prepared that request's business content; PPM records their authenticated identity
+   and attestation. This proposed business definition requires approval. Workflow StartedBy, Portfolio
+   CreatedBy, the last editor or a client-provided preparer ID cannot substitute; automation/another actor
+   starting the engine does not change the frozen preparer. No unspecified preparer delegation.
+2. Reserve one local submission attempt for the same tenant/record/operation/target version before start;
+   retain its correlation/retry identity. Store the returned exact instance and bind it to that request
+   before using a result. After an ambiguous start response, reconcile that same attempt with provider
+   evidence; do not blindly start a second instance or choose the latest by ObjectRef. Provider start
+   idempotency/recovery and authoritative binding must be agreed. Technical request/receipt persistence
+   alone must not advance the Portfolio business Version and invalidate its own approval; business
+   changes still use Version/CAS. This split needs a reviewed persistence contract, not new runtime code.
+3. On explicit apply, read only the recorded instance and verify the server tenant context, object,
+   operation, frozen PPM version and complete authoritative outcome. Existing DTO supplies Id,
+   TemplateId/TemplateVersionId, object coordinates, status and general completion timestamps; the endpoint
+   supplies existing permission/tenant/non-leaking lookup behavior. It does not currently supply a complete
+   bound decision result with preparer, required approving actors, decision reasons/times and finality.
+   Task ActionedBy is an action actor, not universal approval proof. CompletedAt is generic instance
+   completion, not an attestation of every approval. Full authoritative outcome, approved/rejected/cancelled/
+   pending interpretation, required-step completion and preparer–approver separation remain the narrow
+   shared contract need; no internal TaskApprovalService dependency is introduced.
+4. Recommend that any intervening Portfolio business Version change invalidates the request for future
+   application: mark it superseded in local request state, retain its outcome/history and require a fresh
+   prepared request/version. Never rebase an old approval onto a new revision. No automatic external
+   cancellation, replacement instance or activation is implied. Owner transfer and assessment mutations
+   count as business changes. Compatibility of existing records remains the already open decision.
+5. Recheck current permission, SOP-0029 access, effective owner, current Version, Strategic Objective,
+   verified funding, Review Frequency and applicable approval/business conditions before activation.
+   Provider unavailable/indeterminate means no effect; missing/invisible and definitive rejection retain
+   distinct semantics. Agree outcome immutability/revocation, freshness and response-binding guarantees:
+   a GET followed by local CAS is not a distributed transaction or proof against an intervening external
+   revocation. No stale cached approval is sufficient.
+6. Atomically claim the local request/outcome as applied and persist the business effect, resulting Version,
+   related history and local audit intent with the consumption receipt. Serialize contenders through the
+   same request/target-version identity plus existing CAS; one wins. A duplicate matching the stored
+   receipt returns only an authorized replay result and performs no second write, Version increment or
+   success history. A changed payload under the same identity is rejected. Check identity/access before
+   disclosing even a receipt; no replay bypass of current access. Local failure leaves no application
+   receipt/effect; after commit, response loss or external audit failure recovers the receipt/retries
+   transport without re-applying the approved operation. PF-AC12 remains the future acceptance gate.
+
+ObjectRef encoding can carry correlation only under a canonical agreed representation; neither it,
+latest-by-object, template-version pinning nor Workflow-side idempotency establishes the full binding or
+PPM at-most-once business effect. Prefer a narrow outcome/binding addition compatible with the existing
+exact-instance read; whether it can reuse an existing public result contract or needs an additive provider
+change remains bilateral technical work, not an executive endpoint choice or an assigned Platform task.
+
+**Boundaries carried forward:** Review Frequency remains required at activation, with values/default/
+placement undecided. Target create/edit field count and Golden selection remain OPEN: owner assignment,
+manual assessments and approval application are proposed separate actions; historical/current assessment
+projections are read-only; any eventual create/edit inputs are counted only after their placement is
+approved. None of the conceptual fields above is a form-count decision. Remaining SOP, strategy, budget
+and compatibility dependencies stay in their existing control-plan rows; budget remains only §10.5.
+
+The single classified work table in control-plan [§10.7](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-technical-work-split)
+separates existing-contract PPM work, proven shared gaps, source/business decisions, conditional development
+and deferred work, with separate Draft create/read/edit, assessment and activation impact. Existing identity,
+audit or BRD endpoints do not establish a ready subset: confidentiality and owner controls remain mandatory.
+No Platform, Organization, ES or Workflow implementation work is dispatched.
+
+**Separate Strategic Objective dependency:** canonical business ownership is **MOD-0352 — Enterprise
+Strategy Management**, ESBP goals/objectives/cascade, verified from the
+[module registry](../../../registries/module-id-registry.md) MOD-0352 row and
+[ESBP domain-config, Ownership Boundaries](../../enterprise-strategy-business-performance/domain-config.md#ownership-boundaries).
+This is separate from MOD-0288 Organization identity and from Claude's Organization/FU02 contract.
+An approved, tenant-safe, Portfolio-consumable executable Strategic Objective provider/version/access/failure
+contract is **not verified / OPEN**; canonical ownership and legacy Enterprise Strategy code do not prove
+provider readiness. Seek that contract from the MOD-0352 business/technical owner; no new API, ID, ownership
+decision or ES implementation task is created. MOD-0136 finance coordination remains only control-plan §10.5.
+Active/Archived compatibility remains the PPM owners' decision, with access/finance owner consultation
+only for the respective external constraints. This correction assigns implementation work to no party.
+
+
+<a id="portfolio-owner-assignment-boundary"></a>
+
+#### Owner assignment — one APPROVED BUSINESS DECISION; implementation boundary DRAFT / NON-EXECUTABLE — 2026-09-10
+
+**APPROVED BUSINESS DECISION — assigning business persona only:** Kullanıcı bu iş kararını onaylama
+yetkisini teyit ederek şu öneriyi açıkça onayladı: **“Portfolio sorumlusunu portföy yönetimi/PMO adına
+yetkilendirilmiş kişi atar.”** Atayıcı persona artık açık karar değildir. Bu, genel sistem yöneticisine
+veya mevcut owner'a otomatik atama/devir yetkisi vermez; mevcut bir PMO rolü, permission veya gerçek
+kullanıcı yetkilendirmesi bulunduğunu göstermez. Aynı kişinin devir yapmasının kapsamı aşağıdaki dar
+davranış önerisidir; atayıcı kararı bütün devir kurallarını kendiliğinden onaylamaz.
+
+Yalnız bu iş kararı onaylandı. User principal seçimi, cardinality/Draft opsiyonellik/devir sınırları ve
+diğer PROPOSED tasarımlar topluca onaylanmadı. Gizlilik/risk/preparer, kaynak ve sağlayıcı kapıları,
+önceki scoped onaylar, pack review ve production_authority: none korunur. Bu bölüm kod/test/runtime/DB/
+provisioning yetkisi değildir. Aşağıdaki fiziksel kapsam yalnız öneridir. Tarihsel
+[detached dilim](#portfolio-isolated-test-slice) **NOT SELECTED — implementation not authorized** kalır.
+
+##### Mevcut zincir ve en küçük tutarlı delta
+
+Mevcut Portfolio.cs owner taşımıyor; PortfolioService ayrı Create/Update/Transition metotlarından
+IPortfolioRepository, PpmUnitOfWork ve AuditIntentRepository'ye gidiyor. MongoRepository.ReplaceAsync
+tenant/IsDeleted/ExpectedVersion filtresi ve tek Version artışı zorunluluğunu zaten uyguluyor.
+Bu temel korunur; yeni servis, PortfolioDraftState, ikinci aggregate veya test persistence modeli yoktur.
+
+Öneri: aynı Portfolio'ya nullable güncel atama bağı ve sahip olunan immutable atama girdileri ekle.
+Girdi yeni aggregate/collection değil; atama kimliği, önceki atama bağı, typed User referansı,
+server actor/UTC zamanı, gerekçe, önceki/yeni Version ve request/result/auditIntent korelasyonunu tutar.
+Devir eski girdiyi silmez veya yeniden yazmaz; önceki aralığın kapanışı successor bağı/zamanından
+türetilir, güncel bağ tek yeni girdiye taşınır. Ayrı kişi dizini veya kopya User profili tutulmaz.
+Geçmiş silme/retention politikası uydurulmaz; BSON boyut/persistence hatası atomik ret olmalıdır,
+sessiz geçmiş kısaltma veya ikinci store'a geçiş değil.
+
+Mevcut PortfolioService içinde tek owner-change metodu, Assign/Transfer ayrımını açıkça doğrular.
+Önerilen **yeni, henüz mevcut olmayan** endpoint:
+POST /api/v1/ppm/portfolios/{id}/owner-assignments. Girdiler: Operation (Assign veya Transfer),
+NewOwnerUserId, ExpectedAssignmentId (Assign için boş, Transfer için mevcut atama),
+Reason, ExpectedVersion ve RequestId. Id route'tan; tenant/acting actor, UTC zaman ve permission
+server context'ten gelir. Bu girdiler genel create/edit formuna eklenmez.
+Yanıt yalnız yetkili çağırana atama/işlem kimliği ve Version verir; genel PortfolioDto/list/detail'e
+owner, kimlik profili veya gerekçe/history eklenmez. Yeni history GET ve frontend bu sınırda yoktur.
+
+İşlem sırası: mevcut entitlement/context + ayrı permission; tenant-scoped Portfolio lookup; bağımsız
+kayıt/işlem erişimi ve PMO adına yetkilendirme kanıtı; yetkili replay kontrolü; yeni etki için hedef
+User'ın aynı tenant/aktif/adlandırılmış insan/atanabilirlik kanıtı; state/expected assignment/Version;
+aynı gerçek transaction'da entity + owner history/receipt + mevcut minimal audit intent commit.
+RequestId içeriği tenant/Portfolio/actor/operation/hedef/önceki atama/gerekçe/expected Version'a bağlanır.
+Aynı kabul edilmiş istek yeniden gelirse güncel erişim kontrolünden sonra eski receipt döner; yeni
+Version/history/intent yoktur. İçeriği farklı tekrar reddedilir. Yarış kaybedeni önce conflict alabilir;
+yetkili aynı-istek retry'ı commit edilmiş receipt'i okur. Kayıp commit cevabı yeni atama üretmez.
+
+Genel update/lifecycle izni, sistem yöneticisi rol etiketi veya mevcut owner olmak atama izni değildir.
+Atama izni değerlendirme izni/owner kanıtı vermez. Mevcut metadata Update yeni owner verisini değiştiremez.
+Assessment/activation kurallarını bu owner işi içinde uygulama veya tamamlanmış sayma; mevcut
+Transition davranışındaki açık aktivasyon koşulları mevcut planda kalır. Yeni atama yalnız onaylanacak
+Draft sınırında çalışır; Active/Archived/soft-deleted kayıtları dönüştürme veya backfill yoktur.
+
+Yeni dış authority portu kimlik, nesne erişimi ve yetkilendirmeyi ayrı kanıt sonuçlarıyla taşır;
+PPM owner geçmişini, Version'ı veya persistence'ı uygulamaz. Missing/Denied/Indeterminate/malformed
+sonuçların hiçbiri Allowed sayılmaz. Tenant/actor/record/operation/target bağı doğrulanır; görünmez veya
+cross-tenant kayıt 404, kesin işlem reddi 403, bozuk istek 400, state/CAS conflict 409, sağlayıcı/kanıt
+belirsizliği 503; hedef kimlik ayrıntıları ifşa edilmez. Caller cancellation başarıya çevrilmez.
+
+Mevcut DI PortfolioService'i kaydediyor, handler/validator assembly taraması yapıyor. Yeni command
+runtime zincirinin gerçek parçasıdır; detached/test-only servis değildir. Bu öneride dış authority
+constructor bağımlılığı optional-null ise yalnız owner aksiyonu 503 döner; olumlu üretim implementasyonu,
+fallback veya fake DI kaydı eklenmez. Null dependency genel CRUD'u kırmaz ve genel CRUD'un mevcut
+gizlilik açığını kapatmış sayılmaz. Gerçek sağlayıcı/DI bağlama sonraki mutabakata bağlıdır.
+
+<a id="portfolio-owner-assignment-files"></a>
+
+##### Exact gelecek PPM dosya kapsamı — mevcut/yeni, henüz yetki değil
+
+Aşağıdaki 5 mevcut + 8 yeni dosya yalnız yukarıdaki önerilen seçim için aday kapsamdır; farklı iş veya
+ortak sözleşme seçimi bunu kendiliğinden genişletmez. İki mevcut governance belgesi ayrıca yalnız
+scoped karar/onay ve gerçek kanıt kaydı için güncellenebilir. Başka dosya veya wildcard allowlist yoktur.
+
+| Durum | Exact repository-relative dosya | Gerekçe |
+|---|---|---|
+| EXISTING — proposed extension | services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/Portfolio.cs | Mevcut aggregate'e nullable güncel atama bağı, sahip olunan immutable atama geçmişi ve Assign/Transfer invariant'ları; metadata Update owner'a dokunmaz. |
+| EXISTING — proposed extension | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Services/PortfolioService.cs | Aynı serviste ayrı owner aksiyonu; permission + kayıt erişimi + kimlik kanıtı; mevcut repository/UoW/audit/CAS, replay kontrolü. |
+| EXISTING — proposed extension | services/Diten.PpmService/src/Diten.PpmService.Application/Common/PpmPermissions.cs | Yalnız Claude ile mutabık kalınan yeni owner-action permission sabiti; mevcut update/lifecycle anahtarlarının anlamı genişletilmez. |
+| EXISTING — proposed extension | services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/PortfoliosController.cs | Mevcut controller'a tek owner-assignment POST; mevcut MediatR zincirine iletim, ayrı controller yok. |
+| EXISTING — proposed extension | services/Diten.PpmService/src/Diten.PpmService.Persistence/Mongo/PpmBsonConfiguration.cs | Yalnız Portfolio'nun sahip olduğu yeni geçmiş tipinin/özel koleksiyonunun BSON eşlemesi; mevcut genel serializer/collection/index davranışını değiştirmez. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/PortfolioOwnerAssignment.cs | Yeni destekleyici immutable atama/geçmiş girdisi; EntityBase türevi veya ayrı aggregate/repository değil. Önceki atama bağı, typed User, actor/time/reason/Version ve request receipt bilgisi. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/PortfolioOwnerModels.cs | Yeni yalnız owner aksiyonu request/result/evidence tipleri; liste/detail DTO'suna owner veya gizli geçmiş eklemez. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/IPortfolioOwnerActionAuthority.cs | Yeni dış kanıt portu: hedef User uygunluğu ile actor/Portfolio/işlem bazlı erişim ve PMO adına yetkilendirme ayrı sonuçlar; hiçbir PPM state/store davranışı içermez. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Commands/ChangePortfolioOwnerCommand.cs | Yeni sealed command; açık Assign/Transfer ayrımı, caller actor/tenant alanı yok. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Handlers/CommandHandlers/ChangePortfolioOwnerHandler.cs | Yeni ince handler; mevcut PortfolioService'e delegasyon. |
+| NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Validators/ChangePortfolioOwnerValidator.cs | Yeni request şekli, non-empty kimlikler/gerekçe, ExpectedVersion ve Assign/Transfer girdisi doğrulaması; iş yetkisini validator vermez. |
+| NEW — proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/Portfolios/PortfolioOwnerAssignmentTests.cs | Yeni mevcut Portfolio üzerinde domain, metadata korunması ve BSON round-trip/eski doküman şekli testleri; ikinci davranış modeli yok. |
+| NEW — proposed | services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioOwnerAssignmentMongoTests.cs | Yeni mevcut PortfolioService + gerçek PortfolioRepository/PpmUnitOfWork/AuditIntentRepository testleri. Yalnız dış kimlik/erişim/entitlement/permission kanıtları test doubles; test store yok. |
+
+Korunan mevcut temel: IPortfolioRepository.cs, PortfolioRepository.cs, MongoRepository.cs,
+PpmUnitOfWork.cs, PpmMongoContext.cs, AuditIntentRepository.cs, EntityBase.cs, PortfolioDto.cs ve
+DtoMapping.cs; mevcut create/update/lifecycle command/handler/validator'ları ve DI dosyaları.
+Bunların yeni yetkiyle genişletilmesi gerekirse bu listeden örtülü izin çıkarılmaz. Yeni collection,
+repository, index, migration, seed, csproj/package/config/secret değişikliği hedeflenmez.
+BSON testi eksik owner alanlarını “bilinmiyor/atanmamış” olarak okur; CreatedBy veya default User ile
+doldurmaz. Atama yapılmamış eski dokümanın sıradan edit'inde boş owner alanlarının gereksiz yazımı
+önlenir. Eski binary'nin yeni BSON alanlarını okuma uyumu deployment gate'idir; bu tur dönüşüm yetkisi yoktur.
+
+##### Yalnız kalan zorunlu kararlar ve Claude temasları
+
+| Açık madde | Somut öneri | Gerçek engel / sınır |
+|---|---|---|
+| Owner principal ve Draft cardinality | Adlandırılmış insan User; Draft 0–1 etkin atama; CreatedBy'dan türetme yok. | Bu iki seçim yeni alan/invariant tasarımını doğrudan belirler; kod başlangıcından önce açıkça seçilmeli. Atayıcı persona tekrar sorulmaz. |
+| Devir ve ilk state kapsamı | Atamaya yetkilendirilmiş PMO adına kişi gerekçeli devir de yapabilsin; ilk owner aksiyonu yalnız Draft'ta, server anında; geleceğe/geçmişe tarih, owner kaldırma, kendiliğinden vekâlet yok. Active/Archived için ret, mevcut veri aynen korunur. | Atama rolü onayı devir semantiğini kapatmaz. Bu dar seçim kod başlangıcını belirler; tüm Active/Archived ürün politikasını şimdi çözmek gerekmez. |
+| Kayıt erişimi ve kimlik kanıtı | SOP-0029 seviyeleri icat edilmeden, actor+record+operation için authoritative Allow ve PMO adına yetkilendirme; hedefte authoritative same-tenant/active/named-human/reference eligibility. Belirsizde ret. | Olumlu gerçek kullanım için kaynak/teknik sözleşme zorunlu; port + kapalı davranış kodunu engelleyen genel iş-onayı maddesi değildir. Gizlilik olmadan güvenli Draft/browser kabulü yoktur. |
+
+Atama dışı vocabulary/SOP-0004 risk/preparer/activation/finans/Review Frequency kararları bu dar kod
+sınırının yeni önkoşulları değildir; ilgili gerçek Portfolio davranışlarını bloklamaya devam eder.
+Saklama/ifşa ve mevcut kayıt uyumu [kontrol planı §10.7](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-technical-work-split)
+üzerinden izlenir; yeni mükerrer iş kaydı açılmaz.
+
+**Claude'a ait dar ortak temaslar — bu PPM allowlist'inin dışında, görev gönderilmiş değildir:**
+
+- Permission anlamı ve catalog/manifest eşleşmesi: önerilen, **mevcut olmayan**
+  ppm.portfolios.assign-owner anahtarı (devir seçilirse aynı kontrollü aksiyon); kesin literal/action
+  sözlüğü Claude ile mutabık kalmadan kodlanmaz. PMO metni hardcode rol kontrolü değildir.
+  services/Diten.Platform/src/Diten.Platform.Application/Features/Ppm/SelfRegistration/PpmManifestProvider.cs
+  ve services/Diten.Platform/tests/Diten.Platform.Application.Tests/Ppm/PpmManifestProviderTests.cs
+  Platform-owned temaslardır. frontend/Diten.Web/Navigation/PpmModuleManifest.cs discovery eşleşmesi
+  Claude koordinasyonundadır; bu işe frontend düğmesi ekleme yetkisi çıkarılmaz.
+- Mevcut exact signed permission değerlendirmesi
+  services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/SignedJwtPermissionClaimEvaluator.cs
+  içinde rol adı bypass'ı yoktur; korunur. Claude catalog/grant bağının yalnız açıkça yetkilendirilmiş
+  kişiyi temsil ettiğini, generic admin/owner/update yoluyla otomatik verilmediğini sözleşmeye bağlar.
+  Permission tanımlamak gerçek kullanıcıya grant/provisioning yapmak değildir.
+- Kimlik yolu: services/Diten.Platform/src/Diten.Platform.Infrastructure/Services/Auth/AuthServiceUserReferenceValidator.cs
+  mevcut non-success/parse/kesintiyi 404'e indirger. Auth'taki
+  services/Diten.AuthService/src/Diten.AuthService.Application/Features/Users/Handlers/QueryHandlers/ValidateUserReferenceQueryHandler.cs
+  tenant/aktiflik kontrol eder; tek başına named-human veya PPM adına atama yetkisi kanıtı değildir.
+  Claude, mevcut kimlik/access sözleşmesinin uygunluğunu ve denial/unavailable ayrımını Auth/Platform
+  sahipleriyle daraltır; PPM bu protected dosyaları değiştirmez veya yeni hazır provider varsaymaz.
+  Kayıt erişimi/SOP-0029 authoritative Allow sözleşmesi olmadan portun olumlu runtime kaydı yapılmaz.
+
+##### Gerçek Portfolio test kapıları — PENDING / NOT RUN
+
+| Test yüzeyi | Olumlu kanıt | Olumsuz/yarış kanıtı |
+|---|---|---|
+| PortfolioOwnerAssignmentTests | Mevcut Portfolio ilk atama/devir; tek güncel bağ, gerekçe/actor/UTC/önceki atama korunumu; her yeni etki tek Version. | Gerekçesiz, çakışan owner, yanlış expected assignment, uygunsuz state reddi; metadata Update owner/history değiştirmez. |
+| Aynı unit dosyasında BSON | Gerçek Portfolio + yeni sahip olunan girdi round-trip; eksik alanlı eski BSON atanmış owner üretmez. | CreatedBy/backfill/default kimlik yok; bilinmeyen/bozuk geçmiş sessizce düzeltilmez; eski doküman şekli/regression kanıtı. |
+| PortfolioOwnerAssignmentMongoTests | Mevcut PortfolioService/command/handler zinciri, gerçek repository/UoW/audit ile atama ve devir; yeniden okuyunca aynı history/receipt. | Editor-only, admin etiketi-only, current-owner-only, PMO permission var ama kayıt erişimi yok, hedef kimlik geçersiz/belirsiz, cross-tenant/deleted: hiçbir owner/history/Version/intent değişmez. |
+| Aynı gerçek Mongo testi | Kabul edilen request retry'ı/lost-response sonrası okuma aynı receipt; audit korelasyonu mevcut minimal mutation “updated” ile aynı transaction. | Farklı içeriğe aynı RequestId ret; concurrent aynı/farklı istek tek etki; stale CAS no residue; gerçek UoW callback'inde writes sonrası abort entity/history/receipt/intent'i birlikte geri alır. Sonuncusu transaction kanıtıdır, service hata yolunun tamamı geçti diye sunulmaz. |
+| Mevcut zincir/regression | Mevcut Portfolio CRUD/tenant/CAS testleri korunur; new handler mevcut DI taramasıyla bulunur, provider yokken owner aksiyonu kapalıdır. | Test assembly dışında concrete fake; ikinci aggregate/store; genel DTO'ya history ifşası; permission yerine rol etiketi; protected-path değişimi kabulü engeller. |
+
+Test doubles yalnız test assembly'sinde dış identity/access/entitlement/permission cevaplarıdır.
+Portfolio, repository, audit repository ve UoW yerine in-memory davranış modeli yazılmaz.
+Mevcut PpmDisposableMongo/PpmMongoCollection/PpmMongoTestDatabase test altyapısı değişmeden kullanılır;
+Mongo testleri gerçek test-owned süreç/DB başlattığı için ayrıca açık test-runtime yetkisi gerektirir.
+Bu tur çalıştırılmaz; kod başlangıcı onayı bu test DB yetkisini örtülü vermez. Salt unit test başarısı
+persistence/CAS/rollback, gerçek sağlayıcı, gizlilik veya browser kabulü sayılmaz. Test DB yetkisi yoksa
+integration kapıları PENDING kalır; test store ile ikame edilmez.
+
+##### Önceki owner-only dar onay metni — tarihsel öneri, verilmiş onay değil
+
+Bu ayrı metin yerine [tek kullanıcı teslimatı toplu onayı](#portfolio-user-delivery-bundle)
+değerlendirilir; aşağıdaki kayıt tarihsel kapsamı korur ve bağımsız sonraki adım değildir.
+
+Bu metin atayıcı rolünü yeniden onaylatmaz; kalan iki owner davranış seçimini açıkça ayırır.
+Permission literal/consumer kanıt biçimi Claude ile mutabık olduktan sonra kullanılabilecek metin:
+
+> Owner principal için adlandırılmış insan User ve Draft 0–1 seçimini; gerekçeli, anlık, yalnız Draft'ta
+> PMO adına yetkilendirilmiş kişinin devir yapabilmesi sınırını ayrıca onaylıyorum. MOD-0117
+> “Owner assignment — one APPROVED BUSINESS DECISION” bölümündeki 5 mevcut + 8 yeni dosyada mevcut
+> Portfolio entity/service zincirinin owner atama/devir için genişletilmesine ve yalnız ilgili unit
+> testlerinin çalıştırılmasına izin veriyorum. İki mevcut belge yalnız scoped onay/kanıt için
+> güncellenebilir. Gerçek kimlik/erişim sağlayıcısı yoksa owner aksiyonu kapalı kalacak; test doubles
+> yalnız dış bağımlılıklar olacak. Test Mongo/süreç başlatma, gerçek veri, Platform/Auth/shared veya
+> frontend/Gateway değişikliği, provisioning, assessment/activation, config/secret, production ve
+> commit/push/PR bu onayın dışındadır. NOT SELECTED dilim kapalı; pack review ve production_authority: none.
+
+Bu yalnız taslak onay metnidir; bu tur implementation authority verilmedi. Atayıcı rolü kapandı diye
+diğer PROPOSED kararlar approved olmaz. Gerçek persistence test-runtime yetkisi ve provider/manifest
+mutabakatı ayrı kanıt kapılarıdır. Aynı anlamlı Portfolio teslimatı içinde kalınır; küçük governance PR'ı yoktur.
+
+
+<a id="portfolio-user-delivery-bundle"></a>
+
+#### Portfolio first user delivery — single approval bundle — DRAFT / NON-EXECUTABLE — 2026-09-10
+
+> **SCOPED USER IMPLEMENTATION APPROVAL — 2026-09-10:** Kullanıcı dört alanlı Portfolio ekranı ve
+> Draft'ta sorumlu atama/devir geliştirmesini açıkça onayladı; mevcut Active/Archived read-only,
+> lifecycle ve silme kapalı seçimini kabul etti. Aşağıdaki tarihsel DRAFT/onay-bekliyor ifadeleri
+> bu seçilen PPM geliştirme sınırı için bu kayıtla aşılmıştır; toplu taslak metnin tamamı verilmiş
+> onay gibi okunmaz. Diğer PROPOSED politikalar, permission katalog yayını, gerçek kullanıcı grant'i,
+> Auth/Platform değişikliği, provisioning, ortak/production DB ve canlıya alma kapsam dışıdır.
+> Pack review, önceki scoped yetkiler ve production_authority: none korunur.
+> Test koşulu: açıkça belirlenmiş, repository kurallarına uygun disposable profil.
+> Seçilen Mongo profili mevcut PpmMongoCollection / MOD-0117-disposable-Mongo + PpmDisposableMongo:
+> yalnız test-owned loopback süreçleri, dinamik port >=27022, geçici dbpath ve sabit
+> diten_ppm_integration_tests DB; test başına tenant izolasyonu. Ortak/production bağlantısı veya
+> uygulama config'i tüketilmez. Unit/JS kontrolleri DB'siz disposable çalışma çıktılarıyla sınırlıdır.
+> CT external endpoint/schema ve güvenli katalog checkpoint'i olmadan runtime authority adapter/DI
+> veya frontend assign-owner manifest yayını yapılmaz; eksik authority işlemleri kapalı tutar.
+
+
+Bu bölüm liste + create/edit + details + sorumlu atama/devir yüzeylerini **tek kısmi Draft kullanıcı
+teslimatı** olarak birleştirir. Önceki analizlerin tekrarı veya yeni module/backlog değildir.
+Yalnız atayıcı iş rolü APPROVED BUSINESS DECISION'dır: **portföy yönetimi/PMO adına yetkilendirilmiş kişi**.
+Aşağıdaki owner/form/state/permission seçimleri PROPOSED; bu hazırlık kod/test/runtime yetkisi vermez.
+Pack review, mevcut implementation-authority alanları, production_authority: none ve önceki scoped
+onaylar değişmez. Detached dilim NOT SELECTED kalır.
+
+Bu yeni toplu öneri seçilirse önceki owner-only 5+8 dosya önerisinin **ayrı onay metni yerine** buradaki
+tek onay metni kullanılır. Owner-only tarihsel kapsam silinmez; kendiliğinden genişlemiş onay sayılmaz.
+İlk kullanıcı teslimatı için form OPEN kaydı aşağıdaki **dört alanlı öneriyle** somutlaştırılmıştır;
+Portfolio'nun daha sonraki tam formu, diğer sınıflar ve composite frontmatter alan sayısı bundan türetilmez.
+
+##### Kullanıcı alanları ve işlemleri — hedef net, onay henüz yok
+
+| Yüzey | Kullanıcının girdiği alan / işlem | İlk teslimat önerisi ve açılma şartı |
+|---|---|---|
+| Create/edit — alan 1 | Code | Required, max 64; mevcut normalizasyon ve tenant içinde uniqueness korunur. |
+| Create/edit — alan 2 | Name | Required, max 200. |
+| Create/edit — alan 3 | Description | Optional, max 2000. |
+| Create/edit — alan 4 | Capacity Allocation açıklaması | Optional serbest metin; teknik limit önerisi max 2000. Rezervasyon, atama, hesap veya zorunluluk değil. |
+| Liste | Arama/filtre, izinli kayıt seçimi | Yalnız erişim kararı doğrulanmış kayıtlar; görünmeyen kayıt sayısı/etiketi/export verisi sızmaz. Draft ile mevcut Active/Archived ayrımı açık. |
+| Details | Salt okunur hızlı görünüm | Dört alan, lifecycle, izinli güncel owner özeti ve ayrıca history-read kararı varsa gerekçeli atama geçmişi. Liste satırına tam history gömülmez; açılışta güncel detail GET. |
+| Atama/devir | Uygun User seçimi + gerekçe | Ayrı offcanvas; server'dan Assign/Transfer bağlamı. Hedef adaylar scoped authoritative arama ile gelir; serbest GUID veya hardcoded kullanıcı listesi yok. |
+| Backend/system | Id, tenant, actor, Version, RequestId, ExpectedAssignmentId, UTC zamanlar, lifecycle, izin/action/policy kanıtları | Kullanıcı form alanı değildir. Teknik concurrency/idempotency alanları server/istemci protokolünce taşınır; yetki kaynağı sayılmaz. |
+| Kapsam dışı | Performance/risk değerlendirmesi, Review Frequency, Strategic Objective/funding girişi, gizlilik seviyesi seçimi | İlk dört-alan formuna eklenmez; uydurma değer/default veya aktif görünen boş kontrol yok. İlgili bağımlılık nedeniyle kullanılmadığı açıklanır. |
+
+**Create/edit kullanıcı alan sayısı = 4; Golden = Slim (4 ≤ 8).** Index içinde create/edit offcanvas,
+details için _DetailsQuickView; ayrı Compact Create.cshtml/Edit.cshtml/Details.cshtml/_Form.cshtml yok.
+Atama/devir aksiyonunun iki girdisi create/edit sayımına eklenmez. Referans: AGENTS.md §6,
+DEV-0000 pack ve canlı GoldenReferenceSlim Index/_DetailsQuickView/Create command. Tenant layout
+_LayoutTenantShell; DataTable v2, yedi dil ve mevcut Premium SweetAlert2 kontratı korunur.
+Başka yüzeyleri değiştiren shared refactor veya ikinci frontend ürün akışı hedeflenmez.
+
+| İşlem | Hedef kullanılabilirlik | Şu anda gerçek kullanımın kapalı olmasının nedeni |
+|---|---|---|
+| Page/list/detail | Read permission + authoritative kayıt erişimi; mevcut Active/Archived yalnız izinli read-only | SOP-0029 uygulanabilir politika/record-access provider doğrulanmadı. Önce sayfa erişimi; yetkisizde iskelet/tablo/aksiyon çizilmez, yalnız açıklama gösterilir. |
+| Draft create/edit | Dört metadata alanı; create policy ve mevcut kayıtta edit kararı ayrıca doğrulanır | Gizlilik/erişim eksik. Create, provider'ın seçilen dört alanla resolve ettiği authoritative policy bağını kullanır; creator-only/en kısıtlı default uydurulmaz. |
+| Draft atama/devir | Ayrı assign-owner permission + PMO adına yetkilendirme + kayıt erişimi + hedef eligibility; reason/CAS/replay | Owner seçimleri hâlâ PROPOSED; CT auto-grant/catalog ve gerçek identity/access sözleşmeleri açık. |
+| Aktivasyon / diğer lifecycle | İlk kabulde kapalı; doğrudan API çağrısı da açamaz | MOD-0136 finans, stratejik hedef, accountable owner, Review Frequency ve ilgili onay/erişim koşulları birlikte kapanmadı. Mevcut kodun Draft→Active izni bu teslimatta server-side kapatılmalı. |
+| Archive/delete/bulk mutation | Bu kullanıcı kabulünde kullanılmaz; UI düğmesi yok, Portfolio API bypass'ı da reddedilir | Bu teslimat talebinin dışında; Active/Archived mutation uyumluluğu onaylanmış değil. Entity soft-delete/dependency/fence temeli silinmez. |
+| Assessment ve diğer entegrasyonlar | Kapalı, tamamlanmış sayılmaz | Performans yayını/history, SOP-0004 risk, tam approval/preparer ve diğer mevcut §10.7/§10.5 bağımlılıkları sürer. |
+
+Aktivasyonun kapatılması yeni bir otomatik Draft dönüşümü değildir. Eski Active/Archived kayıtlar
+yeniden sınıflanmaz, silinmez veya owner/default ile doldurulmaz. Policy kararı olmayan eski kayıt
+açıklanmaz. Eski BSON'da owner/capacity alanı yokluğu doğru temsil edilir; toplu migration/backfill yok.
+Create için gerçek politika ayrıca kullanıcıdan bir sınıflandırma girdisi gerektirirse bu dört alanlı
+öneri onun yerine geçmez: ilgili create yolu kapalı kalır, kapsam sessizce beşinci alanla genişletilmez.
+Bu nedenle paket **onaya sunulabilir tasarımdır**, bugün güvenli gerçek-veri teslimatı hazır değildir.
+
+##### Tek karar tablosu — kapanan atayıcı rolü tekrar sorulmaz
+
+| Karar / durum | Tek seferde değerlendirilecek öneri | Sahip / sınır |
+|---|---|---|
+| Atayıcı persona — APPROVED BUSINESS DECISION | PMO/portföy yönetimi adına yetkilendirilmiş kişi | Kullanıcının önceki açık onayı korunur; admin, current owner veya update otomatik yetki değildir. |
+| Owner principal — PROPOSED | Adlandırılmış insan User; shared/system/service hesabı uygun sayılmaz | PPM iş seçimi; authoritative insan/aktiflik/tenant/atanabilirlik kanıtı Auth/CT sözleşmesidir. |
+| Draft cardinality — PROPOSED | Draft'ta 0–1 etkin owner; yokluğu açık göster | PPM iş seçimi; owner yokluğu gerçek assessment/activation hakkı vermez. |
+| Devir — PROPOSED | Aynı yetkilendirilmiş iş personası gerekçeli, server anında, yalnız Draft'ta atama/devir yapabilsin | Owner kaldırma, backdate/scheduling ve vekâlet kapsam dışında; kişi kendiliğinden devir yetkisi kazanmaz. |
+| İlk yüzey/form/state kapsamı — PROPOSED | Dört alan + Slim + ayrı owner aksiyonu; mevcut Active/Archived read-only; assessment/lifecycle/delete bu kabul dışında | PPM kapsam seçimi. Capacity optional iş kararı korunur; 2000 limit teknik öneridir. |
+| Permission governance — PROPOSED | ppm.portfolios.assign-owner; Assign/Transfer aynı kontrollü izin, farklı request/state kontrolleri | MOD-0117 Tier-3 anlam kaydı; assessment veya genel edit'e alias değil. CT katalog/grant güvenliği şart. |
+
+##### Platform–Auth teslim sırası ve açık dış kapılar
+
+Bu bölüm assign-owner için tek kanonik governance kaydıdır; [kontrol planı §10.11](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-owner-assignment-control)
+yalnız CT koordinasyonunu bu kayda bağlar. **Auth/Platform kodunun tek yazarı altyapı CT'dir; başka sohbete gönderilmez.**
+Önceki read-only bulgular yeniden tamamlanmış iş sayılmaz; altyapı kusurları CT kuyruğunda bekler.
+
+1. **Governance seçimi:** Yukarıdaki tek permission literal/anlamı toplu onay içinde açıkça seçilir.
+   Adlandırma PKS Tier-3'e uygundur; henüz runtime/canonical katalog kaydı yoktur.
+2. **CT altyapı düzeltmesi önce:** catalog create/reactivate full-catalog auto-grant, SuperAdmin baseline
+   ve PPM module-code case/sync yolları yeni kontrollü izni otomatik vermemeli. JWT resolver'ın exact
+   authoritative PPM kabulü sessizce genişletilmez. Düzeltme + negatif grant/sync kanıtı gelmeden
+   permission yayınlama/etkinleştirme yok. Gerçek role/user grant/provisioning bu paketin yetkisi değildir.
+3. **Platform → Auth kayıt eşleşmesi:** CT PpmManifestProvider PORTFOLIOS'a tek ASSIGN_OWNER aksiyonu
+   ve testi (24→25 izin; yalnız Portfolio 3→4 aksiyon) için checkpoint hazırlar. Auth PpmPermissionCatalog'a
+   aynı **tek anahtar** eklenir; ortak Actions dizisi genişletilmez. Manifest sync'i bu kapalı canonical
+   liste ve grant koruması hazır olduktan sonra kontrollü non-production doğrulanır. Tek taraflı katalog
+   değişikliği teslimat değildir. PPM sabiti + frontend discovery + exact-set testleri aynı literal ile eşleşir.
+4. **Kimlik ve erişim sözleşmesi:** CT/Auth hedefin named-human/same-tenant/active/assignable kanıtını;
+   erişim kaynağı sahibi SOP-0029'a uygun page/create/record/read/edit/history/owner kararını sağlar.
+   auth.users.lookup-validation endpoint'i yalnız kısmi tenant/aktiflik kanıtıdır. Platform iç adapter'ı
+   PPM dış API'si değildir; hazır Portfolio-specific provider iddiası yoktur. Denial/unavailable ayrımı,
+   trusted tenant/actor/Portfolio/operation/target/Version/request/policy-version/freshness bağı gerekir.
+   Candidate sorgusu da kayıt-scope izinli ve masked/bounded olmalı; tam User dizinine otomatik erişim yok.
+5. **PPM tüketimi ve non-production kabul:** Exact CT schema/endpoint/auth/failure sözleşmesi geldikten
+   sonra aşağıdaki PPM adapter'ı bağlanır. Null/unavailable port 503, kesin yetki reddi 403, görünmez/
+   cross-tenant kayıt 404; istemci 400/409/503 farkını gösterir. Positive provider yokken test double'ı
+   runtime'a koyma, fake lookup veya creator-only fallback yasaktır.
+
+| Dış bağımlılık | Sahip | İlk kabulde gerçek engel |
+|---|---|---|
+| Auto-grant/case kusurları + Platform/Auth katalog eşleşmesi | Altyapı CT — mevcut kuyruk | Assign-owner yayını ve gerçek yetkilendirme güvenliği; checkpoint/test kanıtı henüz yok. |
+| SOP-0029 politika/erişim kaynağı; create policy resolve ve history-read | Yetkili politika/belge sahibi + altyapı CT; PPM consumer | Liste/create/edit/details ve history gerçek veri kabulü; uydurularak kapatılamaz. |
+| User insan/aktiflik/tenant/atanabilirlik; scoped candidate sözleşmesi | Auth/kimlik sahibi + altyapı CT; PPM consumer | Atama/devir olumlu gerçek kullanım; API/adapter varlığı tam kanıt değildir. |
+| MOD-0136 finans, MOD-0352 strateji, Review Frequency, approval/preparer, SOP-0004 ve MOD-0048 | Mevcut §10.7 sahipleri; finans yalnız §10.5 | Kendi kapsamındaki aktivasyon/assessment/entegrasyonlar kapalı. Dört alanlı metadata'yı fake değerle tamamlamak gerekmez. |
+
+##### Dar permission governance ve kayıt erişimi karar tablosu — CT handoff
+
+<a id="portfolio-owner-explicit-grant-decision"></a>
+
+**APPROVED BUSINESS DECISION — 2026-09-11; yalnız otomatik grant dışlama:** Kullanıcı,
+`ppm.portfolios.assign-owner` izninin SuperAdmin dahil hiçbir role otomatik verilmemesini,
+yalnız yetkili kişinin açık izin atamasıyla verilmesini açık soruya verdiği “evet” yanıtıyla onayladı.
+Kapsam; tam katalog grant'i, kiracı Admin modül eşitlemesi ve başlangıç rol şablonları dahil
+tüm otomatik grant yollarıdır. Diğer izinlerin davranışı değişmez.
+Bu karar mevcut gerçek grant'leri değiştirme/kaldırma, provisioning, Auth/Platform uygulaması,
+commit/push veya production yetkisi değildir. Parent pack `review` ve `production_authority: none`
+kalır; kimlik ve kayıt erişimi gerçek kullanım kapıları olarak ayrıca açıktır. Parent statüsü için
+yeniden CT teyidi istenmez.
+
+| Konu | Mevcut onay / kanıt | Eksik karar | Öneri — runtime politikası değildir | Karar sahibi |
+|---|---|---|---|---|
+| \`ppm.portfolios.assign-owner\` | Yalnız Portfolio Assign/Transfer içindir; genel edit, değerlendirme veya kayıt okuma yetkisi değildir. PMO adına yetkilendirilmiş kişinin atayıcı iş rolü onaylıdır. Otomatik grant dışlama iş kararı yukarıdaki 2026-09-11 kaydıyla onaylandı. | Katalog yayını ve dışlama uygulaması henüz tamamlanmadı. | Bu satırdaki otomatik grant dışlama artık öneri değildir; onaylı iş kararıdır. Runtime uygulaması ve kanıtı ayrı kapılardır. | İş kararı: Kullanıcı — onaylandı. Katalog/grant uygulaması: altyapı CT. |
+| Parent pack / scoped amendment | MOD-0117 \`review\`, \`production_authority: none\` kalır. FU01'in yalnız permission-yayımı kapsamı kullanıcı tarafından onaylandı; bu parent pack'i \`approved\` / \`ready-for-dev\` yapmaz. | Claude'un 2026-09-11 teyidi: parent review kalabilir; own approved/ready FU origin SHA ile okunabilir. | CT'nin kesinleştirilmiş write scope'u, gerekli yetki girdileri ve test kapıları ayrıdır; onay gerçek grant/provisioning, kimlik/kayıt erişimi, browser veya production yetkisi değildir. | FU kapsam onayı: Kullanıcı — onaylandı. CT scope/test: altyapı CT. |
+| Owner kimliği | Adlandırılmış aktif insan User yaklaşımı korunur. | Mevcut Auth tenant/aktiflik kanıtı hesabın insan olduğunu kanıtlamaz; atanabilirlik provider sözleşmesi yoktur. | Yeni çalışan/aktif pozisyon şartı veya “her aktif kullanıcı uygundur” kapsamı eklenmez. Target yalnız authoritative named-human/tenant/active/assignable kanıtıyla seçilir; belirsizlikte ret. | Auth/kimlik sahibi + altyapı CT; iş kuralı sahibi |
+| Owner’sız Draft oluşturma ve sonradan erişim | Owner'ın Draft'ta yokluğu temsil edilir; owner aksiyonu ayrıdır. | Oluşturanın veya başka actorün sonraki read/edit erişimini belirleyen gizlilik kararı yoktur. | Create ve sonraki record access ayrı authoritative policy kararlarıdır; creator-only veya owner fallback yoktur. Provider yok/belirsizse fail-closed. | SOP-0029 / yetkili politika sahibi; PPM tüketici |
+| Liste/detail/arama/export görünürlüğü | Cross-tenant ve hidden kayıtta no-leak hedefi vardır; genel CRUD permission tek başına yeterli değildir. | List/detail/search/export, count ve cache/DOM sızıntısı için gizlilik politikası seçilmemiştir. | Her operation ayrı authoritative record-access kararı ister; list görünürlüğü detail/history/export izni üretmez. Belirsizlikte fail-closed. | SOP-0029 / yetkili politika sahibi; PPM tüketici |
+| Metadata düzenleme | Dört alanlı Draft metadata düzenleme kapsamda; Active/Archived salt-okunur, lifecycle/delete kapalıdır. | Hangi actorların hangi Draft kaydını güncelleyebileceği açık değildir. | Record + operation-bound policy kanıtı gerekir; generic update, atayıcı rol veya owner olmak tek başına yetki değildir. | SOP-0029 / yetkili politika sahibi; PPM tüketici |
+| Owner atama/devir | Atayıcı iş rolü onaylı; Assign/Transfer genel editten ayrı; eksik/belirsiz authority'de işlem kapalıdır. | Actor'ın kayda bağlı yetkisi, target named-human uygunluğu ve Draft/cardinality/devir ayrıntılarının authoritative sözleşmesi açık değildir. | Actor + tenant + record + operation + target kanıtı save-time yeniden doğrulanır; PMO rol adı hardcode edilmez. | Yetkili iş/politika sahibi; Auth/kimlik sahibi + altyapı CT; PPM tüketici |
+| Owner ve gerekçe geçmişi | Geçmiş aggregate içinde append-only tutulur; liste/detail görünürlüğüne otomatik eklenmez. | History'nin kimlere, hangi gerekçe/snapshot alanlarıyla açılacağı belirlenmemiştir. | History-read ayrı record-access operation'dır; current-record read veya owner görünürlüğü history izni değildir. | SOP-0029 / yetkili politika sahibi; PPM tüketici |
+| Active/Archived kayıtları okuma | Kayıtlar salt-okunur kalır; Draft'a dönüştürme ve varsayılan owner üretimi yoktur. | Kimlerin list/detail/search/export ile okuyacağı belirlenmemiştir. | Read-only state erişim grant'i değildir; aynı authoritative read policy gerekir ve belirsizlikte fail-closed kalır. | SOP-0029 / yetkili politika sahibi; PPM tüketici |
+
+**CT'ye dar handoff — henüz SHA yok:** “Push edilmiş sabit governance SHA oluştuğunda CT,
+\`git show <sha> -- execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md
+docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md\` ile bu kaydı
+main merge beklemeden okuyabilir. PPM governance kaydı CT'nin ilgili Auth/Platform commitlerinden önce
+veya onlarla aynı anda main'e girmelidir. Parent review kalabilir; FU kendi approved/ready statüsü ve
+origin SHA ile okunur. Bu teyit FU onayı veya implementation yetkisi değildir. Sonrasında aynı literal
+için açık-yetkilendirme, automatic-grant negatifleri ve discovery/catalog teslim sırası beklenir. Commit/push/PR/merge ve
+production activation ayrı kapılardır; bu turda hiçbiri yapılmamıştır.”
+
+**FU kapsam ayrımı — 2026-09-11:** [MOD-0117-FU01 — Portfolio Assign-Owner Permission Publication](MOD-0117-FU01-portfolio-assign-owner-permission-publication.md)
+bu kanonik kaydın yalnız permission-yayımı follow-up’ıdır. Parent pack `review` kalır; FU `approved` ve
+`production_authority: none` durumundadır. Kullanıcı onayı yalnız Auth/Platform’un CT tarafından, CT’nin
+kendi kesinleştirilmiş write scope’u ve test kapılarıyla yürütülebilecek publication kapsamıdır; gerçek
+grant/provisioning, kimlik/kayıt erişimi, browser ve production kapsam dışıdır. PPM’de mevcut `PpmPermissions` consumer literal’i ve contract
+beklentisi yeniden yapılacak iş değildir. Platform manifest/catalog, Auth canonical ayna, BL-359
+automatic-grant dışlama ve BL-360 case-consistency yalnız altyapı CT’nin ayrı write scope’udur. FU yeni
+endpoint, UI, entity, servis, migration veya genel record-access motoru açmaz.
+
+<a id="portfolio-user-delivery-files"></a>
+
+##### Tek PPM backend/frontend/test exact gelecek allowlist — yalnız PROPOSED
+
+Aşağıdaki **53 dosya** (35 EXISTING, 18 NEW) tek kullanıcı teslimatı için aday kapsamdır.
+Bu tur yalnız iki governance belgesi değişebilir. Liste hiçbir mevcut implementation yetkisini
+genişletmez; seçilirse önceki owner-only listeye açık ekleme/yerine geçme olarak kullanılır.
+NEW satırları bugün yoktur. Runtime provider dosya yeri önerisi, CT dış API sözleşmesinin hazır
+olduğu anlamına gelmez; bilinmeyen endpoint/schema/config değeri icat edilmez.
+
+| Katman / durum | Exact repository-relative dosya | Yalnız izin verilecek dar değişiklik |
+|---|---|---|
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/Portfolio.cs | CapacityAllocationDescription + aynı aggregate'te owner/history; mevcut metadata/tenant/Version temeli. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Services/PortfolioService.cs | Liste/detail/create/edit/owner için authoritative erişim; Draft sınırı; aktivasyon ve kapsam dışı mutasyonlar kapalı; aynı repository/UoW/CAS/audit. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Common/PpmPermissions.cs | Yalnız onaylanacak assign-owner sabiti. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Api/Controllers/PortfoliosController.cs | Mevcut API'ye page-access, owner-candidates ve owner-assignments aksiyonları; DTO/response uyumu. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Persistence/Mongo/PpmBsonConfiguration.cs | Yalnız Portfolio capacity/embedded-owner/history BSON eşlemesi ve eski şekil uyumu. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Commands/CreatePortfolioCommand.cs | Dördüncü optional metadata girdisi; owner/lifecycle/tenant/actor girdisi yok. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Commands/UpdatePortfolioCommand.cs | Aynı dört metadata girdisi + teknik expected Version. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Validators/CreatePortfolioValidator.cs | Dört alanın doğrulaması; serbest visibility/default yok. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Validators/UpdatePortfolioValidator.cs | Aynı doğrulama; domain/service yetki ve state kontrolünün yerine geçmez. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Common/PortfolioDto.cs | Capacity, yalnız izinli owner özeti/action availability; details'e mahsus izinli history projection, listeye history yok. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Application/Common/DtoMapping.cs | Yalnız Portfolio mapping; policy değerlendirmesi mapping'de yapılmaz, yetkisiz owner/history serialize edilmez. |
+| Backend / EXISTING | services/Diten.PpmService/src/Diten.PpmService.Infrastructure/DependencyInjection.cs | Yalnız Portfolio dış authority consumer bağlama; eksik/bozuk provider config kapalı, sahte provider yok. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/Entities/PortfolioOwnerAssignment.cs | Sahip olunan immutable girdi + predecessor/request receipt/audit korelasyonu; ikinci aggregate/repository değil. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/PortfolioOwnerModels.cs | Owner, masked candidate, permission/action ve history/evidence DTO'ları; gerçek kimlik dizini değil. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/IPortfolioOwnerActionAuthority.cs | Dış actor/işlem/PMO yetkilendirmesi ve hedef insan User eligibility/candidate kanıtı; ayrı sonuçlar. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/IPortfolioRecordAccessAuthority.cs | Create/page/list/detail/edit/history için dış erişim kararları; tenant/record/operation/policy sürüm bağı. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Commands/ChangePortfolioOwnerCommand.cs | Assign/Transfer açık; gerekçe/target/ExpectedAssignmentId/ExpectedVersion/RequestId. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Handlers/CommandHandlers/ChangePortfolioOwnerHandler.cs | Mevcut PortfolioService'e delegasyon. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Validators/ChangePortfolioOwnerValidator.cs | Şekil ve gerekçe/sürüm kontrolleri; rol adı kontrolü yok. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Queries/GetPortfolioPageAccessQuery.cs | Kayıt taşımayan page/read/create availability isteği. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Handlers/QueryHandlers/GetPortfolioPageAccessHandler.cs | Mevcut PortfolioService üzerinden authoritative page/create kararı. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Queries/GetPortfolioOwnerCandidatesQuery.cs | Portfolio-scope, sınırlandırılmış search/paging; tam dizin export'u yok. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/Portfolios/Handlers/QueryHandlers/GetPortfolioOwnerCandidatesHandler.cs | Mevcut PortfolioService üzerinden yetkili candidate sorgusu. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthorityClient.cs | CT'nin doğrulanmış dış sözleşmesine PPM adapter'ı; endpoint/schema henüz hazır değil, sözleşme kapısı açık. |
+| Backend / NEW — proposed | services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthorityOptions.cs | Typed consumer ayar/bağı doğrulaması; repo config/secret dosyası veya default endpoint ekleme yetkisi değil. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/Index.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/_Filter.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/_DataTable.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/_CreateEditOffcanvas.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/_DetailsQuickView.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/Views/PPM/Portfolios/_IndexL10n.cshtml | Mevcut Portfolio partial'ını gerçek Slim yüzeyine genişlet; dört alan, izinli details ve ayrı owner aksiyonu; diğer PPM partial'larına değişiklik yok. |
+| Frontend / EXISTING | frontend/Diten.Web/wwwroot/assets/js/PPM/Portfolios/index.js | Portfolio'ya ait field/action/error wiring ve L10n; server authority sonucunu tüketir. |
+| Frontend / EXISTING | frontend/Diten.Web/wwwroot/assets/js/PPM/Portfolios/index.l10n.js | Portfolio'ya ait field/action/error wiring ve L10n; server authority sonucunu tüketir. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.en.resx | Mevcut en kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.tr.resx | Mevcut tr kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.fr.resx | Mevcut fr kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.es.resx | Mevcut es kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.zh.resx | Mevcut zh kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.ar.resx | Mevcut ar kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Resources/Views/PPM/Portfolios/PortfoliosIndex.ru.resx | Mevcut ru kaynaklarında dört alan, owner/details ve hata/açılmama nedenleri. |
+| Frontend / EXISTING | frontend/Diten.Web/Controllers/PPM/PpmController.cs | Shared PPM controller: yalnız portfolios page-access gate + yeni same-origin proxy yolları; mevcut diğer resource davranışları korunur. |
+| Frontend / EXISTING | frontend/Diten.Web/wwwroot/assets/js/PPM/ppm-crud.js | Shared PPM yardımcı: opt-in Portfolio field/action/detail-load/error hooks; varsayılan diğer modül davranışını değiştirmez. |
+| Frontend / EXISTING | frontend/Diten.Web/Navigation/PpmModuleManifest.cs | CT'nin aynı literal/katalog checkpoint'iyle yalnız assign-owner discovery kaydı; grant değil. |
+| Frontend / NEW — proposed | frontend/Diten.Web/Models/PPM/PortfolioPageModels.cs | Yalnız Portfolio page/form/availability modelleri; shared PpmViewModels ve başka aggregate üretmez. |
+| Frontend / NEW — proposed | frontend/Diten.Web/Views/PPM/Portfolios/_OwnerAssignmentOffcanvas.cshtml | Ayrı kullanıcı seçimi + gerekçe; Assign/Transfer bağlamı ve teknik alanlar server'dan. |
+| Test / EXISTING | services/Diten.PpmService/tests/Diten.PpmService.Tests/ApplicationContractTests.cs | Exact permission setine tek anahtar ve mevcut Portfolio regression beklentileri; diğer kaynakların kümesi genişletilmez. |
+| Test / EXISTING — 2026-09-11 dar onay | services/Diten.PpmService/tests/Diten.PpmService.Tests/PpmEntitlementAuthorizationTests.cs | Yalnız dış record-access authority olumlu test cevabı; create \`201\` ile entitlement → mutation → audit → dispatch correlation zinciri korunur. |
+| Test / EXISTING — 2026-09-11 dar onay | services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/MongoPersistenceIntegrationTests.cs | Yalnız dış authority fixture'ı ve create/CAS beklentileri: normalized duplicate \`409\`, cross-tenant \`404\`, stale version \`409\`, reddedilen işlemde Mongo/audit değişmez. Gerçek Mongo repository/UoW/CAS/audit korunur. |
+| Test / EXISTING | frontend/Diten.Web/tests/js/ppm-add-new-delegation.test.mjs | Mevcut Portfolio add/edit delegasyonu yeni dört alanla; diğer yüzeylerin davranışı korunur. |
+| Test / EXISTING | frontend/Diten.Web/tests/js/ppm-gate-l-contract.test.mjs | Shared PpmCrud/controller değişiminde mevcut Gate L ve diğer PPM regressions. |
+| Test / NEW — proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/Portfolios/PortfolioOwnerAssignmentTests.cs | Gerçek Portfolio owner/capacity invariant'ları, metadata korunumu, BSON eski/yeni şekil. |
+| Test / NEW — proposed | services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioOwnerAssignmentMongoTests.cs | Gerçek PortfolioService/repository/UoW/audit ile CRUD, access, history, owner, CAS/replay/rollback ve activation reddi. |
+| Test / NEW — proposed | frontend/Diten.Web/tests/js/ppm-portfolio-delivery.test.mjs | Gerçek Portfolio JS/DOM/proxy contract'ı; alan sayısı, server actions, errors, no-leak. Browser kullanıcı kabulünün yerine geçmez. |
+
+**Shared/protected sınır:** PpmController.cs, ppm-crud.js ve DtoMapping.cs shared temasları yukarıda
+bilerek açıkça listelendi; değişim Portfolio opt-in branch/hook ile sınırlandırılır, diğer modüllerin
+regressions zorunludur. Portfolio Index mevcut shared _ListShell'i genişletmek yerine mevcut yerel
+Portfolio partial'larını gerçek Slim kompozisyonunda kullanabilir; aynı PpmCrud yardımcısı korunur.
+Shared _ListShell/_Layout/diğer PPM partial'ları, .antigravity, diğer domain servisleri, csproj/package,
+repo config/secret, seed/index/migration dosyaları PPM uygulama allowlist'inde değildir.
+Mevcut Gateway /api/v1/ppm/{everything} GET/POST/PUT yollarını taşıyor; yeni route dosyası deltası
+gerekli görünmedi. Gateway değişikliği gerekirse integration-agent/protected kapısı ayrı kalır.
+
+**CT-owned temaslar — PPM allowlist'inin dışında, yeni atama değil, mevcut kuyrukla bağlantı:**
+services/Diten.Platform/src/Diten.Platform.Application/Features/Ppm/SelfRegistration/PpmManifestProvider.cs;
+services/Diten.Platform/tests/Diten.Platform.Application.Tests/Ppm/PpmManifestProviderTests.cs;
+services/Diten.AuthService/src/Diten.AuthService.Application/Common/Authorization/PpmPermissionCatalog.cs;
+services/Diten.AuthService/src/Diten.AuthService.Application/Common/Authorization/PpmEntitlementPermissionPolicy.cs;
+services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs;
+services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/InternalPermissionsController.cs;
+services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/FullCatalogPermissionGrantService.cs;
+services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs.
+Bunlar incelenmiş temas noktalarıdır, hepsinin mutlaka değişeceği veya CT allowlist'inin bu belgede
+onaylandığı iddia edilmez. CT kendi dar düzeltme/test kapsamını mevcut kuyruğunda tutar.
+Kimlik/record-access provider'ın yeni dış endpoint dosyaları henüz sözleşmeyle belirlenmedi; PPM
+bu boşluğu protected dosya değişikliği veya hazır provider varsayımıyla doldurmaz.
+
+##### Mevcut zincir, API ve kabul senaryoları — NOT RUN / PENDING
+
+Mevcut Portfolio/PortfolioService/IPortfolioRepository/PpmUnitOfWork/Mongo CAS/minimal audit zinciri
+korunur. Capacity ve owner/history aynı aggregate'tedir; yeni store/aggregate/outbox/kimlik dizini yok.
+Genel update owner/history'yi değiştiremez. Atama yetkisi assessment yetkisi değildir.
+Önceki owner reason/Version/request-replay/transaction tasarımı sadece seçilen sınırda genişletilir.
+Mevcut DTO'nun owner/history eklemesi **yalnız izinli projection** içindir: history sadece detail GET'te,
+history-read Allow varsa; liste yanıtında/row data-json'da/history yetkisi olmayan detail'de bulunmaz.
+
+Yeni **önerilen, mevcut olmayan** PPM yolları:
+GET /api/v1/ppm/portfolios/page-access;
+GET /api/v1/ppm/portfolios/{id}/owner-candidates;
+POST /api/v1/ppm/portfolios/{id}/owner-assignments.
+Mevcut list/detail/create/update yolları genişletilir. Frontend aynı-origin /PPM/Portfolios/api
+proxy ailesini, backend'e Gateway üzerinden kullanır. Bunlar PPM consumer yollarıdır; yeni dış
+Platform/Auth API'si hazır ilan edilmez. Owner formunda yalnız User seçimi ve reason görünür;
+Assign/Transfer/ExpectedAssignmentId/Version/RequestId protokol alanlarıdır.
+
+| Kabul kapısı | Birlikte aranacak olumlu/olumsuz kanıt |
+|---|---|
+| Dört alan / Slim | Code/Name zorunlu; Description/Capacity optional ve max limitler; tenant duplicate; backend/source HTML/JS alanları aynı. System/owner/visibility/frequency alanı create/edit sayımına veya gizli iş girdisine sızmaz. |
+| Liste + detail gizliliği | Read permission yetmez: kayıt erişimi, history-read ve create ayrı. Cross-tenant/hidden 404; unavailable 503; sayfa yetkisizken iskelet yok. Search/count/export/client cache/DOM sadece izinli veri taşır. Detail açılırken güncel GET; görünür listeden geçmişe otomatik izin yok. |
+| Create/edit + eski kayıt | Gerçek policy resolve olmadan create yok; Draft edit reasonless metadata yalnız kendi alanlarını değiştirir. Owner/history/Version ve mevcut bağımlılıklar korunur. Eski Active/Archived read-only; eski eksik alanlardan owner/default üretme veya migration yok. |
+| Owner atama/devir | Authoritative scoped candidate + save-time yeniden doğrulama; generic admin/current-owner/update tek başına ret. Gerekçesiz/yanlış target veya scope/stale Version ret; tek etkin owner, append-only predecessor, replay tek etki. |
+| Gerçek persistence | Mevcut PortfolioService + gerçek repository/UoW/audit ile commit/yeniden okuma; concurrent CAS; replay/lost-response; gerçek transaction abort'ta entity/history/receipt/intent birlikte geri alınır. Sahte store ile kabul yok. |
+| Aktivasyon / kapsam dışı bypass | UI'da kapalı işlemin doğrudan API çağrısı da reddedilir; finans tek başına yeterli olmaz. Lifecycle/delete/assessment kapalı; mevcut Active kayıt Draft'a dönüştürülmez. |
+| Permission zinciri | CT katalog 25 exact set, yalnız Portfolio eklemesi; auto-grant/seed/sync/case negatifleri; JWT role∩entitlement∩canonical; PMO rol adı hardcode değil; kayıt erişimi bağımsız. CT checkpoint'i gelmeden bu kapı kapanmaz. |
+| Hata/UX/shared regression | 400 alan hatası; 401 oturum; 403 yetki; 404 görünmez/kayıp; 409 refresh/retry, sessiz overwrite yok; 503 bağımlılık, başarı toast'ı yok. Çift gönderim/retry ikinci etki üretmez; seven-locale, Slim/DataTable v2, shared diğer PPM davranışı korunur. |
+| Kullanıcı eski/yeni ekran kontrolü | Aynı seçilmiş non-production test kapsamı/izinler ile eski ve yeni ekran yan yana: alanlar, details, atama/devir, kapalı aksiyon ve hata örnekleri. Eski Archive/legacy dosyaları yalnız referans; kopyalama/değişiklik yok. |
+
+**Mongo test profili kapısı:** Mongo entegrasyon testleri yalnız repository kurallarına uygun,
+açıkça belirlenmiş disposable test profili üzerinde çalışabilir. Ortak veya production veritabanı
+kullanılamaz. Uygun profil belirlenmemişse Mongo testi başlatılmaz; mevcut test fixture'ının bulunması
+profil seçimi veya test yürütme onayı sayılmaz. Bu dar koşul implementation/test yetkisi vermez.
+
+Teknik testler mevcut projelerdeki unit, gerçek test-owned Mongo entegrasyon, ilgili frontend JS ve
+DataTable/Slim/lokalizasyon kontrollerini içerir; build/test bu tur çalıştırılmaz. Test doubles sadece
+dış bağımlılık cevaplarıdır ve test assembly'sinde kalır. Pozitif browser kabulü fake authority ile
+yapılamaz; mevcut yetkili non-production hesap/veri ortamı ve gerçek CT provider gerektirir. Test
+ortamı yoksa kabul kapısı bekler; bu onay user/role provisioning veya secret işlemini örtülü vermez.
+Provider options/transport bağlama, doğrulanmış CT kontratına göre ve test/non-production sınırında;
+bilinmeyen config dosyası veya üretim endpoint'i listeden türetilmez.
+
+##### Tek teslim düzeni ve toplu onay metni
+
+Teknik test → kullanıcının eski/yeni ekran kontrolü → Claude uygunluk incelemesi → aynı kapsamda
+düzeltmeler ve etkilenen kontroller → **tek anlamlı Portfolio teslimatı/PR**.
+Gerekli CT checkpoint'leri ve güvenlik/kimlik kapıları kullanıcı kabulünden önce kapanmalıdır.
+Sonraki sayfa bu kabul ve teslimat kapanmadan başlamaz. Sırf doküman/owner/backend/frontend bitti diye
+küçük PR üretilmez. Aynı feature branch ve mevcut dirty işler korunur; ileride güncel main mutabakatı
+ayrıca yapılır. Canlıya alma ayrıca açık yetki, veri/rollback uyumluluğu ve güvenlik kontrolü ister.
+
+**Kullanıcının tek seferde değerlendireceği önerilen onay — şu anda verilmiş değildir:**
+
+> MOD-0117 “Portfolio first user delivery — single approval bundle” kapsamındaki dört alanlı Golden
+> Slim liste/create-edit/details ve ayrı owner atama/devir teslimatını seçiyorum. Adlandırılmış insan
+> User, Draft'ta 0–1 owner, PMO adına yetkilendirilmiş kişinin gerekçeli ve anlık yalnız Draft atama/devir
+> yapması; owner kaldırma/backdate/scheduling olmaması; mevcut Active/Archived kayıtların izinli
+> read-only kalması ve ilk kabulde aktivasyon/diğer lifecycle/delete/assessment'ın kapalı tutulması
+> seçimlerini açıkça onaylıyorum. ppm.portfolios.assign-owner anlamını Assign/Transfer için aynı
+> kontrollü izin olarak governance düzeyinde onaylıyorum; otomatik grant veya gerçek kullanıcıya
+> yetki vermiyorum. Belirtilen 51 PPM/backend/frontend/test dosyasında mevcut uygulama zincirinin
+> geliştirilmesine, ilgili teknik testlerin yalnız test-owned non-production ortamda yapılmasına
+> ve güvenlik/kimlik/CT kapıları kapandıktan sonra tek kullanıcı ekran kontrolüne izin veriyorum.
+> Mongo entegrasyon testleri yalnız repository kurallarına uygun, açıkça belirlenmiş disposable test
+> profilinde çalışabilir; ortak veya production veritabanı kullanılamaz. Uygun profil belirlenmemişse
+> Mongo testi başlatılmayacak.
+> İki mevcut belge yalnız scoped onay ve kanıt için güncellenebilir. Auth/Platform işleri mevcut
+> altyapı CT kuyruğunda kalır; bu onay başka sohbete devir veya protected Auth/Platform uygulama yetkisi
+> değildir. Eksik SOP-0029/provider/grant koruması gerçek veri kabulünü açmaz; diğer PROPOSED tasarımlar,
+> risk/preparer/finans politikası onaylanmış sayılmaz. Provisioning, secret/config/migration işlemi,
+> canlıya alma ve merge bu onayın dışındadır. Tek anlamlı PR aşamasına yalnız teknik test, kullanıcı
+> kontrolü, Claude incelemesi ve düzeltmeler tamamlandıktan, mevcut Git güvenlik koşulları sağlandıktan
+> sonra geçilsin; küçük ara PR oluşturulmasın. Pack review ve production_authority: none korunur;
+> NOT SELECTED detached dilim açılmaz.
+
+Bu metnin hazırlanması onay yerine geçmez; statü veya implementation/production authority yükseltilmedi.
+Kaynak/CT sözleşmeleri onay metninin yerine geçmediği gibi onay metni de eksik kaynakları üretmez.
+Kısmi Draft kullanıcı kabulü, Portfolio tamamlandı/finans entegre/production hazır anlamına gelmez.
+
+<a id="portfolio-isolated-test-slice"></a>
+
+#### Isolated Domain/Application test slice — 2026-09-10 — NOT SELECTED — implementation not authorized
+
+**CONTROL TOWER disposition:** this detached 14-file proposal was not selected for implementation.
+PortfolioDraftState, a separate service and a test store create a second behavior model independent of
+the existing Portfolio implementation; passing its tests would not count as progress on the real
+Portfolio delivery. The proposal, file list, test matrix and approval wording below are retained only
+as historical material, not an executable next step or an invitation to request approval.
+This disposition supersedes the historical conditional execution/approval language in this section.
+No code or test execution is authorized.
+
+Any subsequent real development must extend the existing Portfolio entity/service chain. Test doubles
+may represent external dependencies only; they must not create a second Portfolio aggregate or an
+alternative persistence reality. Earlier Portfolio designs, dependency decisions, scoped approvals,
+pack review and production_authority: none remain unchanged.
+
+**Authority:** the user accepted preparation of this bounded non-production test slice, not its coding.
+This is a scoped proposal inside MOD-0117, not a new module/FU or an approved runtime allowlist.
+Pack status remains review; earlier scoped approvals remain unchanged; production_authority: none.
+The four business designs remain PROPOSED. The test scenario neither approves company role/access policy
+nor grants any real user assignment/approval rights, establishes a corporate preparer definition, closes
+SOP-0029/SOP-0004, or authorizes code, service, database or production operations. An informal "ok" is
+not approval of all those matters. The former code-start approval text below is historical and inactive.
+
+**Historical proposed boundary — not selected:** add a detached, immutable Draft evaluation model and a non-registered plain
+Application service. Only the selected unit tests construct and invoke them. The live Portfolio entity,
+PortfolioService, CRUD/lifecycle endpoints, persistence, permissions and runtime composition stay untouched.
+This section supplies the exact *future* file proposal; it is non-executable until separately authorized.
+The broader source/policy gates continue to block real implementation/use. As a specific bounded exception,
+this isolated test implementation may proceed after its own explicit scoped approval without treating
+those corporate/source decisions as closed; they are not prerequisites for synthetic test preparation.
+
+##### Included and excluded behavior
+
+Included only as proposed business-design tests:
+
+- Draft state can explicitly have no owner. A successful test assignment has one effective named User
+  reference, and a transfer closes the old entry, records a reason and establishes one replacement.
+- Owner-only assessment requires a valid effective assignment, matching actor and affirmative identity/
+  operation evidence. General edit evidence grants neither assignment nor assessment rights.
+- Performance and risk have separate append-only histories and separate current-entry references.
+  A new reasoned assessment/correction appends an entry; it cannot overwrite previous attribution.
+- Expected-Version and a request-bound receipt gate local effects. Replayed identical requests cannot
+  increment Version or append history/intent twice; changed content under one request ID is rejected.
+- Missing, denied, malformed, wrong-scope or indeterminate identity/authorization/vocabulary evidence
+  rejects the affected operation with no accepted-state change. Denial and dependency uncertainty remain
+  distinguishable application results; this slice defines no new public HTTP mapping.
+- A negative-only activation check proves that owner absence/invalidity cannot permit activation.
+  Even with a valid owner it returns OutsideSlice, never Allowed, never Active and never a success receipt.
+
+Excluded: live Draft CRUD changes; actual activation or full eligibility calculation; Strategic Objective/
+funding/Review Frequency implementation; complete approval/preparer semantics; Workflow start/read/result
+consumption; user provisioning; real provider or external-reference integration; confidentiality levels;
+SOP risk values; MOD-0048 set/code/publication; runtime permission/manifest entries; browser/API behavior;
+Mongo/persistence/index/migration/seed; external audit dispatch; service/config/secret/network/real data.
+No automatic demo data, production fallback or generalized allow-all policy is introduced.
+
+##### Existing architecture and exact isolation decision
+
+Evidence at e72701fa565942187e7dd85c1e92fdcc25080969:
+
+- Application/DependencyInjection.cs AddApplication scans its assembly for MediatR handlers and
+  FluentValidation validators (lines 20–21), then registers the existing PortfolioService (line 22).
+  Therefore merely omitting a new explicit AddScoped entry would be insufficient for new discoverable
+  handlers/validators. **For this slice only**, use plain request/result DTOs, explicit service methods
+  and constructor-supplied ports: no IRequest/IRequestHandler/INotificationHandler, AbstractValidator/
+  IValidator, pipeline behavior, registration attribute, initializer or hosted worker. Existing runtime
+  CQRS stays unchanged. This bounded non-runtime experiment is not an exemption for later runtime code.
+- The existing Domain project has no project dependencies; Application references Domain. Existing
+  tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj already references Application and also
+  Infrastructure/Api/Contracts. Reuse that project unchanged and select only the new test namespace.
+  Transitive compilation is not claimed to be a Domain-only build. Tests must not construct an API host,
+  call Program, register Infrastructure/Persistence, create a service provider or connect to a real source.
+  No csproj/solution/package/config change is allowed. If this project cannot run the isolated selection
+  without forbidden initialization, stop and report the exact dependency; do not broaden the scope.
+- Portfolio.cs, EntityBase.cs and PortfolioService.cs stay read-only. Their tenant/Version/soft-delete/
+  lifecycle behavior, normalization and InvestmentCase fences are preserved. The proposed detached state
+  uses explicit tenant/actor/time/request inputs from the test driver, not an HTTP DTO or trusted real-user
+  context. It does not subclass, mutate, save, automatically map into or replace the live Portfolio.
+- Existing PpmUnitOfWork/MongoRepository transaction and CAS are later persistence references only.
+  Reuse the existing Domain.Repositories.AuditIntent shape as an in-memory intent descriptor, with the
+  Portfolio aggregate identity and existing updated mutation literal; do not dispatch it or change §8.
+  No actual Portfolio insert/update or audit event is produced.
+
+**Application commit model:** read an immutable snapshot, collect request-bound evidence and stage a
+candidate state/history/receipt/intent bundle without mutating the published snapshot. The abstract store
+performs one compare-and-commit for expected Version and request identity. Its only implementation in this
+slice is an internal test-assembly store with a lock or equivalent deterministic synchronization.
+Failure before publication leaves the entire old state unchanged. An injected lost response after a
+successful in-memory commit is recovered from the matching receipt, not by repeating the mutation.
+This demonstrates the Application contract only: no Mongo rollback, durable outbox, multi-process
+linearizability, crash durability or distributed transaction is proven.
+
+Receipt binding includes tenant, Portfolio test identity, actor, operation, expected Version and canonical
+semantic request content; timestamps generated by the service are not regenerated into a different retry
+fingerprint. Evidence must match the addressed tenant/principal/operation/reference; an affirmative result
+for another request is not accepted. Read/replay still checks current identity and operation authorization
+before exposing a receipt. Matching replay returns the original accepted result; changed-content reuse and
+a different stale request fail. The store race test synchronizes contenders explicitly, without sleeps.
+No existing HTTP request, real JWT, role grant or corporate authorization service feeds this model.
+
+<a id="portfolio-isolated-test-files"></a>
+
+##### Exact future file allowlist — closed set, not current write authority
+
+All 14 source/test paths below are **NEW / proposed / currently absent**, verified during this preparation.
+No other source file, test helper or project file is implicitly included. Paths are repository-relative
+to /Users/alitufanoglu/ERP-vNext-codex-current; the list is exact, not a directory wildcard.
+
+| State | Exact future path | Sole purpose |
+|---|---|---|
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/PortfolioDraftEvaluation/PortfolioDraftState.cs | Detached immutable Draft state, identity/scope, Version and invariants; no inheritance from or writes to the live Portfolio. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/PortfolioDraftEvaluation/PortfolioDraftOwnerAssignment.cs | Single effective assignment and immutable transfer entries for the proposed test scenario. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/PortfolioDraftEvaluation/PortfolioDraftAssessmentEntry.cs | Separate performance/risk entry identity, opaque source-reference evidence, rationale and attribution. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Domain/PortfolioDraftEvaluation/PortfolioDraftMutationReceipt.cs | Request identity/content binding, accepted result and local Version provenance. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/PortfolioDraftEvaluationModels.cs | Plain request/result and evidence DTOs; explicit denial/indeterminate/outside-slice results; no IRequest or public endpoint. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/IPortfolioDraftIdentityAuthority.cs | Abstract identity-evidence port; no concrete provider/default implementation. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/IPortfolioDraftAuthorizationAuthority.cs | Abstract operation-evidence port; no company roles/permission keys/grants. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/IPortfolioDraftVocabularyAuthority.cs | Abstract opaque reference-validation port; no lookup list, set code or real risk scale. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/IPortfolioDraftStateStore.cs | Abstract snapshot/read-receipt/compare-and-commit contract; candidate state, history, receipt and local intent submitted together; no persistence implementation. |
+| NEW / proposed | services/Diten.PpmService/src/Diten.PpmService.Application/Features/PortfolioDraftEvaluation/Services/PortfolioDraftEvaluationService.cs | Constructor-only composition and explicit method invocation; stages immutable mutations, gates evidence, Version and replay; no DI registration/discoverable handlers. |
+| NEW / proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/PortfolioDraftEvaluation/PortfolioDraftEvaluationTestDoubles.cs | Internal deterministic identity/auth/vocabulary doubles and atomic in-memory store with controlled failures/barriers; clock/IDs are explicit test inputs. |
+| NEW / proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/PortfolioDraftEvaluation/PortfolioDraftEvaluationDomainTests.cs | Detached-state/owner/history and immutability assertions. |
+| NEW / proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/PortfolioDraftEvaluation/PortfolioDraftEvaluationApplicationTests.cs | Evidence denial, staging/commit, replay, stale-version and controlled concurrency scenarios. |
+| NEW / proposed | services/Diten.PpmService/tests/Diten.PpmService.Tests/PortfolioDraftEvaluation/PortfolioDraftEvaluationIsolationTests.cs | Assembly/source/dependency/registration boundary checks without building a host or resolving runtime providers. |
+
+**Existing files allowed later only for scoped approval/evidence bookkeeping:**
+this MOD-0117 pack and
+[the existing control plan](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-isolated-test-control).
+No existing code file is in the write allowlist. The two documents may record only this slice's explicit
+authorization and actual test results; pack-wide review/production_authority and other scoped approvals
+must not be promoted or overwritten. In this preparation turn, only those two existing documents are writable.
+
+Read-only/protected boundary includes every DependencyInjection.cs; Api/Controllers and Program.cs;
+Portfolio.cs/PortfolioService.cs and existing CRUD commands/validators; all Persistence/Infrastructure/
+Contracts code; PpmPermissions.cs; frontend PpmModuleManifest.cs and Platform PpmManifestProvider.cs;
+all project/solution files; frontend/Gateway/Platform/Auth/shared rules/config/secrets. No runtime DI,
+controller, manifest, permission registry or provider implementation may acquire a reference to the new
+slice. The new sources will compile into Domain/Application assemblies, but must remain unreachable from
+runtime composition; absence of registration is not claimed to mean absence from the compiled artifact.
+
+##### Deterministic test doubles — synthetic authority only, no invented business vocabulary
+
+Only PortfolioDraftEvaluationTestDoubles.cs inside Diten.PpmService.Tests may implement the four ports.
+All doubles are internal, explicitly named TestOnly, and assert their containing assembly is the test
+assembly. The state-store double is a test repository simulation, not a future persistence fallback.
+All fixtures use synthetic identities and explicit fixed UTC inputs; no real account, tenant or directory
+is read. Authorization evidence expresses test operation outcomes, not a role named by the company.
+Identity eligibility is distinct from the PPM responsibility assignment.
+
+Vocabulary fixtures use opaque synthetic reference IDs and a conspicuous test-only provenance marker.
+They contain **no risk rating/score/level, SOP scale value, confidentiality level, real set code or purported
+published version**. Distinct opaque test reference revisions may exercise provenance mismatch; they are
+not declared to be MOD-0048 publication versions. A positive "risk history" test proves only that the risk
+channel stores a reasoned opaque reference separately; it does not validate or demonstrate a usable risk
+assessment scale. Four approved performance labels remain business input in the earlier amendment; this
+slice does not mint their runtime codes or a production selection list. Missing-source scenarios reject;
+test evidence is never exported to application DI, runtime data, config, manifest, seed or real providers.
+
+<a id="portfolio-isolated-test-matrix"></a>
+
+##### Future test matrix — all PENDING / NOT RUN
+
+Local row numbers below are checklist labels only, not new module/backlog identities. Every rejected or
+indeterminate mutation must assert unchanged state, Version, history, receipts and local intent count.
+
+| # / behavior | Positive/control scenario | Negative/race scenario and required result | Test file |
+|---|---|---|---|
+| 1 — ownerless Draft | Detached Draft explicitly has no assignment; no CreatedBy-derived owner | Assessment rejects MissingOwner; negative-only activation rejects; no effects | DomainTests + ApplicationTests |
+| 2 — first assignment | Affirmative same-scope test identity and assignment authority establish exactly one effective User reference and one versioned history entry | General edit alone, denied/unknown assignment authority, wrong tenant, ineligible principal or a second overlapping owner reject | DomainTests + ApplicationTests |
+| 3 — reasoned transfer | Replacement validated; old interval/history retained, new effective assignment starts at explicit test time, one Version increment | Blank reason, stale Version, invalid replacement or pre-publication store failure leaves the old owner/history intact; former owner cannot assess afterward | DomainTests + ApplicationTests |
+| 4 — owner-only assessment | Effective owner + separate assessment authorization + matching identity/reference evidence append a result | Owner with no operation permission; editor/assigner who is not owner; inactive/expired/indeterminate owner; unspecified delegation all reject | ApplicationTests |
+| 5 — separate histories | Performance and risk-channel opaque entries each update only their own current-entry pointer | Interleaved changes cannot overwrite the other channel or reinterpret a prior source revision; no actual risk value is fabricated | DomainTests + ApplicationTests |
+| 6 — rationale/correction | Reasoned correction appends and links the old entry; same selected reference with a new explicit review request remains a separate proposed review | Empty/whitespace reason rejects; historical actor/time/reference/Version cannot be edited in place; exact retry is not a new review | DomainTests + ApplicationTests |
+| 7 — external evidence | Matching test-only identity/auth/reference results allow only the addressed detached operation | Missing/Denied/Indeterminate, mismatched tenant/actor/operation/reference, malformed evidence or simulated provider exception yields a bounded rejection/uncertainty result; no fail-open | ApplicationTests |
+| 8 — CAS and commit boundary | Candidate state/history/intent/receipt publish together once | Two different requests from the same Version: one wins, the other conflicts; injected pre-publication failure publishes nothing; original immutable snapshot is unchanged | ApplicationTests |
+| 9 — request replay | Identical accepted request recovers original result without Version/history/intent increment | Changed content/actor/operation/tenant under reused identity rejects; concurrent identical requests cause one effect; simulated post-commit response loss recovers receipt; unauthorized receipt read rejects | ApplicationTests |
+| 10 — activation exclusion | Valid owner control case still returns OutsideSlice, never an activation success | Missing/ineligible owner rejects specifically; no test can produce Active, an approval instance, an activation receipt or a real transition call | ApplicationTests + IsolationTests |
+| 11 — no implicit runtime discovery | Reflection/source checks find new types only in expected Domain/Application/test locations; no handler/validator/worker registration interfaces | A runtime reference/DI descriptor to the slice, linked test source or concrete source-side port implementation fails isolation acceptance | IsolationTests |
+| 12 — test-only provenance and scope | Port implementations/fixtures reside only in the test assembly; source project references do not point to tests; forbidden-path diff is empty | Real provider/host/HttpClient/Mongo/credential/config access, production fallback, added permission/manifest, or scope drift blocks completion instead of triggering a workaround | IsolationTests + delivery diff review |
+
+Test-file short labels refer only to the exact four test paths in the allowlist. No acceptance row is
+passed by writing this matrix. Test isolation checks inspect types/source/project edges without starting
+a host; they must not register Infrastructure/Persistence or resolve live services merely to test absence.
+
+##### Test gates and explicit future approval
+
+After explicit authorization only, the selected namespace must be
+Diten.PpmService.Tests.PortfolioDraftEvaluation. The future command from this worktree is:
+
+    dotnet test services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj --filter "FullyQualifiedName~Diten.PpmService.Tests.PortfolioDraftEvaluation"
+
+This is a proposed future selected unit-test run, **not executed now**, not permission to run the full
+unit/integration/architecture suites, and not permission to launch services. Existing pinned dependencies
+and project references are reused; no dependency/config workaround is authorized. Restore/build failure
+requiring out-of-scope changes or external setup must be reported without changing the scope.
+
+Completion gates: all 12 rows have actual non-skipped evidence in the selected tests; test-only
+implementation/provenance checks pass; no new runtime reference or automatic registration exists; only
+the exact new files plus bounded documentation evidence differ from the code-start baseline; original
+dirty documentation is preserved; protected DI/controller/manifest/config paths have an empty diff;
+full changed-file review and git diff --check pass. Source scanning plus reflection cannot prove browser,
+network or durable persistence behavior, and those claims are explicitly excluded.
+
+**Historical proposed code-start approval text — NOT SELECTED; not an executable next step:**
+
+> MOD-0117 içindeki "Isolated Domain/Application test slice — 2026-09-10" bölümünü yalnız belirtilen
+> 14 yeni Domain/Application/test dosyası için uygulama ve seçili izole unit testlerini çalıştırma
+> kapsamında onaylıyorum. Mevcut iki belge yalnız bu scoped onay ve gerçek test kanıtları için
+> güncellenebilir. Runtime DI/controller/manifest, mevcut Portfolio runtime kodu, Persistence/Mongo,
+> frontend/Gateway, Platform/Auth, config/secret ve gerçek veri kapsam dışıdır. Bu onay şirket
+> rol/erişim veya preparer politikasını, SOP kaynaklarını, gerçek aktivasyonu ya da production
+> kullanımını onaylamaz. Pack review ve production_authority: none korunur; commit/push/PR yoktur.
+
+The quoted wording is retained as proposal history only. It is no longer the next approval or execution
+step; no approval is requested. This detached slice is NOT SELECTED — implementation not authorized.
+Pack-wide review and the broader Portfolio amendment remain unchanged.
+
+##### Later slices and completion language
+
+Follow-on persistence/provider/frontend preparation remains in the existing control-plan
+[§10.7 work split](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-technical-work-split):
+PPM mutation/history/CAS and real atomic persistence; owner identity; MOD-0048 publication; SOP-0029
+policy; SOP-0004 scale; full outcome binding and replay; Strategic Objective; Review Frequency;
+Active/Archived compatibility. Finance remains only
+[§10.5](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-budget-integration).
+PF-AC01–PF-AC12 remain broader future acceptance, not passed by the in-memory slice; particularly PF-AC12
+Workflow outcome consumption and real activation are excluded here.
+
+Allowed completion wording is only "the isolated Domain/Application proposed-behavior tests passed"
+with actual evidence. Never "Portfolio completed", "secure browser acceptance passed", "integration works",
+"real risk scale/visibility policy validated" or "durable persistence proven".
+This backend-only test slice creates no form fields or UI; the target Portfolio form count/Golden
+remain OPEN and existing other-surface decisions remain intact.
+No separate PR is targeted. This unselected detached proposal and any hypothetical passing tests do
+not count as progress on the real Portfolio delivery on codex/ppm-portfolio-first-delivery.
+Updated main reconciliation belongs to the later combined delivery;
+no fetch/merge or synchronization claim is made here.
+
+#### Future acceptance criteria — all pending, not executed or passed
+
+| ID (local checklist only) | Future scenario and required observable result |
+|---|---|
+| PF-AC01 | Entitled same-tenant actor with general update permission but without verified Portfolio ownership attempts performance/risk assessment: reject server-side; assessment, rationale history and Version remain unchanged. Missing or indeterminate owner proof never allows the mutation. |
+| PF-AC02 | Otherwise authorized actor addresses another tenant's Portfolio through read/update/assessment/lifecycle or a typed link: 404 without foreign data disclosure or mutation; tenant/actor payload spoofing cannot override authenticated context. |
+| PF-AC03 | Required performance/risk vocabulary or its approved version is absent/unavailable/unsupported: affected action cannot save; no hardcoded labels-as-codes, fabricated rating or default option; manual valid vocabulary path is tested separately. |
+| PF-AC04 | Verified owner submits empty or whitespace-only rationale for either assessment: reject with no state/history change. Valid manual assessment records before/after, rationale, authenticated actor, UTC time and relevant version provenance; UI does not claim automatic calculation. |
+| PF-AC05 | Two writers use the same expected Version: only one valid mutation commits; stale request receives 409 and cannot overwrite assessment/lifecycle or append a successful mutation audit. |
+| PF-AC06 | Required local assessment history/audit-intent append fails: entire mutation transaction rolls back, including lifecycle/assessment and Version. Post-commit downstream audit transport failure follows durable retry/idempotency; it is not falsely described as local rollback. |
+| PF-AC07 | Draft activation lacks a verified typed MOD-0136 budget/funding commitment, or reference is deleted/invalid/wrong tenant/stale or provider unavailable: no Active state. Even with valid funding, missing Strategic Objective, accountable owner or Review Frequency independently prevents activation; recheck all four and applicable approval/access gates at mutation time. This is a future delta, not a claim about existing code or Draft-save requiredness. |
+| PF-AC08 | Confidentiality policy, level or role/visibility mapping is indeterminate: no disclosure or successful affected operation, including Draft list/detail/create/update; no invented most-restrictive code, creator-only fallback or UI-only protection. A see grant alone never grants change/approve. |
+| PF-AC09 | Capacity explanation omitted: no mandatory-field rejection solely for that omission; supplied text creates no resource reservation/person assignment/calculation. Final string limits and form placement must be contracted before implementation. |
+| PF-AC10 | Approved compatibility cases for existing Active/Archived and soft-deleted records preserve history, tenant/CAS, dependency checks and terminal-state constraints; no automatic migration/demotion/backfill or reactivation is performed. |
+| PF-AC11 | Future authorized UI demonstrates the final counted form, separate assessments/lifecycle, truthful read-only data, explicit tenant layout, DataTable v2 and seven-language parity; unauthorized access discloses no record/page content. |
+| PF-AC12 | The same authoritative Workflow outcome is delivered repeatedly or concurrently: PPM applies the business effect at most once, with mutation, consumption/idempotency state, relevant local history/audit intent and Version in the same atomic boundary. No second effect, Version increment or successful-mutation history is created by replay. Before a new effect PPM rechecks permission, record version and all business conditions; an outcome with mismatched instance/tenant/record/operation/version cannot apply. Test local rollback and post-commit external audit transport failure separately; Workflow idempotency or delivery count is not proof of this behavior. |
+
+Final endpoint/DTO/permission and HTTP mapping must distinguish invalid request, definitive denial,
+missing/invisible resource, stale state and unavailable authoritative dependency per control-plan §10.2.
+Undefined outcomes are not all collapsed into 400/409. These are future test expectations, not newly run
+tests or an implementation allowlist. No build, runtime, DB, migration/index/seed or browser tests were run
+for this governance-only amendment. Authoring validation: canonical MOD-0117 preflight passed against
+Master 8.1/registry; full two-document diff review and `git diff --check` are required before handoff.
+
+Implementation remains blocked for this amendment until the missing source/owner contracts, compatibility
+and exact scope are reconciled and separately approved with explicit repository implementation authority.
+Deferred performance automation, risk aggregation and resource integration remain OPEN under control-plan
+§10.7; Portfolio–Budget remains only [§10.5](../../../../docs/records/audits/2026-09/dcp-006-ppm-governance-reconciliation-control-plan.md#portfolio-budget-integration).
+
 ### Change log
 
 | Date | Change | Authority |
@@ -2241,3 +3443,80 @@ authorize frontend implementation, close MOD-0023 authority or promote MOD-0117 
 - Any future WorkCenter-related behavior through DCP-004 and the applicable Gate 2 process.
 - For every Initiative detail concept in §4.3.1, obtain an owner-approved executable contract and a separate
   MOD-0117 consumer amendment before adding UI, entity fields, DTOs, API routes or data relationships.
+
+##### Scoped implementation checkpoint — 2026-09-11 — USER ACCEPTANCE OPEN
+
+Dört alanlı Slim liste/create-edit/details ve ayrı Draft owner aksiyonu mevcut Portfolio
+entity/service/controller zincirinde uygulandı. Owner/history/receipt aynı aggregate içinde;
+gerekçeli devir append-only, aynı istek tekrarında ikinci etki yok; mevcut UoW/CAS/minimal audit
+korundu. DTO owner/history projection'ı ayrı erişim kararlarına bağlıdır. Genel edit atama yetkisi
+değildir. Active/Archived edit ve Portfolio API lifecycle/delete kapalıdır; eski veri dönüştürülmedi.
+
+Exact aday listenin içinde **44 kod/test dosyası + mevcut iki belge** değişti (30 mevcut, 16 yeni).
+CT dış sözleşmesi olmadan PortfolioAuthorityClient/Options oluşturulmadı; Infrastructure DI ve
+frontend PpmModuleManifest değiştirilmedi. ppm.portfolios.assign-owner yalnız PPM tüketici sabitidir;
+katalog yayını, gerçek grant, provider veya canlı entegrasyon değildir. Diğer PROPOSED politikalar,
+SOP-0029 ve gerçek kimlik/erişim bağımlılıkları kapanmadı. Runtime'ta optional authority kaydı yok;
+gerekli doğrulanmış olumlu kanıt olmadan ilgili Portfolio işlemi kapalıdır.
+
+| Doğrulama | Gerçek sonuç / sınır |
+|---|---|
+| PPM backend derleme + Portfolio/Application seçili unit | Derleme başarılı; seçili unit 29/29. BSON zaman hassasiyeti düzeltildi. |
+| Yeni gerçek Portfolio Mongo senaryoları | Seçili MOD-0117-disposable-Mongo profilinde 12/12; gerçek service, repository, UoW, audit, concurrent aynı/farklı istek, replay, stale CAS ve writes-sonrası rollback. Cleanup fixture tarafından tamamlandı. |
+| Frontend derleme | Başarılı, 0 hata; değiştirilmeyen CRM/WorkCenter/ESBP dosyalarında 15 uyarı. |
+| Portfolio + mevcut shared JS regresyonları | node --test ile 12/12; gerçek Razor alan sayımı, server aksiyonları, metin güvenliği, owner retry ve yedi dil. Browser kabulü değildir. |
+| Golden Slim statik kontrol | --api-profile proxy ile 64/64; mevcut shared kompozisyon işaretleri kullanılır, page-local DataTable kopyası eklenmedi. Statik işaret kontrolü runtime kanıtı değildir. |
+| Tüm PPM unit paketi | Repository kökünü görebilen DB'siz disposable artifact profilinde 386/389. Kalan 3 test aşağıdaki eski correlation beklentileridir; atlama/bypass uygulanmadı. |
+| Mevcut MongoPersistenceIntegrationTests | Aynı disposable Mongo profilinde 16/19. Kalan 3 eski test, authority'siz Portfolio create beklediği için başarısız. |
+| Repository mimari muhafızları | Repository kökü görünürken 16/17. Tek kırmızı DB-010 kontrolü aşağıdaki değiştirilmeyen Platform dosyalarıdır; istisna listesi genişletilmedi. |
+
+**Dar açık regresyon kapsamı:** Hazırlanan exact liste iki gerekli mevcut PPM test dosyasını
+atlamıştır; bu tur sessizce genişletilmedi:
+- services/Diten.PpmService/tests/Diten.PpmService.Tests/PpmEntitlementAuthorizationTests.cs:
+  One_scoped_correlation_flows_through_entitlement_mutation_and_dispatch üç varyantta provider'sız
+  create için 201 bekliyor; yeni doğru cevap 503. Olumlu correlation zinciri testi yalnız dış
+  record-authority test double'ıyla uyarlanmalı; runtime bypass veya ikinci aggregate eklenmemeli.
+- services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/MongoPersistenceIntegrationTests.cs:
+  Duplicate_normalized_code_returns_409, Stale_version_is_rejected_with_concurrency_contract ve
+  Cross_tenant_entity_is_hidden_with_404 aynı eski create fixture'ına bağlı. Gerçek repository/UoW
+  korunarak yalnız dış authority cevabı ve yeni 409 response beklentisi uyarlanmalı.
+Bu iki dosya değişmedi; kapsam eklemesi yapılmış/onaylanmış sayılmaz. Aynı uniqueness, cross-tenant,
+stale CAS ve correlation/receipt davranışları yeni gerçek Portfolio Mongo testinde de doğrulandı.
+
+##### Dar test allowlist ek onayı — 2026-09-11
+
+Kullanıcı yalnız aşağıdaki iki mevcut test dosyasını exact Portfolio teslimat kapsamına ekledi:
+
+- \`services/Diten.PpmService/tests/Diten.PpmService.Tests/PpmEntitlementAuthorizationTests.cs\`
+- \`services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/MongoPersistenceIntegrationTests.cs\`
+
+Bu ekleme ürün kodu, Auth/Platform, DI, configuration veya disposable Mongo test profilini değiştirme
+yetkisi vermez. İlk dosyada yalnız dış record-access authority test cevabı eklendi; olumlu
+correlation senaryolarında create \`201\` ve entitlement → mutation → audit → dispatch zinciri aynen
+korundu. İkinci dosyada gerçek Mongo repository/UoW/CAS/audit korunarak yalnız dış authority fixture'ı
+ve create/CAS beklentileri uyarlandı: normalized duplicate \`409\`, cross-tenant \`404\`, stale version
+\`409\`; duplicate, stale ve authority-yok retlerinde ilgili Mongo/audit etkisinin oluşmadığı ayrıca
+doğrulandı. Authority yokluğu create'i \`503\` ile kapatır.
+
+\`Portfolio_delete_and_investment_create_never_commit_an_orphan\` bu ek onayın parçası olarak
+değiştirilmedi. Portfolio delete artık koşulsuz \`409\` döndüğü için testin \`204 && 201\` imkânsızlık
+assertion'ı gerçek delete–create yarışını kanıtlamaz; mevcut hali sahte güvence üretebilir. Bu ayrı
+test semantiği bulgusudur; dar izin dışındaki uyarlama ve lifecycle kararı olmadan değişiklik yapılmaz.
+
+**Mevcut CT kuyruğunda kalan DB-010 bulgusu:** services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs
+ve services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs.
+Mimari tarama bu iki mevcut dosyadaki koşu başına GUID'li DB adını işaretledi; bu testler
+çalıştırılmadı ve Platform dosyaları değiştirilmedi. Seçili Portfolio profilinin sabit DB adı +
+test-owned süreç + TenantId izolasyonu bu ihlalden ayrıdır.
+
+Test çıktı profilleri: /private/tmp/portfolio-owner-delivery-artifacts ve DB'siz kök-tarama
+kontrolleri için services/Diten.PpmService/tests/Diten.PpmService.Tests/bin/portfolio-owner-disposable-artifacts
+(gitignore kapsamı, bu tur oluşturulan geçici çıktılar). İlk repository-dışı çalıştırmalarda kökü
+bulamayan testler bu yerleşimle ayrıştırıldı; bunlar ürün regresyonu diye raporlanmadı.
+Ortak/production DB, provisioning, uygulama servislerini başlatma veya canlıya alma yapılmadı.
+
+Tek teslimat hâlâ teknik regresyon kapanışı → kullanıcının eski/yeni ekran kontrolü →
+Claude uygunluk incelemesi → correction → tek anlamlı PR sırasındadır. Kullanıcı ekran kabulü,
+Claude incelemesi, live provider ve production henüz yoktur; sonraki sayfa başlatılmadı.
+Pack review / production_authority: none ve NOT SELECTED detached dilim korunur.
+Commit, push veya PR yapılmadı.
