@@ -69,6 +69,7 @@ public static class PlatformCollections
     public const string DocumentManagementLegalHolds = "document_management_legal_holds";
     public const string DocumentManagementLifecycleTransitions = "document_management_lifecycle_transitions";
     public const string DocumentManagementMasterRegister = "document_management_master_register";
+    public const string DocumentRegisterImportBatches = "document_management_register_import_batches";
     public const string DocumentManagementObsoleteCopyFindings = "document_management_obsolete_copy_findings";
     public const string DocumentManagementPeriodicReviewEscalations = "document_management_periodic_review_escalations";
     public const string DocumentManagementPeriodicReviewExtensions = "document_management_periodic_review_extensions";

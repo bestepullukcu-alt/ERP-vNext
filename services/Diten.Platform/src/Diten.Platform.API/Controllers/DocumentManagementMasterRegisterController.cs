@@ -160,6 +160,75 @@ public sealed class DocumentManagementMasterRegisterController : CustomBaseContr
     public async Task<IActionResult> SearchCitations([FromQuery] string? term, [FromQuery] int limit, CancellationToken ct) =>
         CreateActionResultInstance(await _mediator.Send(new SearchDocumentCitationQuery(term, limit, CorrelationId), ct));
 
+    // ── WP-DM-DCP005-REGISTER-IMPORT-UI-01 — audited CSV import (preview → commit) ───────────────────────
+
+    /// <summary>Step 1 — preview only. Writes nothing.</summary>
+    [HttpPost("document-master-register/import:dry-run")]
+    [HasPermission(DocumentMasterRegisterPermissions.Import)]
+    public async Task<IActionResult> DryRunImport([FromBody] DryRunRegisterImportApiRequest request, CancellationToken ct)
+    {
+        if (!TryDecode(request?.ContentBase64, out var csv, out var decodeError))
+        {
+            return CreateActionResultInstance(Response<DocumentRegisterImportPreview>.Fail(
+                decodeError!, 400, MasterRegisterReasonCodes.ValidationFailed, CorrelationId));
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(request!.FileName) ? "register.csv" : request.FileName!.Trim();
+        return CreateActionResultInstance(await _mediator.Send(
+            new DryRunDocumentRegisterImportCommand(fileName, csv, CorrelationId), ct));
+    }
+
+    /// <summary>Step 2 — commit a previously previewed file. 409 on a stale or already-applied hash.</summary>
+    [HttpPost("document-master-register/import:commit")]
+    [HasPermission(DocumentMasterRegisterPermissions.Import)]
+    public async Task<IActionResult> CommitImport([FromBody] CommitRegisterImportApiRequest request, CancellationToken ct)
+    {
+        if (!TryDecode(request?.ContentBase64, out var csv, out var decodeError))
+        {
+            return CreateActionResultInstance(Response<DocumentRegisterImportCommitResult>.Fail(
+                decodeError!, 400, MasterRegisterReasonCodes.ValidationFailed, CorrelationId));
+        }
+
+        if (string.IsNullOrWhiteSpace(request!.ExpectedContentHash))
+        {
+            return CreateActionResultInstance(Response<DocumentRegisterImportCommitResult>.Fail(
+                "expectedContentHash is required — preview the file before committing it.",
+                400, MasterRegisterReasonCodes.ValidationFailed, CorrelationId));
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(request.FileName) ? "register.csv" : request.FileName!.Trim();
+        return CreateActionResultInstance(await _mediator.Send(
+            new CommitDocumentRegisterImportCommand(fileName, csv, request.ExpectedContentHash!.Trim(), CorrelationId), ct));
+    }
+
+    /// <summary>Every committed import, newest first — "which file loaded this register, and when".</summary>
+    [HttpGet("document-master-register/import-history")]
+    [HasPermission(DocumentMasterRegisterPermissions.Import)]
+    public async Task<IActionResult> ImportHistory(CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new GetDocumentRegisterImportHistoryQuery(CorrelationId), ct));
+
+    private static bool TryDecode(string? base64, out string content, out string? error)
+    {
+        content = string.Empty;
+        error = null;
+        if (string.IsNullOrWhiteSpace(base64))
+        {
+            error = "The uploaded content is empty.";
+            return false;
+        }
+
+        try
+        {
+            content = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+            return true;
+        }
+        catch (FormatException)
+        {
+            error = "The uploaded content is not valid base64.";
+            return false;
+        }
+    }
+
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId) ? HttpContext.TraceIdentifier : _correlationContext.CorrelationId!;
 }
