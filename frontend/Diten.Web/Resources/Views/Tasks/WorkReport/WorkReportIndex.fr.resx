@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>Autres résultats</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>clôturée {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Exporter</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>Télécharger en CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>Télécharger en JSON</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>rapport-activite</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>{0} lignes téléchargées.</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>Ce rapport couvre plus de tâches qu’un export ne peut en contenir. Réduisez la période ou les filtres, puis réessayez.</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à exporter ce rapport.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>L’export n’a pas pu être préparé.</value></data>
 </root>

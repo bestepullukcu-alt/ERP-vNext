@@ -111,30 +111,24 @@ public sealed class GetTaskAssignmentPersonLookupHandler
                 continue;
             }
 
-            if (!positionById.TryGetValue(assignment.PositionId, out var position)
-                || position.IsArchived
-                || position.Status != PositionStatus.Active)
+            /*
+             * The SHARED rule — the same Judge every write that hands work to somebody asks, so the server accepts
+             * exactly who this list offers. An inactive position and a unit that is gone are one reason (a row
+             * without its unit label cannot be told apart from a namesake elsewhere); scope is the other.
+             */
+            var candidate = positionById.GetValueOrDefault(assignment.PositionId);
+            var verdict = TaskAssigneeEligibility.Judge(candidate, unitById, scope, out var judgedUnit);
+            if (verdict != TaskAssigneeVerdict.Assignable)
             {
-                Skip(assignment.UserId, SkipReason.PositionNotActive);
+                Skip(assignment.UserId, verdict == TaskAssigneeVerdict.OutOfScope
+                    ? SkipReason.OutOfScope
+                    : SkipReason.PositionNotActive);
                 continue;
             }
 
-            // Without the unit label the row cannot be told apart from a namesake elsewhere, so skip rather
-            // than show an ambiguous entry.
-            if (!unitById.TryGetValue(position.OrganizationUnitId, out var unit) || unit.IsArchived)
-            {
-                Skip(assignment.UserId, SkipReason.PositionNotActive);
-                continue;
-            }
-
-            // BL-057. The one line the whole round is about, and it is asked of the shared rule rather than
-            // re-derived here.
-            if (scope is not null
-                && !scope.Allows(position.Id, unit.Id, unit.LegalEntityId))
-            {
-                Skip(assignment.UserId, SkipReason.OutOfScope);
-                continue;
-            }
+            // Assignable means both resolved; Judge says so, the compiler cannot.
+            var position = candidate!;
+            var unit = judgedUnit!;
 
             listed.Add(assignment.UserId);
             skipped.Remove(assignment.UserId);

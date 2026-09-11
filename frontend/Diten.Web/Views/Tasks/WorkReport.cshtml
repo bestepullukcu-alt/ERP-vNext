@@ -110,18 +110,18 @@
                 <label class="form-label fw-medium d-none d-xl-block">&nbsp;</label>
                 <div class="d-flex align-items-center gap-2">
                     @*
-                        ⚠ THERE IS NO "ACTION" BUTTON HERE, AND ITS ABSENCE IS THE DECISION.
+                        ⚠ THE MENU CAME BACK WITH WHAT IT DOES — Dilim 1e.
 
-                        One stood here until Dilim 1g: the DataTable collection button's exact shape, put up so the
-                        page's silhouette would match its DataTable siblings, with an EMPTY menu because this screen
-                        has no rows to bulk-act on. Measured live: the dropdown opened onto `children.length === 0`.
-                        Declining to guess at its contents was right; leaving the button was not — a control that
-                        does nothing when pressed teaches a reader that this page's controls may be decoration, and
-                        that doubt spreads to the ones that work. `.antigravity/rules/frontend-standards.md` UI-027
-                        now says so in as many words.
+                        Until Dilim 1g an EMPTY action menu stood here (measured live: `children.length === 0`) and
+                        was removed under UI-027: a control that does nothing teaches a reader that this page's
+                        controls may be decoration. It returns as EXPORT, with both entries wired to `downloadExport`
+                        in index.js — button and behaviour in the same change, as that rule asks.
 
-                        It comes back WITH the thing it does. Export is the one real entry anybody has named for it,
-                        and export is Dilim 1e — button and behaviour arrive together or not at all.
+                        It sits BESIDE THE FILTER TOGGLE on purpose: that toggle's badge says how many filters are
+                        narrowing the report, and the file is the rows of exactly that narrowed report — the same
+                        period, the same five filters, the same scope. Put elsewhere, a reader could not see what they
+                        were about to download. It starts `disabled` and is enabled by the first report that loads,
+                        because until then there is no report whose rows it could export.
                     *@
                     @*
                         ⚠ THE ACTIVE-FILTER COUNT IS NOT COSMETIC — it is what keeps a narrowed report from being
@@ -137,6 +137,29 @@
                         <span class="badge badge-center rounded-pill bg-primary position-absolute top-0 end-0 translate-middle"
                               data-wr-filter-count hidden>0</span>
                     </button>
+                    @*
+                        The audit export's two formats and no more — no XLSX, which would bring a library the audit
+                        export does not need either. `format` travels as a CODE, never a translated word.
+                    *@
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-icon btn-label-secondary dropdown-toggle hide-arrow"
+                                data-bs-toggle="dropdown" aria-expanded="false" disabled data-wr-export-toggle
+                                title="@Localizer["ExportButton"]" aria-label="@Localizer["ExportButton"]">
+                            <i class="icon-base bx bx-download icon-sm"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button type="button" class="dropdown-item" data-wr-export="csv">
+                                    <i class="icon-base bx bx-file icon-sm me-2"></i>@Localizer["ExportCsv"]
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item" data-wr-export="json">
+                                    <i class="icon-base bx bx-code-alt icon-sm me-2"></i>@Localizer["ExportJson"]
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
                     <button type="submit" class="btn btn-primary flex-grow-1 flex-md-grow-0">@Localizer["Apply"]</button>
                 </div>
             </div>

@@ -341,7 +341,11 @@ app.MapGet("/", (HttpContext context) =>
 {
     var host = context.Request.Host.Host;
     var isAdminHost = host.StartsWith("admin.", StringComparison.OrdinalIgnoreCase);
-    return Results.Redirect(isAdminHost ? "/Platform/Tenants" : "/WorkCenter");
+    // WorkCenterNext, not WorkCenter: the older surface loads mock-work-items.js for its list while its detail
+    // page calls the real /api/tasks endpoints — so it shows invented tasks whose ids the engine has never heard
+    // of. A pure mock announces itself; a half-real one does not. WorkCenterNext loads its list from the WC-1
+    // projection through the same-origin proxy (WorkCenterNextController), with no mock branch on that path.
+    return Results.Redirect(isAdminHost ? "/Platform/Tenants" : "/WorkCenterNext");
 });
 
 app.MapControllers();

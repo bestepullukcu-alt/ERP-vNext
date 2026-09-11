@@ -19,7 +19,6 @@
   <data name="LockedHintModule" xml:space="preserve"><value>Это разрешение было автоматически предоставлено модулем {0} и не может быть изменено здесь.</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>Модуль</value></data>
   <data name="AllModulesOption" xml:space="preserve"><value>Все модули</value></data>
-  <data name="ModuleFilterSearchPlaceholder" xml:space="preserve"><value>Поиск модулей…</value></data>
   <data name="ModuleUngrouped" xml:space="preserve"><value>Прочее</value></data>
   <data name="FilterStateGroupLabel" xml:space="preserve"><value>Фильтр по статусу назначения</value></data>
   <data name="FilterAll" xml:space="preserve"><value>Все</value></data>

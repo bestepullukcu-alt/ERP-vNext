@@ -36,9 +36,16 @@ public sealed class TaskOutboxTests
 {
     private static readonly Guid PositionId = Guid.Parse("11111111-1111-1111-1111-111111111111");
 
-    /// <summary>Every act that presupposes holding the work. None of these may be OFFERED in the Outbox.</summary>
+    /// <summary>
+    /// Every act that presupposes holding the work. None of these may be OFFERED in the Outbox.
+    ///
+    /// <para>BL-361 — `plan` is deliberately NOT in this list. It used to belong here by assumption alone (nothing
+    /// ever measured it); the pack's own decision now names it the ONE holder-shaped act the REQUESTER may also
+    /// perform — a plan date is a personal note either of them has standing to set. See the dedicated assertion
+    /// below and <c>TaskWorkItemProvider.BuildActions</c>'s own comment beside the `plan` condition.</para>
+    /// </summary>
     private static readonly string[] HolderActs =
-        ["accept", "claim", "start", "complete", "submitReview", "plan", "inquire", "release", "return"];
+        ["accept", "claim", "start", "complete", "submitReview", "inquire", "release", "return"];
 
     // ── guard (a) ─────────────────────────────────────────────────────────────
 
@@ -181,9 +188,9 @@ public sealed class TaskOutboxTests
     {
         /*
          * Withholding the holder's acts must not leave a row with nothing on it — an outbox that can only be
-         * read is a report, not a work surface. Two acts survive, both already the requester's on the server:
-         * `cancel` (TransitionTaskItemHandler answers a non-requester with 403 CANCEL_NOT_REQUESTER) and
-         * `reassign` ("this is with the wrong person").
+         * read is a report, not a work surface. Three acts survive, all already the requester's on the server:
+         * `reassign` ("this is with the wrong person"), `plan` (BL-361 — a personal note the requester may set
+         * too), and `cancel` (TransitionTaskItemHandler answers a non-requester with 403 CANCEL_NOT_REQUESTER).
          *
          * `reassign` LEADS, and that is a rule rather than a preference: cancel is riskLevel destructive, and a
          * destructive act must never be a row's primary button.
@@ -192,10 +199,30 @@ public sealed class TaskOutboxTests
 
         var item = Assert.Single(await Project(task));
 
-        Assert.Equal(["reassign", "cancel"], item.Actions.Select(a => a.Code).ToArray());
+        Assert.Equal(["reassign", "plan", "cancel"], item.Actions.Select(a => a.Code).ToArray());
         Assert.Equal("reassign", item.PrimaryActionCode);
-        Assert.Equal(["cancel"], item.OverflowActionCodes!.ToArray());
+        Assert.Equal(["plan", "cancel"], item.OverflowActionCodes!.ToArray());
         Assert.DoesNotContain(item.Actions, a => a.Code == item.PrimaryActionCode && a.RiskLevel == "destructive");
+    }
+
+    /// <summary>
+    /// BL-361, isolated: `plan` is offered in the Outbox even on a POOLED task the creator opened, once it is
+    /// CLAIMED (an unclaimed one fails `plan`'s own `!unclaimed` condition — a fact this row must NOT trip) — the
+    /// ONE holder-shaped act that survives there, because it is not actually holder-shaped; it is
+    /// holder-OR-requester-shaped, and this row's actor is the requester. `reassign` is correctly absent (a pool
+    /// has no single holder to correct), which is what makes this the case that isolates `plan`'s own condition
+    /// from `reassign`'s.
+    /// </summary>
+    [Fact]
+    public async Task The_Outbox_offers_plan_on_a_CLAIMED_pooled_task_because_plan_is_not_holder_only()
+    {
+        var task = PoolTaskFor(creator: TaskTestData.Me);
+        task.AssigneeUserId = TaskTestData.Rival; // claimed by somebody else — no longer unclaimed
+
+        var item = Assert.Single(await Project(task));
+
+        Assert.Contains(item.Actions, a => a.Code == "plan");
+        Assert.DoesNotContain(item.Actions, a => a.Code == "reassign");
     }
 
     [Fact]

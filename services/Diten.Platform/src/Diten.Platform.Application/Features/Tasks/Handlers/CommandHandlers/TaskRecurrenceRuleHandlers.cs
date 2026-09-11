@@ -63,15 +63,18 @@ public sealed class CreateTaskRecurrenceRuleHandler
     private readonly ITaskRecurrenceRuleRepository _rules;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
 
     public CreateTaskRecurrenceRuleHandler(
         ITaskRecurrenceRuleRepository rules,
         ITenantContext tenantContext,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskAssignmentGuard assignmentGuard)
     {
         _rules = rules;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _assignmentGuard = assignmentGuard;
     }
 
     public async Task<Response<Guid>> Handle(CreateTaskRecurrenceRuleCommand command, CancellationToken ct)
@@ -83,6 +86,18 @@ public sealed class CreateTaskRecurrenceRuleHandler
                 request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId) is { } invalid)
         {
             return Response<Guid>.Fail(invalid.Message, 400, invalid.ReasonCode, command.CorrelationId);
+        }
+
+        /*
+         * BL-057 — the rule names who every future occurrence goes to, and the sweep that produces them has no
+         * caller to ask. So THIS is where the question is asked, of the person saving the rule, with the same
+         * guard task creation uses. Before the write: a refused rule leaves nothing behind.
+         */
+        if (await _assignmentGuard.CheckTargetAsync(
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, ct) is { } refused)
+        {
+            return Response<Guid>.Fail(
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         var rule = new TaskRecurrenceRule
@@ -113,11 +128,16 @@ public sealed class UpdateTaskRecurrenceRuleHandler
 {
     private readonly ITaskRecurrenceRuleRepository _rules;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
 
-    public UpdateTaskRecurrenceRuleHandler(ITaskRecurrenceRuleRepository rules, ICurrentUserContext currentUser)
+    public UpdateTaskRecurrenceRuleHandler(
+        ITaskRecurrenceRuleRepository rules,
+        ICurrentUserContext currentUser,
+        ITaskAssignmentGuard assignmentGuard)
     {
         _rules = rules;
         _currentUser = currentUser;
+        _assignmentGuard = assignmentGuard;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateTaskRecurrenceRuleCommand command, CancellationToken ct)
@@ -135,6 +155,28 @@ public sealed class UpdateTaskRecurrenceRuleHandler
                 request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId) is { } invalid)
         {
             return Response<NoContent>.Fail(invalid.Message, 400, invalid.ReasonCode, command.CorrelationId);
+        }
+
+        /*
+         * BL-352 — the guard is asked only when THIS save CHOOSES an assignment: the target itself changes
+         * (compared to what is stored, below), or the rule goes from inactive to active (re-activating re-issues
+         * the assignment, so it counts as choosing it again). An unchanged target — including switching the rule
+         * off — is not a choice the person saving it made and is not answerable for it; that is the same principle
+         * that already exempts reassign from checking the CURRENT holder. Before this, a rule whose assignee had
+         * since left the company or lost the seat could not be saved at all, not even to turn it off.
+         */
+        var targetChanged =
+            rule.AssignmentTarget != request.AssignmentTarget
+            || rule.AssigneeUserId != request.AssigneeUserId
+            || rule.PoolPositionId != request.PoolPositionId;
+        var reactivated = !rule.IsActive && request.IsActive;
+
+        if ((targetChanged || reactivated)
+            && await _assignmentGuard.CheckTargetAsync(
+                request.AssignmentTarget, request.AssigneeUserId, request.PoolPositionId, ct) is { } refused)
+        {
+            return Response<NoContent>.Fail(
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         rule.Name = request.Name.Trim();

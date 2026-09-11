@@ -108,6 +108,54 @@ public sealed class WorkReportRouteTests
         Assert.DoesNotContain("scopeApplied", body, StringComparison.OrdinalIgnoreCase);
     }
 
+    // ── Dilim 1e — the export ────────────────────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void The_export_proxy_route_exists_so_the_download_button_is_not_calling_a_404()
+    {
+        // The third call the screen makes. Platform exposing it and this tier not is the `inquire` defect again.
+        Assert.Equal("api/work-report/export", Template(nameof(TasksController.ApiWorkReportExport)));
+    }
+
+    [Fact]
+    public void The_export_proxy_forwards_the_query_string_whole_and_relays_a_FILE()
+    {
+        /*
+         * ⚠ WHOLE, because a filter this tier re-listed and dropped would make the file answer about a wider set
+         * than the screen — 13 downloaded under 12 shown. And through ProxyFileAsync, because ProxyAsync reads the
+         * body as a string and forwards no headers: the file name and the row count would not survive the hop.
+         */
+        var source = File.ReadAllText(ControllerSourcePath());
+        var start = source.IndexOf("public Task<IActionResult> ApiWorkReportExport", StringComparison.Ordinal);
+        Assert.True(start > 0, "ApiWorkReportExport is gone from the controller");
+
+        var body = source[start..(start + 300)];
+        Assert.Contains("Request.QueryString.Value", body, StringComparison.Ordinal);
+        Assert.Contains("/api/v1/tasks/work-report/export", body, StringComparison.Ordinal);
+        Assert.Contains("ProxyFileAsync(", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("tenant-wide", body, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void The_file_proxy_keeps_the_name_and_row_count_and_passes_a_403_through_untouched()
+    {
+        /*
+         * The audit screen's file proxy clears the auth cookies on a 403. On this controller a 403 means "not
+         * granted", and the screen answers it with a sentence — logging the reader out instead would turn a
+         * missing permission into a lost session.
+         */
+        var source = File.ReadAllText(ControllerSourcePath());
+        var start = source.IndexOf("private async Task<IActionResult> ProxyFileAsync", StringComparison.Ordinal);
+        Assert.True(start > 0, "ProxyFileAsync is gone from the controller");
+
+        var end = source.IndexOf("private bool TryCreateTenantRequest", start, StringComparison.Ordinal);
+        var body = source[start..end];
+        Assert.Contains("ContentDisposition", body, StringComparison.Ordinal);
+        Assert.Contains("WorkReportExportRowCountHeader", body, StringComparison.Ordinal);
+        Assert.Contains("ReadAsByteArrayAsync", body, StringComparison.Ordinal);
+        Assert.DoesNotContain("ClearAuthCookies", body, StringComparison.Ordinal);
+    }
+
     private static string ControllerSourcePath()
     {
         var dir = AppContext.BaseDirectory;

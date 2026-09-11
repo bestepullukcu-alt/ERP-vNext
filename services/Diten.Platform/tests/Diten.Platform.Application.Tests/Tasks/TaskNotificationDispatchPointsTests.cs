@@ -318,7 +318,7 @@ public sealed class TaskNotificationDispatchPointsTests
                     new FakeCurrentUserContext(Me),
                     new FakeTenantContext(TaskTestData.Tenant),
                     NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister())
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll())
                 .Handle(
                     new CreateTaskItemCommand(
                         new CreateTaskItemRequest(

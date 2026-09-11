@@ -196,6 +196,12 @@ public static class TaskReasonCodes
     /// <summary>Only the current holder may return work they were given.</summary>
     public const string ReturnNotAssignee = "TASK_RETURN_NOT_ASSIGNEE";
 
+    /// <summary>
+    /// The work report covers more tasks than one export may carry. REFUSED rather than trimmed — a cut file
+    /// looks complete — so the screen asks the reader to narrow the period or the filters (Dilim 1e).
+    /// </summary>
+    public const string WorkReportExportTooLarge = "WORK_REPORT_EXPORT_TOO_LARGE";
+
     /// <summary>Reassigning is the holder's or the requester's to do — nobody else's.</summary>
     public const string ReassignNotPermitted = "TASK_REASSIGN_NOT_PERMITTED";
 

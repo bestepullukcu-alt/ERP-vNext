@@ -261,6 +261,63 @@ public sealed class WorkReportRepository : IWorkReportRepository
     }
 
     /// <summary>
+    /// EVERY ROW BEHIND THE REPORT — Dilim 1e.
+    ///
+    /// <para><b>⚠ NO QUERY OF ITS OWN.</b> <see cref="ReadAsync"/> is the read the numbers and the lists come
+    /// from; <c>WorkReportTally.Export</c> marks each row with the cells <c>Select</c> puts it in. The only other
+    /// trip to the database is for TITLES, by id, for rows that read already admitted — and that trip carries its
+    /// own tenant guard. <c>WorkReportExportShapeTests</c> fails if this method ever reaches a collection
+    /// directly, because a direct query is exactly how an export stops being scoped.</para>
+    ///
+    /// <para>Past <paramref name="maxRows"/> the titles are not read at all: the handler is going to refuse, and
+    /// fifty thousand ids' worth of strings would be spent on a file nobody receives.</para>
+    /// </summary>
+    public async Task<WorkReportExportSet> ExportAsync(
+        WorkReportCriteria criteria,
+        int maxRows,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+
+        var readout = await ReadAsync(criteria, ct, withTypes: true);
+        if (readout is null)
+        {
+            return WorkReportExportSet.Empty;
+        }
+
+        var rows = WorkReportTally.Export(criteria, readout.Set);
+        if (rows.Count > maxRows)
+        {
+            return new WorkReportExportSet(rows.Count, []);
+        }
+
+        // In slices: one `$in` of fifty thousand ids is a single oversized command; a thousand at a time is the
+        // same read in pieces Mongo handles comfortably.
+        var titles = new Dictionary<Guid, string>();
+        foreach (var chunk in rows.Select(row => row.Id).Chunk(1_000))
+        {
+            foreach (var (id, title) in await TitlesAsync(chunk, ct))
+            {
+                titles[id] = title;
+            }
+        }
+
+        return new WorkReportExportSet(
+            rows.Count,
+            rows.Select(row => row with
+            {
+                Title = titles.TryGetValue(row.Id, out var title) ? title : string.Empty,
+                // Absent when the unit is gone from the live set: an empty cell, never an invented name.
+                OrganizationUnitName = readout.Units.TryGetValue(row.OrganizationUnitId, out var unit)
+                    ? unit.Name
+                    : null,
+                TaskTypeName = row.TaskTypeCode is not null
+                    ? readout.Types.Values.FirstOrDefault(type => type.Code == row.TaskTypeCode)?.Name
+                    : null
+            }).ToList());
+    }
+
+    /// <summary>
     /// One report's row sets, plus the two lookups the labels need — everything a single read produces.
     ///
     /// <para>A record rather than fields on the repository: the comparison path calls
@@ -282,7 +339,15 @@ public sealed class WorkReportRepository : IWorkReportRepository
     ///
     /// <para>Returns NULL when the scope admits nothing, so each caller can shape its own empty answer.</para>
     /// </summary>
-    private async Task<ReportReadout?> ReadAsync(WorkReportCriteria criteria, CancellationToken ct)
+    /// <param name="withTypes">
+    /// Read the type catalogue even when neither the filter nor the axis needs it — the export does, to print a
+    /// type's code and name. ⚠ It can only ADD a lookup: the row set is identical either way, because the
+    /// catalogue is consulted by the filter only when a type code was asked for, and then it is read regardless.
+    /// </param>
+    private async Task<ReportReadout?> ReadAsync(
+        WorkReportCriteria criteria,
+        CancellationToken ct,
+        bool withTypes = false)
     {
         /*
          * ⚠ THE SECOND LOCK ON THE SAME DOOR. The handler short-circuits an empty scope before it ever gets
@@ -342,7 +407,9 @@ public sealed class WorkReportRepository : IWorkReportRepository
             .Where(unit => unit.TenantId == _tenantContext.TenantId && unit.DeletedAt is null)
             .ToDictionary(unit => unit.Id);
 
-        var types = criteria.Filter?.TaskTypeCode is not null || criteria.GroupBy == WorkReportGroupBy.TaskType
+        var types = withTypes
+            || criteria.Filter?.TaskTypeCode is not null
+            || criteria.GroupBy == WorkReportGroupBy.TaskType
             ? (await _taskTypes.ListAllAsync(ct)).ToDictionary(type => type.Id)
             : new Dictionary<Guid, Domain.Entities.Tasks.TaskType>();
 

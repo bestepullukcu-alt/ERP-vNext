@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>其他结果</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>关闭 {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>导出</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>下载为 CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>下载为 JSON</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>工作报告</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>已下载 {0} 行。</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>此报告包含的任务超过单次导出的上限。请缩小期间或筛选条件后重试。</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>您无权导出此报告。</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>无法生成导出文件。</value></data>
 </root>

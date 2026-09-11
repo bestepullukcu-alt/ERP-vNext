@@ -432,7 +432,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
 
         var request = new CreateTaskItemRequest(
             Title: "From template", Description: null, Priority: TaskPriority.Medium,
@@ -502,7 +502,7 @@ public sealed class TaskChecklistSubtaskTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
 
         var request = new CreateTaskItemRequest(
             Title: "Child work", Description: null, Priority: TaskPriority.Medium,

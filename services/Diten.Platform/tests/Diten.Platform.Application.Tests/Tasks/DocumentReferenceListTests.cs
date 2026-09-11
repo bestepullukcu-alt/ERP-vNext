@@ -20,14 +20,14 @@ public sealed class DocumentReferenceListTests
     private static string RealFile()
     {
         var dir = AppContext.BaseDirectory;
-        while (dir is not null && !Directory.Exists(Path.Combine(dir, "docs", "integration", "gmg-qms")))
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "docs", "reference", "integrations", "gmg-qms")))
         {
             dir = Directory.GetParent(dir)?.FullName;
         }
 
         Assert.NotNull(dir);
         return File.ReadAllText(Path.Combine(
-            dir!, "docs", "integration", "gmg-qms", "GMG_ERP_Document_Reference_List_2026-08-24.csv"));
+            dir!, "docs", "reference", "integrations", "gmg-qms", "GMG_ERP_Document_Reference_List_2026-08-24.csv"));
     }
 
     [Fact]
@@ -146,13 +146,13 @@ public sealed class DocumentReferenceListImportTests
     private static string RealFileBase64()
     {
         var dir = AppContext.BaseDirectory;
-        while (dir is not null && !Directory.Exists(Path.Combine(dir, "docs", "integration", "gmg-qms")))
+        while (dir is not null && !Directory.Exists(Path.Combine(dir, "docs", "reference", "integrations", "gmg-qms")))
         {
             dir = Directory.GetParent(dir)?.FullName;
         }
 
         var bytes = File.ReadAllBytes(Path.Combine(
-            dir!, "docs", "integration", "gmg-qms", "GMG_ERP_Document_Reference_List_2026-08-24.csv"));
+            dir!, "docs", "reference", "integrations", "gmg-qms", "GMG_ERP_Document_Reference_List_2026-08-24.csv"));
         return Convert.ToBase64String(bytes);
     }
 

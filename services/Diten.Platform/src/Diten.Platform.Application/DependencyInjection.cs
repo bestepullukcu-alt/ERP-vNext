@@ -72,6 +72,10 @@ public static class DependencyInjection
         // CONSUMES IDataScopeResolver rather than recomputing anything; see TaskAssignmentScopeResolver.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentScopeResolver,
             Features.Tasks.Services.TaskAssignmentScopeResolver>();
+        // BL-057 at the WRITE — the same rule asked again by every path that hands work to somebody, so the server
+        // accepts exactly who the pickers offer.
+        services.AddScoped<Features.Tasks.Services.ITaskAssignmentGuard,
+            Features.Tasks.Services.TaskAssignmentGuard>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();

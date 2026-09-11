@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentManagementContract;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
@@ -262,6 +263,36 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * BL-361 — WHO may start, resume or finish this. Start/resume (→ InProgress) and complete (→ Done) are the
+         * two acts that most directly mean "I am doing this" / "I am done" — every sibling verb that changes who
+         * does the work or when (Accept, Release, Inquire, Return, Reassign) already asks a holder/requester
+         * question of its own; these two never did. That let anybody holding the ordinary Update/Complete
+         * permission execute a colleague's task end to end, most visibly through Ekibim's (?scope=team) own
+         * working "Tamamla" button on a subordinate's row — measured and recorded (BL-361/BL-362).
+         *
+         * Cancel's own actor check, three lines above this comment's target, is left untouched: it asks a
+         * DIFFERENT question (the REQUESTER's right to call work off) and stays scoped to `Cancelled` only. This
+         * is the sibling question for the two verbs that speak for the WORKER, never the requester.
+         *
+         * AFTER `CanTransition`, deliberately — not before it. An unclaimed pool task answers `TASK_NOT_CLAIMABLE`
+         * to EVERYONE regardless of who is asking, because there is no holder yet to compare against; "you are
+         * not the holder" would be a confusing lie to the very person about to claim it. BEFORE every gate below
+         * (checklist/approval/review/dependency/subtask/closure) and before any write, so a wrong-actor call
+         * looks, from the outside, exactly like it was never sent — no history entry, no notification.
+         *
+         * The SAME refusal code `[HasPermission]` and `ITaskAssignmentGuard` already answer with, not a new one:
+         * this is a permission question in substance ("this is not your work to move"), and the client's existing
+         * 403 fallback already covers it with no new resx key.
+         */
+        if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done
+            && task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
         }
 
         // Checklist gate, enforced HERE and not only in the projection: the projection disables the button, but a
@@ -741,6 +772,18 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         }
 
         /*
+         * BL-361 — the SAME question Start/Complete now ask, for the same reason: submitting work for review is
+         * "I am done with my part," and this handler never asked whose part it was. See the sibling comment in
+         * TransitionTaskItemHandler for the full rationale; it applies verbatim here.
+         */
+        if (task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
+        }
+
+        /*
          * A task that never asked for a review cannot be submitted for one. The projection simply does not offer
          * the action, but a caller can post straight to this endpoint — and a hidden control is presentation while
          * the refusal is the rule. Without this, any task could be parked in PendingReview with a workflow nobody
@@ -863,6 +906,21 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * BL-361 — a plan date is a PERSONAL note about when the work will happen, so both the person doing the
+         * work and the person who asked for it may set one; a bystander with no stake in either direction may not.
+         * Wider than Start/Complete/SubmitReview on purpose — this is the one verb in the group the requester also
+         * legitimately touches (their own outbox row offers `plan`, see TaskWorkItemProvider), so the rule matches
+         * what the projection already shows rather than narrowing it.
+         */
+        if (task.AssigneeUserId != _currentUser.UserId
+            && (task.CreatedByUserId is null || task.CreatedByUserId != _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee or the requester may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
         }
 
         if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
@@ -1159,26 +1217,20 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
 {
     private readonly ITaskItemRepository _tasks;
     private readonly ITaskAssignmentRepository _assignments;
-    private readonly ITaskSeatDirectory _seats;
-    private readonly IPositionRepository _positions;
-    private readonly IOrganizationUnitRepository _organizationUnits;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
     private readonly ICurrentUserContext _currentUser;
     private readonly ITenantContext _tenantContext;
 
     public ReassignTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskAssignmentRepository assignments,
-        ITaskSeatDirectory seats,
-        IPositionRepository positions,
-        IOrganizationUnitRepository organizationUnits,
+        ITaskAssignmentGuard assignmentGuard,
         ICurrentUserContext currentUser,
         ITenantContext tenantContext)
     {
         _tasks = tasks;
         _assignments = assignments;
-        _seats = seats;
-        _positions = positions;
-        _organizationUnits = organizationUnits;
+        _assignmentGuard = assignmentGuard;
         _currentUser = currentUser;
         _tenantContext = tenantContext;
     }
@@ -1206,30 +1258,6 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
-        /*
-         * ⚠ THE FLAG NOW DECIDES SOMETHING. `DelegationAllowed` has been collected by the create form since
-         * Phase 1 and was asked NOWHERE: a task explicitly marked "may not be delegated" could be handed to
-         * anybody, and nothing said otherwise.
-         *
-         * The refusal lives HERE, at the write, and not only in the projection. A disabled button is a courtesy;
-         * the rule is the endpoint saying no — a client that posts straight to the route must meet the same
-         * answer, and this module has closed three gaps of exactly that shape already (cancel authority,
-         * dependencies, subtasks).
-         *
-         * BEFORE the who-are-you check, deliberately: "this task cannot be delegated at all" is true whoever is
-         * asking, and answering "not you" to the holder would send them looking for a permission that does not
-         * exist.
-         *
-         * <para>Policy only — see <c>TaskItem.DelegationAllowed</c>. Whether a particular PERSON may receive
-         * work stays MOD-0018's decision, checked further down against the assignable set.</para>
-         */
-        if (!task.DelegationAllowed)
-        {
-            return Response<NoContent>.Fail(
-                "This task is marked as not delegable.",
-                409, TaskReasonCodes.DelegationNotAllowed, command.CorrelationId);
-        }
-
         var isHolder = task.AssigneeUserId == _currentUser.UserId;
         var isRequester = task.CreatedByUserId is not null && task.CreatedByUserId == _currentUser.UserId;
         if (!isHolder && !isRequester)
@@ -1237,6 +1265,33 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
             return Response<NoContent>.Fail(
                 "Only the current assignee or the requester can reassign this task.",
                 403, TaskReasonCodes.ReassignNotPermitted, command.CorrelationId);
+        }
+
+        /*
+         * BL-357 — THE FLAG LIMITS THE HOLDER'S FURTHER DELEGATION, NOT THE REQUESTER'S OWN CORRECTION.
+         *
+         * `DelegationAllowed` has been collected by the create form since Phase 1 and was asked NOWHERE: a task
+         * explicitly marked "may not be delegated" could be handed to anybody, and nothing said otherwise. The
+         * first fix for that (2026-08-23) asked the flag for EVERY caller, which closed that gap but opened this
+         * one: the person who OPENED the request — who is not "delegating" anything, they are correcting their
+         * own instruction — was refused their own task by a flag meant to stop a THIRD leg of hand-off. SAP routes
+         * this the same way (the initiator always re-routes; a recipient's forward is what gets policed) and so
+         * does Oracle (task ownership always carries a reassign right).
+         *
+         * So the who-are-you check now comes FIRST: a bystander is told "not you" (403), which is the true
+         * reason and the one that sends them looking for the right authority — Assign, held by someone who
+         * actually has a hand in the task. Only once that passes does the flag speak, and only for the shape it
+         * was always meant to name: HOLDER, not requester. A holder who is also the requester (self-assigned)
+         * never asked anyone else to do it, so there is nothing here to police either.
+         *
+         * <para>Policy only — see <c>TaskItem.DelegationAllowed</c>. Whether a particular PERSON may receive
+         * work stays MOD-0018's decision, checked further down against the assignable set.</para>
+         */
+        if (isHolder && !isRequester && !task.DelegationAllowed)
+        {
+            return Response<NoContent>.Fail(
+                "This task is marked as not delegable.",
+                409, TaskReasonCodes.DelegationNotAllowed, command.CorrelationId);
         }
 
         if (command.Request.AssigneeUserId == Guid.Empty)
@@ -1253,18 +1308,16 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
         }
 
-        // The same rule the people picker uses — see TaskAssigneeEligibility for why it is shared rather than
-        // written twice. Refusing here is what stops work landing on somebody the product will not offer.
-        var assignable = TaskAssigneeEligibility.ResolveAssignableUserIds(
-            await _seats.ActiveAsync(ct),
-            await _positions.GetAllAsync(ct),
-            await _organizationUnits.GetAllAsync(ct));
-
-        if (!assignable.Contains(command.Request.AssigneeUserId))
+        /*
+         * The same rule the people picker uses — eligibility AND scope, through the shared guard. It used to ask
+         * only the position and the unit, so a holder could hand work to anybody in another company whose seat
+         * was live. No self exemption here, unlike create: taking a task over is still an assignment, and the
+         * picker that offers the new holder is the scoped one.
+         */
+        if (await _assignmentGuard.CheckPersonAsync(command.Request.AssigneeUserId, ct) is { } refused)
         {
             return Response<NoContent>.Fail(
-                "That person cannot be assigned work.",
-                400, TaskReasonCodes.AssigneeNotAssignable, command.CorrelationId);
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
         /*

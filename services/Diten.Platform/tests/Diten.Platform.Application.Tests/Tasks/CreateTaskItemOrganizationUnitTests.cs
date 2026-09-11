@@ -274,7 +274,7 @@ public sealed class CreateTaskItemOrganizationUnitTests
             new FakeCurrentUserContext(TaskTestData.Me),
             new FakeTenantContext(TaskTestData.Tenant),
             NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
 
     private static OrganizationUnit Unit(Guid id, string code) => new()
     {

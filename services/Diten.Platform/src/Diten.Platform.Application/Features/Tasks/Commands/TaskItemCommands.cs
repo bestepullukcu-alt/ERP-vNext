@@ -27,7 +27,14 @@ public sealed record CreateTaskItemCommand(
     /// reads off the template, never something a client may assert. A caller that could post its own value could
     /// claim a task was built from a shape the template never had.</para>
     /// </summary>
-    DateTimeOffset? TemplateSnapshotAt = null)
+    DateTimeOffset? TemplateSnapshotAt = null,
+    /// <summary>
+    /// True ONLY for the recurrence sweep, which has no caller: no permissions, no scope, nobody to be "self".
+    /// The ASSIGNMENT guard (BL-057 at the write) is a question about the caller and is not asked here — the rule
+    /// was checked when a person saved the RULE. On the command, never on the request, for the same reason as
+    /// <see cref="TemplateSnapshotAt"/>: a client must not be able to declare itself a sweep.
+    /// </summary>
+    bool IsScheduledGeneration = false)
     : IRequest<Response<Guid>>;
 
 public sealed record UpdateTaskItemCommand(Guid Id, UpdateTaskItemRequest Request, string CorrelationId)
@@ -158,7 +165,9 @@ public sealed record ReorderChecklistCommand(
 /// <summary>Create a task from a reusable template, instantiating its checklist too (pack §12 E5).</summary>
 public sealed record CreateTaskItemFromTemplateCommand(
     CreateTaskFromTemplateRequest Request,
-    string CorrelationId) : IRequest<Response<Guid>>;
+    string CorrelationId,
+    /// <summary>Passed through to <see cref="CreateTaskItemCommand.IsScheduledGeneration"/>; see there.</summary>
+    bool IsScheduledGeneration = false) : IRequest<Response<Guid>>;
 
 // ── Dependencies (BL-028, pack §12 Y3) ───────────────────────────────────────
 

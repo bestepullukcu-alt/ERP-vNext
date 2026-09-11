@@ -16,6 +16,8 @@
     var ENDPOINT = '/Tasks/api/work-report';
     // Dilim 1c — the work behind one of the numbers above. Same tier, same proxy pattern, one path segment on.
     var ITEMS_ENDPOINT = '/Tasks/api/work-report/items';
+    // Dilim 1e — the same report's rows as a file. The third of the screen's calls, and the same proxy again.
+    var EXPORT_ENDPOINT = '/Tasks/api/work-report/export';
 
     /* ── l10n ────────────────────────────────────────────────────────────────────────────────────────────── */
 
@@ -874,6 +876,7 @@
          * reader has to interpret.
          */
         if (!q.from || !q.to || q.to <= q.from) {
+            setExportEnabled(false);
             destroyAll();
             showSkeleton(false);
             show('[data-wr-tiles]', false);
@@ -928,18 +931,150 @@
                  * list for a report that is not the one being looked at.
                  */
                 lastQuery = q;
+                // Dilim 1e — there is now a report on screen, so there are rows to export: exactly these.
+                setExportEnabled(true);
 
                 // The gateway envelope carries the report under `data`; a bare body is accepted too so the
                 // screen does not break if the envelope is ever unwrapped upstream.
                 render((payload && payload.data) || payload || {});
             })
             .catch(function () {
+                // Nothing is on screen, so there is nothing an export could honestly be "the rows of".
+                setExportEnabled(false);
                 destroyAll();
                 showSkeleton(false);
                 show('[data-wr-tiles]', false);
                 show('[data-wr-charts]', false);
                 // The third state, and the only one that says WHY nothing is here.
                 setText('[data-wr-status]', t('LoadFailed'));
+            });
+    };
+
+    /* ── Dilim 1e — THE ROWS, AS A FILE ──────────────────────────────────────────────────────────────────── */
+
+    /*
+     * ⚠ THE AUDIT LOG'S DOWNLOAD, COPIED — NOT A SECOND DOWNLOAD PATTERN. `Platform/AuditLog/index.js`
+     * `downloadExport` is the shape: fetch → 401/403 answered with a sentence → blob → the name from
+     * `content-disposition` → object URL → `<a download>` → revoke. The only additions are the ones this screen
+     * needs: the query comes from `lastQuery`, the file name's stable prefix is swapped for the reader's words,
+     * and a refused, too-large export is told apart from a failed one.
+     */
+
+    /** The part of Platform's file name the screen swaps for the reader's own words. The period stays as sent. */
+    var SERVER_FILE_PREFIX = 'work-report';
+    var ROW_COUNT_HEADER = 'X-Work-Report-Export-Row-Count';
+    var TOO_LARGE = 'WORK_REPORT_EXPORT_TOO_LARGE';
+
+    var setExportEnabled = function (enabled) {
+        var toggle = $('[data-wr-export-toggle]');
+        if (toggle) { toggle.disabled = !enabled; }
+    };
+
+    /*
+     * ⚠ THE QUERY IS `lastQuery` — THE ONE THAT PRODUCED THE NUMBERS ON SCREEN — never the pickers' current
+     * values. A reader who changed a filter and has not pressed Apply is still looking at the OLD report, and
+     * the file has to be the rows of the report they are looking at: 12 on screen, 12 in the file.
+     *
+     * The same period, the same five filters and the same scope preference as `itemsUrl`, and no group axis —
+     * the file is the totals' rows, with every axis in it as a column.
+     */
+    var exportUrl = function (format) {
+        var url = EXPORT_ENDPOINT
+            + '?format=' + encodeURIComponent(format)
+            + '&from=' + encodeURIComponent(lastQuery.from + 'T00:00:00Z')
+            + '&to=' + encodeURIComponent(lastQuery.to + 'T00:00:00Z');
+
+        ['legalEntityId', 'organizationUnitId', 'taskTypeCode', 'assigneeUserId', 'priority'].forEach(function (name) {
+            if (lastQuery[name]) { url += '&' + name + '=' + encodeURIComponent(lastQuery[name]); }
+        });
+
+        if (lastQuery.scopePreference) { url += '&scope=' + encodeURIComponent(lastQuery.scopePreference); }
+
+        return url;
+    };
+
+    /** The audit log's own reader of `content-disposition` — `filename*` (RFC 5987) or plain `filename`. */
+    var parseFileName = function (contentDisposition) {
+        var match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(contentDisposition || '');
+        if (!match) { return ''; }
+        try { return decodeURIComponent(match[1].replace(/"/g, '')); } catch (e) { return match[1]; }
+    };
+
+    /**
+     * `work-report_2026-08-11_2026-09-10.csv` → `is-raporu_2026-08-11_2026-09-10.csv`.
+     *
+     * Platform has no localizer, so it names the file with a stable prefix and the period; only the prefix is
+     * replaced here. A server name that does not start with it is left exactly as sent — guessing at a
+     * rename would risk a file that no longer says which period it holds.
+     */
+    var localFileName = function (serverName, format) {
+        var name = serverName || (SERVER_FILE_PREFIX + '.' + format);
+        var prefix = L.ExportFilePrefix;
+        return (prefix && name.indexOf(SERVER_FILE_PREFIX) === 0)
+            ? prefix + name.slice(SERVER_FILE_PREFIX.length)
+            : name;
+    };
+
+    /** The product's toast when the shell has one; otherwise the status line under the filter. */
+    var notify = function (message, type) {
+        if (typeof window.showToast === 'function') { window.showToast(message, type); return; }
+        setText('[data-wr-status]', message);
+    };
+
+    var exporting = false;
+
+    var downloadExport = function (format) {
+        // No report on screen, no rows to export — and one download at a time.
+        if (!lastQuery || exporting) { return Promise.resolve(); }
+        exporting = true;
+
+        return fetch(exportUrl(format), { credentials: 'same-origin' })
+            .then(function (response) {
+                // ⚠ ANSWERED WITH A SENTENCE, NOT A RAW ERROR — the audit log's rule for the same two statuses.
+                if (response.status === 401 || response.status === 403) {
+                    notify(t('ExportForbidden'), 'error');
+                    return null;
+                }
+
+                if (!response.ok) {
+                    return response.json()
+                        .catch(function () { return null; })
+                        .then(function (body) {
+                            var reason = body && (body.reason_code || body.reasonCode);
+                            // ⚠ REFUSED IS NOT FAILED. Too many rows is something the reader can fix — narrow
+                            // the filters — and saying "it failed" would leave them trying the same thing again.
+                            notify(t(reason === TOO_LARGE ? 'ExportTooManyRows' : 'ExportFailed'), 'error');
+                        });
+                }
+
+                return response.blob().then(function (blob) {
+                    var fileName = localFileName(parseFileName(response.headers.get('content-disposition')), format);
+                    var url = URL.createObjectURL(blob);
+                    /*
+                     * ⚠ REVOKED IN `finally`, NOT AFTER THE CLICK. The audit log revokes on the line after
+                     * `click()`; if anything between the two threw, the blob — the whole file — would stay
+                     * pinned in memory for the life of the page. Here it is released whatever happens.
+                     */
+                    try {
+                        var link = document.createElement('a');
+                        link.href = url;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                    } finally {
+                        URL.revokeObjectURL(url);
+                    }
+
+                    var rows = response.headers.get(ROW_COUNT_HEADER);
+                    notify(tf('ExportDownloaded', rows === null ? '' : rows), 'success');
+                });
+            })
+            .catch(function () {
+                notify(t('ExportFailed'), 'error');
+            })
+            .then(function () {
+                exporting = false;
             });
     };
 
@@ -1492,6 +1627,15 @@
                 window.WorkReportScreen.loadItemsPage(true);
             }
         });
+
+        // Dilim 1e — both export entries, through the one function. The FORMAT is the entry's own code.
+        document.addEventListener('click', function (event) {
+            var entry = event.target.closest && event.target.closest('[data-wr-export]');
+            if (entry && window.WorkReportScreen) {
+                event.preventDefault();
+                window.WorkReportScreen.downloadExport(entry.getAttribute('data-wr-export'));
+            }
+        });
     }
 
     // Exposed for the test harness — the real render path, not a copy of it.
@@ -1518,6 +1662,10 @@
         // of the screen; these two hooks let a test set or read the state a real chip click sets and reads.
         showSkeleton: showSkeleton,
         setScopePreference: function (value) { scopePreference = value; },
-        getScopePreference: function () { return scopePreference; }
+        getScopePreference: function () { return scopePreference; },
+        // Dilim 1e — the real download path, not a copy of it.
+        downloadExport: downloadExport,
+        exportUrl: function (format) { return exportUrl(format); },
+        localFileName: localFileName
     };
 })();
