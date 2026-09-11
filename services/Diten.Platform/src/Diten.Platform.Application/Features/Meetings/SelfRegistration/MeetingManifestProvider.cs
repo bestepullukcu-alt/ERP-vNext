@@ -33,6 +33,9 @@ namespace Diten.Platform.Application.Features.Meetings.SelfRegistration;
 public sealed class MeetingManifestProvider : IModuleManifestProvider
 {
     private const string PageMeetings = "MEETINGS";
+    private const string PageMeetingCreate = "MEETING_CREATE";
+    private const string PageMeetingDetail = "MEETING_DETAIL";
+    private const string PageMeetingEdit = "MEETING_EDIT";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -48,13 +51,15 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
             IsBaseline: false,
             Pages:
             [
+                // S3 — pack §9: the top-level list IS nav-visible (unlike MOD-0024's work surfaces, Meetings is
+                // a first-class tenant screen, not a personal-work aggregator hidden behind the Task Center).
                 new ModuleManifestPage(
                     PageCode: PageMeetings,
                     DisplayName: "Meetings",
                     RoutePath: "/Meetings",
                     RequiredPermission: MeetingPermissions.Read,
                     ParentPageCode: null,
-                    IsNavigationVisible: false,
+                    IsNavigationVisible: true,
                     PageType: "List",
                     SortOrder: 10,
                     Actions:
@@ -75,7 +80,42 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "Toolbar", 70, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("READ_ALL", "View All Meetings", MeetingPermissions.ReadAll,
                             "Toolbar", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
-                    ])
+                    ]),
+
+                // The three work-surface routes — nav-hidden (§2a), reached only from the list, mirroring
+                // TaskManifestProvider's own TASK_CREATE/TASK_DETAIL/TASK_EDIT pages exactly.
+                new ModuleManifestPage(
+                    PageCode: PageMeetingCreate,
+                    DisplayName: "Create Meeting",
+                    RoutePath: "/Meetings/Create",
+                    RequiredPermission: MeetingPermissions.Create,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 11,
+                    Actions: []),
+
+                new ModuleManifestPage(
+                    PageCode: PageMeetingDetail,
+                    DisplayName: "Meeting Detail",
+                    RoutePath: "/Meetings/{id}",
+                    RequiredPermission: MeetingPermissions.Read,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 12,
+                    Actions: []),
+
+                new ModuleManifestPage(
+                    PageCode: PageMeetingEdit,
+                    DisplayName: "Edit Meeting",
+                    RoutePath: "/Meetings/{id}/Edit",
+                    RequiredPermission: MeetingPermissions.Update,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 13,
+                    Actions: [])
             ],
             NotificationEvents: []);
 }

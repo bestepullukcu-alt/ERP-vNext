@@ -1,0 +1,152 @@
+@using Diten.Web.Views.Meetings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var meetingId = ViewData["MeetingId"] as string ?? string.Empty;
+}
+
+@if (!Perms.Has("platform.meetings.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["DetailsTitle"].Value" />
+    return;
+}
+
+@* MOD-0357 S3 — the header is Razor, the record's fields are drawn client-side (the same split
+   TaskWorkItemProvider's own Details page takes, since the record lives on Platform, reached only through the
+   same-origin proxy). D3 visibility (organizer ∨ attendee ∨ read-all) is enforced server-side: a caller with no
+   relationship to this id gets a 404 from the proxy, rendered here as "not found", never "you lack permission". *@
+<div class="meetings-details" id="meetingDetailsRoot" data-meeting-id="@meetingId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/Meetings">@Localizer["MeetingsTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2" id="detailsActionBar">
+            <a href="/Meetings" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <button type="button" class="btn btn-label-secondary d-none" id="btnReassignOrganizer">@Localizer["ReassignOrganizer"]</button>
+            <button type="button" class="btn btn-label-danger d-none" id="btnCancelMeeting">@Localizer["CancelMeeting"]</button>
+            <a href="#" class="btn btn-primary d-none" id="btnEditMeeting">@SharedLocalizer["Edit"]</a>
+        </div>
+    </div>
+
+    <div id="meetingNotFound" class="alert alert-warning d-none" role="alert">@Localizer["ErrorMeetingNotFound"]</div>
+
+    <div id="meetingDetailsBody" class="d-none">
+        <div class="row g-4">
+            <!-- Main Column -->
+            <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+                <section class="card p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-id-card"></i>@Localizer["IdentitySection"]</h6>
+                    <div class="row g-4">
+                        <div class="col-12"><div class="backbone-preview-label">@Localizer["Title"]</div><div class="backbone-preview-value mt-1" id="dTitle">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["MeetingType"]</div><div class="backbone-preview-value mt-1" id="dType">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@SharedLocalizer["Status"]</div><div class="mt-1" id="dStatus">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["StartAt"]</div><div class="backbone-preview-value mt-1" id="dStartAt">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["EndAt"]</div><div class="backbone-preview-value mt-1" id="dEndAt">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["Location"]</div><div class="backbone-preview-value mt-1" id="dLocation">-</div></div>
+                        <div class="col-12 col-md-6"><div class="backbone-preview-label">@Localizer["Organizer"]</div><div class="backbone-preview-value mt-1" id="dOrganizer">-</div></div>
+                        <div class="col-12"><div class="backbone-preview-label">@SharedLocalizer["Description"]</div><div class="backbone-preview-value mt-1" id="dDescription">-</div></div>
+                        <div class="col-12 d-none" id="dCancellationReasonRow">
+                            <div class="backbone-preview-label">@Localizer["CancellationReason"]</div>
+                            <div class="backbone-preview-value mt-1" id="dCancellationReason">-</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-list-ul"></i>@Localizer["Agenda"]</h6>
+                    </div>
+                    <ul class="list-group mb-3" id="agendaList"></ul>
+                    <p class="text-muted small mb-3 d-none" id="noAgendaHint">@Localizer["NoAgendaItems"]</p>
+                    <div class="d-flex gap-2 meeting-agenda-add d-none" id="agendaAddRow">
+                        <input type="text" class="form-control" id="newAgendaItemText" maxlength="500" placeholder="@Localizer["AgendaItemPlaceholder"]" />
+                        <button type="button" class="btn btn-label-primary text-nowrap" id="btnAddAgendaItem">@Localizer["AddAgendaItem"]</button>
+                    </div>
+                </section>
+
+                <section class="card p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-task"></i>@Localizer["LinkedTasks"]</h6>
+                    <ul class="list-group" id="linkedTasksList"></ul>
+                    <p class="text-muted small mb-0 d-none" id="noLinkedTasksHint">@Localizer["NoLinkedTasks"]</p>
+                </section>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+                <section class="card p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h6 class="card-section-title mb-0"><i class="bx bx-group"></i>@Localizer["Attendees"]</h6>
+                    </div>
+                    <ul class="list-group mb-3" id="attendeesList"></ul>
+                    <div class="d-flex gap-2 meeting-attendee-add d-none" id="attendeeAddRow">
+                        <select id="newAttendeeUserId" class="select2 form-select" data-placeholder="@Localizer["AttendeesPlaceholder"]"></select>
+                        <button type="button" class="btn btn-label-primary text-nowrap" id="btnAddAttendee">@Localizer["AddAttendee"]</button>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    @* Reassign-organizer modal — the picker is the SAME eligible-attendee lookup the sidebar's add-attendee
+       control uses (D2, scope-exempt). *@
+    <div class="modal fade" id="reassignOrganizerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["ReassignOrganizer"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="reassignOrganizerUserId" class="form-label fw-medium">@Localizer["NewOrganizer"]</label>
+                    <select id="reassignOrganizerUserId" class="select2 form-select" style="width:100%"></select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-primary" id="btnConfirmReassignOrganizer">@SharedLocalizer["Save"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Cancel-meeting modal. A native window.prompt() was the first cut here and was replaced after a live
+       smoke test: it is silently auto-dismissed by automated/policy-restricted browsers (returns null with no
+       way to tell that apart from the user themselves cancelling), and it cannot carry the app's own
+       validation styling or resx-driven placeholder text. *@
+    <div class="modal fade" id="cancelMeetingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Localizer["CancelMeeting"]</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label for="cancelMeetingReason" class="form-label fw-medium">@Localizer["CancellationReason"] <span class="text-danger">*</span></label>
+                    <textarea id="cancelMeetingReason" class="form-control" rows="3" maxlength="500"></textarea>
+                    <span class="text-danger small mt-1 d-none" id="cancelMeetingReasonError">@Localizer["ErrorCancellationReasonRequired"]</span>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
+                    <button type="button" class="btn btn-label-danger" id="btnConfirmCancelMeeting">@Localizer["CancelMeeting"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/Meetings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
+}

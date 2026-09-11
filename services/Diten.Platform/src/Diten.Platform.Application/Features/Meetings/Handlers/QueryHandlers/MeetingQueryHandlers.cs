@@ -3,6 +3,8 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Meetings.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Meetings.Queries;
 using Diten.Platform.Application.Features.Meetings.RecordLinks;
+using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -244,5 +246,39 @@ public sealed class GetMeetingTypeByIdHandler : IRequestHandler<GetMeetingTypeBy
         }
 
         return Response<MeetingTypeDto>.Success(MeetingTypeMapping.ToDto(type), 200, query.CorrelationId);
+    }
+}
+
+/// <summary>S3 — the attendee picker's own data source. Forwards to MOD-0024's own person-lookup query
+/// (<c>Purpose: Decision</c>, scope-exempt per D2) rather than resolving eligible users a second way.</summary>
+public sealed class GetMeetingAttendeeLookupHandler
+    : IRequestHandler<GetMeetingAttendeeLookupQuery, Response<AssignablePersonLookupDto>>
+{
+    private readonly IMediator _mediator;
+
+    public GetMeetingAttendeeLookupHandler(IMediator mediator) => _mediator = mediator;
+
+    public Task<Response<AssignablePersonLookupDto>> Handle(GetMeetingAttendeeLookupQuery query, CancellationToken ct)
+        => _mediator.Send(new GetTaskAssignmentPersonLookupQuery(query.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+}
+
+/// <summary>S3 — the type dropdown's own data source (pack §12: the type must resolve and be active).</summary>
+public sealed class GetMeetingTypeLookupHandler
+    : IRequestHandler<GetMeetingTypeLookupQuery, Response<IReadOnlyList<MeetingTypeLookupItemDto>>>
+{
+    private readonly IMeetingTypeRepository _types;
+
+    public GetMeetingTypeLookupHandler(IMeetingTypeRepository types) => _types = types;
+
+    public async Task<Response<IReadOnlyList<MeetingTypeLookupItemDto>>> Handle(
+        GetMeetingTypeLookupQuery query, CancellationToken ct)
+    {
+        var types = await _types.ListAsync(ct);
+        IReadOnlyList<MeetingTypeLookupItemDto> items = types
+            .OrderBy(t => t.Name, StringComparer.Ordinal)
+            .Select(t => new MeetingTypeLookupItemDto(t.Id, t.Name))
+            .ToList();
+
+        return Response<IReadOnlyList<MeetingTypeLookupItemDto>>.Success(items, 200, query.CorrelationId);
     }
 }

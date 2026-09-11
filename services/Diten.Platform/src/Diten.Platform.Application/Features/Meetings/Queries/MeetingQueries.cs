@@ -16,3 +16,13 @@ public sealed record GetLinkedTasksQuery(Guid MeetingId, string CorrelationId)
 public sealed record GetMeetingTypeListQuery(string CorrelationId) : IRequest<Response<IReadOnlyList<MeetingTypeDto>>>;
 
 public sealed record GetMeetingTypeByIdQuery(Guid Id, string CorrelationId) : IRequest<Response<MeetingTypeDto>>;
+
+// ── Lookups (S3) ─────────────────────────────────────────────────────────────────────────────────────────────
+
+/// <summary>D2 — the SAME seam MOD-0024's own assignee picker uses (<c>GetTaskAssignmentPersonLookupQuery</c>,
+/// <c>Purpose: Decision</c>, scope-EXEMPT); this query only forwards to it, never a second resolution path.</summary>
+public sealed record GetMeetingAttendeeLookupQuery(string CorrelationId)
+    : IRequest<Response<Diten.Platform.Application.Features.Tasks.AssignablePersonLookupDto>>;
+
+public sealed record GetMeetingTypeLookupQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<MeetingTypeLookupItemDto>>>;

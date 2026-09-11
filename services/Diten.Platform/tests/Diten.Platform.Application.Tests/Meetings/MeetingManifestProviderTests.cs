@@ -55,10 +55,26 @@ public sealed class MeetingManifestProviderTests
         }
     }
 
+    /// <summary>S3 — pack §9: the top-level list is the module's own nav entry now that its screen exists;
+    /// the three work-surface routes (Create/Detail/Edit) stay nav-hidden, reached only from the list, the
+    /// same shape TaskManifestProvider's own TASK_CREATE/TASK_DETAIL/TASK_EDIT pages take.</summary>
     [Fact]
-    public void No_page_is_navigation_visible_this_slice_so_no_dead_menu_link_appears_before_S3()
+    public void Only_the_top_level_list_is_navigation_visible()
     {
-        Assert.All(Manifest.Pages, p => Assert.False(p.IsNavigationVisible));
+        var visible = Manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToList();
+        Assert.Equal(["MEETINGS"], visible);
+    }
+
+    [Fact]
+    public void The_three_work_surface_routes_exist_nav_hidden_under_the_list()
+    {
+        var byCode = Manifest.Pages.ToDictionary(p => p.PageCode);
+        foreach (var code in new[] { "MEETING_CREATE", "MEETING_DETAIL", "MEETING_EDIT" })
+        {
+            Assert.True(byCode.TryGetValue(code, out var page), $"Expected a {code} page.");
+            Assert.False(page!.IsNavigationVisible);
+            Assert.Equal("MEETINGS", page.ParentPageCode);
+        }
     }
 
     [Fact]

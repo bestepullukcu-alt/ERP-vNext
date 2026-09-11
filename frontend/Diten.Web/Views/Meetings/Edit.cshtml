@@ -1,0 +1,25 @@
+@using Diten.Web.Views.Meetings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+@if (!Perms.Has("platform.meetings.update"))
+{
+    <partial name="_AccessDenied" model="@Localizer["MeetingsTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Meetings/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Meetings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
+}

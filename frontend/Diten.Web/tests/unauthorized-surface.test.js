@@ -39,7 +39,13 @@ const GATED = {
   "Governance/Users/Index.cshtml": "auth.users.read",
   // Added when the Role Permissions screen was gated. The map is the guard: a screen absent from it is
   // simply not checked, which is why removing the gate from this very view broke nothing until this line existed.
-  "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission"
+  "Governance/RoleAssignments/Index.cshtml": "auth.roles.assign-permission",
+  // MOD-0357 S3 — the four Meetings screens, each on the key its own data actually needs (create/update stay
+  // separate from read: a caller who may read a meeting is not automatically who may write one).
+  "Meetings/Index.cshtml": "platform.meetings.read",
+  "Meetings/Create.cshtml": "platform.meetings.create",
+  "Meetings/Edit.cshtml": "platform.meetings.update",
+  "Meetings/Details.cshtml": "platform.meetings.read"
 };
 
 describe("the gate stands in front of the page, not beside it", () => {

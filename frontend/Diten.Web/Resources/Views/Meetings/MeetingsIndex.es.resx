@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingsTitle" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Las reuniones que organiza o a las que asiste, con su orden del día y sus tareas vinculadas.</value></data>
+  <data name="Title" xml:space="preserve"><value>Título</value></data>
+  <data name="MeetingType" xml:space="preserve"><value>Tipo de reunión</value></data>
+  <data name="StartAt" xml:space="preserve"><value>Inicio</value></data>
+  <data name="EndAt" xml:space="preserve"><value>Fin</value></data>
+  <data name="Organizer" xml:space="preserve"><value>Organizador</value></data>
+  <data name="IAmAttendee" xml:space="preserve"><value>Asistencia</value></data>
+  <data name="HasLinkedTasks" xml:space="preserve"><value>Tareas vinculadas</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Segment" xml:space="preserve"><value>Período</value></data>
+  <data name="SegmentUpcoming" xml:space="preserve"><value>Próximas</value></data>
+  <data name="SegmentPast" xml:space="preserve"><value>Pasadas</value></data>
+  <data name="IAmAttendeeFilter" xml:space="preserve"><value>Soy asistente</value></data>
+  <data name="HasLinkedTasksFilter" xml:space="preserve"><value>Tiene tareas vinculadas</value></data>
+  <data name="FromDate" xml:space="preserve"><value>Fecha desde</value></data>
+  <data name="ToDate" xml:space="preserve"><value>Fecha hasta</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Nueva reunión</value></data>
+  <data name="StatusScheduled" xml:space="preserve"><value>Programada</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Cancelada</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Completada</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nueva reunión</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar reunión</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Detalles de la reunión</value></data>
+  <data name="Location" xml:space="preserve"><value>Ubicación</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Sala, edificio o enlace de videollamada</value></data>
+  <data name="FollowUpOfMeeting" xml:space="preserve"><value>Continuación de la reunión</value></data>
+  <data name="Attendees" xml:space="preserve"><value>Asistentes</value></data>
+  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Buscar personas para invitar</value></data>
+  <data name="NoEligibleAttendees" xml:space="preserve"><value>No se encontraron personas elegibles. Solo se puede invitar a usuarios activos del tenant que ocupen un puesto.</value></data>
+  <data name="AddAgendaItem" xml:space="preserve"><value>Agregar</value></data>
+  <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Punto del orden del día</value></data>
+  <data name="RemoveAttendee" xml:space="preserve"><value>Quitar asistente</value></data>
+  <data name="AddAttendee" xml:space="preserve"><value>Agregar</value></data>
+  <data name="ReassignOrganizer" xml:space="preserve"><value>Reasignar organizador</value></data>
+  <data name="NewOrganizer" xml:space="preserve"><value>Nuevo organizador</value></data>
+  <data name="CancelMeeting" xml:space="preserve"><value>Cancelar reunión</value></data>
+  <data name="CancellationReason" xml:space="preserve"><value>Motivo de cancelación</value></data>
+  <data name="InvitationPending" xml:space="preserve"><value>Pendiente</value></data>
+  <data name="InvitationAccepted" xml:space="preserve"><value>Aceptada</value></data>
+  <data name="InvitationDeclined" xml:space="preserve"><value>Rechazada</value></data>
+  <data name="LinkedTasks" xml:space="preserve"><value>Tareas vinculadas</value></data>
+  <data name="NoLinkedTasks" xml:space="preserve"><value>Todavía no hay tareas vinculadas a esta reunión.</value></data>
+  <data name="Agenda" xml:space="preserve"><value>Orden del día</value></data>
+  <data name="NoAgendaItems" xml:space="preserve"><value>Todavía no hay puntos en el orden del día.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Información de la reunión</value></data>
+  <data name="ErrorMeetingNotFound" xml:space="preserve"><value>No se pudo encontrar esta reunión.</value></data>
+  <data name="ErrorEndBeforeStart" xml:space="preserve"><value>La hora de fin debe ser posterior a la hora de inicio.</value></data>
+  <data name="ErrorMeetingCancelled" xml:space="preserve"><value>Esta reunión está cancelada.</value></data>
+  <data name="ErrorMeetingCompleted" xml:space="preserve"><value>Esta reunión está completada.</value></data>
+  <data name="ErrorCancellationReasonRequired" xml:space="preserve"><value>Se requiere un motivo de cancelación.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Esta reunión cambió mientras tanto; recargue e inténtelo de nuevo.</value></data>
+  <data name="ErrorSelfFollowUp" xml:space="preserve"><value>Una reunión no puede ser continuación de sí misma.</value></data>
+  <data name="ErrorFollowUpNotFound" xml:space="preserve"><value>No se pudo encontrar la reunión de la que esta es continuación.</value></data>
+  <data name="ErrorOrganizerInvalid" xml:space="preserve"><value>El organizador debe ser un usuario activo del tenant.</value></data>
+  <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Esta persona no puede ser invitada en este momento.</value></data>
+  <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Esta persona ya está invitada.</value></data>
+  <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Este asistente no forma parte de la reunión.</value></data>
+  <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>No se pudo encontrar este punto del orden del día.</value></data>
+  <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>No se pudo reordenar el orden del día; recargue e inténtelo de nuevo.</value></data>
+  <data name="ErrorTypeNotFound" xml:space="preserve"><value>No se pudo encontrar este tipo de reunión.</value></data>
+  <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Ya existe un tipo de reunión con este nombre.</value></data>
+  <data name="ErrorTypeInUse" xml:space="preserve"><value>Este tipo de reunión está en uso por una reunión y no se puede eliminar.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
+</root>

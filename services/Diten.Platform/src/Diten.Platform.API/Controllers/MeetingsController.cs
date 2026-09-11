@@ -140,4 +140,25 @@ public sealed class MeetingsController : CustomBaseController
         var response = await _mediator.Send(new GetLinkedTasksQuery(id, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
+
+    // ── S3 lookups — "lookups" never matches {id:guid}, same disambiguation MeetingTypesController's own
+    // "types" sub-route already relies on. ──────────────────────────────────────────────────────────────────
+
+    /// <summary>The attendee picker (D2, scope-exempt) — Create needs it to invite anyone at all.</summary>
+    [HttpGet("lookups/attendees")]
+    [HasPermission(MeetingPermissions.Create)]
+    public async Task<IActionResult> LookupAttendees(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMeetingAttendeeLookupQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>The type dropdown — gated on Read (not TypesManage): choosing a type is not managing the catalogue.</summary>
+    [HttpGet("lookups/types")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> LookupTypes(CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMeetingTypeLookupQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
 }

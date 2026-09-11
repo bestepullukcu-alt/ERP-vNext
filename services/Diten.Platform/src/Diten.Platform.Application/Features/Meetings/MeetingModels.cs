@@ -187,3 +187,10 @@ public sealed record MeetingTypeDto(
     bool RequiresESignature,
     bool AttendanceMandatory,
     int Version);
+
+// ── Lookups (S3 — the Create/Edit form's two pickers) ───────────────────────────────────────────────────────
+
+/// <summary>The type dropdown's own shape — lighter than <see cref="MeetingTypeDto"/> and gated on
+/// <see cref="MeetingPermissions.Read"/> rather than <see cref="MeetingPermissions.TypesManage"/>: anyone who
+/// may create a meeting must be able to choose a type, without also being able to manage the type catalogue.</summary>
+public sealed record MeetingTypeLookupItemDto(Guid Id, string Name);
