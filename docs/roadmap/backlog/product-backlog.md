@@ -5072,6 +5072,10 @@ CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `Check
 Görevde artık dosya var: kanıt / çıktı / düz ek, kiracıya ayrı klasörde, indirme dosya adıyla, silme yumuşak (bayt kalır). `EvidenceRequired` gerçekten zorluyor (409 CHECKLIST_EVIDENCE_REQUIRED).
 Yetki: ekleme/silme holder∨requester + `platform.tasks.update`, okuma/indirme `platform.tasks.read`, başka kiracı 404, kapalı görev 409, ekleme ve silme denetim kaydı.
 CT eklemesi: `TaskAttachmentRepositoryMongoTests` (gerçek Mongo) — diğer tüm testler sahte depo kullanıyordu ve sahte depo silinmişleri kendi süzüyordu; süzgeç üretimden düşerse artık kırmızı.
+**Açık (küçük, ATT-1 kusuru DEĞİL):** Görev Merkezi **detay sayfası** dev'de iş öğesini çözemiyor — akış (`/WorkCenterNext/api/work-items`) tek öğe döndürüyor
+("Reference work item"), o öğenin kendi detay adresi bile "İstenen iş öğesi bulunamadı" diyor; sayfa öğeyi yüklü akıştan `itemById` ile arıyor. Bu yüzden "Ekler"
+kartının canlı ekran görüntüsü alınamadı; kart jsdom'da gerçek app.js ile 16 testle, uçlar ise canlı API turuyla kanıtlandı. Bir sonraki Görev Merkezi canlı turunda bakılacak.
+
 **Kalan (Adım 3):** kapanış zarfı (MOD-0024 Faz 2) — kapanışta çıktı/kanıt alanları; iş raporunda dosya YOK (rapor görevden okur).
 
 ### BL-371
