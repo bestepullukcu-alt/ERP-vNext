@@ -4732,7 +4732,7 @@ Tahmin değil ölçüm için ekran görüntüsü + kullanıcı + ortam gerekiyor
 
 **PPM `assign-owner` izni otomatik grant yollarından dışlanmıyor — altyapı (AuthService) işi**
 
-DURUM: AÇIK · KARAR (Codex aktarımıyla sahip, 2026-09-11): assign-owner hiçbir otomatik yolla verilmez — SuperAdmin tam katalog, kiracı Admin
+DURUM: AÇIK · KARAR VERİLDİ (sahip, 2026-09-11 — doğrudan onay): assign-owner hiçbir otomatik yolla verilmez — SuperAdmin tam katalog, kiracı Admin
 modül eşitlemesi, başlangıç rol şablonu dahil; yalnız açık ve yetkili atama · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10
 
 **Yetki girdisi kuralı (CT, 2026-09-11):** PPM'nin push edilmiş amendment SHA'sı (`git show <sha>:<pack yolu>`) dar Auth işinin
