@@ -25,6 +25,12 @@ const loadModules = () => {
   // The shared checklist row, loaded exactly as Views/WorkCenterNext/*.cshtml loads it. app.js delegates every
   // checklist row to it, so a harness without it boots an app that could not render one.
   loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
+  // WP-WC-SHARED-UI-01 (E1/E2/E3) — app.js's own dialogIcon/dialogDescriptionClass, personInitials and
+  // renderRelated's row markup now delegate to these, exactly as Views/WorkCenterNext/*.cshtml load them ahead
+  // of app.js.
+  loadScript("wwwroot/assets/js/shared/diten-dialog.js");
+  loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
+  loadScript("wwwroot/assets/js/shared/diten-related-records.js");
   loadScript(SCRIPT_ROOT + "fixture-contract.js");
   loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
   loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");

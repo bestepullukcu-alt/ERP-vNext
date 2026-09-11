@@ -64,14 +64,14 @@
                             <label for="fieldStartAt" class="form-label fw-medium">@Localizer["StartAt"] <span class="text-danger">*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
-                                <input type="datetime-local" id="fieldStartAt" class="form-control" required />
+                                <input type="text" id="fieldStartAt" class="form-control flatpickr-date" autocomplete="off" required />
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
                             <label for="fieldEndAt" class="form-label fw-medium">@Localizer["EndAt"] <span class="text-danger">*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-calendar-check diten-field-icon" aria-hidden="true"></i>
-                                <input type="datetime-local" id="fieldEndAt" class="form-control" required />
+                                <input type="text" id="fieldEndAt" class="form-control flatpickr-date" autocomplete="off" required />
                             </div>
                             <span class="text-danger small mt-1 d-none" id="fieldEndAtError"></span>
                         </div>
@@ -100,7 +100,6 @@
                         <select id="fieldAttendeeUserIds" class="select2 form-select" multiple="multiple" data-placeholder="@Localizer["AttendeesPlaceholder"]">
                         </select>
                     </div>
-                    <p class="text-muted small mt-2 mb-0 d-none" id="noEligibleAttendeesHint">@Localizer["NoEligibleAttendees"]</p>
                 </div>
             </section>
 

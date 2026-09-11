@@ -13,41 +13,33 @@
 (function () {
     const t = (key) => window.MeetingsL10n?.t?.(key) ?? key;
 
-    const toIsoOrNull = (datetimeLocalValue) => {
-        if (!datetimeLocalValue) { return null; }
-        const d = new Date(datetimeLocalValue);
+    /*
+     * M3 — the start/end fields are flatpickr now (`enableTime: true, dateFormat: 'Y-m-d H:i'`,
+     * WP-WC-SHARED-UI-01), not a native `datetime-local` input. flatpickr's own value is space-separated
+     * ("2026-09-15 14:30"); the `T` is restored before handing it to `Date` because only the `T`-separated form
+     * is guaranteed by the spec to parse as local time everywhere `Date` runs.
+     */
+    const toIsoOrNull = (flatpickrValue) => {
+        if (!flatpickrValue) { return null; }
+        const d = new Date(flatpickrValue.replace(' ', 'T'));
         return Number.isNaN(d.getTime()) ? null : d.toISOString();
     };
-    const toDatetimeLocal = (isoValue) => {
+    const toFlatpickrValue = (isoValue) => {
         if (!isoValue) { return ''; }
         const d = new Date(isoValue);
         if (Number.isNaN(d.getTime())) { return ''; }
         const pad = (n) => String(n).padStart(2, '0');
-        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     };
 
     /*
-     * select2 4.0.13 wires DropdownSearch only for single selects; composed here (Utils.Decorate) the same way
-     * Governance/RoleAssignments/index.js does, so the searchable dropdown also opens for the attendee MULTI
-     * select — otherwise a tenant with dozens of eligible people has no way to find one by typing.
+     * select2 4.0.13 wires DropdownSearch only for single selects; the attendee MULTI select needs it too —
+     * otherwise a tenant with dozens of eligible people has no way to find one by typing.
+     *
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — this file carried its own copy,
+     * identical to Governance/RoleAssignments/index.js's, and both now call the one place it is built.
      */
-    let searchableDropdownAdapter = null;
-    const buildSearchableDropdownAdapter = () => {
-        if (searchableDropdownAdapter) { return searchableDropdownAdapter; }
-        const amd = window.jQuery?.fn?.select2?.amd;
-        if (!amd?.require) { return undefined; }
-        try {
-            const Dropdown = amd.require('select2/dropdown');
-            const DropdownSearch = amd.require('select2/dropdown/search');
-            const AttachBody = amd.require('select2/dropdown/attachBody');
-            const Utils = amd.require('select2/utils');
-            searchableDropdownAdapter = Utils.Decorate(Utils.Decorate(Dropdown, DropdownSearch), AttachBody);
-            return searchableDropdownAdapter;
-        } catch (e) {
-            console.warn('[Meetings] dropdown search adapter unavailable; falling back to the default.', e);
-            return undefined;
-        }
-    };
+    const buildSearchableDropdownAdapter = () => window.DitenPersonPicker.buildSearchableDropdownAdapter();
 
     const initSelect2 = (selector, options) => {
         if (!window.jQuery || !$.fn.select2) { return; }
@@ -85,8 +77,13 @@
             document.getElementById('createOnlySection')?.classList.add('d-none');
         } else {
             const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
-            populateOptions('#fieldAttendeeUserIds', people, 'userId', 'displayName');
-            document.getElementById('noEligibleAttendeesHint')?.classList.toggle('d-none', people.length > 0);
+            // AssignablePersonDto rows, straight from the same lookup Tasks' own assignee picker uses — the
+            // shared picker renders the avatar+name(+unit) row and its own "nobody eligible" state (E2).
+            window.DitenPersonPicker.renderPersonOptions(
+                document.getElementById('fieldAttendeeUserIds'),
+                people,
+                { placeholder: t('attendeesPlaceholder'), empty: t('noEligibleAttendees') },
+                { multiple: true });
             initSelect2('#fieldAttendeeUserIds', {
                 placeholder: t('attendeesPlaceholder'),
                 dropdownAdapter: buildSearchableDropdownAdapter(),
@@ -108,12 +105,16 @@
             const meeting = result.data;
             document.getElementById('fieldTitle').value = meeting.title || '';
             $('#fieldMeetingTypeId').val(meeting.meetingTypeId).trigger('change');
-            document.getElementById('fieldStartAt').value = toDatetimeLocal(meeting.startAt);
-            document.getElementById('fieldEndAt').value = toDatetimeLocal(meeting.endAt);
+            document.getElementById('fieldStartAt').value = toFlatpickrValue(meeting.startAt);
+            document.getElementById('fieldEndAt').value = toFlatpickrValue(meeting.endAt);
             document.getElementById('fieldLocation').value = meeting.location || '';
             document.getElementById('fieldDescription').value = meeting.description || '';
             document.getElementById('meetingExpectedVersion').value = String(meeting.version);
         }
+
+        // M3 — bound AFTER any edit-mode pre-fill above, so flatpickr's constructor reads the field's real
+        // value (if any) and starts the calendar on the right date instead of blank.
+        window.DitenDateField?.enhance(form, { enableTime: true, dateFormat: 'Y-m-d H:i' });
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -149,14 +150,16 @@
             return;
         }
 
+        const startAt = toIsoOrNull(startAtLocal);
+        const endAt = toIsoOrNull(endAtLocal);
+
         // AC4 — client-side gate; the server has the final word (400 MEETING_END_BEFORE_START either way).
-        if (new Date(endAtLocal) <= new Date(startAtLocal)) {
+        // Compared as the ISO strings just derived above, not the raw field values: flatpickr's own value is
+        // space-separated ("2026-09-15 14:30"), a form `Date` is not guaranteed to parse the same way everywhere.
+        if (new Date(endAt) <= new Date(startAt)) {
             showFieldError('fieldEndAtError', t('errorEndBeforeStart'));
             return;
         }
-
-        const startAt = toIsoOrNull(startAtLocal);
-        const endAt = toIsoOrNull(endAtLocal);
 
         const result = isEdit
             ? await window.MeetingsApi.update(meetingId, {
@@ -289,16 +292,23 @@
         await reloadMeeting();
     };
 
+    // Minimal HTML escaping — the same reason this exists in WorkCenterNext/app.js's own `esc`: a task title is
+    // text someone typed, and string-building is how typed text becomes markup.
+    const esc = (value) => String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+    /*
+     * The row markup delegates to shared/diten-related-records.js (WP-WC-SHARED-UI-01, E3) — the same row
+     * WorkCenterNext's own "related records" card uses. A linked task carries no `type` (every row here IS a
+     * task, so a badge would repeat the same word on every line): `resolveTypeLabel` is omitted, and the row
+     * prints without one.
+     */
     const renderLinkedTasks = (tasks) => {
         const list = document.getElementById('linkedTasksList');
-        list.innerHTML = '';
         document.getElementById('noLinkedTasksHint')?.classList.toggle('d-none', tasks.length > 0);
-        tasks.forEach((task) => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item';
-            li.innerHTML = `<a href="${task.link}">${task.title}</a>`;
-            list.appendChild(li);
-        });
+        list.innerHTML = window.DitenRelatedRecords.renderRelatedRows(
+            tasks.map((task) => ({ id: '', title: task.title, link: task.link })),
+            { esc, showId: false });
     };
 
     const reloadMeeting = async (meetingId) => {
@@ -326,10 +336,14 @@
         const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
         eligiblePeopleById = {};
         people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || p.userId; });
-        populateOptions('#newAttendeeUserId', people, 'userId', 'displayName');
+        // Same shared picker as the Create form's attendee select (E2) — avatar+name(+unit) rows, and its own
+        // disabled/explained state when nobody is eligible, in place of the plain list this select used to get.
+        // The reassign-organizer picker no longer lives on the page at all — M2 opens it through the shared
+        // confirm's own select, built from `eligiblePeopleById` at click time.
+        window.DitenPersonPicker.renderPersonOptions(
+            document.getElementById('newAttendeeUserId'), people,
+            { placeholder: t('attendeesPlaceholder'), empty: t('noEligibleAttendees') });
         initSelect2('#newAttendeeUserId', { placeholder: t('attendeesPlaceholder'), dropdownAdapter: buildSearchableDropdownAdapter() });
-        populateOptions('#reassignOrganizerUserId', people, 'userId', 'displayName');
-        initSelect2('#reassignOrganizerUserId', { placeholder: t('newOrganizer'), dropdownAdapter: buildSearchableDropdownAdapter() });
 
         await reloadMeeting(meetingId);
 
@@ -351,50 +365,69 @@
             await reloadMeeting();
         });
 
+        /*
+         * M1 — the shared confirm's TEXTAREA, in place of the hand-rolled `#cancelMeetingModal` (WP-WC-SHARED-UI-01).
+         * Modeled on WorkCenterNext/app.js's `editComment` (a seeded/validated textarea through the same
+         * component), not `withdrawComment` (which takes no input at all).
+         */
         document.getElementById('btnCancelMeeting')?.addEventListener('click', () => {
-            document.getElementById('cancelMeetingReason').value = '';
-            document.getElementById('cancelMeetingReasonError')?.classList.add('d-none');
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('cancelMeetingModal')).show();
-        });
-
-        document.getElementById('btnConfirmCancelMeeting')?.addEventListener('click', async () => {
-            const reason = document.getElementById('cancelMeetingReason').value.trim();
-            if (!reason) {
-                document.getElementById('cancelMeetingReasonError')?.classList.remove('d-none');
-                return;
-            }
-            const result = await window.MeetingsApi.cancel(currentMeeting.id, { reason, expectedVersion: currentMeeting.version });
-            bootstrap.Modal.getInstance(document.getElementById('cancelMeetingModal'))?.hide();
-            if (!result.ok) {
-                window.DitenModal?.error?.({
-                    title: t('errorOccurred'),
-                    message: window.MeetingsApi.isConcurrencyConflict(result) ? t('errorConcurrencyConflict') : window.MeetingsApi.failureMessage(result)
-                });
-                return;
-            }
-            await reloadMeeting();
-        });
-
-        document.getElementById('btnReassignOrganizer')?.addEventListener('click', () => {
-            $('#reassignOrganizerUserId').val(currentMeeting.organizerUserId).trigger('change');
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('reassignOrganizerModal')).show();
-        });
-
-        document.getElementById('btnConfirmReassignOrganizer')?.addEventListener('click', async () => {
-            const newOrganizerUserId = $('#reassignOrganizerUserId').val();
-            if (!newOrganizerUserId) { return; }
-            const result = await window.MeetingsApi.reassignOrganizer(currentMeeting.id, {
-                newOrganizerUserId, expectedVersion: currentMeeting.version
+            window.showConfirm(t('cancelMeeting'), async (rawReason) => {
+                const reason = String(rawReason || '').trim();
+                const result = await window.MeetingsApi.cancel(currentMeeting.id, { reason, expectedVersion: currentMeeting.version });
+                if (!result.ok) {
+                    window.DitenModal?.error?.({
+                        title: t('errorOccurred'),
+                        message: window.MeetingsApi.isConcurrencyConflict(result) ? t('errorConcurrencyConflict') : window.MeetingsApi.failureMessage(result)
+                    });
+                    return;
+                }
+                await reloadMeeting();
+            }, {
+                type: 'danger',
+                // No generic "are you sure?" sentence: the field label already says what is being asked.
+                subtext: '',
+                confirmButtonText: t('cancelMeeting'),
+                showInput: true,
+                inputType: 'textarea',
+                inputLabel: t('cancellationReason'),
+                inputValidator: (value) => (String(value || '').trim() ? null : t('errorCancellationReasonRequired'))
             });
-            bootstrap.Modal.getInstance(document.getElementById('reassignOrganizerModal'))?.hide();
-            if (!result.ok) {
-                window.DitenModal?.error?.({
-                    title: t('errorOccurred'),
-                    message: window.MeetingsApi.isConcurrencyConflict(result) ? t('errorConcurrencyConflict') : window.MeetingsApi.failureMessage(result)
+        });
+
+        /*
+         * M2 — the shared confirm's SELECT, in place of the hand-rolled `#reassignOrganizerModal`
+         * (WP-WC-SHARED-UI-01). Modeled on WorkCenterNext/app.js's `openCreateInSource` (a select seeded through
+         * `didOpen`, upgraded to searchable select2 via the shared dialog adapter).
+         */
+        document.getElementById('btnReassignOrganizer')?.addEventListener('click', () => {
+            window.showConfirm(t('reassignOrganizer'), async (newOrganizerUserId) => {
+                if (!newOrganizerUserId) { return; }
+                const result = await window.MeetingsApi.reassignOrganizer(currentMeeting.id, {
+                    newOrganizerUserId, expectedVersion: currentMeeting.version
                 });
-                return;
-            }
-            await reloadMeeting();
+                if (!result.ok) {
+                    window.DitenModal?.error?.({
+                        title: t('errorOccurred'),
+                        message: window.MeetingsApi.isConcurrencyConflict(result) ? t('errorConcurrencyConflict') : window.MeetingsApi.failureMessage(result)
+                    });
+                    return;
+                }
+                await reloadMeeting();
+            }, {
+                subtext: '',
+                confirmButtonText: t('reassignOrganizer'),
+                showInput: true,
+                inputType: 'select',
+                inputLabel: t('newOrganizer'),
+                inputOptions: eligiblePeopleById,
+                didOpen: (popup) => {
+                    const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
+                        || popup.querySelector('.swal2-select');
+                    if (!box) { return; }
+                    box.value = currentMeeting.organizerUserId || '';
+                    window.DitenDialog?.bindDialogSelect2?.(box, popup);
+                }
+            });
         });
     };
 

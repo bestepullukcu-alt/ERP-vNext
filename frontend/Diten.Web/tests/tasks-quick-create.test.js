@@ -73,6 +73,7 @@ describe("Task Center quick create", () => {
     window.location = { href: "http://localhost/WorkCenterNext" };
 
     // The real TaskForm: payload building and the shared draft must be exercised, not mocked away.
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     loadScript("wwwroot/assets/js/WorkCenterNext/quick-create.js");
   });

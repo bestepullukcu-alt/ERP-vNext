@@ -121,6 +121,7 @@ describe("MOD-0024 reviewer field", () => {
   describe("draft rules", () => {
     beforeEach(() => {
       delete global.TaskForm;
+      loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
       loadScript("wwwroot/assets/js/Tasks/form.js");
     });
 

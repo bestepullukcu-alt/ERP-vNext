@@ -192,10 +192,13 @@ describe("eight dialogs, four moved and four dressed", () => {
     const callers = sourceFiles().filter((f) => f.endsWith(".js") && CALL.test(fs.readFileSync(f, "utf8")));
     expect(callers.length, "nobody calls the shared confirm — the scan is broken").toBeGreaterThan(20);
 
-    // THE RULE: `inputOptions` is opt-in, so no caller outside this module may be passing it.
+    // THE RULE: `inputOptions` is opt-in, so only a caller that names it may pass it.
+    // WP-WC-SHARED-UI-01 (M2) added the second one: Meetings' reassign-organizer dialog, modeled directly on
+    // this module's own `openCreateInSource` (a select seeded through `didOpen`, same as this one).
     const passing = callers.filter((f) => /inputOptions/.test(fs.readFileSync(f, "utf8")));
-    expect(passing.map((f) => path.relative(repoRoot, f)),
-      "a caller outside WorkCenterNext started passing inputOptions").toEqual([
+    expect(passing.map((f) => path.relative(repoRoot, f)).sort(),
+      "an unnamed caller started passing inputOptions").toEqual([
+      "frontend/Diten.Web/wwwroot/assets/js/Meetings/form.js",
       "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js"
     ]);
   });

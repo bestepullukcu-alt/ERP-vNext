@@ -76,7 +76,7 @@
 
                 <section class="card p-4">
                     <h6 class="card-section-title mb-4"><i class="bx bx-task"></i>@Localizer["LinkedTasks"]</h6>
-                    <ul class="list-group" id="linkedTasksList"></ul>
+                    <div class="wcn-related-list" id="linkedTasksList"></div>
                     <p class="text-muted small mb-0 d-none" id="noLinkedTasksHint">@Localizer["NoLinkedTasks"]</p>
                 </section>
             </div>
@@ -97,50 +97,9 @@
         </div>
     </div>
 
-    @* Reassign-organizer modal — the picker is the SAME eligible-attendee lookup the sidebar's add-attendee
-       control uses (D2, scope-exempt). *@
-    <div class="modal fade" id="reassignOrganizerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@Localizer["ReassignOrganizer"]</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="reassignOrganizerUserId" class="form-label fw-medium">@Localizer["NewOrganizer"]</label>
-                    <select id="reassignOrganizerUserId" class="select2 form-select" style="width:100%"></select>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
-                    <button type="button" class="btn btn-primary" id="btnConfirmReassignOrganizer">@SharedLocalizer["Save"]</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    @* Cancel-meeting modal. A native window.prompt() was the first cut here and was replaced after a live
-       smoke test: it is silently auto-dismissed by automated/policy-restricted browsers (returns null with no
-       way to tell that apart from the user themselves cancelling), and it cannot carry the app's own
-       validation styling or resx-driven placeholder text. *@
-    <div class="modal fade" id="cancelMeetingModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@Localizer["CancelMeeting"]</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label for="cancelMeetingReason" class="form-label fw-medium">@Localizer["CancellationReason"] <span class="text-danger">*</span></label>
-                    <textarea id="cancelMeetingReason" class="form-control" rows="3" maxlength="500"></textarea>
-                    <span class="text-danger small mt-1 d-none" id="cancelMeetingReasonError">@Localizer["ErrorCancellationReasonRequired"]</span>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@SharedLocalizer["Cancel"]</button>
-                    <button type="button" class="btn btn-label-danger" id="btnConfirmCancelMeeting">@Localizer["CancelMeeting"]</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @* WP-WC-SHARED-UI-01, M1/M2 — the hand-rolled reassign-organizer and cancel-meeting modals that used to
+       live here are gone. Both actions now open through window.showConfirm (Meetings/form.js), the product's
+       one dialog component, the same way every other module's confirmation does. *@
 </div>
 
 @section Scripts {
@@ -148,5 +107,11 @@
     <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    @* WP-WC-SHARED-UI-01, E2 — the add-attendee picker and dropdown-search adapter now delegate here. *@
+    <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
+    @* WP-WC-SHARED-UI-01, E3 — the linked-tasks row markup now delegates here. *@
+    <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
+    @* WP-WC-SHARED-UI-01, M2 — the reassign-organizer dialog's select2 is bound through here. *@
+    <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
 }

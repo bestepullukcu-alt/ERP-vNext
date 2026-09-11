@@ -510,25 +510,14 @@
     };
 
     /*
-     * A PERSON'S MONOGRAM — the same rule the assignee picker uses (Tasks/form.js personInitials), because a
-     * person has to look like the same person wherever they appear.
+     * A PERSON'S MONOGRAM — the same rule the assignee picker uses, because a person has to look like the same
+     * person wherever they appear.
      *
-     * Two or more words take the first and last initial; a single word takes its first two characters, which is
-     * what keeps "Ayşe" from rendering as a lone "A" beside "AT". Locale-aware upper-casing, so Turkish dotted
-     * and dotless i do not swap places.
-     *
-     * ⚠ The picker's copy still lives in Tasks/form.js — a different bundle with no export seam. Consolidating
-     * them is raised as its own item rather than smuggled into this round; what matters here is that app.js has
-     * ONE algorithm rather than a second improvised one.
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — this file's own copy (the one the
+     * comment just above used to invite consolidating) and Tasks/form.js's original are the same algorithm, so
+     * both now call the one place it is written.
      */
-    const personInitials = (name) => {
-        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
-        if (!words.length) { return '?'; }
-        const raw = words.length > 1
-            ? words[0].charAt(0) + words[words.length - 1].charAt(0)
-            : words[0].slice(0, 2);
-        return raw.toLocaleUpperCase();
-    };
+    const personInitials = (name) => global.DitenPersonPicker.personInitials(name);
 
     /*
      * WHAT AN EVENT SAYS, in the reader's language.
@@ -4399,10 +4388,17 @@
     };
 
 
+    /*
+     * The row markup delegates to shared/diten-related-records.js (WP-WC-SHARED-UI-01, E3) — this section's own
+     * wrapper (sectionHead + .wcn-related-list) stays here; only "one record → one row" moved, unchanged.
+     */
     const renderRelated = (item) => {
         if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = item.relatedRecords.map((record) => `<a class="wcn-related-row" href="${esc(record.link)}"><span class="wcn-related-type">${esc(t(typeKeys[record.type] || 'RelatedTypeDocument'))}</span><span><strong>${esc(record.title)}</strong><small>${esc(record.id)}</small></span><i class="bx bx-chevron-right"></i></a>`).join('');
+        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+            esc,
+            resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
+        });
         return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-link', 'RelatedRecordsTitle')}<div class="wcn-related-list">${rows}</div></section>`;
     };
 
@@ -7775,15 +7771,17 @@
     /*
      * THE ICON, for a dialog that cannot go through `showConfirm`. Read from the published builder — the same
      * one the shared confirm uses — so the circle, its tint and the glyph cannot become a second design here.
+     *
+     * Delegates to shared/diten-dialog.js (WP-WC-SHARED-UI-01, E1): only this function's CALL SITES further
+     * down are asserted by this module's own tests, never this declaration's body, so there is nothing pinning
+     * a local copy here — unlike `dialogLook` and `bindDialogSelect2` just above/below, which keep their bodies
+     * for exactly that reason (see diten-dialog.js's own top comment).
      */
-    const dialogIcon = (type, glyph) => (typeof global.DitenDialogAppearance === 'function'
-        && typeof global.DitenDialogAppearance.iconHtml === 'function'
-        ? global.DitenDialogAppearance.iconHtml(type, glyph)
+    const dialogIcon = (type, glyph) => (global.DitenDialog
+        ? global.DitenDialog.dialogIcon(type, glyph)
         : '');
     // The class the product's dialog DESCRIPTION wears — 13px secondary copy, read from the same one place.
-    const dialogDescriptionClass = () => (typeof global.DitenDialogAppearance === 'function'
-        ? global.DitenDialogAppearance.description
-        : '');
+    const dialogDescriptionClass = () => (global.DitenDialog ? global.DitenDialog.dialogDescriptionClass() : '');
 
     const sharedConfirm = (options) => {
         const confirm = global.showConfirm;
