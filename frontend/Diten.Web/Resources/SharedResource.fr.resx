@@ -514,6 +514,7 @@
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Activation développeur</value></data>
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Gestion documentaire</value></data>
+  <data name="Nav.Domain.MANAGEMENTGOVERNANCE" xml:space="preserve"><value>Management et gouvernance</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Gestion des données de référence</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Services partagés de la plateforme</value></data>
   <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Calendrier de travail</value></data>
@@ -528,6 +529,7 @@
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organisation</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Paramètres des tâches</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flux de travail</value></data>
+  <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations de rôle</value></data>
