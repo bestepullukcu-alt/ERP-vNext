@@ -1,7 +1,12 @@
 # Diten ERP — Android (Kotlin) Mobil Uygulama · Yol Haritası (SoR)
 
 **Sahibi (Owner):** gm@grandmedical.eu · **CT:** CONTROL TOWER · **Oluşturma:** 2026-09-10
-**Durum:** BAŞLADI — **M0.1 iskelet** (5ae82588) + **M0.2 `:core:network`** (f256df89) CT-ACCEPTED + commit (2026-09-11). Sonraki: M0.3 `:core:database` (Room).
+**Durum:** BAŞLADI — **M0.1** (5ae82588) · **M0.2 `:core:network`** (f256df89) · **M0.3 `:core:database` + M0.5 `:core:design`** (0456e913, paralel) CT-ACCEPTED + commit (2026-09-11). Sonraki: **M0.4 `:core:auth`** (M0.2✓ + M0.3✓ hazır), sonra M0.6 (`:core:sync`+`:core:common` genişletme) → M0.7 (`:app` shell). Toplam 5 modül, 35 mobil unit test yeşil.
+
+> **M0.3 (`:core:database`):** `ScopeKeys(tenantId, legalEntityId)` her satıra `@Embedded` · `DitenDatabase` v1 + schema export (VCS'te) · `CachedReadinessDao` backend legal-entity semantiği: write-scope izolasyon + roll-up (`IN`) · Hilt `DatabaseModule` · yıkıcı-fallback yok, `MigrationTestHelper` · Robolectric testleri sızıntısızlığı **kanıtlıyor** (tenantB aynı `le-1`'i paylaşsa da tenantA scope'una sızmıyor). 11 test.
+> **M0.5 (`:core:design`):** ölçülen web paleti (primary `#696CFF`…) → Material3 light/dark, `dynamicColor=false` · readiness durum→renk sistemi (saf-Kotlin JVM-test, 11 test) · bileşenler StatusChip/Scaffold/TextField/DropdownField/Button/`UiStateContainer`(→`UiResult`)/ListRow, hepsi `@PreviewLightDark`.
+>
+> **Bilinen düzeltilecek:** ktlint eklentisi bu AGP'de yalnız `.kts` denetliyor (Kotlin kaynak-set görevi kaydetmiyor); Kotlin lint şu an **detekt** ile sağlanıyor (temiz). Ayrı küçük WP ile ktlint Kotlin kapsamı düzeltilecek.
 
 > **M0.2'de teslim edilenler (ölçülen backend sözleşmesine birebir):** Retrofit 2.11 + OkHttp 4.12 + kotlinx.serialization · `NetworkEnvelope<T>` `{data,statusCode,isSuccessful,errors}` → `UiResult` + tipli `NetworkError` · HeaderInterceptor (Bearer + `X-Tenant-Id` + `X-Legal-Entity-Id`, opt-in marker, null-omit, login hariç) · redaksiyonlu debug logging · AuthAuthenticator (401→refresh→tek retry, döngü-korumalı) · auth-seam arayüzleri (`SessionTokenProvider`/`TokenRefresher`) + no-op binding (M0.4 override eder, döngü yok) · AuthApi (`api/tenant-auth/login`,`/mfa/verify`,`api/auth/refresh-token`,`/logout`) · per-domain network-security-config (cleartext yalnız emülatör/localhost) + cert-pin hook · `BuildConfig.BASE_URL`/`NETWORK_LOG`. CT: sıfırdan 10 MockWebServer testi yeşil + R8 release derleniyor.
 
