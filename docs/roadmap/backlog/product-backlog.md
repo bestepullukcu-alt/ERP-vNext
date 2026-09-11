@@ -4886,3 +4886,26 @@ ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD
 **Ölçüm komutu:**
 
     mongosh "mongodb://localhost:27017/diten_personalization_dev" --quiet --eval 'print(db.organization_units.countDocuments({}), db.positions.countDocuments({}), db.position_assignments.countDocuments({}))'
+
+### BL-367
+
+**Görev Merkezi'nin hata/onay pencereleri hâlâ ham SweetAlert; ürünün tek diyalog bileşeni kullanılmıyor**
+
+DURUM: AÇIK · SAHİP: CT (WorkCenter) · ÖLÇÜLDÜ: 2026-09-11 (sahip canlıda gördü: hızlı görev hatası "organizasyon birimi belirlenemedi" modalı)
+
+Standart: `.antigravity/rules/premium-modal-standard.md` (MOD-0013) — varsayılan/özelleştirilmemiş SweetAlert2 yasak; onaylar `window.showConfirm`
+(`backbone-shell.js:76`, `_GlobalConfirmation.cshtml`) üzerinden; muhafızlar `tests/dialog-one-implementation.test.js` ("one confirm implementation,
+product-wide") ve `tests/wcn-dialog-one-language.test.js`. Ölçüm: `WorkCenterNext/app.js` hâlâ doğrudan `global.Swal.fire(` çağırıyor
+(`:8489`, `:8580`; dosyanın kendi yorumu `:7677` "on beş çağrı vardı" diye başlıyor — ikiye inmiş, sıfır değil) ve toplam 18 `Swal`
+referansı taşıyor. Sahip 2026-09-11: "bu modal yanlış, biz modallarda değişiklik yaptık" — hızlı görev hata penceresi standart dışı.
+İki muhafız main'de zaten kırmızı ama sebebi başka ekip: `PPM/Initiatives/index.js` (paylaşılan bileşen dışı diyalog) + görünüm paketinin
+6. tanımı — BL-343 ailesi.
+
+**Yapılacak (paylaşımlı parça girişimi BL-365 ile birlikte):** WCN'deki kalan ham `Swal.fire` çağrıları ve hata/onay/gerekçe diyalogları tek
+bileşene taşınır; bileşen gerekçe (textarea) ve "hata + Tamam" biçimlerini destekliyorsa kullanılır, desteklemiyorsa önce bileşen genişletilir
+(metin → l10n kapısı). Toplantı S3'ün kendi Bootstrap iptal modalı (`#cancelMeetingModal`) da aynı bileşene geçer.
+
+**Ölçüm komutu:**
+
+    grep -n "Swal\.fire(" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+    npx --prefix frontend/Diten.Web vitest run tests/dialog-one-implementation.test.js tests/wcn-dialog-one-language.test.js
