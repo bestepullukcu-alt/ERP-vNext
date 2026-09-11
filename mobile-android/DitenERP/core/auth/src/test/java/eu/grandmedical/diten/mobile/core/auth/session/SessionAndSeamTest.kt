@@ -124,8 +124,12 @@ class SessionAndSeamTest {
         var refreshCount = 0
             private set
 
-        override suspend fun login(email: String, password: String, tenantId: String): UiResult<LoginResult> =
-            UiResult.Error("unused")
+        override suspend fun login(
+            email: String,
+            password: String,
+            tenantId: String,
+            rememberMe: Boolean,
+        ): UiResult<LoginResult> = UiResult.Error("unused")
 
         override suspend fun verifyMfa(challengeId: String, code: String): UiResult<LoginResult> =
             UiResult.Error("unused")

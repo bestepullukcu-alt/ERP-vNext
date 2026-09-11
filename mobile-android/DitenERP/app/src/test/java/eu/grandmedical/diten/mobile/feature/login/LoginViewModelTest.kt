@@ -128,8 +128,12 @@ class LoginViewModelTest {
     private class FakeAuthRepository(
         private val loginHandler: suspend () -> UiResult<LoginResult>,
     ) : AuthRepository {
-        override suspend fun login(email: String, password: String, tenantId: String): UiResult<LoginResult> =
-            loginHandler()
+        override suspend fun login(
+            email: String,
+            password: String,
+            tenantId: String,
+            rememberMe: Boolean,
+        ): UiResult<LoginResult> = loginHandler()
 
         override suspend fun verifyMfa(challengeId: String, code: String): UiResult<LoginResult> =
             UiResult.Error("not used")

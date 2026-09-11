@@ -35,9 +35,14 @@ class AuthRepositoryImpl @Inject constructor(
     @Volatile
     private var pendingTenantId: String? = null
 
-    override suspend fun login(email: String, password: String, tenantId: String): UiResult<LoginResult> {
+    override suspend fun login(
+        email: String,
+        password: String,
+        tenantId: String,
+        rememberMe: Boolean,
+    ): UiResult<LoginResult> {
         val response = safeApiCaller.apiCall {
-            authApi.login(tenantId, LoginRequest(email = email, password = password, rememberMe = true))
+            authApi.login(tenantId, LoginRequest(email = email, password = password, rememberMe = rememberMe))
         }
         return when (response) {
             is ApiResponse.Success -> handleAuthSuccess(response.data, fallbackTenantId = tenantId)

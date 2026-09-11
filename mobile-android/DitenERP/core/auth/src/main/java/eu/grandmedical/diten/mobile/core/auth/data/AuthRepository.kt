@@ -13,7 +13,12 @@ interface AuthRepository {
      * kept until the `tenant_id` JWT claim supersedes it. Returns a [LoginResult]
      * (authenticated OR MFA-required) on success, or `UiResult.Error` on failure.
      */
-    suspend fun login(email: String, password: String, tenantId: String): UiResult<LoginResult>
+    suspend fun login(
+        email: String,
+        password: String,
+        tenantId: String,
+        rememberMe: Boolean = true,
+    ): UiResult<LoginResult>
 
     /** Completes an MFA challenge started by [login]. */
     suspend fun verifyMfa(challengeId: String, code: String): UiResult<LoginResult>

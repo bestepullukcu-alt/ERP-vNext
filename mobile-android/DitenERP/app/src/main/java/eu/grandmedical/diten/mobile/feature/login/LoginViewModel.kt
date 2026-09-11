@@ -26,6 +26,7 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.EmailChanged -> setState { copy(email = event.value, error = null) }
             is LoginEvent.PasswordChanged -> setState { copy(password = event.value, error = null) }
             is LoginEvent.TenantIdChanged -> setState { copy(tenantId = event.value, error = null) }
+            is LoginEvent.RememberMeChanged -> setState { copy(rememberMe = event.value) }
             LoginEvent.Submit -> submit()
         }
     }
@@ -35,7 +36,14 @@ class LoginViewModel @Inject constructor(
         if (!current.canSubmit) return
 
         setState { copy(isLoading = true, error = null) }
-        when (val result = authRepository.login(current.email, current.password, current.tenantId)) {
+        when (
+            val result = authRepository.login(
+                current.email,
+                current.password,
+                current.tenantId,
+                current.rememberMe,
+            )
+        ) {
             is UiResult.Loading -> setState { copy(isLoading = true) }
             is UiResult.Success -> handleSuccess(result.data)
             is UiResult.Error -> setState { copy(isLoading = false, error = result.message) }

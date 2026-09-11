@@ -12,6 +12,7 @@ data class LoginState(
     val email: String = "",
     val password: String = "",
     val tenantId: String = "",
+    val rememberMe: Boolean = true,
     val isLoading: Boolean = false,
     val error: String? = null,
 ) : UiState {
@@ -25,6 +26,7 @@ sealed interface LoginEvent : UiEvent {
     data class EmailChanged(val value: String) : LoginEvent
     data class PasswordChanged(val value: String) : LoginEvent
     data class TenantIdChanged(val value: String) : LoginEvent
+    data class RememberMeChanged(val value: Boolean) : LoginEvent
     data object Submit : LoginEvent
 }
 
