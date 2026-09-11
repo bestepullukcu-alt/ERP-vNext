@@ -364,6 +364,8 @@ public static class DependencyInjection
         services.AddScoped<IWorkReportRepository, WorkReportRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+        // MOD-0357 S1 — the one bridge collection's storage. See IRecordLinkRepository/IRecordLinkService.
+        services.AddScoped<IRecordLinkRepository, RecordLinkRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();

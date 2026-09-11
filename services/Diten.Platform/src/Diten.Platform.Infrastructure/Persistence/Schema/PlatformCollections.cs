@@ -113,6 +113,8 @@ public static class PlatformCollections
     public const string InterfaceDiscoveryBatches = "platform_interface_discovery_batches";
     public const string InterfaceDiscoveryDiffItems = "platform_interface_discovery_diff_items";
     public const string JobExecutionLogs = "job_execution_logs";
+    // MOD-0357 S1 — the one bridge between a meeting and anything else (a task today). See RecordLink.cs.
+    public const string MeetingRecordLinks = "meeting_record_links";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

@@ -91,6 +91,9 @@ public static class WorkItemContract
 {
     public const string FixtureKindWorkItem = "workItem";
 
+    /// <summary>Mirrors `fixture-contract.js` `LIMITS.maxRelatedRecords` — the cap on `relatedRecords[]`.</summary>
+    public const int MaxRelatedRecords = 20;
+
     // workIntent
     public const string IntentApproval = "approval";
 
@@ -364,6 +367,15 @@ public sealed record WorkItemProjectionDto(
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<WorkItemDependencyDto>? Dependencies = null,
+    /// <summary>
+    /// MOD-0357 S1 — read-only links to another module's records (a linked meeting, today; MOD-0007's
+    /// decisions later). Container ⇔ the <c>relatedRecords</c> capability, DATA-DRIVEN like <c>checklist</c>
+    /// and <c>businessContext</c> (not unconditional like <c>subtasks</c>): null/omitted when there are none,
+    /// present — capped at the contract's own <c>maxRelatedRecords</c> (20) — only when at least one link
+    /// resolved. Never an implicit blocker (pack §3 K1): nothing here gates any action.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemRelatedRecordDto>? RelatedRecords = null,
     /// <summary>
     /// What is stopping this work, and which actions it stops. Absent when nothing blocks — a
     /// <c>blocked: false</c> object would make every unblocked item carry a blocked state.
@@ -939,6 +951,22 @@ public sealed record WorkItemDependencyDto(
     string Direction,
     /// <summary>Whether this edge is what actually holds the work up right now.</summary>
     bool Blocking);
+
+/// <summary>
+/// MOD-0357 S1 — one entry in `relatedRecords[]`. The contract (`fixture-contract.js`) declared this field,
+/// the `relatedRecords` capability and its `maxRelatedRecords: 20` limit long before any provider emitted
+/// data for it (measured 2026-09-11: zero `RelatedRecord` symbols anywhere in this file or
+/// `TaskWorkItemProvider.cs`). This is the field the contract already promised, filled in — not a new one.
+///
+/// <para><c>Title</c>/<c>Link</c> are resolved fresh from the far module every read (via
+/// <c>IRelatedRecordResolver</c>), never stored on the link itself — a title copied at link time would go
+/// stale the moment the far record was renamed.</para>
+/// </summary>
+public sealed record WorkItemRelatedRecordDto(
+    string Id,
+    string Type,
+    string Title,
+    string Link);
 
 /// <summary>
 /// blockedState { blocked, affectedActionCodes[], blockers[] } — the shape the executable contract validates.

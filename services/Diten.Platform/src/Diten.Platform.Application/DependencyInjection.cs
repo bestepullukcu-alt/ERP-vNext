@@ -316,6 +316,19 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        /*
+         * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
+         * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"
+         * list — one registration, one query shape, never two. `IRelatedRecordResolverRegistry` collects every
+         * `IRelatedRecordResolver` registered below via the `IEnumerable<T>` constructor pattern, so a future
+         * resolver (a "meetings" one, in S2) needs only its own registration line, never a change here.
+         */
+        services.AddScoped<Features.Meetings.RecordLinks.IRecordLinkService,
+            Features.Meetings.RecordLinks.RecordLinkService>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolverRegistry,
+            Features.Meetings.RecordLinks.RelatedRecordResolverRegistry>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolver,
+            Features.Meetings.RecordLinks.TaskRelatedRecordResolver>();
         // MOD-0024 — the SECOND work-item provider. This single line is the only WorkAggregation touch point:
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
