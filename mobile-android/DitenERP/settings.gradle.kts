@@ -25,4 +25,6 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Diten ERP"
-include(":app", ":core:common", ":core:network", ":core:database", ":core:design", ":core:auth", ":core:sync", ":core:feature", ":feature:applicant-intake")
+include(":app", ":core:common", ":core:network", ":core:database", ":core:design", ":core:auth", ":core:sync", ":core:feature", ":feature:applicant-intake",
+    ":feature:candidate-pipeline", ":feature:employee-onboarding",
+    ":feature:offer-management", ":feature:performance-reviews")

@@ -48,6 +48,10 @@ dependencies {
     // shell references NO feature type directly — adding a module needs zero edits
     // here beyond this one line.
     implementation(project(":feature:applicant-intake"))
+    implementation(project(":feature:candidate-pipeline"))
+    implementation(project(":feature:employee-onboarding"))
+    implementation(project(":feature:offer-management"))
+    implementation(project(":feature:performance-reviews"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
