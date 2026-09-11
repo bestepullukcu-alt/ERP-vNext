@@ -157,7 +157,7 @@ MOD-0142 GRN (besler→0173) · MOD-0141 PO · MOD-0188/0189 Demand/MRP (okur←
 
 ### MOD-0290 Product/Item/SKU (foundation — hardening) — **INS ölçüldü 2026-09-07**
 **VAR (MdmService):** SKU-coding zinciri `GlobalProduct→ProductDefinitionRevision→Gsku→Lsku→FinishedGood` (CanonicalCode, CodeReservation, lifecycle, audit-intent) · brand `Product`(ProductCode, DosageForm, Strength, PackSize, `UnitOfMeasure`=tek string, ExternalReferences) · `Gsku.PackUomCode`+`PackQuantity` (pack descriptor)
-**YOK → hardening (inventory-facing):** **`UoMConversion`** (From/To/Numerator/Denominator/Effective — pack descriptor≠conversion) · **`ProductIdentifier` GTIN/GS1/barcode** (sadece internal code + generic ExternalReference) · **`ShelfLifeDays`/`MinRemainingShelfLife`/`StorageCondition`/`RetestDays`** (hiç yok) · **`LotControlled`/`SerialControlled` flags** · `ProductClassification`(ABC) [P2]
+**YOK → hardening (inventory-facing):** **`materialType`** (raw / API / excipient / packaging / semi-finished / finished — hammadde ayrımı; bkz §23) · **`UoMConversion`** (From/To/Numerator/Denominator/Effective — pack descriptor≠conversion) · **`ProductIdentifier` GTIN/GS1/barcode** (sadece internal code + generic ExternalReference) · **`ShelfLifeDays`/`MinRemainingShelfLife`/`StorageCondition`/`RetestDays`** (hiç yok) · **`LotControlled`/`SerialControlled` flags** · `ProductClassification`(ABC) [P2]
 
 ### MOD-0173 Inventory Ledger & Valuation (THE HEART)
 - **`InventoryTransaction`/`InventoryMovement`** [EXT, append-only]: Id, TransactionNumber, **DocumentGroupId**, **TenantId, LegalEntityId** (DEC-INV-18), MovementType, MovementReason, TransactionDate, PostingDate, ItemId (GlobalProduct), **SkuId + SkuLevel** (Gsku\|Lsku\|FinishedGood, DEC-INV-17), From/To Warehouse+Location, Quantity, UomId, **BaseQuantity, BaseUomId**, LotId, SerialId, From/ToStockStatus, **SourceModule, SourceType, SourceDocumentId, SourceLineId, SourceSystem** (DEC-INV-19 dış entegrasyon), ReasonCode, UnitCost, TotalCost, Currency (LE base), **CorrelationId, IdempotencyKey**, CreatedBy, CreatedAt
@@ -482,6 +482,7 @@ Inventory (§13.2) tüm bloğun MVP-1 + MVP-5'i. Tüm Supply Planning bloğu iç
 | `Gsku` | Global SKU | **var** | Pack-level SKU (→ `SkuId` aday); UoMConversion + GTIN owner |
 | `Lsku` | Local/market SKU | **var** | Market-scoped SKU |
 | `FinishedGood` | Marketed pack | **var** | Satılan/stoklanan birim; market GTIN |
+| `materialType` | Product | **YOK→hardening** | raw/API/excipient/packaging/semi/finished — **hammadde ayrımı** (§23); Blueprint'te ayrı modül yok |
 | `UoMConversion` | — | **YOK→hardening** | Base↔pack dönüşümü (Gsku) |
 | `ProductIdentifier` (GTIN/GS1) | — | **YOK→hardening** | Barkod/GTIN (Gsku + Lsku/FinishedGood) |
 | `ShelfLife/StorageCondition/RetestDays` | — | **YOK→hardening** `[gxp]` | Raf ömrü/saklama/retest (PDR) |
@@ -855,3 +856,38 @@ Amaç: MVP'ler **çakışmadan paralel** geliştirilsin. Sequence değil — her
 **Takvim etkisi:** naive "MVP-1 bitince fan-out" (~13h bekle) yerine Faz-0 (~3h) sonrası 6 takım başlar → tüm blok **~32-40h yerine ~24-30h** — *yalnız contract stabil kalırsa.*
 
 > **Maliyet/karar:** "6 paralel" = **"önce contract'lara ciddi yatırım (Faz-0)"** kararı. Faz-0 zayıf yapılırsa 6-yönlü paralel avantajı rework'e döner. Görsel: **Figure 5**.
+
+---
+
+## 23. RAW MATERIAL HANDLING (hammadde yerleşimi)
+
+> **Blueprint-teyitli (ölçüldü 2026-09-11):** Blueprint 8.1'de hammadde/material için **AYRI MODÜL YOK** (name/group/SoR taraması boş; Object Catalog'da "Material" yalnız dış ERP/SAP bağlamında). Hammadde bir **item tipi**dir.
+
+### 23.1 Ana ilke
+**Hammadde ayrı modül değildir.** MOD-0290 Product/Item/SKU Master'da bir **item** olarak yaşar; Blueprint 0290 tanımı: *"item master data used by commercial, procurement, inventory, **manufacturing**, and quality modules"* → hammadde/bileşen zaten kapsamda. **Formülasyonu (ne kadar kullanıldığı) MOD-0193 BOM'da tutulur.**
+
+### 23.2 Hammaddenin modüllere dağılımı
+| Aşama | Modül | Ne |
+|---|---|---|
+| **Kimlik** (Potassium Citrate, Purified Water) | **MOD-0290** | item, `materialType=raw/API/excipient` |
+| **Alım** (tedarikçiden) | MOD-0142 GRN | hammadde girişi → 0173'e post |
+| **Stok + lot + karantina + expiry** | 0173 / 0174 / 0175 / 0176 | hammadde stoğu; QC/karantina; retest |
+| **Composition** (hangi hammadde + **ne kadar**) | **MOD-0193 BOM** | reçete/formülasyon; 0290 item'larına referans |
+| **Tüketim** (üretimde) | MOD-0194 Work Orders + `GOODS_ISSUE_PROD` | hammadde tüketilir → bitmiş ürün (`GOODS_RECEIPT_PROD`) |
+
+### 23.3 Kritik ayrım (kural)
+- **Product Master (0290) = "bu hammadde nedir"** (kimlik + materialType).
+- **BOM (0193) = "bitmiş üründe ne kadar var"** (miktar/formülasyon).
+- Legacy'de composition ürün/SKU ekranında bir tab'dı (UI kolaylığı); **mimari olarak miktar BOM'a aittir**, kimlik değil.
+
+### 23.4 Legacy ekran → vNext modül eşlemesi (ölçülen ekranlardan)
+| Legacy ekran | Ne | vNext |
+|---|---|---|
+| **Composition** (API + Excipient + miktar + RM Producer + Alternative) | Formülasyon/reçete | **MOD-0193 BOM** |
+| Composition'daki materyaller (Potassium Citrate, Purified Water…) | Hammaddeler | **MOD-0290 item** (`materialType=raw`) |
+| **Global SKU** (pack form, ml, production/packaging/batch-release site) | Global SKU + üretim/paketleme site'ı | **MOD-0290 Gsku** (+ Site → Location Master) |
+| **Country Brand / Local Sku** | Market SKU | **MOD-0290 Lsku / FinishedGood** |
+
+### 23.5 Scope bulgusu (açık — karar bekliyor)
+Legacy'de **Composition, ürün tanımının parçası** (SKU ona referans veriyor) → pharma'da BOM/formülasyon **foundation'a yakın**, benim planımdaki "MVP-3 downstream manufacturing" konumundan daha merkezi. **Açık nokta:** BOM'un (0193) sırası/product-master'a bağlanma şekli — pharma composition modeline göre gözden geçirilmeli. *(DEC değil henüz; owner'la netleşecek.)*
+
