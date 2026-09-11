@@ -4947,3 +4947,24 @@ DtDefaults 401'i hata olarak mı loglamalı, sessiz tekrar mı? Görev Merkezi v
 `invalid_token` / yenileme kaskadı kaydı (çözüldü, main).
 
 **Ölçüm komutu:** tarayıcı ağ sekmesi, Web yeniden başlatıldıktan sonra ilk `/…/api/*` çağrıları; `grep -n "401" frontend/Diten.Web/wwwroot/assets/js/shared/dt-defaults*.js`
+
+### BL-369
+
+**"Kontrollü Dokümanlar" sayfası (`/Tasks/DocumentList`) ve CSV kütük araması emekli edilecek — taşıma canlıda çalıştıktan SONRA**
+
+DURUM: AÇIK · KARAR: sahip + DM geliştiricisi, 2026-09-10 (G1 = (a), WP-0029-EFFECTIVENESS-P2.md:150) · SAHİP: taşımayı yapan (DM geliştiricisi) · KAYIT: 2026-09-11
+
+**Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
+`GET /Tasks/api/document-list/search`) geçicidir; kütük CSV UID'lerini sahiplenir (`PermanentUid = CSV uid`), görev formu `by="uid"` ile
+`document-master-register/citations/search` (DM-2b, main'de) ucunu çağırır. Dondurulmuş görev alıntıları (`TaskDocumentReference`) olduğu gibi
+okunur kalır; hiçbir kapanmış görevin alıntısı yeniden çözümlenmez (DCP-005 §6.2).
+
+**Sayfanın kaderi:** Görev Tanımları → Kontrollü Dokümanlar (`TaskManifestProvider` sayfası `/Tasks/DocumentList`, `platform.tasks.document-list.*`
+izinleri, içe aktarma dahil) CSV listesinin ekranıdır; taşıma (devir planı Adım 2) **canlıda çalıştıktan sonra** menüden ve koddan kaldırılır,
+yerine Doküman Yönetimi'nin kütük ekranı. Yarım kaldırma yok (K4): sayfa gitmeden önce arama + sürüm + durum bilgisinin DM ucunda karşılandığı
+ölçülür. Kaldırılan izin anahtarları Auth kataloğunda kalır (DELETE-sync Faz 1.5, BL-340 komşusu) — ayrıca temizlenir.
+
+**Ölçüm komutu:**
+
+    grep -n "document-list" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
+    grep -n "DocumentList" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs
