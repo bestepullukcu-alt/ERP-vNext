@@ -4725,7 +4725,8 @@ DURUM: AÇIK · DEV'DE YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla)
 
 **EK (CT, 2026-09-11):** Aynı veri eksiği DCP-005 Adım 2'nin (BL-369) canlı kanıtını da engelliyor — `CreateTaskItemHandler` organizasyon
 birimini alıntı dondurmadan ÖNCE çözer (`:208-219` vs `:331`), dev kiracısında birim olmadığı için görev hiç açılamıyor. Kontrol turu için karar
-(elle MOD-0288 ekranları vs tek seferlik `DevSeeds:OrganizationPositions=true`) bu yüzden iki işi birden açıyor.
+(elle MOD-0288 ekranları vs tek seferlik `DevSeeds:OrganizationPositions=true`) bu yüzden iki işi birden açıyor. **Üçüncü etki (CT, S8 kabulü, 2026-09-11):** toplantı oluşturma da dev'de `MEETING_ORGANIZER_INVALID` ile düşüyor — organizatör uygunluğu
+görev kişi aramasıdır (aktif pozisyon), pozisyon yok → uygun kimse yok; MOD-0357 K8 kutu 1'in canlı kanıtı da buna bağlı.
 
 **Yeniden üretim:** Görev Merkezi → + Yeni → Hızlı görev → Kime: Kendim → Oluştur → `POST /Tasks/api` 400, ekranda
 "Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi
@@ -4915,6 +4916,10 @@ ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD
 
 DURUM: AÇIK · SAHİP: CT (WorkCenter) · ÖLÇÜLDÜ: 2026-09-11 (sahip canlıda gördü: hızlı görev hatası "organizasyon birimi belirlenemedi" modalı)
 
+**EK BULGU (CT, 2026-09-11):** `wcn-dialog-one-language` testi ("declares the package once") main'den beri kırmızı: diyalog görünüm paketi parmak izi
+(`popup: 'rounded-4 shadow-lg'`) `frontend/Diten.Web/wwwroot/assets/js/PPM/Initiatives/index.js` içinde de var (Codex, `7f37e172`) — PPM kulvarında ikinci bir
+diyalog görünümü kopyası. Kapanış PPM'de: `DitenDialog`/`window.showConfirm` kullanımı; CT bilgi verdi.
+
 **Düzeltme (CT, 2026-09-11, envanterden):** sahibin gördüğü pencere ham Swal değil, `wwwroot/assets/js/shared/premium-modal.js` (`DitenModal.error`,
 `quick-create.js:116`) — `_GlobalConfirmation.cshtml`'in `DitenDialogAppearance` paketi yanında **ikinci** bir paylaşımlı görünüm tanımı; muhafızın
 "paket bir kez tanımlanır (5 bekleniyor, 6 bulundu)" kırmızısına adaydır. Karar (sahip): kanonik görünüm `_GlobalConfirmation`'ınki ise `DitenModal`
@@ -4942,6 +4947,11 @@ bileşene taşınır; bileşen gerekçe (textarea) ve "hata + Tamam" biçimlerin
 **Görev Merkezi'nin ön yüz parçaları paylaşımlı bileşen olarak çıkarılır; toplantı ekranları yeniden yazmaz**
 
 DURUM: AÇIK · SAHİP: CT (WorkCenter) · KARAR: sahip, 2026-09-11 ("liste, kart gibi şeyleri tekrar tekrar yapmayalım") · ENVANTER: `docs/records/audits/2026-09/workcenter-reusable-ui-inventory-2026-09-11.md`
+
+**İLERLEME (CT, 2026-09-11, `6bab238c`):** Görev Merkezi'nin `bindDialogSelect2` / `dialogLook` kopyaları kapandı — app.js tek satır delegasyon,
+dört test (`wcn-dialog-seven-defects`, `wcn-dialog-rhythm`, `wcn-dialog-one-language`, `wcn-detail-three-regions`) shared dosyayı okuyor, muhafızın istisna listesi
+yalnız `shared/diten-dialog.js`; ikinci gövde eklenince muhafız kırmızı (CT sabotajı). `.wcn-dialog-select` CSS kaldı (delegasyon sınıf adını option olarak taşıyor).
+Kalan: #4 aylık takvim → ortak takvim bileşeni (S3b, sahip: önce tasarım konuşulacak).
 
 **Hemen değiştir (çıkarma gerekmez):** Meetings iptal modalı → `showConfirm` (textarea, zorunlu) · Meetings tarih-saat → `DitenDateField.enhance({enableTime:true})`.
 **Önce çıkar, sonra kullan (öncelik sırası):** 1 diyalog görünüm adaptörü (`app.js:7727-7787`) → S5/S6 gerekçe diyalogları + Meetings düzenleyen-değiştir ·
@@ -5003,7 +5013,13 @@ yazılmadı. **CT canlı E4, birleşik ağaç (main + Adım 0 + Adım 2, çakı�
 200 ve satırlar: GMG-COM-SOP-0001/2/3 `linkableInErp=true` (Kalite kararı), GMG-GDP-SOP-0001 `false` + gerekçe "Draft" (kararsız Taslak). HTTP/JWT katmanı kapandı.
 **Sıra:** Adım 0 PR → Adım 2 PR (ya da birlikte) → merge → canlıda görev açarak dondurma kanıtı (BL-358 org verisi şart) → bu maddenin emekliliği.
 **Açık karar (sahip/DM):** üretim kiracısına gerçek ingest'in tetiklenme şekli (yönetici CSV yükleme ekranı mı, tek seferlik iç uç mu) — `IngestDocumentMasterRegisterCommand`
-hazır, tetikleyici yok.
+hazır, tetikleyici yok. → **KAPANDI (CT, 2026-09-11):** WP-DM-DCP005-REGISTER-IMPORT-UI-01, dal `feature/dm/dcp-005-register-import-ui`
+(base Adım 0 dalı `1e07712b`, commit `c22eb1ce`, worktree `.claude/worktrees/dm+dcp-005-register-import-ui`; sahip push edecek, kendi PR'ı, Adım 0'dan sonra merge).
+Önizle (yazmaz; Created/Updated/Unchanged/Blocked, hash, "daha önce yüklendi") → `window.showConfirm` → onayla (409 IMPORT_CONTENT_CHANGED / IMPORT_ALREADY_APPLIED;
+mevcut ingest komutu çağrılır; IAuditableCommand) → yükleme geçmişi (`document_management_register_import_batches`, (TenantId, ContentHash) unique). Yeni izin
+`platform.document-management.master-register.import` üç uçta + sayfada; 7 dil 36 anahtar tek resx setinde. CT: 23/23 test, hash kontrolü kapatılınca 1 kırmızı;
+canlıda sayfa yeni izni oturum yenilenmeden görmez (UAS doğru davranış) — yeni oturumla tıklama kanıtı açık. Üretim yüklemesi = DM/Kalite'den izinli kişi bu ekrandan;
+kanıt = geçmiş satırı + denetim kaydı.
 
 **Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
 `GET /Tasks/api/document-list/search`) geçicidir; kütük CSV UID'lerini sahiplenir (`PermanentUid = CSV uid`), görev formu `by="uid"` ile

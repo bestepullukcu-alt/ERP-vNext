@@ -716,7 +716,7 @@ MOD-0024's own equivalent gap was.
 | S5b | `.ics` invite / change / cancel email — first step: additive `Attachments` field on `MessagingProviderEmailRequest` (CT infra, Notifications); then `IMeetingInviteMailer` attaches the `.ics` (same UID across updates; METHOD:CANCEL on cancel). Stage 1 per ADR-003 §5 |
 | S6 | Minutes: draft, publish, correct, decisions-as-rows |
 | S7 | Continuation meeting (K6 carry-forward) |
-| S8 | Meeting type setting screen |
+| S8 | Meeting type setting screen — ✅ delivered 2026-09-11, commit `6bab238c` (WP-MG-MOD0357-S8-MEETING-TYPES-01): list/create/edit under `platform.meetings.types-manage`, nav-visible page MEETING_TYPES (7 languages), agenda-template pre-fill on the meeting form (K8 box 1 — code + tests; live proof waits for dev organisation data, BL-358), K8 box 2 flags default off. Also closed the Task Center dialog-helper duplication (BL-365/BL-367). |
 | S9 | `reviewMeetingPolicy.required` gate wired end-to-end against a real MOD-0024 task type |
 | S11 | Recurring meeting SERIES (weekly quality review, monthly management review): a light rule generating instances on the task engine's recurrence/Hangfire pattern, each instance chained to the previous as a follow-up (K6). Owner decision 2026-09-11 — moved INTO Stage 1 because the Blueprint scopes MOD-0357 as *cadence*; exceptions and attendee-calendar writes stay with Google (Phase 2) |
 | S10 | Live-session verification pass (this repo's own "green tests ≠ working" discipline — HTTP-level round
