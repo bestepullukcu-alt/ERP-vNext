@@ -101,6 +101,7 @@ public sealed class DocumentCitationResolverTests
     [InlineData(ControlledDocumentLifecycleStatus.ObsoleteCopy)]
     public async Task Non_effective_statuses_are_not_citable_with_reason(ControlledDocumentLifecycleStatus status)
     {
+        // CitableByQualityDecision defaults to false (not set below) — this pins the pre-Step-0 behaviour untouched.
         var handler = ResolveHandlerWith(Entry(uid: "UID-1", code: "C-1", status: status));
 
         var response = await handler.Handle(ResolveQuery("UID-1", DocumentIdentifierKind.Uid), CancellationToken.None);
@@ -109,6 +110,69 @@ public sealed class DocumentCitationResolverTests
         Assert.False(item.Citable);
         Assert.Equal(status.ToString(), item.BlockedReason);
         Assert.Equal(status.ToString(), item.Lifecycle);
+    }
+
+    // ── DCP-005 Step 0, Part B — Quality's "linkable in ERP" decision widens citability ──────────────────
+
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Draft)]
+    [InlineData(ControlledDocumentLifecycleStatus.InReview)]
+    [InlineData(ControlledDocumentLifecycleStatus.ApprovedPendingEffective)]
+    public async Task A_quality_cleared_document_on_its_way_to_effective_is_citable(ControlledDocumentLifecycleStatus status)
+    {
+        /*
+         * MUTATION GUARD (AC5): drop the `|| citableByQualityDecision` disjunct from DocumentCitationMapping.IsCitable
+         * and this goes red, while Operationally_effective_statuses_are_citable above (no quality decision involved)
+         * stays green — proof the two judgments are independent.
+         */
+        var handler = ResolveHandlerWith(Entry(uid: "UID-1", code: "C-1", status: status, citableByQualityDecision: true));
+
+        var response = await handler.Handle(ResolveQuery("UID-1", DocumentIdentifierKind.Uid), CancellationToken.None);
+
+        var item = Assert.Single(response.Data!.Items);
+        Assert.True(item.Citable);
+        Assert.Null(item.BlockedReason);
+    }
+
+    [Theory]
+    [InlineData(ControlledDocumentLifecycleStatus.Suspended)]
+    [InlineData(ControlledDocumentLifecycleStatus.Superseded)]
+    [InlineData(ControlledDocumentLifecycleStatus.Retired)]
+    [InlineData(ControlledDocumentLifecycleStatus.ObsoleteCopy)]
+    public async Task The_quality_decision_never_overrides_a_terminal_or_suspended_status(ControlledDocumentLifecycleStatus status)
+    {
+        /*
+         * Owner decision, 2026-09-11: Retired (and Void, mapped to Retired by DocumentRegisterIngestMapping) is
+         * ALWAYS non-citable. MUTATION GUARD: widen the allow-list past Draft/InReview/ApprovedPendingEffective
+         * and this goes red — a withdrawn document must never become citable because Quality once flagged the CSV
+         * row linkable.
+         */
+        var handler = ResolveHandlerWith(Entry(uid: "UID-1", code: "C-1", status: status, citableByQualityDecision: true));
+
+        var response = await handler.Handle(ResolveQuery("UID-1", DocumentIdentifierKind.Uid), CancellationToken.None);
+
+        var item = Assert.Single(response.Data!.Items);
+        Assert.False(item.Citable);
+        Assert.Equal(status.ToString(), item.BlockedReason);
+    }
+
+    [Fact]
+    public async Task The_effectiveness_gate_is_unaffected_by_the_quality_decision()
+    {
+        /*
+         * The formula lives only in DocumentCitationMapping — ResolveDocumentEffectivenessHandler computes its own
+         * `effective` straight from IsOperationallyEffective and never reads CitableByQualityDecision. This test
+         * pins the CITATION side of that claim: a Draft document with the quality decision set is citable but its
+         * raw Lifecycle still reads "Draft", not "Effective" — the two answers stay independent.
+         */
+        var handler = ResolveHandlerWith(
+            Entry(uid: "UID-1", code: "C-1", status: ControlledDocumentLifecycleStatus.Draft, citableByQualityDecision: true));
+
+        var response = await handler.Handle(ResolveQuery("UID-1", DocumentIdentifierKind.Uid), CancellationToken.None);
+
+        var item = Assert.Single(response.Data!.Items);
+        Assert.True(item.Citable);
+        Assert.Equal("Draft", item.Lifecycle);
     }
 
     // ── Omission: unresolved + incomplete rows ───────────────────────────────────
@@ -258,7 +322,8 @@ public sealed class DocumentCitationResolverTests
     }
 
     private static DocumentMasterRegisterEntry Entry(
-        string? uid, string? code, ControlledDocumentLifecycleStatus status, string title = "Document Control", string? version = "V1.0") => new()
+        string? uid, string? code, ControlledDocumentLifecycleStatus status, string title = "Document Control",
+        string? version = "V1.0", bool citableByQualityDecision = false) => new()
     {
         Id = Guid.NewGuid(),
         TenantId = TenantId,
@@ -266,7 +331,8 @@ public sealed class DocumentCitationResolverTests
         DocumentCode = code,
         DocumentTitle = title,
         CurrentVersionLabel = version,
-        LifecycleStatus = status
+        LifecycleStatus = status,
+        CitableByQualityDecision = citableByQualityDecision
     };
 
     private static ResolveDocumentCitationQuery ResolveQuery(string identifier, DocumentIdentifierKind by) =>
