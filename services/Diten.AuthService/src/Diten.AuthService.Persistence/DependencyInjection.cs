@@ -24,7 +24,22 @@ public static class DependencyInjection
         ]);
 
         // MongoDB Serializers
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the registration is process-global and THROWS once a Guid serializer has been
+        // registered or merely looked up. In production that never happens (one host, one startup, this line runs
+        // first). In a test process that hosts the real Api in-process (WebApplicationFactory) AFTER another test has
+        // already touched Guid serialization, the throw took the whole AuthService host down at Program.cs:73 —
+        // measured: 20 acceptance tests red in the full run, green in isolation. (TryRegisterSerializer is not enough:
+        // it still throws when the cached serializer is a DIFFERENT instance, which the driver's own default is.)
+        // A fresh process keeps the exact production registration; a warm one keeps the serializer it already has —
+        // equivalent on the wire here, because in the driver's V2 mode the representation is decided by the writer.
+        try
+        {
+            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        }
+        catch (BsonSerializationException)
+        {
+            // Already registered/looked up earlier in this process (in-process test host); the first registration stands.
+        }
 
         // MongoDB Conventions - Globally ignore extra elements to prevent deserialization errors on schema changes
         var conventionPack = new ConventionPack
