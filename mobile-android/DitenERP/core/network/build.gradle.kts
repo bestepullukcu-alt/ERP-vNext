@@ -12,14 +12,18 @@ android {
 
         // Gateway base URL and logging flag are compiled in via BuildConfig so no
         // endpoint/secret is hard-coded in source. Per-build-type values below.
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5080/\"")
+        buildConfigField("String", "BASE_URL", "\"http://localhost:5080/\"")
         buildConfigField("boolean", "NETWORK_LOG", "true")
     }
 
     buildTypes {
         debug {
-            // Android emulator -> host loopback; verbose logging with redaction.
-            buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:5080/\"")
+            // Dev connectivity: this environment's emulator NAT to 10.0.2.2 stalls, so
+            // we target localhost:5080 and bridge it to the host gateway with
+            // `adb reverse tcp:5080 tcp:5080` (reliable adb transport). Re-run adb
+            // reverse after an emulator/adb restart. (10.0.2.2 remains the classic
+            // default where NAT works.) Verbose logging with redaction.
+            buildConfigField("String", "BASE_URL", "\"http://localhost:5080/\"")
             buildConfigField("boolean", "NETWORK_LOG", "true")
         }
         release {
