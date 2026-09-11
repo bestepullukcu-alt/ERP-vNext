@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Providers;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
@@ -150,6 +151,66 @@ public sealed class TaskTeamScopeTests
         Assert.DoesNotContain(items, i => i.Title.Text == "başka şirketin işi");
     }
 
+    // ── BL-361/BL-362 — Ekibim must not hand the manager the subordinate's OWN buttons ───────────────────────
+
+    /// <summary>
+    /// THE MEASURED DEFECT, pinned. A subordinate's own task (they opened it, they hold it) reaches my board
+    /// through Ekibim — that part is correct and unchanged (BL-023) — but I am neither its holder nor its
+    /// requester, so nothing on it is mine to press. Before this fix, `BuildActions` never asked `isHolder` for
+    /// start/complete/submitReview/accept/inquire/release, so this exact row answered with a fully enabled,
+    /// working "Başlat" button — pressing it succeeded, and the history recorded ME as the actor of a subordinate's
+    /// own work.
+    /// </summary>
+    [Fact]
+    public async Task The_Ekibim_scope_offers_NO_action_on_a_subordinates_OWN_task_Im_neither_holder_nor_requester_of()
+    {
+        var theirs = Task(assignee: Report, title: "astımın kendi işi"); // CreatedByUserId == Report too
+
+        var item = Assert.Single(await Project(WorkItemScope.Team, theirs));
+
+        Assert.Empty(item.Actions);
+        Assert.Null(item.PrimaryActionCode);
+    }
+
+    /// <summary>Same guard, mid-flight: an IN-PROGRESS subordinate task must not offer `complete` either — the
+    /// act that most directly closes someone else's work.</summary>
+    [Fact]
+    public async Task The_Ekibim_scope_offers_NO_complete_on_a_subordinates_OWN_inprogress_task()
+    {
+        var theirs = Task(assignee: Report, title: "astımın devam eden işi");
+        theirs.Lifecycle = TaskLifecycle.InProgress;
+
+        var item = Assert.Single(await Project(WorkItemScope.Team, theirs));
+
+        Assert.DoesNotContain(item.Actions, a => a.Code == "complete");
+        Assert.DoesNotContain(item.Actions, a => a.Code == "submitReview");
+    }
+
+    /// <summary>
+    /// Non-vacuity for the two guards above, from the OTHER direction that reaches Ekibim: when I am the one who
+    /// OPENED a subordinate's task (I am its requester, they hold it), Ekibim must not go blank on me either —
+    /// `cancel`, `reassign` and `plan` are mine by the requester rule (BL-357/BL-361), whatever `DelegationAllowed`
+    /// says, and start/complete stay withheld because holding the work is still theirs, not mine.
+    /// </summary>
+    [Fact]
+    public async Task The_Ekibim_scope_still_offers_cancel_reassign_and_plan_when_Im_the_REQUESTER_of_a_subordinates_task()
+    {
+        var assigned = Task(assignee: Report, title: "asıma verdiğim iş");
+        assigned.CreatedByUserId = TaskTestData.Me;
+        assigned.DelegationAllowed = false; // BL-357 — must not matter; I am the requester, not just any holder.
+
+        var item = Assert.Single(await Project(
+            WorkItemScope.Team,
+            permissions: [TaskPermissions.Assign, TaskPermissions.Update, TaskPermissions.Cancel],
+            assigned));
+
+        Assert.Contains(item.Actions, a => a.Code == "cancel" && a.Enabled);
+        Assert.Contains(item.Actions, a => a.Code == "reassign" && a.Enabled);
+        Assert.Contains(item.Actions, a => a.Code == "plan" && a.Enabled);
+        Assert.DoesNotContain(item.Actions, a => a.Code == "start");
+        Assert.DoesNotContain(item.Actions, a => a.Code == "complete");
+    }
+
     // ── the walk lives in ONE place ──────────────────────────────────────────
 
     [Fact]
@@ -175,12 +236,16 @@ public sealed class TaskTeamScopeTests
 
     private static async Task<IReadOnlyList<WorkItemProjectionDto>> Project(
         WorkItemScope scope, params TaskItem[] tasks)
+        => await Project(scope, permissions: [], tasks);
+
+    private static async Task<IReadOnlyList<WorkItemProjectionDto>> Project(
+        WorkItemScope scope, IReadOnlyCollection<string> permissions, params TaskItem[] tasks)
     {
         var world = World();
         var provider = TaskWorkItemProviderHarness.Create(world.Positions, world.Units, world.Assignments, tasks);
 
         return await provider.GetWorkItemsAsync(
-            new WorkItemActor(TaskTestData.Me, false, new HashSet<string>()) { Scope = scope },
+            new WorkItemActor(TaskTestData.Me, false, new HashSet<string>(permissions)) { Scope = scope },
             CancellationToken.None);
     }
 

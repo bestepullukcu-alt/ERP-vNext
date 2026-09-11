@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentManagementContract;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
@@ -262,6 +263,36 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * BL-361 — WHO may start, resume or finish this. Start/resume (→ InProgress) and complete (→ Done) are the
+         * two acts that most directly mean "I am doing this" / "I am done" — every sibling verb that changes who
+         * does the work or when (Accept, Release, Inquire, Return, Reassign) already asks a holder/requester
+         * question of its own; these two never did. That let anybody holding the ordinary Update/Complete
+         * permission execute a colleague's task end to end, most visibly through Ekibim's (?scope=team) own
+         * working "Tamamla" button on a subordinate's row — measured and recorded (BL-361/BL-362).
+         *
+         * Cancel's own actor check, three lines above this comment's target, is left untouched: it asks a
+         * DIFFERENT question (the REQUESTER's right to call work off) and stays scoped to `Cancelled` only. This
+         * is the sibling question for the two verbs that speak for the WORKER, never the requester.
+         *
+         * AFTER `CanTransition`, deliberately — not before it. An unclaimed pool task answers `TASK_NOT_CLAIMABLE`
+         * to EVERYONE regardless of who is asking, because there is no holder yet to compare against; "you are
+         * not the holder" would be a confusing lie to the very person about to claim it. BEFORE every gate below
+         * (checklist/approval/review/dependency/subtask/closure) and before any write, so a wrong-actor call
+         * looks, from the outside, exactly like it was never sent — no history entry, no notification.
+         *
+         * The SAME refusal code `[HasPermission]` and `ITaskAssignmentGuard` already answer with, not a new one:
+         * this is a permission question in substance ("this is not your work to move"), and the client's existing
+         * 403 fallback already covers it with no new resx key.
+         */
+        if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done
+            && task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
         }
 
         // Checklist gate, enforced HERE and not only in the projection: the projection disables the button, but a
@@ -741,6 +772,18 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         }
 
         /*
+         * BL-361 — the SAME question Start/Complete now ask, for the same reason: submitting work for review is
+         * "I am done with my part," and this handler never asked whose part it was. See the sibling comment in
+         * TransitionTaskItemHandler for the full rationale; it applies verbatim here.
+         */
+        if (task.AssigneeUserId != _currentUser.UserId)
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
+        }
+
+        /*
          * A task that never asked for a review cannot be submitted for one. The projection simply does not offer
          * the action, but a caller can post straight to this endpoint — and a hidden control is presentation while
          * the refusal is the rule. Without this, any task could be parked in PendingReview with a workflow nobody
@@ -863,6 +906,21 @@ public sealed class PlanTaskItemHandler : IRequestHandler<PlanTaskItemCommand, R
         if (task is null)
         {
             return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * BL-361 — a plan date is a PERSONAL note about when the work will happen, so both the person doing the
+         * work and the person who asked for it may set one; a bystander with no stake in either direction may not.
+         * Wider than Start/Complete/SubmitReview on purpose — this is the one verb in the group the requester also
+         * legitimately touches (their own outbox row offers `plan`, see TaskWorkItemProvider), so the rule matches
+         * what the projection already shows rather than narrowing it.
+         */
+        if (task.AssigneeUserId != _currentUser.UserId
+            && (task.CreatedByUserId is null || task.CreatedByUserId != _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "Only the assignee or the requester may perform this action.",
+                403, DocumentManagementReasonCodes.PermissionDenied, command.CorrelationId);
         }
 
         if (!_lifecycle.CanTransition(task, TaskLifecycle.Planned, out var reasonCode))
