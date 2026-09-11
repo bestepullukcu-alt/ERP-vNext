@@ -5035,3 +5035,21 @@ yerine Doküman Yönetimi'nin kütük ekranı. Yarım kaldırma yok (K4): sayfa 
 
     grep -n "document-list" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
     grep -n "DocumentList" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs
+
+### BL-370
+
+**Görevde kanıt dosyası (evidence attachment) yok — dosya deposu + kapanış zarfı, sıralı iki iş**
+
+DURUM: AÇIK · KARAR: sahip, 2026-09-11 ("yapacağız", sırayla) · SAHİP: DM geliştiricisi (depo) → CT (zarf) · KAYIT: 2026-09-11
+
+**Ölçüm:** görev formunda kontrollü doküman ATIFI var (`TaskDocumentReference`, dondurulmuş); dosya yükleme hiçbir görev ekranında yok (`type="file"` yalnız
+CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `ChecklistRunItem.EvidenceRequired` saklanıyor, hiçbir şeyi zorlamıyor; ekranda
+"Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek." Depoda dosya/nesne deposu soyutlaması yok (IBlobStorage/MinIO/S3/GridFS: 0).
+İş Raporu doküman/kanıt göstermiyor.
+
+**Sıra:**
+1. **MOD-0262-FU01 Document Binary Store** (pack ready-for-dev, 2026-09-07; kod yok) — DM geliştiricisi, bugünkü üç DM dalı merge olduktan ve Kalite kütüğü
+   yükledikten sonra; tahmin 2-3 prompt. Kiracı izolasyonu, indirme yetkisi, boyut/tür sınırı, denetim.
+2. **MOD-0024 Faz 2 kapanış zarfı** (pack draft; §7: kanıt/çıktı "her zaman var") — CT, toplantı modülü bittikten sonra; tahmin 2 prompt: kapanışta kanıt
+   yükleme (depoya bağlanır), `EvidenceRequired` maddede gerçek zorlama, Görev Merkezi detayında kanıt listesi, İş Raporu'nda kanıt sütunu.
+3. Kalite izi tamamlanır: "hangi prosedüre göre yaptım" (atıf, DCP-005) + "işte kanıtı" (bu madde).
