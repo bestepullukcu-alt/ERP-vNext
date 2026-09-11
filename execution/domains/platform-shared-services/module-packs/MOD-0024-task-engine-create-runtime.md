@@ -898,6 +898,14 @@ The schema is laid down correctly **in Phase 1** (pool fields, `Classification`/
 1. **MOD-0018** — seed/grant the `platform.tasks.*` keys; confirm `Scope=Tenant`.
 2. **integration-agent** — the `/api/v1/tasks/{everything}` Ocelot route.
 3. **Attachments** — a separate slice bound to an approved document/storage provider (§12 Y4).
+   → **Slice ATT-1 — ready-for-dev (CT, 2026-09-11; owner decision BL-370).** The approved provider now exists on main:
+   MOD-0262-FU01 Document Binary Store (`Contracts/DocumentRepository/IContentStorageGateway`, `Features/DocumentRepository/Services/DocumentRepositoryService`,
+   `api/v1/document-repository/*`, local-filesystem provider, tenant-isolated keys, SHA-256, allow-list, audit). ATT-1 = task attachments consuming that store:
+   own collection `task_attachments` (`TaskAttachment`: TaskId · ChecklistRunItemCode? · Kind Evidence|Deliverable|Attachment · ContentRef · Note · UploadedBy/At · DeletedAt),
+   `TaskItem` gains no field; add/remove by holder or requester with `platform.tasks.update`, read/download with `platform.tasks.read` + task visibility; immutable after
+   Done/Cancelled; `ChecklistRunItem.EvidenceRequired` finally ENFORCED (item cannot complete without ≥1 Evidence attachment on it → 409 CHECKLIST_EVIDENCE_REQUIRED);
+   `ContentStorageScope.TaskAttachments` (additive); Web proxy streams multipart up and bytes down (no base64, AD-4); Task Center detail "Ekler" section + per-item
+   "Kanıt ekle"; seven languages. No purge path. Deliverables text/closure narrative stay with the closure envelope (Faz 2).
 4. **BL-024** — field-level authorization for configurable fields.
 5. **BL-025** — in-app channel + header bell (email-only until then).
 6. **BL-023 / BL-016 (Outbox)** — team scope and creator-scope surfaces build on this slice.
