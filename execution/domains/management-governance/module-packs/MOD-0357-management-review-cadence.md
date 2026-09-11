@@ -557,7 +557,7 @@ MOD-0024's own equivalent gap was.
 ## 16. Acceptance Criteria (phase-tagged, K1–K12 made measurable)
 
 ### Governance
-- [ ] `MOD-0357` identity unchanged from this pack's frontmatter; no new ID; `verify_module_id.py` exit 0
+- [x] `MOD-0357` identity unchanged from this pack's frontmatter; no new ID; `verify_module_id.py` exit 0 *(S1, 5f7dd687)*
       (already measured 2026-09-11 — reproduce before `ready-for-dev`).
 - [ ] `Features/Tasks`, `Features/WorkAggregation` (except one DI line), AuthService, `ocelot.json`,
       `TaskItem.cs`, other domains' `execution/domains/**` untouched.
@@ -570,7 +570,7 @@ MOD-0024's own equivalent gap was.
 - [ ] `GET /meetings/{id}/tasks` and (on MOD-0024's side) a task's `relatedRecords` both resolve through the
       same `RecordLink` rows — verified by a shared-fixture test that creates one link and reads it from
       both directions.
-- [ ] MOD-0024 never writes a `RecordLink` row (integration test: MOD-0024's own task handlers touch no
+- [x] MOD-0024 never writes a `RecordLink` row (integration test: MOD-0024's own task handlers touch no
       `meeting_record_links` collection).
 
 ### K2 — meeting-born task is a normal task
@@ -707,7 +707,7 @@ MOD-0024's own equivalent gap was.
 
 | Slice | Scope |
 |---|---|
-| S1 | `RecordLink` collection + `IRecordLinkService` + MOD-0024's `relatedRecords` read wired to it (the one point of contact with `Features/Tasks` this pack allows) |
+| S1 ✅ `5f7dd687` (2026-09-11; CT doğruladı, canlı değil) | `RecordLink` collection + `IRecordLinkService` + MOD-0024's `relatedRecords` read wired to it (the one point of contact with `Features/Tasks` this pack allows) |
 | S2 | `Meeting`/`MeetingAttendee`/`AgendaItem` backend CRUD, no UI yet |
 | S3 | Screens: list (DataTable), create, detail |
 | S4 | Meeting → task (three moments) and task → meeting (`scheduleReviewMeeting` receiving side) |
