@@ -1,5 +1,6 @@
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Domain.Entities.Tasks;
-using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Features.Tasks.Services;
 
@@ -15,19 +16,35 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// citations a task ALREADY carries and returns only the ones being added; the existing objects are passed back
 /// untouched, not re-read and rebuilt. That is what makes "the title is frozen" true rather than aspirational —
 /// an update cannot refresh what it never resolves.</para>
+///
+/// <para><b>DCP-005 Step 2 — repointed from the CSV list to the live Document Master Register</b>
+/// (<see cref="IControlledDocumentCitationPort"/>, WP-PSS-DCP005-STEP2-CITATION-REPOINT-01). The source moved;
+/// the two refusals did not:
+/// <list type="bullet">
+/// <item><b>Unresolved is refused.</b> A UID the register does not list at all cannot be frozen — writing one
+/// would be a citation nobody can reproduce.</item>
+/// <item><b>Blocked is refused.</b> The register's own citable judgment (<c>DocumentCitationItem.Citable</c> —
+/// Effective ∨ UnderRevision, the SAME rule the effectiveness gate uses) replaces the CSV-era <c>LinkableInErp</c>
+/// flag at citation time. The picker shows a blocked row with its reason so the reader sees WHY; this refuses it
+/// because a screen is not a boundary — an API caller never passes the picker. Control Tower decision
+/// (2026-09-11): the WP's AC4 first read "Blocked freezes with its true status", which would have let a task be
+/// opened under a Superseded or Retired procedure through the API while the screen refused the same row. The
+/// task-TYPE activation gate (Step 3, "Kural 4" / G3) is a different question and stays separate.</item>
+/// </list>
+/// </para>
 /// </summary>
 public sealed class TaskDocumentReferenceFreezer
 {
-    private readonly IDocumentReferenceListRepository _lists;
+    private readonly IControlledDocumentCitationPort _citations;
 
-    public TaskDocumentReferenceFreezer(IDocumentReferenceListRepository lists) => _lists = lists;
+    public TaskDocumentReferenceFreezer(IControlledDocumentCitationPort citations) => _citations = citations;
 
     /// <summary>
     /// Work out the task's new citation list from the UIDs the caller asked for.
     ///
-    /// <para>Three outcomes, and they are deliberately different: a UID already cited keeps its FROZEN object; a
-    /// UID that resolves in the current version is frozen now; a UID that is missing or blocked is refused with a
-    /// reason code, because silently dropping it would tell the author they cited something they did not.</para>
+    /// <para>A UID already cited keeps its FROZEN object; a UID the register resolves is frozen now, whatever its
+    /// lifecycle; a UID the register does not list at all is refused with a reason code, because silently
+    /// dropping it would tell the author they cited something they did not.</para>
     ///
     /// <para>Removal needs no work: a UID absent from <paramref name="requestedUids"/> is simply absent from the
     /// result. Removal is not a change to a frozen value — it is the task no longer making the claim.</para>
@@ -59,20 +76,17 @@ public sealed class TaskDocumentReferenceFreezer
 
         if (toFreeze.Count == 0) { return TaskDocumentFreezeResult.Ok(kept); }
 
-        var current = await _lists.GetLatestVersionAsync(ct);
-        if (current is null)
-        {
-            // No list means nothing can be cited. Saying so is better than writing a citation with no register
-            // behind it, which would be a frozen row nobody can reproduce.
-            return TaskDocumentFreezeResult.Failed(TaskReasonCodes.DocumentListNotImported, toFreeze[0]);
-        }
-
-        var entries = await _lists.GetEntriesByUidsAsync(current.Id, toFreeze, ct);
-        var byUid = entries.ToDictionary(e => e.DocumentUid, StringComparer.OrdinalIgnoreCase);
+        // Fail-closed by construction: a register read that cannot complete throws from ResolveAsync (contract
+        // §2/§3/§5) rather than resolving into an empty/Unresolved answer, and that exception is left to
+        // propagate — never caught here and turned into a fabricated refusal or a fabricated success.
+        var result = await _citations.ResolveAsync(
+            new DocumentCitationQuery(toFreeze, DocumentIdentifierKind.Uid), ct);
+        var byUid = result.Items.ToDictionary(i => i.Uid, StringComparer.OrdinalIgnoreCase);
 
         foreach (var uid in toFreeze)
         {
-            if (!byUid.TryGetValue(uid, out var entry))
+            // ResolveAsync omits identifiers with no register row — Unresolved is "absent", not a status value.
+            if (!byUid.TryGetValue(uid, out var item))
             {
                 return TaskDocumentFreezeResult.Failed(TaskReasonCodes.DocumentReferenceNotFound, uid);
             }
@@ -82,22 +96,25 @@ public sealed class TaskDocumentReferenceFreezer
              * reader must see why; this refuses it because a screen is not a boundary — an API caller, an
              * import, or a future slice reaches the same handler without passing the picker at all.
              */
-            if (!entry.LinkableInErp)
+            if (!item.Citable)
             {
                 return TaskDocumentFreezeResult.Failed(TaskReasonCodes.DocumentReferenceBlocked, uid);
             }
 
             kept.Add(new TaskDocumentReference
             {
-                DocumentUid = entry.DocumentUid,
-                DocumentCode = entry.DocumentCode,
-                Title = entry.Title,
-                DocumentVersion = entry.DocumentVersion,
-                Status = entry.Status,
+                DocumentUid = item.Uid,
+                DocumentCode = item.Code,
+                Title = item.Title,
+                DocumentVersion = item.Version,
+                // The register's own lifecycle word, frozen as written — Effective or UnderRevision, since a
+                // blocked row was refused above.
+                Status = item.Lifecycle,
                 // The moment of citation, not of saving: an edit that touches the title does not re-date a
                 // document the author chose last week.
                 ReferencedAt = now,
-                ListVersionId = current.Id,
+                // No CSV list version behind a register-sourced citation (see TaskItem.DocumentReferences remark).
+                ListVersionId = null,
             });
         }
 
