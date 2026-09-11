@@ -4926,5 +4926,10 @@ DURUM: AÇIK · SAHİP: CT (WorkCenter) · KARAR: sahip, 2026-09-11 ("liste, kar
 2 kişi/avatar seçici (`Tasks/form.js:487-813`) → Meetings katılımcı seçici (üçüncü kopya) · 3 ilişkili kayıt satırı (`app.js:4402-4407, 4480-4561`) → S4 ·
 4 aylık takvim (`app.js:5918-5999`) → S3b · 5 üç bölgeli detay kabuğu (`app.js:4563-5180`) → S4–S6 detay.
 **Kalsın:** hata kodu köprüsü (modüle özgü kodlar; iskelet aynalanmış).
+
+**İlerleme (2026-09-11, CT doğruladı):** E1 diyalog adaptörü, E2 kişi seçici + select2 adaptörü, E3 ilişkili kayıt satırı `shared/` altında; Meetings iptal/düzenleyen
+modalları `showConfirm`, tarih-saat `DitenDateField`, bağlı görevler paylaşımlı satır. **Kalan:** `bindDialogSelect2`/`dialogLook` WCN kopyası + `.wcn-dialog-select`
+CSS'i (üç diyalog testi kaynak metnini pinliyor) → sonraki ön yüz dilimi (S8) testleri paylaşımlıya çevirip kopyayı siler · takvim (S3b) · detay kabuğu (S4+).
+Muhafız `shared-ui-parts-one-implementation.test.js` — CT düzeltmesi: her tanım sınıflanır (ilki değil).
 **Kural:** her ekran/dilim prompt'u "mevcut parçayı kullan; yalnız app.js içinde gömülüyse önce çıkar" satırı taşır ([[feedback_reuse_frontend_partials]]).
 Metin/CSS taşıyan çıkarmalar l10n/FG-003 kapısından geçer (Antigravity); saf JS çıkarmalar CT alt ajanıyla yapılabilir.
