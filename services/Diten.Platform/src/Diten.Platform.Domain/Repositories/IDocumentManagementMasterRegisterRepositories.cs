@@ -74,3 +74,19 @@ public interface IDocumentMasterRegisterRepository
 
     Task<bool> UpdateAsync(DocumentMasterRegisterEntry entry, CancellationToken ct = default);
 }
+
+/// <summary>
+/// WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the register's upload history. <see cref="FindByContentHashAsync"/> is the
+/// idempotency check the commit endpoint runs BEFORE writing (contract: same bytes committed twice ⇒
+/// <c>IMPORT_ALREADY_APPLIED</c>, never a second row).
+/// </summary>
+public interface IDocumentRegisterImportBatchRepository
+{
+    Task<DocumentRegisterImportBatch> CreateAsync(DocumentRegisterImportBatch batch, CancellationToken ct = default);
+
+    /// <summary>Tenant-scoped. Null when this exact content has never been committed for the current tenant.</summary>
+    Task<DocumentRegisterImportBatch?> FindByContentHashAsync(string contentHash, CancellationToken ct = default);
+
+    /// <summary>Every committed batch, newest first — "which file did this register load, and when".</summary>
+    Task<IReadOnlyList<DocumentRegisterImportBatch>> ListAsync(CancellationToken ct = default);
+}

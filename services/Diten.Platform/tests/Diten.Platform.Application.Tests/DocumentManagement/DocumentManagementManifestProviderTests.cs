@@ -56,6 +56,8 @@ public sealed class DocumentManagementManifestProviderTests
         // MOD-0029-FU24 Master Register + FU28A Repository Assessments — catalogue pages (fb4245f0),
         // real frontend controllers exist (DocumentManagementMasterRegister/RepositoryAssessments).
         "/DocumentManagementMasterRegister",
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the audited two-step CSV import screen.
+        "/DocumentManagementMasterRegister/Import",
         "/DocumentManagementRepositoryAssessments"
     };
 

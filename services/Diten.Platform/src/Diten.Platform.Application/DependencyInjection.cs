@@ -106,6 +106,8 @@ public static class DependencyInjection
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsFolderTreeValidator>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.DottedOutlineTreeBuilder>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsBaselineImportService>();
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the Document Master Register CSV import preview (dry-run + commit share it).
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.DocumentRegisterImportPreviewService>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.BaselineSnapshotHasher>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsManualStructureService>();
         services.AddScoped<CompanyInstanceKeyFactory>();

@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
 using MediatR;
 
 namespace Diten.Platform.Application.Features.DocumentManagementMasterRegister.Queries;
@@ -18,3 +19,7 @@ public sealed record GetMasterRegisterEntryByIdQuery(Guid EntryId, string Correl
 
 public sealed record GetMasterRegisterSummaryQuery(string CorrelationId)
     : IRequest<Response<MasterRegisterSummaryModel>>;
+
+/// <summary>WP-DM-DCP005-REGISTER-IMPORT-UI-01 — every committed CSV import batch, newest first.</summary>
+public sealed record GetDocumentRegisterImportHistoryQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<DocumentRegisterImportBatchDto>>>;

@@ -408,6 +408,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentCollectionDeviationRepository, DocumentCollectionDeviationRepository>();
         // MOD-0029-FU06 — Document Master Register (LOG-0001) repository (sidecar governance projection).
         services.AddScoped<IDocumentMasterRegisterRepository, DocumentMasterRegisterRepository>();
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the register's CSV upload history.
+        services.AddScoped<IDocumentRegisterImportBatchRepository, DocumentRegisterImportBatchRepository>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<IControlledDocumentRegistrationRepository, ControlledDocumentRegistrationRepository>();
         // MOD-0029-FU07 — document identifier (Permanent UID / Document Code) allocation ledger + sequence counter.
