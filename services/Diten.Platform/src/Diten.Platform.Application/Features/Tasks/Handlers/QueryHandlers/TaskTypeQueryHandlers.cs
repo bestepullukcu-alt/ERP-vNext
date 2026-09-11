@@ -1,4 +1,6 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Domain.Entities.Tasks;
@@ -157,18 +159,23 @@ internal static class TaskTypeMapping
 /// governing document — 1 names nothing (GEN-ADMIN), 7 name UIDs absent from the register, 7 name UIDs the
 /// register blocks. Two more (DEV-GMP, DEV-GDP) name one citable and one blocked, so their suggestion is
 /// PARTIAL rather than empty. A screen that drew a bare empty box would be wrong about all of them.</para>
+///
+/// <para>DCP-005 Step 2 — repointed from the CSV list to the live Document Master Register
+/// (<see cref="IControlledDocumentCitationPort"/>). A read-only suggestion, unchanged in shape: this handler
+/// decides nothing and rejects nothing (a suggestion is never a requirement, per the guard test below), so the
+/// citable/blocked/unresolved split is exactly the register's own answer, carried through.</para>
 /// </summary>
 public sealed class GetTaskTypeGoverningDocumentsHandler
     : IRequestHandler<GetTaskTypeGoverningDocumentsQuery, Response<TaskTypeGoverningDocumentsDto>>
 {
     private readonly ITaskTypeRepository _types;
-    private readonly IDocumentReferenceListRepository _lists;
+    private readonly IControlledDocumentCitationPort _citations;
 
     public GetTaskTypeGoverningDocumentsHandler(
-        ITaskTypeRepository types, IDocumentReferenceListRepository lists)
+        ITaskTypeRepository types, IControlledDocumentCitationPort citations)
     {
         _types = types;
-        _lists = lists;
+        _citations = citations;
     }
 
     public async Task<Response<TaskTypeGoverningDocumentsDto>> Handle(
@@ -195,20 +202,18 @@ public sealed class GetTaskTypeGoverningDocumentsHandler
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        var current = await _lists.GetLatestVersionAsync(ct);
-        if (named.Count == 0 || current is null)
+        if (named.Count == 0)
         {
-            /*
-             * ⚠ With no register imported, every named UID is UNRESOLVED rather than silently dropped. The
-             * reader is then told "the register does not list these", which is true, instead of "this type is
-             * not governed", which is false and would be the more comfortable lie.
-             */
             return Response<TaskTypeGoverningDocumentsDto>.Success(
-                new TaskTypeGoverningDocumentsDto([], named.Count, named, []), 200, query.CorrelationId);
+                new TaskTypeGoverningDocumentsDto([], 0, [], []), 200, query.CorrelationId);
         }
 
-        var entries = await _lists.GetEntriesByUidsAsync(current.Id, named, ct);
-        var byUid = entries.ToDictionary(e => e.DocumentUid, StringComparer.OrdinalIgnoreCase);
+        // ResolveAsync omits identifiers with no register row (Unresolved is "absent"), so the same fail-closed
+        // exception the freezer relies on propagates here too — an unreachable register must not read as "this
+        // type governs nothing".
+        var result = await _citations.ResolveAsync(
+            new DocumentCitationQuery(named, DocumentIdentifierKind.Uid), ct);
+        var byUid = result.Items.ToDictionary(i => i.Uid, StringComparer.OrdinalIgnoreCase);
 
         var unresolved = named.Where(u => !byUid.ContainsKey(u)).ToList();
         var citable = new List<DocumentReferenceEntryDto>();
@@ -216,11 +221,12 @@ public sealed class GetTaskTypeGoverningDocumentsHandler
 
         foreach (var uid in named)
         {
-            if (!byUid.TryGetValue(uid, out var e)) { continue; }
+            if (!byUid.TryGetValue(uid, out var item)) { continue; }
             var dto = new DocumentReferenceEntryDto(
-                e.DocumentUid, e.DocumentCode, e.Title, e.DocumentVersion, e.Status, e.GqmsDomain,
-                e.IsMandatoryGroupSop, e.LinkableInErp, e.LinkBlockedReason);
-            (e.LinkableInErp ? citable : blocked).Add(dto);
+                item.Uid, item.Code, item.Title, item.Version, item.Lifecycle,
+                GqmsDomain: null, IsMandatoryGroupSop: false,
+                LinkableInErp: item.Citable, LinkBlockedReason: item.BlockedReason);
+            (item.Citable ? citable : blocked).Add(dto);
         }
 
         return Response<TaskTypeGoverningDocumentsDto>.Success(

@@ -1,4 +1,6 @@
 using System.Reflection;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
@@ -10,50 +12,66 @@ using Xunit;
 namespace Diten.Platform.Application.Tests.Tasks;
 
 /// <summary>
-/// DCP-005 slice 3 — a task citing a controlled document.
+/// DCP-005 Step 2 — a fake <see cref="IControlledDocumentCitationPort"/> over an in-memory row set, for the tests
+/// below. Mirrors what <c>FakeDocumentReferenceListRepository</c> (<c>DocumentReferenceListTests.cs</c>) did for
+/// the CSV era: a controllable double, not a stub — <see cref="ResolveAsync"/> genuinely omits unmatched
+/// identifiers rather than fabricating a result for them, the same "Unresolved is absence" contract the real port
+/// promises (contract §2).
+/// </summary>
+internal sealed class FakeControlledDocumentCitationPort : IControlledDocumentCitationPort
+{
+    public List<DocumentCitationItem> Items { get; } = [];
+
+    /// <summary>Set to make the next <see cref="ResolveAsync"/> throw — the fail-closed "could not check" path.</summary>
+    public Exception? ThrowOnResolve { get; set; }
+
+    /// <summary>UIDs actually asked for, across every call — so a test can prove a UID was never re-queried.</summary>
+    public List<string> ResolvedIdentifiers { get; } = [];
+
+    public Task<DocumentCitationResult> ResolveAsync(DocumentCitationQuery query, CancellationToken ct)
+    {
+        ResolvedIdentifiers.AddRange(query.Identifiers);
+        if (ThrowOnResolve is { } error) { throw error; }
+
+        var matched = Items
+            .Where(i => query.Identifiers.Contains(i.Uid, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        return Task.FromResult(new DocumentCitationResult(matched));
+    }
+
+    public Task<DocumentCitationResult> SearchAsync(string? term, int limit, CancellationToken ct)
+        => Task.FromResult(new DocumentCitationResult(Items));
+}
+
+/// <summary>
+/// DCP-005 Step 2 (WP-PSS-DCP005-STEP2-CITATION-REPOINT-01) — a task citing a controlled document, now resolved
+/// against the live Document Master Register instead of the CSV list.
 ///
-/// <para>The subject of every test here is ONE rule: the six fields are frozen when the citation is made and
-/// nothing in the product rewrites them afterwards. It is a rule that fails silently — a refreshed title looks
-/// like a correction, not like a defect — so it is pinned from both directions: what a re-resolve WOULD change,
-/// and that the code never re-resolves.</para>
+/// <para>The subject of every test here is still ONE rule: the frozen fields are set when the citation is made
+/// and nothing in the product rewrites them afterwards. It is a rule that fails silently — a refreshed title
+/// looks like a correction, not like a defect — so it is pinned from both directions: what a re-resolve WOULD
+/// change, and that the code never re-resolves (proven here by a UID already cited never reaching the port a
+/// second time — see <see cref="A_frozen_citation_is_never_re_resolved_from_the_register"/>).</para>
 /// </summary>
 public sealed class TaskDocumentReferenceFreezeTests
 {
-    private static readonly Guid VersionOne = Guid.NewGuid();
+    private static DocumentCitationItem Citation(
+        string uid, string code, string title, string? version = "1.0", string lifecycle = "Effective",
+        bool citable = true, string? blockedReason = null)
+        => new(uid, code, title, version, lifecycle, citable, blockedReason,
+            DocumentCitationSource.MasterRegister, Guid.NewGuid());
 
-    private static DocumentReferenceEntry Entry(
-        Guid listVersionId, string uid, string code, string title,
-        string? version = "1.0", string? status = "EFFECTIVE", bool linkable = true, string? blockedReason = null)
-        => new()
-        {
-            TenantId = Guid.NewGuid(),
-            ListVersionId = listVersionId,
-            DocumentUid = uid,
-            DocumentCode = code,
-            Title = title,
-            DocumentVersion = version,
-            Status = status,
-            LinkableInErp = linkable,
-            LinkBlockedReason = blockedReason,
-        };
-
-    private static (TaskDocumentReferenceFreezer Freezer, FakeDocumentReferenceListRepository Repo) Setup()
+    private static (TaskDocumentReferenceFreezer Freezer, FakeControlledDocumentCitationPort Port) Setup()
     {
-        var repo = new FakeDocumentReferenceListRepository();
-        repo.Versions.Add(new DocumentReferenceListVersion
-        {
-            Id = VersionOne, TenantId = Guid.NewGuid(), SourceKey = "GMG", ListVersion = "2026-08-24",
-            ContentHash = "h1", FileName = "register.csv", EntryCount = 2, LinkableCount = 1,
-            ImportedAt = DateTimeOffset.UtcNow.AddDays(-1),
-        });
-        repo.Entries.Add(Entry(VersionOne, "UID-0000104", "GMG-QMS-SOP-0005", "Document Control"));
-        repo.Entries.Add(Entry(VersionOne, "UID-0000115", "GMG-GDP-SOP-0001", "Distribution Practice",
-            linkable: false, blockedReason: "planned, not yet issued"));
-        return (new TaskDocumentReferenceFreezer(repo), repo);
+        var port = new FakeControlledDocumentCitationPort();
+        port.Items.Add(Citation("UID-0000104", "GMG-QMS-SOP-0005", "Document Control"));
+        port.Items.Add(Citation("UID-0000115", "GMG-GDP-SOP-0001", "Distribution Practice",
+            lifecycle: "Superseded", citable: false, blockedReason: "planned, not yet issued"));
+        return (new TaskDocumentReferenceFreezer(port), port);
     }
 
     [Fact]
-    public async Task Citing_a_document_freezes_the_six_fields()
+    public async Task Citing_a_document_freezes_the_five_fields_with_no_list_version()
     {
         var (freezer, _) = Setup();
         var at = new DateTimeOffset(2026, 8, 26, 9, 0, 0, TimeSpan.Zero);
@@ -66,57 +84,56 @@ public sealed class TaskDocumentReferenceFreezeTests
         Assert.Equal("GMG-QMS-SOP-0005", reference.DocumentCode);
         Assert.Equal("Document Control", reference.Title);
         Assert.Equal("1.0", reference.DocumentVersion);
-        Assert.Equal("EFFECTIVE", reference.Status);
+        Assert.Equal("Effective", reference.Status);
         Assert.Equal(at, reference.ReferencedAt);
-        // ⚠ The seventh value, and the one an auditor asks for second: WHICH register said this.
-        Assert.Equal(VersionOne, reference.ListVersionId);
+        // DCP-005 Step 2 — a register-sourced citation carries no CSV list version.
+        Assert.Null(reference.ListVersionId);
     }
 
     [Fact]
-    public async Task A_frozen_title_survives_a_newer_register_that_renamed_the_document()
+    public async Task A_frozen_citation_is_never_re_resolved_from_the_register()
     {
         /*
          * MUTATION GUARD — THE CENTRAL ONE. Make the freezer re-resolve a UID the task already cites and this
-         * goes red.
+         * goes red: it fails BOTH on the assertion below (the stale title survives) AND on the exception the
+         * fake port throws the second time it is asked for a UID it should never be asked for again.
          *
-         * The scenario is the reason six fields are frozen instead of four: the register is re-imported, the
-         * document keeps its UID and gains a new title and version, and a task closed last month must keep
-         * reading the way its author read it. A "helpful" refresh here is invisible — no error, no diff, and a
-         * record that now says something its author never wrote.
+         * The scenario is the reason fields are frozen at all: the register moves on, the document keeps its
+         * UID and gains a new title and version, and a task closed last month must keep reading the way its
+         * author read it. A "helpful" refresh here is invisible — no error, no diff, and a record that now says
+         * something its author never wrote.
          */
-        var (freezer, repo) = Setup();
+        var (freezer, port) = Setup();
         var citedAt = new DateTimeOffset(2026, 8, 26, 9, 0, 0, TimeSpan.Zero);
         var first = await freezer.ResolveNewAsync([], ["UID-0000104"], citedAt);
 
-        // A NEWER register lands, and the same document now reads differently.
-        var versionTwo = Guid.NewGuid();
-        repo.Versions.Add(new DocumentReferenceListVersion
-        {
-            Id = versionTwo, TenantId = Guid.NewGuid(), SourceKey = "GMG", ListVersion = "2026-09-01",
-            ContentHash = "h2", FileName = "register-2.csv", EntryCount = 1, LinkableCount = 1,
-            ImportedAt = DateTimeOffset.UtcNow,
-        });
-        repo.Entries.Add(Entry(versionTwo, "UID-0000104", "GMG-QMS-SOP-0099", "Document Control (revised)", "2.0"));
+        // The register moves on, and the same document now reads differently.
+        port.Items.Clear();
+        port.Items.Add(Citation("UID-0000104", "GMG-QMS-SOP-0099", "Document Control (revised)", "2.0"));
+        port.ResolvedIdentifiers.Clear();
 
-        var later = await freezer.ResolveNewAsync(
-            first.References, ["UID-0000104"], citedAt.AddMonths(1));
+        var later = await freezer.ResolveNewAsync(first.References, ["UID-0000104"], citedAt.AddMonths(1));
 
         var reference = later.References.Single();
         Assert.Equal("Document Control", reference.Title);
         Assert.Equal("GMG-QMS-SOP-0005", reference.DocumentCode);
         Assert.Equal("1.0", reference.DocumentVersion);
         Assert.Equal(citedAt, reference.ReferencedAt);
-        Assert.Equal(VersionOne, reference.ListVersionId);
+        // The port was never asked — the already-cited UID short-circuits before ResolveAsync is called.
+        Assert.Empty(port.ResolvedIdentifiers);
     }
 
     [Fact]
     public async Task A_blocked_row_cannot_be_cited_even_though_it_is_shown()
     {
         /*
-         * MUTATION GUARD: drop the LinkableInErp check and this goes red.
+         * MUTATION GUARD: drop the Citable check and this goes red.
          *
          * The picker refuses a blocked row so the reader can see WHY. This refuses it because a screen is not a
-         * boundary — an API caller never passes the picker.
+         * boundary — an API caller never passes the picker. DCP-005 Step 2 moved the judgment from the CSV flag
+         * to the register's own Citable (Effective ∨ UnderRevision); the refusal itself is unchanged from main.
+         * (The WP's first reading of AC4 — "Blocked freezes with its true status" — was reverted by the Control
+         * Tower on 2026-09-11: the task-TYPE activation gate, Step 3, is the separate question.)
          */
         var (freezer, _) = Setup();
 
@@ -128,7 +145,7 @@ public sealed class TaskDocumentReferenceFreezeTests
     }
 
     [Fact]
-    public async Task A_uid_the_register_does_not_list_is_refused_by_name()
+    public async Task A_uid_the_register_does_not_resolve_is_refused_by_name()
     {
         var (freezer, _) = Setup();
 
@@ -136,52 +153,22 @@ public sealed class TaskDocumentReferenceFreezeTests
 
         Assert.False(result.Success);
         Assert.Equal(TaskReasonCodes.DocumentReferenceNotFound, result.ReasonCode);
+        Assert.Equal("UID-9999999", result.OffendingUid);
     }
 
     [Fact]
-    public async Task The_list_version_is_stored_so_the_citation_can_be_reproduced()
+    public async Task A_register_read_failure_propagates_instead_of_being_swallowed()
     {
         /*
-         * MUTATION GUARD: stop storing ListVersionId (leave it default) and this goes red.
-         *
-         * Without it "which register said this" has no answer, and a frozen row becomes a claim nobody can check
-         * — which is a checksum, not a citation.
+         * Fail-closed (contract §2/§3/§5): an infrastructure failure is a thrown exception, never translated into
+         * a fabricated Unresolved refusal or a fabricated success. MUTATION GUARD: wrap ResolveAsync in a
+         * try/catch that turns the exception into a Failed(...) result and this goes red.
          */
-        var (freezer, _) = Setup();
+        var (freezer, port) = Setup();
+        port.ThrowOnResolve = new InvalidOperationException("register unavailable");
 
-        var result = await freezer.ResolveNewAsync([], ["UID-0000104"], DateTimeOffset.UtcNow);
-
-        Assert.NotEqual(Guid.Empty, result.References.Single().ListVersionId);
-        Assert.Equal(VersionOne, result.References.Single().ListVersionId);
-    }
-
-    [Fact]
-    public async Task A_withdrawn_register_cannot_be_cited_from_but_an_old_citation_still_reads()
-    {
-        /*
-         * MUTATION GUARD: search a withdrawn version and this goes red.
-         *
-         * ⚠ TWO HALVES, MEASURED SEPARATELY, because they pull in opposite directions. Withdrawal is a statement
-         * about the FUTURE: no new citation may come from that register. It says nothing about the past — a task
-         * that already cited it keeps reading, including the version id pointing at the withdrawn version.
-         */
-        var (freezer, repo) = Setup();
-        var before = await freezer.ResolveNewAsync([], ["UID-0000104"], DateTimeOffset.UtcNow);
-
-        repo.Versions.Single(v => v.Id == VersionOne).WithdrawnAt = DateTimeOffset.UtcNow;
-        repo.Versions.Single(v => v.Id == VersionOne).WithdrawnReason = "wrong file";
-
-        // (1) The past still reads — the existing citation is handed back untouched.
-        var afterWithdrawal = await freezer.ResolveNewAsync(
-            before.References, ["UID-0000104"], DateTimeOffset.UtcNow);
-        Assert.True(afterWithdrawal.Success);
-        Assert.Equal("Document Control", afterWithdrawal.References.Single().Title);
-        Assert.Equal(VersionOne, afterWithdrawal.References.Single().ListVersionId);
-
-        // (2) The future does not: a NEW citation has no current register to come from.
-        var fresh = await freezer.ResolveNewAsync([], ["UID-0000104"], DateTimeOffset.UtcNow);
-        Assert.False(fresh.Success);
-        Assert.Equal(TaskReasonCodes.DocumentListNotImported, fresh.ReasonCode);
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => freezer.ResolveNewAsync([], ["UID-0000104"], DateTimeOffset.UtcNow));
     }
 
     [Fact]
@@ -205,33 +192,21 @@ public sealed class TaskDocumentReferenceFreezeTests
 /// </summary>
 public sealed class TaskTypeGoverningDocumentsTests
 {
-    private static readonly Guid ListVersion = Guid.NewGuid();
-
     private static (GetTaskTypeGoverningDocumentsHandler Handler, FakeTaskTypeRepository Types)
         Setup(TaskType type)
     {
         var types = new FakeTaskTypeRepository(type);
 
-        var lists = new FakeDocumentReferenceListRepository();
-        lists.Versions.Add(new DocumentReferenceListVersion
-        {
-            Id = ListVersion, TenantId = Guid.NewGuid(), SourceKey = "GMG", ListVersion = "2026-08-24",
-            ContentHash = "h", FileName = "r.csv", EntryCount = 2, LinkableCount = 1,
-            ImportedAt = DateTimeOffset.UtcNow,
-        });
-        lists.Entries.Add(new DocumentReferenceEntry
-        {
-            TenantId = Guid.NewGuid(), ListVersionId = ListVersion, DocumentUid = "UID-0000104",
-            DocumentCode = "GMG-QMS-SOP-0005", Title = "Document Control", LinkableInErp = true,
-        });
-        lists.Entries.Add(new DocumentReferenceEntry
-        {
-            TenantId = Guid.NewGuid(), ListVersionId = ListVersion, DocumentUid = "UID-0000115",
-            DocumentCode = "GMG-GDP-SOP-0001", Title = "Distribution Practice", LinkableInErp = false,
-            LinkBlockedReason = "planned, not yet issued",
-        });
+        var citations = new FakeControlledDocumentCitationPort();
+        citations.Items.Add(new DocumentCitationItem(
+            "UID-0000104", "GMG-QMS-SOP-0005", "Document Control", "1.0", "Effective",
+            Citable: true, BlockedReason: null, DocumentCitationSource.MasterRegister, Guid.NewGuid()));
+        citations.Items.Add(new DocumentCitationItem(
+            "UID-0000115", "GMG-GDP-SOP-0001", "Distribution Practice", "1.0", "Superseded",
+            Citable: false, BlockedReason: "planned, not yet issued",
+            DocumentCitationSource.MasterRegister, Guid.NewGuid()));
 
-        return (new GetTaskTypeGoverningDocumentsHandler(types, lists), types);
+        return (new GetTaskTypeGoverningDocumentsHandler(types, citations), types);
     }
 
     private static TaskType Type(string code, List<string> group) => new()
@@ -269,8 +244,7 @@ public sealed class TaskTypeGoverningDocumentsTests
             new GetTaskTypeGoverningDocumentsQuery(type.Id, null, "c"), CancellationToken.None);
         Assert.NotEmpty(suggestion.Data!.Suggestions);
 
-        var lists = new FakeDocumentReferenceListRepository();
-        var freezer = new TaskDocumentReferenceFreezer(lists);
+        var freezer = new TaskDocumentReferenceFreezer(new FakeControlledDocumentCitationPort());
         var result = await freezer.ResolveNewAsync([], [], DateTimeOffset.UtcNow);
 
         Assert.True(result.Success);

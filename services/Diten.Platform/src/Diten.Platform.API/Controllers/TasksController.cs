@@ -503,6 +503,24 @@ public sealed class TasksController : CustomBaseController
     }
 
     /// <summary>
+    /// DCP-005 Step 2 — the picker's search, against the live Document Master Register
+    /// (<c>IControlledDocumentCitationPort</c>) instead of the retired CSV list above.
+    ///
+    /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission the CSV search and the governing-documents
+    /// read use, and for the same reason those two give: citing a procedure is ordinary work every task author
+    /// (create OR update) needs, so gating it behind <c>TaskPermissions.Create</c> would leave a caller who may
+    /// only update a task's citations unable to search for one to add.</para>
+    /// </summary>
+    [HttpGet("lookups/document-citations")]
+    [HasPermission(TaskPermissions.DocumentListRead)]
+    public async Task<IActionResult> SearchDocumentCitations(
+        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SearchDocumentCitationsQuery(term, limit, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
     /// DCP-005 slice 3 — the governing documents a task type suggests, resolved against the current register.
     ///
     /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission as the search, and that is a decision

@@ -1,6 +1,6 @@
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Application.Features.Tasks.Services;
-using Diten.Platform.Domain.Entities.Tasks;
-using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Tests.Tasks;
 
@@ -18,43 +18,24 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// citations without freezing them and no test would see it. Over an empty register, the real freezer keeps
 /// its real behaviour: a payload with no UIDs passes through untouched, and a payload that DOES cite
 /// something is refused — which is the correct answer when the register holds nothing.
+///
+/// <para>DCP-005 Step 2 — the double moved from an empty CSV repository to an empty
+/// <see cref="IControlledDocumentCitationPort"/>: <c>ResolveAsync</c> always returns zero items, so every UID a
+/// test asks to freeze here is genuinely Unresolved (the register "holds nothing" is now expressed as "resolves
+/// nothing", not "no list was ever imported") and the refusal reason code changed with it — see
+/// <c>TaskReasonCodes.DocumentReferenceNotFound</c> below.</para>
 /// </summary>
 internal static class TaskDocumentFreezerDoubles
 {
     public static TaskDocumentReferenceFreezer OverAnEmptyRegister()
-        => new(new EmptyDocumentReferenceListRepository());
+        => new(new EmptyControlledDocumentCitationPort());
 
-    private sealed class EmptyDocumentReferenceListRepository : IDocumentReferenceListRepository
+    private sealed class EmptyControlledDocumentCitationPort : IControlledDocumentCitationPort
     {
-        public Task<DocumentReferenceListVersion> CreateVersionAsync(
-            DocumentReferenceListVersion version, CancellationToken ct = default)
-            => Task.FromResult(version);
+        public Task<DocumentCitationResult> ResolveAsync(DocumentCitationQuery query, CancellationToken ct)
+            => Task.FromResult(new DocumentCitationResult([]));
 
-        public Task<DocumentReferenceListVersion?> FindLiveVersionByHashAsync(
-            string contentHash, CancellationToken ct = default)
-            => Task.FromResult<DocumentReferenceListVersion?>(null);
-
-        public Task<DocumentReferenceListVersion?> GetVersionAsync(Guid id, CancellationToken ct = default)
-            => Task.FromResult<DocumentReferenceListVersion?>(null);
-
-        public Task UpdateVersionAsync(DocumentReferenceListVersion version, CancellationToken ct = default)
-            => Task.CompletedTask;
-
-        public Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default)
-            => Task.CompletedTask;
-
-        public Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<DocumentReferenceListVersion>>(Array.Empty<DocumentReferenceListVersion>());
-
-        public Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default)
-            => Task.FromResult<DocumentReferenceListVersion?>(null);
-
-        public Task<IReadOnlyList<DocumentReferenceEntry>> SearchAsync(
-            Guid listVersionId, string? term, int limit, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<DocumentReferenceEntry>>(Array.Empty<DocumentReferenceEntry>());
-
-        public Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
-            Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default)
-            => Task.FromResult<IReadOnlyList<DocumentReferenceEntry>>(Array.Empty<DocumentReferenceEntry>());
+        public Task<DocumentCitationResult> SearchAsync(string? term, int limit, CancellationToken ct)
+            => Task.FromResult(new DocumentCitationResult([]));
     }
 }
