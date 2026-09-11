@@ -898,6 +898,7 @@ The schema is laid down correctly **in Phase 1** (pool fields, `Classification`/
 1. **MOD-0018** — seed/grant the `platform.tasks.*` keys; confirm `Scope=Tenant`.
 2. **integration-agent** — the `/api/v1/tasks/{everything}` Ocelot route.
 3. **Attachments** — a separate slice bound to an approved document/storage provider (§12 Y4).
+   → **Slice ATT-1 — ✅ DELIVERED 2026-09-12 (CT verified; branch `feature/pss/mod-0024-att1-task-attachments`, commit `a5fcb330`).** Live: evidence-required item refused 409 → evidence uploaded → completed 204; plain attachment uploaded, listed, downloaded by name, soft-deleted; `.exe` refused 400 by the store. Files land under `<storage root>/tenant-<id>/company-.../task-attachments/<taskId>/versions/<versionId>/<file>`; soft-deleted rows keep their bytes (AD-6). CT added the missing real-Mongo repository test. Original scope note below.
    → **Slice ATT-1 — ready-for-dev (CT, 2026-09-11; owner decision BL-370).** The approved provider now exists on main:
    MOD-0262-FU01 Document Binary Store (`Contracts/DocumentRepository/IContentStorageGateway`, `Features/DocumentRepository/Services/DocumentRepositoryService`,
    `api/v1/document-repository/*`, local-filesystem provider, tenant-isolated keys, SHA-256, allow-list, audit). ATT-1 = task attachments consuming that store:

@@ -5068,6 +5068,12 @@ CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `Check
    yükleme (depoya bağlanır), `EvidenceRequired` maddede gerçek zorlama, Görev Merkezi detayında kanıt listesi, İş Raporu'nda kanıt sütunu.
 3. Kalite izi tamamlanır: "hangi prosedüre göre yaptım" (atıf, DCP-005) + "işte kanıtı" (bu madde).
 
+**DURUM (CT, 2026-09-12):** Adım 2 (görev ekleri, Slice ATT-1) **TESLİM** — dal `feature/pss/mod-0024-att1-task-attachments`, commit `a5fcb330` (sahip push edecek, kendi PR'ı; main ile hizalı).
+Görevde artık dosya var: kanıt / çıktı / düz ek, kiracıya ayrı klasörde, indirme dosya adıyla, silme yumuşak (bayt kalır). `EvidenceRequired` gerçekten zorluyor (409 CHECKLIST_EVIDENCE_REQUIRED).
+Yetki: ekleme/silme holder∨requester + `platform.tasks.update`, okuma/indirme `platform.tasks.read`, başka kiracı 404, kapalı görev 409, ekleme ve silme denetim kaydı.
+CT eklemesi: `TaskAttachmentRepositoryMongoTests` (gerçek Mongo) — diğer tüm testler sahte depo kullanıyordu ve sahte depo silinmişleri kendi süzüyordu; süzgeç üretimden düşerse artık kırmızı.
+**Kalan (Adım 3):** kapanış zarfı (MOD-0024 Faz 2) — kapanışta çıktı/kanıt alanları; iş raporunda dosya YOK (rapor görevden okur).
+
 ### BL-371
 
 **Auth hesap türü (Unknown/Human/Service) + kiracı-içi kullanıcı arama/hesap doğrulama uçları — PPM portföy sorumlusu için hesap olgusu**
