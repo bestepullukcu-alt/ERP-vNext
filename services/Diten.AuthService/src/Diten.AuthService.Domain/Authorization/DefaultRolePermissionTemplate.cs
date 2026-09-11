@@ -93,7 +93,10 @@ public static class DefaultRolePermissionTemplate
     /// </summary>
     public static IReadOnlyList<Permission> SelectFor(string roleName, IEnumerable<Permission> catalog)
     {
-        var available = catalog.Where(p => !p.IsDeleted);
+        // BL-359 — explicit-grant-only permissions (e.g. ppm.portfolios.assign-owner) never enter any
+        // default/startup role template, including the SuperAdmin full-catalog branch below. Only an
+        // authorized person's explicit role-permission assignment may grant one.
+        var available = catalog.Where(p => !p.IsDeleted && !ExplicitGrantOnlyPermissions.Keys.Contains(p.Key));
 
         return roleName switch
         {

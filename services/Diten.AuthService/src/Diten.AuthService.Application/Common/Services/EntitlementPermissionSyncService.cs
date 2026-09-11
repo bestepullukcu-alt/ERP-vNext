@@ -52,7 +52,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
     public async Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — any-case PPM recognition: "PPM"/"ppm"/"Ppm" all block the bulk module grant, not just
+        // the exact-case "PPM" that PpmEntitlementPermissionPolicy.Applies (resolver-facing) accepts.
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {
@@ -72,7 +74,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — same any-case PPM gate as GrantModuleAsync.
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {
@@ -125,6 +128,13 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct)
     {
+        // BL-359 — defense in depth: module-entitlement sync never grants an explicit-grant-only key, even
+        // if a future module code or key set were to reach this shared path. PPM itself is already fully
+        // blocked above by IsPpmModuleCodeAnyCase, so this is currently a no-op filter for PPM specifically.
+        modulePermissions = modulePermissions
+            .Where(permission => !ExplicitGrantOnlyPermissions.Keys.Contains(permission.Key))
+            .ToList();
+
         if (modulePermissions.Count == 0)
         {
             return;
@@ -182,7 +192,8 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
     public async Task RevokeModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — any-case PPM gate on revoke too, so "ppm"/"Ppm" cannot bulk-revoke PPM grants either.
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(moduleCode)) return;
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
         if (code.Length == 0)
         {

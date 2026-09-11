@@ -9,5 +9,7 @@ namespace Diten.AuthService.Application.Common.Interfaces;
 /// </summary>
 public interface IFullCatalogPermissionGrantService
 {
-    Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct);
+    // BL-359 — permissionKey lets the implementation refuse an explicit-grant-only permission (e.g.
+    // ppm.portfolios.assign-owner) at the grant point itself, independent of the caller.
+    Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct);
 }

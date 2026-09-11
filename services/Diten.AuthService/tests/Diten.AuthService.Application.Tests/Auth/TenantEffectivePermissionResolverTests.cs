@@ -81,6 +81,27 @@ public sealed class TenantEffectivePermissionResolverTests
         Assert.Contains(result, value => string.Equals(value, PpmRead, StringComparison.OrdinalIgnoreCase));
     }
 
+    // MOD-0117-FU01 / AC4 — the explicit-grant-only key is otherwise an ordinary canonical PPM permission to
+    // the resolver: it still requires BOTH an explicit role grant AND a confirmed entitlement. The resolver
+    // itself makes no exception for it (the exclusion lives entirely in the automatic-grant paths, not here).
+    [Fact]
+    public async Task Assign_owner_key_requires_both_explicit_role_grant_and_confirmed_entitlement()
+    {
+        var assignOwner = PpmPermissionCatalog.PortfoliosAssignOwner;
+        var client = FakeClient.Confirmed(new EntitledModulePermissionKeys("PPM", [assignOwner]));
+
+        var result = await Create(client).ResolveAsync(TenantId, [OtherPermission, assignOwner], CancellationToken.None);
+        Assert.Equal([OtherPermission, assignOwner], result);
+
+        // Entitlement present but role grant missing → the key never appears, same as any other PPM key.
+        var withoutRoleGrant = await Create(client).ResolveAsync(TenantId, [OtherPermission], CancellationToken.None);
+        Assert.Equal([OtherPermission], withoutRoleGrant);
+
+        // Role grant present but entitlement unavailable → still no effective permission.
+        var unavailable = await Create(FakeClient.Unavailable()).ResolveAsync(TenantId, [OtherPermission, assignOwner], CancellationToken.None);
+        Assert.Equal([OtherPermission], unavailable);
+    }
+
     [Fact]
     public async Task No_ppm_role_grant_avoids_authority_read()
     {
