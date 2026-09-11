@@ -4761,7 +4761,15 @@ aynı `Applies`'ı paylaştığından süzme sonucunun değişmediği testle gö
 
 **Görev üzerindeki yazma yolları ilişki sormuyor: yetkisi olan herkes, kimliğini bildiği her görevi başlatıp tamamlayabiliyor**
 
-DURUM: AÇIK · KARAR VERİLDİ (sahip, 2026-09-11: ilişki şart) · SAHİP: CT (Antigravity WP) · ÖLÇÜLDÜ: 2026-09-11 (alt ajan tablosu; CT doğruladı; canlı değil)
+DURUM: ⚠️ İLK YARI KAPANDI (KISMİ) · COMMIT: `e904bdfe` (2026-09-11) · İKİNCİ YARI AÇIK (güncelle/sil/toplu sil/bağımlılık/kontrol listesi + okuma BL-349) · ✅ için: sahibin kontrol turu
+
+**İlk yarı — ne yapıldı** (WP-PSS-MOD0024-LIFECYCLE-AUTHORITY-01, Antigravity; CT doğruladı). Handler'lar: start/resume/complete/
+submitReview yalnız holder, plan holder veya talep sahibi; üçüncü kişi 403 (`PERM_DENIED`, ön yüz `errorNoAccess`), CanTransition'dan
+sonra, kapılardan ve yazmadan önce; reddedilende geçiş kaydı ve bildirim yok. Projeksiyon: holder olmayana holder fiilleri sunulmaz;
+talep sahibi outbox'ta plan görür; Ekibim'de yönetici yalnız talep sahibiyse cancel/reassign. 15 yeni test (11 HTTP gerçek yönlendirme
++ [HasPermission], 3 Ekibim, 1 kendine açılan); 2 outbox testi karara göre güncellendi. Sabotaj: ajan 8 hunk → 8 kırmızı; CT handler /
+projeksiyon ayrı → 2+2 kırmızı. Tasks+WorkAggregation 1370/1370. Kullanıcı dışı çağıran yok (tarandı). Alt görev özet listesi
+(`WorkItemSubtaskDto`) aksiyon taşımıyor; alt görevin kendi satırı aynı kuraldan geçiyor.
 
 **Karar ve bölme (2026-09-11):** başlat / sürdür / tamamla / incelemeye gönder = yalnız holder; planla = holder veya talep
 sahibi; kabul / sor / bırak projeksiyonda holder olmayana sunulmaz (BL-362) — hepsi **WP-PSS-MOD0024-LIFECYCLE-AUTHORITY-01**.
@@ -4796,7 +4804,9 @@ BL-349 ve listeleme BL-057 ile aynı karardan çıkmalı; BL-362 aynı WP'de. Ta
 
 **Projeksiyon holder'a bakmıyor: kabul et / sor / bırak düğmeleri holder olmayana etkin çiziliyor, sunucu 403 diyor**
 
-DURUM: AÇIK · SAHİP: CT (BL-361 ile aynı WP) · ÖLÇÜLDÜ: 2026-09-11 (CT doğruladı; canlı değil)
+DURUM: ⚠️ KAPANDI (KISMİ) · COMMIT: `e904bdfe` (2026-09-11, BL-361 ile aynı WP) · ✅ için: sahibin kontrol turu
+
+**Ne yapıldı.** accept (`:1721-1739` dalı), inquire, release yalnız `isHolder` ise sunuluyor; holder olmayana gizli (gri değil). Ekibim testleri kırmızı→yeşil (CT sabotajı 2 kırmızı).
 
 Handler'lar doğru: Accept (`TaskItemTransitionHandlers.cs:28-31`), Release (`:133-137`), Inquire (`:966-971`) holder değilse 403.
 Projeksiyon `isHolder`'ı hesaplıyor (`TaskWorkItemProvider.cs:1648`) ama accept (`:1712`), inquire (`:1847`), release (`:1877`)
