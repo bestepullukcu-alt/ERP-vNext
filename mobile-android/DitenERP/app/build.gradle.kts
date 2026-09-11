@@ -52,6 +52,10 @@ dependencies {
     implementation(project(":feature:employee-onboarding"))
     implementation(project(":feature:offer-management"))
     implementation(project(":feature:performance-reviews"))
+    implementation(project(":feature:compensation-benefits"))
+    implementation(project(":feature:competency-skills"))
+    implementation(project(":feature:learning-training"))
+    implementation(project(":feature:time-attendance-leave"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

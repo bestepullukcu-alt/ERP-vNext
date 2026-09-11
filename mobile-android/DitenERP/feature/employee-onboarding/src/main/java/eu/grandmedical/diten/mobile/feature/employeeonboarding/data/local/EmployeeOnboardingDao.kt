@@ -46,6 +46,15 @@ interface EmployeeOnboardingDao {
     @Query("SELECT * FROM employee_onboarding WHERE sync_status = :status ORDER BY code ASC")
     suspend fun getByStatus(status: SyncStatus = SyncStatus.PENDING): List<EmployeeOnboardingEntity>
 
+    /**
+     * All rows not yet server-synced — PENDING **or** FAILED — across scopes.
+     * The sync handler retries this set so a row left FAILED by a transient
+     * error (offline / expired-token window) is picked up on a later pass
+     * instead of being stuck forever.
+     */
+    @Query("SELECT * FROM employee_onboarding WHERE sync_status != :synced ORDER BY code ASC")
+    suspend fun getUnsynced(synced: SyncStatus = SyncStatus.SYNCED): List<EmployeeOnboardingEntity>
+
     @Upsert
     suspend fun upsert(row: EmployeeOnboardingEntity)
 

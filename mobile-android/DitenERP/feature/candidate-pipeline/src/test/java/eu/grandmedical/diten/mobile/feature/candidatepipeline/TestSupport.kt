@@ -46,6 +46,8 @@ class FakeCandidatePipelineApi(
         private set
     var listCount: Int = 0
         private set
+    var deleteCount: Int = 0
+        private set
     val createdRequests = mutableListOf<CandidatePipelineCreateRequestDto>()
 
     override suspend fun list(): Response<NetworkEnvelope<List<CandidatePipelineReadinessListItemDto>>> {
@@ -65,7 +67,10 @@ class FakeCandidatePipelineApi(
 
     override suspend fun evaluate(id: String): Response<NetworkEnvelope<CandidatePipelineReadinessDto>> = onEvaluate(id)
 
-    override suspend fun delete(id: String): Response<NetworkEnvelope<String>> = onDelete(id)
+    override suspend fun delete(id: String): Response<NetworkEnvelope<String>> {
+        deleteCount++
+        return onDelete(id)
+    }
 
     companion object {
         fun <T> ok(data: T): Response<NetworkEnvelope<T>> =

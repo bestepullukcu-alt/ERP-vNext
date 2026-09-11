@@ -34,10 +34,12 @@ class CandidatePipelineSyncHandler @Inject constructor(
     override val key: String = KEY
 
     override suspend fun sync(): SyncResult {
-        val pending = dao.getByStatus(SyncStatus.PENDING)
+        // PENDING **or** FAILED: a row left FAILED by an earlier transient error
+        // (offline / expired-token window) must be retried, not stuck forever.
+        val unsynced = dao.getUnsynced()
         val failures = mutableListOf<String>()
 
-        for (row in pending) {
+        for (row in unsynced) {
             when (val outcome = push(row)) {
                 Outcome.Transient ->
                     return SyncResult.Retry("connectivity/server pushing candidate-pipeline row ${row.id}")
@@ -72,9 +74,15 @@ class CandidatePipelineSyncHandler @Inject constructor(
 
     private fun NetworkError.toOutcome(): Outcome =
         when (this) {
-            // Transient: retrying with the same input can succeed later.
-            NetworkError.Connectivity, is NetworkError.Server -> Outcome.Transient
-            // Permanent: the same input will keep being rejected.
+            // Transient: retrying can succeed later. Unauthorized during a
+            // background push means "token expired, retry after refresh" (not a
+            // permanent rejection); Unknown is treated as a retryable blip.
+            NetworkError.Connectivity,
+            is NetworkError.Server,
+            NetworkError.Unauthorized,
+            NetworkError.Unknown,
+            -> Outcome.Transient
+            // Permanent: Validation / Forbidden / NotFound will keep being rejected.
             else -> Outcome.Permanent(message)
         }
 

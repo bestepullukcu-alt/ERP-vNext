@@ -60,6 +60,10 @@ class OfferManagementSyncHandlerTest {
         dao.upsert(readinessDto(id).toEntity(scope).copy(syncStatus = SyncStatus.PENDING))
     }
 
+    private suspend fun seedFailed(id: String) {
+        dao.upsert(readinessDto(id).toEntity(scope).copy(syncStatus = SyncStatus.FAILED))
+    }
+
     @Test
     fun pending_isPushed_thenMarkedSynced_withServerId() = runTest {
         seedPending("local-1")
@@ -79,6 +83,32 @@ class OfferManagementSyncHandlerTest {
     fun transientServerError_retries_andLeavesRowPending() = runTest {
         seedPending("local-1")
         api.onCreate = { FakeOfferManagementApi.error(503) }
+
+        val result = handler().sync()
+
+        assertTrue(result is SyncResult.Retry)
+        assertEquals(SyncStatus.PENDING, dao.getById("local-1")?.syncStatus)
+    }
+
+    @Test
+    fun failedRow_isRetried_thenMarkedSynced_onSuccess() = runTest {
+        // A row left FAILED by an earlier transient error must be retried.
+        seedFailed("local-1")
+        api.onCreate = { FakeOfferManagementApi.ok("server-1") }
+
+        val result = handler().sync()
+
+        assertEquals(SyncResult.Success, result)
+        assertEquals(1, api.createCount)
+        assertNull(dao.getById("local-1"))
+        assertEquals(SyncStatus.SYNCED, dao.getById("server-1")?.syncStatus)
+    }
+
+    @Test
+    fun unauthorizedError_retries_andLeavesRowUnchanged() = runTest {
+        // 401 during background sync = "token expired, retry after refresh".
+        seedPending("local-1")
+        api.onCreate = { FakeOfferManagementApi.error(401) }
 
         val result = handler().sync()
 

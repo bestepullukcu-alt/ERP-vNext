@@ -46,6 +46,8 @@ class FakeEmployeeOnboardingApi(
         private set
     var listCount: Int = 0
         private set
+    var deleteCount: Int = 0
+        private set
     val createdRequests = mutableListOf<EmployeeOnboardingCreateRequestDto>()
 
     override suspend fun list(): Response<NetworkEnvelope<List<EmployeeOnboardingReadinessListItemDto>>> {
@@ -65,7 +67,10 @@ class FakeEmployeeOnboardingApi(
 
     override suspend fun evaluate(id: String): Response<NetworkEnvelope<EmployeeOnboardingReadinessDto>> = onEvaluate(id)
 
-    override suspend fun delete(id: String): Response<NetworkEnvelope<String>> = onDelete(id)
+    override suspend fun delete(id: String): Response<NetworkEnvelope<String>> {
+        deleteCount++
+        return onDelete(id)
+    }
 
     companion object {
         fun <T> ok(data: T): Response<NetworkEnvelope<T>> =

@@ -1,0 +1,203 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "1fb4ceece40169cd08f7ac55a0405e09",
+    "entities": [
+      {
+        "tableName": "competency_skills",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `code` TEXT NOT NULL, `display_name` TEXT NOT NULL, `competency_skills_readiness_state` INTEGER NOT NULL, `assessment_workflow_boundary_state` INTEGER NOT NULL, `competency_framework_dependency_state` INTEGER NOT NULL, `skill_taxonomy_dependency_state` INTEGER NOT NULL, `skill_scoring_boundary_state` INTEGER NOT NULL, `rating_boundary_state` INTEGER NOT NULL, `calibration_boundary_state` INTEGER NOT NULL, `ranking_boundary_state` INTEGER NOT NULL, `automated_decision_boundary_state` INTEGER NOT NULL, `manager_assessment_ux_boundary_state` INTEGER NOT NULL, `employee_assessment_ux_boundary_state` INTEGER NOT NULL, `document_dependency_state` INTEGER NOT NULL, `notification_dependency_state` INTEGER NOT NULL, `consent_precondition_state` INTEGER NOT NULL, `data_minimization_state` INTEGER NOT NULL, `retention_policy_state` INTEGER NOT NULL, `evidence_policy_state` INTEGER NOT NULL, `dependency_states` TEXT NOT NULL, `source_contract_version` TEXT NOT NULL, `competency_skills_readiness_version` INTEGER NOT NULL, `deferred_reason` TEXT, `last_evaluated_at` INTEGER, `sync_status` TEXT NOT NULL, `tenant_id` TEXT NOT NULL, `legal_entity_id` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "competencySkillsReadinessState",
+            "columnName": "competency_skills_readiness_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assessmentWorkflowBoundaryState",
+            "columnName": "assessment_workflow_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "competencyFrameworkDependencyState",
+            "columnName": "competency_framework_dependency_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skillTaxonomyDependencyState",
+            "columnName": "skill_taxonomy_dependency_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "skillScoringBoundaryState",
+            "columnName": "skill_scoring_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ratingBoundaryState",
+            "columnName": "rating_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calibrationBoundaryState",
+            "columnName": "calibration_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rankingBoundaryState",
+            "columnName": "ranking_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "automatedDecisionBoundaryState",
+            "columnName": "automated_decision_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "managerAssessmentUxBoundaryState",
+            "columnName": "manager_assessment_ux_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "employeeAssessmentUxBoundaryState",
+            "columnName": "employee_assessment_ux_boundary_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "documentDependencyState",
+            "columnName": "document_dependency_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "notificationDependencyState",
+            "columnName": "notification_dependency_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consentPreconditionState",
+            "columnName": "consent_precondition_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dataMinimizationState",
+            "columnName": "data_minimization_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "retentionPolicyState",
+            "columnName": "retention_policy_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "evidencePolicyState",
+            "columnName": "evidence_policy_state",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dependencyStates",
+            "columnName": "dependency_states",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceContractVersion",
+            "columnName": "source_contract_version",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "competencySkillsReadinessVersion",
+            "columnName": "competency_skills_readiness_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deferredReason",
+            "columnName": "deferred_reason",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "lastEvaluatedAt",
+            "columnName": "last_evaluated_at",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "sync_status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scope.tenantId",
+            "columnName": "tenant_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scope.legalEntityId",
+            "columnName": "legal_entity_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_competency_skills_tenant_id_legal_entity_id",
+            "unique": false,
+            "columnNames": [
+              "tenant_id",
+              "legal_entity_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_competency_skills_tenant_id_legal_entity_id` ON `${TABLE_NAME}` (`tenant_id`, `legal_entity_id`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1fb4ceece40169cd08f7ac55a0405e09')"
+    ]
+  }
+}

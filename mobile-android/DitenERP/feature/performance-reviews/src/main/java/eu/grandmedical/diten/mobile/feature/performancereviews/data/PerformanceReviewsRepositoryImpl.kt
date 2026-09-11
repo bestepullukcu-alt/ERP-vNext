@@ -21,7 +21,6 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
 
@@ -82,20 +81,31 @@ class PerformanceReviewsRepositoryImpl @Inject constructor(
         }
     }
 
-    @Suppress("SwallowedException") // IO failures are translated to a typed UiResult.Error.
-    override suspend fun delete(id: String): UiResult<Unit> =
-        try {
-            val response = api.delete(id)
-            val envelope = response.body()
-            if (response.isSuccessful && (envelope == null || envelope.isSuccessful)) {
+    override suspend fun delete(id: String): UiResult<Unit> {
+        val row = dao.getById(id)
+        // Never-synced rows (PENDING/FAILED) carry a LOCAL id the backend has
+        // never seen — deleting them server-side would 404. Remove locally with
+        // no round-trip so the UI can drop them.
+        if (row != null && row.syncStatus != SyncStatus.SYNCED) {
+            dao.delete(id)
+            return UiResult.Success(Unit)
+        }
+        return when (val response = safeApiCaller.apiCall { api.delete(id) }) {
+            is ApiResponse.Success -> {
                 dao.delete(id)
                 UiResult.Success(Unit)
-            } else {
-                UiResult.Error(envelope?.errors?.firstOrNull() ?: NetworkError.Unknown.message)
             }
-        } catch (io: IOException) {
-            UiResult.Error(NetworkError.Connectivity.message)
+            // A 404 means the server row is already gone — reconcile by removing
+            // the local row and reporting success. Genuine errors still surface.
+            is ApiResponse.Failure ->
+                if (response.error is NetworkError.NotFound) {
+                    dao.delete(id)
+                    UiResult.Success(Unit)
+                } else {
+                    UiResult.Error(response.error.message)
+                }
         }
+    }
 
     override suspend fun refresh(): UiResult<Unit> {
         val scope = scopeProvider.currentScope()

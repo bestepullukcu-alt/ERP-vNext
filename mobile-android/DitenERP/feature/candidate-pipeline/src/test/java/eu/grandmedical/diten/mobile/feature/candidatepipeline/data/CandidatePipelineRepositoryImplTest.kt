@@ -132,13 +132,53 @@ class CandidatePipelineRepositoryImplTest {
     }
 
     @Test
-    fun delete_removesTheRow() = runTest {
-        dao.upsert(readinessDto("id-1").toEntity(scope))
+    fun delete_syncedRow_callsBackend_thenRemovesTheRow() = runTest {
+        dao.upsert(readinessDto("id-1").toEntity(scope)) // SYNCED
         val repo = repository()
 
         val result = repo.delete("id-1")
 
         assertTrue(result is UiResult.Success)
+        assertEquals(1, api.deleteCount)
+        assertNull(dao.getById("id-1"))
+    }
+
+    @Test
+    fun delete_neverSyncedRow_removesLocally_withNoServerCall() = runTest {
+        // A PENDING row carries a LOCAL id the backend never saw.
+        dao.upsert(readinessDto("local-1").toEntity(scope).copy(syncStatus = SyncStatus.PENDING))
+        val repo = repository()
+
+        val result = repo.delete("local-1")
+
+        assertTrue(result is UiResult.Success)
+        assertEquals(0, api.deleteCount)
+        assertNull(dao.getById("local-1"))
+    }
+
+    @Test
+    fun delete_failedRow_removesLocally_withNoServerCall() = runTest {
+        dao.upsert(readinessDto("local-2").toEntity(scope).copy(syncStatus = SyncStatus.FAILED))
+        val repo = repository()
+
+        val result = repo.delete("local-2")
+
+        assertTrue(result is UiResult.Success)
+        assertEquals(0, api.deleteCount)
+        assertNull(dao.getById("local-2"))
+    }
+
+    @Test
+    fun delete_syncedRow_serverReturns404_stillRemovesLocalRow() = runTest {
+        dao.upsert(readinessDto("id-1").toEntity(scope)) // SYNCED
+        api.onDelete = { FakeCandidatePipelineApi.error(404) }
+        val repo = repository()
+
+        val result = repo.delete("id-1")
+
+        // Already gone server-side is reconciled to success.
+        assertTrue(result is UiResult.Success)
+        assertEquals(1, api.deleteCount)
         assertNull(dao.getById("id-1"))
     }
 }
