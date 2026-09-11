@@ -4992,6 +4992,19 @@ engelli (Superseded/Retired/Draft…) doküman alıntı anında `DOCUMENT_REFERE
 doğrulama → bu maddenin emekliliği. Dondurulmuş alıntı kanıtı yerelde alınamadı: `task_items` 0 kayıt ve BL-358 (org birimi yok) freezer'dan önce
 kesiyor.
 
+**ADIM 0 TESLİM + KAPI AÇILDI (CT, 2026-09-11):** WP-DM-DCP005-STEP0-REGISTER-SEED-01, dal `feature/dm/dcp-005-step0-register-seed` (main `11befc07`
+üzerinden, commit `1e07712b`, worktree `.claude/worktrees/dm+dcp-005-step0-register-seed`, sahip push edecek, kendi PR'ı). (A) Dev tohumu DefaultTenant'a
+(izlenen `appsettings.Development.json` TenantId — sır değil; merge sonrası her geliştiricinin dev Platform'u ilk açılışta 358 satırı DefaultTenant'a tohumlar,
+marker kiracı başına). (B) Sahip kararı Seçenek 1: `DocumentMasterRegisterEntry.CitableByQualityDecision` = CSV `linkable_in_erp` (tohum + runtime ingest aynı
+eşlemeden); alıntı yargısı `IsOperationallyEffective ∨ (karar ∧ Draft/InReview/ApprovedPendingEffective)`; Retired/Void/Suspended/Superseded/ObsoleteCopy asla;
+yürürlük kapısı (`IsOperationallyEffective`, effectiveness handler) DOKUNULMADI (35 test yeşil; alıntı formülü sabote edilince yalnız 4 alıntı testi kırmızı).
+Dev Mongo: DefaultTenant 358 satır, 322 karar=evet (Draft 321 + InReview 1), 36 hayır (Draft 29 + Retired 7), Retired+evet 0; eski kiracının 358 satırına alan
+yazılmadı. **CT canlı E4, birleşik ağaç (main + Adım 0 + Adım 2, çakışma yok):** `GET /Tasks/api/lookups/document-citations?term=SOP` DefaultTenant oturumuyla
+200 ve satırlar: GMG-COM-SOP-0001/2/3 `linkableInErp=true` (Kalite kararı), GMG-GDP-SOP-0001 `false` + gerekçe "Draft" (kararsız Taslak). HTTP/JWT katmanı kapandı.
+**Sıra:** Adım 0 PR → Adım 2 PR (ya da birlikte) → merge → canlıda görev açarak dondurma kanıtı (BL-358 org verisi şart) → bu maddenin emekliliği.
+**Açık karar (sahip/DM):** üretim kiracısına gerçek ingest'in tetiklenme şekli (yönetici CSV yükleme ekranı mı, tek seferlik iç uç mu) — `IngestDocumentMasterRegisterCommand`
+hazır, tetikleyici yok.
+
 **Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
 `GET /Tasks/api/document-list/search`) geçicidir; kütük CSV UID'lerini sahiplenir (`PermanentUid = CSV uid`), görev formu `by="uid"` ile
 `document-master-register/citations/search` (DM-2b, main'de) ucunu çağırır. Dondurulmuş görev alıntıları (`TaskDocumentReference`) olduğu gibi
