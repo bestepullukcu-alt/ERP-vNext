@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
@@ -43,10 +44,9 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// BUILT — after Program.cs has already run — so the first attempt started the real Api against
 /// <c>localhost:27017/diten_auth_v3</c> and the fixture's own guard refused it. Process environment variables
 /// (<c>MongoDbSettings__ConnectionString</c>, …) are read by <c>WebApplication.CreateBuilder</c> itself, before any
-/// registration, so they are the one channel that works here. They are set immediately before the host starts and
-/// removed on dispose — or on ANY startup failure, see C1 §2 below.</para>
+/// registration, so they are the one channel that works here. See C3 below for exactly how long they stay set.</para>
 ///
-/// <para>⚠ C1 (PPM CT correction, this round). The ORIGINAL target check — comparing what the built host's own
+/// <para>⚠ C1 (PPM CT correction, an earlier round). The ORIGINAL target check — comparing what the built host's own
 /// <see cref="MongoDbSettings"/> singleton resolved to, against the runner — ran AFTER
 /// <c>WebApplicationFactory.Server</c> had already built the host, which means the production seeder had ALREADY
 /// run against whatever database the host actually resolved by the time a mismatch would have been caught. Three
@@ -55,6 +55,21 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// written anywhere. The post-build check (§ "the host did not take…") is KEPT as a second, redundant line of
 /// defense; it should now be unreachable in practice, and reachability would itself indicate the pre-flight checks
 /// have a gap.</para>
+///
+/// <para>⚠ C3 (PPM CT correction, THIS round) — the override's LIFETIME is lock-scoped and short, not tied to
+/// Dispose. A prior version released <see cref="AuthTestHost.StartLock"/> as soon as the host's own config was
+/// captured, but left the OVERRIDDEN environment variables live until <c>DisposeAsync</c> restored them. That
+/// window was exactly wide enough for a SECOND host, starting while the first was still running, to capture the
+/// FIRST host's overrides as ITS OWN "previous" values — measured shape: host A starts (env now holds A's
+/// overrides, lock released); host B starts (B's <c>_previousEnvironment</c> now holds A's overrides, not the
+/// true baseline); A disposes (restores the true baseline — fine, by luck); B disposes (restores A's OWN
+/// override values — a dead connection string and a discarded JWT secret — permanently, for the rest of the
+/// process, however B happened to be constructed). The fix: <see cref="InitializeCoreAsync"/> now restores the
+/// environment to the value it read BEFORE it ever returns — inside the SAME lock hold that set the overrides,
+/// immediately after the host's own <see cref="MongoDbSettings"/> is captured and validated, before the lock is
+/// released. A running host is unaffected (its configuration was already captured into its own DI container by
+/// then — see T3). <see cref="DisposeAsync"/> no longer touches the environment AT ALL: by the time any code can
+/// call it, restoration has already happened, inside Start.</para>
 /// </summary>
 public static class AccountKindAcceptance
 {
@@ -95,11 +110,14 @@ public static class AccountKindAcceptance
 
     public sealed class AuthTestHost : IAsyncLifetime
     {
-        // C1 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
+        // C1/C3 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
         // interleave their env-var mutation windows. [Collection("AccountKindAcceptance")] already serializes every
         // xunit test class that opts into it; this static lock is the belt-and-suspenders that also protects a
         // direct `new AuthTestHost()` used outside that collection (as the guard tests below do), and makes the
         // serialization independently verifiable rather than merely assumed from xunit's collection semantics.
+        // C3 — the window this lock brackets is the FULL set-override → pre-flight → build-host → capture-config →
+        // RESTORE-override span (see InitializeCoreAsync): the environment is back to its pre-Start value before
+        // the lock is ever released, on every path, success or failure — see the class remarks.
         private static readonly SemaphoreSlim StartLock = new(1, 1);
 
         // C1 §3 — test-observable concurrency probe. ActiveCriticalSections is the number of AuthTestHost
@@ -153,6 +171,15 @@ public static class AccountKindAcceptance
         internal string? GeneratedJwtSecretForLeakGuardOnly { get; private set; }
 
         /// <summary>
+        /// TEST-ONLY seam (C3, T5). When set, <see cref="DisposeAsync"/> calls this INSTEAD of
+        /// <c>factory.DisposeAsync()</c> directly, so a test can inject a failure at that exact point while still
+        /// disposing the real factory for real (the hook is expected to dispose it itself, then may throw) — proving
+        /// runner cleanup and lock release still complete, and the exception still propagates, when factory disposal
+        /// fails. Not part of the fixture's external contract.
+        /// </summary>
+        internal Func<WebApplicationFactory<Program>, Task>? DisposeFactoryHookForTesting { get; set; }
+
+        /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
         /// exact client settings and Guid representation the production code writes with. (Measured: a second
         /// MongoClient with default settings read zero audit rows while the row was there — the Guid encoding differed.)
@@ -189,155 +216,236 @@ public static class AccountKindAcceptance
 
             try
             {
-                var binaryDirectory = ResolveLocalMongoBinaryDirectory();
-                // EphemeralMongo.Core 1.x: synchronous Run; the option is spelled StandardOuputLogger in this version.
-                _runner = MongoRunner.Run(new MongoRunnerOptions
+                try
                 {
-                    BinaryDirectory = binaryDirectory,
-                    StandardOuputLogger = line => MongoLog.Add("[mongod:out] " + line),
-                    StandardErrorLogger = line => MongoLog.Add("[mongod:err] " + line)
-                });
+                    var binaryDirectory = ResolveLocalMongoBinaryDirectory();
+                    // EphemeralMongo.Core 1.x: synchronous Run; the option is spelled StandardOuputLogger in this version.
+                    _runner = MongoRunner.Run(new MongoRunnerOptions
+                    {
+                        BinaryDirectory = binaryDirectory,
+                        StandardOuputLogger = line => MongoLog.Add("[mongod:out] " + line),
+                        StandardErrorLogger = line => MongoLog.Add("[mongod:err] " + line)
+                    });
 
-                // C1 §1(b) — refuse BEFORE touching any data on the runner if it somehow bound the shared port.
-                AccountKindAcceptanceGuard.EnsureRunnerIsNotTheSharedServer(_runner.ConnectionString);
+                    // C1 §1(b) — refuse BEFORE touching any data on the runner if it somehow bound the shared port.
+                    AccountKindAcceptanceGuard.EnsureRunnerIsNotTheSharedServer(_runner.ConnectionString);
 
-                Console.WriteLine($"[AccountKindAcceptance] ephemeral mongod STARTED at {_runner.ConnectionString} from {binaryDirectory} (test-owned process; not the shared 27017)");
+                    Console.WriteLine($"[AccountKindAcceptance] ephemeral mongod STARTED at {_runner.ConnectionString} from {binaryDirectory} (test-owned process; not the shared 27017)");
 
-                // Drop → create: the fixed-name database starts empty on every run, whatever a previous run left.
-                var client = new MongoClient(_runner.ConnectionString);
-                await client.DropDatabaseAsync(DatabaseName);
-                await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+                    // Drop → create: the fixed-name database starts empty on every run, whatever a previous run left.
+                    var client = new MongoClient(_runner.ConnectionString);
+                    await client.DropDatabaseAsync(DatabaseName);
+                    await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
 
-                // C1 §4 — a fresh, random, process-local JWT secret. Never printed (§5), never the repository's
-                // shared appsettings.Development.json value.
-                var jwtSecret = GenerateTestOnlyJwtSecret();
-                GeneratedJwtSecretForLeakGuardOnly = jwtSecret;
+                    // C1 §4 — a fresh, random, process-local JWT secret. Never printed (§5), never the repository's
+                    // shared appsettings.Development.json value. Stored on the instance (not just the environment)
+                    // so it is still readable for the leak guard even after C3 restores the environment below.
+                    var jwtSecret = GenerateTestOnlyJwtSecret();
+                    GeneratedJwtSecretForLeakGuardOnly = jwtSecret;
 
-                var overrides = new Dictionary<string, string?>
-                {
-                    ["MongoDbSettings__ConnectionString"] = _runner.ConnectionString,
-                    ["MongoDbSettings__DatabaseName"] = DatabaseName,
-                    ["Eventing__Transport"] = "InMemory",
-                    ["Smtp__Enabled"] = "false",
-                    ["TenantResolution__DevBypassEnabled"] = "false",
-                    ["Observability__Metrics__Enabled"] = "false",
-                    ["ASPNETCORE_ENVIRONMENT"] = "Development",
-                    ["JwtSettings__Secret"] = jwtSecret
-                };
-                foreach (var (key, value) in overrides)
-                {
-                    _previousEnvironment[key] = Environment.GetEnvironmentVariable(key);
-                    Environment.SetEnvironmentVariable(key, value);
+                    var overrides = new Dictionary<string, string?>
+                    {
+                        ["MongoDbSettings__ConnectionString"] = _runner.ConnectionString,
+                        ["MongoDbSettings__DatabaseName"] = DatabaseName,
+                        ["Eventing__Transport"] = "InMemory",
+                        ["Smtp__Enabled"] = "false",
+                        ["TenantResolution__DevBypassEnabled"] = "false",
+                        ["Observability__Metrics__Enabled"] = "false",
+                        ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                        ["JwtSettings__Secret"] = jwtSecret
+                    };
+                    foreach (var (key, value) in overrides)
+                    {
+                        _previousEnvironment[key] = Environment.GetEnvironmentVariable(key);
+                        Environment.SetEnvironmentVariable(key, value);
+                    }
+
+                    // C1 §1(a) — self-check: the loop above actually applied every override (catches a coding mistake
+                    // in the loop itself, e.g. an exception mid-iteration leaving a later key unset).
+                    foreach (var (key, value) in overrides)
+                    {
+                        AccountKindAcceptanceGuard.EnsureEnvironmentTookTheOverride(key, value);
+                    }
+
+                    // C1 §1(c) — resolve the SAME configuration chain Program.cs will read (appsettings.json →
+                    // appsettings.Development.json → user secrets → environment variables), WITHOUT building the host,
+                    // and refuse here if it does not already land on the isolated database.
+                    var preview = BuildEffectiveHostConfigurationPreview();
+                    AccountKindAcceptanceGuard.EnsureEffectiveConfigurationTargetsTheIsolatedDatabase(
+                        preview, _runner.ConnectionString, DatabaseName);
+
+                    if (injectFailureForTesting)
+                    {
+                        throw new InvalidOperationException(
+                            "TEST-INJECTED-FAILURE: AccountKindAcceptanceGuardTests simulated a startup failure after the pre-flight checks passed.");
+                    }
+
+                    _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+                    {
+                        builder.UseEnvironment("Development");
+                    });
+
+                    // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
+                    _ = _factory.Server;
+
+                    // Kept as a second, redundant line of defense — see the class remarks on C1. Should be unreachable
+                    // now that §1(c) already proved the effective configuration resolves correctly before this point.
+                    var settings = _factory.Services.GetRequiredService<MongoDbSettings>();
+                    if (settings.ConnectionString != _runner.ConnectionString || settings.DatabaseName != DatabaseName)
+                    {
+                        throw new InvalidOperationException(
+                            $"The host did not take the isolated Mongo settings (got {settings.ConnectionString}/{settings.DatabaseName}). Refusing to run against anything else.");
+                    }
+
+                    Console.WriteLine($"[AccountKindAcceptance] AuthService test host READY on {settings.DatabaseName}");
                 }
-
-                // C1 §1(a) — self-check: the loop above actually applied every override (catches a coding mistake
-                // in the loop itself, e.g. an exception mid-iteration leaving a later key unset).
-                foreach (var (key, value) in overrides)
+                catch
                 {
-                    AccountKindAcceptanceGuard.EnsureEnvironmentTookTheOverride(key, value);
+                    // A failure anywhere above: kill whatever got created (factory/runner), each in its own
+                    // try/catch (see DisposeResourcesAsync). A cleanup-step exception here is LOGGED, never
+                    // allowed to replace the ORIGINAL startup failure — that is always what the caller sees
+                    // (the bare `throw;` below), because it is what a caller like T4 actually asserts on.
+                    try
+                    {
+                        await DisposeResourcesAsync(bestEffortDropDatabase: false).ConfigureAwait(false);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        Console.Error.WriteLine(
+                            "[AccountKindAcceptance] cleanup after a startup failure raised its own exception "
+                            + $"(suppressed; the startup failure is what propagates): {cleanupEx}");
+                    }
+
+                    throw;
                 }
-
-                // C1 §1(c) — resolve the SAME configuration chain Program.cs will read (appsettings.json →
-                // appsettings.Development.json → user secrets → environment variables), WITHOUT building the host,
-                // and refuse here if it does not already land on the isolated database.
-                var preview = BuildEffectiveHostConfigurationPreview();
-                AccountKindAcceptanceGuard.EnsureEffectiveConfigurationTargetsTheIsolatedDatabase(
-                    preview, _runner.ConnectionString, DatabaseName);
-
-                if (injectFailureForTesting)
-                {
-                    throw new InvalidOperationException(
-                        "TEST-INJECTED-FAILURE: AccountKindAcceptanceGuardTests simulated a startup failure after the pre-flight checks passed.");
-                }
-
-                _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-                {
-                    builder.UseEnvironment("Development");
-                });
-
-                // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
-                _ = _factory.Server;
-
-                // Kept as a second, redundant line of defense — see the class remarks on C1. Should be unreachable
-                // now that §1(c) already proved the effective configuration resolves correctly before this point.
-                var settings = _factory.Services.GetRequiredService<MongoDbSettings>();
-                if (settings.ConnectionString != _runner.ConnectionString || settings.DatabaseName != DatabaseName)
-                {
-                    throw new InvalidOperationException(
-                        $"The host did not take the isolated Mongo settings (got {settings.ConnectionString}/{settings.DatabaseName}). Refusing to run against anything else.");
-                }
-
-                // C1 §3 — the env-var-mutation window this lock protects ends HERE: the host's MongoDbSettings (and
-                // every other overridden option) is now a captured singleton inside `_factory`'s DI container, so a
-                // SECOND host mutating the SAME environment variables from this point on can no longer affect this
-                // one. Releasing now — rather than holding until DisposeAsync — lets a second Start() proceed as
-                // soon as it is safe, instead of blocking on this instance's full lifetime (including SeedAsync,
-                // which touches no environment variable) or its eventual Dispose.
+            }
+            finally
+            {
+                // C3 §1/§2 — THE FIX. The override's lifetime is lock-scoped and SHORT: restored HERE, inside the
+                // SAME lock hold that set it, on EVERY path (success above, or the catch's rethrow) — never left
+                // live until Dispose. This is what closes the bug: a second Start(), whenever it acquires the lock
+                // next, always reads the TRUE pre-Start baseline as its own "previous", never a still-running
+                // host's overrides. The lock itself is released in this SAME finally, unconditionally (§2 — "kilit
+                // HER durumda finally'de bırakılır") so a startup failure can never leave the next Start() waiting.
+                RestoreEnvironment();
                 ReleaseStartLockIfHeld();
+            }
 
-                Console.WriteLine($"[AccountKindAcceptance] AuthService test host READY on {settings.DatabaseName}");
+            // Outside the lock, deliberately: by this point the environment is ALREADY back to its pre-Start value
+            // (T3) and this host's OWN configuration is already captured inside `_factory`'s DI container, so
+            // SeedAsync — which touches no environment variable — needs none of the lock's protection. A failure
+            // here still cleans up the resources this Start() created (mirrors the pre-build catch above).
+            try
+            {
                 _seed = await SeedAsync(this);
             }
             catch
             {
-                // C1 §2 — a failure ANYWHERE above (pre-flight check, host build, seed) reverts the environment,
-                // kills the mongod process and its data directory, releases the start lock, and rethrows the
-                // ORIGINAL exception (via the bare `throw;` below) so the caller sees the real cause, not a wrapper.
-                await CleanupAfterFailedStartAsync().ConfigureAwait(false);
+                try
+                {
+                    await DisposeResourcesAsync(bestEffortDropDatabase: false).ConfigureAwait(false);
+                }
+                catch (Exception cleanupEx)
+                {
+                    Console.Error.WriteLine(
+                        "[AccountKindAcceptance] cleanup after a seed failure raised its own exception "
+                        + $"(suppressed; the seed failure is what propagates): {cleanupEx}");
+                }
+
                 throw;
             }
         }
 
-        private async Task CleanupAfterFailedStartAsync()
+        /// <summary>
+        /// C3 §3 — disposes the factory (via <see cref="DisposeFactoryHookForTesting"/> when a test has set one,
+        /// otherwise directly) and the runner, EACH IN ITS OWN try/catch so a failure in one does not prevent the
+        /// other from running. If more than one step throws, the FIRST such exception is rethrown — with its
+        /// ORIGINAL stack trace, via <see cref="ExceptionDispatchInfo"/>, never wrapped in an
+        /// <see cref="AggregateException"/> — and every later one is logged to <see cref="Console.Error"/> rather
+        /// than silently lost. <paramref name="bestEffortDropDatabase"/> is true only on the normal (post-start)
+        /// dispose path: a startup failure should not risk a second exception dropping a database that was never
+        /// fully seeded, when the runner's own Dispose deletes its whole data directory anyway.
+        /// </summary>
+        private async Task DisposeResourcesAsync(bool bestEffortDropDatabase)
         {
+            Exception? first = null;
+
             if (_factory is not null)
             {
-                await _factory.DisposeAsync().ConfigureAwait(false);
+                var factory = _factory;
                 _factory = null;
-            }
-
-            RestoreEnvironment();
-
-            if (_runner is not null)
-            {
-                // No best-effort DropDatabaseAsync here (unlike the success-path DisposeAsync below): the whole
-                // runner and its temp data directory are about to be deleted, and a failure path should not risk a
-                // second exception on top of the one already propagating.
-                _runner.Dispose();
-                _runner = null;
-                Console.WriteLine("[AccountKindAcceptance] ephemeral mongod STOPPED after a startup failure (data directory removed)");
-            }
-
-            ReleaseStartLockIfHeld();
-        }
-
-        public async Task DisposeAsync()
-        {
-            if (_factory is not null)
-            {
-                await _factory.DisposeAsync();
-                _factory = null;
-            }
-
-            RestoreEnvironment();
-
-            if (_runner is not null)
-            {
                 try
                 {
-                    await new MongoClient(_runner.ConnectionString).DropDatabaseAsync(DatabaseName);
+                    if (DisposeFactoryHookForTesting is { } hook)
+                    {
+                        await hook(factory).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        await factory.DisposeAsync().ConfigureAwait(false);
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // best effort; the runner deletes its data directory anyway
+                    first ??= ex;
+                    Console.Error.WriteLine($"[AccountKindAcceptance] factory disposal failed: {ex}");
                 }
-
-                _runner.Dispose();
-                _runner = null;
-                Console.WriteLine("[AccountKindAcceptance] ephemeral mongod STOPPED and its data directory removed");
             }
 
-            ReleaseStartLockIfHeld();
+            if (_runner is not null)
+            {
+                var runner = _runner;
+                _runner = null;
+                try
+                {
+                    if (bestEffortDropDatabase)
+                    {
+                        try
+                        {
+                            await new MongoClient(runner.ConnectionString).DropDatabaseAsync(DatabaseName).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // best effort; the runner deletes its data directory anyway
+                        }
+                    }
+
+                    runner.Dispose();
+                    Console.WriteLine(bestEffortDropDatabase
+                        ? "[AccountKindAcceptance] ephemeral mongod STOPPED and its data directory removed"
+                        : "[AccountKindAcceptance] ephemeral mongod STOPPED after a startup failure (data directory removed)");
+                }
+                catch (Exception ex)
+                {
+                    first ??= ex;
+                    Console.Error.WriteLine($"[AccountKindAcceptance] runner disposal failed: {ex}");
+                }
+            }
+
+            if (first is not null)
+            {
+                ExceptionDispatchInfo.Capture(first).Throw();
+            }
+        }
+
+        /// <summary>
+        /// C3 — touches ONLY the factory, the runner and its database (via <see cref="DisposeResourcesAsync"/>).
+        /// The environment is NEVER restored here: by the time anything can call Dispose, <see cref="InitializeCoreAsync"/>
+        /// has ALREADY restored it, inside its own lock hold (see the class remarks). The lock is released
+        /// unconditionally in <c>finally</c> — T5: even a factory-disposal failure must not leave a later Start()
+        /// waiting on a lock this instance already finished with in practice (a no-op in the normal case, since
+        /// InitializeCoreAsync already released it; kept as the same guaranteed-release discipline everywhere).
+        /// </summary>
+        public async Task DisposeAsync()
+        {
+            try
+            {
+                await DisposeResourcesAsync(bestEffortDropDatabase: true).ConfigureAwait(false);
+            }
+            finally
+            {
+                ReleaseStartLockIfHeld();
+            }
         }
 
         private void RestoreEnvironment()

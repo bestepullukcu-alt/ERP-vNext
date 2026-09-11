@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
@@ -267,5 +268,197 @@ public sealed class AccountKindAcceptanceGuardTests
             await host1.DisposeAsync();
             await host2.DisposeAsync();
         }
+    }
+
+    // ── C3 — the override's lifetime is lock-scoped and short, never tied to Dispose ───────────────────────
+    //
+    // PPM CT finding (accepted): the environment used to stay overridden until Dispose, while the LOCK released
+    // as soon as the host's own config was captured. A second host starting in that window captured the FIRST
+    // host's still-live overrides as ITS OWN "previous" — so whichever host disposed LAST restored the OTHER
+    // host's dead connection string / discarded JWT secret into the process, permanently. T1/T2 pin BOTH dispose
+    // orders; T3 pins that a RUNNING host is unaffected by its own environment already being restored; T4/T5 pin
+    // the failure-path guarantees (env unchanged, no process, lock free — even when cleanup itself throws); T6
+    // pins that none of this leaks the generated JWT secret into an exception message or a log line.
+
+    private static Dictionary<string, string?> CaptureEnvironment() =>
+        OverrideEnvironmentKeys.ToDictionary(k => k, Environment.GetEnvironmentVariable);
+
+    private static void AssertEnvironmentEquals(Dictionary<string, string?> expected)
+    {
+        foreach (var key in OverrideEnvironmentKeys)
+        {
+            Assert.Equal(expected[key], Environment.GetEnvironmentVariable(key));
+        }
+    }
+
+    // T1 — A then B start; A disposed, then B disposed.
+    [Fact]
+    public async Task T1_A_then_B_start_dispose_A_then_B_always_restores_the_true_baseline()
+    {
+        var before = CaptureEnvironment();
+
+        var hostA = new AccountKindAcceptance.AuthTestHost();
+        await hostA.InitializeAsync();
+        AssertEnvironmentEquals(before); // the core of the fix: A's own overrides are already gone by the time Start returns
+
+        var hostB = new AccountKindAcceptance.AuthTestHost();
+        await hostB.InitializeAsync();
+        AssertEnvironmentEquals(before); // B captured the TRUE baseline as "previous" — not A's still-live overrides
+
+        await hostA.DisposeAsync();
+        AssertEnvironmentEquals(before);
+
+        await hostB.DisposeAsync();
+        AssertEnvironmentEquals(before);
+    }
+
+    // T2 — the same start order, the OPPOSITE dispose order. Under the bug this fixes, THIS was the order that
+    // corrupted the environment: B (disposed last) used to restore whatever it captured as "previous", and before
+    // the fix that was A's own override — not the baseline.
+    [Fact]
+    public async Task T2_A_then_B_start_dispose_B_then_A_still_restores_the_true_baseline()
+    {
+        var before = CaptureEnvironment();
+
+        var hostA = new AccountKindAcceptance.AuthTestHost();
+        await hostA.InitializeAsync();
+        var hostB = new AccountKindAcceptance.AuthTestHost();
+        await hostB.InitializeAsync();
+        AssertEnvironmentEquals(before);
+
+        await hostB.DisposeAsync();
+        AssertEnvironmentEquals(before);
+
+        await hostA.DisposeAsync();
+        AssertEnvironmentEquals(before);
+    }
+
+    // T3 — a RUNNING host (not yet disposed) is unaffected by its own environment already being restored: its
+    // MongoDbSettings was captured into its DI container before the restore ran, so it keeps reading/writing its
+    // isolated database over real HTTP.
+    [Fact]
+    public async Task T3_a_running_host_keeps_serving_its_isolated_database_after_its_own_environment_is_already_restored()
+    {
+        var before = CaptureEnvironment();
+        var host = new AccountKindAcceptance.AuthTestHost();
+        await host.InitializeAsync();
+        try
+        {
+            AssertEnvironmentEquals(before); // env is back to baseline WHILE the host is still running, unrelated to Dispose
+
+            using var client = host.Client(host.Seeded.PmoToken, host.Seeded.TenantId);
+            var response = await client.GetAsync($"api/users/{host.Seeded.Human.Id}/account-assertion");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+        finally
+        {
+            await host.DisposeAsync();
+        }
+    }
+
+    // T4 — a deliberately failed start (the injected-failure seam) leaves the environment untouched, kills the
+    // mongod process, and — critically — frees the lock immediately, so the VERY NEXT Start() does not wait on
+    // anything the failed attempt left behind.
+    [Fact]
+    public async Task T4_a_failed_start_leaves_the_environment_unchanged_no_process_and_the_lock_free_for_the_next_Start()
+    {
+        var before = CaptureEnvironment();
+
+        var failing = new AccountKindAcceptance.AuthTestHost();
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(failing.InitializeAsync_ForTestingInjectedFailure);
+        Assert.Contains("TEST-INJECTED-FAILURE", failure.Message);
+        AssertEnvironmentEquals(before);
+
+        // The lock must be free RIGHT NOW — bounded wait, so a regression (the lock never released) fails this
+        // test with a clear timeout instead of hanging the whole run.
+        var succeeding = new AccountKindAcceptance.AuthTestHost();
+        var startTask = succeeding.InitializeAsync();
+        var winner = await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(30)));
+        Assert.True(ReferenceEquals(winner, startTask), "the next Start() did not complete within 30s — the lock the failed attempt held was not released.");
+        await startTask; // propagate any genuine failure with its real message
+
+        try
+        {
+            AssertEnvironmentEquals(before); // the succeeding host also restored the environment within its own Start
+        }
+        finally
+        {
+            await succeeding.DisposeAsync();
+        }
+    }
+
+    // T5 — even when factory disposal itself throws, Dispose still stops the mongod process, still frees the
+    // lock, and still lets the exception propagate (not an AggregateException, not silently lost).
+    [Fact]
+    public async Task T5_dispose_still_stops_the_runner_and_frees_the_lock_when_factory_disposal_throws()
+    {
+        var host = new AccountKindAcceptance.AuthTestHost();
+        await host.InitializeAsync();
+
+        var originalOut = Console.Out;
+        var capture = new StringWriter();
+        Console.SetOut(capture);
+
+        // The hook disposes the REAL factory for real (no resource actually leaks), then injects the failure this
+        // test exists to observe — proving the SURROUNDING cleanup code's resilience, not faking away the dispose.
+        host.DisposeFactoryHookForTesting = async factory =>
+        {
+            await factory.DisposeAsync();
+            throw new InvalidOperationException("TEST-INJECTED-DISPOSE-FAILURE: simulated factory disposal failure.");
+        };
+
+        Exception? thrown;
+        try
+        {
+            thrown = await Record.ExceptionAsync(host.DisposeAsync);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+
+        Assert.NotNull(thrown);
+        Assert.Contains("TEST-INJECTED-DISPOSE-FAILURE", thrown!.Message);
+        Assert.Contains("ephemeral mongod STOPPED", capture.ToString()); // the runner still stopped despite the factory exception
+
+        // The lock is free — a fresh Start right after must not hang on it either.
+        var succeeding = new AccountKindAcceptance.AuthTestHost();
+        var startTask = succeeding.InitializeAsync();
+        var winner = await Task.WhenAny(startTask, Task.Delay(TimeSpan.FromSeconds(30)));
+        Assert.True(ReferenceEquals(winner, startTask), "the next Start() did not complete within 30s — Dispose did not free the lock after its own failure.");
+        await startTask;
+        await succeeding.DisposeAsync();
+    }
+
+    // T6 — a startup failure's exception message and every captured log line name the offending variable, never
+    // the generated JWT secret's VALUE.
+    [Fact]
+    public async Task T6_a_startup_failures_message_and_logs_never_contain_the_generated_JWT_secret_value()
+    {
+        var originalOut = Console.Out;
+        var capture = new StringWriter();
+        Console.SetOut(capture);
+
+        var host = new AccountKindAcceptance.AuthTestHost();
+        InvalidOperationException thrown;
+        try
+        {
+            thrown = await Assert.ThrowsAsync<InvalidOperationException>(host.InitializeAsync_ForTestingInjectedFailure);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+
+        var secret = host.GeneratedJwtSecretForLeakGuardOnly;
+        Assert.False(string.IsNullOrWhiteSpace(secret));
+
+        // Assert.False, not Assert.Contains/DoesNotContain — a failed assertion here must not embed the secret
+        // into xunit's own failure message, which would itself be the leak this test exists to catch.
+        Assert.False(thrown.Message.Contains(secret!, StringComparison.Ordinal), "the startup-failure exception message contains the generated test JWT secret.");
+        Assert.False(capture.ToString().Contains(secret!, StringComparison.Ordinal), "the fixture's captured Console output contains the generated test JWT secret.");
+        var mongoLogText = string.Join('\n', host.MongoLog);
+        Assert.False(mongoLogText.Contains(secret!, StringComparison.Ordinal), "mongod's own captured log contains the generated test JWT secret.");
     }
 }
