@@ -12,6 +12,23 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DitenERP">
+
+        <!--
+            Remove WorkManager's default on-startup initializer so the app can
+            supply its own Configuration via DitenApp (Configuration.Provider),
+            wiring in the HiltWorkerFactory required by :core:sync's @HiltWorker.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

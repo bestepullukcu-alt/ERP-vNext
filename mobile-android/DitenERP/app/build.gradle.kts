@@ -37,6 +37,8 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:auth"))
+    implementation(project(":core:design"))
+    implementation(project(":core:sync"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -44,8 +46,19 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.kotlinx.coroutines.core)
+
+    // Single-Activity Compose navigation for the app shell.
+    implementation(libs.androidx.navigation.compose)
+
+    // WorkManager app-init: the Application provides a HiltWorkerFactory so
+    // :core:sync's @HiltWorker (SyncWorker) can be constructed with injected deps.
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Hilt runtime + KSP compiler are contributed by the diten.android.hilt plugin.
     implementation(libs.androidx.hilt.navigation.compose)
@@ -54,6 +67,7 @@ dependencies {
     debugImplementation(libs.leakcanary.android)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

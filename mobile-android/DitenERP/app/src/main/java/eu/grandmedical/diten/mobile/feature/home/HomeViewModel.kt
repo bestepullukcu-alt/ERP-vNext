@@ -1,0 +1,69 @@
+package eu.grandmedical.diten.mobile.feature.home
+
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import eu.grandmedical.diten.mobile.core.auth.data.AuthRepository
+import eu.grandmedical.diten.mobile.core.auth.jwt.JwtDecoder
+import eu.grandmedical.diten.mobile.core.auth.session.AuthState
+import eu.grandmedical.diten.mobile.core.auth.session.SessionManager
+import eu.grandmedical.diten.mobile.core.auth.token.EncryptedTokenStore
+import eu.grandmedical.diten.mobile.core.common.mvi.MviViewModel
+import eu.grandmedical.diten.mobile.core.sync.SyncScheduler
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+/**
+ * Exposes the authenticated session to the dashboard and builds the
+ * permission-gated module menu. The permission set is derived from the access
+ * token's `permission` claims (decoded via [JwtDecoder]); the session summary is
+ * observed from [SessionManager] so a legal-entity switch re-renders live.
+ *
+ * On first construction (i.e. the app is authenticated and Home is shown) it
+ * enqueues the periodic background sync — [SyncScheduler.enqueuePeriodicSync]
+ * is idempotent (unique work, KEEP), so repeated visits never stack schedules.
+ */
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val sessionManager: SessionManager,
+    private val tokenStore: EncryptedTokenStore,
+    private val jwtDecoder: JwtDecoder,
+    private val authRepository: AuthRepository,
+    syncScheduler: SyncScheduler,
+) : MviViewModel<HomeState, HomeEvent, HomeEffect>(HomeState()) {
+
+    init {
+        syncScheduler.enqueuePeriodicSync()
+        observeSession()
+    }
+
+    private fun observeSession() {
+        viewModelScope.launch {
+            val permissions = loadPermissions()
+            sessionManager.authState.collect { authState ->
+                if (authState is AuthState.Authenticated) {
+                    setState {
+                        copy(
+                            email = authState.email,
+                            tenantId = authState.tenantId,
+                            selectedLegalEntityId = authState.selectedLegalEntityId,
+                            availableLegalEntities = authState.availableLegalEntities,
+                            permissions = permissions,
+                            modules = HomeModules.visibleModules(permissions),
+                            isLoading = false,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun loadPermissions(): Set<String> =
+        jwtDecoder.decode(tokenStore.accessToken()).permissions.toSet()
+
+    override suspend fun handleEvent(event: HomeEvent) {
+        when (event) {
+            is HomeEvent.SelectLegalEntity -> sessionManager.selectLegalEntity(event.id)
+            HomeEvent.Logout -> authRepository.logout()
+        }
+    }
+}

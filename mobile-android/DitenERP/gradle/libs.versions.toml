@@ -26,6 +26,7 @@ androidxTestCore = "1.6.1"
 datastore = "1.1.1"
 workManager = "2.9.1"
 androidxHilt = "1.2.0"
+navigationCompose = "2.8.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -77,6 +78,9 @@ androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", vers
 
 # MVI base (:core:common extension) — ViewModel scope
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtx" }
+
+# Navigation (:app shell) — single-Activity Compose navigation
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 
 # Design system (:core:design) — icons are BOM-managed (no explicit version)
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
