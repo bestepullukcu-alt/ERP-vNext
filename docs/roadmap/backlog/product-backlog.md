@@ -4843,3 +4843,19 @@ DURUM: AÇIK · SAHİP: SAHİPSİZ · KAYIT: 2026-09-11
   kasıtlıysa belgelenmeli.
 
 Tablo: `docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.
+
+### BL-364
+
+**Görev Merkezi: iki kart sözleşmede olmayan yeteneklere bakıyor (`compliance`, `approvalChain`)**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-11 (alt ajan, `ee10229c` turunda; CT doğrulamadı)
+
+`WorkCenterNext/app.js` `renderCompliance` (`hasCap(item, 'compliance')`, ~:4409, canlı bağlı ~:5025) ve `renderApprovalChain`
+(`hasCap(item, 'approvalChain')`, ~:4392, ~:5125): iki yetenek adı da `fixture-contract.js` CAPABILITIES listesinde yok; hiçbir
+fixture ya da sağlayıcı üretmiyor. `related`/`relatedRecords` yakın-kaçığından farklı olarak sıfır eşleşme → ölü ya da sözleşme
+öncesi kod. Karar: sözleşmeye eklenir mi (kim üretir?) yoksa kart silinir mi.
+
+**Ölçüm komutu:**
+
+    grep -n "hasCap(item, 'compliance')\|hasCap(item, 'approvalChain')" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+    grep -n "'compliance'\|'approvalChain'" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js

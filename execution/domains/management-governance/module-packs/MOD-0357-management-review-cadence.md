@@ -708,7 +708,7 @@ MOD-0024's own equivalent gap was.
 | Slice | Scope |
 |---|---|
 | S1 ✅ `5f7dd687` (2026-09-11; CT doğruladı, canlı değil) | `RecordLink` collection + `IRecordLinkService` + MOD-0024's `relatedRecords` read wired to it (the one point of contact with `Features/Tasks` this pack allows) |
-| S2 | `Meeting`/`MeetingAttendee`/`AgendaItem` backend CRUD, no UI yet |
+| S2 ✅ (2026-09-11; CT doğruladı, canlı değil) | `Meeting`/`MeetingAttendee`/`AgendaItem`/`MeetingType` backend CRUD + manifest (9 izin) + meetings resolver; UI yok. Not: manifest `Nav.Module.MEETINGS` ve `Nav.Domain.MANAGEMENTGOVERNANCE` anahtarlarını 7 dilde ister (Web nav muhafızı) — ayrı l10n işi |
 | S3 | Screens: list (DataTable), create, detail |
 | S4 | Meeting → task (three moments) and task → meeting (`scheduleReviewMeeting` receiving side) |
 | S5 | Invitation: ERP-internal accept/decline + Task Center trigger |
