@@ -139,6 +139,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding tenant-97c5 CRM knowledge (WP-SCMM-05-S1) grants...");
             await SeedTenant97c5CrmKnowledgeGrantAsync(database);
 
+            Console.WriteLine("Seeding tenant-97c5 CRM claim (WP-SCMM-12-API) grants...");
+            await SeedTenant97c5CrmClaimGrantAsync(database);
+
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
 
@@ -467,6 +470,12 @@ public static class DataSeeder
             new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
             new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
+
+            // SCMM-12-API (CAND-CAP-0011) — Claim HTTP surface. Tenant-scoped keys (module code "crm-content-composition"
+            // ∉ PlatformAdminModules → Scope=Tenant). Canonical crm.claim.* keys for the ContentComposition claim console.
+            new("crm", "claim", "read", "CRM Claim Read", "Permission to view SCMM claims", moduleOverride: "crm-content-composition"),
+            new("crm", "claim", "manage", "CRM Claim Manage", "Permission to create/update/archive SCMM claims", moduleOverride: "crm-content-composition"),
+            new("crm", "claim", "approve", "CRM Claim Approve", "Permission to approve SCMM claims (draft to approved)", moduleOverride: "crm-content-composition"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -1334,6 +1343,62 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Granted {granted} missing crm.knowledge.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    /// <summary>
+    /// WP-SCMM-12-API — grants the CAND-CAP-0011 <c>crm.claim.*</c> permissions to the tenant-97c5 Admin role (mirrors
+    /// <see cref="SeedTenant97c5CrmKnowledgeGrantAsync"/>). Enables the authenticated claim console (create / list /
+    /// approve / archive) for the CRM-tenant Admin. Idempotent: existing grants are skipped; explicit 3-key allowlist.
+    /// </summary>
+    private static async Task SeedTenant97c5CrmClaimGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM claim grant: Admin role not found.");
+            return;
+        }
+
+        var claimKeys = new[]
+        {
+            "crm.claim.read",
+            "crm.claim.manage",
+            "crm.claim.approve"
+        };
+        var claimPerms = await permCol
+            .Find(p => !p.IsDeleted && claimKeys.Contains(p.Key))
+            .ToListAsync();
+        if (claimPerms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM claim grant: no crm.claim.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in claimPerms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.claim.* permission(s) to tenant-97c5 Admin role.");
     }
 
     // MOD-0290-FU02-RBAC — grant the Brand/Product master permissions to the tenant-97c5 operator so the
