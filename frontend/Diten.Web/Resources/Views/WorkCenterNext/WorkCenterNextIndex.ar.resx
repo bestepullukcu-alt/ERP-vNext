@@ -1615,9 +1615,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} بند إلزامي غير مُعلَّم. ستُغلق المهمة على أي حال.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>يلزم مستند إثبات. سيصبح ربط المستند فعّالًا عند توصيل وحدة المستندات.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>يلزم إثبات للبنود المُعلَّمة. استخدم أيقونة المشبك في الصف لإرفاقه.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>تغيير المستوى: اختياري ← متوقَّع ← مانع</value>
   </data>
@@ -2259,4 +2257,23 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>أُعيدت {0} مرات، وآخرها: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>لا مرفقات بعد.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>إضافة ملف</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>إثبات</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>مُخرَج</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>مرفق</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>النوع</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>ملاحظة (اختياري)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>أضف ملاحظة قصيرة حول هذا الملف</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>الملف</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>تحميل</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>إضافة مرفق</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>اختر ملفًا أولًا.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>هل تريد إزالة هذا المرفق؟</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>إزالة المرفق</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>رفعه {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>تمت إضافة المرفق.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>تمت إزالة المرفق.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>إضافة إثبات</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} ملف إثبات</value></data>
 </root>

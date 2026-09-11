@@ -335,14 +335,19 @@
                        has removed that exact dead control more than once. Tracked as its own backlog item. *@
                     <div id="taskChecklistAddRow"></div>
 
+                    @* MOD-0024 Slice ATT-1 — attachments (evidence included) are a write on the TASK's own
+                       attachment list, and there is no task yet on this form: `AddTaskAttachmentHandler` takes
+                       a TaskItemId, which this page has not been issued. Rather than a wholesale rewrite hazard
+                       (the same reason the checklist editor itself is create-only, see the comment above), this
+                       stays a single sentence: attach files once the task exists, on its own detail page. *@
+                    <p class="form-text mb-2">@Localizer["ChecklistAttachmentsAfterSaveHint"]</p>
+
                     @* THE PAPERCLIP'S PROMISE, said out loud.
 
-                       `EvidenceRequired` has been on the model since Phase 1 and nothing enforces it: there is
-                       no task↔document link at all yet (pack §12 Y4 keeps attachments out of MOD-0024, and the
-                       document module is live but unconnected). The flag is still STORED, so nothing a user
-                       records is lost — but a control that quietly promises "this cannot be ticked without
-                       evidence" and then lets it be ticked is worse than no control. So it says what it is and
-                       when it will start biting. Shown only once something on the list carries the flag. *@
+                       `EvidenceRequired` has been on the model since Phase 1; enforcement (Slice ATT-1) and the
+                       attach control both now exist — on the task's OWN detail page, never here (see above).
+                       This sentence says so rather than letting the flag look decorative. Shown only once
+                       something on the list carries the flag. *@
                     @* An ALERT, not body text — the same shape the completion gate and the history gap use.
                        It reports a condition the reader did not create and cannot yet act on, and body text
                        makes such a sentence read as description. Wording and condition are unchanged. *@

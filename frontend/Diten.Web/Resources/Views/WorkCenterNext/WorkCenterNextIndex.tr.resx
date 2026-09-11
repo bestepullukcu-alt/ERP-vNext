@@ -1615,9 +1615,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} zorunlu madde işaretlenmedi. Görev yine de kapatılacak.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>İşaretli maddeler için kanıt gerekiyor. Kanıt eklemek için satırdaki ataç simgesini kullanın.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value>
   </data>
@@ -2259,4 +2257,23 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>{0} kez geri gönderildi, en son: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Henüz ek yok.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Not (opsiyonel)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Bu dosya hakkında kısa bir not</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Yükle</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Ek ekle</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Önce bir dosya seçin.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Bu ek kaldırılsın mı?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Eki kaldır</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>{0} tarafından yüklendi · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Ek eklendi.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Ek kaldırıldı.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} kanıt dosyası</value></data>
 </root>

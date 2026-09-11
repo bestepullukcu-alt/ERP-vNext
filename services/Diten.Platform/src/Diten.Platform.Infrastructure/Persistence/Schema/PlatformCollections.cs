@@ -26,6 +26,7 @@ public static class PlatformCollections
     public const string BusinessReferenceDataValidationResults = "business_reference_data_validation_results";
     public const string BusinessReferenceDataVersions = "business_reference_data_versions";
     public const string ChecklistRuns = "checklist_runs";
+    public const string TaskAttachments = "task_attachments";
     public const string ChecklistTemplates = "checklist_templates";
     public const string ConsumedEvents = "consumed_events";
     public const string DocumentManagementAccessPolicies = "document_management_access_policies";

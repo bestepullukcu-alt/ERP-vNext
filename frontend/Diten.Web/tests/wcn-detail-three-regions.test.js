@@ -2890,9 +2890,14 @@ describe("the page reaches the product's one confirm implementation", () => {
      * the wrapper offers one textarea. It is reported here rather than growing the shared component to suit
      * this module — the rule the comments above spend four rounds establishing.
      */
-    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(2);
+    /*
+     * ⚠ THREE (MOD-0024 Slice ATT-1). The ATTACHMENT UPLOAD dialog joins the same category for the same reason:
+     * a file input, a kind select and a note textarea is three fields, not one. Reported here rather than
+     * growing the shared component, matching every prior entry in this list.
+     */
+    expect((src.match(/Swal\.fire\(/g) || []).length).toBe(3);
     expect((src.match(/dialogLook\(\)/g) || []).length,
-      "a raw dialog is drawing itself again").toBe(2);
+      "a raw dialog is drawing itself again").toBe(3);
   });
 });
 
