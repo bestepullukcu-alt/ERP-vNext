@@ -5075,6 +5075,13 @@ CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `Check
 DURUM: TESLİM (CT, 2026-09-11) · dal `feature/infra/auth-account-kind` (base toplantı dalı `a699b3eb`; worktree `.claude/worktrees/infra+auth-account-kind`;
 sahip push edecek; PR'ı toplantı ara-nokta PR'ından SONRA) · SAHİP: CT (altyapı) · TALEP: Codex/PPM · KARAR: sahip 2026-09-11
 
+**DÜZELTME C1+C2 (CT, 2026-09-11 gece):** Codex'in üç bulgusu kapandı. (1) Paylaşımlı ortam olayı mevcut kanıttan ayrıştırıldı (yeni sorgu/yazım yok). (2) Fixture:
+yanlış hedef host kurulmadan ÖNCE reddedilir (ortam değişkeni · runner ≠ paylaşımlı sunucu · efektif konfigürasyon ön-okuması), başlangıç hatasında factory/env/mongod
+temizliği, kilitli seri başlatma, koşuma özel rastgele JWT anahtarı (çıktıya yazılmaz). (3) Guid serializer: uyumlu tekrar = sessiz, UYUMSUZ = fırlatır (ajanın "uyar ve devam"
+sapması reddedildi); testte izolasyon Platform emsaliyle: test derlemesinde [ModuleInitializer] Standard + MongoDefaults.GuidRepresentation. Ayrıca sahip kararı:
+`auth.users.lookup` TenantSelfServicePermissions'a (mevcut kiracıların Admin'i açılış reconcile'ında alır). Auth 781/784 ×2 (3 eski kırmızı); sabotajda refusal testi kırmızı.
+Dal main ile hizalandı; PR 5 açılabilir (sahip push eder).
+
 **Karar:** sınıflandırma yalnız açık atanan `auth.users.account-kind.manage` ile (ExplicitGrantOnly); Portfolio uygunluğu = aynı kiracıda aktif + Human (PPM kararı);
 ek pozisyon/birim şartı yok; mevcut hesaplar otomatik sınıflandırılmaz (hepsi Unknown). Uçlar: `GET api/users/lookup`, `GET api/users/{id}/account-assertion`
 (`auth.users.lookup`, sıradan kiracı anahtarı, modül access-governance), `POST api/users/{id}/account-kind`. 404 = yok/başka kiracı aynı gövde.
