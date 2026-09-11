@@ -710,6 +710,7 @@ MOD-0024's own equivalent gap was.
 | S1 ✅ `5f7dd687` (2026-09-11; CT doğruladı, canlı değil) | `RecordLink` collection + `IRecordLinkService` + MOD-0024's `relatedRecords` read wired to it (the one point of contact with `Features/Tasks` this pack allows) |
 | S2 ✅ (2026-09-11; CT doğruladı, canlı değil) | `Meeting`/`MeetingAttendee`/`AgendaItem`/`MeetingType` backend CRUD + manifest (9 izin) + meetings resolver; UI yok. Not: manifest `Nav.Module.MEETINGS` ve `Nav.Domain.MANAGEMENTGOVERNANCE` anahtarlarını 7 dilde ister (Web nav muhafızı) — ayrı l10n işi |
 | S3 ✅ (2026-09-11; CT doğruladı; canlı: ajan + CT sahibin oturumuyla — menü, liste boş durumu, oluştur formu (tür/katılımcı seçicileri boş: dev kiracısında tür ve pozisyon yok), 404 sayfası, Görev Merkezi regresyonsuz, konsol hatasız) | Screens: list (DataTable), create, edit, detail + Web proxy + gateway + 2 lookup; gündem detay sayfasında (create isteğinde alan yok); `Nav.Page.MEETINGS` 7 dil ayrı l10n işi; verifier 58/84 (boş-area yol birleştirme ve proxy mimarisi — araç sınırı); dev kiracısında pozisyon yok → seçiciler boş (BL-356) |
+| S3b | Read-only month calendar view on the meetings list (upcoming meetings by day; reuses the Task Center's `renderCalendar` once extracted — BL-365 #4). Owner decision 2026-09-11: calendar yes, kanban no (three states, no flow) |
 | S4 | Meeting → task (three moments) and task → meeting (`scheduleReviewMeeting` receiving side) |
 | S5 | Invitation: ERP-internal accept/decline + Task Center trigger |
 | S5b | `.ics` invite / change / cancel email — first step: additive `Attachments` field on `MessagingProviderEmailRequest` (CT infra, Notifications); then `IMeetingInviteMailer` attaches the `.ics` (same UID across updates; METHOD:CANCEL on cancel). Stage 1 per ADR-003 §5 |
@@ -717,6 +718,7 @@ MOD-0024's own equivalent gap was.
 | S7 | Continuation meeting (K6 carry-forward) |
 | S8 | Meeting type setting screen |
 | S9 | `reviewMeetingPolicy.required` gate wired end-to-end against a real MOD-0024 task type |
+| S11 | Recurring meeting SERIES (weekly quality review, monthly management review): a light rule generating instances on the task engine's recurrence/Hangfire pattern, each instance chained to the previous as a follow-up (K6). Owner decision 2026-09-11 — moved INTO Stage 1 because the Blueprint scopes MOD-0357 as *cadence*; exceptions and attendee-calendar writes stay with Google (Phase 2) |
 | S10 | Live-session verification pass (this repo's own "green tests ≠ working" discipline — HTTP-level round
         trips against a running Platform, not only in-memory doubles) |
 
@@ -742,7 +744,7 @@ Verbatim from ADR-003 §6, plus the two items ADR-003 names elsewhere in the sam
 - File attachments on a meeting or its minutes (no storage provider exists in the product yet).
 - Tasks assigned to an external (non-tenant-user) attendee.
 - Room/resource booking.
-- Recurring meeting series (a schedule that generates instances automatically) — today every meeting,
+- ~~Recurring meeting series~~ — moved into Stage 1 as slice S11 (owner, 2026-09-11); only Google-side exceptions/attendee-calendar sync stay deferred. Original note: today every meeting,
   including a "continuation", is created one at a time.
 - AI-suggested actions from a transcript or agenda.
 - Connecting Enterprise Strategy's "Strategic Reviews" screens to this engine.
