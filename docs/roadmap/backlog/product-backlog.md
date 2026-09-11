@@ -4933,3 +4933,17 @@ CSS'i (üç diyalog testi kaynak metnini pinliyor) → sonraki ön yüz dilimi (
 Muhafız `shared-ui-parts-one-implementation.test.js` — CT düzeltmesi: her tanım sınıflanır (ilki değil).
 **Kural:** her ekran/dilim prompt'u "mevcut parçayı kullan; yalnız app.js içinde gömülüyse önce çıkar" satırı taşır ([[feedback_reuse_frontend_partials]]).
 Metin/CSS taşıyan çıkarmalar l10n/FG-003 kapısından geçer (Antigravity); saf JS çıkarmalar CT alt ajanıyla yapılabilir.
+
+### BL-368
+
+**Web yeniden başladıktan / oturum tazelendikten sonra ilk API çağrıları 401, tekrarı 200 — DataTable konsola hata yazıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · GÖZLEM: 2026-09-11 (CT, sahibin oturumu, /Meetings)
+
+Ağ kaydı: `GET /Meetings/api/lookups/types` 401 · `/lookups/attendees` 401 · `/api/list?pageSize=1000` 401 → hemen ardından aynı üçü 200.
+Sayfa toparlıyor (oturum yenileme sonrası tekrar), kullanıcı fark etmiyor; ama `[DtDefaults] Ajax error {status: 401 …}` konsola hata düşüyor
+ve ilk yanıt gelmeden ikinci istek `&&_=` (çift ampersand) ile üretiliyor. Sorular: yenileme İSTEKTEN ÖNCE yapılamaz mı (token süresi biliniyor)?
+DtDefaults 401'i hata olarak mı loglamalı, sessiz tekrar mı? Görev Merkezi ve Görevler sayfalarında aynı desen var mı? İlgili: geçmiş
+`invalid_token` / yenileme kaskadı kaydı (çözüldü, main).
+
+**Ölçüm komutu:** tarayıcı ağ sekmesi, Web yeniden başlatıldıktan sonra ilk `/…/api/*` çağrıları; `grep -n "401" frontend/Diten.Web/wwwroot/assets/js/shared/dt-defaults*.js`
