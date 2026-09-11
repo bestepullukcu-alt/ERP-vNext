@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>Toplantı Türleri</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kiracınızın planlayabileceği, yönetilen gözden geçirme toplantı ritimleri.</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Name" xml:space="preserve"><value>Ad</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>Kalite Kaydı</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>Bu alanı QA açıkça belirler; türün adından veya alanından çıkarım yapılmaz.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>E-İmza Gerektirir</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>Bu dilimde yalnızca bir alan olarak kaydedilir; imzalama mekanizmasının kendisi sonraki bir dilimdedir.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>Katılım Zorunlu</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Toplantı Türü</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Toplantı Türünü Düzenle</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Bayraklar</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>Varsayılan Aksiyon Görev Türü</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>Toplantıdan doğan bir aksiyonun varsayılan olarak alacağı görev türü.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>Gündem Şablonu</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>Yeni bir toplantının gündemini ön doldurur; her toplantının kendi gündemi sonrasında bağımsız olarak düzenlenebilir kalır.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>Bu türün henüz bir gündem şablonu yok.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>Satır Ekle</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>Yukarı taşı</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>Aşağı taşı</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>Satırı kaldır</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>Gündem satırı</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Bu toplantı türü silinsin mi?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Bu işlem geri alınamaz. Bir toplantı tarafından kullanılan tür silinemez.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Bu toplantı türü bu sırada değişti; sayfayı yenileyip tekrar deneyin.</value></data>
+</root>

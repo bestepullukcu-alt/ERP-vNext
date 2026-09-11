@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingsTitle" xml:space="preserve"><value>الاجتماعات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>الاجتماعات التي تنظمها أو تحضرها، مع جدول أعمالها والمهام المرتبطة بها.</value></data>
+  <data name="Title" xml:space="preserve"><value>العنوان</value></data>
+  <data name="MeetingType" xml:space="preserve"><value>نوع الاجتماع</value></data>
+  <data name="StartAt" xml:space="preserve"><value>البداية</value></data>
+  <data name="EndAt" xml:space="preserve"><value>النهاية</value></data>
+  <data name="Organizer" xml:space="preserve"><value>المنظّم</value></data>
+  <data name="IAmAttendee" xml:space="preserve"><value>الحضور</value></data>
+  <data name="HasLinkedTasks" xml:space="preserve"><value>مهام مرتبطة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Segment" xml:space="preserve"><value>الفترة</value></data>
+  <data name="SegmentUpcoming" xml:space="preserve"><value>قادمة</value></data>
+  <data name="SegmentPast" xml:space="preserve"><value>سابقة</value></data>
+  <data name="IAmAttendeeFilter" xml:space="preserve"><value>أنا من الحضور</value></data>
+  <data name="HasLinkedTasksFilter" xml:space="preserve"><value>لديه مهام مرتبطة</value></data>
+  <data name="FromDate" xml:space="preserve"><value>من تاريخ</value></data>
+  <data name="ToDate" xml:space="preserve"><value>إلى تاريخ</value></data>
+  <data name="AddNew" xml:space="preserve"><value>اجتماع جديد</value></data>
+  <data name="StatusScheduled" xml:space="preserve"><value>مجدوَل</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>مكتمل</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>اجتماع جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل الاجتماع</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>تفاصيل الاجتماع</value></data>
+  <data name="Location" xml:space="preserve"><value>الموقع</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>الغرفة أو المبنى أو رابط مكالمة الفيديو</value></data>
+  <data name="FollowUpOfMeeting" xml:space="preserve"><value>متابعة للاجتماع</value></data>
+  <data name="Attendees" xml:space="preserve"><value>الحضور</value></data>
+  <data name="AttendeesPlaceholder" xml:space="preserve"><value>ابحث عن أشخاص لدعوتهم</value></data>
+  <data name="NoEligibleAttendees" xml:space="preserve"><value>لم يتم العثور على أشخاص مؤهلين. يمكن دعوة مستخدمي المستأجر النشطين الذين يشغلون منصبًا فقط.</value></data>
+  <data name="AddAgendaItem" xml:space="preserve"><value>إضافة</value></data>
+  <data name="AgendaItemPlaceholder" xml:space="preserve"><value>بند جدول الأعمال</value></data>
+  <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
+  <data name="AddAttendee" xml:space="preserve"><value>إضافة</value></data>
+  <data name="ReassignOrganizer" xml:space="preserve"><value>إعادة تعيين المنظّم</value></data>
+  <data name="NewOrganizer" xml:space="preserve"><value>المنظّم الجديد</value></data>
+  <data name="CancelMeeting" xml:space="preserve"><value>إلغاء الاجتماع</value></data>
+  <data name="CancellationReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
+  <data name="InvitationPending" xml:space="preserve"><value>قيد الانتظار</value></data>
+  <data name="InvitationAccepted" xml:space="preserve"><value>مقبولة</value></data>
+  <data name="InvitationDeclined" xml:space="preserve"><value>مرفوضة</value></data>
+  <data name="LinkedTasks" xml:space="preserve"><value>المهام المرتبطة</value></data>
+  <data name="NoLinkedTasks" xml:space="preserve"><value>لا توجد مهام مرتبطة بهذا الاجتماع بعد.</value></data>
+  <data name="Agenda" xml:space="preserve"><value>جدول الأعمال</value></data>
+  <data name="NoAgendaItems" xml:space="preserve"><value>لا توجد بنود في جدول الأعمال بعد.</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>
+  <data name="ErrorMeetingNotFound" xml:space="preserve"><value>تعذر العثور على هذا الاجتماع.</value></data>
+  <data name="ErrorEndBeforeStart" xml:space="preserve"><value>يجب أن يكون وقت النهاية بعد وقت البداية.</value></data>
+  <data name="ErrorMeetingCancelled" xml:space="preserve"><value>هذا الاجتماع ملغى.</value></data>
+  <data name="ErrorMeetingCompleted" xml:space="preserve"><value>هذا الاجتماع مكتمل.</value></data>
+  <data name="ErrorCancellationReasonRequired" xml:space="preserve"><value>سبب الإلغاء مطلوب.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>تم تغيير هذا الاجتماع في هذه الأثناء؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
+  <data name="ErrorSelfFollowUp" xml:space="preserve"><value>لا يمكن أن يكون الاجتماع متابعة لنفسه.</value></data>
+  <data name="ErrorFollowUpNotFound" xml:space="preserve"><value>تعذر العثور على الاجتماع الذي يُعد هذا متابعة له.</value></data>
+  <data name="ErrorOrganizerInvalid" xml:space="preserve"><value>يجب أن يكون المنظّم مستخدم مستأجر نشطًا.</value></data>
+  <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>لا يمكن دعوة هذا الشخص حاليًا.</value></data>
+  <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>هذا الشخص مدعو بالفعل.</value></data>
+  <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>هذا الحاضر ليس ضمن الاجتماع.</value></data>
+  <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>تعذر العثور على بند جدول الأعمال هذا.</value></data>
+  <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>تعذرت إعادة ترتيب جدول الأعمال؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
+  <data name="ErrorTypeNotFound" xml:space="preserve"><value>تعذر العثور على نوع الاجتماع هذا.</value></data>
+  <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>يوجد بالفعل نوع اجتماع بهذا الاسم.</value></data>
+  <data name="ErrorTypeInUse" xml:space="preserve"><value>نوع الاجتماع هذا مستخدم من قبل اجتماع ولا يمكن حذفه.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+</root>

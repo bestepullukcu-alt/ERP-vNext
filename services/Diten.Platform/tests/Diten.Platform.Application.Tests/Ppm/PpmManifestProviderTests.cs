@@ -9,7 +9,7 @@ public sealed class PpmManifestProviderTests
         ["portfolios", "initiatives", "programs", "projects", "investment-cases", "benefit-commitments"];
 
     [Fact]
-    public void Declares_entitlement_gated_PPM_with_six_pages_and_exact_24_permissions()
+    public void Declares_entitlement_gated_PPM_with_six_pages_and_exact_25_permissions()
     {
         var manifest = new PpmManifestProvider().GetManifest();
 
@@ -25,14 +25,28 @@ public sealed class PpmManifestProviderTests
             $"ppm.{resource}.create",
             $"ppm.{resource}.update",
             $"ppm.{resource}.change-lifecycle"
-        }).ToHashSet(StringComparer.Ordinal);
+        })
+        // MOD-0117-FU01 — one explicit addition, Portfolio Assign/Transfer only; no other resource gets it.
+        .Append("ppm.portfolios.assign-owner")
+        .ToHashSet(StringComparer.Ordinal);
         var actual = manifest.Pages.Select(page => page.RequiredPermission)
             .Concat(manifest.Pages.SelectMany(page => page.Actions).Select(action => action.PermissionKey))
             .ToHashSet(StringComparer.Ordinal);
 
-        Assert.Equal(24, actual.Count);
+        Assert.Equal(25, actual.Count);
         Assert.True(actual.SetEquals(expected));
-        Assert.All(manifest.Pages, page => Assert.Equal(3, page.Actions.Count));
+
+        var portfolios = manifest.Pages.Single(page => page.PageCode == "PORTFOLIOS");
+        Assert.Equal(4, portfolios.Actions.Count);
+        Assert.Contains(portfolios.Actions, action => action.ActionCode == "ASSIGN_OWNER"
+            && action.PermissionKey == "ppm.portfolios.assign-owner"
+            && action.IsRowAction
+            && !action.IsToolbarAction
+            && !action.IsDangerous);
+
+        Assert.All(
+            manifest.Pages.Where(page => page.PageCode != "PORTFOLIOS"),
+            page => Assert.Equal(3, page.Actions.Count));
     }
 
     [Fact]

@@ -10,6 +10,7 @@
 - Slug: `management-governance`
 - Branch short code: `mg`
 - Canonical capabilities: `MOD-0354`, `MOD-0355` (historical aliases `CAND-CAP-0008/0009`)
+- Canonical capability (2026-09-11, ADR-003): `MOD-0357` Management Review & Cadence — Blueprint W-5'ten öne çekildi; **`Diten.Platform`'da barınır** (MG servisi yok; sapma ADR-003'te kayıtlı, taşınabilirlik sınırları paket sözleşmesinde)
 - Planned service: `services/Diten.ManagementGovernanceService` — mevcut değil
 - Planned internal modules: `Dws`, `ProcessModeling`
 - Port ve gateway: `TBD`; bu scaffold karar vermez

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>会议类型</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>租户可以安排的受管理评审会议节奏。</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>质量记录</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>此项由质量保证明确设置；绝不会从类型的名称或领域中推断。</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>需要电子签名</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>本阶段仅作为字段记录；签名机制本身将在后续阶段实现。</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>强制出席</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建会议类型</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑会议类型</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>标志</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>默认操作任务类型</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>会议产生的操作默认采用的任务类型。</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>议程模板</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>预先填充新会议的议程；之后每次会议自己的议程仍可独立编辑。</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>该类型尚无议程模板。</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>添加行</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>下移</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>删除行</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>议程行</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>删除此会议类型？</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>此操作无法撤销。会议正在使用的类型无法删除。</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>此会议类型同时被更改；请刷新页面后重试。</value></data>
+</root>

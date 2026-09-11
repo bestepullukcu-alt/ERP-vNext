@@ -713,26 +713,13 @@ const RoleAssignments = (function () {
 
     /*
      * select2 4.0.13 ships the pieces but wires DropdownSearch only for single selects. Composing it here gives a
-     * MULTI select the dropdown search box. Built once and cached: Decorate() creates a class, and a fresh one per
-     * init would discard select2's own event wiring on re-init.
+     * MULTI select the dropdown search box.
+     *
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — Meetings/form.js carried an
+     * identical copy, memoized the same way, for its own attendee/organizer selects; both now call the one
+     * place it is built.
      */
-    let searchableDropdownAdapter = null;
-    const buildSearchableDropdownAdapter = () => {
-        if (searchableDropdownAdapter) return searchableDropdownAdapter;
-        const amd = window.jQuery?.fn?.select2?.amd;
-        if (!amd?.require) return undefined;   // no adapter -> select2 falls back to its default, never throws
-        try {
-            const Dropdown = amd.require('select2/dropdown');
-            const DropdownSearch = amd.require('select2/dropdown/search');
-            const AttachBody = amd.require('select2/dropdown/attachBody');
-            const Utils = amd.require('select2/utils');
-            searchableDropdownAdapter = Utils.Decorate(Utils.Decorate(Dropdown, DropdownSearch), AttachBody);
-            return searchableDropdownAdapter;
-        } catch (e) {
-            console.warn('[RoleAssignments] dropdown search adapter unavailable; falling back to the default.', e);
-            return undefined;
-        }
-    };
+    const buildSearchableDropdownAdapter = () => window.DitenPersonPicker.buildSearchableDropdownAdapter();
 
     const initModuleSelect2 = (selector) => {
         if (!window.jQuery || !window.jQuery.fn?.select2) return;

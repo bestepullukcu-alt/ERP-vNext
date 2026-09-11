@@ -30,8 +30,19 @@ public sealed class FullCatalogPermissionGrantService : IFullCatalogPermissionGr
         _logger = logger;
     }
 
-    public async Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
+    public async Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct)
     {
+        // BL-359 — explicit-grant-only permissions (e.g. ppm.portfolios.assign-owner) never reach the
+        // full-catalog/SuperAdmin role through this automatic path, on first creation or reactivation.
+        if (ExplicitGrantOnlyPermissions.Keys.Contains(permissionKey))
+        {
+            _logger.LogInformation(
+                "Skipped full-catalog auto-grant for explicit-grant-only permission {PermissionId} Key={Key}.",
+                permissionId,
+                permissionKey);
+            return;
+        }
+
         foreach (var roleName in FullCatalogRoleNames)
         {
             try

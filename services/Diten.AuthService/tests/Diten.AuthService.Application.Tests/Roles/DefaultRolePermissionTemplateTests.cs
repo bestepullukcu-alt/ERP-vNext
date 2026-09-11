@@ -293,6 +293,36 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Nope", Catalog()));
     }
 
+    // BL-359 — MOD-0117-FU01: an explicit-grant-only permission never enters any default/startup role
+    // template, including SuperAdmin's otherwise-unfiltered full-catalog branch (owner decision, 2026-09-11).
+    [Fact]
+    public void SuperAdmin_excludes_explicit_grant_only_permissions()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("ppm", "portfolios", "assign-owner", "Assign Owner", null));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", superAdminKeys);
+        Assert.Equal(5, superAdminKeys.Count); // the base Catalog() rows only
+    }
+
+    [Fact]
+    public void Admin_and_Viewer_exclude_explicit_grant_only_permissions_even_under_a_matching_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            new("ppm", "portfolios", "assign-owner", "Assign Owner", null, moduleOverride: "legal-entity")
+        };
+
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", adminKeys);
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", viewerKeys);
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

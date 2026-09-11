@@ -45,6 +45,7 @@ public static partial class PlatformSchemaManifest
             .Concat(DocumentManagementFollowUpCollections)
             .Concat(DocumentRepositoryCollections)
             .Concat(WorkingCalendarCollections)
+            .Concat(MeetingsCollections)
             .ToArray());
 
     /// <summary>Every collection in every profile — what the production path builds.</summary>

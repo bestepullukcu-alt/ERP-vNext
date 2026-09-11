@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>وتيرة اجتماعات المراجعة الخاضعة للحوكمة التي يمكن لمستأجرك جدولتها.</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>سجل جودة</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>يحدد فريق الجودة هذا بشكل صريح؛ ولا يُستنتج أبدًا من اسم النوع أو مجاله.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>يتطلب توقيعًا إلكترونيًا</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>يُسجَّل كحقل فقط في هذه المرحلة؛ آلية التوقيع نفسها ستأتي في مرحلة لاحقة.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>الحضور إلزامي</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>نوع اجتماع جديد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل نوع الاجتماع</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>الخيارات</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>نوع مهمة الإجراء الافتراضي</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>النوع الذي يُخصَّص افتراضيًا لإجراء ناشئ عن اجتماع.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>قالب جدول الأعمال</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>يعبئ جدول أعمال اجتماع جديد مسبقًا؛ ويبقى جدول أعمال كل اجتماع قابلاً للتعديل بشكل مستقل بعد ذلك.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>لا يوجد لهذا النوع قالب جدول أعمال حتى الآن.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>إضافة سطر</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>تحريك للأعلى</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>تحريك للأسفل</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>إزالة السطر</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>سطر جدول الأعمال</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>هل تريد حذف نوع الاجتماع هذا؟</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>لا يمكن التراجع عن هذا الإجراء. لا يمكن حذف نوع يستخدمه اجتماع.</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>تغيّر نوع الاجتماع هذا في هذه الأثناء؛ يرجى تحديث الصفحة والمحاولة مرة أخرى.</value></data>
+</root>

@@ -74,6 +74,7 @@ describe("the checklist editor builds rows and reads them back", () => {
     // The row component, loaded exactly as every page that draws a row loads it. form.js delegates to it, so a
     // harness without it is testing a form that could not run.
     loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     TaskForm = global.TaskForm;
   });
@@ -196,6 +197,7 @@ describe("the payload carries the checklist with the task", () => {
 
   beforeEach(() => {
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     TaskForm = global.TaskForm;
   });
@@ -254,6 +256,7 @@ describe("a row can be dragged without losing the way to move it by keyboard", (
   beforeEach(() => {
     document.body.innerHTML = '<ul id="list"></ul>';
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     TaskForm = global.TaskForm;
     TaskForm.renderChecklistItems(document.getElementById("list"), [{ text: "bir" }, { text: "iki" }], t);
@@ -326,6 +329,7 @@ describe("a move control is live only where it has somewhere to go", () => {
   beforeEach(() => {
     document.body.innerHTML = '<ul id="list"></ul>';
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     TaskForm = global.TaskForm;
   });

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>Meeting Types</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>The governed review-meeting cadences your tenant can schedule.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>Quality Record</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>QA sets this explicitly; it is never inferred from the type's name or domain.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>Requires E-Signature</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>Recorded as a field only in this slice; the signing mechanism itself is a later slice.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>Attendance Mandatory</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>New Meeting Type</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Meeting Type</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identity</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Flags</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>Default Action Task Type</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>The type a meeting-born action defaults to.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>Agenda Template</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>Pre-fills a new meeting's agenda; each meeting's own agenda stays independently editable afterward.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>This type has no agenda template yet.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>Add Line</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>Remove line</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>Agenda line</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Delete this meeting type?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>This cannot be undone. A type used by a meeting cannot be deleted.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>This meeting type changed meanwhile; reload and try again.</value></data>
+</root>
