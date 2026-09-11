@@ -1,7 +1,9 @@
 # Diten ERP — Android (Kotlin) Mobil Uygulama · Yol Haritası (SoR)
 
 **Sahibi (Owner):** gm@grandmedical.eu · **CT:** CONTROL TOWER · **Oluşturma:** 2026-09-10
-**Durum:** BAŞLADI — **M0.1 iskelet CT-ACCEPTED + commit (5ae82588, 2026-09-11)**. Sonraki: M0.2 `:core:network`.
+**Durum:** BAŞLADI — **M0.1 iskelet** (5ae82588) + **M0.2 `:core:network`** (f256df89) CT-ACCEPTED + commit (2026-09-11). Sonraki: M0.3 `:core:database` (Room).
+
+> **M0.2'de teslim edilenler (ölçülen backend sözleşmesine birebir):** Retrofit 2.11 + OkHttp 4.12 + kotlinx.serialization · `NetworkEnvelope<T>` `{data,statusCode,isSuccessful,errors}` → `UiResult` + tipli `NetworkError` · HeaderInterceptor (Bearer + `X-Tenant-Id` + `X-Legal-Entity-Id`, opt-in marker, null-omit, login hariç) · redaksiyonlu debug logging · AuthAuthenticator (401→refresh→tek retry, döngü-korumalı) · auth-seam arayüzleri (`SessionTokenProvider`/`TokenRefresher`) + no-op binding (M0.4 override eder, döngü yok) · AuthApi (`api/tenant-auth/login`,`/mfa/verify`,`api/auth/refresh-token`,`/logout`) · per-domain network-security-config (cleartext yalnız emülatör/localhost) + cert-pin hook · `BuildConfig.BASE_URL`/`NETWORK_LOG`. CT: sıfırdan 10 MockWebServer testi yeşil + R8 release derleniyor.
 
 > **Baseline (ölçüldü, AS ile kuruldu):** proje kökü `mobile-android/DitenERP` · AGP **9.4.0** · Kotlin **2.2.10** · Gradle **9.6** · Gradle daemon JDK **25** (foojay auto-provision) · compileSdk/targetSdk **37** · minSdk **26**. Not: yol haritasındaki eski pinler (AGP 8.5/Gradle 8.9/JDK 17/compileSdk 34) bu ölçülen yığına yukarı hizalandı.
 >
