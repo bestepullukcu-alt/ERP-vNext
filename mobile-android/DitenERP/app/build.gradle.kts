@@ -40,6 +40,10 @@ dependencies {
     implementation(project(":core:design"))
     implementation(project(":core:sync"))
 
+    // First real feature module (WP-MOBILE-M1-PILOT). Brings its @IntoSet
+    // SyncHandler onto the app classpath so SyncEngine runs it.
+    implementation(project(":feature:applicant-intake"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

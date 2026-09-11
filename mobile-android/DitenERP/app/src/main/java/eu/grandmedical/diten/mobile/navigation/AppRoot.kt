@@ -14,6 +14,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import eu.grandmedical.diten.mobile.core.auth.session.AuthState
+import eu.grandmedical.diten.mobile.feature.applicantintake.presentation.navigation.ApplicantIntakeFeature
+import eu.grandmedical.diten.mobile.feature.applicantintake.presentation.navigation.ApplicantIntakeFeature.registerApplicantIntakeGraph
+import eu.grandmedical.diten.mobile.feature.home.HomeModules
 import eu.grandmedical.diten.mobile.feature.home.HomeRoute
 import eu.grandmedical.diten.mobile.feature.login.LoginRoute
 import eu.grandmedical.diten.mobile.feature.login.MfaRoute
@@ -113,10 +116,19 @@ private fun NavGraphBuilder.ditenGraph(navController: NavController) {
     composable(DitenDestination.Home.route) {
         HomeRoute(
             onOpenModule = { moduleKey ->
-                navController.navigate(DitenDestination.ModuleDetail.routeFor(moduleKey))
+                // The Applicant Intake module now navigates into the real feature
+                // (WP-MOBILE-M1-PILOT); every other module still shows the placeholder.
+                if (moduleKey == HomeModules.APPLICANT_INTAKE_KEY) {
+                    navController.navigate(ApplicantIntakeFeature.ROUTE)
+                } else {
+                    navController.navigate(DitenDestination.ModuleDetail.routeFor(moduleKey))
+                }
             },
         )
     }
+
+    // The Applicant Intake feature's list -> create / detail sub-graph.
+    registerApplicantIntakeGraph(navController)
 
     composable(
         route = DitenDestination.ModuleDetail.route,

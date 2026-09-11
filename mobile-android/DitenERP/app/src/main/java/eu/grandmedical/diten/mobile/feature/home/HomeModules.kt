@@ -25,9 +25,16 @@ data class ModuleEntry(
  */
 object HomeModules {
 
+    /**
+     * Module key of the Applicant Intake pilot feature. The shell routes this
+     * key into the real `:feature:applicant-intake` graph instead of the
+     * placeholder (WP-MOBILE-M1-PILOT).
+     */
+    const val APPLICANT_INTAKE_KEY: String = "hcm.applicant-intake"
+
     /** Every module the shell knows about, before any permission gating. */
     val all: List<ModuleEntry> = listOf(
-        ModuleEntry("hcm.applicant-intake", "Aday Başvuru Alımı", "hcm.applicant-intake"),
+        ModuleEntry(APPLICANT_INTAKE_KEY, "Aday Başvuru Alımı", "hcm.applicant-intake"),
         ModuleEntry("hcm.candidate-pipeline", "Aday Havuzu", "hcm.candidate-pipeline"),
         ModuleEntry("hcm.employee-onboarding", "Çalışan Oryantasyonu", "hcm.employee-onboarding"),
         ModuleEntry("hcm.time-attendance", "Mesai ve Devam", "hcm.time-attendance"),
