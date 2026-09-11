@@ -4893,6 +4893,11 @@ ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD
 
 DURUM: AÇIK · SAHİP: CT (WorkCenter) · ÖLÇÜLDÜ: 2026-09-11 (sahip canlıda gördü: hızlı görev hatası "organizasyon birimi belirlenemedi" modalı)
 
+**Düzeltme (CT, 2026-09-11, envanterden):** sahibin gördüğü pencere ham Swal değil, `wwwroot/assets/js/shared/premium-modal.js` (`DitenModal.error`,
+`quick-create.js:116`) — `_GlobalConfirmation.cshtml`'in `DitenDialogAppearance` paketi yanında **ikinci** bir paylaşımlı görünüm tanımı; muhafızın
+"paket bir kez tanımlanır (5 bekleniyor, 6 bulundu)" kırmızısına adaydır. Karar (sahip): kanonik görünüm `_GlobalConfirmation`'ınki ise `DitenModal`
+ona devreder ya da kaldırılır; Meetings/form.js ve Tasks/form-page.js de bunu kullanıyor.
+
 Standart: `.antigravity/rules/premium-modal-standard.md` (MOD-0013) — varsayılan/özelleştirilmemiş SweetAlert2 yasak; onaylar `window.showConfirm`
 (`backbone-shell.js:76`, `_GlobalConfirmation.cshtml`) üzerinden; muhafızlar `tests/dialog-one-implementation.test.js` ("one confirm implementation,
 product-wide") ve `tests/wcn-dialog-one-language.test.js`. Ölçüm: `WorkCenterNext/app.js` hâlâ doğrudan `global.Swal.fire(` çağırıyor
@@ -4909,3 +4914,17 @@ bileşene taşınır; bileşen gerekçe (textarea) ve "hata + Tamam" biçimlerin
 
     grep -n "Swal\.fire(" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
     npx --prefix frontend/Diten.Web vitest run tests/dialog-one-implementation.test.js tests/wcn-dialog-one-language.test.js
+
+### BL-365
+
+**Görev Merkezi'nin ön yüz parçaları paylaşımlı bileşen olarak çıkarılır; toplantı ekranları yeniden yazmaz**
+
+DURUM: AÇIK · SAHİP: CT (WorkCenter) · KARAR: sahip, 2026-09-11 ("liste, kart gibi şeyleri tekrar tekrar yapmayalım") · ENVANTER: `docs/records/audits/2026-09/workcenter-reusable-ui-inventory-2026-09-11.md`
+
+**Hemen değiştir (çıkarma gerekmez):** Meetings iptal modalı → `showConfirm` (textarea, zorunlu) · Meetings tarih-saat → `DitenDateField.enhance({enableTime:true})`.
+**Önce çıkar, sonra kullan (öncelik sırası):** 1 diyalog görünüm adaptörü (`app.js:7727-7787`) → S5/S6 gerekçe diyalogları + Meetings düzenleyen-değiştir ·
+2 kişi/avatar seçici (`Tasks/form.js:487-813`) → Meetings katılımcı seçici (üçüncü kopya) · 3 ilişkili kayıt satırı (`app.js:4402-4407, 4480-4561`) → S4 ·
+4 aylık takvim (`app.js:5918-5999`) → S3b · 5 üç bölgeli detay kabuğu (`app.js:4563-5180`) → S4–S6 detay.
+**Kalsın:** hata kodu köprüsü (modüle özgü kodlar; iskelet aynalanmış).
+**Kural:** her ekran/dilim prompt'u "mevcut parçayı kullan; yalnız app.js içinde gömülüyse önce çıkar" satırı taşır ([[feedback_reuse_frontend_partials]]).
+Metin/CSS taşıyan çıkarmalar l10n/FG-003 kapısından geçer (Antigravity); saf JS çıkarmalar CT alt ajanıyla yapılabilir.
