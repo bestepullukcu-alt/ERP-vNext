@@ -141,6 +141,12 @@ public sealed class AccountKindAcceptanceGuardTests
         var capture = new StringWriter();
         Console.SetOut(capture);
 
+        var originalError = Console.Error;
+
+        var errorCapture = new StringWriter();
+
+        Console.SetError(errorCapture);
+
         var host = new AccountKindAcceptance.AuthTestHost();
         InvalidOperationException thrown;
         try
@@ -150,6 +156,7 @@ public sealed class AccountKindAcceptanceGuardTests
         finally
         {
             Console.SetOut(originalOut);
+            Console.SetError(originalError);
         }
 
         Assert.Contains("TEST-INJECTED-FAILURE", thrown.Message);
@@ -192,6 +199,9 @@ public sealed class AccountKindAcceptanceGuardTests
         var originalOut = Console.Out;
         var capture = new StringWriter();
         Console.SetOut(capture);
+        var originalError = Console.Error;
+        var errorCapture = new StringWriter();
+        Console.SetError(errorCapture);
 
         var host = new AccountKindAcceptance.AuthTestHost();
         try
@@ -201,6 +211,7 @@ public sealed class AccountKindAcceptanceGuardTests
         finally
         {
             Console.SetOut(originalOut);
+            Console.SetError(originalError);
         }
 
         try
@@ -209,6 +220,8 @@ public sealed class AccountKindAcceptanceGuardTests
             Assert.False(string.IsNullOrWhiteSpace(secret));
 
             var consoleText = capture.ToString();
+            Assert.False(errorCapture.ToString().Contains(secret!, StringComparison.Ordinal), "the fixture's captured Console.Error output contains the generated test JWT secret.");
+            Assert.False(thrown.ToString().Contains(secret!, StringComparison.Ordinal), "the startup-failure exception (inner exceptions and stack included) contains the generated test JWT secret.");
             var mongoLogText = string.Join('\n', host.MongoLog);
 
             // Assert.False (not Assert.DoesNotContain): a failure here must not embed the secret in xunit's own
@@ -287,7 +300,11 @@ public sealed class AccountKindAcceptanceGuardTests
     {
         foreach (var key in OverrideEnvironmentKeys)
         {
-            Assert.Equal(expected[key], Environment.GetEnvironmentVariable(key));
+            // Assert.True over Assert.Equal on purpose: Assert.Equal prints expected/actual on failure, and for
+            // MongoDbSettings__ConnectionString or JwtSettings__Secret that would put a connection string or the
+            // generated secret into xunit's own output. Only the variable NAME may appear in the message.
+            var same = string.Equals(expected[key], Environment.GetEnvironmentVariable(key), StringComparison.Ordinal);
+            Assert.True(same, $"Environment variable '{key}' did not return to its initial value (values withheld on purpose).");
         }
     }
 
@@ -400,6 +417,12 @@ public sealed class AccountKindAcceptanceGuardTests
         var capture = new StringWriter();
         Console.SetOut(capture);
 
+        var originalError = Console.Error;
+
+        var errorCapture = new StringWriter();
+
+        Console.SetError(errorCapture);
+
         // The hook disposes the REAL factory for real (no resource actually leaks), then injects the failure this
         // test exists to observe — proving the SURROUNDING cleanup code's resilience, not faking away the dispose.
         host.DisposeFactoryHookForTesting = async factory =>
@@ -416,6 +439,7 @@ public sealed class AccountKindAcceptanceGuardTests
         finally
         {
             Console.SetOut(originalOut);
+            Console.SetError(originalError);
         }
 
         Assert.NotNull(thrown);
@@ -439,6 +463,9 @@ public sealed class AccountKindAcceptanceGuardTests
         var originalOut = Console.Out;
         var capture = new StringWriter();
         Console.SetOut(capture);
+        var originalError = Console.Error;
+        var errorCapture = new StringWriter();
+        Console.SetError(errorCapture);
 
         var host = new AccountKindAcceptance.AuthTestHost();
         InvalidOperationException thrown;
@@ -449,6 +476,7 @@ public sealed class AccountKindAcceptanceGuardTests
         finally
         {
             Console.SetOut(originalOut);
+            Console.SetError(originalError);
         }
 
         var secret = host.GeneratedJwtSecretForLeakGuardOnly;
@@ -458,6 +486,8 @@ public sealed class AccountKindAcceptanceGuardTests
         // into xunit's own failure message, which would itself be the leak this test exists to catch.
         Assert.False(thrown.Message.Contains(secret!, StringComparison.Ordinal), "the startup-failure exception message contains the generated test JWT secret.");
         Assert.False(capture.ToString().Contains(secret!, StringComparison.Ordinal), "the fixture's captured Console output contains the generated test JWT secret.");
+        Assert.False(errorCapture.ToString().Contains(secret!, StringComparison.Ordinal), "the fixture's captured Console.Error output contains the generated test JWT secret.");
+        Assert.False(thrown.ToString().Contains(secret!, StringComparison.Ordinal), "the startup-failure exception (inner exceptions and stack included) contains the generated test JWT secret.");
         var mongoLogText = string.Join('\n', host.MongoLog);
         Assert.False(mongoLogText.Contains(secret!, StringComparison.Ordinal), "mongod's own captured log contains the generated test JWT secret.");
     }
