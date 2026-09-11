@@ -1,0 +1,43 @@
+@using Diten.Web.Views.Meetings.MeetingTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingTypesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["MeetingTypesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* UAS-001 — nothing below this block is drawn for a user who cannot manage meeting types: not the heading,
+   not the filter bar, not the DataTable skeleton. Mirrors Views/Meetings/Index.cshtml's own gate exactly. *@
+@if (!Perms.Has("platform.meetings.types-manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["MeetingTypesTitle"].Value" />
+    return;
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Meetings/MeetingTypes/_Filter.cshtml" />
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["MeetingTypesTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+</div>
+
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-meeting-types" data-dt-standard="v2"> *@
+<partial name="~/Views/Meetings/MeetingTypes/_DataTable.cshtml" />
+
+@section Scripts {
+    @* The GENERAL Meetings payload (window.MeetingsL10n) is loaded too — Meetings/api.js's reason-code bridge
+       (MEETING_TYPE_NOT_FOUND/NAME_DUPLICATE/IN_USE) reads it regardless of which screen calls the API, and it
+       already carries those three sentences (Resources/Views/Meetings/MeetingsIndex.*.resx). *@
+    <partial name="~/Views/Meetings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
+    @* Contract marker: <partial name="_IndexL10n" /> — this screen's OWN labels (window.MeetingTypesL10n). *@
+    <partial name="~/Views/Meetings/MeetingTypes/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/types/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/types/index.js" asp-append-version="true"></script>
+}

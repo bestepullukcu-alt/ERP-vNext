@@ -72,4 +72,5 @@
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>
 </root>

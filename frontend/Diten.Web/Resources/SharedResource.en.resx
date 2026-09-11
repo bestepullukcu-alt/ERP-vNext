@@ -856,6 +856,8 @@
   <data name="Nav.Page.INBOX" xml:space="preserve"><value>Inbox</value></data>
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Override</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Field Definitions</value></data>
+  <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Meetings</value></data>
+  <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Meeting Types</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>You don't have access to {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Ask your administrator to grant you permission for this page.</value></data>
 </root>

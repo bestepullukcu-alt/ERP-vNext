@@ -192,5 +192,7 @@ public sealed record MeetingTypeDto(
 
 /// <summary>The type dropdown's own shape — lighter than <see cref="MeetingTypeDto"/> and gated on
 /// <see cref="MeetingPermissions.Read"/> rather than <see cref="MeetingPermissions.TypesManage"/>: anyone who
-/// may create a meeting must be able to choose a type, without also being able to manage the type catalogue.</summary>
-public sealed record MeetingTypeLookupItemDto(Guid Id, string Name);
+/// may create a meeting must be able to choose a type, without also being able to manage the type catalogue.
+/// S8 — <see cref="AgendaTemplate"/> is carried here too (additive) so the Create/Details flow can pre-fill a
+/// new meeting's agenda from its type (pack K8) without a second round trip through the manage-only endpoint.</summary>
+public sealed record MeetingTypeLookupItemDto(Guid Id, string Name, IReadOnlyList<string> AgendaTemplate);

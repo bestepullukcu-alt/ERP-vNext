@@ -5,25 +5,18 @@
  * select2 control (or that needs the product's dialog LOOK for a raw, multi-field `Swal.fire`) can call, so a
  * third and fourth hand-rolled copy of this never gets written (WP-WC-SHARED-UI-01, E1).
  *
- * ⚠ WHY WorkCenterNext/app.js KEEPS ITS OWN COPIES OF `bindDialogSelect2` AND `dialogLook`, RATHER THAN CALLING
- * THIS FILE — a DELIBERATE, REPORTED EXCEPTION, not an oversight. Three tests pin their exact literal source
- * inside app.js: `wcn-dialog-seven-defects.test.js` and `wcn-dialog-rhythm.test.js` slice
- * `const bindDialogSelect2 = (` straight out of app.js's own text and assert on its body (including the literal
- * class name `wcn-dialog-select`, which also has its own pinned CSS rules), and `wcn-dialog-one-language.test.js`
- * asserts `APP` (app.js's source) contains the literal string `global.DitenDialogAppearance(options)` — the
- * body of `dialogLook`. Deleting either declaration from app.js in favour of a one-line delegation would not
- * change any user-visible behaviour, but it would turn all three tests red for a purely structural reason (this
- * WP's own stop condition treats a red WCN test as "the refactor changed behaviour — revert"). So the SAME
- * logic is written here, fresh, for every OTHER consumer (Meetings today; S5/S6 next), while WorkCenterNext's
- * own copies — already covered by their own tests — are left exactly as they are. `dialogIcon` and
- * `dialogDescriptionClass` are NOT pinned this way (only their CALL SITES are asserted, e.g.
- * `dialogIcon('info', inboxActionIcon(action))`), so app.js's own declarations were safely turned into one-line
- * delegations to this file — no third copy of THEIR bodies either.
+ * WorkCenterNext/app.js's own `bindDialogSelect2`/`dialogLook` used to keep real, duplicate bodies here rather
+ * than delegating — three of app.js's own tests pinned their literal source, and this file's `bindDialogSelect2`
+ * did not yet accept an `options` override for the class names those tests also pinned. WP-WC-SHARED-UI-01 M2b
+ * (2026-09-11) closed that gap: `bindDialogSelect2` now takes `containerCssClass`/`dropdownCssClass` overrides
+ * (below), the four pinning tests were retargeted to read the mechanism from THIS file while keeping the same
+ * behavioural claims, and app.js's own declarations became one-line delegations — like `dialogIcon` and
+ * `dialogDescriptionClass` already were.
  *
- * `bindDialogSelect2` here defaults to ITS OWN class names (`diten-dialog-select` /
- * `diten-dialog-select-dropdown`, styled in backbone-custom.css under "THE SHARED CONFIRM'S SELECT2, PUBLISHED")
- * rather than reusing `wcn-dialog-select` — a shared component does not reach into a module's own CSS hook, and
- * WCN's pinned class stays WCN's.
+ * `bindDialogSelect2` DEFAULTS to its own class names (`diten-dialog-select` / `diten-dialog-select-dropdown`,
+ * styled in backbone-custom.css under "THE SHARED CONFIRM'S SELECT2, PUBLISHED"); a caller with its own pinned
+ * CSS hook (WorkCenterNext's `wcn-dialog-select`) passes it as an option instead — a shared component does not
+ * reach into a module's own CSS hook.
  */
 (function (global) {
     const dialogLook = (options) => {

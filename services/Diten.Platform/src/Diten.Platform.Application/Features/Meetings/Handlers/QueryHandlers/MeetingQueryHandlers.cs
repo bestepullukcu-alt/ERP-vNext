@@ -276,7 +276,7 @@ public sealed class GetMeetingTypeLookupHandler
         var types = await _types.ListAsync(ct);
         IReadOnlyList<MeetingTypeLookupItemDto> items = types
             .OrderBy(t => t.Name, StringComparer.Ordinal)
-            .Select(t => new MeetingTypeLookupItemDto(t.Id, t.Name))
+            .Select(t => new MeetingTypeLookupItemDto(t.Id, t.Name, t.AgendaTemplate))
             .ToList();
 
         return Response<IReadOnlyList<MeetingTypeLookupItemDto>>.Success(items, 200, query.CorrelationId);

@@ -189,7 +189,10 @@
 
         window.DitenModal?.success?.({ title: isEdit ? t('recordUpdated') : t('recordCreated'), timer: 1200 });
         const targetId = isEdit ? meetingId : result.data.id;
-        window.location.href = `/Meetings/${targetId}`;
+        // K8 box 1 — the backend has no create-time agenda field (see this file's own top comment), so the
+        // type's AgendaTemplate is applied on the Details page's first load instead, right after creation. The
+        // flag is one-shot and stripped from the URL immediately after use (see initDetailsPage below).
+        window.location.href = isEdit ? `/Meetings/${targetId}` : `/Meetings/${targetId}?prefillAgenda=1`;
     };
 
     // ── Details ──────────────────────────────────────────────────────────────────────────────────────────────
@@ -328,6 +331,35 @@
         renderLinkedTasks(tasksResult.ok ? (tasksResult.data || []) : []);
     };
 
+    /*
+     * K8 box 1 — the meeting was JUST created (Create's own redirect carries `?prefillAgenda=1`, a one-shot
+     * flag). If the agenda is still empty and the chosen type declares agenda lines, add each line as a REAL
+     * agenda item through the same endpoint a manually-typed line would use — so it is independently editable
+     * afterward, exactly like K8 requires, and no second "template" concept exists on the wire.
+     */
+    const prefillAgendaFromTypeIfRequested = async (meeting) => {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('prefillAgenda') !== '1') { return false; }
+        url.searchParams.delete('prefillAgenda');
+        window.history.replaceState({}, '', url.toString());
+
+        if ((meeting.agendaItems || []).length > 0) { return false; }
+
+        const typesResult = await window.MeetingsApi.lookupTypes();
+        const types = typesResult.ok ? (typesResult.data || []) : [];
+        const type = types.find((candidate) => candidate.id === meeting.meetingTypeId);
+        const lines = (type?.agendaTemplate || []).filter((line) => String(line || '').trim().length > 0);
+        if (lines.length === 0) { return false; }
+
+        for (const line of lines) {
+            // Sequential, not Promise.all — SortOrder is assigned server-side in arrival order, and the
+            // template's own order must survive (pack §"AgendaItem" SortOrder rule).
+            // eslint-disable-next-line no-await-in-loop
+            await window.MeetingsApi.addAgendaItem(meeting.id, { text: line });
+        }
+        return true;
+    };
+
     const initDetailsPage = async () => {
         const root = document.getElementById('meetingDetailsRoot');
         const meetingId = root.dataset.meetingId;
@@ -346,6 +378,9 @@
         initSelect2('#newAttendeeUserId', { placeholder: t('attendeesPlaceholder'), dropdownAdapter: buildSearchableDropdownAdapter() });
 
         await reloadMeeting(meetingId);
+        if (currentMeeting && await prefillAgendaFromTypeIfRequested(currentMeeting)) {
+            await reloadMeeting(meetingId);
+        }
 
         document.getElementById('btnAddAttendee')?.addEventListener('click', async () => {
             const userId = $('#newAttendeeUserId').val();

@@ -72,4 +72,5 @@
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>
 </root>

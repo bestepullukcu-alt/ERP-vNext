@@ -11,10 +11,12 @@ const path = require("path");
  * algorithm — rather than calling the shared one — is the second copy this round exists to close, and nothing
  * short of reading every consumer's own source proves that did not happen.
  *
- * ⚠ ONE NAMED, REPORTED EXCEPTION: WorkCenterNext/app.js keeps its OWN real bodies of `bindDialogSelect2` and
- * `dialogLook` (see shared/diten-dialog.js's own top comment for why — three of app.js's own tests pin their
- * literal source). Everywhere else, a name in DELEGATIONS below must have exactly the ONE real declaration
- * listed for it.
+ * WorkCenterNext/app.js's `bindDialogSelect2`/`dialogLook` used to be the one named exception here — real
+ * bodies of their own, because three of app.js's own tests pinned their literal source. WP-WC-SHARED-UI-01
+ * M2b (2026-09-11) closed it: those three tests were retargeted to read the mechanism from
+ * shared/diten-dialog.js instead (see that file's own top comment), and app.js's declarations became one-line
+ * delegations like `dialogIcon`'s always were. Every name in DELEGATIONS below now has exactly the ONE real
+ * declaration listed for it — no exceptions left.
  */
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
@@ -123,14 +125,18 @@ describe("WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-r
     expect(renderLinkedTasksBody).toMatch(/DitenRelatedRecords\.renderRelatedRows\(/);
   });
 
-  it("⚠ the one named exception: bindDialogSelect2 and dialogLook keep a real body in WorkCenterNext/app.js too", () => {
-    /*
-     * Reported, not accidental — see shared/diten-dialog.js's own top comment. If this ever needs to shrink to
-     * one file, delete this test's expectation FIRST (after confirming the three tests that pin app.js's own
-     * literal source no longer do), not the other way around.
-     */
-    expect(declarations("bindDialogSelect2").real).toEqual(["WorkCenterNext/app.js", "shared/diten-dialog.js"].sort());
-    expect(declarations("dialogLook").real).toEqual(["WorkCenterNext/app.js", "shared/diten-dialog.js"].sort());
+  it("bindDialogSelect2 and dialogLook are real declarations only in shared/diten-dialog.js", () => {
+    // WP-WC-SHARED-UI-01 M2b (2026-09-11) — WorkCenterNext/app.js used to keep a real body of each (the former
+    // named exception, see this file's top comment); both are one-line delegations now.
+    expect(declarations("bindDialogSelect2").real, "a real body reappeared outside the shared module")
+      .toEqual(["shared/diten-dialog.js"]);
+    expect(declarations("dialogLook").real, "a real body reappeared outside the shared module")
+      .toEqual(["shared/diten-dialog.js"]);
+  });
+
+  it("WorkCenterNext/app.js calls the shared bindDialogSelect2/dialogLook rather than redeclaring them", () => {
+    expect(declarations("bindDialogSelect2").delegating).toContain("WorkCenterNext/app.js");
+    expect(declarations("dialogLook").delegating).toContain("WorkCenterNext/app.js");
   });
 
   it("dialogIcon and dialogDescriptionClass are NOT similarly duplicated — only their call sites are pinned", () => {

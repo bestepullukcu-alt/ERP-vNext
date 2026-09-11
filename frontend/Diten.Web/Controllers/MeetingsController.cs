@@ -58,6 +58,21 @@ public sealed class MeetingsController : Controller
         return View("~/Views/Meetings/Edit.cshtml");
     }
 
+    // ── S8 — Meeting Types (Compact satellite settings screen, pack §5 :323) ──
+
+    [HttpGet("MeetingTypes")]
+    public IActionResult MeetingTypesIndex() => View("~/Views/Meetings/MeetingTypes/Index.cshtml");
+
+    [HttpGet("MeetingTypes/Create")]
+    public IActionResult MeetingTypesCreate() => View("~/Views/Meetings/MeetingTypes/Create.cshtml");
+
+    [HttpGet("MeetingTypes/{id:guid}/Edit")]
+    public IActionResult MeetingTypesEdit(Guid id)
+    {
+        ViewData["MeetingTypeId"] = id.ToString();
+        return View("~/Views/Meetings/MeetingTypes/Edit.cshtml");
+    }
+
     // ── Same-origin API proxy ────────────────────────────────────────────────
 
     [HttpGet("api/list")]
@@ -119,6 +134,29 @@ public sealed class MeetingsController : Controller
     [HttpGet("api/lookups/types")]
     public Task<IActionResult> ApiLookupTypes()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/types", readBody: false);
+
+    // ── S8 — Meeting Types CRUD proxy (types-manage only; "types" never matches {id:guid}, same
+    // disambiguation MeetingTypesController's own sub-route already relies on) ─────────────────────
+
+    [HttpGet("api/types")]
+    public Task<IActionResult> ApiTypesList()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/types", readBody: false);
+
+    [HttpGet("api/types/{id:guid}")]
+    public Task<IActionResult> ApiTypesGet(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/types/{id}", readBody: false);
+
+    [HttpPost("api/types")]
+    public Task<IActionResult> ApiTypesCreate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/types", readBody: true);
+
+    [HttpPut("api/types/{id:guid}")]
+    public Task<IActionResult> ApiTypesUpdate(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/types/{id}", readBody: true);
+
+    [HttpDelete("api/types/{id:guid}")]
+    public Task<IActionResult> ApiTypesDelete(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/types/{id}", readBody: false);
 
     // ── Proxy plumbing (identical to TasksController's own) ──────────────────
 

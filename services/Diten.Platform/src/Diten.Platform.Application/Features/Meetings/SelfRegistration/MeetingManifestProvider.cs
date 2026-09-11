@@ -36,6 +36,7 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
     private const string PageMeetingCreate = "MEETING_CREATE";
     private const string PageMeetingDetail = "MEETING_DETAIL";
     private const string PageMeetingEdit = "MEETING_EDIT";
+    private const string PageMeetingTypes = "MEETING_TYPES";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -115,7 +116,29 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                     IsNavigationVisible: false,
                     PageType: "Detail",
                     SortOrder: 13,
-                    Actions: [])
+                    Actions: []),
+
+                // S8 — the meeting-type setting screen (pack §5 :323, §K8). Nav-visible under MEETINGS, same
+                // shape TaskManifestProvider's own TASK_TYPES page takes under TASKS. The MEETINGS page's own
+                // TYPES_MANAGE toolbar action stays — it now links here instead of being a dead placeholder.
+                new ModuleManifestPage(
+                    PageCode: PageMeetingTypes,
+                    DisplayName: "Meeting Types",
+                    RoutePath: "/Meetings/MeetingTypes",
+                    RequiredPermission: MeetingPermissions.TypesManage,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 20,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Meeting Type", MeetingPermissions.TypesManage,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Meeting Type", MeetingPermissions.TypesManage,
+                            "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Meeting Type", MeetingPermissions.TypesManage,
+                            "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ])
             ],
             NotificationEvents: []);
 }

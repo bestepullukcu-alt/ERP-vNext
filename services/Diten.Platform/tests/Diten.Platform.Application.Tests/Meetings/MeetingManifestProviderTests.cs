@@ -55,14 +55,29 @@ public sealed class MeetingManifestProviderTests
         }
     }
 
-    /// <summary>S3 — pack §9: the top-level list is the module's own nav entry now that its screen exists;
+    /// <summary>S3/S8 — the top-level list AND the meeting-type setting screen are the module's nav entries;
     /// the three work-surface routes (Create/Detail/Edit) stay nav-hidden, reached only from the list, the
-    /// same shape TaskManifestProvider's own TASK_CREATE/TASK_DETAIL/TASK_EDIT pages take.</summary>
+    /// same shape TaskManifestProvider's own TASK_CREATE/TASK_DETAIL/TASK_EDIT pages take (its own TASK_TYPES
+    /// page is nav-visible too, under TASKS — MEETING_TYPES mirrors it under MEETINGS).</summary>
     [Fact]
-    public void Only_the_top_level_list_is_navigation_visible()
+    public void Only_the_list_and_the_type_setting_screen_are_navigation_visible()
     {
         var visible = Manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToList();
-        Assert.Equal(["MEETINGS"], visible);
+        Assert.Equal(["MEETINGS", "MEETING_TYPES"], visible.OrderBy(c => c, StringComparer.Ordinal));
+    }
+
+    /// <summary>S8 — the type setting screen is a child of MEETINGS, gated on TypesManage (not Read), and its
+    /// own three actions (Create/Edit/Delete — unlike TASK_TYPES, MeetingType genuinely supports delete).</summary>
+    [Fact]
+    public void The_meeting_types_page_is_a_types_manage_gated_child_of_meetings_with_crud_actions()
+    {
+        var page = Manifest.Pages.Single(p => p.PageCode == "MEETING_TYPES");
+        Assert.Equal("MEETINGS", page.ParentPageCode);
+        Assert.Equal(MeetingPermissions.TypesManage, page.RequiredPermission);
+        Assert.True(page.IsNavigationVisible);
+        Assert.Equal(3, page.Actions.Count);
+        Assert.All(page.Actions, a => Assert.Equal(MeetingPermissions.TypesManage, a.PermissionKey));
+        Assert.Contains(page.Actions, a => a.ActionCode == "DELETE" && a.IsDangerous);
     }
 
     [Fact]

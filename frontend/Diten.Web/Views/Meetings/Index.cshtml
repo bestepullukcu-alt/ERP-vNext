@@ -24,6 +24,14 @@
         <h5 class="mb-0">@Localizer["MeetingsTitle"]</h5>
         <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
     </div>
+    @* S8 — the manifest's own TYPES_MANAGE toolbar action (SelfRegistration/MeetingManifestProvider.cs) now
+       links to the meeting-type setting screen instead of being an unreachable declaration. *@
+    @if (Perms.Has("platform.meetings.types-manage"))
+    {
+        <a href="/Meetings/MeetingTypes" class="btn btn-label-secondary">
+            <i class="bx bx-purchase-tag me-1"></i>@Localizer["ManageTypes"]
+        </a>
+    }
 </div>
 
 @* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-meetings" data-dt-standard="v2"> *@

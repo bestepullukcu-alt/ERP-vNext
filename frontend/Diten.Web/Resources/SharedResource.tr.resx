@@ -856,6 +856,8 @@
   <data name="Nav.Page.INBOX" xml:space="preserve"><value>Gelen Kutusu</value></data>
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>İstisna</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Alan Tanımları</value></data>
+  <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
 </root>

@@ -94,6 +94,13 @@
         deleteAgendaItem: (id, itemId) => request('DELETE', `/${id}/agenda/${itemId}`),
         linkedTasks: (id) => request('GET', `/${id}/tasks`),
         lookupAttendees: () => request('GET', '/lookups/attendees'),
-        lookupTypes: () => request('GET', '/lookups/types')
+        lookupTypes: () => request('GET', '/lookups/types'),
+
+        // ── S8 — Meeting Types (types-manage) ───────────────────────────────
+        typesList: () => request('GET', '/types'),
+        typesGet: (id) => request('GET', `/types/${id}`),
+        typesCreate: (payload) => request('POST', '/types', payload),
+        typesUpdate: (id, payload) => request('PUT', `/types/${id}`, payload),
+        typesDelete: (id) => request('DELETE', `/types/${id}`)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -45,7 +45,12 @@ const GATED = {
   "Meetings/Index.cshtml": "platform.meetings.read",
   "Meetings/Create.cshtml": "platform.meetings.create",
   "Meetings/Edit.cshtml": "platform.meetings.update",
-  "Meetings/Details.cshtml": "platform.meetings.read"
+  "Meetings/Details.cshtml": "platform.meetings.read",
+  // S8 — the meeting-type setting screen, gated on types-manage alone (no separate read key for it: managing
+  // the catalogue and choosing a type from it are different actions, and choosing needs only meetings.read).
+  "Meetings/MeetingTypes/Index.cshtml": "platform.meetings.types-manage",
+  "Meetings/MeetingTypes/Create.cshtml": "platform.meetings.types-manage",
+  "Meetings/MeetingTypes/Edit.cshtml": "platform.meetings.types-manage"
 };
 
 describe("the gate stands in front of the page, not beside it", () => {

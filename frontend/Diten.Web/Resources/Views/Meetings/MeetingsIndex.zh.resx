@@ -72,4 +72,5 @@
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>
 </root>

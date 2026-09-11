@@ -796,6 +796,8 @@
   <data name="Nav.Page.INBOX" xml:space="preserve"><value>Bandeja de entrada</value></data>
   <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Excepción</value></data>
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Definiciones de campos</value></data>
+  <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Reuniones</value></data>
+  <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Tipos de reunión</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>No tienes acceso a {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Solicita a tu administrador que te conceda acceso a esta página.</value></data>
 </root>

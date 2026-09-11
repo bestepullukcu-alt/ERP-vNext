@@ -72,4 +72,5 @@
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>Meeting Types</value></data>
 </root>
