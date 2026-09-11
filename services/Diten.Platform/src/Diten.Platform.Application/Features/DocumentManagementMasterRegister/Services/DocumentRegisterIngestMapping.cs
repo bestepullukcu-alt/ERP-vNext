@@ -91,6 +91,10 @@ public static class DocumentRegisterIngestMapping
         target.LifecycleStatus = MapLifecycleStatus(src.Status);
         target.IsSystemAllocated = false;                 // manual provenance (not the FU07 engine)
         target.CollectionInstanceId = Guid.Empty;          // folderless metadata projection (§8)
+        // DCP-005 Step 0, Part B — Quality's CSV call, copied 1:1 (both the seed and the runtime ingest command
+        // go through this one method, so the two paths cannot disagree about it). See the field's own doc comment
+        // on DocumentMasterRegisterEntry for how a citation consumes it.
+        target.CitableByQualityDecision = src.LinkableInErp;
 
         if (!src.LinkableInErp)
         {

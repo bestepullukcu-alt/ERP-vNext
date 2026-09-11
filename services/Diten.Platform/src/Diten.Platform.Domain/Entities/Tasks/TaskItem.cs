@@ -414,9 +414,14 @@ public sealed class TaskDocumentReference
     public required DateTimeOffset ReferencedAt { get; init; }
 
     /// <summary>
-    /// Which imported list version the five frozen values were read from
+    /// Which imported CSV list version the five frozen values were read from
     /// (<c>DocumentReferenceListVersion.Id</c>). A withdrawn version stays readable here on purpose: the task
     /// cited what it cited, and withdrawal is a statement about the FUTURE, not about the past.
+    ///
+    /// <para>DCP-005 Step 2 — nullable since the citation source moved from the versioned CSV list to the live
+    /// Document Master Register (<c>IControlledDocumentCitationPort</c>), which carries no list version. Null on
+    /// every citation frozen from the register; the pre-migration rows keep the version id they were frozen
+    /// with, unchanged.</para>
     /// </summary>
-    public required Guid ListVersionId { get; init; }
+    public required Guid? ListVersionId { get; init; }
 }

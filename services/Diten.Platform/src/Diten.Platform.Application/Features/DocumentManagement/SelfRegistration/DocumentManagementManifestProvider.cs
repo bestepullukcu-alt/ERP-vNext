@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.DocumentManagementAccessMatrix;
 using Diten.Platform.Application.Features.DocumentManagementContract;
 using Diten.Platform.Application.Features.DocumentManagementControlledDocuments;
 using Diten.Platform.Application.Features.DocumentManagementInstantiation;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister;
 using Diten.Platform.Application.Features.DocumentManagementQmsBaseline;
 using Diten.Platform.Application.Features.DocumentManagementTemplateMasters;
 using Diten.Platform.Application.Features.DocumentManagementTemplateVariants;
@@ -379,6 +380,24 @@ public sealed class DocumentManagementManifestProvider : IModuleManifestProvider
                     PageType: "List",
                     SortOrder: 70,
                     Actions: []),
+
+                // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the audited two-step CSV import (preview → commit), same
+                // toolbar-action shape as QMS_IMPORT above. RequiredPermission is the real
+                // DocumentMasterRegisterPermissions.Import key the [HasPermission] attributes enforce.
+                new ModuleManifestPage(
+                    PageCode: "MASTER_REGISTER_IMPORT",
+                    DisplayName: "Import Master Register",
+                    RoutePath: "/DocumentManagementMasterRegister/Import",
+                    RequiredPermission: DocumentMasterRegisterPermissions.Import,
+                    ParentPageCode: "MASTER_REGISTER",
+                    IsNavigationVisible: false,
+                    PageType: "Detail",
+                    SortOrder: 71,
+                    Actions:
+                    [
+                        new ModuleManifestAction("IMPORT_DRY_RUN", "Preview Import", DocumentMasterRegisterPermissions.Import, "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("IMPORT_COMMIT", "Commit Import", DocumentMasterRegisterPermissions.Import, "Toolbar", 20, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                    ]),
 
                 new ModuleManifestPage(
                     PageCode: "REPOSITORY_ASSESSMENT",

@@ -285,7 +285,12 @@ const MasterRegisterList = (function () {
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
                 attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
                 action: () => toggleInlineFilter()
-            }
+            },
+            // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — "Import" in the Action dropdown, the golden slot dt-defaults
+            // already reserves for a module's own import entry (below print/CSV/Excel/PDF/copy).
+            importBtn: perms.canImport
+                ? { attr: { title: L.ImportTitle || L.Import }, action: () => { window.location.href = '/DocumentManagementMasterRegister/Import'; } }
+                : null
         };
 
         dt = window.DitenDataTable.createCrudTable({

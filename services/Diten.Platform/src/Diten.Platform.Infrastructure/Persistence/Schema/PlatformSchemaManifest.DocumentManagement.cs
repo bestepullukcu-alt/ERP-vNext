@@ -508,5 +508,25 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.IsDeleted),
                         new CreateIndexOptions { Name = "ix_dm_collection_deviations_tenant_baseline_status" })
             }),
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the register's upload history. UNIQUE on (TenantId, ContentHash): the
+        // idempotency guarantee (same bytes committed twice ⇒ 409 IMPORT_ALREADY_APPLIED, never a duplicate row) is
+        // enforced by this index, not only by the handler's own pre-check — a race between two concurrent commits of
+        // the same file is decided by Mongo, not by whichever request's read ran first.
+        Collection<DocumentRegisterImportBatch>(
+            SchemaProfile.DocumentManagement,
+            PlatformCollections.DocumentRegisterImportBatches,
+            () => new CreateIndexModel<DocumentRegisterImportBatch>[]
+            {
+                    new CreateIndexModel<DocumentRegisterImportBatch>(
+                        Builders<DocumentRegisterImportBatch>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.ContentHash),
+                        new CreateIndexOptions { Unique = true, Name = "ux_dm_register_import_batches_tenant_content_hash" }),
+                    new CreateIndexModel<DocumentRegisterImportBatch>(
+                        Builders<DocumentRegisterImportBatch>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Descending(x => x.AppliedAt),
+                        new CreateIndexOptions { Name = "ix_dm_register_import_batches_tenant_applied_at" })
+            }),
     };
 }

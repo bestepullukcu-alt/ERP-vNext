@@ -135,4 +135,20 @@ public sealed class DocumentMasterRegisterEntry : TenantScopedEntity
 
     public string? CorrelationId { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>
+    /// DCP-005 Step 0, Part B (owner decision 2026-09-11) — Quality's own historical "linkable in ERP" call, carried
+    /// forward verbatim from the CSV register's <c>linkable_in_erp</c> column (<c>DocumentRegisterIngestMapping.Apply</c>
+    /// copies it 1:1, both on seed and on the runtime ingest path). A document Quality already cleared for citation
+    /// stays citable in the new register even while its FU08 lifecycle has not yet reached Effective/UnderRevision —
+    /// see <see cref="DocumentMasterRegisterEntry"/>'s consumer, <c>DocumentCitationMapping.ToCitation</c>, for the
+    /// gated formula (Draft/InReview/ApprovedPendingEffective only; Retired/Void never).
+    ///
+    /// <para>⚠ Does NOT feed <see cref="Diten.Platform.Domain.Enums.DocumentManagement.ControlledDocumentLifecyclePolicy.IsOperationallyEffective"/>
+    /// or the effectiveness gate (<c>ResolveDocumentEffectivenessHandler</c>) — those answer "in force?" and stay
+    /// exactly what they were. This field only ever widens what may be CITED, never what may be relied on as
+    /// currently effective. Default false: an old row with the field absent reads false (BSON default), which is
+    /// the safe/conservative reading, not a silent grant.</para>
+    /// </summary>
+    public bool CitableByQualityDecision { get; set; }
 }

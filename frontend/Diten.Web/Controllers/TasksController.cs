@@ -538,12 +538,33 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDocumentListVersions()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/document-list/versions", readBody: false);
 
-    /// <summary>Search the current list. The query string travels; blocked rows come back and are shown.</summary>
+    /// <summary>
+    /// Search the current CSV list. The query string travels; blocked rows come back and are shown.
+    ///
+    /// ⚠ Retained for the admin import page (<c>/Tasks/DocumentList</c>) only — the task-form picker moved to
+    /// <see cref="ApiDocumentCitationsLookup"/> (DCP-005 Step 2, WP-PSS-DCP005-STEP2-CITATION-REPOINT-01).
+    /// </summary>
     [HttpGet("api/document-list/search")]
     public Task<IActionResult> ApiDocumentListSearch([FromQuery] string? term, [FromQuery] int limit)
         => ProxyAsync(
             HttpMethod.Get,
             $"{_gatewayUrl}/api/v1/tasks/document-list/search?term={Uri.EscapeDataString(term ?? string.Empty)}&limit={limit}",
+            readBody: false);
+
+    /// <summary>
+    /// DCP-005 Step 2 — the task-form document picker's search, against the live Document Master Register.
+    /// Replaces <see cref="ApiDocumentListSearch"/> as the picker's source (<c>api.js</c>'s <c>searchDocuments</c>);
+    /// that route stays for the admin CSV import page, which this WP does not retire (BL-369).
+    ///
+    /// ⚠ Named here because this controller is a PROXY with one method per endpoint — a route that exists on the
+    /// service is invisible to the browser until it is listed (measured three times already in this module: the
+    /// pin, the task types, the withdrawal).
+    /// </summary>
+    [HttpGet("api/lookups/document-citations")]
+    public Task<IActionResult> ApiDocumentCitationsLookup([FromQuery] string? term, [FromQuery] int limit)
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/lookups/document-citations?term={Uri.EscapeDataString(term ?? string.Empty)}&limit={limit}",
             readBody: false);
 
     /// <summary>

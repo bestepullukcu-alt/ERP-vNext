@@ -398,10 +398,11 @@
         // an administrative act.
         activeTaskTypes: () => request('GET', '/task-types/active'),
         // ── DCP-005 slice 3 — citing a controlled document ───────────────────────────────────────────────
-        // Search the CURRENT register. Blocked rows come back like any other and the picker refuses them with
-        // their reason visible; hiding them would leave "why can I not cite this SOP" unanswerable.
+        // Search the LIVE Document Master Register (DCP-005 Step 2 — moved off the CSV list). Blocked rows come
+        // back like any other and the picker refuses them with their reason visible; hiding them would leave
+        // "why can I not cite this SOP" unanswerable.
         searchDocuments: (term) =>
-            request('GET', `/document-list/search?term=${encodeURIComponent(term || '')}&limit=25`),
+            request('GET', `/lookups/document-citations?term=${encodeURIComponent(term || '')}&limit=25`),
         // What a type SUGGESTS citing. A suggestion the author may untick, never a requirement — and the answer
         // says WHICH kind of empty it is when it is empty, because three different things look alike here.
         typeGoverningDocuments: (typeId, organizationCode) =>

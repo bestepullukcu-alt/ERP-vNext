@@ -190,8 +190,24 @@ public sealed record GetDocumentReferenceListVersionsQuery(string CorrelationId)
 
 /// <summary>
 /// Search the CURRENT list. Blocked rows come back like any other — the caller shows them and refuses them.
+///
+/// <para>DCP-005 Step 2 — the CSV register this reads is retired as the picker's source (see
+/// <see cref="SearchDocumentCitationsQuery"/> below) but stays live for the admin import page
+/// (<c>/Tasks/DocumentList</c>, BL-369 retires it separately).</para>
 /// </summary>
 public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;
+
+/// <summary>
+/// DCP-005 Step 2 — the picker's source, now the live Document Master Register instead of the CSV list. A thin
+/// pass-through to <c>IControlledDocumentCitationPort.SearchAsync</c>, returned as <see cref="DocumentReferenceEntryDto"/>
+/// so the existing frontend picker (<c>document-references.js</c>) needs no shape change — only its source URL
+/// moves (<c>api.js</c>'s <c>searchDocuments</c>).
+///
+/// <para>Blocked rows come back like any other, <c>LinkableInErp = false</c> — same "show it, refuse to let it be
+/// chosen" rule the CSV search used, now driven by the register's own citable judgment.</para>
+/// </summary>
+public sealed record SearchDocumentCitationsQuery(string? Term, int Limit, string CorrelationId)
     : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;
 
 /// <summary>

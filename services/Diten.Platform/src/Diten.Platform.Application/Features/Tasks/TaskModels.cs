@@ -1368,8 +1368,11 @@ public sealed record TaskDocumentReferenceDto(
     string? DocumentVersion,
     string? Status,
     DateTimeOffset ReferencedAt,
-    /// <summary>Which register version said this. Readable even after that version has been withdrawn.</summary>
-    Guid ListVersionId);
+    /// <summary>
+    /// Which CSV list version said this. Readable even after that version has been withdrawn. Null for every
+    /// citation frozen from the Master Register (DCP-005 Step 2) — the register carries no list version.
+    /// </summary>
+    Guid? ListVersionId);
 
 /// <summary>
 /// A task type's governing documents, resolved against the CURRENT list (DCP-005 §6.4).
