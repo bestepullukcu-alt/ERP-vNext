@@ -19,8 +19,8 @@ public sealed class FullCatalogPermissionGrantServiceTests
         var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
         var permissionId = Guid.NewGuid();
 
-        await service.GrantToFullCatalogRolesAsync(permissionId, CancellationToken.None);
-        await service.GrantToFullCatalogRolesAsync(permissionId, CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(permissionId, "goldenslim.records.read", CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(permissionId, "goldenslim.records.read", CancellationToken.None);
 
         var grant = Assert.Single(grants.Assigned);
         Assert.Equal(superAdmin.Id, grant.RoleId);
@@ -35,7 +35,22 @@ public sealed class FullCatalogPermissionGrantServiceTests
         var grants = new FakeRolePermissionRepository();
         var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
 
-        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), CancellationToken.None);
+        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), "goldenslim.records.read", CancellationToken.None);
+
+        Assert.Empty(grants.Assigned);
+    }
+
+    // BL-359 — MOD-0117-FU01: the explicit-grant-only key must never reach the full-catalog SuperAdmin role
+    // through this automatic path, even though the role and repositories are otherwise available.
+    [Fact]
+    public async Task Explicit_grant_only_permission_is_never_auto_granted_to_full_catalog_role()
+    {
+        var superAdmin = new Role("SuperAdmin", "Super Administrator", null, Guid.NewGuid());
+        var roles = new FakeRoleRepository(superAdmin);
+        var grants = new FakeRolePermissionRepository();
+        var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
+
+        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), "ppm.portfolios.assign-owner", CancellationToken.None);
 
         Assert.Empty(grants.Assigned);
     }

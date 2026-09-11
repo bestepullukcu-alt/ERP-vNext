@@ -316,6 +316,24 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        /*
+         * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
+         * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"
+         * list — one registration, one query shape, never two. `IRelatedRecordResolverRegistry` collects every
+         * `IRelatedRecordResolver` registered below via the `IEnumerable<T>` constructor pattern, so a future
+         * resolver (a "meetings" one, in S2) needs only its own registration line, never a change here.
+         */
+        services.AddScoped<Features.Meetings.RecordLinks.IRecordLinkService,
+            Features.Meetings.RecordLinks.RecordLinkService>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolverRegistry,
+            Features.Meetings.RecordLinks.RelatedRecordResolverRegistry>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolver,
+            Features.Meetings.RecordLinks.TaskRelatedRecordResolver>();
+        // MOD-0357 S2 — the "meetings" side of the same registry, the twin of TaskRelatedRecordResolver above.
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolver,
+            Features.Meetings.RecordLinks.MeetingRelatedRecordResolver>();
+        services.AddScoped<Features.Meetings.Services.IMeetingIdempotencyKeyResolver,
+            Features.Meetings.Services.MeetingIdempotencyKeyResolver>();
         // MOD-0024 — the SECOND work-item provider. This single line is the only WorkAggregation touch point:
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
@@ -425,6 +443,9 @@ public static class DependencyInjection
         // MOD-0024 / İş Raporu — the Work Report is its OWN module, not a page under "Görev Tanımları": the
         // sidebar groups by module, so no ParentPageCode could have moved it out of the settings group.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.WorkReportManifestProvider>();
+        // MOD-0357 S2 — Meetings. See MeetingManifestProvider's own doc comment for a reported, unresolved
+        // conflict this registration creates with NavManifestL10nGuardTests (frontend/**, protected this WP).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Meetings.SelfRegistration.MeetingManifestProvider>();
 
         return services;
     }

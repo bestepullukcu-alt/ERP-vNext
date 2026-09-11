@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>Типы совещаний</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Регламентированные ритмы совещаний по обзору, которые может планировать ваш тенант.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>Запись качества</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>Это устанавливает явно служба качества; значение никогда не выводится из названия или домена типа.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>Требуется электронная подпись</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>На этом этапе фиксируется только как поле; сам механизм подписи появится позже.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>Присутствие обязательно</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Новый тип совещания</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить тип совещания</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Флаги</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>Тип задачи действия по умолчанию</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>Тип, который по умолчанию получает действие, созданное из совещания.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>Шаблон повестки</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>Предзаполняет повестку нового совещания; после этого повестка каждого совещания остаётся независимо редактируемой.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>У этого типа пока нет шаблона повестки.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>Переместить вверх</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>Переместить вниз</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>Удалить строку</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>Строка повестки</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Удалить этот тип совещания?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Это действие нельзя отменить. Тип, используемый совещанием, нельзя удалить.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Этот тип совещания изменился в это время; обновите страницу и повторите попытку.</value></data>
+</root>

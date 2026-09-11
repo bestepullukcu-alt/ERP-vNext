@@ -4721,7 +4721,23 @@ kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi 
 
 **Canlı bildirim: "kişi kendine görev açamıyor" — kanıt bekliyor**
 
-DURUM: AÇIK · KANIT BEKLİYOR · SAHİP: sahip (ortam · kullanıcı · tam hata mesajı) · KAYIT: 2026-09-10
+DURUM: AÇIK · DEV'DE YENİDEN ÜRETİLDİ (CT, 2026-09-11, sahibin oturumuyla) · SAHİP: sahip (veri) + ürün kararı · KAYIT: 2026-09-10
+
+**EK (CT, 2026-09-11):** Aynı veri eksiği DCP-005 Adım 2'nin (BL-369) canlı kanıtını da engelliyor — `CreateTaskItemHandler` organizasyon
+birimini alıntı dondurmadan ÖNCE çözer (`:208-219` vs `:331`), dev kiracısında birim olmadığı için görev hiç açılamıyor. Kontrol turu için karar
+(elle MOD-0288 ekranları vs tek seferlik `DevSeeds:OrganizationPositions=true`) bu yüzden iki işi birden açıyor. **Üçüncü etki (CT, S8 kabulü, 2026-09-11):** toplantı oluşturma da dev'de `MEETING_ORGANIZER_INVALID` ile düşüyor — organizatör uygunluğu
+görev kişi aramasıdır (aktif pozisyon), pozisyon yok → uygun kimse yok; MOD-0357 K8 kutu 1'in canlı kanıtı da buna bağlı.
+
+**Yeniden üretim:** Görev Merkezi → + Yeni → Hızlı görev → Kime: Kendim → Oluştur → `POST /Tasks/api` 400, ekranda
+"Bu görev için organizasyon birimi belirlenemedi. Yöneticinizden size bir pozisyon atamasını veya bir kök organizasyon birimi
+tanımlamasını isteyin." (`ORGANIZATION_UNIT_UNRESOLVED`). Sebep veri: dev kiracısında `organization_units` 0, `positions` 0,
+`position_assignments` 0 (2026-09-10 tohum temizliğinden sonra) → `CreateTaskItemHandler` basamaklı geri düşüşü (istek → pozisyonun birimi
+→ kök birim) hiçbir yerde birim bulamıyor. Kod kural gereği davranıyor (pack §12 K6: her görevin birimi olur, uydurulmaz). Canlıda aynı
+mesaj görülüyorsa o kiracıda ya kullanıcının pozisyonu yok ya da aktif kök birim yok — kontrol turunda bakılacak.
+
+**Ürün sorusu (BL-366):** organizasyon yapısı kurulmamış bir kiracıda görev açmak tümden kilitli mi kalmalı? Öneri: kiracı
+kurulumu (onboarding) bir varsayılan kök birim ("Şirket") oluştursun; böylece pozisyonsuz kullanıcı kendine görev açabilir, başkasına
+atama yine pozisyon ister (BL-356).
 
 Testlerde kendine açma 201 (`TaskAssignmentWriteGuardHttpTests.A_task_for_MYSELF_is_201_without_assign`);
 canlıdaki kod `01bc0915`'i içermiyor. Koddaki tek aday: pozisyonsuz kullanıcının görevi kök birime düşer
@@ -4732,7 +4748,21 @@ Tahmin değil ölçüm için ekran görüntüsü + kullanıcı + ortam gerekiyor
 
 **PPM `assign-owner` izni otomatik grant yollarından dışlanmıyor — altyapı (AuthService) işi**
 
-DURUM: AÇIK · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10 · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPALI (CT, 2026-09-11, `0bf3b283`) · KARAR VERİLDİ (sahip, 2026-09-11 — doğrudan onay): assign-owner hiçbir otomatik yolla verilmez — SuperAdmin tam katalog, kiracı Admin
+modül eşitlemesi, başlangıç rol şablonu dahil; yalnız açık ve yetkili atama · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10
+
+**KAPANIŞ (CT, 2026-09-11, commit `0bf3b283`, dal `feature/mg/mod-0357-management-review-cadence`):** WP-INFRA-PPM-ASSIGN-OWNER-01.
+Tek liste `Diten.AuthService.Domain/Authorization/ExplicitGrantOnlyPermissions.cs` (`ppm.portfolios.assign-owner`); dört otomatik yol onu okur:
+`FullCatalogPermissionGrantService` (imza `permissionKey` aldı), `DefaultRolePermissionTemplate.SelectFor` (SuperAdmin dahil; DataSeeder +
+RoleProvisioningService aynı noktadan geçer), `EntitlementPermissionSyncService.GrantPermissionsToRolesAsync` süzgeci, `InternalPermissionsController`
+create/reactivate. Resolver dokunulmadı (anahtar = açık rol grant'i ∩ onaylı PPM entitlement). Platform manifesti: PORTFOLIOS sayfasına `ASSIGN_OWNER`
+RowAction (25 anahtar). Kanıt: liste boşaltılınca 5 test kırmızı (dört yol); Auth 667/670 (3 kırmızı önceden: CRM knowledge baseline-CSV, user-lookup DTO);
+paylaşımlı yerel Mongo'da katalog 429, anahtarı tutan rol 0, SuperAdmin bu anahtar dışında her aktif anahtarı tutuyor, kiracı Admin 77 değişmedi.
+Yayım girdisi FU01 SHA `4a10cd92` (`git show`). Açık: Codex'in "named-human / assignable target" ve SOP-0029 kayıt erişimi (PPM tarafı, FU01 kapsamı dışı).
+
+**Yetki girdisi kuralı (CT, 2026-09-11):** PPM'nin push edilmiş amendment SHA'sı (`git show <sha>:<pack yolu>`) dar Auth işinin
+(dışlama mekanizması + BL-360) girdisi olarak kabul edilir; anahtarın kataloğa/manifeste YAYIMI ise üst paketin
+approved/ready-for-dev olmasını bekler (izin yüzeyi PPM kapsamı).
 
 Anahtar `ppm.portfolios.assign-owner` henüz hiçbir dalda/pakette yok (`git log --all -S'assign-owner'` boş;
 MOD-0117/DCP-006 kapsamı genişletilmeli). Eklendiğinde: `FullCatalogPermissionGrantService` ve
@@ -4750,7 +4780,16 @@ BL-360 aynı WP'de. Auth, PPM için korumalı yol; iş CT'nin altyapı kulvarın
 
 **PPM toplu-grant kapısında harf tutarsızlığı: `Applies` "PPM" (Ordinal) sorulur, kod sonra küçültülür**
 
-DURUM: AÇIK · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPALI (CT, 2026-09-11, `0bf3b283`) · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+
+**KAPANIŞ (CT, 2026-09-11, commit `0bf3b283`):** Önerilen düzeltmenin ilk yarısı uygulandı, ikinci yarısı bilinçli olarak DEĞİL: `Applies`
+(Ordinal "PPM") resolver'a bakan yüzey olduğu için harf duyarsız yapılmadı; yerine dar `IsPpmModuleCodeAnyCase` eklendi ve yalnız
+`EntitlementPermissionSyncService`'in üç kapısında (`GrantModuleAsync`, `GrantModuleWithKeysAsync`, `RevokeModuleAsync`) kullanıldı. Resolver süzme
+matrisi testle birebir. CT bulgusu: ajanın grant-tarafı "PPM/ppm/Ppm" teorileri boş kanıttı (paylaşılan test kataloğunda PPM izni yoktu; iki kapı
+Ordinal'e döndürülünce 38 test yeşil kaldı) → katalog PPM izinleriyle genişletildi, aynı sabotaj 4 vaka kırmızı.
+**Ek kapanış (CT, 2026-09-11, Codex'in 0bf3b283 okuması):** kapı ham kodla soruluyordu, `IsPpmModuleCodeAnyCase` yalnız harf duyarsızdı; `" PPM "` gibi boşluklu
+kod kapıyı geçip `NormalizeModuleCode` sonrası `ppm` olarak işlenebilirdi. Düzeltme: üç kapı (grant, grant-with-keys, revoke) önce normalize eder, sonra sorar;
+tanıyıcı ayrıca Trim yapar. Teoriler `" PPM "`, `" ppm "`, `"\tPpm\n"` ile genişletildi (gerçek PPM kataloğu); ham-kod kapısına dönülünce 9 vaka kırmızı.
 
 `PpmEntitlementPermissionPolicy.Applies` (`:16-17`) `StringComparison.Ordinal` ile `"PPM"` arar.
 `EntitlementPermissionSyncService` (`:55,:75,:185`) kapıyı `NormalizeModuleCode` (trim + lowercase,
@@ -4838,3 +4877,201 @@ DURUM: AÇIK · SAHİP: SAHİPSİZ · KAYIT: 2026-09-11
   kasıtlıysa belgelenmeli.
 
 Tablo: `docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.
+
+### BL-364
+
+**Görev Merkezi: iki kart sözleşmede olmayan yeteneklere bakıyor (`compliance`, `approvalChain`)**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-11 (alt ajan, `ee10229c` turunda; CT doğrulamadı)
+
+`WorkCenterNext/app.js` `renderCompliance` (`hasCap(item, 'compliance')`, ~:4409, canlı bağlı ~:5025) ve `renderApprovalChain`
+(`hasCap(item, 'approvalChain')`, ~:4392, ~:5125): iki yetenek adı da `fixture-contract.js` CAPABILITIES listesinde yok; hiçbir
+fixture ya da sağlayıcı üretmiyor. `related`/`relatedRecords` yakın-kaçığından farklı olarak sıfır eşleşme → ölü ya da sözleşme
+öncesi kod. Karar: sözleşmeye eklenir mi (kim üretir?) yoksa kart silinir mi.
+
+**Ölçüm komutu:**
+
+    grep -n "hasCap(item, 'compliance')\|hasCap(item, 'approvalChain')" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+    grep -n "'compliance'\|'approvalChain'" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/fixture-contract.js
+
+### BL-366
+
+**Kiracı kurulumu kök organizasyon birimi oluşturmuyor — yapısız kiracıda görev ve toplantı açılamaz**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-11
+
+Görev oluşturma her göreve bir birim ister (`CreateTaskItemHandler` basamağı: istek → atananın pozisyon birimi → aktif kök birim →
+`ORGANIZATION_UNIT_UNRESOLVED`). Toplantı düzenleyeni ve katılımcıları aktif pozisyon ister (MOD-0357 D2). Kiracı oluşturma (Platform
+onboarding, bkz. `project_platform_tenant_onboarding_gaps`) hiçbir organizasyon kaydı yaratmıyor → yeni kiracıda yönetici bile kendine görev
+açamaz (BL-358 dev yeniden üretimi: 0 birim / 0 pozisyon). Öneri: onboarding tek bir aktif kök birim (tüzel kişiliğe bağlı, kod `ROOT`/
+ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD-0288). SAP'ta şirket kodu ve kök org birimi kurulumun parçasıdır.
+
+**Ölçüm komutu:**
+
+    mongosh "mongodb://localhost:27017/diten_personalization_dev" --quiet --eval 'print(db.organization_units.countDocuments({}), db.positions.countDocuments({}), db.position_assignments.countDocuments({}))'
+
+### BL-367
+
+**Görev Merkezi'nin hata/onay pencereleri hâlâ ham SweetAlert; ürünün tek diyalog bileşeni kullanılmıyor**
+
+DURUM: AÇIK · SAHİP: CT (WorkCenter) · ÖLÇÜLDÜ: 2026-09-11 (sahip canlıda gördü: hızlı görev hatası "organizasyon birimi belirlenemedi" modalı)
+
+**EK BULGU (CT, 2026-09-11):** `wcn-dialog-one-language` testi ("declares the package once") main'den beri kırmızı: diyalog görünüm paketi parmak izi
+(`popup: 'rounded-4 shadow-lg'`) `frontend/Diten.Web/wwwroot/assets/js/PPM/Initiatives/index.js` içinde de var (Codex, `7f37e172`) — PPM kulvarında ikinci bir
+diyalog görünümü kopyası. Kapanış PPM'de: `DitenDialog`/`window.showConfirm` kullanımı; CT bilgi verdi.
+
+**Düzeltme (CT, 2026-09-11, envanterden):** sahibin gördüğü pencere ham Swal değil, `wwwroot/assets/js/shared/premium-modal.js` (`DitenModal.error`,
+`quick-create.js:116`) — `_GlobalConfirmation.cshtml`'in `DitenDialogAppearance` paketi yanında **ikinci** bir paylaşımlı görünüm tanımı; muhafızın
+"paket bir kez tanımlanır (5 bekleniyor, 6 bulundu)" kırmızısına adaydır. Karar (sahip): kanonik görünüm `_GlobalConfirmation`'ınki ise `DitenModal`
+ona devreder ya da kaldırılır; Meetings/form.js ve Tasks/form-page.js de bunu kullanıyor.
+
+Standart: `.antigravity/rules/premium-modal-standard.md` (MOD-0013) — varsayılan/özelleştirilmemiş SweetAlert2 yasak; onaylar `window.showConfirm`
+(`backbone-shell.js:76`, `_GlobalConfirmation.cshtml`) üzerinden; muhafızlar `tests/dialog-one-implementation.test.js` ("one confirm implementation,
+product-wide") ve `tests/wcn-dialog-one-language.test.js`. Ölçüm: `WorkCenterNext/app.js` hâlâ doğrudan `global.Swal.fire(` çağırıyor
+(`:8489`, `:8580`; dosyanın kendi yorumu `:7677` "on beş çağrı vardı" diye başlıyor — ikiye inmiş, sıfır değil) ve toplam 18 `Swal`
+referansı taşıyor. Sahip 2026-09-11: "bu modal yanlış, biz modallarda değişiklik yaptık" — hızlı görev hata penceresi standart dışı.
+İki muhafız main'de zaten kırmızı ama sebebi başka ekip: `PPM/Initiatives/index.js` (paylaşılan bileşen dışı diyalog) + görünüm paketinin
+6. tanımı — BL-343 ailesi.
+
+**Yapılacak (paylaşımlı parça girişimi BL-365 ile birlikte):** WCN'deki kalan ham `Swal.fire` çağrıları ve hata/onay/gerekçe diyalogları tek
+bileşene taşınır; bileşen gerekçe (textarea) ve "hata + Tamam" biçimlerini destekliyorsa kullanılır, desteklemiyorsa önce bileşen genişletilir
+(metin → l10n kapısı). Toplantı S3'ün kendi Bootstrap iptal modalı (`#cancelMeetingModal`) da aynı bileşene geçer.
+
+**Ölçüm komutu:**
+
+    grep -n "Swal\.fire(" frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js
+    npx --prefix frontend/Diten.Web vitest run tests/dialog-one-implementation.test.js tests/wcn-dialog-one-language.test.js
+
+### BL-365
+
+**Görev Merkezi'nin ön yüz parçaları paylaşımlı bileşen olarak çıkarılır; toplantı ekranları yeniden yazmaz**
+
+DURUM: AÇIK · SAHİP: CT (WorkCenter) · KARAR: sahip, 2026-09-11 ("liste, kart gibi şeyleri tekrar tekrar yapmayalım") · ENVANTER: `docs/records/audits/2026-09/workcenter-reusable-ui-inventory-2026-09-11.md`
+
+**İLERLEME (CT, 2026-09-11, `6bab238c`):** Görev Merkezi'nin `bindDialogSelect2` / `dialogLook` kopyaları kapandı — app.js tek satır delegasyon,
+dört test (`wcn-dialog-seven-defects`, `wcn-dialog-rhythm`, `wcn-dialog-one-language`, `wcn-detail-three-regions`) shared dosyayı okuyor, muhafızın istisna listesi
+yalnız `shared/diten-dialog.js`; ikinci gövde eklenince muhafız kırmızı (CT sabotajı). `.wcn-dialog-select` CSS kaldı (delegasyon sınıf adını option olarak taşıyor).
+Kalan: #4 aylık takvim → ortak takvim bileşeni (S3b, sahip: önce tasarım konuşulacak).
+
+**Hemen değiştir (çıkarma gerekmez):** Meetings iptal modalı → `showConfirm` (textarea, zorunlu) · Meetings tarih-saat → `DitenDateField.enhance({enableTime:true})`.
+**Önce çıkar, sonra kullan (öncelik sırası):** 1 diyalog görünüm adaptörü (`app.js:7727-7787`) → S5/S6 gerekçe diyalogları + Meetings düzenleyen-değiştir ·
+2 kişi/avatar seçici (`Tasks/form.js:487-813`) → Meetings katılımcı seçici (üçüncü kopya) · 3 ilişkili kayıt satırı (`app.js:4402-4407, 4480-4561`) → S4 ·
+4 aylık takvim (`app.js:5918-5999`) → S3b · 5 üç bölgeli detay kabuğu (`app.js:4563-5180`) → S4–S6 detay.
+**Kalsın:** hata kodu köprüsü (modüle özgü kodlar; iskelet aynalanmış).
+
+**İlerleme (2026-09-11, CT doğruladı):** E1 diyalog adaptörü, E2 kişi seçici + select2 adaptörü, E3 ilişkili kayıt satırı `shared/` altında; Meetings iptal/düzenleyen
+modalları `showConfirm`, tarih-saat `DitenDateField`, bağlı görevler paylaşımlı satır. **Kalan:** `bindDialogSelect2`/`dialogLook` WCN kopyası + `.wcn-dialog-select`
+CSS'i (üç diyalog testi kaynak metnini pinliyor) → sonraki ön yüz dilimi (S8) testleri paylaşımlıya çevirip kopyayı siler · takvim (S3b) · detay kabuğu (S4+).
+Muhafız `shared-ui-parts-one-implementation.test.js` — CT düzeltmesi: her tanım sınıflanır (ilki değil).
+**Kural:** her ekran/dilim prompt'u "mevcut parçayı kullan; yalnız app.js içinde gömülüyse önce çıkar" satırı taşır ([[feedback_reuse_frontend_partials]]).
+Metin/CSS taşıyan çıkarmalar l10n/FG-003 kapısından geçer (Antigravity); saf JS çıkarmalar CT alt ajanıyla yapılabilir.
+
+### BL-368
+
+**Web yeniden başladıktan / oturum tazelendikten sonra ilk API çağrıları 401, tekrarı 200 — DataTable konsola hata yazıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · GÖZLEM: 2026-09-11 (CT, sahibin oturumu, /Meetings)
+
+Ağ kaydı: `GET /Meetings/api/lookups/types` 401 · `/lookups/attendees` 401 · `/api/list?pageSize=1000` 401 → hemen ardından aynı üçü 200.
+Sayfa toparlıyor (oturum yenileme sonrası tekrar), kullanıcı fark etmiyor; ama `[DtDefaults] Ajax error {status: 401 …}` konsola hata düşüyor
+ve ilk yanıt gelmeden ikinci istek `&&_=` (çift ampersand) ile üretiliyor. Sorular: yenileme İSTEKTEN ÖNCE yapılamaz mı (token süresi biliniyor)?
+DtDefaults 401'i hata olarak mı loglamalı, sessiz tekrar mı? Görev Merkezi ve Görevler sayfalarında aynı desen var mı? İlgili: geçmiş
+`invalid_token` / yenileme kaskadı kaydı (çözüldü, main).
+
+**Ölçüm komutu:** tarayıcı ağ sekmesi, Web yeniden başlatıldıktan sonra ilk `/…/api/*` çağrıları; `grep -n "401" frontend/Diten.Web/wwwroot/assets/js/shared/dt-defaults*.js`
+
+### BL-369
+
+**"Kontrollü Dokümanlar" sayfası (`/Tasks/DocumentList`) ve CSV kütük araması emekli edilecek — taşıma canlıda çalıştıktan SONRA**
+
+DURUM: AÇIK · KARAR: sahip + DM geliştiricisi, 2026-09-10 (G1 = (a), WP-0029-EFFECTIVENESS-P2.md:150) · SAHİP: taşımayı yapan (DM geliştiricisi) · KAYIT: 2026-09-11
+
+**İLERLEME (CT, 2026-09-11):** Devir planı **Adım 2 teslim edildi** — WP-PSS-DCP005-STEP2-CITATION-REPOINT-01, dal `feature/pss/dcp-005-citation-repoint`
+(main `11befc07` üzerinden, commit `ac2a8d54`, worktree `.claude/worktrees/pss+dcp-005-citation-repoint`, sahip push edecek, kendi PR'ı).
+Görev formu seçicisi `GET api/v1/tasks/lookups/document-citations` → `IControlledDocumentCitationPort`; freezer yeni alıntıları kütükten dondurur
+(`ListVersionId` nullable, eski CSV alıntıları olduğu gibi); görev türü yöneten-doküman okuması porta; CSV sayfası ve içe aktarma KALDI (bu maddenin
+emekliliği hâlâ canlı sonrası). **CT düzeltmesi:** WP'nin AC4'ü "engelli doküman durumu donar, görev açılır" demişti — ana daldaki kural geri alındı:
+engelli (Superseded/Retired/Draft…) doküman alıntı anında `DOCUMENT_REFERENCE_BLOCKED` ile reddedilir, ölçüt kütüğün kendi `Citable` yargısı
+(Effective ∨ UnderRevision); ekran ile API tutarlı, Adım 3 (`/active`, Kural 4/G3) ayrı. Sabotaj: `Citable` kontrolü kaldırılınca 1 test kırmızı.
+
+**⚠ CANLIYA ÇIKIŞ KAPISI (CT canlı ölçümü, dev, 2026-09-11):** uç zinciri çalışıyor (Web proxy → gateway → Platform → port, 200) ama
+`document_management_master_register` 358 satırın **tümü kiracı `97c59330-dbc4-4665-b29c-0c26dbb5cc93`'te**, oturumun kiracısı DefaultTenant
+(`…0001`) → seçici boş; ayrıca yaşam döngüsü dağılımı **Draft 350 · InReview 1 · Retired 7 → alıntılanabilir 0/358**. CSV listesi aynı belgeleri
+`linkableInErp=true` sayıyordu. Sonuç: Adım 2 birleşse bile **kütük gerçek yaşam döngüsü durumlarıyla ve doğru kiracıda tohumlanmadan
+(Adım 0 register tohumu — WP-0029:150 "bizim sıradaki WP", DM geliştiricisi) hiçbir doküman alıntılanamaz.** Sıra: Adım 0 → Adım 2 merge → canlı
+doğrulama → bu maddenin emekliliği. Dondurulmuş alıntı kanıtı yerelde alınamadı: `task_items` 0 kayıt ve BL-358 (org birimi yok) freezer'dan önce
+kesiyor.
+
+**ADIM 0 TESLİM + KAPI AÇILDI (CT, 2026-09-11):** WP-DM-DCP005-STEP0-REGISTER-SEED-01, dal `feature/dm/dcp-005-step0-register-seed` (main `11befc07`
+üzerinden, commit `1e07712b`, worktree `.claude/worktrees/dm+dcp-005-step0-register-seed`, sahip push edecek, kendi PR'ı). (A) Dev tohumu DefaultTenant'a
+(izlenen `appsettings.Development.json` TenantId — sır değil; merge sonrası her geliştiricinin dev Platform'u ilk açılışta 358 satırı DefaultTenant'a tohumlar,
+marker kiracı başına). (B) Sahip kararı Seçenek 1: `DocumentMasterRegisterEntry.CitableByQualityDecision` = CSV `linkable_in_erp` (tohum + runtime ingest aynı
+eşlemeden); alıntı yargısı `IsOperationallyEffective ∨ (karar ∧ Draft/InReview/ApprovedPendingEffective)`; Retired/Void/Suspended/Superseded/ObsoleteCopy asla;
+yürürlük kapısı (`IsOperationallyEffective`, effectiveness handler) DOKUNULMADI (35 test yeşil; alıntı formülü sabote edilince yalnız 4 alıntı testi kırmızı).
+Dev Mongo: DefaultTenant 358 satır, 322 karar=evet (Draft 321 + InReview 1), 36 hayır (Draft 29 + Retired 7), Retired+evet 0; eski kiracının 358 satırına alan
+yazılmadı. **CT canlı E4, birleşik ağaç (main + Adım 0 + Adım 2, çakışma yok):** `GET /Tasks/api/lookups/document-citations?term=SOP` DefaultTenant oturumuyla
+200 ve satırlar: GMG-COM-SOP-0001/2/3 `linkableInErp=true` (Kalite kararı), GMG-GDP-SOP-0001 `false` + gerekçe "Draft" (kararsız Taslak). HTTP/JWT katmanı kapandı.
+**Sıra:** Adım 0 PR → Adım 2 PR (ya da birlikte) → merge → canlıda görev açarak dondurma kanıtı (BL-358 org verisi şart) → bu maddenin emekliliği.
+**Açık karar (sahip/DM):** üretim kiracısına gerçek ingest'in tetiklenme şekli (yönetici CSV yükleme ekranı mı, tek seferlik iç uç mu) — `IngestDocumentMasterRegisterCommand`
+hazır, tetikleyici yok. → **KAPANDI (CT, 2026-09-11):** WP-DM-DCP005-REGISTER-IMPORT-UI-01, dal `feature/dm/dcp-005-register-import-ui`
+(base Adım 0 dalı `1e07712b`, commit `c22eb1ce`, worktree `.claude/worktrees/dm+dcp-005-register-import-ui`; sahip push edecek, kendi PR'ı, Adım 0'dan sonra merge).
+Önizle (yazmaz; Created/Updated/Unchanged/Blocked, hash, "daha önce yüklendi") → `window.showConfirm` → onayla (409 IMPORT_CONTENT_CHANGED / IMPORT_ALREADY_APPLIED;
+mevcut ingest komutu çağrılır; IAuditableCommand) → yükleme geçmişi (`document_management_register_import_batches`, (TenantId, ContentHash) unique). Yeni izin
+`platform.document-management.master-register.import` üç uçta + sayfada; 7 dil 36 anahtar tek resx setinde. CT: 23/23 test, hash kontrolü kapatılınca 1 kırmızı;
+canlıda sayfa yeni izni oturum yenilenmeden görmez (UAS doğru davranış) — yeni oturumla tıklama kanıtı açık. Üretim yüklemesi = DM/Kalite'den izinli kişi bu ekrandan;
+kanıt = geçmiş satırı + denetim kaydı.
+
+**Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
+`GET /Tasks/api/document-list/search`) geçicidir; kütük CSV UID'lerini sahiplenir (`PermanentUid = CSV uid`), görev formu `by="uid"` ile
+`document-master-register/citations/search` (DM-2b, main'de) ucunu çağırır. Dondurulmuş görev alıntıları (`TaskDocumentReference`) olduğu gibi
+okunur kalır; hiçbir kapanmış görevin alıntısı yeniden çözümlenmez (DCP-005 §6.2).
+
+**Sayfanın kaderi:** Görev Tanımları → Kontrollü Dokümanlar (`TaskManifestProvider` sayfası `/Tasks/DocumentList`, `platform.tasks.document-list.*`
+izinleri, içe aktarma dahil) CSV listesinin ekranıdır; taşıma (devir planı Adım 2) **canlıda çalıştıktan sonra** menüden ve koddan kaldırılır,
+yerine Doküman Yönetimi'nin kütük ekranı. Yarım kaldırma yok (K4): sayfa gitmeden önce arama + sürüm + durum bilgisinin DM ucunda karşılandığı
+ölçülür. Kaldırılan izin anahtarları Auth kataloğunda kalır (DELETE-sync Faz 1.5, BL-340 komşusu) — ayrıca temizlenir.
+
+**Ölçüm komutu:**
+
+    grep -n "document-list" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
+    grep -n "DocumentList" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs
+
+### BL-370
+
+**Görevde kanıt dosyası (evidence attachment) yok — dosya deposu + kapanış zarfı, sıralı iki iş**
+
+DURUM: AÇIK · KARAR: sahip, 2026-09-11 ("yapacağız", sırayla) · SAHİP: DM geliştiricisi (depo) → CT (zarf) · KAYIT: 2026-09-11
+
+**Ölçüm:** görev formunda kontrollü doküman ATIFI var (`TaskDocumentReference`, dondurulmuş); dosya yükleme hiçbir görev ekranında yok (`type="file"` yalnız
+CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `ChecklistRunItem.EvidenceRequired` saklanıyor, hiçbir şeyi zorlamıyor; ekranda
+"Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek." Depoda dosya/nesne deposu soyutlaması yok (IBlobStorage/MinIO/S3/GridFS: 0).
+İş Raporu doküman/kanıt göstermiyor.
+
+**Sıra:**
+1. **MOD-0262-FU01 Document Binary Store** (pack ready-for-dev, 2026-09-07; kod yok) — DM geliştiricisi, bugünkü üç DM dalı merge olduktan ve Kalite kütüğü
+   yükledikten sonra; tahmin 2-3 prompt. Kiracı izolasyonu, indirme yetkisi, boyut/tür sınırı, denetim.
+2. **MOD-0024 Faz 2 kapanış zarfı** (pack draft; §7: kanıt/çıktı "her zaman var") — CT, toplantı modülü bittikten sonra; tahmin 2 prompt: kapanışta kanıt
+   yükleme (depoya bağlanır), `EvidenceRequired` maddede gerçek zorlama, Görev Merkezi detayında kanıt listesi, İş Raporu'nda kanıt sütunu.
+3. Kalite izi tamamlanır: "hangi prosedüre göre yaptım" (atıf, DCP-005) + "işte kanıtı" (bu madde).
+
+### BL-371
+
+**Auth hesap türü (Unknown/Human/Service) + kiracı-içi kullanıcı arama/hesap doğrulama uçları — PPM portföy sorumlusu için hesap olgusu**
+
+DURUM: TESLİM (CT, 2026-09-11) · dal `feature/infra/auth-account-kind` (base toplantı dalı `a699b3eb`; worktree `.claude/worktrees/infra+auth-account-kind`;
+sahip push edecek; PR'ı toplantı ara-nokta PR'ından SONRA) · SAHİP: CT (altyapı) · TALEP: Codex/PPM · KARAR: sahip 2026-09-11
+
+**Karar:** sınıflandırma yalnız açık atanan `auth.users.account-kind.manage` ile (ExplicitGrantOnly); Portfolio uygunluğu = aynı kiracıda aktif + Human (PPM kararı);
+ek pozisyon/birim şartı yok; mevcut hesaplar otomatik sınıflandırılmaz (hepsi Unknown). Uçlar: `GET api/users/lookup`, `GET api/users/{id}/account-assertion`
+(`auth.users.lookup`, sıradan kiracı anahtarı, modül access-governance), `POST api/users/{id}/account-kind`. 404 = yok/başka kiracı aynı gövde.
+İzole gerçek-sağlayıcı fixture: `tests/.../Testing/AccountKindAcceptance.cs` (EphemeralMongo.Core 1.1.3 + WebApplicationFactory, DB `diten_auth_itest_account_kind`,
+makinede mongod ikilisi şart: `DITEN_ITEST_MONGOD_BIN_DIR` → PATH → Homebrew).
+
+**CT doğrulaması:** Auth 758/761 (3 eski kırmızı) · sabotaj: manage anahtarı listeden çıkınca 7 kırmızı, Register'a Human yazılınca 3 kırmızı · izole uç testleri 20/20 ·
+Web 137/137 + vitest 106/106 · 7 dil tek anahtar seti · paylaşımlı dev K3: katalog +2, lookup SuperAdmin+DefaultTenant Admin'de, manage hiçbir rolde, denetim olayı 0,
+admin@diten.com AccountKind=Unknown (seeder'ın kendi upsert'i); ajanın ilk host denemesi paylaşımlı Mongo'ya bir kez değdi (18:32Z), raporunda açıkladı.
+
+**Açık:** (1) daha önce kurulmuş kiracıların Admin rolü `auth.users.lookup`'ı otomatik almıyor (reconcile yalnız self-service anahtarları) → PPM okuyucusuna elle ya da
+CT reconcile kararı; (2) ilk sınıflandırıcıyı sahip Rol İzinleri'nden elle atar; (3) doğrulama hataları ProblemDetails (zarf dışı) — servis geneli, PPM adapter'ı
+bunu "sağlayıcı/sözleşme hatası → 503" sınıfına koyar; (4) PPM HTTP eşlemesi (403 vs 409, 401) açık delta, iki taraf henüz dondurmadı; (5) Codex'in kendi pack
+düzeltmesi (MOD-0117 / DCP-006) PPM'de.

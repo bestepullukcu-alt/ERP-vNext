@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingsTitle" xml:space="preserve"><value>Toplantılar</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Düzenlediğiniz veya katıldığınız toplantılar, gündemleri ve bağlı görevleriyle.</value></data>
+  <data name="Title" xml:space="preserve"><value>Başlık</value></data>
+  <data name="MeetingType" xml:space="preserve"><value>Toplantı Türü</value></data>
+  <data name="StartAt" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="EndAt" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="Organizer" xml:space="preserve"><value>Düzenleyen</value></data>
+  <data name="IAmAttendee" xml:space="preserve"><value>Katılıyorum</value></data>
+  <data name="HasLinkedTasks" xml:space="preserve"><value>Bağlı Görev</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Segment" xml:space="preserve"><value>Dönem</value></data>
+  <data name="SegmentUpcoming" xml:space="preserve"><value>Yaklaşan</value></data>
+  <data name="SegmentPast" xml:space="preserve"><value>Geçmiş</value></data>
+  <data name="IAmAttendeeFilter" xml:space="preserve"><value>Katılımcıyım</value></data>
+  <data name="HasLinkedTasksFilter" xml:space="preserve"><value>Bağlı görevi var</value></data>
+  <data name="FromDate" xml:space="preserve"><value>Başlangıç tarihi</value></data>
+  <data name="ToDate" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Yeni Toplantı</value></data>
+  <data name="StatusScheduled" xml:space="preserve"><value>Planlandı</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>İptal Edildi</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>Tamamlandı</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Yeni Toplantı</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Toplantıyı Düzenle</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>Toplantı Detayı</value></data>
+  <data name="Location" xml:space="preserve"><value>Yer</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>Oda, bina veya görüntülü görüşme bağlantısı</value></data>
+  <data name="FollowUpOfMeeting" xml:space="preserve"><value>Devamı Olduğu Toplantı</value></data>
+  <data name="Attendees" xml:space="preserve"><value>Katılımcılar</value></data>
+  <data name="AttendeesPlaceholder" xml:space="preserve"><value>Davet edilecek kişileri arayın</value></data>
+  <data name="NoEligibleAttendees" xml:space="preserve"><value>Uygun kişi bulunamadı. Yalnızca aktif bir pozisyon tutan tenant kullanıcıları davet edilebilir.</value></data>
+  <data name="AddAgendaItem" xml:space="preserve"><value>Ekle</value></data>
+  <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Gündem maddesi</value></data>
+  <data name="RemoveAttendee" xml:space="preserve"><value>Katılımcıyı kaldır</value></data>
+  <data name="AddAttendee" xml:space="preserve"><value>Ekle</value></data>
+  <data name="ReassignOrganizer" xml:space="preserve"><value>Düzenleyeni Değiştir</value></data>
+  <data name="NewOrganizer" xml:space="preserve"><value>Yeni Düzenleyen</value></data>
+  <data name="CancelMeeting" xml:space="preserve"><value>Toplantıyı İptal Et</value></data>
+  <data name="CancellationReason" xml:space="preserve"><value>İptal gerekçesi</value></data>
+  <data name="InvitationPending" xml:space="preserve"><value>Bekliyor</value></data>
+  <data name="InvitationAccepted" xml:space="preserve"><value>Kabul Edildi</value></data>
+  <data name="InvitationDeclined" xml:space="preserve"><value>Reddedildi</value></data>
+  <data name="LinkedTasks" xml:space="preserve"><value>Bağlı Görevler</value></data>
+  <data name="NoLinkedTasks" xml:space="preserve"><value>Bu toplantıya bağlı bir görev yok.</value></data>
+  <data name="Agenda" xml:space="preserve"><value>Gündem</value></data>
+  <data name="NoAgendaItems" xml:space="preserve"><value>Henüz gündem maddesi yok.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Toplantı Bilgileri</value></data>
+  <data name="ErrorMeetingNotFound" xml:space="preserve"><value>Bu toplantı bulunamadı.</value></data>
+  <data name="ErrorEndBeforeStart" xml:space="preserve"><value>Bitiş saati başlangıç saatinden sonra olmalıdır.</value></data>
+  <data name="ErrorMeetingCancelled" xml:space="preserve"><value>Bu toplantı iptal edildi.</value></data>
+  <data name="ErrorMeetingCompleted" xml:space="preserve"><value>Bu toplantı tamamlandı.</value></data>
+  <data name="ErrorCancellationReasonRequired" xml:space="preserve"><value>İptal gerekçesi zorunludur.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Bu toplantı bu sırada değişti; sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrorSelfFollowUp" xml:space="preserve"><value>Bir toplantı kendi devamı olamaz.</value></data>
+  <data name="ErrorFollowUpNotFound" xml:space="preserve"><value>Devamı olduğu belirtilen toplantı bulunamadı.</value></data>
+  <data name="ErrorOrganizerInvalid" xml:space="preserve"><value>Düzenleyen aktif bir tenant kullanıcısı olmalıdır.</value></data>
+  <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Bu kişi şu anda davet edilemiyor.</value></data>
+  <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Bu kişi zaten davet edilmiş.</value></data>
+  <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Bu katılımcı toplantıda değil.</value></data>
+  <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Bu gündem maddesi bulunamadı.</value></data>
+  <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>Gündem yeniden sıralanamadı; lütfen sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrorTypeNotFound" xml:space="preserve"><value>Bu toplantı türü bulunamadı.</value></data>
+  <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Bu adla bir toplantı türü zaten var.</value></data>
+  <data name="ErrorTypeInUse" xml:space="preserve"><value>Bu toplantı türü bir toplantı tarafından kullanılıyor ve silinemez.</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>
+</root>

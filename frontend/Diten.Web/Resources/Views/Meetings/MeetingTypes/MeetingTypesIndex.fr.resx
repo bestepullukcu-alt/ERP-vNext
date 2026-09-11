@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>Types de réunion</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Les cadences de réunions de revue encadrées que votre tenant peut planifier.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Name" xml:space="preserve"><value>Nom</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>Enregistrement qualité</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>La qualité définit ceci explicitement ; jamais déduit du nom ou du domaine du type.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>Signature électronique requise</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>Enregistré uniquement comme champ dans cette tranche ; le mécanisme de signature lui-même viendra plus tard.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>Présence obligatoire</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nouveau type de réunion</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le type de réunion</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identité</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Indicateurs</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>Type de tâche d'action par défaut</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>Le type auquel une action issue d'une réunion est affectée par défaut.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>Modèle d'ordre du jour</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>Pré-remplit l'ordre du jour d'une nouvelle réunion ; l'ordre du jour de chaque réunion reste ensuite modifiable indépendamment.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>Ce type n'a pas encore de modèle d'ordre du jour.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>Ajouter une ligne</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>Déplacer vers le haut</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>Déplacer vers le bas</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>Supprimer la ligne</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>Ligne d'ordre du jour</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>Supprimer ce type de réunion ?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Cette action est irréversible. Un type utilisé par une réunion ne peut pas être supprimé.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Oui</value></data>
+  <data name="No" xml:space="preserve"><value>Non</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Ce type de réunion a changé entre-temps ; actualisez la page et réessayez.</value></data>
+</root>

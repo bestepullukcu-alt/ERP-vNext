@@ -62,6 +62,29 @@ public sealed class DocumentRegisterIngestTests
     }
 
     [Fact]
+    public async Task LinkableInErp_is_copied_verbatim_into_CitableByQualityDecision()
+    {
+        /*
+         * DCP-005 Step 0, Part B — MUTATION GUARD: drop the `target.CitableByQualityDecision = src.LinkableInErp`
+         * assignment in DocumentRegisterIngestMapping.Apply and this goes red for every yes/no row.
+         */
+        var f = Fixture();
+
+        var response = await f.Handler.Handle(Cmd(SampleCsv), CancellationToken.None);
+        var byUid = f.Register.Items.ToDictionary(e => e.PermanentUid!, StringComparer.Ordinal);
+
+        // linkable_in_erp=yes: UID-1, UID-2, UID-6.
+        Assert.True(byUid["UID-1"].CitableByQualityDecision);
+        Assert.True(byUid["UID-2"].CitableByQualityDecision);
+        Assert.True(byUid["UID-6"].CitableByQualityDecision);
+        // linkable_in_erp=no: UID-3 (Void→Retired), UID-4, UID-5.
+        Assert.False(byUid["UID-3"].CitableByQualityDecision);
+        Assert.False(byUid["UID-4"].CitableByQualityDecision);
+        Assert.False(byUid["UID-5"].CitableByQualityDecision);
+        Assert.True(response.IsSuccessful);
+    }
+
+    [Fact]
     public async Task Blocked_rows_are_imported_visible_with_reason_and_not_counted_with_executed()
     {
         var f = Fixture();
@@ -153,6 +176,9 @@ public sealed class DocumentRegisterIngestTests
         Assert.All(f.Register.Items, e => Assert.False(e.IsSystemAllocated));
         // 0 Effective today (Faz 1 truth) — everything maps to a non-effective lifecycle.
         Assert.DoesNotContain(f.Register.Items, e => e.LifecycleStatus == ControlledDocumentLifecycleStatus.Effective);
+        // DCP-005 Step 0, AC2 — measured against the real CSV: 358 - 36 blocked = 322 rows carry
+        // linkable_in_erp=yes, and that count lands verbatim on CitableByQualityDecision.
+        Assert.Equal(322, f.Register.Items.Count(e => e.CitableByQualityDecision));
     }
 
     // ── fixtures ──────────────────────────────────────────────────────────────

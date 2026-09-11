@@ -1,0 +1,102 @@
+@using Diten.Web.Views.Meetings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* MOD-0357 S3 — the l10n payload every Meetings page loads (Index/Create/Edit/Details all need the error-code
+   bridge, so this partial is shared rather than duplicated per page). Contract marker: id="meetings-l10n". *@
+<script id="meetings-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        // ── general UI ──────────────────────────────────────────────────────
+        MeetingsTitle = Localizer["MeetingsTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        Title = Localizer["Title"].Value,
+        MeetingType = Localizer["MeetingType"].Value,
+        StartAt = Localizer["StartAt"].Value,
+        EndAt = Localizer["EndAt"].Value,
+        Organizer = Localizer["Organizer"].Value,
+        IAmAttendee = Localizer["IAmAttendee"].Value,
+        IAmAttendeeFilter = Localizer["IAmAttendeeFilter"].Value,
+        HasLinkedTasks = Localizer["HasLinkedTasks"].Value,
+        HasLinkedTasksFilter = Localizer["HasLinkedTasksFilter"].Value,
+        Segment = Localizer["Segment"].Value,
+        SegmentUpcoming = Localizer["SegmentUpcoming"].Value,
+        SegmentPast = Localizer["SegmentPast"].Value,
+        FromDate = Localizer["FromDate"].Value,
+        ToDate = Localizer["ToDate"].Value,
+        Actions = Localizer["Actions"].Value,
+        Yes = Localizer["Yes"].Value,
+        No = Localizer["No"].Value,
+        StatusScheduled = Localizer["StatusScheduled"].Value,
+        StatusCancelled = Localizer["StatusCancelled"].Value,
+        StatusCompleted = Localizer["StatusCompleted"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Back = SharedLocalizer["Back"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        DetailsTitle = Localizer["DetailsTitle"].Value,
+
+        // ── form ─────────────────────────────────────────────────────────────
+        Description = SharedLocalizer["Description"].Value,
+        Location = Localizer["Location"].Value,
+        LocationPlaceholder = Localizer["LocationPlaceholder"].Value,
+        FollowUpOfMeeting = Localizer["FollowUpOfMeeting"].Value,
+        Attendees = Localizer["Attendees"].Value,
+        AttendeesPlaceholder = Localizer["AttendeesPlaceholder"].Value,
+        NoEligibleAttendees = Localizer["NoEligibleAttendees"].Value,
+        AddAgendaItem = Localizer["AddAgendaItem"].Value,
+        AgendaItemPlaceholder = Localizer["AgendaItemPlaceholder"].Value,
+        RemoveAttendee = Localizer["RemoveAttendee"].Value,
+        AddAttendee = Localizer["AddAttendee"].Value,
+        ReassignOrganizer = Localizer["ReassignOrganizer"].Value,
+        NewOrganizer = Localizer["NewOrganizer"].Value,
+        CancelMeeting = Localizer["CancelMeeting"].Value,
+        CancellationReason = Localizer["CancellationReason"].Value,
+        InvitationPending = Localizer["InvitationPending"].Value,
+        InvitationAccepted = Localizer["InvitationAccepted"].Value,
+        InvitationDeclined = Localizer["InvitationDeclined"].Value,
+        LinkedTasks = Localizer["LinkedTasks"].Value,
+        NoLinkedTasks = Localizer["NoLinkedTasks"].Value,
+        Agenda = Localizer["Agenda"].Value,
+        NoAgendaItems = Localizer["NoAgendaItems"].Value,
+
+        // ── error-code bridge (BL-040/BL-351 pattern) — every MEETING_*/MEETING_TYPE_* reason code Platform
+        // can return, mapped to its own sentence; AC6's guard asserts this list is exhaustive and unique. ──
+        ErrorMeetingNotFound = Localizer["ErrorMeetingNotFound"].Value,
+        ErrorEndBeforeStart = Localizer["ErrorEndBeforeStart"].Value,
+        ErrorMeetingCancelled = Localizer["ErrorMeetingCancelled"].Value,
+        ErrorMeetingCompleted = Localizer["ErrorMeetingCompleted"].Value,
+        ErrorCancellationReasonRequired = Localizer["ErrorCancellationReasonRequired"].Value,
+        ErrorConcurrencyConflict = Localizer["ErrorConcurrencyConflict"].Value,
+        ErrorSelfFollowUp = Localizer["ErrorSelfFollowUp"].Value,
+        ErrorFollowUpNotFound = Localizer["ErrorFollowUpNotFound"].Value,
+        ErrorOrganizerInvalid = Localizer["ErrorOrganizerInvalid"].Value,
+        ErrorAttendeeNotEligible = Localizer["ErrorAttendeeNotEligible"].Value,
+        ErrorAttendeeDuplicate = Localizer["ErrorAttendeeDuplicate"].Value,
+        ErrorAttendeeNotFound = Localizer["ErrorAttendeeNotFound"].Value,
+        ErrorAgendaItemNotFound = Localizer["ErrorAgendaItemNotFound"].Value,
+        ErrorAgendaReorderMismatch = Localizer["ErrorAgendaReorderMismatch"].Value,
+        ErrorTypeNotFound = Localizer["ErrorTypeNotFound"].Value,
+        ErrorTypeNameDuplicate = Localizer["ErrorTypeNameDuplicate"].Value,
+        ErrorTypeInUse = Localizer["ErrorTypeInUse"].Value,
+        ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
+        ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
+        FormValidationError = Localizer["FormValidationError"].Value,
+        SelectPlaceholder = SharedLocalizer["SelectPlaceholder"].Value
+    })
+</script>

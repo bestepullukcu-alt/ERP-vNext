@@ -36,6 +36,7 @@ describe("MOD-0024 person picker", () => {
 
   beforeEach(() => {
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
   });
 

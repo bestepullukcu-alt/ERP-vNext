@@ -1,0 +1,119 @@
+@using Diten.Web.Views.Meetings
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/Meetings">@Localizer["MeetingsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Meetings" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="meetingForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="meetingForm" class="needs-validation" novalidate data-form-mode="@(isEdit ? "edit" : "create")">
+    <input type="hidden" id="meetingId" value="@(ViewData["MeetingId"] as string ?? string.Empty)" />
+    <input type="hidden" id="meetingExpectedVersion" value="" />
+
+    <div id="formValidationSummary" class="alert alert-danger d-none" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-id-card"></i>@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="fieldTitle" class="form-label fw-medium">@Localizer["Title"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="fieldTitle" class="form-control" maxlength="200" required />
+                            </div>
+                            <span class="text-danger small mt-1 d-none" id="fieldTitleError"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="fieldMeetingTypeId" class="form-label fw-medium">@Localizer["MeetingType"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                                <select id="fieldMeetingTypeId" class="select2 form-select" required>
+                                    <option value="">@SharedLocalizer["SelectPlaceholder"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="fieldLocation" class="form-label fw-medium">@Localizer["Location"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="fieldLocation" class="form-control" maxlength="500" placeholder="@Localizer["LocationPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="fieldStartAt" class="form-label fw-medium">@Localizer["StartAt"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="fieldStartAt" class="form-control flatpickr-date" autocomplete="off" required />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="fieldEndAt" class="form-label fw-medium">@Localizer["EndAt"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar-check diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" id="fieldEndAt" class="form-control flatpickr-date" autocomplete="off" required />
+                            </div>
+                            <span class="text-danger small mt-1 d-none" id="fieldEndAtError"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-detail"></i>@SharedLocalizer["Description"]</h6>
+                    <div class="diten-field">
+                        <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="fieldDescription" class="form-control" rows="6" maxlength="4000"></textarea>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) — CREATE only: attendees and follow-up are set once, then managed on Details -->
+        <div class="col-12 col-lg-4" id="createOnlySection">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-group"></i>@Localizer["Attendees"]</h6>
+                    <div class="diten-field">
+                        <i class="bx bx-user-plus diten-field-icon" aria-hidden="true"></i>
+                        <select id="fieldAttendeeUserIds" class="select2 form-select" multiple="multiple" data-placeholder="@Localizer["AttendeesPlaceholder"]">
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-git-branch"></i>@Localizer["FollowUpOfMeeting"]</h6>
+                    <div class="diten-field">
+                        <i class="bx bx-link diten-field-icon" aria-hidden="true"></i>
+                        <select id="fieldFollowUpOfMeetingId" class="select2 form-select">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
