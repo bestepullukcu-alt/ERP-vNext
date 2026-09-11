@@ -4300,6 +4300,12 @@ takım "testler geçiyor mu" sorusunu cevaplanamaz hale getirir — her tur bu 1
 elle ayıklamak zorunda kalır ve bir gün biri fazladan bir kırmızıyı da eski
 sanar. Bu maddenin asıl maliyeti budur.
 
+**d) `TenantArchitecture.ArchitectureTests` — `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun` kırmızı (ölçüldü 2026-09-11,
+main'i dala aldıktan sonra, 96b0eaf1).** Muhafız iki dosyayı gösteriyor: `Audit/PpmAuditRetentionPolicySeedMongoTests.cs` ve
+`Persistence/DisposableStandaloneMongo.cs` — ikisi de `KnownPerRunDatabase` listesinde değil. Üç dosya (muhafız + ikisi) tabandan
+(7b11f3e9) beri değişmemiş; son commit'ler 27–31 Ağustos → main o günden beri bu kuralda kırmızı. Sahip: PPM denetim testi (Audit) /
+Platform test altyapısı. **Ölçüm komutu:** `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter MongoTestDatabaseGuard`
+
 **c) `Platform.Application.Tests` — bu madde onları hiç yazmıyordu**
 
 2026-09-10 tam koşum: **4070 testin 75'i kırmızı**. Dal `fix/workcenter-role-testing`; bu
