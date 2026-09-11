@@ -5035,3 +5035,43 @@ yerine Doküman Yönetimi'nin kütük ekranı. Yarım kaldırma yok (K4): sayfa 
 
     grep -n "document-list" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
     grep -n "DocumentList" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs
+
+### BL-370
+
+**Görevde kanıt dosyası (evidence attachment) yok — dosya deposu + kapanış zarfı, sıralı iki iş**
+
+DURUM: AÇIK · KARAR: sahip, 2026-09-11 ("yapacağız", sırayla) · SAHİP: DM geliştiricisi (depo) → CT (zarf) · KAYIT: 2026-09-11
+
+**Ölçüm:** görev formunda kontrollü doküman ATIFI var (`TaskDocumentReference`, dondurulmuş); dosya yükleme hiçbir görev ekranında yok (`type="file"` yalnız
+CSV içe aktarma sayfasında). `ChecklistTemplateItem.EvidenceRequired` / `ChecklistRunItem.EvidenceRequired` saklanıyor, hiçbir şeyi zorlamıyor; ekranda
+"Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek." Depoda dosya/nesne deposu soyutlaması yok (IBlobStorage/MinIO/S3/GridFS: 0).
+İş Raporu doküman/kanıt göstermiyor.
+
+**Sıra:**
+1. **MOD-0262-FU01 Document Binary Store** (pack ready-for-dev, 2026-09-07; kod yok) — DM geliştiricisi, bugünkü üç DM dalı merge olduktan ve Kalite kütüğü
+   yükledikten sonra; tahmin 2-3 prompt. Kiracı izolasyonu, indirme yetkisi, boyut/tür sınırı, denetim.
+2. **MOD-0024 Faz 2 kapanış zarfı** (pack draft; §7: kanıt/çıktı "her zaman var") — CT, toplantı modülü bittikten sonra; tahmin 2 prompt: kapanışta kanıt
+   yükleme (depoya bağlanır), `EvidenceRequired` maddede gerçek zorlama, Görev Merkezi detayında kanıt listesi, İş Raporu'nda kanıt sütunu.
+3. Kalite izi tamamlanır: "hangi prosedüre göre yaptım" (atıf, DCP-005) + "işte kanıtı" (bu madde).
+
+### BL-371
+
+**Auth hesap türü (Unknown/Human/Service) + kiracı-içi kullanıcı arama/hesap doğrulama uçları — PPM portföy sorumlusu için hesap olgusu**
+
+DURUM: TESLİM (CT, 2026-09-11) · dal `feature/infra/auth-account-kind` (base toplantı dalı `a699b3eb`; worktree `.claude/worktrees/infra+auth-account-kind`;
+sahip push edecek; PR'ı toplantı ara-nokta PR'ından SONRA) · SAHİP: CT (altyapı) · TALEP: Codex/PPM · KARAR: sahip 2026-09-11
+
+**Karar:** sınıflandırma yalnız açık atanan `auth.users.account-kind.manage` ile (ExplicitGrantOnly); Portfolio uygunluğu = aynı kiracıda aktif + Human (PPM kararı);
+ek pozisyon/birim şartı yok; mevcut hesaplar otomatik sınıflandırılmaz (hepsi Unknown). Uçlar: `GET api/users/lookup`, `GET api/users/{id}/account-assertion`
+(`auth.users.lookup`, sıradan kiracı anahtarı, modül access-governance), `POST api/users/{id}/account-kind`. 404 = yok/başka kiracı aynı gövde.
+İzole gerçek-sağlayıcı fixture: `tests/.../Testing/AccountKindAcceptance.cs` (EphemeralMongo.Core 1.1.3 + WebApplicationFactory, DB `diten_auth_itest_account_kind`,
+makinede mongod ikilisi şart: `DITEN_ITEST_MONGOD_BIN_DIR` → PATH → Homebrew).
+
+**CT doğrulaması:** Auth 758/761 (3 eski kırmızı) · sabotaj: manage anahtarı listeden çıkınca 7 kırmızı, Register'a Human yazılınca 3 kırmızı · izole uç testleri 20/20 ·
+Web 137/137 + vitest 106/106 · 7 dil tek anahtar seti · paylaşımlı dev K3: katalog +2, lookup SuperAdmin+DefaultTenant Admin'de, manage hiçbir rolde, denetim olayı 0,
+admin@diten.com AccountKind=Unknown (seeder'ın kendi upsert'i); ajanın ilk host denemesi paylaşımlı Mongo'ya bir kez değdi (18:32Z), raporunda açıkladı.
+
+**Açık:** (1) daha önce kurulmuş kiracıların Admin rolü `auth.users.lookup`'ı otomatik almıyor (reconcile yalnız self-service anahtarları) → PPM okuyucusuna elle ya da
+CT reconcile kararı; (2) ilk sınıflandırıcıyı sahip Rol İzinleri'nden elle atar; (3) doğrulama hataları ProblemDetails (zarf dışı) — servis geneli, PPM adapter'ı
+bunu "sağlayıcı/sözleşme hatası → 503" sınıfına koyar; (4) PPM HTTP eşlemesi (403 vs 409, 401) açık delta, iki taraf henüz dondurmadı; (5) Codex'in kendi pack
+düzeltmesi (MOD-0117 / DCP-006) PPM'de.

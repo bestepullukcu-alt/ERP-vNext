@@ -83,3 +83,25 @@ public sealed class DocumentMasterRegisterRepository : TenantRepository<Document
     private FilterDefinition<DocumentMasterRegisterEntry> And(FilterDefinition<DocumentMasterRegisterEntry> extra) =>
         Builders<DocumentMasterRegisterEntry>.Filter.And(ExecutionFilter, extra);
 }
+
+/// <summary>
+/// WP-DM-DCP005-REGISTER-IMPORT-UI-01 — tenant-scoped Mongo repository for the register's upload history. No
+/// updates, no delete: a batch row is written once, by the commit handler, and never touched again.
+/// </summary>
+public sealed class DocumentRegisterImportBatchRepository
+    : TenantRepository<DocumentRegisterImportBatch>, IDocumentRegisterImportBatchRepository
+{
+    public DocumentRegisterImportBatchRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.DocumentRegisterImportBatches) { }
+
+    public new Task<DocumentRegisterImportBatch> CreateAsync(DocumentRegisterImportBatch batch, CancellationToken ct = default) =>
+        base.CreateAsync(batch, ct);
+
+    public Task<DocumentRegisterImportBatch?> FindByContentHashAsync(string contentHash, CancellationToken ct = default) =>
+        Collection.Find(Builders<DocumentRegisterImportBatch>.Filter.And(
+            ExecutionFilter, Builders<DocumentRegisterImportBatch>.Filter.Eq(x => x.ContentHash, contentHash)))
+            .FirstOrDefaultAsync(ct)!;
+
+    public async Task<IReadOnlyList<DocumentRegisterImportBatch>> ListAsync(CancellationToken ct = default) =>
+        await Collection.Find(ExecutionFilter).SortByDescending(x => x.AppliedAt).ToListAsync(ct);
+}

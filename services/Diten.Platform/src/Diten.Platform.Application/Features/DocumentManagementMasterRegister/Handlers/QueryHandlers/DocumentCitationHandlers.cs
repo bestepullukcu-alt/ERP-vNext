@@ -114,9 +114,24 @@ public sealed class SearchDocumentCitationHandler(
 internal static class DocumentCitationMapping
 {
     /// <summary>
+    /// DCP-005 Step 0, Part B (owner decision 2026-09-11) — the CITATION-only judgment. Widens the shared
+    /// effectiveness judgment (<see cref="ControlledDocumentLifecyclePolicy.IsOperationallyEffective"/>, unchanged
+    /// and untouched — the activation gate reads only that) with Quality's own historical call, but ONLY for a
+    /// document still on its way toward Effective: <c>Draft</c>, <c>InReview</c>, <c>ApprovedPendingEffective</c>.
+    /// <c>Retired</c> (also the mapped target of the CSV's <c>Void</c> — <c>DocumentRegisterIngestMapping</c>) and
+    /// every other terminal/blocked status are ALWAYS non-citable regardless of the quality decision: a withdrawn
+    /// or never-valid document does not become citable because Quality once flagged the CSV row linkable.
+    /// </summary>
+    private static bool IsCitable(ControlledDocumentLifecycleStatus status, bool citableByQualityDecision) =>
+        status.IsOperationallyEffective()
+        || (citableByQualityDecision && status is ControlledDocumentLifecycleStatus.Draft
+            or ControlledDocumentLifecycleStatus.InReview
+            or ControlledDocumentLifecycleStatus.ApprovedPendingEffective);
+
+    /// <summary>
     /// Maps a register row to a citation item, or null when the row cannot form a citation — a citation needs BOTH a
     /// Permanent UID and a Document Code (identity), so an incomplete (pre-allocation) row is not citable/displayable.
-    /// <c>Citable</c> is the shared effectiveness judgment; <c>BlockedReason</c> is the LifecycleStatus name when not citable.
+    /// <c>BlockedReason</c> is the LifecycleStatus name when not citable — unchanged by Part B.
     /// </summary>
     public static DocumentCitationItem? ToCitation(DocumentMasterRegisterEntry e)
     {
@@ -127,7 +142,7 @@ internal static class DocumentCitationMapping
             return null;
         }
 
-        var citable = e.LifecycleStatus.IsOperationallyEffective();
+        var citable = IsCitable(e.LifecycleStatus, e.CitableByQualityDecision);
         var lifecycle = e.LifecycleStatus.ToString();
         return new DocumentCitationItem(
             uid,

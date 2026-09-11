@@ -3,7 +3,7 @@
 > **Dev-prompt DEĞİL** — Control Tower intake. Branch `feature/mvp6-logistics` · Gate: MVP-2..5 stabil (G3 sonrası). En son.
 
 ## OWNED (SoR)
-Shipment/POD(0183) · Carrier(0184) · Routing/Load(0185) · Reverse Logistics(0186) · Claims(0187) · SupplierPerformance(0147) · SupplierPortal(0148).
+**S&OPPlan/SignOff(0190) · CapacityPlan(0192)** · Shipment/POD(0183) · Carrier(0184) · Routing/Load(0185) · Reverse Logistics(0186) · Claims(0187) · SupplierPerformance(0147) · SupplierPortal(0148).
 
 ## CONSUMED (frozen/mock)
 Warehouse (MVP-5 shipment tetiği) · INVENTORY (stok) · Supplier (MVP-2). Event Bus (Platform) — shipment lifecycle event'leri.

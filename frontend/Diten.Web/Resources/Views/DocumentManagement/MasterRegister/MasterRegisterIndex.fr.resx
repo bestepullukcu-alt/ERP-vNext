@@ -1081,4 +1081,42 @@
   <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>La liaison manuelle sert uniquement à rapprocher les enregistrements hérités. Le périmètre, le propriétaire, la collection et le dossier doivent correspondre exactement.</value></data>
   <data name="ReconciliationReason" xml:space="preserve"><value>Motif du rapprochement</value></data>
   <data name="ReconciliationReasonHint" xml:space="preserve"><value>Expliquez pourquoi cette relation héritée est rapprochée.</value></data>
+
+  <!-- WP-DM-DCP005-REGISTER-IMPORT-UI-01 — écran d'import CSV contrôlé -->
+  <data name="ImportPageTitle" xml:space="preserve"><value>Importer le registre maître</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>Prévisualisez un fichier CSV de registre de documents contrôlés avant de le valider. Rien n'est écrit avant votre confirmation.</value></data>
+  <data name="Step1SelectFile" xml:space="preserve"><value>Sélectionner le fichier</value></data>
+  <data name="Step2Preview" xml:space="preserve"><value>Aperçu</value></data>
+  <data name="Step3Confirm" xml:space="preserve"><value>Confirmer et valider</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>Fichier CSV du registre</value></data>
+  <data name="ImportFileHint" xml:space="preserve"><value>Le même format à 17 colonnes que lit l'amorçage du registre (.csv uniquement).</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Prévisualiser l'import</value></data>
+  <data name="PreviewTotalRows" xml:space="preserve"><value>Lignes totales</value></data>
+  <data name="PreviewCreated" xml:space="preserve"><value>Nouvelles</value></data>
+  <data name="PreviewUpdated" xml:space="preserve"><value>Mises à jour</value></data>
+  <data name="PreviewUnchanged" xml:space="preserve"><value>Inchangées</value></data>
+  <data name="PreviewBlocked" xml:space="preserve"><value>Bloquées (CSV)</value></data>
+  <data name="PreviewCitableYes" xml:space="preserve"><value>Citable par décision Qualité</value></data>
+  <data name="PreviewCitableNo" xml:space="preserve"><value>Non citable par décision Qualité</value></data>
+  <data name="PreviewLifecycleDistribution" xml:space="preserve"><value>Répartition du cycle de vie</value></data>
+  <data name="PreviewMissingColumns" xml:space="preserve"><value>Colonnes manquantes</value></data>
+  <data name="PreviewErrors" xml:space="preserve"><value>Erreurs de ligne</value></data>
+  <data name="AlreadyImportedWarning" xml:space="preserve"><value>Ce fichier exact a déjà été importé le {0} par {1}.</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>Valider l'import</value></data>
+  <data name="CommitConfirmTitle" xml:space="preserve"><value>Valider cet import ?</value></data>
+  <data name="CommitConfirmMessage" xml:space="preserve"><value>Cette action écrit {0} ligne(s) dans le registre en production. Ce même contenu ne pourra plus être prévisualisé ensuite.</value></data>
+  <data name="CommitSucceeded" xml:space="preserve"><value>Import validé.</value></data>
+  <data name="CommitFailed" xml:space="preserve"><value>L'import n'a pas pu être validé.</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>L'aperçu n'a pas pu être terminé.</value></data>
+  <data name="ReasonContentChanged" xml:space="preserve"><value>Le fichier a changé depuis son aperçu. Prévisualisez-le à nouveau avant de valider.</value></data>
+  <data name="ReasonAlreadyApplied" xml:space="preserve"><value>Ce fichier exact a déjà été importé.</value></data>
+  <data name="ReasonValidationFailed" xml:space="preserve"><value>Le fichier envoyé n'est pas valide.</value></data>
+  <data name="ImportHistoryTitle" xml:space="preserve"><value>Historique des imports</value></data>
+  <data name="HistoryFileNameColumn" xml:space="preserve"><value>Fichier</value></data>
+  <data name="HistoryActorColumn" xml:space="preserve"><value>Importé par</value></data>
+  <data name="HistoryAppliedAtColumn" xml:space="preserve"><value>Importé le</value></data>
+  <data name="HistoryCountsColumn" xml:space="preserve"><value>Lignes (nouvelles / mises à jour / bloquées)</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Aucun import pour le moment.</value></data>
+  <data name="ImportFileRequired" xml:space="preserve"><value>Sélectionnez d'abord un fichier CSV.</value></data>
+  <data name="ImportInvalidFileType" xml:space="preserve"><value>Seuls les fichiers .csv sont acceptés.</value></data>
 </root>
