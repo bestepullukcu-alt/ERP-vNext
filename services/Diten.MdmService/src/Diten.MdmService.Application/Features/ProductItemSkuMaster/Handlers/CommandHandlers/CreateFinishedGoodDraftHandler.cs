@@ -69,6 +69,24 @@ public sealed class CreateFinishedGoodDraftHandler
         var replay = await _finishedGoods.GetByCreationCommandIdAsync(commandId, cancellationToken);
         if (replay is not null)
         {
+            if (replay.GskuId != command.GskuId)
+            {
+                var driftScopeFailure = await EvaluateGskuScopeAsync(command.GskuId, scope.Context!, cancellationToken);
+                if (driftScopeFailure is not null)
+                {
+                    return driftScopeFailure;
+                }
+
+                if (await _gskus.GetReferenceableByIdAsync(command.GskuId, cancellationToken) is null)
+                {
+                    return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail("GSKU_NOT_REFERENCEABLE", 404);
+                }
+
+                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                    "IDEMPOTENCY_KEY_CONFLICT",
+                    409);
+            }
+
             var replayScopeFailure = await EvaluateGskuScopeAsync(
                 replay.GskuId,
                 scope.Context!,
@@ -82,13 +100,6 @@ public sealed class CreateFinishedGoodDraftHandler
             {
                 return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
                     "CREATION_COMMAND_TOMBSTONED",
-                    409);
-            }
-
-            if (replay.GskuId != command.GskuId)
-            {
-                return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
-                    "IDEMPOTENCY_KEY_CONFLICT",
                     409);
             }
 
@@ -128,6 +139,30 @@ public sealed class CreateFinishedGoodDraftHandler
         if (gsku is null)
         {
             return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail("GSKU_NOT_REFERENCEABLE", 404);
+        }
+
+        var creationAttempt = await _finishedGoods.BindCreationAttemptAsync(
+            gsku.Id,
+            commandId,
+            admissionFingerprint,
+            cancellationToken);
+        if (creationAttempt.Outcome == FinishedGoodCreationAttemptOutcome.Conflict)
+        {
+            return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                "IDEMPOTENCY_KEY_CONFLICT",
+                409);
+        }
+
+        if (creationAttempt.Outcome != FinishedGoodCreationAttemptOutcome.Bound
+            || creationAttempt.Attempt is null
+            || creationAttempt.Attempt.TenantId != _tenantContext.TenantId
+            || creationAttempt.Attempt.GskuId != gsku.Id
+            || !string.Equals(creationAttempt.Attempt.CreationCommandId, commandId, StringComparison.Ordinal)
+            || !string.Equals(creationAttempt.Attempt.RequestFingerprint, admissionFingerprint, StringComparison.Ordinal))
+        {
+            return Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>.Fail(
+                "FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED",
+                202);
         }
 
         var admission = await _gskus.AcquireChildCreationAdmissionAsync(

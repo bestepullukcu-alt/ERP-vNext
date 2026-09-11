@@ -215,6 +215,47 @@ public sealed class FinishedGoodDraftFoundationUnitTests
         Assert.Equal(CodeReservationBindingState.PendingIdentityWrite, fixture.Reservations.Current.BindingState);
     }
 
+    [Fact]
+    public async Task Unverified_creation_attempt_binding_fails_closed_before_admission_or_reservation()
+    {
+        var fixture = HandlerFixture.Create(
+            _ => throw new InvalidOperationException("Create must not be reached when binding is unavailable."),
+            bind: (_, _, _) => FinishedGoodCreationAttemptResult.Unavailable());
+
+        var response = await fixture.Handle();
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(202, response.StatusCode);
+        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
+        Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
+        Assert.Equal(0, fixture.Reservations.ReserveCalls);
+        Assert.Equal(0, fixture.Reservations.ConfirmCalls);
+        Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
+    }
+
+    [Fact]
+    public async Task Overlength_creation_key_binding_is_unavailable_and_stops_before_admission_or_reservation()
+    {
+        var overlengthKey = new string('K', 129);
+        var fixture = HandlerFixture.Create(
+            _ => throw new InvalidOperationException("Create must not be reached when binding rejects the key."),
+            bind: (_, key, _) =>
+            {
+                Assert.Equal(overlengthKey, key);
+                return FinishedGoodCreationAttemptResult.Unavailable();
+            });
+
+        var response = await fixture.Handle(overlengthKey);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(202, response.StatusCode);
+        Assert.Contains("FINISHED_GOOD_BINDING_RECONCILIATION_REQUIRED", response.Errors);
+        Assert.Equal(0, fixture.FinishedGoods.CreateCalls);
+        Assert.Equal(0, fixture.Reservations.ReserveCalls);
+        Assert.Equal(0, fixture.Reservations.ConfirmCalls);
+        Assert.Equal(CodeReservationBindingState.None, fixture.Reservations.Current.BindingState);
+    }
+
     private sealed class HandlerFixture
     {
         private readonly CreateFinishedGoodDraftHandler _handler;
@@ -237,7 +278,8 @@ public sealed class FinishedGoodDraftFoundationUnitTests
 
         public static HandlerFixture Create(
             Func<FinishedGood, FinishedGoodCreateResult> create,
-            bool returnCapturedOnReread = false)
+            bool returnCapturedOnReread = false,
+            Func<Guid, string, string, FinishedGoodCreationAttemptResult>? bind = null)
         {
             var tenantId = Guid.NewGuid();
             var product = new GlobalProduct
@@ -265,7 +307,7 @@ public sealed class FinishedGoodDraftFoundationUnitTests
                 CanonicalCode = "GS-UNIT-0001",
                 LifecycleStatus = ProductIdentityLifecycleStatus.Draft
             };
-            var finishedGoods = new TestFinishedGoodRepository(create, returnCapturedOnReread);
+            var finishedGoods = new TestFinishedGoodRepository(tenantId, create, returnCapturedOnReread, bind);
             var reservations = new TestReservationRepository(tenantId);
             var tenantContext = new TestTenantContext(tenantId);
             var access = ProductLegalEntityScopeTestFixture.Preparation(tenantContext);
@@ -283,19 +325,39 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             return new(handler, gsku.Id, finishedGoods, reservations);
         }
 
-        public Task<Diten.Shared.Core.Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> Handle()
+        public Task<Diten.Shared.Core.Response<ProductItemSkuMasterModels.FinishedGoodDraftDto>> Handle(
+            string idempotencyKey = "unit-hardening-command")
             => _handler.Handle(new CreateFinishedGoodDraftCommand(new()
             {
                 GskuId = _gskuId,
-                IdempotencyKey = "unit-hardening-command"
+                IdempotencyKey = idempotencyKey
             }), CancellationToken.None);
     }
 
     private sealed class TestFinishedGoodRepository(
+        Guid tenantId,
         Func<FinishedGood, FinishedGoodCreateResult> create,
-        bool returnCapturedOnReread) : IFinishedGoodRepository
+        bool returnCapturedOnReread,
+        Func<Guid, string, string, FinishedGoodCreationAttemptResult>? bind) : IFinishedGoodRepository
     {
         public FinishedGood? Captured { get; private set; }
+        public int CreateCalls { get; private set; }
+
+        public Task<FinishedGoodCreationAttemptResult> BindCreationAttemptAsync(
+            Guid gskuId,
+            string normalizedCreationCommandId,
+            string requestFingerprint,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(bind?.Invoke(gskuId, normalizedCreationCommandId, requestFingerprint)
+                ?? FinishedGoodCreationAttemptResult.Bound(new FinishedGoodCreationAttempt
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    GskuId = gskuId,
+                    CreationCommandId = normalizedCreationCommandId,
+                    RequestFingerprint = requestFingerprint,
+                    IsDeleted = false
+                }));
 
         public Task<FinishedGood?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<FinishedGood?>(null);
@@ -322,6 +384,7 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             FinishedGood finishedGood,
             CancellationToken cancellationToken = default)
         {
+            CreateCalls++;
             Captured = finishedGood;
             return Task.FromResult(create(finishedGood));
         }
@@ -347,6 +410,7 @@ public sealed class FinishedGoodDraftFoundationUnitTests
         };
 
         public int ConfirmCalls { get; private set; }
+        public int ReserveCalls { get; private set; }
 
         public Task<CodeReservation?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<CodeReservation?>(Current.Id == id ? Current : null);
@@ -357,7 +421,10 @@ public sealed class FinishedGoodDraftFoundationUnitTests
             string actorId,
             string correlationId,
             CancellationToken cancellationToken = default)
-            => Task.FromResult(Current);
+        {
+            ReserveCalls++;
+            return Task.FromResult(Current);
+        }
 
         public Task<ReservationOperationResult> ConsumeForIdentityAsync(
             Guid reservationId,

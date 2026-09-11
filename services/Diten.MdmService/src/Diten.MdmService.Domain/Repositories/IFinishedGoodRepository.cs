@@ -4,6 +4,12 @@ namespace Diten.MdmService.Domain.Repositories;
 
 public interface IFinishedGoodRepository
 {
+    Task<FinishedGoodCreationAttemptResult> BindCreationAttemptAsync(
+        Guid gskuId,
+        string normalizedCreationCommandId,
+        string requestFingerprint,
+        CancellationToken cancellationToken = default) =>
+        throw new NotSupportedException("FINISHED_GOOD_CREATION_ATTEMPT_NOT_IMPLEMENTED");
     Task<FinishedGood?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<FinishedGood?> GetByCreationCommandIdAsync(
         string creationCommandId,

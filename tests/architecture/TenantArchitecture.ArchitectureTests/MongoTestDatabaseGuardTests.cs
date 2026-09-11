@@ -76,7 +76,6 @@ public class MongoTestDatabaseGuardTests
     {
         "services/Diten.HcmService/tests/Diten.HcmService.Application.Tests/EmployeeDraftSessionRepositoryMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs",
-        "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GlobalProductApiMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuRegisterMongoTests.cs",
         "services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs",

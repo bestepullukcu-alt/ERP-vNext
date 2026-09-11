@@ -19,6 +19,10 @@ canonical_blueprint: docs/System Capability & Implementation Blueprint - master 
 
 # MOD-0290 - Product / Item / SKU Master
 
+> **2026-09-10 FG proposal authority:** Section 21 records the actual integration HEAD and a Phase 1.5 planning-only
+> revision. Its proposed future paths and decisions do not grant runtime code-start, change this pack's status or
+> revalidate historical live/test claims. Existing unrelated approvals remain intact; current FG code truth is in 21.1-21.3.
+
 > **In-progress/code-truth guard (2026-08-09):** This pack records the implemented Local Development scope proved in
 > Section 19: Global Product end-to-end, Product Definition Revision/First GSKU, verified GSKU provider/publication,
 > GSKU A-G, LSKU A-G, Finished Good A-E and shared Save View hardening. It grants no new runtime authority and makes no
@@ -3371,3 +3375,1184 @@ duplicate/cursor paging across ABB plus all original eight collections, and reje
 wrong aggregate/source, legacy temporal storage, future retry, active lease, delivered and dead-letter records.
 The independent audit storage prerequisite run has 2 passed tests; these are distinct from the 11 discovery tests.
 Producer, WorkCenter and UI integration are separate gates; neither run proves live worker acceptance.
+
+## 21. Finished Good Phase 1.5 proposal — planning only (2026-09-10)
+
+### 21.0 Decision summary — one-page recommendation, not runtime approval
+
+FG remains a retained identity register with current multiplicity; no Inventory/Material/Brand redesign.
+Recommend **O2: narrow FG-local continuation authority** over existing Auth-issued identities, native Workflow evidence,
+current MDM scope/fence and G4. Unchanged reuse is insufficient; a new central audience/LE-grant/permit platform is not
+shown necessary. Keep the earlier central proposal deferred and retain the current Platform 5/20 schema budget.
+
+Two small shared gaps remain selected: read-only recovery of a committed cancellation whose response was lost, and a
+named-service own-tenant status/context read. Neither grants a service the right to cancel a task. Draft-cancel
+finalization is mechanical completion of an already authorized local decision: use its receipt and current audit
+executor gate, not a fabricated WorkCenter decision or new Workflow grant.
+
+Recommend admission-time maker authority and decision-time checker authority, with **current** executor/tenant/source
+checks at application. Later offboarding alone should not strand an authorized decision. Remote revocation is observed,
+not globally atomic; approve the bounded-observation model only after its visibility/deadline assumptions and physical-
+CAS expiry are tested. The 300-second token lifetime is not a permit window; no measured global bound exists here.
+
+For orphan Drafts, recommend exact cancel-draft permission + current product/LE scope + mandatory reason, even for
+another creator's Draft. This is not yet approved and does not permit withdrawing another requester's pending process.
+Keep immutable original creation provenance and actual cancelling actor separate.
+
+The original 239 paths are retained and classified once. O2 selects 212 of them and adds 12 exact paths: 46 reuse,
+23 semantic source ports, 86 existing-file amendments, 69 genuinely new proposed files across runtime/tests.
+The other 27 new central files are deferred, not required. Details and contract-on-existing-file distinctions are in 21.7.
+First runtime step, if separately authorized: prove the pre-insert changed-GSKU replay risk using the existing real
+repositories before proposing a binder redesign. Exact keys/role deltas, 72–76 ordinal candidates, O2 contracts,
+orphan cancellation policy and revocation acceptance remain final owner approvals. No code-start/status/Git mutation.
+
+### 21.1 Authority, baseline and evidence limits
+
+**ARCHITECTURAL DIRECTIONS APPROVED; RUNTIME CODE-START NOT AUTHORIZED.** This remains a planning revision of existing
+MOD-0290, not a new ID, runtime/test amendment approval or status promotion. Only Section 21 may change in this turn;
+frontmatter, preceding sections, historical approvals and the opening guard remain untouched. Every proposed exact
+permission, role delta, operation name/ordinal, authority protocol and future path below still needs explicit review
+and code-start approval. Cross-domain Auth/Platform amendments are proposals, not permissions for this MDM pack to edit
+other owners' runtime or governance.
+
+The user's selected architectural directions now supersede the first proposal's alternatives:
+
+| Selected direction | Boundary still not granted |
+|---|---|
+| Preserve current GSKU → zero-or-more FG model and existing records | No assertion that multiplicity has a proven business need; no uniqueness migration or invented discriminator |
+| Audited Draft cancellation, no physical deletion or code reuse; safe admission/fence release | Exact permission, cancellation representation, audit allocation and implementation remain proposed |
+| Authorized own withdrawal for both undecided identity approval and retirement request | Exact separate permission keys and role grants remain proposed; terminal decisions cannot be overwritten |
+| Background applies authenticated terminal decisions without waiting for maker return | Requires explicit narrow audited tenant/scope/revocation/fence authority; no current service audience or human JWT is an automatic substitute |
+| Fixed CanonicalCode ordering aligned with UI and Save View | No new server-sort feature or arbitrary saved order |
+| WorkCenter retirement request with safe direct-retire grant transition | No direct-retire endpoint, automatic assignment or premature claim that historical grants are all revoked |
+
+Target worktree is `C:/dev/ERP-vNext/.worktrees/product-pv-delivery-integration-20260907`, branch
+`codex/product-pv-delivery-integration-20260907`, HEAD
+`dc6857d03cdafde5628affdcd0e5efc25bae3f7f`.
+The first proposal started with clean tracked/index state and 432 retained .testoutput files.
+This revision starts with that expected MOD-0290 pack modification, an empty index, the same HEAD and retained evidence;
+it does not reset or replace another worktree's work. No build/test, browser, Mongo or service operation runs here.
+
+Verified source `d58368d0e30f26b2e032d9f70f20bd7fc8712c77` is an ancestor of
+`bb9ce94d0ca3d4520f3d1555d284cbe3f8219f25`. Their FG implementation has identity submit/terminal reconciliation and
+direct-retire, but no Draft cancellation, identity withdrawal or WorkCenter retirement-request/withdrawal.
+Preserve the later immutable start/terminal evidence separation, not the old maker-return recovery restriction:
+`AwaitingMakerReplay` is source history to reconcile under the newly selected background-authority design, not a future
+requirement. Source code is not an overwrite instruction or approval of new contracts. Historical Section 19 live
+evidence and retained test artifacts do not prove current lifecycle runtime or Production readiness.
+
+### 21.2 Business meaning, fields and cardinality decision
+
+A user selects a referenceable approved GSKU and receives a separately allocated FG canonical identity code.
+Today this is an identity register entry, not a stock balance, manufacturing order, lot, BOM, material, plant/site
+assignment or regulatory licence. A proposed future submit opens an identity approval task in existing WorkCenter;
+a checker decision becomes FG state only after verified MDM read-back. A future retirement request is another
+controlled decision, not a direct status update.
+
+| Field or link | Actual source and meaning | Phase 1.5 boundary |
+|---|---|---|
+| `GskuId` | One user selection, server revalidated against tenant, parent state and Product Legal Entity Scope | Preserve the current E1B approved GSKU + approved Product Definition Revision prerequisite; do not restore historical Draft-parent acceptance |
+| `CanonicalCode` | System allocation/reservation, not editable input | Preserve immutable code, reservation binding and no reuse |
+| `CodeReservationId`, `CreationCommandId` | Allocation and durable create-attempt identity | Technical evidence, not form fields; one logical retry retains identity |
+| `LifecycleStatus` and proposed FG cancellation disposition | Server-owned Draft today; future workflow transitions plus FG-specific immutable cancellation evidence | No arbitrary update, direct-retire, Retired alias, edit/correction or physical delete endpoint |
+| `Id`, `TenantId`, `Version`, timestamps, soft-delete markers | EntityBase and authenticated server context | Tenant isolation and CAS; Draft cancellation uses retained business evidence, not IsDeleted/DeletedAt or erase |
+| Audit intents/receipts | Local producers, durable G4 acceptance and compaction | Not user-entered business data; no sensitive payload display |
+| GSKU code / revision / Global Product | Display or validation reached through GSKU and its revision/parent relationships | Do not duplicate those identities or editable names in FG |
+| Legal Entity access | Current Global Product scope policy reached through the parent chain | No invented FG LegalEntityId or browser-generated tenant/scope authority |
+| LSKU, Market, composition, Material, Inventory | No direct FG association in the inspected model | Deferred dependencies, not fabricated fields; FG does not need the LSKU verified-Market resolver |
+| Proposed operation, maker, workflow binding, terminal/cancellation/execution evidence | New or source-candidate technical records | Immutable human provenance versus authenticated service executor; exact reason/authority fields require owner review |
+
+Blueprint master 8.1 `Blueprint_Data!A291:AG291`, `SoR_Map!A256:E256` and
+`Dependencies!A1281:D1285` support Product/Item/SKU SoR, UoM/lifecycle/downstream boundaries and MOD-0003,
+MOD-0040, MOD-0021, MOD-0252, MOD-0253 dependencies. Read-only searches of all workbook sheets found no explicit
+Finished Good/Bitmiş Ürün wording establishing a multiple-FG business purpose. This is limited evidence, not proof
+that no implicit need exists. The current locked domain contract Sections 4 and 7.5 allows GSKU → zero-or-more FG,
+each FG → exactly one GSKU; the repository's non-unique parent index and tests implement this existing approved model.
+Current consumers found are parent-retirement admission, scope inventory, code ledger and audit delivery, not a
+manufacturing/inventory consumer that explains why siblings need distinct identity. No business database was queried.
+
+**Selected:** preserve the existing zero-or-more model and data. Its differentiating business need remains unvalidated,
+not a code-start blocker requiring a cardinality change. Any future zero-or-one proposal would need a new explicit
+business decision, assessment of historical siblings/conflicts, and separately approved schema/data work. Do not add a
+unique index, migrate records or add `StewardLabel` merely to distinguish them.
+Material/Inventory/Composition linkage and Brand/Product redesign remain excluded.
+
+The current parent-retirement blocker includes every non-retired FG, including Draft. The selected Draft-cancellation
+flow addresses that trap without deleting the identity. Proposed FG-specific immutable cancellation facts/disposition
+must distinguish `CancellationPending` from audit-finalized `Cancelled`; do not relabel cancellation as Retired or
+set IsDeleted. A pending identity approval must first complete valid withdrawal back to Draft. Only a cancellation
+whose durable audit receipt and operation-bound finalization are verified may cease blocking parent retirement.
+The exact target GSKU blocker must exclude only that terminal case under the existing parent admission/fence contract;
+unknown outcomes, missing receipts and other children still block. Canonical code and confirmed reservation remain
+consumed/bound permanently. No broad fence clear, reservation reset, code burn/reuse or implicit parent retirement occurs.
+The shared four-value lifecycle enum need not be expanded for every product; the proposed FG-specific representation
+and DTO projection are an explicit owner-review item. Retained cancelled FG remains in scope inventory and audit discovery.
+
+
+### 21.3 Current versus selected future end-to-end contracts
+
+All new routes/actions in this table remain implementation proposals. No new FG lifecycle endpoint is present at the
+inspected target merely because an architectural direction is selected.
+
+| Flow | Target / source truth | Selected future behavior and required closure |
+|---|---|---|
+| Create/read/selector | Existing read/create backend and MVC | Preserve approved GSKU/revision, scope, allocation and retry identity; close pre-insert payload-binding proof in 21.6 |
+| Draft cancellation | Absent target and old source | Authorized Draft-only audited terminal cancellation, immutable code/history, PendingAudit then verified receipt/finalization; no delete/Retired alias; only finalized cancellation releases parent blocker |
+| Submit | Absent target FG API/handler; source candidate exists | Draft without any cancellation record → workflow-backed Pending; maker identity, current permission/scope, CAS and audit |
+| Approve/reject read-back | Generic WorkCenter exists; target FG processor absent | Native checker decision → unattended authorized MDM terminal application and actual source read-back, without maker return |
+| Identity withdrawal | Absent both target and source | Authorized own undecided request, native cancellation proof before Draft restoration; then a separate Draft-cancel command if desired |
+| Retirement request | Absent both target and source | Approved FG → native WorkCenter request; rejection preserves approved identity, approval eventually finalizes Retired through the same background authority |
+| Retirement-request withdrawal | Absent both target and source | Authorized own undecided retirement request; exact operation/profile cancellation; FG remains approved and active request binding is released only on verified outcome |
+| Direct retire | Old source only | Not ported; safely supersede only module-owned grant, preserve other-source rights without exposing a direct-retire route |
+| Edit/correction/delete/import/navigation | Not selected | No mutable FG business field established; no fake action, physical erase or unrelated UI expansion |
+
+Current routes remain `GET /api/finished-goods`, `GET /api/finished-goods/{id}`,
+`GET /api/finished-goods/gsku-selector`, `POST /api/finished-goods/drafts`.
+Read uses `mdm.finished-goods.read`; selector/create uses `mdm.finished-goods.create`.
+The source `POST /api/finished-goods/{id}/submit` is a reconciliation candidate.
+Proposed new routes are `POST /api/finished-goods/{id}/cancel-draft`,
+`POST /api/finished-goods/{id}/withdraw`, `POST /api/finished-goods/{id}/retirement-requests`,
+and `POST /api/finished-goods/{id}/retirement-requests/{operationId}/withdraw`.
+Each mutation requires exact permission, strict request shape, immutable operation identity and expectedVersion;
+unknown fields cannot select an authority or override stored actor/profile. Background reconciliation is not a public
+human `lifecycle/reconcile` endpoint and must not require a maker JWT or maker revisit.
+
+Browser → same-origin MVC → existing Gateway GET/POST/OPTIONS → MDM port 5059 remains sufficient.
+No root/nested PUT, route, port or auth change is proposed; only route-contract tests. No browser-generated tenant,
+bearer or service identity. CSRF and protected form/action identities remain required.
+
+| Chain boundary | Current delta / explicit future gate |
+|---|---|
+| Auth → manifest | Current Auth FG submit/retire profile disagrees with actual read/create-only FG manifest. Exact coordinated catalog/profile/action/endpoint delta is required; publishing keys cannot stand in for implemented endpoints |
+| User permission → FU21 | Human commands use independently validated delegated JWT + exact `product-item-sku-master` pairs. New action keys are proposals in 21.4; background service authority is separate, not a fake human pair |
+| Scope → repository | Current parent-chain scope and local LE/policy validation, short-held admission, physical-write CAS/fence; cancellation/withdrawal cannot clear unrelated operations |
+| Audit → durable state | Exact FG aggregate/operation/ordinal, local intent, G4 acceptance/receipt, compaction/replay; cancellation PendingAudit is not final and does not free the parent |
+| MDM → workflow | Reuse identity profile `finished-good`; proposed retirement profile `FinishedGoodRetirementRequest` must be validated against exact client/service/audience/object/template contract |
+| Platform → WorkCenter | Reuse native provider/action dispatcher and transaction/concurrency behavior. WorkCenter decides; MDM alone owns FG state |
+| Terminal → MDM background | New explicit machine execution authorization + current tenant/scope/revocation/fence + exact terminal proof; no inference from evidence-read permission or original human JWT |
+| Terminal read-back → UI | Actual server FG disposition, lifecycle and version; accepted/unknown/pending is never displayed as finalized |
+
+Exact existing audience boundaries: workflow `TRUSTED_WORKFLOW_CONSUMER`; audit
+`TRUSTED_AUDIT_SOURCE_INGEST` with source `Diten.MDM` and contract `mod-0290.audit-intent.v1`;
+human FU21 `TRUSTED_LEGAL_ENTITY_SCOPE_RESOLVE`. None currently authorizes autonomous FG source mutation.
+A separate proposed authority contract in 21.4 must be reviewed rather than silently widening these audiences.
+Runtime client/template IDs and tenant provisioning remain outside this plan; proposed retirement object-ID meaning
+must distinguish workflow operation ID from source FG ID.
+
+### 21.4 Proposed exact permission matrix, safe supersession and background authority
+
+The architecture approves these flow responsibilities, **not these exact new strings or grants**. Existing FG keys are
+`mdm.finished-goods.read`, `mdm.finished-goods.create`, and Auth's existing `mdm.finished-goods.submit`/
+`mdm.finished-goods.retire` (the latter two are absent from current FG manifest/API). Proposed new keys are
+`mdm.finished-goods.cancel-draft`, `mdm.finished-goods.withdraw`,
+`mdm.finished-goods.request-retirement`, and `mdm.finished-goods.withdraw-retirement-request`.
+Separate withdrawal keys prevent identity-steward scope from automatically granting retirement-request withdrawal.
+
+| Existing responsibility role | Current FG-specific grants | Proposed FG-specific grants / exact delta |
+|---|---|---|
+| `ProductDataSteward` | read, create, submit | Keep those three; add `mdm.finished-goods.cancel-draft` and `mdm.finished-goods.withdraw`; retain native `platform.workflow.instances.start` |
+| `ProductIdentityApprover` | read | No FG delta; native `platform.work-aggregation.inbox.view`, `platform.workflow.tasks.approve`, `platform.workflow.tasks.reject` unchanged |
+| `ProductIdentityRetirementSteward` | read, retire | Keep read; remove only module-owned `mdm.finished-goods.retire`; add `mdm.finished-goods.request-retirement` and `mdm.finished-goods.withdraw-retirement-request`; retain native workflow start |
+| Admin / Viewer | Existing base-template behavior | No lifecycle mutation addition, no responsibility membership or automatic extra read permission |
+
+Other products' permissions are unchanged. Roles are grant templates, not authorization checks by role name.
+Each withdraw additionally requires the operation's same canonical requester, undecided exact workflow binding and
+current permission/scope. Draft cancellation ownership is addressed separately below: recommend exact cancel-draft permission + current scope
+with mandatory reason, including another creator's Draft; this broadened stewardship choice is not yet approved. Human maker/checker separation
+continues through native WorkCenter. No new `mdm.finished-goods.approve/reject` keys or direct-retire exposure.
+
+Proposed new human FU21 pairs (existing read/create and every unrelated pair remain unchanged):
+
+| Exact resource | Exact permission proposal |
+|---|---|
+| `product-item-sku-master` | `mdm.finished-goods.submit` |
+| `product-item-sku-master` | `mdm.finished-goods.cancel-draft` |
+| `product-item-sku-master` | `mdm.finished-goods.withdraw` |
+| `product-item-sku-master` | `mdm.finished-goods.request-retirement` |
+| `product-item-sku-master` | `mdm.finished-goods.withdraw-retirement-request` |
+
+No automatic retire/background pair, wildcard, prefix, case-insensitive match or read fallback. Pair acceptance does not
+grant user authority. Current real role totals are 20/7/11 (Steward/Approver/RetirementSteward); this exact proposed delta would produce 22/7/12,
+not an approved target count. Current lifecycle-key set is 18; replacing FG retire with four new keys would yield 21.
+Derive and test these sets from definitions, not by adding unrelated grants to match a number.
+Coordinate actual manifest emission, exact Auth profile, implemented endpoint/actions and reconciliation atomically as a
+validated release sequence; do not “fix” strict reconciliation merely by advertising unavailable endpoints.
+
+Direct-retire transition is source-safe: existing `EntitlementPermissionSyncService` removes only stale
+`GrantSource.Module` + `SourceModuleCode = product-item-sku-master` grants; manual and other-source grants survive.
+Desired-profile replay must be cardinality-stable, revoke/restore must restore the new exact grants, and old/stale events
+must not revive old FG authority. Retained manual retire rights preclude claiming that every retire grant was revoked;
+the selected interface still exposes no direct-retire route/profile. An old JWT cannot manufacture a missing endpoint.
+No user membership assignment or operational reconciliation is performed. Historical FU23 owner pack is source-only;
+its future exact amendment remains a cross-owner dependency, not authorization to create that pack now.
+
+#### Orphan Draft decision — recommendation, not approval
+
+| Alternative | Business/security result | Exact scope |
+|---|---|---|
+| Creator-only | Least actor reach, but offboarding can strand Draft and block parent retirement | Same proposed command/handler/evidence/test paths; requires demonstrable canonical creator, never guess from display name |
+| Exact permission + current scoped steward **recommended** | Avoids orphan lock without an operator module; authorizes the action by permission and current product/LE scope, never role name | Draft only, no pending/conflicting operation, expectedVersion, mandatory bounded reason; same paths, no added general endpoint |
+
+The second option still needs user approval. Preserve original creator/creation-command provenance and record the
+actual cancelling actor separately; unavailable legacy creator evidence must not be fabricated. Do not grant another
+person's identity/retirement withdrawal: those remain own-requester only. Reject pending/conflicting operations before
+repository/audit/workflow mutation. A retry by another actor cannot overwrite the admitted actor/fingerprint.
+Tests must cover another creator with exact key/scope, missing key, scope denial, tenant mismatch, role-name-only denial,
+mandatory reason, conflicting operation, own versus other-requester withdrawal and immutable replay actor.
+
+#### 21.4.1 Minimum background design — recommendation for approval
+
+| Option | Exact current evidence and coverage | Gap / cost / recommendation |
+|---|---|---|
+| O1 — unchanged reuse | Existing `AuthProductIdentityWorkflowServiceIdentityProvider.GetAsync(forceRefresh: true)` obtains fresh Auth issuance; `IssueServiceIdentityTokenHandler` checks current identity/credential/exact tenant-audience grant; Platform named validator checks real RS256; existing terminal evidence and FU03 evaluator/fence/G4 are available | Does not itself authorize source mutation. Source FG recovery denies Enforced; no admitted finite scope snapshot or service-actor fence entry. Current token issuance and workflow executor do not check tenant Active. Unchanged reuse cannot satisfy unattended safe apply |
+| O2 — narrow local continuation contract **recommended** | Reuse those mechanisms; a new FG-local `FinishedGoodLifecycleExecutionAuthority` validates one durable admitted operation + terminal/cancellation/receipt proof + current own-tenant observation + current local scope/policy/fence. Existing Auth audiences/grants and Platform tenant registry remain SoR | New local contract and small named-service tenant-context read are necessary; no new audience, grant collection or central permit. Exact selected paths below. Lowest proposed operational cost: existing credentials/grants, no duplicate LE-grant administration |
+| O3 — new central audience / execution grant / permit | Prior candidate `TRUSTED_FINISHED_GOOD_LIFECYCLE_APPLY`, Platform finite-LE grant and Auth epoch/permit paths are retained as **deferred alternatives**, not erased | Not shown necessary for FG. Would create a new authority SoR, provisioning, epoch-writer coverage and schema cost. Needed only if owners require independently administered background LE grants or coordinated global revocation. Do not implement merely because proposed earlier |
+
+O2 is a new explicit source-side contract, not a claim that an existing transport grant already authorizes FG writes.
+It is reachable only from the bounded FG recovery path for an already admitted operation; no public arbitrary-operation
+or user-supplied permission/tenant interface. Persist immutable canonical human admission, exact request/fingerprint,
+finite admitted LE upper-bound and original workflow binding. Existing source FG operations lack that scope snapshot:
+this is a semantic port change, not previously implemented evidence. Preserve maker/checker facts; never persist their JWT.
+
+For workflow application, obtain fresh existing workflow identity, retrieve exact native terminal evidence (or the
+separately proposed read-only cancellation evidence), then apply the narrow local policy. The existing provider's forced
+refresh captures its rejected token inside its semaphore and acquires afresh; no provider behavior change is selected.
+Platform validates the token cryptographically; MDM's structural token parsing alone is not RSA validation.
+The service-token remains exact `exp = nbf + 300`, `iat = nbf`; default validation skew is 30 seconds. This transport
+lifetime, or its possible skew allowance, is **not** an execution permit or an approved revocation window.
+
+Current tenant Active is a real missing gate: Auth issuance checks client/grant, not tenant registry, and the workflow
+executor only establishes TenantScope. Proposed FG own-tenant execution-context **read**, not a permit/grant resolver,
+uses three exact **proposed, not yet approved** purposes: `FinishedGoodIdentityTerminalApply` and
+`FinishedGoodRetirementTerminalApply` use the existing `TrustedWorkflowConsumerService` named scheme;
+`FinishedGoodDraftCancelFinalize` uses the existing `TrustedServiceToken` audit named scheme. Unknown purposes,
+mixed-purpose proof payloads and purpose/audience mismatches are rejected; no scheme fallback is allowed.
+Tenant comes solely from the validated token and must be Exists + Active through the existing local
+`GetTenantStatusQuery`/`GetTenantStatusQueryHandler`/`ITenantRegistryRepository`.
+No second X-Internal-Api-Key, arbitrary tenant parameter, new scope grant or source-write assertion. Return only bounded
+current tenant status and verified service/purpose/token binding needed by the MDM consumer; unknown/inactive/unavailable
+is fail-closed even though an older unrelated client comments on fail-open behavior.
+Bind each response to the exact request/attempt nonce, validated tenant, service-sub, token `jti` and purpose, with
+explicit observation freshness and expiry validation. The MDM client must reject cached, expired, cross-attempt,
+cross-token or mismatched responses; corresponding negative contract tests are required. This response is an
+authenticated point-in-time observation, never a source-write permit or atomic revocation guarantee.
+This narrow new read contract itself requires explicit cross-owner approval; its exact extra paths are listed after the
+original inventory. It is needed for Draft completion, which has no workflow evidence request to piggyback on.
+
+Current source scope = integrity-verified finite admission LE upper-bound intersected with current active local Legal
+Entities and current Global Product policy, using existing `ProductLegalEntityScopeEvaluator` unchanged.
+No caller-supplied set, GroupWide substitute, human-FU21 impersonation or new Platform LE-grant collection.
+Human foreground commands still use FU21. Missing admission bound cannot silently pass Enforced after rollout changes.
+Keep 200 LE / 100-period / 1 MB applicable persisted-document bounds, including technical evidence.
+The existing write-fence coordinator currently depends on HTTP human actor context: propose a narrow verified service-
+identity entry for one FG operation, not a fake HttpContext or global actor replacement. Reacquire local lease and
+revalidate rollout/operation/policy at physical CAS; do not retain a tenant writer lease during approval waits.
+
+**DraftCancelFinalize is a distinct local-completion branch, not a WorkCenter terminal decision.** The human has already
+durably admitted the irreversible cancellation; the finalizer only confirms its exact receipt and safely completes the
+matching state/admission. It needs current own-tenant status, current local policy/activation/fence, immutable cancellation
+proof and verified G4 receipt, but no fabricated workflow fields or workflow-purpose grant.
+Recommend fresh existing audit-service identity as its separate current executor gate. Current audit provider may
+coalesce a concurrently acquired token because its rejected-token snapshot precedes the semaphore; add a narrowly named
+fresh-acquisition operation on its existing interface/implementation, preserving every existing G4 caller's semantics.
+No shared-cache rewrite, new credential/audience or stale receipt-as-current-authority shortcut.
+
+Actual background actor remains the validated service-sub GUID in the proposed
+`service:Diten.MDM:<serviceClientIdentityGuid>` format (54 characters, within ActorId 160); maker/checker remain immutable
+provenance. SnapshotReference obeys `^[A-Za-z0-9._:/-]{1,256}$`. Bind operation, proof, current observations and actual
+executor into `FinishedGoodLifecycleExecutionAuthorizationEvidence`, preserving first-application fingerprint through
+replay/compaction. No FU01 envelope/header expansion. Service identity cannot initiate cancel/retire, approve tasks or
+use the local finalizer for another profile.
+
+#### 21.4.2 Revocation behavior — proposed business/security policy
+
+Maker authority belongs to admission time; checker authority belongs to the authenticated decision time; service
+identity, tenant and local source conditions belong to the execution attempt. Recommended: later maker/checker departure
+does not retroactively invalidate a valid committed business decision. Otherwise ordinary offboarding could strand an
+approved record indefinitely. This is a policy for user approval, not a claim that current code implements it.
+A specifically revoked/cancelled operation or invalid decision proof still blocks; no maker re-login or retained JWT.
+
+| Situation | Proposed outcome / authority distinction |
+|---|---|
+| Maker disabled or permission removed after valid admission | Do not impersonate or re-authorize the former maker; valid admitted operation may complete under current service/source checks. Invalid/revoked admission does not pass |
+| Checker disabled after valid immutable decision | Preserve decision-time authority/provenance; do not erase the decision solely due to later offboarding |
+| Service client/grant revoked before fresh issuance | Auth rejects; defer without source mutation. Restore requires a fresh attempt, not replay of cached execution observations |
+| Tenant suspended/deactivated/missing | Named-service context read denies; retained evidence is not authority to ignore suspension |
+| LE scope/policy changes | Re-evaluate current policy/active LE against admission upper-bound; empty/missing Enforced result denies. Narrowing may defer; broadening cannot enlarge admission |
+| Terminal decision exists but source CAS not applied | Resume same operation with fresh executor/tenant observations and current local fence; no new decision, duplicate audit or version increment |
+| Auth/Platform authority observation unavailable | Defer/quarantine with evidence retained; no cached-success fallback or fabricated receipt |
+| Revocation after observation and before CAS | Cross-service race remains explicit. Local source lease/operation/policy changes are fenced at CAS; a fresh remote read cannot atomically serialize remote Auth revocation |
+| Prior attempt timed out / Mongo result unknown | Read back original operation/outcome before retry; never turn timeout into a new identity or reuse old attempt observations |
+
+O2 has **no central execution permit**. Let L be authority-store visibility lag and W the accepted fresh-observation-to-
+physical-CAS interval. The potential revocation exposure is at least L + W, plus any explicitly relied-on clock uncertainty;
+L is not measured/bounded by the inspected code. The 300-second JWT lifetime and 30-second validation skew are not W.
+No proven numeric global upper bound is claimed. Recommend an owner-approved bounded-observation policy without global
+atomic revocation, conditioned on an outer monotonic attempt deadline including semaphore wait, HTTP, retries and CAS,
+and an actual database-enforced expiry/fence rather than only a client cancellation token.
+An eventual retry starts new observations; it cannot reset the clock on old evidence. Unknown in-flight writes require
+read-back. Before choosing a numeric W, measure/test these paths and specify datastore expiry/clock assumptions.
+If immediate cross-service revocation is mandatory, O2 is insufficient; O3 still needs a real coordinated revocation
+protocol, not merely extra epoch fields or fresh reads.
+
+Test delayed/revoked issuance, stale/concurrent cache acquisition, tenant suspension, observation-to-CAS pauses, local
+lease/policy revocation, delayed Mongo acknowledgement, clock changes and retry boundaries. A short timeout used in a
+unit test is not proof of a production global revocation bound. No operational measurement or test runs in this turn.
+
+#### 21.4.3 Deferred central alternative and schema evidence
+
+O3's prior new audience, live Auth authorization endpoint/epoch writers, Platform finite-LE execution-grant repository
+and HTTP authority client are retained with `deferred-O3` markers below. They are not selected prerequisites for O2.
+Current AccessGovernance manifest has five collections, fifteen declared indexes plus five implicit _id indexes = 20;
+the approved budget is 5/20. A separately owned Platform execution-grant SoR with implicit _id plus unique tenant/client/
+profile would require a proposed 6/22, but no requirement for that additional SoR has been established here.
+Keep all existing indexes unchanged. O2 reads existing tenant registry and uses MDM's existing admitted/current scope,
+so it requires neither collection nor budget growth. Any future independently administered background scope or central
+permit remains a separate owner decision with exact grant/revocation lifecycle and cross-product regression scope.
+
+Historical source also contains generic orphan-operation recovery (including
+`services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/OrphanedOperationRecovery/Handlers/CommandHandlers/RecoverOrphanedProductIdentityWorkflowOperationHandler.cs`
+at bb9ce94d). It is developed source/reference, not “never implemented”; it is not automatically ported as a new operator
+module or evidence that current FG has safe unattended authority. No new general recovery product is selected.
+
+### 21.5 Proposed audit mapping, cancellation and compaction invariants
+
+These are **candidate names/values/central semantics, not allocation or approval**. Aggregate is exact `FinishedGood`
+(enum value 5). Verified enum evidence: target has 65 members, maximum 71; final bb9ce94d has 71 members through 71;
+d58368d0 has 35 through 35. No duplicate numeric values were found in those enum snapshots. Gaps 32–37 are not free:
+FG historical 32–35 and source shared abandonment/supersession 36–37 must not be reused. Candidate 72–76 are absent
+from the inspected target/source enum and relevant plan text; this bounded check is not a repository-wide reservation
+or a guarantee about concurrent branches. Repeat collision/producer/map checks before exact approval and code-start.
+
+| Event proposal | Ordinal status | Producer moment / meaning | Proposed exact central operation |
+|---|---|---|---|
+| `FinishedGoodDraftCreated` | Existing 9 | Existing FG draft creation | Preserve existing Create |
+| `FinishedGoodIdentitySubmitted` | Historical 32, absent target | Durable submit/Pending binding, not approval | LifecycleTransition, subject to exact producer/map review |
+| `FinishedGoodIdentityApproved` | Historical 33, absent target | Verified native approval applied through authorized source CAS | LifecycleTransition |
+| `FinishedGoodIdentityRejected` | Historical 34, absent target | Verified native rejection applied through authorized source CAS | LifecycleTransition |
+| `FinishedGoodIdentityRetired` | Historical 35, absent target | Only verified WorkCenter retirement approval, never direct-retire | Deactivate |
+| `FinishedGoodDraftCancelled` | Candidate 72, UNALLOCATED | Immutable authorized Draft-cancellation decision + local intent; delivery/finalization may still be PendingAudit | LifecycleTransition |
+| `FinishedGoodIdentityApprovalWithdrawn` | Candidate 73, UNALLOCATED | Verified native cancellation of own identity approval + source Draft CAS | LifecycleTransition |
+| `FinishedGoodRetirementRequested` | Candidate 74, UNALLOCATED | Durable retirement request admitted with exact workflow binding | LifecycleTransition |
+| `FinishedGoodRetirementRejected` | Candidate 75, UNALLOCATED | Verified retirement rejection; FG remains approved | LifecycleTransition |
+| `FinishedGoodRetirementCancelled` | Candidate 76, UNALLOCATED | Verified own retirement-request withdrawal; FG remains approved | LifecycleTransition |
+
+The exact producers, operation factories, central map and negative tests must agree; do not add mappings merely to
+reach a count. Current/source central mapping contains only FG draft creation. No numeric passthrough, unknown ordinal,
+case drift or cross-product acceptance. Authority grant/deny/apply evidence is technical auditable execution evidence,
+not an invented extra ProductAuditOperation on every retry. Additional business events require their own exact proposal.
+
+**Draft cancellation:** take current tenant/permission/scope and expectedVersion, reject any pending approval or conflicting
+active operation, persist immutable cancellation identity/fingerprint/actor/reason and intent with FG still retained.
+PendingAudit blocks all new submit/retirement/cancellation attempts except exact replay. Only verified durable G4
+receipt plus current finalization authority, matching operation and fenced CAS can mark Finalized. The audit event
+describes the irreversible accepted cancellation decision; receipt/finalization is its completion evidence, not a second
+identical business event. A missing/unknown/conflicting receipt leaves parent retirement blocked.
+
+Parent admission cleanup references the original `CreationCommandId` and fingerprint, not the new cancellation ID.
+Reuse the existing durable-child/confirmed-reservation checks before completing only that admission. Never clear a
+parent retirement lease, pull all admissions, burn/reset the confirmed code reservation or unlink another FG.
+The narrowed GSKU blocker excludes only this finalized retained cancelled child; an active sibling still blocks.
+Do not trust a disposition/Finalized flag alone: missing or mismatched receipt, cancellation operation, fingerprint or
+binding must block/quarantine a forged, corrupt or legacy record rather than silently release parent eligibility.
+Crash between cancellation decision, G4 delivery/compaction, finalization and matching admission cleanup replays with the
+same identities. Original create-key replay must return the same cancelled identity/evidence or explicit terminal conflict,
+never allocate a replacement code or present it as newly created Draft.
+
+**Both withdrawals:** current exact action permission + own canonical requester + scope/expectedVersion must be checked
+before any mutation. Platform cancellation validates tenant/client/task/object/instance/maker and native CAS but does
+not know the FG permission. Require `TerminalAction = Cancel`, `TaskStatus = Cancelled`,
+`InstanceStatus = Cancelled` and exact operation/profile binding. Identity withdrawal restores Draft only after proof;
+retirement withdrawal preserves Approved and releases only the matching retirement binding. Preflight, 200 without
+proof, accepted 202, timeout or unknown result is not source-state authority. Concurrent approval/cancel resolves through
+native terminal concurrency; losing/ambiguous outcomes reconcile, never overwrite. Pending identity must first complete
+withdrawal before a separate Draft-cancel action is allowed.
+
+**Lost successful cancellation response is a separate mandatory shared dependency.** Current terminal-decision evidence
+returns approve/reject only; cancel requires the delegated human token, and cancel-preflight status is not proof.
+Propose read-only `POST /api/internal/v1/workflow/trusted-consumer/cancellation-evidence` under the existing exact
+workflow service authority. It may retrieve authenticated persisted cancellation evidence but never invoke CancelAsync,
+start a workflow or relax the original human-only cancellation requirement.
+MDM must durably record an immutable cancellation attempt before the outbound call: original client/requester, instance,
+task, object type/ID, maker, both pre-cancel expected versions, reason/comment, idempotency and canonical fingerprint.
+The new read validates that exact committed Cancel log, coherent completed trusted start proof, monotonic terminal
+history, task/instance Cancelled state, actor/reason/sequence and client/tenant/profile binding. Missing, partial,
+ambiguous or conflicting proof fails closed; a fresh preflight or another cancel call cannot manufacture it.
+Source finalization then separately requires the new machine execution authority and physical fence. Test native cancel
+committed → response lost → MDM restart without maker JWT → read-only proof → one fenced source finalization, with no
+duplicate cancel/audit/version. Exact conditional shared paths are in P0/P3; this behavior does not already exist.
+
+**Compaction:** the old `ApplyLocalPendingAsync` counts embedded submit intents and can return
+`LOCAL_PENDING_INCONSISTENT` after legitimate compaction, while repository replay accepts a receipt.
+Require exactly one matching intent XOR one fully validated durable receipt, matching tenant, source, intent ID,
+idempotency, evidence hash, status/version and immutable operation/workflow binding. Existing G4 receipt acknowledgement/
+contract validation remains mandatory; mere receipt presence is not proof. Test actual local transition, durable delivery,
+compaction, crash before operation checkpoint and restart replay. Missing/duplicate/foreign/drift evidence fails closed;
+temporal tests or a fabricated acknowledgement are not end-to-end delivery proof.
+Existing FG discovery and temporal/G4 repositories are reused; retain IsDeleted=false for cancelled evidence so discovery
+and scope inventory still see the identity. No extra collection scan, direct Mongo transport or HMAC fallback.
+
+### 21.6 UI, stable create retry and sorting proposal
+
+Use current GoldenReferenceSlim / tenant shell and the existing generic WorkCenter UI as visual behavior references
+only. One business form field is selected GSKU; technical fields are not counted. No shared layout/theme, WorkCenter,
+personalization client, verifier, navigation or unrelated screen change is planned.
+
+Current MVC generates a new Guid for each Create POST; JS sends GskuId and CSRF only, and the existing frontend test
+asserts this behavior. Replace that assertion in the proposed UI slice, not treat it as proof of retry safety.
+Use a server-generated opaque, Data Protection-protected form-attempt identity bound initially to tenant, canonical actor
+and purpose. The form is opened before GSKU selection; the nonce alone does not bind that selection. The proposed contract
+requires the first accepted submission to bind the attempt immutably to the selected GSKU/payload, with changed-payload
+reuse rejected. **Pre-insert binding is an unresolved proof gate, not established existing behavior:** the current create
+handler checks changed GSKU against a persisted FG replay, while pre-insert admission is per GSKU and reservation
+reserve/consume receives commandId without GskuId. A crash after admission or reservation consumption but before FG
+persistence must be tested with the same attempt and a different GSKU; post-insert mismatch rejection alone is insufficient.
+This is not a proven runtime defect or approval to design a binder. Inspect the exact handler reference below and prove
+the full durable chain first. If closure requires a handler delta, durable binder/store or additional paths, record the
+exact conditional amendment and obtain owner/code-start approval before implementation; the existing UI-only path set
+must not be assumed sufficient.
+The attempt persists across duplicate clicks, network timeout, 202 and a lost 201 response; same logical
+attempt forwards the same backend idempotency key. A genuinely new form intent receives a different key even for the
+same GSKU. Do not derive the key solely from GskuId. Reject tamper, cross-actor/tenant reuse and payload drift.
+Do not silently rotate an expired/unresolved attempt into a new create: preserve a pending/reconciliation UX until its
+outcome can be resolved. Token lifetime and multi-tab behavior need explicit UI/security contract tests; no durable
+browser bearer/credential storage.
+
+Current server-side DataTable persists order/Save View but backend fixes CanonicalCode. **Selected: fixed CanonicalCode
+ordering with deterministic Id tie-breaker.** Disable unsupported column ordering and sanitize old Save View sort state
+to this baseline while preserving filters, visibility and presentation column order. Do not delete personalization
+records or add arbitrary server sort fields. Lifecycle/cancellation-disposition filters apply to both Preparation and
+Enforced queries before pagination; filter restore/clear must be visible and consistent.
+Finalized Cancelled is a distinct FG display/read-model disposition, not Retired or technical deletion. PendingAudit
+shows pending completion and exposes no new mutation; retained code, parent, immutable evidence and version remain readable.
+Proposed exact read-model fields are `CancellationDisposition` (`None`, `PendingAudit`, `Cancelled`) and derived
+`EffectiveLifecycleStatus`; PendingAudit/Cancelled take precedence over the stored shared Draft value for actions,
+display and filters. A plain Draft filter must not select these records or expose submit. These names remain proposed
+DTO/query contracts, implemented in the already listed models/query/validator/repository paths, not a global enum change.
+
+
+| User capability | Intended UX without implicit grants |
+|---|---|
+| Read only | List/detail/filter/Save View; do not initialize the create selector |
+| Create only | Selector and create remain valid; no automatic read/list/detail request. Show only the authorized create response/receipt and pending status, not fake detail success |
+| Read + create | Existing create plus real list/detail refresh after authorized response; pending is distinguished from confirmed read-back |
+| Lifecycle permission missing | No enabled forbidden action; server still enforces every action independently |
+| Scope/lifecycle/version changed | Reload authorized read-back, preserve unknown attempt identity, show localized conflict/pending; no success toast based only on accepted 202 |
+| Checker / maker offline | Native WorkCenter decision, background authorized source apply, then actual read-only status/version refresh; no maker reconcile POST or standalone FG approve/reject endpoint |
+
+Current seven FG-specific locale files each contain 39 keys by static XML inspection, not a test run.
+Reuse existing `CanonicalCode`, `GskuCanonicalCode`, `LifecycleStatus`, `Version`, `ErrorForbidden`,
+`ErrorConflict`, `CreateSuccessWithCode`, `CreatePendingWithCode`, `CreatePending`; pending copy must not promise
+a list refresh to create-only users.
+Candidate new keys and English intent, subject to the chosen contract:
+
+| Proposed key | English meaning |
+|---|---|
+| `SubmitIdentity`, `SubmitConfirmation` | Submit identity / confirm identity submission |
+| `WithdrawIdentityApproval`, `WithdrawConfirmation` | Withdraw own pending identity request / confirm withdrawal |
+| `WithdrawRetirementRequest`, `RetirementWithdrawalConfirmation` | Withdraw own undecided retirement request / confirm |
+| `CancelDraft`, `CancelDraftConfirmation` | Cancel eligible Draft identity, not delete |
+| `DraftCancellationPending`, `LifecycleCancelled` | Audited cancellation pending completion / finalized retained cancellation |
+| `RequestRetirement`, `RetirementRequestConfirmation` | Request retirement / confirm retirement request |
+| `RetirementReasonLabel`, `RetirementReasonRequired`, `RetirementReasonTooLong` | Reason and validation; use only if owner selects the exact reason contract |
+| `LifecyclePending`, `ReadBackPending` | Request accepted but source outcome not confirmed |
+| `StateChanged`, `ReconciliationRequired` | Version/state changed or same-attempt continuation required |
+| `ReadPermissionRequired` | Read capability is unavailable; no broken automatic list request |
+| `ErrorTimeout`, `ErrorServiceUnavailable` | Unknown outcome / service unavailable, without treating retry as a new intent |
+
+Add only keys actually consumed and all seven translations, preferring existing shared keys when semantically identical.
+No SharedResource write is currently required. JS syntax, parity and executable MVC/DOM error-state behavior must all
+be tested. A regex/source assertion alone does not prove browser behavior.
+Historical Section 19 foundation verifier 76 pass / 16 fail is historical, not a new run and not blanket lifecycle
+variance. Evaluate every future verifier failure against current prohibited actions and any explicit variance approval;
+do not add edit/delete/import/bulk behavior to appease the verifier. The current personalization browser request is
+same-origin MVC, which forwards authenticated tenant/bearer server-side: a verifier expecting browser-created tenant
+headers is not proof of broken runtime forwarding. Do not change the shared client or verifier to hide that mismatch.
+
+### 21.7 Dependency-ordered proposed exact path inventory
+
+All paths remain future proposals relative to the single target worktree; no runtime write is authorized here.
+The original **239 unique candidate paths are preserved once** in the existing lists, reclassified:
+A = target exists and will be reused unchanged; B = developed protected-source candidate ported with semantic adaptation;
+C = narrow amendment to an existing target file; D = genuinely new proposed code/contract path.
+`selected` means included in recommended O2 planning, not user-approved implementation; `deferred-O3` is the retained
+larger central alternative, not a selected dependency. A reused path may have had an O3 amendment proposed previously:
+that larger delta is deferred, not silently carried into O2.
+
+| Unique file-path accounting | A reuse | B source port | C existing-file amendment | D new proposed file | Total |
+|---|---:|---:|---:|---:|---:|
+| Original 239, selected O2 | 46 | 23 | 84 | 59 | 212 |
+| Original 239, deferred O3 | 0 | 0 | 0 | 27 | 27 |
+| Additional exact O2 paths below | 0 | 0 | 2 | 10 | 12 |
+| Selected O2 including additions | 46 | 23 | 86 | 69 | 224 |
+
+Thus the proposed target write envelope is **178 paths** (23 source ports + 86 existing amendments + 69 new files),
+with 46 unchanged references and 27 deferred new central files. This is a bounded proposal, not proof every optional test
+split is indispensable or code-start approval. The 23 B files are physically absent in target but already developed in
+the protected source; they are not 23 new designs. The 69 D files are genuinely new proposed paths, not all 239.
+Counts include runtime and tests, not only production classes.
+
+A new contract on an existing file remains **C-file**, not a new physical D-file. Examples explicitly selected here:
+read-only cancellation evidence on existing workflow interfaces/models/controller/executor/coordinator; fresh audit
+acquisition on the existing provider interface/implementation; verified service-actor entry in the scope fence;
+FG cancellation/read-model and create-replay changes on existing entity/repository/handler.
+Those new behaviors still require exact contract approval even though no new file is created.
+
+#### Slice P-1 — FG-PREINSERT-PROOF v1.0: test-only authority and measured result (2026-09-10)
+
+The explicit FG-PREINSERT-PROOF v1.0 user prompt authorizes only this evidence test, its DB-010 isolation adaptation,
+the single FG guard-exception removal and this P-1 evidence record. It does not approve a runtime binder, any other
+Section 21 implementation, lifecycle code-start, status promotion or Git mutation. Exact writable paths for this WP:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs`
+- `tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs` — remove only the
+  `FinishedGoodDraftFoundationMongoTests.cs` entry from `KnownPerRunDatabase` after eliminating its actual violation.
+- `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md` — P-1 authority/result only.
+
+Measured target: branch `codex/product-pv-delivery-integration-20260907`, HEAD
+`dc6857d03cdafde5628affdcd0e5efc25bae3f7f`; index remained empty. The prior pack changes were preserved.
+The unchanged unit counterpart was executed as a regression, not edited. Production handler/repository code and the
+existing fixture were read-only; only the interruption decorator is synthetic, never a successful storage result.
+
+**Executed persistence evidence.** Tests use the real create handler and GSKU/code-reservation/FG repositories.
+Each of the six new cases independently arranges a fresh tenant and proves the selected interruption was reached
+before any FG exists. Changed-parent is the FIRST retry, with no successful same-parent insertion in between:
+
+| Crash point | Same GSKU + key first retry | Changed GSKU + key first retry | Other tenant + same key |
+|---|---|---|---|
+| A: parent admission persisted, before reservation | Passed: one logical identity/code; completed replay stable | **Failed expected rejection:** actual successful=true, status=201, FG count=1 under the changed GSKU | Passed: foreign parent rejected; own parent succeeds without altering original tenant partial state |
+| B: reservation consumed, before FG insert | Passed: consumed identity/code reused for the original GSKU | **Failed expected rejection:** actual successful=true, status=201, FG count=1; original consumed identity/code reused under the changed GSKU | Passed: same isolation checks, including the original consumed reservation |
+
+Exact failing test: `FinishedGoodDraftFoundationMongoTests.Pre_insert_crash_changed_parent_first_retry_must_reject_without_creating_finished_good`,
+with `crashPoint: AfterAdmissionBeforeReservation` and `crashPoint: AfterConsumptionBeforeInsert`.
+Both before/after snapshots show the original parent's admission surviving while the changed parent receives the FG.
+Reservation, consumed identity, binding state and linked local audit intent snapshots are retained in the Mongo TRX;
+the failure is not a fixture startup error or a post-insert drift test. The rejection expectation remains red and was
+not weakened, skipped or rewritten to accept the defect.
+
+| Validation run | Discovered / executed | Passed / failed / skipped | Evidence |
+|---|---:|---:|---|
+| MDM Application test project Release build | Build | 0 errors / 6 warnings | Execution-session build output for `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Diten.MdmService.Application.Tests.csproj` |
+| `FinishedGoodDraftFoundationMongoTests` | 17 / 17 | 15 / 2 / 0 | `.testoutput/fg-preinsert-proof-20260910/mongo/fg-mongo.trx` |
+| Existing Mongo cases within that same run | 11 / 11 | 11 / 0 / 0 | Same Mongo TRX; subset, not an additional run |
+| New pre-insert cases within that same run | 6 / 6 | 4 / 2 / 0 | Same Mongo TRX; subset, not an additional run |
+| `FinishedGoodDraftFoundationUnitTests` | 32 / 32 | 32 / 0 / 0 | `.testoutput/fg-preinsert-proof-20260910/unit/fg-unit.trx` |
+| `MongoTestDatabaseGuardTests` | 5 / 5 | 3 / 2 / 0 | `.testoutput/fg-preinsert-proof-20260910/guard/mongo-guard.trx` |
+
+Do not add subset/overlapping counts or report the general suite green. The two current guard failures have exactly
+the same messages and offender paths as `.testoutput/fu20-baseline-comparison-20260910/current-guards.trx`:
+
+- `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun` still names
+  `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageMigrationMongoTests.cs`,
+  `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs`,
+  `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentMongoTests.cs` and
+  `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs`.
+- `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest` still names
+  `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/AuditIntentDeliveryMongoTests.cs`,
+  `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityMongoRoundTripTests.cs` and
+  `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductAbbreviationRegisterMongoTests.cs`.
+
+The FG test now uses fixed `ProductLegalEntityScopeMongoCollection.DatabaseName`, no per-run GUID database or
+application-Mongo fallback; its sole guard exception was removed. No new FG offender, other exception, guard regex
+or rule change was introduced. The remaining seven listed paths are outside this WP and were not fixed here.
+
+**Isolation and evidence limits.** The unchanged `AuditIntentTemporalMongoFixture` supplied test-owned MongoDB 7,
+single-node replica-set primary on loopback port 63398, with fixed database `diten_mdm_product_scope_itest` and fresh
+TenantIds. Every test's cleanup reported zero owned documents remaining in all six collections, including canonical
+code counters; no per-test database drop. Host post-run checks found no owned temporary directory/process remaining;
+the pre-existing application mongod PID 4716 remained untouched. No application-Mongo connection was used.
+The handler uses the existing **Preparation scope test double**: this proves repository/crash/tenant behavior,
+not Enforced authorization, live acceptance or Auth-to-FU01/G4 transport. Local audit snapshots are not central
+durable-acceptance proof. All 432 pre-existing `.testoutput` files retained their SHA-256 values; only the three new
+TRX artifacts above were added. Artifacts remain outside staging. Diff whitespace, conflict and secret-value review
+found no blocking finding; no credential or token value is included in this record.
+
+**Agent Verdict:** defect reproduced; the expected pre-insert parent-drift rejection **fails** in both windows.
+This test-only reproduction is not Product PASS or Finished Good lifecycle completion. **Independent Verification
+Verdict:** pending the separately assigned strict no-change auditor; this record does not pre-claim its acceptance.
+
+Minimum runtime requirement for a separately approved follow-up: durably bind tenant + normalized create key to the
+first GSKU/request fingerprint before the first parent-admission side effect, and reject changed-parent replay without
+creating a new identity or mutating another parent. A consume-only or insert-only check cannot close window A, where
+no reservation exists yet. The measured chain is `CreateFinishedGoodDraftHandler` -> per-parent `GskuRepository`
+admission -> `CodeReservationRepository` replay -> `FinishedGoodRepository` insert; post-insert GSKU checks are too late.
+This states the required invariant, not a selected binder design, new collection or authorized runtime path delta.
+Keep the red proof and request the smallest exact runtime amendment before implementation; all other architecture
+decisions and source-write gates in Section 21 remain unchanged.
+
+#### Slice P-1R — FG-PREINSERT-REMEDIATION-R1 v1.0: narrow approved remediation authority (2026-09-11)
+
+The explicit `FG-PREINSERT-REMEDIATION-R1 v1.0` user prompt supersedes the **test-only writing boundary** of P-1
+only for the durable Finished Good create-attempt remediation below. It preserves P-1's two RED observations and
+does not turn the red proof into a PASS. This is a bounded MDM backend/persistence amendment, not authorization for
+the rest of Phase 1.5: no FG lifecycle code-start, WorkCenter, Auth, Platform, Workflow, Gateway, frontend, service
+configuration, operational recovery, data repair/backfill, deployment, Git mutation or status promotion is granted.
+
+The only writable runtime/test/governance paths for P-1R are exactly these nine; a required tenth path is a stop and
+requires a new explicit amendment:
+
+1. `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodCreationAttempt.cs` — new FG-owned
+   technical attempt entity only.
+2. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodCreationAttemptResult.cs` — new
+   explicit success/conflict/unavailable result only; null/default is never success.
+3. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRepository.cs` — narrow
+   attempt-binding contract; no new repository, DI service or program registration.
+4. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs` — tenant-first
+   attempt persistence and its production-owned index only; retain existing FG and code-reservation indexes unchanged.
+5. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFinishedGoodDraftHandler.cs`
+   — take and verify the binding before the first parent-admission side effect while preserving current validation,
+   scope, referenceability, completed-FG replay/tombstone and local-audit paths.
+6. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationUnitTests.cs`.
+7. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs`.
+8. `tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs` — retain the prior FG
+   exception removal only; P-1R adds no guard exception, matcher or rule change.
+9. `execution/domains/master-data-management/module-packs/MOD-0290-product-item-sku-master.md` — this P-1R
+   authority/evidence record in Section 21 only.
+
+**Frozen persistence contract.** `mdm_finished_good_creation_attempts` is an FG-owned, tenant-scoped technical
+idempotency collection, not a Finished Good aggregate, a reservation ledger or a shared idempotency facility. It
+retains EntityBase technical tenant/identity fields and stores the existing trimmed, upper-cased creation key with
+the first `GskuId` and the request fingerprint compatible with `GskuChildCreationAdmission`. Key and fingerprint
+bounds remain those of the current create contract. No client payload field is added. A tenant plus normalized key
+has a unique, non-reusable binding: archived/soft-deleted attempts do not free that key. The binding is inserted
+atomically (or by an equivalent insert-only primitive); it is never updated, adopted, re-bound, TTL-purged or
+automatically deleted. Duplicate/unknown write outcomes must be read back and exactly compared before proceeding;
+absence of verified binding is fail-closed.
+
+For a new, currently valid and authorized request, the handler obtains that binding before parent admission,
+reservation, allocation, audit or FG insertion. Same tenant/key/parent/fingerprint retries continue the same logical
+work. A same tenant/key with another GSKU or fingerprint returns the existing `IDEMPOTENCY_KEY_CONFLICT` / 409
+convention and starts no new parent admission, reservation, code, audit or FG mutation. The binding is not authority:
+each retry still performs current tenant, permission, scope and parent-referenceability checks; invalid or unauthorized
+parents create no attempt. Actor policy is unchanged.
+
+**Compatibility is deliberately fail-closed.** A persisted completed FG keeps its existing replay, tombstone and
+no-code-reuse behavior. An attempt-less legacy partial admission or consumed reservation may not be silently adopted
+or bound to a different parent. It must use the existing tenant-scoped reconciliation/conflict convention with explicit
+evidence; P-1R neither completes, deletes, burns/resets nor bulk-cleans legacy state. Cross-version writer safety is
+not claimed: no deployment/restart occurs in this slice, and simultaneous old/new writers remain an operational
+compatibility decision outside it.
+
+**Required evidence gates.** Retain P-1's two named RED-before cases and make their changed-GSKU FIRST retry green
+only by actual rejection. Real handler/repository Mongo tests, with the unchanged test-owned
+`AuditIntentTemporalMongoFixture`, must prove all of the following before any local preservation action is considered:
+
+- both interruption windows reject changed-parent first retry and leave the original binding, both parent admissions,
+  reservation/code/consumed identity, FG and local-audit links unchanged;
+- same-parent retry and concurrent same-key/same-parent replay preserve one identity/code and complete the intended
+  admission; a fresh concurrent same-key/different-parent race has exactly one durable binding winner and an
+  side-effect-free rejected loser;
+- a crash immediately after binding, uncertain binding-write result and cross-tenant same-key each fail closed or
+  recover only after verified tenant-scoped read-back; the latter tenant never observes or mutates the first tenant;
+- completed legacy replay, tombstone/no-code-reuse, binder-less admission-only and consumed-reservation partial
+  cases preserve their existing safe behavior and never create a changed-parent binding;
+- the real unique index is established and rejects a divergent persisted binding; invalid/unauthorized parents create
+  neither attempt nor downstream state.
+
+Run the MDM test-project Release build, `FinishedGoodDraftFoundationUnitTests`, full
+`FinishedGoodDraftFoundationMongoTests`, `GskuChildAdmissionRetirementMongoTests`, relevant scope tests using their
+existing safe fixture, and all five `MongoTestDatabaseGuardTests`. Report discovery and passed/failed/skipped per
+non-overlapping run; distinguish the known non-FG baseline guard failures from new failures. Preparation doubles
+remain repository/crash evidence only, never Enforced authorization, service-token/G4 transport or live acceptance.
+The fixed `ProductLegalEntityScopeMongoCollection` database and tenant-owned cleanup, no localhost application-Mongo
+fallback, no GUID database, no new shared harness and no skip/fake-success rules remain mandatory. Preserve prior TRX
+bytes; new evidence must be separate and unstaged. Require staged-scope review, `git diff --check`, conflict-marker
+and secret-value review, plus an independent strict read-only audit. Passing these gates proves this narrow create
+invariant only; it does not complete Finished Good lifecycle or live acceptance.
+
+#### Slice P0 — owner decisions and cross-domain catalog / scope / audit closure
+
+Preserve the selected cardinality/sorting/flow directions; resolve exact audit allocation, role supersession,
+retirement profile, machine-authority revocation contract, Draft cancellation representation and scope admission proof
+before implementation. Related owner packs are references/dependencies, not edits authorized here:
+`execution/domains/platform-shared-services/module-packs/MOD-0018-FU21-trusted-multi-legal-entity-scope-resolution.md`;
+source-only `execution/domains/platform-shared-services/module-packs/MOD-0018-FU23-product-identity-lifecycle-permission-onboarding.md`;
+`execution/domains/platform-shared-services/module-packs/MOD-0021-FU01-trusted-durable-source-audit-intent-ingestion.md`;
+`execution/domains/platform-shared-services/module-packs/MOD-0033-FU02-service-identity-token-issuance-foundation.md`;
+`execution/domains/master-data-management/module-packs/MOD-0290-FU03-product-legal-entity-scope-assignment.md`.
+No ID is minted or owner pack automatically promoted by this list.
+
+- C [selected] `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/ProductIdentityLifecycleEntitlementGrantProfile.cs`
+- C [selected] `services/Diten.AuthService/src/Diten.AuthService.Domain/Authorization/DefaultRolePermissionTemplate.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/TrustedSourceAuditIntentOperationMap.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/DefaultRolePermissionTemplateTests.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecycleEntitlementGrantProfileTests.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementPermissionSyncServiceTests.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/ProductIdentityLifecyclePermissionOnboardingMongoTests.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/EntitlementSyncConsumerTests.cs`
+- C [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Roles/IntegrationEventInboxRepositoryMongoTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeCredentialAuthenticatorTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/TrustedSourceAuditIntentContractTests.cs`
+
+P0A below retains the prior central candidate inventory with explicit disposition. O2 reuses current Auth identity/grant/
+audience/schema files unchanged (A) and selects only the local authority contracts/evidence/tests plus required narrow
+registration. New central Auth/Platform authority/grant/client/options files are deferred-O3. No 6/22 change is selected.
+
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceIdentityTokenAudiencePolicy.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedServiceTokenValidationExtensions.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientIdentity.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Domain/Entities/ServiceClientTenantGrant.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientIdentityRepository.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Domain/Repositories/IServiceClientTenantGrantRepository.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientIdentityRepository.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Persistence/Repositories/ServiceClientTenantGrantRepository.cs`
+- A [selected] `services/Diten.AuthService/src/Diten.AuthService.Api/Program.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/DependencyInjection.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Infrastructure/DependencyInjection.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Program.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/PlatformSchemaManifest.AccessGovernance.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Schema/SchemaProfileBudget.cs`
+- A [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Schema/PlatformSchemaManifestTests.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Api/Controllers/Internal/InternalServiceExecutionAuthorizationsController.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Api/Security/ServiceExecutionAuthorizationRequestParser.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Api/Security/ServiceExecutionAuthorizationRequestAuthenticator.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/ServiceExecutionAuthorizationModels.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Queries/AuthorizeFinishedGoodExecutionQuery.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Handlers/QueryHandlers/AuthorizeFinishedGoodExecutionHandler.cs`
+- D [deferred-O3] `services/Diten.AuthService/src/Diten.AuthService.Application/Features/ServiceIdentityTokens/Validators/AuthorizeFinishedGoodExecutionValidator.cs`
+- D [deferred-O3] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/FinishedGoodServiceExecutionAuthorizationContractTests.cs`
+- D [deferred-O3] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/FinishedGoodServiceExecutionAuthorizationMongoTests.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/FinishedGoodExecutionAuthorizationController.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.API/Models/AccessGovernance/FinishedGoodExecutionAuthorizationRequestParser.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.API/Security/FinishedGoodExecutionAuthorizationRequestExecutor.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Application/Features/AccessGovernance/FinishedGoodExecution/FinishedGoodExecutionAuthorizationModels.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Application/Features/AccessGovernance/FinishedGoodExecution/IFinishedGoodExecutionAuthorizationProvider.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Application/Features/AccessGovernance/FinishedGoodExecution/FinishedGoodExecutionAuthorizationProvider.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Application/Features/AccessGovernance/FinishedGoodExecution/IAuthFinishedGoodExecutionAuthorityClient.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Domain/Entities/AccessGovernance/FinishedGoodExecutionScopeGrant.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/IFinishedGoodExecutionScopeGrantRepository.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/FinishedGoodExecutionScopeGrantRepository.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Authorization/AuthFinishedGoodExecutionAuthorityClient.cs`
+- D [deferred-O3] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Authorization/AuthFinishedGoodExecutionAuthorityClientOptions.cs`
+- D [deferred-O3] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/FinishedGoodExecutionAuthorizationContractTests.cs`
+- D [deferred-O3] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/FinishedGoodExecutionAuthorizationMongoTests.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IFinishedGoodLifecycleExecutionAuthority.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/FinishedGoodLifecycleExecutionAuthorityModels.cs`
+- D [deferred-O3] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformFinishedGoodLifecycleExecutionAuthorityClient.cs`
+- D [deferred-O3] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/AuthFinishedGoodLifecycleExecutionServiceIdentityProvider.cs`
+- D [deferred-O3] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/AuthFinishedGoodLifecycleExecutionServiceIdentityProviderOptions.cs`
+- D [deferred-O3] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/FinishedGoodLifecycleExecutionAuthorityClientOptions.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleExecutionAuthorizationEvidence.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleExecutionAuthorityContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleExecutionAuthorityMongoTests.cs`
+- A [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenHandlerTests.cs`
+- A [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenSecurityContractTests.cs`
+- A [selected] `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/ServiceIdentityTokens/ServiceIdentityTokenMongoTests.cs`
+
+O2 does not add grant epochs or change identity/grant writers. If owners later choose O3, every epoch writer and schema/
+revocation contract must be separately enumerated and approved; this deferred list does not establish such coverage.
+
+Additional exact O2 paths beyond the original 239 (no duplicate paths):
+
+- D [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodLifecycleExecutionAuthority.cs`
+- D [selected-addition] `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalFinishedGoodExecutionContextController.cs`
+- D [selected-addition] `services/Diten.Platform/src/Diten.Platform.API/Security/FinishedGoodExecutionContextRequestExecutor.cs`
+- D [selected-addition] `services/Diten.Platform/src/Diten.Platform.API/Models/FinishedGood/FinishedGoodExecutionContextModels.cs`
+- D [selected-addition] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/FinishedGoodExecutionContextContractTests.cs`
+- D [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformFinishedGoodExecutionContextClient.cs`
+- D [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/IFinishedGoodExecutionContextClient.cs`
+- D [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/FinishedGoodExecutionContextModels.cs`
+- D [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/FinishedGoodExecutionContextClientOptions.cs`
+- D [selected-addition] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/FinishedGoodExecutionContextClientTests.cs`
+- C [selected-addition] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Audit/ITrustedSourceAuditServiceIdentityProvider.cs`
+- C [selected-addition] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuthTrustedSourceAuditServiceIdentityProviderTests.cs`
+
+The new local implementation is not an old source port. The new Platform context endpoint is read-only own-tenant
+status/service binding, not a grant SoR or permit. Existing Platform API Program and MDM Infrastructure DI rows are C
+only for these bounded registrations; existing Auth API/Application/Platform Infrastructure baseline remains unchanged.
+The audit provider implementation already occurs in the 239 and is C for the fresh method; the interface/test additions
+above do not change existing G4 GetAsync/coalescing semantics.
+
+#### Slice P1 — FG identity domain, storage and workflow admission
+
+Prerequisite: P0 contracts and the conditional fence rule approved. Preserve current create/read and parent admission.
+Source files require current serializer, temporal, audit and workflow reconciliation; exclude the old direct-retire command,
+handler and validator. DI is a narrow addition, never an old Program.cs or repository overwrite.
+
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGood.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRepository.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductAuditOperation.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/FinishedGoodsController.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/ProductItemSkuMasterModels.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetFinishedGoodByIdHandler.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetFinishedGoodsHandler.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Queries/GetFinishedGoodsQuery.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Validators/GetFinishedGoodsValidator.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FinishedGoodIdentityWorkflowCheckpoint.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodIdentityWorkflowOperationResults.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowOperationRepository.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowTenantPartitionDiscovery.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowTenantPartitionDiscoveryRepository.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodIdentityLifecycleModels.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodIdentityLifecycleAuditIntentFactory.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodIdentityWorkflowProcessor.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodIdentityWorkflowStartRequestFactory.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartFinishedGoodIdentityWorkflowCommand.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFinishedGoodIdentityWorkflowHandler.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartFinishedGoodIdentityWorkflowValidator.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FinishedGoodIdentityWorkflowOptions.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FinishedGoodIdentityWorkflowWorkerOptions.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodIdentityWorkflowRecoveryCommandLine.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodIdentityWorkflowRecoveryRunner.cs`
+- B [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodIdentityWorkflowRecoveryWorker.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodActiveLifecycleOperationBinding.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodApiContractTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodAuthorizationTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationUnitTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftFoundationMongoTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+- B [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityLifecycleMongoTests.cs`
+- B [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowOperationMongoTests.cs`
+- B [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowProcessorTests.cs`
+- B [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowRecoveryRunnerTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityLifecycleContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodAvailableActionsTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleAuditCompactionMongoTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleRecoveryMongoTests.cs`
+
+#### Slice P2 — Draft cancellation, both withdrawals, retirement request and machine-authorized completion
+
+Prerequisite: P1, approved exact action/profile/audit contracts and machine execution authority. These are new
+FG paths, not an inherited final implementation. Include Draft cancellation from human admission through audit-finalized
+parent release, both own withdrawals and background terminal application; no maker-return continuation remains. Existing shared decision/recovery enums and LSKU repository discovery
+pattern may be reused without expansion; no second generic WorkCenter bridge or automatic startup runner is planned.
+Runner options remain default-disabled and invocation explicit; no configuration file is in the proposal.
+
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodRetirementRequestOperation.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/FinishedGoodRetirementRequestCheckpoint.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRetirementRequestOperationRepository.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodRetirementRequestOperationResults.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRetirementRequestOperationRepository.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodRetirementRequestModels.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodRetirementRequestAuditIntentFactory.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/WithdrawFinishedGoodIdentityApprovalCommand.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/WithdrawFinishedGoodIdentityApprovalHandler.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/WithdrawFinishedGoodIdentityApprovalValidator.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/StartFinishedGoodRetirementRequestWorkflowCommand.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/StartFinishedGoodRetirementRequestWorkflowHandler.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/StartFinishedGoodRetirementRequestWorkflowValidator.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodRetirementRequestWorkflowProcessor.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodRetirementRequestWorkflowStartRequestFactory.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FinishedGoodRetirementRequestWorkflowOptions.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Configuration/FinishedGoodRetirementRequestWorkflowWorkerOptions.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodRetirementRequestRecoveryCommandLine.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodRetirementRequestRecoveryRunner.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductItemSkuMaster/FinishedGoodRetirementRequestRecoveryWorker.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/PlatformProductIdentityWorkflowClient.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Workflow/PlatformProductIdentityWorkflowClientTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityApprovalWithdrawalUnitTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodRetirementRequestOperationMongoTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodRetirementRequestWorkflowProcessorTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodRetirementRequestRecoveryContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleScopeContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleEnforcedScopeContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleActivationFenceMongoTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodLifecycleTransportContractTests.cs`
+
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/GskuChildAdmissionRetirementMongoTests.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodDraftCancellationEvidence.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodDraftCancellationModels.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodDraftCancellationAuditIntentFactory.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/CancelFinishedGoodDraftCommand.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/CancelFinishedGoodDraftHandler.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/CancelFinishedGoodDraftValidator.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FinishedGoodDraftCancellationProcessor.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Commands/WithdrawFinishedGoodRetirementRequestCommand.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Handlers/CommandHandlers/WithdrawFinishedGoodRetirementRequestHandler.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/Validators/WithdrawFinishedGoodRetirementRequestValidator.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftCancellationUnitTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftCancellationMongoTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodDraftCancellationRecoveryMongoTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodRetirementRequestWithdrawalContractTests.cs`
+- D [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodRetirementRequestWithdrawalMongoTests.cs`
+
+FG entity/repository/API/manifest/read-model and frontend paths are the existing P1/P4 rows, not omitted from the
+cancellation slice. Proposed cancellation evidence is embedded in the same FG; existing proposed FG recovery discovery
+must include bounded PendingAudit/finalization recovery without a new collection. Pending and finalized cancellation
+must be checked by every FG mutation and create replay. Parent blocker changes only for verified finalized cancellation.
+
+Conditional shared admission amendment: no implementation is authorized or claimed complete. First prove whether the
+existing marker/repository transaction contract can supply short-lived admission and physical-write fencing; if not,
+these exact owner-reviewed paths are required before proceeding. Do not hide the gap behind a local precheck.
+
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeWriteFenceCoordinator.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeMutationIdentity.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopeRolloutStateRepository.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeWriteAdmissionContractTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeWriteAdmissionMongoTests.cs`
+
+Cancellation/readiness reference paths (reuse, not wholesale amendment):
+
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/CodeReservationRepository.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ICodeReservationRepository.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Enums/ProductIdentityLifecycleStatus.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeOperationalReadinessRepository.cs`
+
+#### Slice P3 — actual transport, authorization, durability and regression gates
+
+Existing shared runtime references are reused without broader authority; Platform owner changes, if required by an
+actual parser/policy mismatch, need a new exact approved delta rather than wildcard acceptance.
+
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductIdentityWorkflowBinding.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/ProductIdentityWorkflowTransportModels.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Workflow/IProductIdentityWorkflowClient.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/AuthProductIdentityWorkflowServiceIdentityProvider.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentTenantPartitionDiscoveryRepository.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/IProductIdentityLifecycleActorContext.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Workflow/HttpContextProductIdentityDelegatedTokenAccessor.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/CommandHandlers/CreateFinishedGoodDraftHandler.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/AuthTrustedSourceAuditServiceIdentityProvider.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Audit/PlatformTrustedSourceAuditIntentClient.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Audit/AuditIntentDeliveryProcessor.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/AuditIntentContract.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/AuditIntentDeliveryRepository.cs`
+- A [selected] `services/Diten.MdmService/src/Diten.MdmService.Api/Services/Audit/AuditIntentDeliveryWorker.cs`
+- C [selected] `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/Providers/WorkflowApprovalWorkItemProvider.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/Providers/WorkflowApprovalWorkItemActionDispatcher.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestParser.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedWorkflowConsumerRequestExecutor.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.API/Security/ConfiguredTrustedWorkflowStartAuthorizationPolicy.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/TrustedWorkflowCancellationCoordinator.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetTrustedWorkflowTerminalDecisionEvidenceHandler.cs`
+
+Mandatory proposed read-only cancellation-evidence extension (never service permission to cancel); existing MDM client
+and cancellation contract/Mongo/security test rows above/below also gain this exact test scope:
+
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Controllers/Internal/InternalTrustedWorkflowConsumerController.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Models/Workflow/TrustedWorkflowConsumerRequestModels.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.API/Security/ITrustedWorkflowConsumerRequestExecutor.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Services/ITrustedWorkflowCancellationCoordinator.cs`
+- C [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/WorkflowModels.cs`
+- D [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Queries/GetTrustedWorkflowCancellationEvidenceQuery.cs`
+- D [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Handlers/QueryHandlers/GetTrustedWorkflowCancellationEvidenceHandler.cs`
+- D [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Workflow/Validators/GetTrustedWorkflowCancellationEvidenceValidator.cs`
+- D [selected] `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodWorkflowCancellationAttempt.cs`
+
+Persist the proposed immutable attempt in the already listed FG identity/retirement operation entities and repositories
+before remote cancellation; preserve original start evidence separately. No new cancellation collection or parser
+interface is implied. Tenant-status authority uses existing local Platform query/registry, not a second shared-key call:
+
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Queries/GetTenantStatusQuery.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Application/Features/Tenants/Handlers/GetTenantStatusQueryHandler.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Domain/Repositories/ITenantRegistryRepository.cs`
+- A [selected] `services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/TenantRegistryRepository.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/PlatformTrustedLegalEntityScopeProviderClientTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/TrustedLegalEntityScopeProviderContractTests.cs`
+- C [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/TrustedLegalEntityScopeDelegatedTokenForwardingTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedWorkflowConsumerSecurityTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Security/TrustedWorkflowStartAuthorizationPolicyTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowStartAuthorizationTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowCancellationContractTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowCancellationMongoTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Workflow/TrustedWorkflowTerminalDecisionEvidenceMongoTests.cs`
+- C [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeRequestExecutorTests.cs`
+- A [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentDeliveryWorkerMongoTests.cs`
+- A [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentTemporalMigrationMongoTests.cs`
+- A [selected] `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeMongoCollection.cs`
+- A [selected] `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageCutoverMongoTests.cs`
+- C [selected] `tests/architecture/TenantArchitecture.ArchitectureTests/MongoTestDatabaseGuardTests.cs`
+
+The architecture-guard proposal is only removal of the FG legacy exception after the actual FG test violations are
+removed and owner approval is granted; no relaxed guard or unrelated exception cleanup. Existing shared fixtures are
+read/reuse references, not proposed helper rewrites. MDM has no tracked module schema manifest to copy from Platform.
+
+The existing create handler listed C is a mandatory narrow cancellation-replay amendment: return the retained
+PendingAudit/Cancelled outcome rather than fresh Draft/201 success or new allocation. This does not approve a
+pre-insert durable binder; that separate proof/conditional-path gate in 21.6 remains open.
+
+#### Slice P4 — FG-only MVC / UI / locale and Gateway proof
+
+Prerequisite: stable backend contracts, selected fixed sorting and proven retry semantics. Existing views can host actions; no new
+shared layout, WorkCenter, navigation or edit/correction partial is required. Keep backend and UI validation/commits
+separate when runtime is later approved; do not claim a source-only frontend contains new withdrawal/retirement behavior.
+
+- C [selected] `frontend/Diten.Web/Controllers/FinishedGoodsController.cs`
+- C [selected] `frontend/Diten.Web/Models/FinishedGoods/FinishedGoodViewModels.cs`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/Index.cshtml`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/_CreateEditOffcanvas.cshtml`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/_DetailsQuickView.cshtml`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/_DataTable.cshtml`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/_Filter.cshtml`
+- C [selected] `frontend/Diten.Web/Views/MasterDataManagement/FinishedGoods/_IndexL10n.cshtml`
+- C [selected] `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/FinishedGoods/index.js`
+- C [selected] `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/FinishedGoods/index.l10n.js`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.en.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.tr.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.fr.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.es.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.zh.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.ar.resx`
+- C [selected] `frontend/Diten.Web/Resources/Views/MasterDataManagement/FinishedGoods/FinishedGoodsIndex.ru.resx`
+- C [selected] `frontend/Diten.Web/tests/finished-good-draft-foundation.test.js`
+- C [selected] `gateway/Diten.ApiGateway.Tests/OcelotConfigurationTests.cs`
+- D [selected] `frontend/Diten.Web.Tests/Controllers/FinishedGoodsControllerTests.cs`
+- D [selected] `frontend/Diten.Web/tests/finished-good-lifecycle.test.js`
+
+### 21.8 Test acceptance matrix and evidence discipline
+
+The following tests are **planned**, not executed in this task. Build success alone never closes a row.
+
+| Gate | Required positive evidence | Required fail-closed / race evidence |
+|---|---|---|
+| Current create/read | Approved GSKU + approved revision, immutable code reservation, real allocation replay, existing read/selector behavior | Cross-tenant 404, inaccessible parent, changed parent state, denied create/read without fallback |
+| Catalog and roles | Actual emitted MDM manifest reconciles through real Auth profile; exact proposed FG role delta after approval | Missing/extra/case-drift definitions; no Admin/Viewer mutation or automatic membership |
+| Supersession | Module-source retire removed, request-retirement restored once, replay cardinality stable | Manual/other-source retained, revoked/new-token denied; pre-revocation JWT behavior explicitly bounded |
+| Scope client/provider | Real MDM serialization → real FU21 parser/authenticator/executor/provider and exact pairs | Wrong resource/permission/case, wrong tenant/client, empty/suspended scope; no workflow/repository/audit mutation on denial |
+| Submit | Operation admission, workflow start receipt, Pending CAS, one local audit intent, immutable start binding | Stale version, duplicate/drifting operation, concurrent submit, maker/service actor confusion, unknown start outcome |
+| Checker read-back | Native approve/reject evidence → correct FG status/version and audit once | Same canonical maker checker, conflicting subject, mismatched object/task/instance/template/tenant, forged/nonterminal evidence |
+| Both withdrawals | Same canonical requester, stored operation kind, exact corresponding action/scope, native cancellation proof | Wrong profile/requester, concurrent approval/cancel, expired lease/stale owner, preflight/202/timeout cannot reset; identity→Draft, retirement request→Approved |
+| Retirement request | Approved-source admission → native decision → background-authorized rejection/retirement/read-back | No direct-retire path, scope loss, duplicate/conflicting request, terminal drift; own withdrawal competes safely with approval |
+| Background authority | Human offline; fresh existing Auth issuance → named-service own-tenant context + real workflow evidence → local operation-bound continuation | Revoked/disabled identity/grant, wrong purpose/audience/tenant, unavailable observation, widened admission scope, activation/stale physical CAS; no maker return or token-as-permit assumption |
+| Draft cancellation | Draft-only authorized immutable cancellation, PendingAudit then verified receipt/fenced Finalized, original code retained | Pending approval requires prior confirmed withdrawal; pending/foreign receipt or forged Finalized flag blocks parent, sibling still blocks, crash/replay and original create-key cannot recreate, only matching admission released |
+| G4 / compaction | Real durable acceptance, verified receipt, actual compaction, crash-before-checkpoint and same-operation replay | Missing/duplicate/foreign/drift receipt, payload conflict, ambiguous network; no fake acknowledgement or second audit intent |
+| Temporal / storage | Current serializer and temporal dual-write/read compatibility, repository indexes, CAS/replay | No global serializer change, whole-document replacement, automatic migration or bypass |
+| Browser retry | Same opaque attempt across timeout/202/lost-201/repeated click, distinct new intent and multi-tab behavior | Tamper, changed GSKU, changed actor/tenant, expired unresolved identity; crash after admission/reservation consumption before FG insertion followed by same-attempt changed-GSKU retry must reject; no automatic duplicate create |
+| UI action/read-back | Exact permissions + server lifecycle/version; actual response controls success; create-only and read-only UX | Forbidden action not merely hidden, stale state/409/timeout, no unsupported edit/delete/import |
+| Filtering / Save View | Fixed CanonicalCode/Id, disabled unsupported ordering, lifecycle/cancellation filtering and restore/clear | Old saved sort sanitized without deleting preferences; both Preparation/Enforced filters before pagination, no arbitrary sort endpoint |
+| Gateway / L10n | Existing root/nested GET/POST carry exact FG paths; seven locale consumed-key parity + JS syntax | No PUT/other route expansion; every verifier failure reviewed individually, no blanket variance |
+
+Real workflow transport proof must feed the actual serialized MDM request into Platform's actual parser, named
+service-token validation, exact authorization policy, request executor and native start/cancellation coordinator.
+Wrong profile, audience, tenant, client/object/template binding and mixed-profile payload must fail.
+Machine execution tests must accept the three distinct proof schemas and reject workflow fields on DraftCancelFinalize,
+cancellation-receipt substitution for native terminal evidence, mixed profiles, over-limit/duplicate Legal Entity sets,
+oversized technical evidence, malformed service-sub GUID, mixed actor and unsafe SnapshotReference. Assert exact
+300-second service token validation separately from the not-yet-quantified observation-to-CAS deadline; validate real Auth issuance and named RSA processing, not just a fabricated ClaimsPrincipal.
+Require local tenant Exists + Active; missing/deleted, Provisioning, Suspended, Deactivated or unavailable status denies.
+Both withdrawals need real lost-response cancellation-evidence retrieval tests, including wrong key/hash/client/profile/
+requester, approval-first outcome, incomplete log/task/instance, ambiguous matching logs and forbidden service-only Cancel.
+Exercise actual Auth issuer/grant repository → named Platform JWT validation → local tenant query → real MDM context client. A fake HttpMessageHandler that returns 200 or a mocked success receipt proves client formatting/error handling only.
+Likewise a mocked permissive scope provider does not prove FU21 interoperability or current mutation authorization.
+
+Mongo plan uses existing test-owned mechanisms, **not** the application localhost:27017 fallback:
+
+- Auth onboarding reuses the existing `ProductIdentityLifecyclePermissionOnboardingMongoTests.cs` mechanism:
+  explicit `MONGO_TEST_URI` without fallback, fixed `diten_auth_permission_onboarding_itest` database, serialized
+  `Auth permission onboarding Mongo` collection and fresh tenantA/tenantB with owned-document cleanup. Supply only
+  the isolated test-owned fixture URI; no new harness, Platform schema copy or application database connection.
+- Reuse `AuditIntentTemporalMongoFixture`, defined in
+  `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Audit/AuditIntentTemporalMigrationMongoTests.cs`,
+  without changing that shared fixture. It owns the available mongod process, ephemeral loopback port and disposable data
+  directory and initializes replica-set/primary topology. Use the fixed database contract from
+  `ProductLegalEntityScopeMongoCollection`, fresh test TenantId and tenant-owned document cleanup/serialization.
+- Platform native transaction tests reuse `AuditOutboxTemporalReplicaSetFixture` in
+  `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/AuditOutboxTemporalStorageCutoverMongoTests.cs`
+  and actual WorkflowWorkCenter schema. Do not use Platform's hardcoded-27017 integration harness or copy its schema
+  profile into MDM. The known Windows `DisposableMongoReplicaSet` helper debt is not solved by this plan.
+- Adapt existing `FinishedGoodDraftFoundationMongoTests.cs` and the two source-candidate FG Mongo files before reuse:
+  current foundation tests create GUID databases, drop the database and fall back to application port, with a legacy
+  architecture exception. Preserve production index key order/options/uniqueness; no missing-index workaround.
+  No new shared harness, arbitrary database cleanup, app fallback, fixture-start skip or fake/in-memory replacement.
+- Run transaction-required replay/concurrency/atomicity/fence tests on the actual isolated replica set; test
+  transaction-unavailable denial separately. Test data/process ownership is explicit; no real tenant/config/credential
+  writes. Future test authorization is required before starting these fixtures.
+- Existing FG foundation tests call handlers with permissive preparation doubles and their receipt fixtures are not
+  real G4/FU01 acceptance. They remain useful unit/persistence regressions, not Enforced authorization or live delivery proof.
+
+Historical artifact inspection found exact FG classes in
+`.testoutput/gsku-amendment-preflight-20260908/mdm-full.trx`: 66 passed, 0 failed, 0 skipped
+(17 API, 6 authorization, 11 Mongo, 32 unit). A substring name match would include four unrelated tests and incorrectly
+report 70. Later `.testoutput/lsku-backend-regressions-20260909.trx` contains 8 passed FG tests
+(1 API, 5 Mongo, 2 unit), overlapping the first run; do not add these counts.
+No target FG lifecycle TRX was found; there is no executed evidence for the newly proposed Draft cancellation or machine authority. Source CAS/lease tests and mocked processor crash tests do not establish the new
+processor + G4 compaction crash sequence. Preserve the existing .testoutput evidence outside future commits.
+The known baseline failures remain open:
+
+- `UserLookupValidationContractTests.ResponseJsonDoesNotLeakTenantOrProfileAuthorizationOrStatusDetails`
+- `UserLookupValidationContractTests.ResponseDtoContainsOnlyUserIdAndReferenceable`
+- `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun`
+- `MongoTestDatabaseGuardTests.PerRunDatabaseExceptionListStaysHonest`
+
+The unresolved concurrency-flakiness case is
+`ProductItemSkuMasterMongoTests.Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses`.
+These are prior comparison findings, not fresh executions or newly attributed FG regressions; this document does not
+turn the general suite green or close flakiness because a later run passed.
+
+Future validation must report test discovery, executed test bodies, passed/failed/skipped and topology separately by
+run, disclose overlapping filters and distinguish prior artifacts from fresh runs. Planned gates: affected MDM/Auth/
+Platform/frontend/Gateway Release builds; focused tests above; actual emitted-manifest reconciliation; current
+Global Product/GSKU/LSKU/ABB, scope, human JWT/default scheme and audit regressions; both Mongo architecture guards;
+seven locales, JS syntax and the real packaged-Python Golden verifier. No test is run merely to produce a plan.
+Before any later commit: exact stage inventory, complete staged diff, secret-value review, conflict and whitespace
+checks; never stage .testoutput, config, secrets or unrelated governance changes. Hook bypass is not permitted.
+
+### 21.9 Separate operational / live acceptance gates
+
+Code and isolated tests will not create operational readiness. Later explicit authorization is required for exact
+tenant service-client/audience grants, human responsibility assignment, current catalog reconciliation, template/
+object binding, trusted scope configuration, selected recovery policy and default-disabled worker invocation.
+No credential values belong in this pack. Provisioning is not automatically granted by runtime code-start.
+
+A separately approved Local Development browser exercise must prove actual same-origin create/retry, scope-filtered
+selection, assigned WorkCenter maker/checker decisions, withdrawal race outcome, retirement decision, source read-back
+and audit receipt under intended roles. No current pack statement proves that live path. Production/Staging,
+operational migration/cutover and service restart remain prohibited here; live audit acceptance and temporal activation
+must have their own safety gates. Navigation remains unchanged.
+
+### 21.10 Final owner decisions before the first runtime prompt
+
+The six architectural directions remain selected. The remaining decisions are narrowed, not hidden:
+
+1. Approve O2's FG-local continuation contract plus named-service own-tenant read and separate read-only cancellation-
+   evidence recovery. Do not approve the deferred new audience/central grant/6/22 option merely by approving FG.
+2. Approve admission-time maker and decision-time checker authority after later offboarding, subject to current service,
+   tenant, local scope/fence and explicitly revoked-operation denial.
+3. Choose bounded observation rather than immediate global revocation, or require a separately designed coordinated
+   protocol. No numeric maximum is yet proven; approve an operational W only after visibility/clock/physical-CAS tests.
+4. Approve or reject scoped permission-based stewardship cancellation of another creator's Draft with mandatory reason.
+   Both pending-process withdrawals remain own-requester only; no general operator module.
+5. Approve/amend exact four new action keys, role delta (derived 20/7/11 → 22/7/12), five FU21 pairs (current 32 → proposed
+   37) and safe module-owned retire supersession. These counts follow sets, never justify adding extra grants.
+6. Approve/amend candidate audit names/semantics and unallocated 72–76 only after fresh collision/producer/map checks;
+   preserve historical 9 and 32–35 and shared 36–37.
+7. Approve exact cancellation/read-model and retirement reason/profile contracts, finite admitted scope capture, service
+   actor/audit provenance and physical write-fence adaptation. Legacy operations without required proof fail closed.
+8. Authorize only the first narrow pre-insert replay evidence slice P-1 before any binder redesign. A test result may
+   reveal a smaller concrete amendment; static analysis has not executed that defect.
+9. Runtime source/test edits, builds, fixture execution, commits and provisioning still need their own explicit grant.
+   Current task writes only this section. Existing multiplicity stays; business rationale remains an open question,
+   not permission to migrate or invent a discriminator.
+
+No “all dependencies closed” or runtime-ready claim follows from this document. Deferred O3 schema/epoch work is not
+part of the recommended first runtime prompt.
+
+### 21.11 Review roles and present-task boundary
+
+The repository definitions used are `.antigravity/agents/module-pack-author.md` with
+`.antigravity/workflows/prepare-module-pack.md` for the sole pack writer;
+`.antigravity/agents/orchestrator.md` for coordination; `.antigravity/agents/business-analyst.md` for domain/business
+evidence; `.antigravity/agents/backend-architect.md`, `.antigravity/agents/security-agent.md`,
+`.antigravity/agents/frontend-ui-ux.md` and `.antigravity/agents/testing-agent.md` for independent read-only
+specialist reviews. Agent definitions were discovered from the repo, not invented.
+Two specialist review workers were reused for backend/frontend and security/testing roles under the available
+concurrency limit; they are not five independent model workers. The pack author is separate from both reviewers.
+
+First-round findings incorporated: business evidence does not prove multiple-FG necessity; backend exposes absent
+withdraw/retirement-request, strict mapping gaps, compaction replay defect and admission/recovery authority gap;
+security exposes manifest/profile mismatch, source-safe revoke, JWT staleness and evidence-versus-authority separation;
+frontend exposes per-POST create identity, unsupported sorting and create-only/read-only UX; testing exposes legacy
+Mongo ownership, mocked evidence limits and overlapping historic counts.
+The first proposal's independent second review was completed and its documentary corrections were retained.
+This narrow decision review compares unchanged reuse, local extension and the deferred central alternative without
+restarting the plan. Business/backend and security/testing read-only findings informed O2, the separate Draft finalizer,
+scoped-steward orphan proposal, observed-revocation limits, path accounting and the first pre-insert proof test.
+Independent second review of this narrow revision: security/testing read the full section and found no remaining
+blocking documentary issue after the exact-purpose/scheme and attempt/token-bound response clarifications above.
+Backend/frontend read the full section and identified the P-1 false-positive risk: changed-GSKU must be the first retry
+in an independently arranged pre-insert crash case, not follow a successful same-parent insertion; this was corrected.
+Its remaining path-count review was interrupted by usage limits and is not represented as completed. The orchestrator
+independently verified 251 unique paths, retention of the original 239, and zero target path-classification mismatches.
+These are documentary/static review results only, not runtime readiness, new approval or executed test evidence.
