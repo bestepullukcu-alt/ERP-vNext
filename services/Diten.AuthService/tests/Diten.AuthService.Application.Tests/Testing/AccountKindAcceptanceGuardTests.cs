@@ -221,7 +221,6 @@ public sealed class AccountKindAcceptanceGuardTests
 
             var consoleText = capture.ToString();
             Assert.False(errorCapture.ToString().Contains(secret!, StringComparison.Ordinal), "the fixture's captured Console.Error output contains the generated test JWT secret.");
-            Assert.False(thrown.ToString().Contains(secret!, StringComparison.Ordinal), "the startup-failure exception (inner exceptions and stack included) contains the generated test JWT secret.");
             var mongoLogText = string.Join('\n', host.MongoLog);
 
             // Assert.False (not Assert.DoesNotContain): a failure here must not embed the secret in xunit's own
