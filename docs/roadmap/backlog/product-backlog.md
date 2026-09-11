@@ -5026,7 +5026,13 @@ hazır, tetikleyici yok. → **KAPANDI (CT, 2026-09-11):** WP-DM-DCP005-REGISTER
 Önizle (yazmaz; Created/Updated/Unchanged/Blocked, hash, "daha önce yüklendi") → `window.showConfirm` → onayla (409 IMPORT_CONTENT_CHANGED / IMPORT_ALREADY_APPLIED;
 mevcut ingest komutu çağrılır; IAuditableCommand) → yükleme geçmişi (`document_management_register_import_batches`, (TenantId, ContentHash) unique). Yeni izin
 `platform.document-management.master-register.import` üç uçta + sayfada; 7 dil 36 anahtar tek resx setinde. CT: 23/23 test, hash kontrolü kapatılınca 1 kırmızı;
-canlıda sayfa yeni izni oturum yenilenmeden görmez (UAS doğru davranış) — yeni oturumla tıklama kanıtı açık. Üretim yüklemesi = DM/Kalite'den izinli kişi bu ekrandan;
+canlıda sayfa yeni izni oturum yenilenmeden görmez (UAS doğru davranış) — yeni oturumla tıklama kanıtı açık. → **KAPANDI (CT, 2026-09-11 23:00, sahibin yeni oturumu):** sayfa açıldı; 2 satırlık CSV ile önizleme
+(2 toplam / 0 yeni / 0 güncellenecek / 2 değişmeyecek / 2 Kalite kararıyla alıntılanabilir / Draft 2) → showConfirm → onay 201 → toast + geçmiş satırı
+(admin@diten.com, 22:58:50) → aynı dosya tekrar önizleme "zaten içe aktarılmış" uyarısı → onay → sunucu 409 IMPORT_ALREADY_APPLIED, ekranda "Bu dosya zaten içe aktarılmış."
+**İki küçük bulgu (DM, ayrı küçük düzeltme, engel değil):** (1) geçmiş satırı "0 / 2 / 0" yazıyor — ingest komutu her upsert'i "güncellendi" sayıyor, önizleme ise
+"değişmeyecek" demişti; sayım tutarlılığı (Unchanged ayrımı commit sonucunda da) · (2) 409 sonrası önizleme kartı "Önizleme tamamlanamadı" durumuna düşüyor ve
+sunucunun İngilizce ayrıntı cümlesi ("This exact file was already imported on …") "Satır hataları" altında ham görünüyor — sebep kodu köprüsü var ama ayrıntı
+metni yerelleştirilmemiş. Üretim yüklemesi = DM/Kalite'den izinli kişi bu ekrandan;
 kanıt = geçmiş satırı + denetim kaydı.
 
 **Karar:** tek doküman kaynağı Doküman Yönetimi'nin Ana Kütüğü (Master Register). Görev tarafındaki CSV kütüğü (`document_reference_list_versions`,
