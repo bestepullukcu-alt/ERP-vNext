@@ -49,3 +49,89 @@ public interface IRecordLinkRepository
 
     Task DeleteAsync(Guid id, CancellationToken ct = default);
 }
+
+// MOD-0357 S2 — the meeting aggregate's own repositories. Same live TenantRepository<T> execution filter as
+// every repository above; UpdateAsync's ExpectedVersion pattern mirrors ITaskItemRepository.UpdateAsync exactly
+// (FindOneAndReplaceAsync gated on both tenant+id+Version — a mismatch returns null, the handler turns that into
+// a 409, and no compare-and-set logic is duplicated here).
+
+/// <summary>Raw storage for <see cref="Meeting"/>.</summary>
+public interface IMeetingRepository
+{
+    Task<Meeting> CreateAsync(Meeting meeting, CancellationToken ct = default);
+
+    Task<Meeting?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>The idempotency check (K11) — a meeting already created for this exact key, if any.</summary>
+    Task<Meeting?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);
+
+    /// <summary>K11, race-safe — the same <c>FindOrCreateAsync</c> pattern <c>RecordLinkRepository</c> already
+    /// established in S1: find by <see cref="Meeting.IdempotencyKey"/> first; on a genuine insert race the
+    /// unique index (<c>PlatformSchemaManifest.Meetings.cs</c>) refuses the loser's write, which this method
+    /// catches and turns into "return the winner" — never a 500.</summary>
+    Task<Meeting> FindOrCreateAsync(Meeting candidate, CancellationToken ct = default);
+
+    /// <summary>Optimistic-concurrency replace. Returns <c>false</c> (never throws) when <paramref name="expectedVersion"/>
+    /// no longer matches the stored row — the caller turns that into a 409.</summary>
+    Task<bool> UpdateAsync(Meeting meeting, int expectedVersion, CancellationToken ct = default);
+
+    /// <summary>Every meeting in the tenant, unfiltered by visibility — the handler applies D3 (organizer ∨
+    /// attendee ∨ read-all) afterward, once, in one place, rather than duplicating it per repository method.</summary>
+    Task<IReadOnlyList<Meeting>> ListAsync(CancellationToken ct = default);
+
+    /// <summary>Batched read for <c>MeetingRelatedRecordResolver</c> — one query for every id the
+    /// registry asks for, never one query per id (the same discipline <c>ITaskItemRepository.ListByIdsAsync</c>
+    /// already follows for the "tasks" side of the same registry).</summary>
+    Task<IReadOnlyList<Meeting>> ListByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default);
+
+    /// <summary>Whether ANY live meeting still references this type — the "in use" check
+    /// <c>DeleteMeetingTypeCommand</c> refuses on (pack §13, <c>MEETING_TYPE_IN_USE</c>), without loading every
+    /// meeting in the tenant just to answer one boolean.</summary>
+    Task<bool> AnyByMeetingTypeIdAsync(Guid meetingTypeId, CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="MeetingAttendee"/>.</summary>
+public interface IMeetingAttendeeRepository
+{
+    Task<MeetingAttendee> CreateAsync(MeetingAttendee attendee, CancellationToken ct = default);
+
+    Task<IReadOnlyList<MeetingAttendee>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
+
+    /// <summary>Every attendee row across several meetings, in ONE call — the batched read a list projection
+    /// (visibility check, "am I an attendee of any of these") needs, never one query per meeting.</summary>
+    Task<IReadOnlyList<MeetingAttendee>> ListByMeetingIdsAsync(IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default);
+
+    Task<MeetingAttendee?> FindAsync(Guid meetingId, Guid userId, CancellationToken ct = default);
+
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>
+public interface IAgendaItemRepository
+{
+    Task<AgendaItem> CreateAsync(AgendaItem item, CancellationToken ct = default);
+
+    Task<AgendaItem?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    Task<IReadOnlyList<AgendaItem>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
+
+    Task<bool> UpdateAsync(AgendaItem item, int expectedVersion, CancellationToken ct = default);
+
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
+}
+
+/// <summary>Raw storage for <see cref="MeetingType"/>.</summary>
+public interface IMeetingTypeRepository
+{
+    Task<MeetingType> CreateAsync(MeetingType type, CancellationToken ct = default);
+
+    Task<MeetingType?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    Task<IReadOnlyList<MeetingType>> ListAsync(CancellationToken ct = default);
+
+    Task<MeetingType?> FindByNameAsync(string name, CancellationToken ct = default);
+
+    Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default);
+
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
+}

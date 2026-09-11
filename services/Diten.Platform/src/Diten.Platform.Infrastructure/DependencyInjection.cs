@@ -366,6 +366,11 @@ public static class DependencyInjection
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
         // MOD-0357 S1 — the one bridge collection's storage. See IRecordLinkRepository/IRecordLinkService.
         services.AddScoped<IRecordLinkRepository, RecordLinkRepository>();
+        // MOD-0357 S2 — the meeting aggregate's own storage.
+        services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
+        services.AddScoped<IAgendaItemRepository, AgendaItemRepository>();
+        services.AddScoped<IMeetingTypeRepository, MeetingTypeRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();

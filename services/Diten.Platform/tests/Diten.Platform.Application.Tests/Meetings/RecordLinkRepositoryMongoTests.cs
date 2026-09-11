@@ -206,6 +206,13 @@ public sealed class RecordLinkRepositoryMongoTests : IAsyncLifetime
 
         await _repository.DeleteAsync(original.Id);
 
+        // MOD-0357 S2 fix — DeletedAt is a field RecordLink declares specifically for an auditable "when"
+        // (its own doc comment), and the base TenantRepository<T>.DeleteAsync this class used to inherit only
+        // ever set IsDeleted/UpdatedAt. Read straight off the raw collection so this proves the STORED
+        // document, not a value the repository merely echoes back.
+        var stored = await RawCollection.Find(Builders<RecordLink>.Filter.Eq(x => x.Id, original.Id)).SingleAsync();
+        Assert.NotNull(stored.DeletedAt);
+
         Assert.Empty(await _repository.ListBySourceAsync([sourceId]));
         Assert.Empty(await _repository.ListByTargetAsync([targetId]));
 
