@@ -5,6 +5,7 @@ using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Diten.AuthService.Application.Features.Auth.Handlers.CommandHandlers;
@@ -15,6 +16,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IUserLegalEntityAssignmentRepository _legalEntityAssignmentRepository;
     private readonly ITokenService _tokenService;
     private readonly ITenantLoginSettingsClient _tenantLoginSettingsClient;
     private readonly IRefreshTokenHasher _refreshTokenHasher;
@@ -28,6 +30,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         IUserRoleRepository userRoleRepository,
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
+        IUserLegalEntityAssignmentRepository legalEntityAssignmentRepository,
         ITokenService tokenService,
         ITenantLoginSettingsClient tenantLoginSettingsClient,
         IRefreshTokenHasher refreshTokenHasher,
@@ -40,6 +43,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         _userRoleRepository = userRoleRepository;
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
+        _legalEntityAssignmentRepository = legalEntityAssignmentRepository;
         _tokenService = tokenService;
         _tenantLoginSettingsClient = tenantLoginSettingsClient;
         _refreshTokenHasher = refreshTokenHasher;
@@ -122,6 +126,18 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
         var isPlatformActor = IsPlatformActor(actorType);
 
         var tenantSettings = isPlatformActor ? null : await _tenantLoginSettingsClient.GetAsync(tokenTenantId, ct);
+
+        // Refresh must carry the SAME legal_entities claim the login token had, or the
+        // rotated token loses legal-entity scope and every scoped write fails closed
+        // with 403 once the session refreshes. Mirror LoginCommandHandler's fetch.
+        var legalEntities = isPlatformActor
+            ? System.Array.Empty<string>()
+            : (await _legalEntityAssignmentRepository.GetByUserIdAsync(user.Id, ct))
+                .Where(a => a.TenantId == tokenTenantId)
+                .Select(a => a.LegalEntityId.ToString())
+                .Distinct(System.StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
         var accessToken = isPlatformActor
             ? _tokenService.GeneratePlatformAccessToken(
                 user.Id,
@@ -134,7 +150,7 @@ public sealed class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCom
                 permissions,
                 15,
                 user.MustChangePassword)
-            : _tokenService.GenerateAccessToken(user, roles, permissions, tenantSettings!.SessionTimeoutMinutes);
+            : _tokenService.GenerateAccessToken(user, roles, permissions, legalEntities, tenantSettings!.SessionTimeoutMinutes);
         var newRefreshTokenStr = _tokenService.GenerateRefreshToken();
         var newRefreshTokenHash = _refreshTokenHasher.Hash(newRefreshTokenStr);
 
