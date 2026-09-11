@@ -140,5 +140,83 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],
-            NotificationEvents: []);
+            NotificationEvents:
+            [
+                // S5 — invite/change/cancel (pack §3 IMeetingInviteMailer, K12). Email only, same posture
+                // TaskManifestProvider's own events take: there is no in-app channel for these yet.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.invite",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.invite",
+                    DisplayNameKey: "NotificationEvent_MeetingInvite",
+                    FallbackDisplayName: "Meeting invitation",
+                    Description: "Sent to attendees when a meeting is created.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.change",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.change",
+                    DisplayNameKey: "NotificationEvent_MeetingChange",
+                    FallbackDisplayName: "Meeting changed",
+                    Description: "Sent to attendees when a meeting's date, time or location changes.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.cancel",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.cancel",
+                    DisplayNameKey: "NotificationEvent_MeetingCancel",
+                    FallbackDisplayName: "Meeting cancelled",
+                    Description: "Sent to attendees when a meeting is cancelled.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active")
+            ]);
 }

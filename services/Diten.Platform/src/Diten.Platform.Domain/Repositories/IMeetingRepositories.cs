@@ -1,4 +1,5 @@
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 
 namespace Diten.Platform.Domain.Repositories;
 
@@ -109,6 +110,11 @@ public interface IMeetingAttendeeRepository
     Task<MeetingAttendee?> FindAsync(Guid meetingId, Guid userId, CancellationToken ct = default);
 
     Task DeleteAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>S5 — the respond endpoint's own write. No <c>expectedVersion</c>: K5's "same response twice is
+    /// idempotent" needs no optimistic-concurrency token, since setting the SAME value twice is a no-op either
+    /// way and there is no other writer of this one field to race against.</summary>
+    Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>

@@ -48,3 +48,9 @@ public sealed record LinkExistingTaskCommand(Guid MeetingId, LinkExistingTaskReq
 public sealed record ScheduleReviewMeetingForTaskCommand(
     Guid TaskId, ScheduleReviewMeetingForTaskRequest Request, string CorrelationId)
     : IRequest<Response<ScheduleReviewMeetingForTaskResultDto>>;
+
+// ── S5 — invitation response ─────────────────────────────────────────────────────────────────────────────────
+
+public sealed record RespondToInvitationCommand(
+    Guid MeetingId, RespondToInvitationRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;

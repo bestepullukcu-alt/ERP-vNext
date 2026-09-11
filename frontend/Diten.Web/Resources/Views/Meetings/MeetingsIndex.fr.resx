@@ -84,6 +84,7 @@
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Ce type de réunion est utilisé par une réunion et ne peut pas être supprimé.</value></data>
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Cette tâche est déjà liée à cette réunion.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Une réunion de revue est déjà planifiée pour cette tâche.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>La réponse doit être Accepter ou Refuser.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas accès à cette action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service Réunions est actuellement indisponible.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Veuillez remplir tous les champs obligatoires.</value></data>

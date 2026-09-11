@@ -127,6 +127,11 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiGetLinkedTasks(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: false);
 
+    // S5, K5 — Accept/Decline.
+    [HttpPost("api/{id:guid}/respond")]
+    public Task<IActionResult> ApiRespond(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/respond", readBody: true);
+
     // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
 
     [HttpPost("api/{id:guid}/tasks")]

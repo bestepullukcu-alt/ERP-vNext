@@ -51,6 +51,11 @@ public static class MeetingReasonCodes
     // ── S4 — the meeting↔task bridge ────────────────────────────────────────────────────────────────────────
     public const string TaskAlreadyLinked = "MEETING_TASK_ALREADY_LINKED";
     public const string ReviewAlreadyScheduled = "MEETING_REVIEW_ALREADY_SCHEDULED";
+
+    // ── S5 — invitation response ─────────────────────────────────────────────────────────────────────────────
+    /// <summary>K5 — the request body named something other than "Accept"/"Decline" ("maybe" included; there
+    /// is no third state in this slice).</summary>
+    public const string InvitationResponseInvalid = "MEETING_INVITATION_RESPONSE_INVALID";
 }
 
 public static class MeetingFieldLimits
@@ -104,7 +109,17 @@ public sealed record MeetingDto(
     string? CancellationReason,
     int Version,
     IReadOnlyList<MeetingAttendeeDto> Attendees,
-    IReadOnlyList<AgendaItemDto> AgendaItems);
+    IReadOnlyList<AgendaItemDto> AgendaItems,
+    /// <summary>
+    /// K12 (§S5) — whether the invite/change/cancel e-mail this write triggered went out. Null when this write
+    /// triggers no e-mail at all (e.g. <c>GetById</c>'s own re-read) — never a stand-in for "nothing failed".
+    /// </summary>
+    MeetingInviteDeliveryDto? InviteDelivery = null);
+
+/// <summary>K12 — a failed dispatch is reported, never silently absorbed into a 201. <paramref name="Sent"/> and
+/// <paramref name="Failed"/> are deliberately NOT each other's negation: no attendee to tell (organizer-only
+/// meeting) is neither a send nor a failure.</summary>
+public sealed record MeetingInviteDeliveryDto(bool Sent, bool Failed, string? Reason);
 
 public sealed record MeetingListItemDto(
     Guid Id,
@@ -247,3 +262,11 @@ public sealed record ScheduleReviewMeetingForTaskRequest(
     string IdempotencyKey);
 
 public sealed record ScheduleReviewMeetingForTaskResultDto(Guid MeetingId, Guid RecordLinkId);
+
+// ── S5 — invitation response (pack §16 K5, §13 :497, §14 :202) ─────────────────────────────────────────────────
+
+/// <summary>
+/// Exactly <c>"Accept"</c> or <c>"Decline"</c> (K5 — there is no third "maybe" state this slice). Compared
+/// ordinally, case-sensitively: the wire contract names the two literal values, not a free-text choice.
+/// </summary>
+public sealed record RespondToInvitationRequest(string Response);

@@ -84,6 +84,7 @@
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Bu toplantı türü bir toplantı tarafından kullanılıyor ve silinemez.</value></data>
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Bu görev bu toplantıya zaten bağlı.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Bu görev için zaten bir gözden geçirme toplantısı planlanmış.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>Yanıt Kabul veya Reddet olmalıdır.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>

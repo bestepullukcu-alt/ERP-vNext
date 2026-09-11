@@ -27,7 +27,8 @@ internal static class MeetingEligibility
 
     public static MeetingDto ToDto(
         Meeting meeting, string meetingTypeName,
-        IReadOnlyList<MeetingAttendee> attendees, IReadOnlyList<AgendaItem> agendaItems) => new(
+        IReadOnlyList<MeetingAttendee> attendees, IReadOnlyList<AgendaItem> agendaItems,
+        MeetingInviteDeliveryResult? delivery = null) => new(
         Id: meeting.Id,
         Title: meeting.Title,
         MeetingTypeId: meeting.MeetingTypeId,
@@ -47,7 +48,10 @@ internal static class MeetingEligibility
         AgendaItems: agendaItems
             .OrderBy(a => a.SortOrder)
             .Select(a => new AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId))
-            .ToList());
+            .ToList(),
+        InviteDelivery: delivery is null
+            ? null
+            : new MeetingInviteDeliveryDto(delivery.Sent, delivery.Failed, delivery.Reason));
 
     /// <summary>D3 (§22): visible to the organizer, any attendee, or whoever holds <c>read-all</c>.</summary>
     public static bool CanView(Meeting meeting, Guid callerUserId, bool hasReadAll, IReadOnlySet<Guid> attendeeUserIds)
@@ -63,6 +67,7 @@ public sealed class CreateMeetingHandler : IRequestHandler<CreateMeetingCommand,
     private readonly ICurrentUserContext _currentUser;
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly IMediator _mediator;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
     public CreateMeetingHandler(
         IMeetingRepository meetings,
@@ -71,7 +76,8 @@ public sealed class CreateMeetingHandler : IRequestHandler<CreateMeetingCommand,
         ITenantContext tenantContext,
         ICurrentUserContext currentUser,
         IMeetingIdempotencyKeyResolver idempotency,
-        IMediator mediator)
+        IMediator mediator,
+        IMeetingInviteMailer inviteMailer)
     {
         _meetings = meetings;
         _types = types;
@@ -80,6 +86,7 @@ public sealed class CreateMeetingHandler : IRequestHandler<CreateMeetingCommand,
         _currentUser = currentUser;
         _idempotency = idempotency;
         _mediator = mediator;
+        _inviteMailer = inviteMailer;
     }
 
     public async Task<Response<MeetingDto>> Handle(CreateMeetingCommand command, CancellationToken ct)
@@ -139,27 +146,54 @@ public sealed class CreateMeetingHandler : IRequestHandler<CreateMeetingCommand,
         var isNew = meeting.Id == candidate.Id;
 
         var addedAttendees = new List<MeetingAttendee>();
-        if (isNew && request.AttendeeUserIds is { Count: > 0 })
+        if (isNew)
         {
-            foreach (var userId in request.AttendeeUserIds.Distinct())
+            // S5 K5 — the organizer is counted Accepted in their own meeting, written at creation: they never
+            // sit in Pending, and never receive an invite e-mail for a meeting they themselves just made
+            // (SendInviteAsync's own actor-exclusion rule handles that half).
+            addedAttendees.Add(await _attendees.CreateAsync(new MeetingAttendee
             {
-                if (!eligible.Contains(userId))
-                {
-                    continue; // K12 — a create response only ever reports the meeting; a full skip breakdown is AddMeetingAttendeesCommand's own job.
-                }
+                TenantId = _tenantContext.TenantId,
+                MeetingId = meeting.Id,
+                UserId = organizerUserId,
+                InvitationResponse = InvitationResponse.Accepted,
+                CreatedBy = _currentUser.ActorName
+            }, ct));
 
-                addedAttendees.Add(await _attendees.CreateAsync(new MeetingAttendee
+            if (request.AttendeeUserIds is { Count: > 0 })
+            {
+                foreach (var userId in request.AttendeeUserIds.Distinct())
                 {
-                    TenantId = _tenantContext.TenantId,
-                    MeetingId = meeting.Id,
-                    UserId = userId,
-                    CreatedBy = _currentUser.ActorName
-                }, ct));
+                    if (userId == organizerUserId)
+                    {
+                        continue; // already written above — the organizer is never a second, Pending row.
+                    }
+
+                    if (!eligible.Contains(userId))
+                    {
+                        continue; // K12 — a create response only ever reports the meeting; a full skip breakdown is AddMeetingAttendeesCommand's own job.
+                    }
+
+                    addedAttendees.Add(await _attendees.CreateAsync(new MeetingAttendee
+                    {
+                        TenantId = _tenantContext.TenantId,
+                        MeetingId = meeting.Id,
+                        UserId = userId,
+                        CreatedBy = _currentUser.ActorName
+                    }, ct));
+                }
             }
         }
 
         var attendees = isNew ? addedAttendees : await _attendees.ListByMeetingIdAsync(meeting.Id, ct);
-        var dto = MeetingEligibility.ToDto(meeting, type.Name, attendees, []);
+
+        // K12 — the invite e-mail is attempted after the meeting is durably written and never rolls it back;
+        // its own outcome rides on the response instead of being silently absorbed into the 201.
+        var delivery = isNew
+            ? await _inviteMailer.SendInviteAsync(meeting, type.Name, attendees, _currentUser.UserId, ct)
+            : null;
+
+        var dto = MeetingEligibility.ToDto(meeting, type.Name, attendees, [], delivery);
         return Response<MeetingDto>.Success(dto, 201, command.CorrelationId);
     }
 }
@@ -168,11 +202,22 @@ public sealed class UpdateMeetingHandler : IRequestHandler<UpdateMeetingCommand,
 {
     private readonly IMeetingRepository _meetings;
     private readonly IMeetingTypeRepository _types;
+    private readonly IMeetingAttendeeRepository _attendees;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
-    public UpdateMeetingHandler(IMeetingRepository meetings, IMeetingTypeRepository types)
+    public UpdateMeetingHandler(
+        IMeetingRepository meetings,
+        IMeetingTypeRepository types,
+        IMeetingAttendeeRepository attendees,
+        ICurrentUserContext currentUser,
+        IMeetingInviteMailer inviteMailer)
     {
         _meetings = meetings;
         _types = types;
+        _attendees = attendees;
+        _currentUser = currentUser;
+        _inviteMailer = inviteMailer;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateMeetingCommand command, CancellationToken ct)
@@ -203,6 +248,12 @@ public sealed class UpdateMeetingHandler : IRequestHandler<UpdateMeetingCommand,
                 "The meeting type does not exist.", 400, MeetingReasonCodes.TypeNotFound, command.CorrelationId);
         }
 
+        // K7/S5 — a change e-mail only for what an attendee would actually notice; a title/description edit
+        // with the SAME time and place is not a scheduling change and sends nothing.
+        var scheduleChanged = meeting.StartAt != request.StartAt
+            || meeting.EndAt != request.EndAt
+            || meeting.Location != request.Location;
+
         meeting.Title = request.Title.Trim();
         meeting.MeetingTypeId = request.MeetingTypeId;
         meeting.StartAt = request.StartAt;
@@ -214,6 +265,12 @@ public sealed class UpdateMeetingHandler : IRequestHandler<UpdateMeetingCommand,
         {
             return Response<NoContent>.Fail(
                 "The meeting changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        if (scheduleChanged)
+        {
+            var attendees = await _attendees.ListByMeetingIdAsync(meeting.Id, ct);
+            await _inviteMailer.SendChangeAsync(meeting, type.Name, attendees, _currentUser.UserId, ct);
         }
 
         return Response<NoContent>.Success(200, command.CorrelationId);
@@ -232,8 +289,24 @@ public sealed class UpdateMeetingHandler : IRequestHandler<UpdateMeetingCommand,
 public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand, Response<NoContent>>
 {
     private readonly IMeetingRepository _meetings;
+    private readonly IMeetingTypeRepository _types;
+    private readonly IMeetingAttendeeRepository _attendees;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
-    public CancelMeetingHandler(IMeetingRepository meetings) => _meetings = meetings;
+    public CancelMeetingHandler(
+        IMeetingRepository meetings,
+        IMeetingTypeRepository types,
+        IMeetingAttendeeRepository attendees,
+        ICurrentUserContext currentUser,
+        IMeetingInviteMailer inviteMailer)
+    {
+        _meetings = meetings;
+        _types = types;
+        _attendees = attendees;
+        _currentUser = currentUser;
+        _inviteMailer = inviteMailer;
+    }
 
     public async Task<Response<NoContent>> Handle(CancelMeetingCommand command, CancellationToken ct)
     {
@@ -267,6 +340,11 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
             return Response<NoContent>.Fail(
                 "The meeting changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
+
+        // K7/S5 — cancellation always notifies, unlike an ordinary edit: there is no "not notice-worthy" cancel.
+        var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
+        var attendees = await _attendees.ListByMeetingIdAsync(meeting.Id, ct);
+        await _inviteMailer.SendCancelAsync(meeting, type?.Name ?? string.Empty, attendees, _currentUser.UserId, ct);
 
         return Response<NoContent>.Success(200, command.CorrelationId);
     }
@@ -431,6 +509,66 @@ public sealed class RemoveMeetingAttendeeHandler : IRequestHandler<RemoveMeeting
         }
 
         await _attendees.DeleteAsync(attendee.Id, ct);
+        return Response<NoContent>.Success(200, command.CorrelationId);
+    }
+}
+
+/// <summary>S5, K5 — Accept/Decline, ERP-internal. §13 :497's own posture: a caller with no attendee row on this
+/// meeting gets 404, never a hint that the meeting exists.</summary>
+public sealed class RespondToInvitationHandler : IRequestHandler<RespondToInvitationCommand, Response<NoContent>>
+{
+    private readonly IMeetingRepository _meetings;
+    private readonly IMeetingAttendeeRepository _attendees;
+    private readonly ICurrentUserContext _currentUser;
+
+    public RespondToInvitationHandler(
+        IMeetingRepository meetings, IMeetingAttendeeRepository attendees, ICurrentUserContext currentUser)
+    {
+        _meetings = meetings;
+        _attendees = attendees;
+        _currentUser = currentUser;
+    }
+
+    public async Task<Response<NoContent>> Handle(RespondToInvitationCommand command, CancellationToken ct)
+    {
+        var meeting = await _meetings.GetByIdAsync(command.MeetingId, ct);
+        if (meeting is null)
+        {
+            return Response<NoContent>.Fail("The meeting does not exist.", 404, MeetingReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // Cancelled/completed — same 409s UpdateMeetingHandler's own editable-state gate returns; a decision
+        // recorded against a meeting that is no longer happening is not what this endpoint is for.
+        var stateCheck = UpdateMeetingHandler.CheckEditable(meeting, command.CorrelationId);
+        if (stateCheck is not null)
+        {
+            return stateCheck;
+        }
+
+        var response = command.Request.Response switch
+        {
+            "Accept" => InvitationResponse.Accepted,
+            "Decline" => InvitationResponse.Declined,
+            _ => (InvitationResponse?)null
+        };
+
+        if (response is null)
+        {
+            return Response<NoContent>.Fail(
+                "The response must be 'Accept' or 'Decline'.", 400, MeetingReasonCodes.InvitationResponseInvalid, command.CorrelationId);
+        }
+
+        // §13 :497 — 404, not 403: a caller with no row here never learns the meeting exists.
+        var attendee = await _attendees.FindAsync(command.MeetingId, _currentUser.UserId, ct);
+        if (attendee is null)
+        {
+            return Response<NoContent>.Fail(
+                "This meeting has no invitation for you.", 404, MeetingReasonCodes.AttendeeNotFound, command.CorrelationId);
+        }
+
+        // K5 — idempotent: the SAME response resubmitted still writes (a no-op value change) and still answers
+        // 200. No branch skips the write, so there is nothing here that could special-case the repeat wrong.
+        await _attendees.UpdateInvitationResponseAsync(attendee.Id, response.Value, ct);
         return Response<NoContent>.Success(200, command.CorrelationId);
     }
 }

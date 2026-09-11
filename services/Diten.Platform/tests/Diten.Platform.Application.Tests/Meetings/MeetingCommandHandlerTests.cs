@@ -28,13 +28,19 @@ public sealed class MeetingCommandHandlerTests
         public FakeTenantContext TenantContext { get; } = new(Tenant);
         public FakeCurrentUserContext CurrentUser { get; } = new(Organizer);
         public IMeetingIdempotencyKeyResolver Idempotency { get; } = new MeetingIdempotencyKeyResolver();
+        public FakeMeetingInviteMailer InviteMailer { get; } = new();
 
         public Fixture()
         {
             Mediator.EligibleUserIds.Add(Organizer);
         }
 
-        public CreateMeetingHandler CreateHandler() => new(Meetings, Types, Attendees, TenantContext, CurrentUser, Idempotency, Mediator);
+        public CreateMeetingHandler CreateHandler()
+            => new(Meetings, Types, Attendees, TenantContext, CurrentUser, Idempotency, Mediator, InviteMailer);
+
+        public UpdateMeetingHandler UpdateHandler() => new(Meetings, Types, Attendees, CurrentUser, InviteMailer);
+
+        public CancelMeetingHandler CancelHandler() => new(Meetings, Types, Attendees, CurrentUser, InviteMailer);
 
         public MeetingType SeedType()
         {
@@ -120,8 +126,11 @@ public sealed class MeetingCommandHandlerTests
 
         Assert.True(response.IsSuccessful);
         var attendees = await fx.Attendees.ListByMeetingIdAsync(response.Data!.Id);
-        Assert.Single(attendees);
-        Assert.Equal(eligibleAttendee, attendees[0].UserId);
+        // S5 — the organizer's own Accepted row (written at creation) plus the one eligible invitee; the
+        // ineligible id never became a row at all.
+        Assert.Equal(2, attendees.Count);
+        Assert.Contains(attendees, a => a.UserId == eligibleAttendee && a.InvitationResponse == InvitationResponse.Pending);
+        Assert.Contains(attendees, a => a.UserId == Organizer && a.InvitationResponse == InvitationResponse.Accepted);
     }
 
     [Fact]
@@ -171,7 +180,7 @@ public sealed class MeetingCommandHandlerTests
         };
         fx.Meetings.Seed(meeting);
 
-        var handler = new CancelMeetingHandler(fx.Meetings);
+        var handler = fx.CancelHandler();
         var response = await handler.Handle(
             new CancelMeetingCommand(meeting.Id, new CancelMeetingRequest("", meeting.Version), "corr"), CancellationToken.None);
 
@@ -194,7 +203,7 @@ public sealed class MeetingCommandHandlerTests
         };
         fx.Meetings.Seed(meeting);
 
-        var handler = new UpdateMeetingHandler(fx.Meetings, fx.Types);
+        var handler = fx.UpdateHandler();
         var request = new UpdateMeetingRequest("Yeni", type.Id, meeting.StartAt, meeting.EndAt, null, null, meeting.Version);
         var response = await handler.Handle(new UpdateMeetingCommand(meeting.Id, request, "corr"), CancellationToken.None);
 

@@ -84,6 +84,7 @@
   <data name="ErrorTypeInUse" xml:space="preserve"><value>This meeting type is used by a meeting and cannot be deleted.</value></data>
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>This task is already linked to this meeting.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>A review meeting is already scheduled for this task.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>The response must be Accept or Decline.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>

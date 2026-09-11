@@ -61,7 +61,10 @@
 
         // ── S4 — the meeting↔task bridge ────────────────────────────────────
         MEETING_TASK_ALREADY_LINKED: 'errorTaskAlreadyLinked',
-        MEETING_REVIEW_ALREADY_SCHEDULED: 'errorReviewAlreadyScheduled'
+        MEETING_REVIEW_ALREADY_SCHEDULED: 'errorReviewAlreadyScheduled',
+
+        // ── S5 — invitation response ─────────────────────────────────────────
+        MEETING_INVITATION_RESPONSE_INVALID: 'errorInvitationResponseInvalid'
     };
 
     const isConcurrencyConflict = (result) =>
@@ -97,6 +100,9 @@
         updateAgendaItem: (id, itemId, payload) => request('PUT', `/${id}/agenda/${itemId}`, payload),
         deleteAgendaItem: (id, itemId) => request('DELETE', `/${id}/agenda/${itemId}`),
         linkedTasks: (id) => request('GET', `/${id}/tasks`),
+
+        // S5, K5 — Accept/Decline. `response` is exactly 'Accept' or 'Decline'.
+        respond: (id, response) => request('POST', `/${id}/respond`, { response }),
 
         // ── S4 — the meeting↔task bridge ────────────────────────────────────
         createTaskFromMeeting: (id, payload) => request('POST', `/${id}/tasks`, payload),

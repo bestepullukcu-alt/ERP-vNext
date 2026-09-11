@@ -84,6 +84,7 @@
   <data name="ErrorTypeInUse" xml:space="preserve"><value>此会议类型正被某个会议使用，无法删除。</value></data>
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>此任务已链接到本次会议。</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>此任务已安排了一次审查会议。</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>回复必须是接受或拒绝。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>

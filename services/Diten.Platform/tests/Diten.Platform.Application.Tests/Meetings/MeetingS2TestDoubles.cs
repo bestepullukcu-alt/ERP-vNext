@@ -1,8 +1,10 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -77,6 +79,10 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
     private readonly List<MeetingAttendee> _items = [];
     public Guid Tenant { get; init; }
 
+    public IReadOnlyList<MeetingAttendee> Items => _items;
+
+    public void Seed(MeetingAttendee attendee) => _items.Add(attendee);
+
     public Task<MeetingAttendee> CreateAsync(MeetingAttendee attendee, CancellationToken ct = default)
     {
         _items.Add(attendee);
@@ -99,6 +105,13 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
     {
         var item = _items.FirstOrDefault(x => x.Id == id);
         if (item is not null) { item.IsDeleted = true; }
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.Id == id);
+        if (item is not null) { item.InvitationResponse = response; }
         return Task.CompletedTask;
     }
 }
@@ -185,6 +198,36 @@ internal sealed class FakeMeetingTypeRepository : IMeetingTypeRepository
         var item = _items.FirstOrDefault(x => x.Id == id);
         if (item is not null) { item.IsDeleted = true; }
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>S5 — records every call so a test can assert WHO was mailed and WHICH event, without a real
+/// <c>INotificationEventDispatchAdapter</c>. <see cref="NextResult"/> is read at call time, not fixed at
+/// construction, so a K12 test can flip it to a failure mid-scenario.</summary>
+internal sealed class FakeMeetingInviteMailer : IMeetingInviteMailer
+{
+    public sealed record Call(string Kind, Guid MeetingId, IReadOnlyList<Guid> RecipientUserIds, Guid ActingUserId);
+
+    public List<Call> Calls { get; } = [];
+    public MeetingInviteDeliveryResult NextResult { get; set; } = new(Sent: true, Failed: false, Reason: null);
+
+    public Task<MeetingInviteDeliveryResult> SendInviteAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("invite", meeting, recipients, actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendChangeAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("change", meeting, recipients, actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendCancelAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("cancel", meeting, recipients, actingUserId);
+
+    private Task<MeetingInviteDeliveryResult> Record(
+        string kind, Meeting meeting, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId)
+    {
+        Calls.Add(new Call(kind, meeting.Id, recipients.Select(r => r.UserId).ToList(), actingUserId));
+        return Task.FromResult(NextResult);
     }
 }
 

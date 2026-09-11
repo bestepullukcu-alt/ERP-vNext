@@ -2,6 +2,7 @@ using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Driver;
 
@@ -243,6 +244,15 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
             Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
             Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.Id, id));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.InvitationResponse, response);
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 }
 

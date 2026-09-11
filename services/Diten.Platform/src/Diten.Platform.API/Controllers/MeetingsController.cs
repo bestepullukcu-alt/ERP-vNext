@@ -142,6 +142,17 @@ public sealed class MeetingsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>S5, K5 — Accept/Decline. Read-gated, deliberately: responding to an invitation is not managing
+    /// the meeting, and the 404-for-non-attendee rule (pack §13 :497) is enforced by the handler, not by a
+    /// tighter permission here.</summary>
+    [HttpPost("{id:guid}/respond")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> Respond(Guid id, [FromBody] RespondToInvitationRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new RespondToInvitationCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── S4 — the meeting↔task bridge (pack §3 Commands "bridge", §14 K9). Every action below stacks a
     // Meetings permission with an ORDINARY MOD-0024 permission — AND semantics (HasPermissionAttribute's own
     // doc comment) — so platform.meetings.* alone grants nothing over TaskItem (K9), the same precedent

@@ -84,6 +84,7 @@
   <data name="ErrorTypeInUse" xml:space="preserve"><value>نوع الاجتماع هذا مستخدم من قبل اجتماع ولا يمكن حذفه.</value></data>
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>هذه المهمة مرتبطة بهذا الاجتماع بالفعل.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>تم جدولة اجتماع مراجعة لهذه المهمة بالفعل.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>يجب أن يكون الرد قبول أو رفض.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
