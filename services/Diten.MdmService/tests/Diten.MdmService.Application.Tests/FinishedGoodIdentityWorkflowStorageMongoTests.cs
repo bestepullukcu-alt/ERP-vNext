@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -22,6 +24,8 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
 {
     private readonly AuditIntentTemporalMongoFixture _fixture;
     private readonly ITestOutputHelper _output;
+    private readonly ConcurrentQueue<string> _mongoCommandEvents = new();
+    private readonly Stopwatch _diagnosticClock = Stopwatch.StartNew();
     private readonly List<Guid> _tenantIds = [];
     private IMongoDatabase _database = null!;
     private IMongoCollection<FinishedGoodIdentityWorkflowOperation> _collection = null!;
@@ -41,6 +45,34 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
 #pragma warning disable CS0618
         settings.GuidRepresentation = GuidRepresentation.Standard;
 #pragma warning restore CS0618
+        settings.ClusterConfigurator = cluster =>
+        {
+            cluster.Subscribe<CommandStartedEvent>(started =>
+                RecordMongoCommandEvent("started", started.CommandName, started.RequestId, started.OperationId));
+            cluster.Subscribe<CommandSucceededEvent>(succeeded =>
+                RecordMongoCommandEvent(
+                    "succeeded",
+                    succeeded.CommandName,
+                    succeeded.RequestId,
+                    succeeded.OperationId,
+                    $"duration-ms={succeeded.Duration.TotalMilliseconds:F3}"));
+            cluster.Subscribe<CommandFailedEvent>(failed =>
+            {
+                var code = failed.Failure is MongoCommandException commandException
+                    ? commandException.Code.ToString(CultureInfo.InvariantCulture)
+                    : "none";
+                var labels = failed.Failure is MongoException mongoException
+                    ? string.Join(',', mongoException.ErrorLabels.OrderBy(label => label, StringComparer.Ordinal))
+                    : string.Empty;
+                RecordMongoCommandEvent(
+                    "failed",
+                    failed.CommandName,
+                    failed.RequestId,
+                    failed.OperationId,
+                    $"duration-ms={failed.Duration.TotalMilliseconds:F3}; exception={failed.Failure.GetType().Name}; " +
+                    $"code={code}; labels={(labels.Length == 0 ? "none" : labels)}");
+            });
+        };
         _database = new MongoClient(settings).GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
         await _database.RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
         var hello = await _database.Client.GetDatabase("admin")
@@ -59,8 +91,15 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
 
     public async Task DisposeAsync()
     {
-        if (_tenantIds.Count == 0) return;
-        await _collection.DeleteManyAsync(item => _tenantIds.Contains(item.TenantId));
+        if (_tenantIds.Count > 0)
+        {
+            await _collection.DeleteManyAsync(item => _tenantIds.Contains(item.TenantId));
+        }
+
+        while (_mongoCommandEvents.TryDequeue(out var commandEvent))
+        {
+            _output.WriteLine(commandEvent);
+        }
     }
 
     [Fact]
@@ -164,6 +203,11 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
         var claims = await Task.WhenAll(Enumerable.Range(0, 6).Select(index => repository.TryClaimAsync(new(
             facts.OperationId, facts.Fingerprint, [FinishedGoodIdentityWorkflowCheckpoint.Prepared], $"owner-{index}", 0,
             TimeSpan.FromSeconds(2).Ticks))));
+        if (claims.All(claim => claim is null))
+        {
+            await FailWithAllNullClaimDiagnosticsAsync(repository, tenantId, facts);
+        }
+
         var winner = Assert.Single(claims, claim => claim is not null)!;
 
         await WaitUntilAfterAsync(winner.LeaseUntilUtcTicksV1);
@@ -178,6 +222,107 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
         Assert.Equal("FINISHED_GOOD_IDENTITY_WORKFLOW_STALE_CLAIM", expired.ErrorCode);
         Assert.NotNull(takeover);
         Assert.Equal(winner.LeaseGeneration + 1, takeover!.LeaseGeneration);
+    }
+
+    [Fact]
+    public async Task Concurrent_claims_never_create_two_active_owners_for_the_same_generation()
+    {
+        var tenantId = TenantId();
+        var facts = Facts(tenantId, "claim-safety", "7");
+        var repository = Repository(tenantId);
+        Assert.True((await repository.ReserveAsync(facts.Reservation)).Succeeded);
+
+        var claims = await Task.WhenAll(Enumerable.Range(0, 6).Select(index => repository.TryClaimAsync(new(
+            facts.OperationId,
+            facts.Fingerprint,
+            [FinishedGoodIdentityWorkflowCheckpoint.Prepared],
+            $"claim-safety-owner-{index}",
+            0,
+            TimeSpan.FromMinutes(1).Ticks))));
+        var persisted = await Raw(facts.OperationId, tenantId);
+        await WritePersistedClaimStateAsync("single-writer-long-lease", tenantId, facts.OperationId, persisted);
+
+        var winner = Assert.Single(claims, claim => claim is not null)!;
+        Assert.Equal(1, winner.LeaseGeneration);
+        Assert.Equal(1, persisted[nameof(FinishedGoodIdentityWorkflowOperation.LeaseGeneration)].ToInt64());
+        Assert.Equal(1, persisted[nameof(FinishedGoodIdentityWorkflowOperation.Version)].ToInt64());
+        Assert.Equal(winner.LeaseUntilUtcTicksV1,
+            persisted[nameof(FinishedGoodIdentityWorkflowOperation.LeaseUntilUtcTicksV1)].AsInt64);
+        Assert.True(winner.LeaseUntilUtcTicksV1 > DateTimeOffset.UtcNow.UtcTicks);
+        Assert.Equal(
+            HashDiagnosticValue(winner.LeaseOwner),
+            HashDiagnosticValue(persisted[nameof(FinishedGoodIdentityWorkflowOperation.LeaseOwner)].AsString));
+    }
+
+    [Fact]
+    public async Task Expired_blocked_advance_is_fail_closed_and_fresh_takeover_preserves_liveness()
+    {
+        var tenantId = TenantId();
+        var facts = Facts(tenantId, "claim-expiry-liveness", "8");
+        var repository = Repository(tenantId);
+        Assert.True((await repository.ReserveAsync(facts.Reservation)).Succeeded);
+        var staleClaim = Assert.IsType<FinishedGoodIdentityWorkflowClaim>(await repository.TryClaimAsync(new(
+            facts.OperationId,
+            facts.Fingerprint,
+            [FinishedGoodIdentityWorkflowCheckpoint.Prepared],
+            "claim-expiry-stale-owner",
+            0,
+            TimeSpan.FromSeconds(2).Ticks)));
+
+        var commandStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var observedRepository = Repository(tenantId, commandStarted);
+        using var blocker = await _database.Client.StartSessionAsync();
+        blocker.StartTransaction();
+        const string synchronizationFailure = "p1a-claim-diag-synchronization";
+        await RawCollection.UpdateOneAsync(
+            blocker,
+            RawFilter(facts.OperationId, tenantId),
+            Builders<BsonDocument>.Update.Set("LastFailureCode", synchronizationFailure));
+        var beforeAdvance = await Raw(facts.OperationId, tenantId);
+        var expectedAfterSynchronization = beforeAdvance.DeepClone().AsBsonDocument;
+        expectedAfterSynchronization["LastFailureCode"] = synchronizationFailure;
+
+        var blockedAdvance = observedRepository.AdvanceAsync(staleClaim, new(
+            FinishedGoodIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+            ProductIdentityWorkflowRecoveryDisposition.None));
+        await commandStarted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        await WaitUntilAfterAsync(staleClaim.LeaseUntilUtcTicksV1);
+        await blocker.CommitTransactionAsync();
+        var expiredResult = await blockedAdvance;
+        var afterExpiredAdvance = await Raw(facts.OperationId, tenantId);
+        await WritePersistedClaimStateAsync(
+            "expired-blocked-advance",
+            tenantId,
+            facts.OperationId,
+            afterExpiredAdvance);
+
+        Assert.False(expiredResult.Succeeded);
+        Assert.Equal("FINISHED_GOOD_IDENTITY_WORKFLOW_STALE_CLAIM", expiredResult.ErrorCode);
+        Assert.Equal(expectedAfterSynchronization, afterExpiredAdvance);
+
+        var takeover = Assert.IsType<FinishedGoodIdentityWorkflowClaim>(await repository.TryClaimAsync(new(
+            facts.OperationId,
+            facts.Fingerprint,
+            [FinishedGoodIdentityWorkflowCheckpoint.Prepared],
+            "claim-expiry-fresh-owner",
+            staleClaim.LeaseGeneration,
+            TimeSpan.FromMinutes(1).Ticks)));
+        var staleRetry = await repository.AdvanceAsync(staleClaim, new(
+            FinishedGoodIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+            ProductIdentityWorkflowRecoveryDisposition.None));
+        var freshAdvance = await repository.AdvanceAsync(takeover, new(
+            FinishedGoodIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+            ProductIdentityWorkflowRecoveryDisposition.None));
+        var finalState = await Raw(facts.OperationId, tenantId);
+        await WritePersistedClaimStateAsync("fresh-takeover-advanced", tenantId, facts.OperationId, finalState);
+
+        Assert.Equal(staleClaim.LeaseGeneration + 1, takeover.LeaseGeneration);
+        Assert.False(staleRetry.Succeeded);
+        Assert.Equal("FINISHED_GOOD_IDENTITY_WORKFLOW_STALE_CLAIM", staleRetry.ErrorCode);
+        Assert.True(freshAdvance.Succeeded);
+        Assert.Equal(
+            (int)FinishedGoodIdentityWorkflowCheckpoint.StartOutcomeUnknown,
+            finalState[nameof(FinishedGoodIdentityWorkflowOperation.Checkpoint)].AsInt32);
     }
 
     [Fact]
@@ -501,6 +646,90 @@ public sealed class FinishedGoodIdentityWorkflowStorageMongoTests
             ["OperationId"] = new BsonBinaryData(operationId, GuidRepresentation.Standard)
         })
         .SingleAsync();
+
+    private async Task FailWithAllNullClaimDiagnosticsAsync(
+        FinishedGoodIdentityWorkflowOperationRepository repository,
+        Guid tenantId,
+        (Guid OperationId, Guid FinishedGoodId, Guid GskuId, Guid RevisionId, Guid MakerId,
+            string Fingerprint, FinishedGoodIdentityWorkflowReservation Reservation) facts)
+    {
+        var persisted = await Raw(facts.OperationId, tenantId);
+        await WritePersistedClaimStateAsync("all-null-observed", tenantId, facts.OperationId, persisted);
+        var persistedGeneration = persisted[nameof(FinishedGoodIdentityWorkflowOperation.LeaseGeneration)].ToInt64();
+        var persistedVersion = persisted[nameof(FinishedGoodIdentityWorkflowOperation.Version)].ToInt64();
+        var owner = persisted.GetValue(nameof(FinishedGoodIdentityWorkflowOperation.LeaseOwner), BsonNull.Value);
+        var leaseUntil = persisted.GetValue(
+            nameof(FinishedGoodIdentityWorkflowOperation.LeaseUntilUtcTicksV1),
+            BsonNull.Value);
+        if (!leaseUntil.IsBsonNull)
+        {
+            await WaitUntilAfterAsync(leaseUntil.AsInt64);
+        }
+
+        var recovery = await repository.TryClaimAsync(new(
+            facts.OperationId,
+            facts.Fingerprint,
+            [FinishedGoodIdentityWorkflowCheckpoint.Prepared],
+            "all-null-recovery-owner",
+            persistedGeneration,
+            TimeSpan.FromMinutes(1).Ticks));
+        var afterRecovery = await Raw(facts.OperationId, tenantId);
+        await WritePersistedClaimStateAsync("all-null-recovery", tenantId, facts.OperationId, afterRecovery);
+
+        var unexpectedMutation = persistedGeneration != 0 || persistedVersion != 0 || !owner.IsBsonNull;
+        if (unexpectedMutation)
+        {
+            Assert.Fail(
+                "P1A_ALL_NULL_PERSISTED_MUTATION: all contenders returned null but persisted claim facts changed; " +
+                $"recovery-succeeded={recovery is not null}");
+        }
+
+        Assert.True(recovery is not null,
+            "P1A_ALL_NULL_LIVENESS_FAILURE: all contenders returned null and a fresh claim could not progress after contention cleared.");
+        Assert.Fail(
+            "P1A_ALL_NULL_REPRODUCED_LIVENESS_OK: all contenders returned null; persisted state remained clean and a fresh claim progressed.");
+    }
+
+    private Task WritePersistedClaimStateAsync(
+        string label,
+        Guid tenantId,
+        Guid operationId,
+        BsonDocument persisted)
+    {
+        var owner = persisted.GetValue(nameof(FinishedGoodIdentityWorkflowOperation.LeaseOwner), BsonNull.Value);
+        var leaseUntil = persisted.GetValue(
+            nameof(FinishedGoodIdentityWorkflowOperation.LeaseUntilUtcTicksV1),
+            BsonNull.Value);
+        _output.WriteLine(
+            "P1A_CLAIM_STATE label={0}; tenant={1:D}; operation={2:D}; elapsed-ms={3:F3}; " +
+            "checkpoint={4}; version={5}; lease-generation={6}; owner={7}; lease-until={8}; now-utc-ticks={9}",
+            label,
+            tenantId,
+            operationId,
+            _diagnosticClock.Elapsed.TotalMilliseconds,
+            persisted[nameof(FinishedGoodIdentityWorkflowOperation.Checkpoint)].AsInt32,
+            persisted[nameof(FinishedGoodIdentityWorkflowOperation.Version)].ToInt64(),
+            persisted[nameof(FinishedGoodIdentityWorkflowOperation.LeaseGeneration)].ToInt64(),
+            owner.IsBsonNull ? "none" : HashDiagnosticValue(owner.AsString),
+            leaseUntil.IsBsonNull ? "none" : leaseUntil.AsInt64.ToString(CultureInfo.InvariantCulture),
+            DateTimeOffset.UtcNow.UtcTicks);
+        return Task.CompletedTask;
+    }
+
+    private void RecordMongoCommandEvent(
+        string phase,
+        string commandName,
+        int requestId,
+        long? operationId,
+        string outcome = "none") => _mongoCommandEvents.Enqueue(
+            $"P1A_MONGO_COMMAND phase={phase}; elapsed-ms={_diagnosticClock.Elapsed.TotalMilliseconds:F3}; " +
+            $"command={commandName}; request-id={requestId}; operation-id={operationId?.ToString(CultureInfo.InvariantCulture) ?? "none"}; {outcome}");
+
+    private static string HashDiagnosticValue(string value)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(value));
+        return $"sha256:{Convert.ToHexString(hash.AsSpan(0, 6)).ToLowerInvariant()}";
+    }
 
     private IMongoCollection<BsonDocument> RawCollection => _database
         .GetCollection<BsonDocument>(FinishedGoodIdentityWorkflowOperationRepository.CollectionName);

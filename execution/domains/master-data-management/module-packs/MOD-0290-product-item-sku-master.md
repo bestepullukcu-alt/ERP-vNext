@@ -4829,3 +4829,76 @@ P1A remediation can establish only the bounded storage contract. It cannot estab
 workflow start/transport, terminal decision application, background authority, source lifecycle mutation, API/
 manifest/DI/Program integration, UI/Gateway behavior, operational readiness, live acceptance or Finished Good
 lifecycle completion.
+
+#### FG-P1A-CLAIM-DIAG-01 — bounded all-null claim diagnosis (2026-09-11)
+
+This diagnostic work package was limited to the existing P1A storage test and this evidence record. Its exact
+writable paths were
+`services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowStorageMongoTests.cs`
+and this §21.14 subsection; runtime repositories, contracts, fixtures, DI and configuration remained read-only.
+Evidence was written only below `.testoutput/fg-p1a-claim-diag-01/run-20260911-01/`. The previously retained 566
+evidence files were preserved; the diagnostic run added 80 files. No staging, commit, push, application Mongo access,
+operational provisioning or service activation was part of this work package.
+
+The three historical all-null failures retained in §21.14 do not carry the exact test-source hash, test/runtime DLL
+hashes or lease input needed to reconstruct their executing state. Their root cause therefore remains **UNKNOWN**.
+In particular, the current two-second lease cannot be projected backwards onto those runs, and the unproven
+one-millisecond-fixture possibility is not promoted to an explanation. Later passing runs, including this diagnostic
+work, do not close or erase that historical flakiness.
+
+The unchanged pre-instrumentation test was freshly built and executed three times with a two-second lease. Each run
+discovered and executed one test and reported `1/0/0` passed/failed/skipped on independent test-owned single-node
+replica sets using the fixed `diten_mdm_product_scope_itest` database: `127.0.0.1:64070`, `127.0.0.1:64123` and
+`127.0.0.1:64174`. The pre-instrumentation Release build succeeded with `0` errors and `8` warnings. The baseline
+source SHA-256 was
+`746362c1fb10860009bf77028cf30230b808680b6ed5a61e94bee28ef7801a25`; the test DLL SHA-256 was
+`e2b346c7b9f07996a0f4cb7239aeca32f0c6a73f3d093601e3fd0ea2610d8b06`. The P1A runtime DLL SHA-256 remained
+`f14e5360fb9c2dcd16cbc67b5a0787451313d30ca6a1010ff53d14e855e98396` throughout every diagnostic build and
+experiment. The current two-second scenario is consequently **NOT REPRODUCED**, not proven fixed.
+
+Test-only command-event and persisted-state diagnostics then measured the following bounded hypotheses. Diagnostic
+identifiers are synthetic or redacted; full Mongo command bodies, credentials and tokens were not recorded.
+
+| Hypothesis | Observation | Result | Evidence |
+|---|---|---|---|
+| Current two-second six-contender claim can reproduce all-null | One instrumented run discovered/executed one test and reported `1/0/0` on `127.0.0.1:59447`. One contender committed; five losing transactions surfaced Mongo `WriteConflict` code `112` with `TransientTransactionError` and were not converted into simultaneous owners. | **NOT REPRODUCED**. Contention and bounded retry are observed in the current code, but do not establish the cause of the historical runs. | `experiment-01-instrumented-six-contender/` |
+| Long lease can create two active owners in the same generation | The first run reported `0/1/0`, but the failure was a test-only `BsonInt32.AsInt64` `InvalidCastException`, not a storage assertion or runtime failure. After correcting only that diagnostic assertion, the rerun reported `1/0/0` on `127.0.0.1:59662`: exactly one generation-1 owner and one committed claim state. | Safety evidence: no double active owner was observed. The initial failure is retained and is not classified as a runtime defect. | `experiment-02-single-writer-long-lease/`; `experiment-02b-single-writer-long-lease/` |
+| Expired/blocked mutation can poison ownership or prevent recovery | The controlled expiry run reported `1/0/0` on `127.0.0.1:59709`. The expired stale owner could not advance or change checkpoint/version/business facts; after contention cleared, a fresh owner took generation `+1`, advanced, and the stale owner remained rejected. | Fail-closed safety and liveness are demonstrated for the controlled scenario: fresh takeover/advance succeeds and stale-owner mutation is rejected. This is not a reconstruction of the historical all-null event. | `experiment-03-expiry-liveness/` |
+| Test-only diagnostics disturb the wider P1A storage contract | The full storage class discovered/executed 13 tests and reported `13/0/0` on `127.0.0.1:53054`. | No diagnostic-run storage regression was observed. | `experiment-04-full-storage/` |
+| Test-only diagnostics disturb the lifecycle contract | The lifecycle contract run discovered/executed six tests and reported `6/0/0`; no Mongo topology applies. | No diagnostic-run contract regression was observed. | `experiment-05-lifecycle-contract-regression/` |
+
+The final diagnostic test-source SHA-256 was
+`300894ec831b16aa3473b018c87e4df690853d3d619bbd2a14cfbe486e278ab2`; its test DLL SHA-256 was
+`a1ff1f459dd8cb9291142ac86455cc6adab613644f2a16530a848ed9d0473dbc`. The first instrumented Release build
+failed with three test compile errors and no executed tests; those test-only compilation errors were corrected before
+any diagnostic claim was accepted. The fresh final Release build succeeded with `0` errors and `3` existing warnings.
+
+**Diagnostic verdict:** historical root cause `UNKNOWN`; current two-second reproduction `NOT REPRODUCED`; current
+single-writer safety passed; controlled expiry recovery preserved liveness and rejected stale-owner advance. No
+runtime correction is recommended or proven by this bounded evidence. P1A remains a `CONDITIONAL PASS` storage
+checkpoint with the three historical all-null failures and the two known architecture-guard baseline failures still
+open. This record grants no P1A acceptance, flakiness closure, lifecycle completion, live acceptance or merge-ready
+status. A later closure attempt needs retained source/DLL/lease provenance for a reproduced all-null event, or another
+directly observed cause under the same bounded test-owned topology.
+
+##### Diagnostic evidence inventory baseline
+
+The previously reported aggregate digests
+`f80bae48895888dffe4ce7e1ab17a1328048ea05082459d0c1a4f7b16517f0e0` and
+`b7f4052ee9a8a08a6863c00c3ed0cf5ae6c7e1cdbbab9633404a70338384e124` differ. The reason for that discrepancy is
+**UNKNOWN** because no preserved historical manifest or calculation command was found. The historical statement that
+the evidence was preserved is therefore insufficient hash-comparison evidence; the discrepancy is not, by itself,
+proof of data loss.
+
+Future comparisons use this canonical inventory method: each file path is relative to the worktree and uses `/` as
+the separator; normalized relative-path strings are sorted with PowerShell `[StringComparer]::Ordinal`; each line is encoded as
+`relativePath<TAB>lowercase SHA256<LF>` using UTF-8 without a BOM; each per-file SHA-256 is calculated over the raw file
+bytes; and the aggregate SHA-256 is calculated over the resulting manifest bytes. With that method, the pre-existing
+evidence set contains 566 files and has aggregate SHA-256
+`4c87c5c5aaea9b71f99da3fedeb0677aa77fa60a4c6c3cee0e00284bfc1139ee`; the new diagnostic set contains 80 files and
+has aggregate SHA-256 `750877b7b2b35be489013869ed9159f0f73a6460f0040300cedffb2589007124`; the combined set contains
+646 files and has aggregate SHA-256 `239af8810160c1f77a9297db66e74c9e06e85c5e88eafac1007464afbe3cd97e`.
+
+This inventory baseline does not alter the diagnostic conclusions: the historical root cause remains `UNKNOWN`, the
+current two-second scenario remains `NOT REPRODUCED`, and P1A remains `CONDITIONAL PASS`. It grants no acceptance,
+status promotion, lifecycle completion, live acceptance or merge-ready claim.
