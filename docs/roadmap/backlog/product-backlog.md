@@ -5081,6 +5081,10 @@ temizliği, kilitli seri başlatma, koşuma özel rastgele JWT anahtarı (çıkt
 sapması reddedildi); testte izolasyon Platform emsaliyle: test derlemesinde [ModuleInitializer] Standard + MongoDefaults.GuidRepresentation. Ayrıca sahip kararı:
 `auth.users.lookup` TenantSelfServicePermissions'a (mevcut kiracıların Admin'i açılış reconcile'ında alır). Auth 781/784 ×2 (3 eski kırmızı); sabotajda refusal testi kırmızı.
 Dal main ile hizalandı; PR 5 açılabilir (sahip push eder).
+**C3 (CT, 2026-09-12 00:xx):** Codex'in ikinci fixture bulgusu (ortam override'ı kilit dışında geri alınıyor → iki host birbirinin ortamını bozuyor) kapandı:
+override penceresi = kilit penceresi (kur → ön-kontrol → host → ayar yakala → geri al → bırak, tek finally); Dispose ortama dokunmaz; factory/runner ayrı try/catch,
+ilk hata orijinal yığınla yeniden fırlar; T1–T6 (A→B, B→A, host çalışırken env eski, başarısız başlangıç, dispose hatası, sır sızıntısı). CT sabotajı: geri alma
+Dispose'a taşınınca T1/T2 kırmızı. Auth 787/790 (3 eski). PR 5 sabah.
 
 **Karar:** sınıflandırma yalnız açık atanan `auth.users.account-kind.manage` ile (ExplicitGrantOnly); Portfolio uygunluğu = aynı kiracıda aktif + Human (PPM kararı);
 ek pozisyon/birim şartı yok; mevcut hesaplar otomatik sınıflandırılmaz (hepsi Unknown). Uçlar: `GET api/users/lookup`, `GET api/users/{id}/account-assertion`
