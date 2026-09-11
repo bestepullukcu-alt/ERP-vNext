@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>此会议尚无关联任务。</value></data>
   <data name="Agenda" xml:space="preserve"><value>议程</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>暂无议程项。</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>创建任务</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>链接现有任务</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>从此行创建任务</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>任务标题</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>任务标题为必填项。</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>负责人</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>我自己</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>截止日期</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>任务</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>搜索要链接的任务</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>选择要链接的任务。</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>任务已创建并链接到此会议。</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>任务已链接到此会议。</value></data>
   <data name="Yes" xml:space="preserve"><value>是</value></data>
   <data name="No" xml:space="preserve"><value>否</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>会议信息</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>未找到此会议类型。</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>已存在同名的会议类型。</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>此会议类型正被某个会议使用，无法删除。</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>此任务已链接到本次会议。</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>此任务已安排了一次审查会议。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>

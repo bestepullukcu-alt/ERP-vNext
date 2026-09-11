@@ -338,6 +338,15 @@
             });
         },
         decisionMakers: () => request('GET', '/decision-makers'),
+        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
+         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        linkCandidates: (term, limit) => {
+            const params = new URLSearchParams();
+            if (term) { params.set('term', term); }
+            if (limit) { params.set('limit', String(limit)); }
+            const query = params.toString();
+            return request('GET', query ? `/link-candidates?${query}` : '/link-candidates');
+        },
         /*
          * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is
          * pressed. The server answers from the same reporting-chain scope it uses when it opens the request, so

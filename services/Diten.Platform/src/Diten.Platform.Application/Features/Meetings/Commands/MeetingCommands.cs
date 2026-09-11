@@ -35,3 +35,16 @@ public sealed record DeleteAgendaItemCommand(Guid MeetingId, Guid AgendaItemId, 
 
 public sealed record ReorderAgendaCommand(Guid MeetingId, ReorderAgendaRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
+
+// ── S4 — the meeting↔task bridge ────────────────────────────────────────────────────────────────────────────
+
+public sealed record CreateTaskFromMeetingCommand(
+    Guid MeetingId, CreateTaskFromMeetingRequest Request, string CorrelationId)
+    : IRequest<Response<CreateTaskFromMeetingResultDto>>;
+
+public sealed record LinkExistingTaskCommand(Guid MeetingId, LinkExistingTaskRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+public sealed record ScheduleReviewMeetingForTaskCommand(
+    Guid TaskId, ScheduleReviewMeetingForTaskRequest Request, string CorrelationId)
+    : IRequest<Response<ScheduleReviewMeetingForTaskResultDto>>;

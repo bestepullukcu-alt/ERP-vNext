@@ -244,6 +244,7 @@
         document.getElementById('btnReassignOrganizer')?.classList.toggle('d-none', !editable);
         document.getElementById('agendaAddRow')?.classList.toggle('d-none', !editable);
         document.getElementById('attendeeAddRow')?.classList.toggle('d-none', !editable);
+        document.getElementById('taskAddRow')?.classList.toggle('d-none', !editable);
 
         const attendeesList = document.getElementById('attendeesList');
         attendeesList.innerHTML = '';
@@ -270,14 +271,29 @@
         items.forEach((item) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${item.text}</span>`;
+            li.innerHTML = `<span>${esc(item.text)}</span>`;
             if (editable) {
+                const rowActions = document.createElement('div');
+                rowActions.className = 'd-flex gap-1';
+                // MOD-0357 S4 — a line that already carries a RecordLink (the far end of a prepared task, or a
+                // carried-over action) offers nothing more here; the ONE task it names is reached through
+                // Linked Tasks below, never a second one from the same line.
+                if (!item.recordLinkId) {
+                    const createTaskBtn = document.createElement('button');
+                    createTaskBtn.type = 'button';
+                    createTaskBtn.className = 'btn btn-sm btn-text-primary';
+                    createTaskBtn.innerHTML = '<i class="bx bx-plus"></i>';
+                    createTaskBtn.title = t('createTaskFromAgendaItem');
+                    createTaskBtn.addEventListener('click', () => openCreateTaskDialog(item.id));
+                    rowActions.appendChild(createTaskBtn);
+                }
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'btn btn-sm btn-text-danger';
                 removeBtn.innerHTML = '<i class="bx bx-x"></i>';
                 removeBtn.addEventListener('click', () => void removeAgendaItem(item.id));
-                li.appendChild(removeBtn);
+                rowActions.appendChild(removeBtn);
+                li.appendChild(rowActions);
             }
             agendaList.appendChild(li);
         });
@@ -400,6 +416,9 @@
             await reloadMeeting();
         });
 
+        document.getElementById('btnCreateTaskFromMeeting')?.addEventListener('click', () => openCreateTaskDialog(null));
+        document.getElementById('btnLinkExistingTask')?.addEventListener('click', () => openLinkExistingTaskDialog());
+
         /*
          * M1 — the shared confirm's TEXTAREA, in place of the hand-rolled `#cancelMeetingModal` (WP-WC-SHARED-UI-01).
          * Modeled on WorkCenterNext/app.js's `editComment` (a seeded/validated textarea through the same
@@ -464,6 +483,126 @@
                 }
             });
         });
+    };
+
+    // ── S4 — the meeting↔task bridge ─────────────────────────────────────────────────────────────────────────
+
+    // Platform/Workflow/workflow.api.js's own precedent — the caller-supplied key K11 needs; neither bridge
+    // endpoint derives one server-side the way meeting create derives its own.
+    const newIdempotencyKey = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') { return crypto.randomUUID(); }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    };
+
+    /*
+     * "Create task" needs THREE fields (title, assignee, due date) — one more than `window.showConfirm` takes
+     * (_GlobalConfirmation.cshtml's own rule: "anything beyond this belongs in a form … takes
+     * DitenDialogAppearance and builds its own body"). This mirrors WorkCenterNext/app.js's own multi-field
+     * dialog (the reason+assignee form): a raw `Swal.fire` wearing the shared LOOK, never an unstyled one.
+     */
+    const openCreateTaskDialog = (agendaItemId) => {
+        if (!window.Swal || !window.DitenDialog) { return; }
+        const dialogLook = window.DitenDialog.dialogLook();
+        const dialogIcon = window.DitenDialog.dialogIcon('info', 'bx-task');
+
+        window.Swal.fire(Object.assign({
+            title: dialogIcon + '<span>' + esc(t('createTaskFromMeeting')) + '</span>',
+            html: `<label class="form-label d-block text-start" for="mtgTaskTitle">${esc(t('taskTitleLabel'))}</label>`
+                + `<input type="text" id="mtgTaskTitle" class="form-control" maxlength="200" autocomplete="off" />`
+                + `<label class="form-label d-block text-start mt-3" for="mtgTaskAssignee">${esc(t('taskAssigneeLabel'))}</label>`
+                + `<select id="mtgTaskAssignee" class="form-select"><option value="">${esc(t('taskAssigneeSelf'))}</option></select>`
+                + `<label class="form-label d-block text-start mt-3" for="mtgTaskDueAt">${esc(t('taskDueAtLabel'))}</label>`
+                + `<input type="text" id="mtgTaskDueAt" class="form-control wcn-date-input" autocomplete="off" />`,
+            showCancelButton: true,
+            confirmButtonText: t('createTaskFromMeeting'),
+            cancelButtonText: t('cancel'),
+            didOpen: async (popup) => {
+                const dateInput = document.getElementById('mtgTaskDueAt');
+                if (window.flatpickr) {
+                    window.flatpickr(dateInput, { enableTime: false, dateFormat: 'Y-m-d', disableMobile: true });
+                }
+                // The SAME assignable-people lookup TaskWorkItemProvider's own reassign dialog reads (BL-057's
+                // eligibility rule) — never a second, looser list built for this one dialog.
+                const peopleResult = await window.TasksApi?.assignablePeople?.();
+                const people = peopleResult?.ok ? peopleResult.data : [];
+                const select = document.getElementById('mtgTaskAssignee');
+                people.forEach((person) => {
+                    select.appendChild(new Option(person.displayName || person.userId, person.userId));
+                });
+                window.DitenDialog.bindDialogSelect2(select, popup);
+            },
+            preConfirm: () => {
+                const title = String(document.getElementById('mtgTaskTitle')?.value || '').trim();
+                if (!title) { window.Swal.showValidationMessage(t('taskTitleRequired')); return false; }
+                const assigneeUserId = String(document.getElementById('mtgTaskAssignee')?.value || '').trim() || null;
+                const dueAtLocal = String(document.getElementById('mtgTaskDueAt')?.value || '').trim();
+                const dueAtDate = dueAtLocal ? new Date(`${dueAtLocal}T00:00:00`) : null;
+                const dueAt = dueAtDate && !Number.isNaN(dueAtDate.getTime()) ? dueAtDate.toISOString() : null;
+                return { title, assigneeUserId, dueAt };
+            }
+        }, dialogLook)).then(async (res) => {
+            if (!res.isConfirmed || !res.value) { return; }
+            const result = await window.MeetingsApi.createTaskFromMeeting(currentMeeting.id, {
+                title: res.value.title,
+                description: null,
+                assigneeUserId: res.value.assigneeUserId,
+                dueAt: res.value.dueAt,
+                agendaItemId: agendaItemId || null,
+                taskTypeId: null,
+                idempotencyKey: newIdempotencyKey()
+            });
+            if (!result.ok) {
+                window.DitenModal?.error?.({ title: t('errorOccurred'), message: window.MeetingsApi.failureMessage(result) });
+                return;
+            }
+            window.DitenModal?.success?.({ title: t('toastTaskCreated'), timer: 1200 });
+            await reloadMeeting();
+        });
+    };
+
+    /*
+     * "Link existing task" is ONE field — a search-select — so it goes through `window.showConfirm` exactly
+     * like the reassign-organizer picker above (M2), never the raw-Swal path `openCreateTaskDialog` takes.
+     */
+    const openLinkExistingTaskDialog = () => {
+        void (async () => {
+            const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
+            const candidates = candidatesResult?.ok ? candidatesResult.data : [];
+            // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
+            // already selected, and confirming without touching it would link a task nobody chose.
+            const taskOptions = { '': t('linkExistingTaskPlaceholder') };
+            candidates.forEach((candidate) => { taskOptions[candidate.id] = candidate.title; });
+
+            window.showConfirm(t('linkExistingTask'), async (taskId) => {
+                if (!taskId) { return; }
+                const result = await window.MeetingsApi.linkExistingTask(currentMeeting.id, taskId, null);
+                if (!result.ok) {
+                    // MEETING_TASK_ALREADY_LINKED (409) reads through the SAME reason-code bridge as every
+                    // other failure here — no special-cased sentence, the bridge already carries one for it.
+                    window.DitenModal?.error?.({ title: t('errorOccurred'), message: window.MeetingsApi.failureMessage(result) });
+                    return;
+                }
+                window.DitenModal?.success?.({ title: t('toastTaskLinked'), timer: 1200 });
+                await reloadMeeting();
+            }, {
+                subtext: '',
+                confirmButtonText: t('linkExistingTask'),
+                showInput: true,
+                inputType: 'select',
+                inputLabel: t('linkExistingTaskLabel'),
+                inputOptions: taskOptions,
+                inputValidator: (value) => (value ? null : t('linkExistingTaskRequired')),
+                didOpen: (popup) => {
+                    const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
+                        || popup.querySelector('.swal2-select');
+                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false }); }
+                }
+            });
+        })();
     };
 
     document.addEventListener('DOMContentLoaded', () => {

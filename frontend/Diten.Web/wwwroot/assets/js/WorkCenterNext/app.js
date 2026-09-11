@@ -7851,9 +7851,12 @@
         });
     };
 
-    // Review meeting is a collaboration command, not a lifecycle transition. The
-    // mock applies an explicit replacement projection after Calendar returns.
-    const applyReviewMeeting = (item, whenStr, label) => {
+    /*
+     * MOD-0357 S4 — review meeting is a collaboration command, not a lifecycle transition. A SHOWCASE fixture
+     * has no backing record anywhere (WC-D2's own rule, above), so it keeps the local demonstration this action
+     * always drew: an explicit replacement projection, applied here and nowhere else.
+     */
+    const applyReviewMeetingFixture = (item, whenStr, label) => {
         const [date, time] = String(whenStr).split(' ');
         const startTime = time || '09:00';
         const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
@@ -7888,15 +7891,64 @@
         toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
     };
 
-    const openMeetingScheduler = (item, action) => {
-        const label = actionLabel(action);
-        if (!global.Swal) { applyReviewMeeting(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-        // Same journey as the plan dialog above, and for the same reason: one value, so one confirmation.
+    // BL-… precedent (Platform/Workflow/workflow.api.js) — the caller-supplied idempotency key this bridge's own
+    // K11 needs; MeetingsController never derives one for THIS endpoint the way meeting create derives its own.
+    const newIdempotencyKey = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') { return crypto.randomUUID(); }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    };
+
+    /*
+     * A REAL task: posts to MOD-0357's own bridge endpoint (K3) and re-reads the projection, exactly the
+     * `submitRealTransition` shape above — nothing applied optimistically, the refreshed projection is the only
+     * source of the new state, and it is the projection that drops `scheduleReviewMeeting` once the write lands
+     * (TaskWorkItemProvider, S4).
+     */
+    const submitReviewMeeting = async (item, meetingTypeId, whenStr) => {
+        const [date, time] = String(whenStr).split(' ');
+        const startTime = time || '09:00';
+        const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
+        const endMinute = startTime.slice(3) || '00';
+
+        state.submittingItemId = item.id;
+        state.submittingActionCode = 'scheduleReviewMeeting';
+        render();
+
+        const result = await global.MeetingsApi.scheduleReviewMeetingForTask(item.id, {
+            meetingTypeId,
+            startAt: `${date}T${startTime}:00`,
+            endAt: `${date}T${endHour}:${endMinute}:00`,
+            title: null,
+            idempotencyKey: newIdempotencyKey()
+        });
+
+        state.submittingItemId = null;
+        state.submittingActionCode = null;
+
+        if (!result.ok) {
+            render();
+            toast(global.MeetingsApi.failureMessage(result), 'error');
+            return;
+        }
+
+        await loadWorkItems();
+        render();
+        toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+    };
+
+    // The date/time step, shared by both the fixture path and the real one — only what happens ON CONFIRM
+    // differs, via `onWhenChosen`. `subtextText` arrives ALREADY resolved — each caller reads its own key by a
+    // literal `t(...)` call, which is what the l10n guard (wcn-dialog-seven-defects.test.js) scans app.js for.
+    const openMeetingDateTimePicker = (item, action, label, subtextText, onWhenChosen) => {
         const seed = item.dueAt || data.todayIso;
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(t('MeetingWhenSubtext')),
+            subtext: esc(subtextText),
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -7915,7 +7967,51 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (value) { applyReviewMeeting(item, String(value).replace('T', ' '), label); }
+                if (value) { onWhenChosen(String(value).replace('T', ' ')); }
+            }
+        });
+    };
+
+    const openMeetingScheduler = async (item, action) => {
+        const label = actionLabel(action);
+
+        if (isFixtureShowcase(item)) {
+            if (!global.showConfirm) { applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
+            openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
+                (whenStr) => applyReviewMeetingFixture(item, whenStr, label));
+            return;
+        }
+
+        // A REAL task needs a REAL meeting type — the receiving side's own CreateMeetingRequest requires one
+        // (pack §7); there is no per-type default to fall back to here the way the meeting→task direction has.
+        const typesResult = await global.MeetingsApi.lookupTypes();
+        if (!typesResult.ok) {
+            toast(global.MeetingsApi.failureMessage(typesResult), 'error');
+            return;
+        }
+        const types = Array.isArray(typesResult.data) ? typesResult.data : [];
+        if (types.length === 0) {
+            toast(t('MeetingNoTypesAvailable'), 'error');
+            return;
+        }
+        const typeOptions = {};
+        types.forEach((type) => { typeOptions[type.id] = type.name; });
+
+        sharedConfirm({
+            title: label,
+            subtext: esc(t('MeetingTypeSubtext')),
+            icon: inboxActionIcon(action),
+            confirmText: t('PlanConfirm'),
+            input: {
+                type: 'select',
+                label: t('MeetingTypeLabel'),
+                options: typeOptions,
+                validate: (value) => (value ? null : t('MeetingTypeLabel'))
+            },
+            onConfirm: (meetingTypeId) => {
+                if (!meetingTypeId) { return; }
+                openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
+                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr));
             }
         });
     };

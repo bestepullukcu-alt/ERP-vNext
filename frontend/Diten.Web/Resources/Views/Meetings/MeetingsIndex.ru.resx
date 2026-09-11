@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>С этим совещанием пока не связаны задачи.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Повестка</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>Пунктов повестки пока нет.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Создать задачу</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Связать существующую задачу</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Создать задачу из этой строки</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Название задачи</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>Название задачи обязательно.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Я сам</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Срок выполнения</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Задача</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Поиск задач для связывания</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Выберите задачу для связывания.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Задача создана и связана с этим совещанием.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Задача связана с этим совещанием.</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Сведения о совещании</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Этот тип совещания не найден.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Тип совещания с таким названием уже существует.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Этот тип совещания используется совещанием и не может быть удалён.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Эта задача уже связана с этим совещанием.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Для этой задачи уже запланировано совещание по обзору.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>

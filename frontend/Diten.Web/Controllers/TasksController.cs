@@ -640,6 +640,14 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDecisionMakers()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
 
+    /// <summary>MOD-0357 S4 — the "link an existing task" dialog's own search box (term, limit).</summary>
+    [HttpGet("api/link-candidates")]
+    public Task<IActionResult> ApiLinkCandidates()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/lookups/link-candidates{Request.QueryString.Value}",
+            readBody: false);
+
     /// <summary>
     /// Forward to the gateway.
     ///

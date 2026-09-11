@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>会议日期和时间</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>会议类型</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>选择要安排的会议类型。</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>尚未配置任何会议类型。请管理员添加一个。</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>此操作会在"会议"模块中创建一个与此任务关联的真实会议。</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>第三季度结账复核</value>
   </data>
@@ -1542,6 +1554,9 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>等待中…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>安排审查会议</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>退回</value>

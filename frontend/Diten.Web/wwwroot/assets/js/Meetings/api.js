@@ -57,7 +57,11 @@
         MEETING_AGENDA_REORDER_MISMATCH: 'errorAgendaReorderMismatch',
         MEETING_TYPE_NOT_FOUND: 'errorTypeNotFound',
         MEETING_TYPE_NAME_DUPLICATE: 'errorTypeNameDuplicate',
-        MEETING_TYPE_IN_USE: 'errorTypeInUse'
+        MEETING_TYPE_IN_USE: 'errorTypeInUse',
+
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        MEETING_TASK_ALREADY_LINKED: 'errorTaskAlreadyLinked',
+        MEETING_REVIEW_ALREADY_SCHEDULED: 'errorReviewAlreadyScheduled'
     };
 
     const isConcurrencyConflict = (result) =>
@@ -93,6 +97,13 @@
         updateAgendaItem: (id, itemId, payload) => request('PUT', `/${id}/agenda/${itemId}`, payload),
         deleteAgendaItem: (id, itemId) => request('DELETE', `/${id}/agenda/${itemId}`),
         linkedTasks: (id) => request('GET', `/${id}/tasks`),
+
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        createTaskFromMeeting: (id, payload) => request('POST', `/${id}/tasks`, payload),
+        linkExistingTask: (id, taskId, payload) => request('POST', `/${id}/tasks/${taskId}/link`, payload ?? {}),
+        scheduleReviewMeetingForTask: (taskId, payload) =>
+            request('POST', `/tasks/${taskId}/schedule-review-meeting`, payload),
+
         lookupAttendees: () => request('GET', '/lookups/attendees'),
         lookupTypes: () => request('GET', '/lookups/types'),
 

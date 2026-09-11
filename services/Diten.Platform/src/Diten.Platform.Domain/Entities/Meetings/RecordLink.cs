@@ -60,6 +60,22 @@ public sealed class RecordLink : TenantScopedEntity
     /// <c>TaskDependency</c> keeps it: an auditable "when."
     /// </summary>
     public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>
+    /// MOD-0357 S4 (pack §8.5, §13 K11) — set ONLY by the meeting→task bridge commands
+    /// (<c>CreateTaskFromMeetingCommand</c>), null for every other link this collection carries (S2's own
+    /// <c>agenda</c>/manual links have no client-supplied retry key to dedupe). A resubmitted bridge request
+    /// resolves to the SAME row via <c>IRecordLinkRepository.FindByIdempotencyKeyAsync</c> — mirrors
+    /// <see cref="Meeting.IdempotencyKey"/>'s own shape exactly, one level down (a link, not a meeting).
+    ///
+    /// <para><b>Not enforced as a unique index, unlike <see cref="Meeting.IdempotencyKey"/>.</b> Multiple rows
+    /// legitimately carry a null value here (every non-bridge link), and Mongo's unique index treats an explicit
+    /// null the same as any other value — a partial-filter index would be needed to allow many nulls while still
+    /// forbidding two equal non-null keys, and this slice does not add one (see the schema manifest's own note).
+    /// The check-before-create in the bridge handler is therefore the only guarantee for THIS field; the existing
+    /// six-value unique index remains the storage-level guarantee for the link itself.</para>
+    /// </summary>
+    public string? IdempotencyKey { get; set; }
 }
 
 /// <summary>The module codes this slice actually writes or reads. Not a closed enum — see <see cref="RecordLink.SourceModuleCode"/>.</summary>

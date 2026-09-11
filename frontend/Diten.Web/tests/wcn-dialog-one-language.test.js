@@ -293,8 +293,10 @@ describe("a field gets a glyph only when the glyph says something", () => {
      * the dialog it opened drew a speech bubble. `inboxActionIcon` is the product's one dictionary and both
      * surfaces read it. Only the SNOOZE keeps a hand-named glyph, and it is not opened by an action.
      */
+    // MOD-0357 S4 — review meeting became a two-step flow (type, then date/time); both steps read the SAME
+    // dictionary, which is why this grew from 3 to 4 rather than a dialog starting to name its own glyph.
     expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length,
-      "an action dialog started choosing its own picture").toBe(3);
+      "an action dialog started choosing its own picture").toBe(4);
     expect(APP, "the snooze moon is not action-driven and stays").toContain("icon: 'bx-moon'");
   });
 });

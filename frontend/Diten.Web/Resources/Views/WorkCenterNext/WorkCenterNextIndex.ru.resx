@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Дата и время встречи</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Тип совещания</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Выберите тип совещания для планирования.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Типы совещаний ещё не настроены. Попросите администратора добавить тип.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Это создаёт реальное совещание в модуле «Совещания», связанное с этой задачей.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Обзор закрытия III квартала</value>
   </data>
@@ -1542,6 +1554,9 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Ожидание…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Запланировать совещание по обзору</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Вернуть</value>

@@ -30,6 +30,16 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.TargetRecordId)
                         .Ascending(x => x.IsDeleted),
                     new CreateIndexOptions { Name = "ix_meeting_record_links_tenant_target" }),
+                // MOD-0357 S4 (K11) — lookup support for the bridge's own idempotency check, NOT unique: unlike
+                // Meeting.IdempotencyKey (always set), this field is null on every non-bridge link, and Mongo's
+                // unique index treats explicit null as a colliding value across documents. A partial-filter
+                // unique index would fix that but is not added this slice — see RecordLink.IdempotencyKey's own
+                // doc comment for the accepted trade-off (check-before-create is the only guarantee here).
+                new CreateIndexModel<RecordLink>(
+                    Builders<RecordLink>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.IdempotencyKey),
+                    new CreateIndexOptions { Name = "ix_meeting_record_links_tenant_idempotency_key" }),
                 // A soft-deleted row must not collide with a freshly re-created identical link, so IsDeleted
                 // joins the unique key — exactly the same reasoning every other tenant-unique index in this
                 // manifest already applies (e.g. WorkingCalendar's scope+country+year+code).

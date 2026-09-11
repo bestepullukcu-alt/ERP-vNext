@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Toplantı tarihi ve saati</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Toplantı türü</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Planlanacak toplantının türünü seçin.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Henüz tanımlı bir toplantı türü yok. Bir yöneticiden eklemesini isteyin.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Bu işlem, Toplantılar modülünde bu göreve bağlı gerçek bir toplantı oluşturur.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Q3 kapanış gözden geçirme</value>
   </data>
@@ -1542,6 +1554,9 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Bilgi bekle</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>İnceleme toplantısı planla</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>İade et</value>

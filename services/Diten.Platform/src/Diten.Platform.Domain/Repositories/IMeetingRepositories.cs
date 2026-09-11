@@ -27,6 +27,11 @@ public interface IRecordLinkRepository
         string targetModuleCode, Guid targetRecordId,
         string linkType, CancellationToken ct = default);
 
+    /// <summary>MOD-0357 S4 (K11) — the bridge's own idempotency check, the twin of
+    /// <see cref="IMeetingRepository.FindByIdempotencyKeyAsync"/>. `null` means this exact bridge request has
+    /// never been processed for this tenant.</summary>
+    Task<RecordLink?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default);
+
     /// <summary>
     /// K11, race-safe: finds the existing row for <paramref name="candidate"/>'s six values, or inserts it.
     /// TWO concurrent callers finding nothing must not both insert — the unique compound index

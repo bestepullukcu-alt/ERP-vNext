@@ -204,3 +204,12 @@ public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, stri
 public sealed record GetTaskTypeGoverningDocumentsQuery(
     Guid TaskTypeId, string? OrganizationCode, string CorrelationId)
     : IRequest<Response<TaskTypeGoverningDocumentsDto>>;
+
+/// <summary>
+/// MOD-0357 S4 — the "link an existing task" picker's own typeahead (pack §7 "two narrow touches"). Tenant-
+/// scoped, title-contains, cancelled tasks excluded (a called-off task is not something a meeting should link
+/// forward to), capped at <see cref="Limit"/>. Mirrors <see cref="SearchDocumentReferencesQuery"/>'s shape —
+/// the closest existing term+limit lookup — rather than opening a second one.
+/// </summary>
+public sealed record GetTaskLinkCandidatesQuery(string? Term, int Limit, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskLinkCandidateDto>>>;

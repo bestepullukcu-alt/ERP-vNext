@@ -1512,3 +1512,7 @@ public sealed record TaskTemplateDto(
     int Version,
     DateTimeOffset CreatedAt,
     DateTimeOffset? UpdatedAt);
+
+/// <summary>MOD-0357 S4 — one row of the "link an existing task" picker. Deliberately lighter than
+/// <see cref="TaskItemListItemDto"/>: the picker asks one question ("which task?"), not the whole list shape.</summary>
+public sealed record TaskLinkCandidateDto(Guid Id, string Title);

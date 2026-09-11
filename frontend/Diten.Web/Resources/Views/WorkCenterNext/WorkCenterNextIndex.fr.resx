@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Date et heure de la réunion</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Type de réunion</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Choisissez le type de réunion à planifier.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Aucun type de réunion n'est encore configuré. Demandez à un administrateur d'en ajouter un.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Cette action crée une réunion réelle dans Réunions, liée à cette tâche.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Revue de clôture T3</value>
   </data>
@@ -1542,6 +1554,9 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>En attente de…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Planifier une réunion de revue</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Renvoyer</value>

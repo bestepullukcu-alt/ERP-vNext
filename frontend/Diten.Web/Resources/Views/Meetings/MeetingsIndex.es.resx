@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>Todavía no hay tareas vinculadas a esta reunión.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Orden del día</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>Todavía no hay puntos en el orden del día.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Crear tarea</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Vincular tarea existente</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Crear una tarea a partir de esta línea</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Título de la tarea</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>Se requiere un título de tarea.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Responsable</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Yo mismo</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Fecha de vencimiento</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Tarea</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Buscar tareas para vincular</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Elija una tarea para vincular.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Tarea creada y vinculada a esta reunión.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Tarea vinculada a esta reunión.</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Información de la reunión</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>No se pudo encontrar este tipo de reunión.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Ya existe un tipo de reunión con este nombre.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Este tipo de reunión está en uso por una reunión y no se puede eliminar.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Esta tarea ya está vinculada a esta reunión.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Ya hay una reunión de revisión programada para esta tarea.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>

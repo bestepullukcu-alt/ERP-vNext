@@ -47,6 +47,10 @@ public static class MeetingReasonCodes
     public const string TypeNotFound = "MEETING_TYPE_NOT_FOUND";
     public const string TypeNameDuplicate = "MEETING_TYPE_NAME_DUPLICATE";
     public const string TypeInUse = "MEETING_TYPE_IN_USE";
+
+    // ── S4 — the meeting↔task bridge ────────────────────────────────────────────────────────────────────────
+    public const string TaskAlreadyLinked = "MEETING_TASK_ALREADY_LINKED";
+    public const string ReviewAlreadyScheduled = "MEETING_REVIEW_ALREADY_SCHEDULED";
 }
 
 public static class MeetingFieldLimits
@@ -196,3 +200,50 @@ public sealed record MeetingTypeDto(
 /// S8 — <see cref="AgendaTemplate"/> is carried here too (additive) so the Create/Details flow can pre-fill a
 /// new meeting's agenda from its type (pack K8) without a second round trip through the manage-only endpoint.</summary>
 public sealed record MeetingTypeLookupItemDto(Guid Id, string Name, IReadOnlyList<string> AgendaTemplate);
+
+// ── S4 — the meeting↔task bridge (pack §3 Commands "bridge", §7, §13, K1/K2/K3/K9/K11) ────────────────────────
+
+/// <summary>
+/// "Create-and-link" — delegates to MOD-0024's own <c>CreateTaskItemCommand</c> unchanged (K2: no second create
+/// path, no new field on <c>TaskItem</c>). <paramref name="TaskTypeId"/> falls back to the meeting's own
+/// <c>MeetingType.DefaultActionTaskTypeId</c> when null. <paramref name="IdempotencyKey"/> is CALLER-supplied
+/// (K11) — see <see cref="Services.IMeetingIdempotencyKeyResolver.ResolveForTaskBridge"/> for why this bridge
+/// needs one, unlike meeting creation's own server-derived key.
+/// </summary>
+public sealed record CreateTaskFromMeetingRequest(
+    string Title,
+    string? Description,
+    Guid? AssigneeUserId,
+    DateTimeOffset? DueAt,
+    Guid? AgendaItemId,
+    Guid? TaskTypeId,
+    string IdempotencyKey);
+
+/// <summary>The bridge's own minimal result — just enough for the caller to redraw the linked-tasks list and
+/// (when <paramref name="AgendaItemId"/> was supplied) know which agenda row now carries the link.</summary>
+public sealed record CreateTaskFromMeetingResultDto(Guid TaskId, Guid RecordLinkId, Guid? AgendaItemId);
+
+/// <summary>Links an EXISTING MOD-0024 task to this meeting — always <c>LinkType: "agenda"</c> (pack §17.4).
+/// The task must exist and belong to this tenant, or the caller gets 404 (never a cross-tenant existence
+/// leak); already-linked is 409 <see cref="MeetingReasonCodes.TaskAlreadyLinked"/>, not a silent no-op — the
+/// caller asked to link a SPECIFIC task and deserves to know it already was.</summary>
+public sealed record LinkExistingTaskRequest(Guid TaskId, Guid? AgendaItemId);
+
+/// <summary>The wire body for the link-existing-task endpoint — <c>TaskId</c> travels in the ROUTE
+/// (<c>POST .../tasks/{taskId}/link</c>), never duplicated in the body.</summary>
+public sealed record LinkExistingTaskRequestBody(Guid? AgendaItemId);
+
+/// <summary>
+/// The receiving side of MOD-0024's <c>scheduleReviewMeeting</c> work-item action (pack §7). Delegates to the
+/// SAME <c>CreateMeetingCommand</c> path a Create-page meeting uses (organizer = the acting user, the same
+/// <c>MeetingEligibility</c> check) — no second meeting-creation path either. <paramref name="Title"/> defaults
+/// to "Review: &lt;task title&gt;" when omitted.
+/// </summary>
+public sealed record ScheduleReviewMeetingForTaskRequest(
+    Guid MeetingTypeId,
+    DateTimeOffset StartAt,
+    DateTimeOffset EndAt,
+    string? Title,
+    string IdempotencyKey);
+
+public sealed record ScheduleReviewMeetingForTaskResultDto(Guid MeetingId, Guid RecordLinkId);

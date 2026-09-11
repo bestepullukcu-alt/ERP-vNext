@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>No tasks are linked to this meeting yet.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Agenda</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>No agenda items yet.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Create task</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Link existing task</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Create a task from this line</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Task title</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>A task title is required.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Assignee</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Myself</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Due date</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Task</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Search tasks to link</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Choose a task to link.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Task created and linked to this meeting.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Task linked to this meeting.</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Meeting Details</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>This meeting type could not be found.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>A meeting type with this name already exists.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>This meeting type is used by a meeting and cannot be deleted.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>This task is already linked to this meeting.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>A review meeting is already scheduled for this task.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>

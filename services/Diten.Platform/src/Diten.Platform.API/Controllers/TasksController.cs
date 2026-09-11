@@ -503,6 +503,19 @@ public sealed class TasksController : CustomBaseController
     }
 
     /// <summary>
+    /// MOD-0357 S4 — the "link an existing task" picker's typeahead. Guarded by <c>Read</c> alone: choosing a
+    /// task to link is not managing it, the same posture the meeting-type dropdown already takes for Meetings.
+    /// </summary>
+    [HttpGet("lookups/link-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetLinkCandidates(
+        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskLinkCandidatesQuery(term, limit, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
     /// DCP-005 slice 3 — the governing documents a task type suggests, resolved against the current register.
     ///
     /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission as the search, and that is a decision

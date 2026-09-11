@@ -75,6 +75,21 @@
         Agenda = Localizer["Agenda"].Value,
         NoAgendaItems = Localizer["NoAgendaItems"].Value,
 
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        CreateTaskFromMeeting = Localizer["CreateTaskFromMeeting"].Value,
+        LinkExistingTask = Localizer["LinkExistingTask"].Value,
+        CreateTaskFromAgendaItem = Localizer["CreateTaskFromAgendaItem"].Value,
+        TaskTitleLabel = Localizer["TaskTitleLabel"].Value,
+        TaskTitleRequired = Localizer["TaskTitleRequired"].Value,
+        TaskAssigneeLabel = Localizer["TaskAssigneeLabel"].Value,
+        TaskAssigneeSelf = Localizer["TaskAssigneeSelf"].Value,
+        TaskDueAtLabel = Localizer["TaskDueAtLabel"].Value,
+        LinkExistingTaskLabel = Localizer["LinkExistingTaskLabel"].Value,
+        LinkExistingTaskPlaceholder = Localizer["LinkExistingTaskPlaceholder"].Value,
+        LinkExistingTaskRequired = Localizer["LinkExistingTaskRequired"].Value,
+        ToastTaskCreated = Localizer["ToastTaskCreated"].Value,
+        ToastTaskLinked = Localizer["ToastTaskLinked"].Value,
+
         // ── error-code bridge (BL-040/BL-351 pattern) — every MEETING_*/MEETING_TYPE_* reason code Platform
         // can return, mapped to its own sentence; AC6's guard asserts this list is exhaustive and unique. ──
         ErrorMeetingNotFound = Localizer["ErrorMeetingNotFound"].Value,
@@ -94,6 +109,8 @@
         ErrorTypeNotFound = Localizer["ErrorTypeNotFound"].Value,
         ErrorTypeNameDuplicate = Localizer["ErrorTypeNameDuplicate"].Value,
         ErrorTypeInUse = Localizer["ErrorTypeInUse"].Value,
+        ErrorTaskAlreadyLinked = Localizer["ErrorTaskAlreadyLinked"].Value,
+        ErrorReviewAlreadyScheduled = Localizer["ErrorReviewAlreadyScheduled"].Value,
         ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
         ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
         FormValidationError = Localizer["FormValidationError"].Value,

@@ -619,7 +619,36 @@ public sealed record WorkItemProjectionDto(
     /// so a silent provider's items are never dropped.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? ViewerRelation = null);
+    string? ViewerRelation = null,
+    /// <summary>
+    /// MOD-0357 S4 — the receiving side of the <c>scheduleReviewMeeting</c> action (pack §7). Modelled beside
+    /// <see cref="Gates"/> per that record's own doc comment.
+    ///
+    /// <para><b><c>Requirement</c> is fixed at <c>"optional"</c> in this slice, not a real decision.</b> No
+    /// <c>TaskType.ReviewMeetingPolicy</c> field exists yet to read a real <c>notAllowed</c>/<c>required</c>
+    /// value from (pack §19, "OLMAYAN" — MOD-0357-S4 does not invent one); a later slice that adds the real
+    /// per-type field changes this VALUE, never this shape. Because it is always <c>"optional"</c>, K3's own
+    /// approve/signoff-blocking clause (requirement <c>required</c> ⇒ disabled decision) never triggers this
+    /// slice — nothing here touches <c>Gates</c> or any decision action.</para>
+    ///
+    /// <para>Present on every task (unconditional, like the fixed value above); omitted only when this
+    /// provider instance was built without the record-link seam (the two optional constructor parameters are
+    /// null), so a caller that has not wired the bridge yet serializes unchanged.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemReviewMeetingPolicyDto? ReviewMeetingPolicy = null);
+
+/// <summary>
+/// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/
+/// ScheduledAt come from the "reviewMeeting"-type RecordLink when one exists — absent means none is scheduled
+/// yet, which is also the condition that keeps the <c>scheduleReviewMeeting</c> action offered.
+/// </summary>
+public sealed record WorkItemReviewMeetingPolicyDto(
+    string Requirement,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? MeetingId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? ScheduledAt = null);
 
 /// <summary>
 /// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide

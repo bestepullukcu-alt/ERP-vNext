@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>Bu toplantıya bağlı bir görev yok.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Gündem</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>Henüz gündem maddesi yok.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Görev oluştur</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Mevcut görevi bağla</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Bu satırdan görev oluştur</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Görev başlığı</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>Görev başlığı gereklidir.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Atanan kişi</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Ben</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Görev</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Bağlanacak görevi arayın</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Bağlanacak bir görev seçin.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Görev oluşturuldu ve bu toplantıya bağlandı.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Görev bu toplantıya bağlandı.</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Toplantı Bilgileri</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Bu toplantı türü bulunamadı.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Bu adla bir toplantı türü zaten var.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Bu toplantı türü bir toplantı tarafından kullanılıyor ve silinemez.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Bu görev bu toplantıya zaten bağlı.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Bu görev için zaten bir gözden geçirme toplantısı planlanmış.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>

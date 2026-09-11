@@ -67,6 +67,14 @@ public sealed class RecordLinkRepository : TenantRepository<RecordLink>, IRecord
         }
     }
 
+    public async Task<RecordLink?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+    {
+        var filter = Builders<RecordLink>.Filter.And(
+            ExecutionFilter,
+            Builders<RecordLink>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
     public async Task<IReadOnlyList<RecordLink>> ListBySourceAsync(
         IReadOnlyCollection<Guid> sourceRecordIds, CancellationToken ct = default)
     {

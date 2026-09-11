@@ -49,6 +49,19 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>لا توجد مهام مرتبطة بهذا الاجتماع بعد.</value></data>
   <data name="Agenda" xml:space="preserve"><value>جدول الأعمال</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>لا توجد بنود في جدول الأعمال بعد.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>إنشاء مهمة</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>ربط مهمة موجودة</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>إنشاء مهمة من هذا السطر</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>عنوان المهمة</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>عنوان المهمة مطلوب.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>المكلَّف</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>أنا نفسي</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>المهمة</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>البحث عن مهام للربط</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>اختر مهمة للربط.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>تم إنشاء المهمة وربطها بهذا الاجتماع.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>تم ربط المهمة بهذا الاجتماع.</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>
@@ -69,6 +82,8 @@
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>تعذر العثور على نوع الاجتماع هذا.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>يوجد بالفعل نوع اجتماع بهذا الاسم.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>نوع الاجتماع هذا مستخدم من قبل اجتماع ولا يمكن حذفه.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>هذه المهمة مرتبطة بهذا الاجتماع بالفعل.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>تم جدولة اجتماع مراجعة لهذه المهمة بالفعل.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>

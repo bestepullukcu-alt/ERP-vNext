@@ -127,6 +127,20 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiGetLinkedTasks(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: false);
 
+    // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
+
+    [HttpPost("api/{id:guid}/tasks")]
+    public Task<IActionResult> ApiCreateTaskFromMeeting(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: true);
+
+    [HttpPost("api/{id:guid}/tasks/{taskId:guid}/link")]
+    public Task<IActionResult> ApiLinkExistingTask(Guid id, Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks/{taskId}/link", readBody: true);
+
+    [HttpPost("api/tasks/{taskId:guid}/schedule-review-meeting")]
+    public Task<IActionResult> ApiScheduleReviewMeetingForTask(Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/tasks/{taskId}/schedule-review-meeting", readBody: true);
+
     [HttpGet("api/lookups/attendees")]
     public Task<IActionResult> ApiLookupAttendees()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/attendees", readBody: false);

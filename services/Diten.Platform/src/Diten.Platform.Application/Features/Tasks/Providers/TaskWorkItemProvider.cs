@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
 using Diten.Platform.Application.Features.WorkAggregation.Services;
+using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
@@ -55,6 +56,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionReturnKey = "WorkAggregation_Action_Return";
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
     private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
+    private const string ActionScheduleReviewMeetingKey = "WorkAggregation_Action_ScheduleReviewMeeting";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -162,11 +164,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         IRecordLinkService? recordLinks = null,
         IRelatedRecordResolverRegistry? relatedRecordResolvers = null,
-        ILogger<TaskWorkItemProvider>? logger = null)
+        ILogger<TaskWorkItemProvider>? logger = null,
+        IMeetingRepository? meetingRepository = null)
     {
         _recordLinks = recordLinks;
         _relatedRecordResolvers = relatedRecordResolvers;
         _logger = logger;
+        _meetings = meetingRepository;
         _teamResolver = teamResolver;
         _sla = sla;
         _fieldDefinitions = fieldDefinitions;
@@ -207,6 +211,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>Optional — a missing logger only means the "no resolver for this module code" warning (AC5)
     /// is not written anywhere; it never changes what is projected.</summary>
     private readonly ILogger<TaskWorkItemProvider>? _logger;
+
+    /// <summary>MOD-0357 S4 — reads the linked meeting's <c>StartAt</c> for <c>reviewMeetingPolicy.scheduledAt</c>.
+    /// Null ⇒ <c>scheduledAt</c> is simply omitted (the policy's <c>requirement</c>/<c>meetingId</c> still
+    /// project from <see cref="_recordLinks"/> alone); every existing test predates this and passes neither.</summary>
+    private readonly IMeetingRepository? _meetings;
 
     /// <summary>
     /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
@@ -443,6 +452,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         var relatedRecordsByTask = await ResolveRelatedRecordsAsync(taskIds, ct);
 
+        // MOD-0357 S4 — the review-meeting policy's own data, batched the same way.
+        var reviewMeetingByTask = await ResolveReviewMeetingLinksAsync(taskIds, ct);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -483,7 +495,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     personalByTask.GetValueOrDefault(t.Id),
                     watchersByTask.GetValueOrDefault(t.Id, []),
                     initiatorOnly.Contains(t.Id),
-                    relatedRecordsByTask.GetValueOrDefault(t.Id));
+                    relatedRecordsByTask.GetValueOrDefault(t.Id),
+                    reviewMeetingByTask.TryGetValue(t.Id, out var reviewMeetingLink)
+                        ? reviewMeetingLink
+                        : ((RecordLink Link, Meeting? Meeting)?)null);
             })
             .ToList();
     }
@@ -521,7 +536,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool initiatorOnly = false,
         // MOD-0357 S1 — this task's resolved related records, already capped at the contract's own limit.
         // Null (not merely empty) means "no capability" — see ResolveCapabilities.
-        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null)
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null,
+        // MOD-0357 S4 — this task's live "reviewMeeting" link, if any, plus the linked meeting (when the
+        // repository seam is wired). Null means none is scheduled yet — the condition that keeps
+        // scheduleReviewMeeting offered.
+        (RecordLink Link, Meeting? Meeting)? reviewMeetingLink = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -631,6 +650,30 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                             : DisabledDependencyKey)
                     : action)
                 .ToList();
+
+        // MOD-0357 S4 — the receiving side of scheduleReviewMeeting (pack §7, K3). Present on every task
+        // (Requirement fixed at "optional" this slice — see the DTO's own doc comment for why); the ACTION
+        // itself is offered only while nothing is scheduled yet (reviewMeetingLink is null) and the task is not
+        // terminal, to the holder or the requester only — the same two relationships every holder/requester act
+        // in this method already keys off. Read-gated: the server's own decisive gate is
+        // MeetingPermissions.Create on the receiving endpoint, checked there, never here (this is a hint).
+        var reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
+            Requirement: "optional",
+            MeetingId: reviewMeetingLink?.Link.SourceRecordId.ToString(),
+            ScheduledAt: reviewMeetingLink?.Meeting?.StartAt);
+
+        if (!terminal && reviewMeetingLink is null)
+        {
+            var isRequesterForReview = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
+            var isHolderForReview = task.AssigneeUserId == actor.UserId;
+            if (isHolderForReview || isRequesterForReview)
+            {
+                actions = actions
+                    .Append(Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Read)))
+                    .ToList();
+                overflowActionCodes = overflowActionCodes.Append("scheduleReviewMeeting").ToList();
+            }
+        }
 
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
@@ -839,7 +882,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             ReminderLeadDays: task.ReminderLeadDays,
             // BL-016 — stated ONLY when the shell cannot work it out for itself; see the DTO for why the holder
             // and pool cases are deliberately silent.
-            ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null);
+            ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null,
+            ReviewMeetingPolicy: reviewMeetingPolicy);
     }
 
     /// <summary>
@@ -1305,6 +1349,45 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }
 
         return byTask;
+    }
+
+    /// <summary>
+    /// MOD-0357 S4 — the "reviewMeeting"-type link, per task, plus the linked meeting's own <c>StartAt</c> for
+    /// <c>scheduledAt</c>. A SEPARATE target-side read from <see cref="ResolveRelatedRecordsAsync"/>'s own
+    /// (that method's <c>byTarget</c> is local to it and already resolved into titles, not raw links) — one
+    /// extra indexed query for the whole page, not one per task.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, (RecordLink Link, Meeting? Meeting)>> ResolveReviewMeetingLinksAsync(
+        IReadOnlyList<Guid> taskIds, CancellationToken ct)
+    {
+        if (_recordLinks is null || taskIds.Count == 0)
+        {
+            return new Dictionary<Guid, (RecordLink Link, Meeting? Meeting)>();
+        }
+
+        var links = await _recordLinks.ListByTargetAsync(taskIds, ct);
+        var reviewLinks = links
+            .Where(link => link.LinkType == RecordLinkTypes.ReviewMeeting
+                            && link.SourceModuleCode == RecordLinkModuleCodes.Meetings)
+            // A task may in principle collect more than one over time if a prior one was soft-deleted; K3 keeps
+            // exactly one LIVE link per task, so the live set here is at most one per task already — first is
+            // fine, and there is no created-at field to prefer a "latest" by.
+            .ToList();
+        if (reviewLinks.Count == 0)
+        {
+            return new Dictionary<Guid, (RecordLink Link, Meeting? Meeting)>();
+        }
+
+        var meetingsById = new Dictionary<Guid, Meeting>();
+        if (_meetings is not null)
+        {
+            var meetingIds = reviewLinks.Select(link => link.SourceRecordId).Distinct().ToList();
+            meetingsById = (await _meetings.ListByIdsAsync(meetingIds, ct)).ToDictionary(m => m.Id);
+        }
+
+        return reviewLinks.ToDictionary(
+            link => link.TargetRecordId,
+            link => (link, meetingsById.TryGetValue(link.SourceRecordId, out var meeting) ? meeting : null));
     }
 
     private static WorkItemSubtasksDto ToSubtasks(
