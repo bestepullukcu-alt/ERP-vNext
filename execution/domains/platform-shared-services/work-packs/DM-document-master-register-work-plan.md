@@ -43,7 +43,10 @@
 - `Citable = IsOperationallyEffective` (effectiveness gate ile aynı yargı kaynağı).
 - İlk teslim: register-backed minimal impl + testler; tohum boşken Unresolved/boş döner ama **şekil sabit** → onlar fixture/mock ile repoint'e başlar. **Hazır olunca haber ver.**
 
-### DM-1 — Register ingest (Adım 0) · paralel · **+ AUTO-SEED (kullanıcı eklentisi 2026-09-10)**
+### DM-1 — ✅ **CT-ACCEPTED (E2, 2026-09-10)** — commits DM-1a `98738949` + DM-1b `51c16343` (branch `feature/dm-document-master-register`, base 8a8190ac)
+> Register ingest (command/handler, parser reuse, idempotent upsert, DM-0 eşlemesi, fail-closed 422) + tenant-agnostik config auto-seed (KARAR-2, `DocumentRegisterSeedOptions`/`Gate`/`Seed`, leakage-guard, hardcode yok). CT doğrulaması: 17/17 kendi testi (gerçek 358-satır CSV → 358 created/36 blocked/0 Effective/Guid.Empty) + baseline-diff 0 gerçek regresyon (WP-DM-1 §37). ⚠ "Executed(1)" bayraklı Draft (QA). E4 (fleet canlı seed + effectiveness:batch) opsiyonel/pending. **PR açılmadı** (DM branch local — kullanıcı kararı).
+
+### DM-1 (orijinal) — Register ingest (Adım 0) · paralel · **+ AUTO-SEED (kullanıcı eklentisi 2026-09-10)**
 - 358 satır CSV (`docs/integration/gmg-qms/GMG_ERP_Document_Reference_List_2026-08-24.csv`) → `DocumentMasterRegisterEntry`; **`DocumentReferenceListParser` reuse**; §3 alan eşlemesi; `IsSystemAllocated=false`; **`CollectionInstanceId=Guid.Empty`** (klasörsüz projeksiyon, §8).
 - Idempotent upsert by `(TenantId, PermanentUid)` (duplicate guard var).
 - **⭐ AUTO-SEED (default):** liste **otomatik** register'a yüklensin ki **push sonrası arkadaş TaskCenter repoint'ini gerçek veriyle** yapabilsin (effectiveness:batch / citation gerçek Effective/Blocked dönsün, boş değil). Yani DM-1 tek-seferlik script değil, **idempotent auto-seed** olarak da koşulur.
@@ -54,7 +57,10 @@
 ### DM-2b — Citation port gerçek implementasyon
 - `SearchAsync` (register repo term filtresi; lookup'ın blocked-görünür/seçilemez davranışını aynala) + `ResolveAsync` (batch `$in` — **`GetByPermanentUidsAsync` reuse**, bu branch'te MEVCUT). Ingest indikten sonra canlı doğrulanır.
 
-### DM-3 — Effectiveness · hazır, reuse (kod yok)
+### DM-3 — ✅ **CT-VERIFIED (E4 authenticated, 2026-09-10) — kod yok, reuse**
+> `effectiveness:batch` canlı authenticated (dev-token, seed'li 97c5/358) → gerçek **Blocked/Unresolved döndü, 0 Effective** (UID-0000161/200/201→Blocked(Draft) · yok→Unresolved). Disjoint + fail-closed kanıtlı. DM-2b `citations:resolve`/`search` de aynı turda HTTP 200 gerçek veriyle doğrulandı. Bugünkü doğru gerçek: 0 Effective → hepsi non-citable.
+
+### DM-3 (orijinal) — Effectiveness · hazır, reuse (kod yok)
 - effectiveness resolver + `GetByPermanentUidsAsync` **bu branch'te mevcut**. Tohumdan sonra `effectiveness:batch` gerçek Effective/Blocked döndüğünü doğrula. Onların Adım 2'si bu portu tüketir → **imza değiştirme, stabil tut**.
 
 ### DM-4 — Gerçek dosyalar (PDF/Word) · ayrı WP, sonra
