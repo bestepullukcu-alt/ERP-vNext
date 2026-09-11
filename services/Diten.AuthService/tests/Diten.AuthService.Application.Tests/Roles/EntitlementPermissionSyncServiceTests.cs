@@ -162,6 +162,11 @@ public sealed class EntitlementPermissionSyncServiceTests
     [InlineData("PPM")]
     [InlineData("ppm")]
     [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
     public async Task GrantModule_is_a_no_op_for_any_case_variant_of_PPM(string moduleCode)
     {
         var (svc, _, rolePerms) = BuildWith(CatalogWithPpm());
@@ -175,6 +180,11 @@ public sealed class EntitlementPermissionSyncServiceTests
     [InlineData("PPM")]
     [InlineData("ppm")]
     [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
     public async Task GrantModuleWithKeys_is_a_no_op_for_any_case_variant_of_PPM(string moduleCode)
     {
         var (svc, _, rolePerms) = BuildWith(CatalogWithPpm());
@@ -188,6 +198,11 @@ public sealed class EntitlementPermissionSyncServiceTests
     [InlineData("PPM")]
     [InlineData("ppm")]
     [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
     public async Task RevokeModule_is_a_no_op_for_any_case_variant_of_PPM_and_leaves_other_grants_untouched(string moduleCode)
     {
         var (svc, roles, rolePerms, _) = Build();

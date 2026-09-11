@@ -21,7 +21,9 @@ public sealed class PpmEntitlementPermissionPolicy : IPpmEntitlementPermissionPo
     // gates only. Deliberately separate from Applies (Ordinal "PPM"), which stays exact-case for the
     // resolver's canonical-module acceptance; broadening Applies itself would change resolver behavior.
     public bool IsPpmModuleCodeAnyCase(string? moduleCode) =>
-        string.Equals(moduleCode, ModuleCode, StringComparison.OrdinalIgnoreCase);
+        // Trim as well: the sync service hands this the normalized code, but a recognizer that says "any case"
+        // must not be defeated by padding if a future caller passes the raw code.
+        string.Equals(moduleCode?.Trim(), ModuleCode, StringComparison.OrdinalIgnoreCase);
 
     public bool AppliesToPermission(string? permissionKey) =>
         !string.IsNullOrWhiteSpace(permissionKey)

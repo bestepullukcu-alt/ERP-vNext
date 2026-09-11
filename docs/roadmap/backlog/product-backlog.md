@@ -4786,6 +4786,9 @@ DURUM: KAPALI (CT, 2026-09-11, `0bf3b283`) · SAHİP: CT (altyapı) · ÖLÇÜLD
 `EntitlementPermissionSyncService`'in üç kapısında (`GrantModuleAsync`, `GrantModuleWithKeysAsync`, `RevokeModuleAsync`) kullanıldı. Resolver süzme
 matrisi testle birebir. CT bulgusu: ajanın grant-tarafı "PPM/ppm/Ppm" teorileri boş kanıttı (paylaşılan test kataloğunda PPM izni yoktu; iki kapı
 Ordinal'e döndürülünce 38 test yeşil kaldı) → katalog PPM izinleriyle genişletildi, aynı sabotaj 4 vaka kırmızı.
+**Ek kapanış (CT, 2026-09-11, Codex'in 0bf3b283 okuması):** kapı ham kodla soruluyordu, `IsPpmModuleCodeAnyCase` yalnız harf duyarsızdı; `" PPM "` gibi boşluklu
+kod kapıyı geçip `NormalizeModuleCode` sonrası `ppm` olarak işlenebilirdi. Düzeltme: üç kapı (grant, grant-with-keys, revoke) önce normalize eder, sonra sorar;
+tanıyıcı ayrıca Trim yapar. Teoriler `" PPM "`, `" ppm "`, `"\tPpm\n"` ile genişletildi (gerçek PPM kataloğu); ham-kod kapısına dönülünce 9 vaka kırmızı.
 
 `PpmEntitlementPermissionPolicy.Applies` (`:16-17`) `StringComparison.Ordinal` ile `"PPM"` arar.
 `EntitlementPermissionSyncService` (`:55,:75,:185`) kapıyı `NormalizeModuleCode` (trim + lowercase,
