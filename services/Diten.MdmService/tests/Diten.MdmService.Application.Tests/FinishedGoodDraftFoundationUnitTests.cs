@@ -131,6 +131,30 @@ public sealed class FinishedGoodDraftFoundationUnitTests
     }
 
     [Fact]
+    public void Finished_good_lifecycle_audit_ordinals_are_explicit_unique_and_preserve_historical_gaps()
+    {
+        var expected = new Dictionary<ProductAuditOperation, int>
+        {
+            [ProductAuditOperation.FinishedGoodDraftCreated] = 9,
+            [ProductAuditOperation.FinishedGoodIdentitySubmitted] = 32,
+            [ProductAuditOperation.FinishedGoodIdentityApproved] = 33,
+            [ProductAuditOperation.FinishedGoodIdentityRejected] = 34,
+            [ProductAuditOperation.FinishedGoodIdentityRetired] = 35,
+            [ProductAuditOperation.FinishedGoodDraftCancelled] = 72,
+            [ProductAuditOperation.FinishedGoodIdentityApprovalWithdrawn] = 73,
+            [ProductAuditOperation.FinishedGoodRetirementRequested] = 74,
+            [ProductAuditOperation.FinishedGoodRetirementRejected] = 75,
+            [ProductAuditOperation.FinishedGoodRetirementCancelled] = 76
+        };
+
+        Assert.All(expected, pair => Assert.Equal(pair.Value, (int)pair.Key));
+        var allValues = Enum.GetValues<ProductAuditOperation>().Select(value => (int)value).ToArray();
+        Assert.Equal(allValues.Length, allValues.Distinct().Count());
+        Assert.DoesNotContain(36, allValues);
+        Assert.DoesNotContain(37, allValues);
+    }
+
+    [Fact]
     public void Repository_result_marks_only_explicit_write_outcomes_as_ambiguous()
     {
         var rejected = new FinishedGoodCreateResult(false, null, "FINISHED_GOOD_DUPLICATE_CONFLICT");

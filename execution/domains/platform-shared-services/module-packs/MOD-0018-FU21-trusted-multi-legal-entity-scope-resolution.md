@@ -598,3 +598,35 @@ Tests retain original 22/28/30 configured
 subsets and verify the 32-pair union, exact new pairs, case/module/unknown rejection and client binding.
 No credential, pair configuration or tenant grant is provisioned. MDM consumer integration and its
 real client-provider scope tests are not implied by this Platform prerequisite.
+
+### Finished Good P0A exact lifecycle-pair amendment — approved code-start (2026-09-11)
+
+P0A preserves the existing **32** exact pairs and adds only these five case-sensitive pairs with
+`module_code = product-item-sku-master`:
+
+| FinishedGood operation | Exact scope permission |
+|---|---|
+| Identity submit | `mdm.finished-goods.submit` |
+| Draft cancellation | `mdm.finished-goods.cancel-draft` |
+| Identity approval withdrawal | `mdm.finished-goods.withdraw` |
+| Retirement request | `mdm.finished-goods.request-retirement` |
+| Retirement-request withdrawal | `mdm.finished-goods.withdraw-retirement-request` |
+
+The resulting exact configured union is **37** pairs. The delta authorizes neither a user grant/profile change nor a
+new endpoint or source mutation. Existing direct `tenant_user` credential, tenant, delegated-human subject, client,
+audience, rotation/revocation and configured-subset binding stay unchanged. Wildcard, prefix, case-insensitive match,
+read/create substitution, direct-retire and background-service pairs are rejected.
+
+Implementation evidence required before a later checkpoint: each five exact pair accepted; the pre-existing 32
+preserved; wrong module, permission and case rejected; direct-retire and wildcard rejected; existing
+credential/rotation/revocation behavior retained. This amendment does not provision credentials, grants, tenant
+configuration or a service-account/background-job scope contract, and it does not represent live acceptance.
+
+#### P0A evidence checkpoint — historical execution evidence, not rerun in this checkpoint
+
+The retained Platform focused TRX records **137 passed / 0 failed / 0 skipped**. This documentation checkpoint did
+not rerun it, and did not run real Mongo, the general suite or live acceptance. Its initial 136-test run recorded
+**135 passed / 1 failed**: the new full-37-union assertion incorrectly rejected the pre-existing
+`mdm.finished-goods.read` pair. The final assertion preserves that existing read acceptance while verifying the
+five tabled P0A pairs exactly and rejecting direct-retire, wildcard and case-drift inputs. The intermediate
+test-source diff is not available as retained evidence, so no further source-level explanation is claimed.

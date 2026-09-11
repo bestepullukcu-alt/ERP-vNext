@@ -4556,3 +4556,63 @@ in an independently arranged pre-insert crash case, not follow a successful same
 Its remaining path-count review was interrupted by usage limits and is not represented as completed. The orchestrator
 independently verified 251 unique paths, retention of the original 239, and zero target path-classification mismatches.
 These are documentary/static review results only, not runtime readiness, new approval or executed test evidence.
+
+### 21.12 P0A — Finished Good lifecycle scope/audit foundation — approved bounded code-start (2026-09-11)
+
+This user-approved P0A slice authorizes **only** the five exact human FU21 scope pairs and the strict FinishedGood
+audit enum/map foundation recorded below. It is not a status promotion, full Finished Good lifecycle code-start,
+or evidence that any lifecycle producer, handler, worker, manifest, UI, Gateway route, Auth grant/profile, or live
+acceptance exists.
+
+#### Owner decisions retained verbatim as implementation constraints
+
+- A current, authorized and product/legal-entity-scoped steward may cancel another creator's Draft with a mandatory
+  reason; physical deletion and code reuse remain forbidden.
+- Identity and retirement-request withdrawal remains limited to the operation's own canonical requester; a terminal
+  decision cannot be overwritten.
+- Retirement is requested through WorkCenter; direct-retire UI/API authority is not introduced.
+- A valid WorkCenter terminal decision may be applied in the source service without waiting for the maker to return,
+  but only under a later narrow, explicit and audited background-mutation/recovery authority. Tenant, scope,
+  revocation and fence checks are not bypassed.
+- Later maker/checker separation does not itself void an already valid decision. Current service, tenant, scope,
+  fence and explicit operation-cancellation checks remain mandatory. No global/instant atomic revocation guarantee
+  or numeric implementation window is approved or evidenced.
+- The first later UI slice uses fixed canonical-code ordering; it must not promise alternate sort behavior that UI or
+  Save View cannot execute.
+- Existing FG multiplicity under one GSKU is unchanged; its business rationale remains an open decision, not a
+  verified design or a data-migration authority.
+- No new central audience, grant collection or 6/22 schema budget is approved; the existing 5 collections / 20
+  logical-index budget remains unchanged.
+
+#### P0A exact runtime/test authorization and dependency boundary
+
+The only P0A runtime/test paths are the two FU21 authenticator paths, the two FU01 audit-map paths and the MDM
+`ProductAuditOperation` enum plus its Finished Good foundation unit test. The independent implementation agents
+must retain strict case-sensitive matching, tenant/delegated-human/client/audience binding and fail-closed unknown
+handling. The exact FU01 table records the target addition of nine mappings: historical FinishedGood ordinals
+32–35 and newly allocated ordinals 72–76. The pre-existing `FinishedGoodDraftCreated` ordinal 9 `Create` mapping
+remains separate, yielding ten FinishedGood mappings in total.
+
+| Contract | Exact P0A delta | Explicitly not authorized by P0A |
+|---|---|---|
+| FU21 human scope | Five FinishedGood action pairs; acceptance is not a user grant | wildcard/prefix/read-create substitution, direct-retire or background-service pair |
+| FU01 audit map | Ordinals 72–76 map only as stated in the FU01 amendment; existing 9 and historical 32–35 stay immutable | event producer, transport, delivery worker, new central audit schema or ordinal reuse of 36–37 |
+| Lifecycle authority | Future source application remains gated by a narrow background-authority design and verified evidence | arbitrary service mutation, maker-token reuse, operation/config provisioning or startup activation |
+
+#### P0A evidence checkpoint — historical execution evidence, not rerun in this checkpoint
+
+The retained TRX evidence records Platform focused tests as **137 passed / 0 failed / 0 skipped**, Finished Good
+unit tests as **35 / 0 / 0**, and non-Mongo regressions as **62 / 0 / 0**. These are historical P0A runs, not new
+results from this documentation-only checkpoint. Real Mongo, the general suite and live acceptance were not run.
+
+The first Platform focused run was **135 passed / 1 failed** out of 136 because the newly written full-37-union
+assertion incorrectly rejected the pre-existing `mdm.finished-goods.read` pair. Its acceptance is part of the
+preserved 32-pair contract. The final assertion instead verifies that this existing read pair remains accepted,
+the five specified P0A pairs are exact, and direct-retire, wildcard and case-drift inputs are rejected. The
+intermediate test-source diff is not retained as evidence here; no additional explanation or source-level proof is
+claimed.
+
+Required later evidence is pair acceptance and wrong module/key/case/direct-retire/wildcard rejection; strict map
+acceptance and wrong aggregate/operation/case/numeric rejection; enum collision proof preserving 9, 32–35 and
+leaving 36–37 unused; then scoped build/regression evidence. Historical and future test runs must be reported
+separately. P0A readiness is limited to this foundation and does not make the broader §21 lifecycle ready-for-dev.

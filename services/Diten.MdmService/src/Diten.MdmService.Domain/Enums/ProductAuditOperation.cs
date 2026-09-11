@@ -33,6 +33,10 @@ public enum ProductAuditOperation
     LskuIdentityApproved = 29,
     LskuIdentityRejected = 30,
     LskuIdentityRetired = 31,
+    FinishedGoodIdentitySubmitted = 32,
+    FinishedGoodIdentityApproved = 33,
+    FinishedGoodIdentityRejected = 34,
+    FinishedGoodIdentityRetired = 35,
     GlobalProductDraftUpdated = 38,
     GlobalProductIdentityApprovalWithdrawn = 39,
     GlobalProductCorrectionRequested = 40,
@@ -66,5 +70,10 @@ public enum ProductAuditOperation
     LskuRetirementRejected = 68,
     GskuRetirementRequested = 69,
     GskuRetirementRejected = 70,
-    GskuRetirementManualReconciliationRequired = 71
+    GskuRetirementManualReconciliationRequired = 71,
+    FinishedGoodDraftCancelled = 72,
+    FinishedGoodIdentityApprovalWithdrawn = 73,
+    FinishedGoodRetirementRequested = 74,
+    FinishedGoodRetirementRejected = 75,
+    FinishedGoodRetirementCancelled = 76
 }

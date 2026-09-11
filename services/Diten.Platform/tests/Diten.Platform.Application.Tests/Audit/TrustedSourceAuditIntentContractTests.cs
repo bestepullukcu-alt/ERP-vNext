@@ -49,6 +49,15 @@ public sealed class TrustedSourceAuditIntentContractTests
         yield return ["Gsku", "GskuRetirementManualReconciliationRequired", "Gsku", AuditOperation.LifecycleTransition];
         yield return ["Gsku", "GskuIdentityRetired", "Gsku", AuditOperation.Deactivate];
         yield return ["FinishedGood", "FinishedGoodDraftCreated", "FinishedGood", AuditOperation.Create];
+        yield return ["FinishedGood", "FinishedGoodIdentitySubmitted", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodIdentityApproved", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodIdentityRejected", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodIdentityRetired", "FinishedGood", AuditOperation.Deactivate];
+        yield return ["FinishedGood", "FinishedGoodDraftCancelled", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodIdentityApprovalWithdrawn", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodRetirementRequested", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodRetirementRejected", "FinishedGood", AuditOperation.LifecycleTransition];
+        yield return ["FinishedGood", "FinishedGoodRetirementCancelled", "FinishedGood", AuditOperation.LifecycleTransition];
         yield return ["Lsku", "LskuDraftCreated", "Lsku", AuditOperation.Create];
         yield return ["Lsku", "LskuIdentitySubmitted", "Lsku", AuditOperation.LifecycleTransition];
         yield return ["Lsku", "LskuIdentityApproved", "Lsku", AuditOperation.LifecycleTransition];
@@ -75,6 +84,25 @@ public sealed class TrustedSourceAuditIntentContractTests
         Assert.True(TrustedSourceAuditIntentOperationMap.TryMap(aggregateType, operation, out var actualType, out var actualOperation));
         Assert.Equal(entityType, actualType);
         Assert.Equal(mappedOperation, actualOperation);
+    }
+
+    [Fact]
+    public void Finished_good_map_contains_existing_draft_and_exactly_nine_non_draft_lifecycle_rows()
+    {
+        var field = typeof(TrustedSourceAuditIntentOperationMap).GetField(
+            "Mappings",
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        var mappings = Assert.IsAssignableFrom<IReadOnlyDictionary<(string AggregateType, string Operation), (string EntityType, AuditOperation Operation)>>(
+            field!.GetValue(null));
+        var finishedGoodRows = mappings
+            .Where(pair => pair.Key.AggregateType == "FinishedGood")
+            .ToArray();
+
+        Assert.Equal(10, finishedGoodRows.Length);
+        Assert.Single(finishedGoodRows, pair => pair.Key.Operation == "FinishedGoodDraftCreated"
+            && pair.Value.Operation == AuditOperation.Create);
+        Assert.Equal(9, finishedGoodRows.Count(pair => pair.Key.Operation != "FinishedGoodDraftCreated"));
     }
 
     [Theory]
@@ -110,6 +138,26 @@ public sealed class TrustedSourceAuditIntentContractTests
             Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
         foreach (var invalid in new[] { operation.ToLowerInvariant(), operation + ".extra", ordinal, "9999", "LskuUnknown", "*" })
             Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("Lsku", invalid, out _, out _));
+    }
+
+    [Theory]
+    [InlineData("FinishedGoodIdentitySubmitted", "32")]
+    [InlineData("FinishedGoodIdentityApproved", "33")]
+    [InlineData("FinishedGoodIdentityRejected", "34")]
+    [InlineData("FinishedGoodIdentityRetired", "35")]
+    [InlineData("FinishedGoodDraftCancelled", "72")]
+    [InlineData("FinishedGoodIdentityApprovalWithdrawn", "73")]
+    [InlineData("FinishedGoodRetirementRequested", "74")]
+    [InlineData("FinishedGoodRetirementRejected", "75")]
+    [InlineData("FinishedGoodRetirementCancelled", "76")]
+    public void Finished_good_non_draft_mapping_rejects_wrong_aggregate_case_numeric_and_unknown_combinations(
+        string operation,
+        string ordinal)
+    {
+        foreach (var aggregate in new[] { "GlobalProduct", "Gsku", "Lsku", "ProductDefinitionRevision", "Finishedgood", "FinishedGood " })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap(aggregate, operation, out _, out _));
+        foreach (var invalid in new[] { operation.ToLowerInvariant(), operation + ".extra", ordinal, "72", "9999", "*", "FinishedGoodUnknown" })
+            Assert.False(TrustedSourceAuditIntentOperationMap.TryMap("FinishedGood", invalid, out _, out _));
     }
 
     [Theory]

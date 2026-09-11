@@ -552,3 +552,44 @@ Exact paths:
 Focused contract tests: 89 passed, 0 failed, 0 skipped, including eleven positive ABB pairs and eleven parameterized
 negative cases (wrong aggregate, case drift, numeric aliases, suffixes and unknown operations). Existing mappings
 remain intact. Platform API Release build passed. These are contract tests, not real-Mongo or live intake acceptance.
+
+### Finished Good P0A strict lifecycle audit-map amendment — approved code-start (2026-09-11)
+
+At the P0A target baseline, FinishedGood had only `FinishedGoodDraftCreated` ordinal **9** mapped to central
+`Create`. This P0A target adds exactly nine mappings: historical FinishedGood ordinals **32–35** and newly allocated
+ordinals **72–76**. Each row has source aggregate and entity type `FinishedGood`; the resulting exact target set is
+ten FinishedGood mappings including the retained ordinal 9 `Create` row.
+
+| MDM enum operation | Ordinal | Central action | P0A target addition |
+|---|---:|---|---|
+| `FinishedGoodIdentitySubmitted` | 32 | `LifecycleTransition` | Historical row added to target |
+| `FinishedGoodIdentityApproved` | 33 | `LifecycleTransition` | Historical row added to target |
+| `FinishedGoodIdentityRejected` | 34 | `LifecycleTransition` | Historical row added to target |
+| `FinishedGoodIdentityRetired` | 35 | `Deactivate` | Historical row added to target |
+| `FinishedGoodDraftCancelled` | 72 | `LifecycleTransition` | Newly allocated P0A row |
+| `FinishedGoodIdentityApprovalWithdrawn` | 73 | `LifecycleTransition` | Newly allocated P0A row |
+| `FinishedGoodRetirementRequested` | 74 | `LifecycleTransition` | Newly allocated P0A row |
+| `FinishedGoodRetirementRejected` | 75 | `LifecycleTransition` | Newly allocated P0A row |
+| `FinishedGoodRetirementCancelled` | 76 | `LifecycleTransition` | Newly allocated P0A row |
+
+Ordinals **36–37** and every other source operation remain out of this amendment. Unknown operation, wrong
+aggregate, case drift and numeric fallback remain fail-closed; no alias or wildcard is introduced. `DraftCancelled`
+describes an irreversible local cancellation decision, not audit receipt/finalization. Historical
+`FinishedGoodIdentityRetired` remains the verified WorkCenter decision's source application and does not create a
+direct-retire permission. This map/enum readiness does not claim that an event producer, durable delivery, lifecycle
+implementation, configuration, credential or live acceptance exists.
+
+Required implementation evidence is strict map/contract coverage for the nine rows, preservation of ordinal 9 and
+historical 32–35 mappings, collision proof that 36–37 remain unused, and negative aggregate/operation/case/numeric
+tests. No source transport, audit schema, collection, worker, service-token authority or operational activation is
+authorized by this amendment.
+
+#### P0A evidence checkpoint — historical execution evidence, not rerun in this checkpoint
+
+The retained P0A TRX evidence records Platform focused tests as **137 passed / 0 failed / 0 skipped**, Finished Good
+unit tests as **35 / 0 / 0**, and non-Mongo regressions as **62 / 0 / 0**. These results are historical and are not
+re-executed by this documentation checkpoint. Real Mongo, the general suite and live acceptance were not run. The
+initial Platform 136-test run was **135 passed / 1 failed** because its newly written full-37-union assertion
+incorrectly rejected the pre-existing `mdm.finished-goods.read` pair; the retained final assertion preserves that
+read pair while checking the five P0A scope pairs exactly and rejecting direct-retire, wildcard and case drift. The
+intermediate test-source diff is unavailable, so this amendment makes no additional source-level claim.
