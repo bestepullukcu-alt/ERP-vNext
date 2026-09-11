@@ -3,14 +3,13 @@ using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Persistence.Configurations;
 using Diten.AuthService.Persistence.Repositories;
 using Diten.AuthService.Persistence.Seed;
+using Diten.AuthService.Persistence.Serialization;
 using Diten.AuthService.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace Diten.AuthService.Persistence;
@@ -24,22 +23,15 @@ public static class DependencyInjection
         ]);
 
         // MongoDB Serializers
-        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the registration is process-global and THROWS once a Guid serializer has been
-        // registered or merely looked up. In production that never happens (one host, one startup, this line runs
-        // first). In a test process that hosts the real Api in-process (WebApplicationFactory) AFTER another test has
-        // already touched Guid serialization, the throw took the whole AuthService host down at Program.cs:73 —
-        // measured: 20 acceptance tests red in the full run, green in isolation. (TryRegisterSerializer is not enough:
-        // it still throws when the cached serializer is a DIFFERENT instance, which the driver's own default is.)
-        // A fresh process keeps the exact production registration; a warm one keeps the serializer it already has —
-        // equivalent on the wire here, because in the driver's V2 mode the representation is decided by the writer.
-        try
-        {
-            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        }
-        catch (BsonSerializationException)
-        {
-            // Already registered/looked up earlier in this process (in-process test host); the first registration stands.
-        }
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 (C1/C2) — the registration is process-global and THROWS once a Guid
+        // serializer has been registered or merely looked up. In production that never happens (one host, one
+        // startup, this line runs first). In a shared test process that hosts the real Api in-process
+        // (WebApplicationFactory) after some EARLIER, unrelated Guid-touching operation has already caused the
+        // driver's own auto-registration — measured: taking the whole AuthService host down over it broke the
+        // Auth suite far beyond this WP's scope. GuidSerializerRegistration.EnsureStandard() distinguishes a
+        // second COMPATIBLE registration (silent no-op) from an INCOMPATIBLE one (a loud Console.Error warning,
+        // not a throw — see its own remarks for the measured reason).
+        GuidSerializerRegistration.EnsureStandard();
 
         // MongoDB Conventions - Globally ignore extra elements to prevent deserialization errors on schema changes
         var conventionPack = new ConventionPack

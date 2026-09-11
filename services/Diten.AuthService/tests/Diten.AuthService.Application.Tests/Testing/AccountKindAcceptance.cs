@@ -1,4 +1,6 @@
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Security.Cryptography;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Authorization;
@@ -8,6 +10,8 @@ using Diten.AuthService.Persistence.Settings;
 using EphemeralMongo;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -28,11 +32,10 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// suffix, not a Guid in the database name). The production seeder does run at host start — into this throwaway
 /// database only — and that is deliberate: it is how the tests prove the two new keys are in the catalog.</para>
 ///
-/// <para>SECRETS. No fake secret is introduced. The host runs as Development and reads the repository's own
-/// appsettings.Development.json (the local-development JWT secret that every service on this machine already
-/// shares). Only these keys are overridden: the Mongo connection string + database name, the eventing transport
-/// (InMemory — no RabbitMQ broker in a test), SMTP disabled, and the tenant-resolution dev bypass OFF so a request
-/// without a tenant is refused exactly as in production.</para>
+/// <para>SECRETS. The Mongo connection string + database name, the eventing transport (InMemory — no RabbitMQ
+/// broker in a test), SMTP disabled, and the tenant-resolution dev bypass OFF (a request without a tenant is
+/// refused exactly as in production) are overridden. The JWT signing secret is ALSO overridden — see C1 §4 below
+/// — so the repository's shared appsettings.Development.json secret is never used here either.</para>
 ///
 /// <para>⚠ HOW THE OVERRIDES REACH THE HOST — measured, not assumed. AuthService's <c>AddPersistence</c> reads the
 /// connection string and builds the MongoClient at service-REGISTRATION time, inside Program.cs. With minimal hosting,
@@ -41,7 +44,17 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// <c>localhost:27017/diten_auth_v3</c> and the fixture's own guard refused it. Process environment variables
 /// (<c>MongoDbSettings__ConnectionString</c>, …) are read by <c>WebApplication.CreateBuilder</c> itself, before any
 /// registration, so they are the one channel that works here. They are set immediately before the host starts and
-/// removed on dispose; the guard below still verifies what the host actually took.</para>
+/// removed on dispose — or on ANY startup failure, see C1 §2 below.</para>
+///
+/// <para>⚠ C1 (PPM CT correction, this round). The ORIGINAL target check — comparing what the built host's own
+/// <see cref="MongoDbSettings"/> singleton resolved to, against the runner — ran AFTER
+/// <c>WebApplicationFactory.Server</c> had already built the host, which means the production seeder had ALREADY
+/// run against whatever database the host actually resolved by the time a mismatch would have been caught. Three
+/// checks (<see cref="AccountKindAcceptanceGuard"/>) now run BEFORE the host is built — see §1 in
+/// <see cref="InitializeCoreAsync"/> — so a wrong target is refused before a single line of production seed data is
+/// written anywhere. The post-build check (§ "the host did not take…") is KEPT as a second, redundant line of
+/// defense; it should now be unreachable in practice, and reachability would itself indicate the pre-flight checks
+/// have a gap.</para>
 /// </summary>
 public static class AccountKindAcceptance
 {
@@ -82,15 +95,62 @@ public static class AccountKindAcceptance
 
     public sealed class AuthTestHost : IAsyncLifetime
     {
+        // C1 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
+        // interleave their env-var mutation windows. [Collection("AccountKindAcceptance")] already serializes every
+        // xunit test class that opts into it; this static lock is the belt-and-suspenders that also protects a
+        // direct `new AuthTestHost()` used outside that collection (as the guard tests below do), and makes the
+        // serialization independently verifiable rather than merely assumed from xunit's collection semantics.
+        private static readonly SemaphoreSlim StartLock = new(1, 1);
+
+        // C1 §3 — test-observable concurrency probe. ActiveCriticalSections is the number of AuthTestHost
+        // instances CURRENTLY inside the env-var-mutation window (bracketed by the same StartLock hold);
+        // MaxObservedConcurrentCriticalSections is the high-water mark since the last reset. Both are internal:
+        // visible only to this test assembly, used exclusively by AccountKindAcceptanceGuardTests to prove two
+        // concurrent Start() calls never actually overlap (StartLock guarantees it by construction — these fields
+        // let a test OBSERVE that guarantee empirically, so removing the lock later turns the test red).
+        internal static int ActiveCriticalSections;
+        internal static int MaxObservedConcurrentCriticalSections;
+
+        internal static void ResetConcurrencyProbeForTests()
+        {
+            Interlocked.Exchange(ref ActiveCriticalSections, 0);
+            Interlocked.Exchange(ref MaxObservedConcurrentCriticalSections, 0);
+        }
+
+        private static void RecordActiveCriticalSectionHighWaterMark()
+        {
+            var observed = Volatile.Read(ref ActiveCriticalSections);
+            int current;
+            do
+            {
+                current = Volatile.Read(ref MaxObservedConcurrentCriticalSections);
+                if (observed <= current)
+                {
+                    return;
+                }
+            }
+            while (Interlocked.CompareExchange(ref MaxObservedConcurrentCriticalSections, observed, current) != current);
+        }
+
         private IMongoRunner? _runner;
         private WebApplicationFactory<Program>? _factory;
         private Seed? _seed;
         private readonly Dictionary<string, string?> _previousEnvironment = new();
+        private bool _lockHeld;
 
         public string ConnectionString => _runner?.ConnectionString ?? throw NotStarted();
         public WebApplicationFactory<Program> Factory => _factory ?? throw NotStarted();
         public Seed Seeded => _seed ?? throw NotStarted();
         public List<string> MongoLog { get; } = new();
+
+        /// <summary>
+        /// TEST-ONLY (C1 §4/§5 leak guard). The random JWT secret THIS instance generated, exposed solely so
+        /// AccountKindAcceptanceGuardTests can prove it never reaches Console output or <see cref="MongoLog"/>.
+        /// Never used to build a token — every token in <see cref="Seed"/> comes from the host's own
+        /// <c>ITokenService</c> (see <see cref="SeedAsync"/>), signed with this same secret but never printed.
+        /// Not part of the fixture's external contract.
+        /// </summary>
+        internal string? GeneratedJwtSecretForLeakGuardOnly { get; private set; }
 
         /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
@@ -107,56 +167,148 @@ public static class AccountKindAcceptance
             return host;
         }
 
-        public async Task InitializeAsync()
+        public Task InitializeAsync() => InitializeCoreAsync(injectFailureForTesting: false);
+
+        /// <summary>
+        /// TEST-ONLY seam (never used by AccountKindEndpointTests or any production-facing test). Runs the EXACT
+        /// same start sequence as <see cref="InitializeAsync"/> — real mongod, real env-var overrides, the same
+        /// three pre-flight checks — but throws immediately after they pass, BEFORE the host is built. This lets
+        /// AccountKindAcceptanceGuardTests observe the real cleanup path (env revert + mongod process killed +
+        /// original exception propagated) without needing to actually corrupt the target (which, by construction,
+        /// nothing in this process can do once the overrides are applied — see the class remarks). Not part of the
+        /// fixture's external contract: <see cref="InitializeAsync"/>'s own signature and behavior are unchanged.
+        /// </summary>
+        internal Task InitializeAsync_ForTestingInjectedFailure() => InitializeCoreAsync(injectFailureForTesting: true);
+
+        private async Task InitializeCoreAsync(bool injectFailureForTesting)
         {
-            var binaryDirectory = ResolveLocalMongoBinaryDirectory();
-            // EphemeralMongo.Core 1.x: synchronous Run; the option is spelled StandardOuputLogger in this version.
-            _runner = MongoRunner.Run(new MongoRunnerOptions
-            {
-                BinaryDirectory = binaryDirectory,
-                StandardOuputLogger = line => MongoLog.Add("[mongod:out] " + line),
-                StandardErrorLogger = line => MongoLog.Add("[mongod:err] " + line)
-            });
-            Console.WriteLine($"[AccountKindAcceptance] ephemeral mongod STARTED at {_runner.ConnectionString} from {binaryDirectory} (test-owned process; not the shared 27017)");
+            await StartLock.WaitAsync().ConfigureAwait(false);
+            _lockHeld = true;
+            Interlocked.Increment(ref ActiveCriticalSections);
+            RecordActiveCriticalSectionHighWaterMark();
 
-            // Drop → create: the fixed-name database starts empty on every run, whatever a previous run left.
-            var client = new MongoClient(_runner.ConnectionString);
-            await client.DropDatabaseAsync(DatabaseName);
-            await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+            try
+            {
+                var binaryDirectory = ResolveLocalMongoBinaryDirectory();
+                // EphemeralMongo.Core 1.x: synchronous Run; the option is spelled StandardOuputLogger in this version.
+                _runner = MongoRunner.Run(new MongoRunnerOptions
+                {
+                    BinaryDirectory = binaryDirectory,
+                    StandardOuputLogger = line => MongoLog.Add("[mongod:out] " + line),
+                    StandardErrorLogger = line => MongoLog.Add("[mongod:err] " + line)
+                });
 
-            var overrides = new Dictionary<string, string?>
+                // C1 §1(b) — refuse BEFORE touching any data on the runner if it somehow bound the shared port.
+                AccountKindAcceptanceGuard.EnsureRunnerIsNotTheSharedServer(_runner.ConnectionString);
+
+                Console.WriteLine($"[AccountKindAcceptance] ephemeral mongod STARTED at {_runner.ConnectionString} from {binaryDirectory} (test-owned process; not the shared 27017)");
+
+                // Drop → create: the fixed-name database starts empty on every run, whatever a previous run left.
+                var client = new MongoClient(_runner.ConnectionString);
+                await client.DropDatabaseAsync(DatabaseName);
+                await client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
+
+                // C1 §4 — a fresh, random, process-local JWT secret. Never printed (§5), never the repository's
+                // shared appsettings.Development.json value.
+                var jwtSecret = GenerateTestOnlyJwtSecret();
+                GeneratedJwtSecretForLeakGuardOnly = jwtSecret;
+
+                var overrides = new Dictionary<string, string?>
+                {
+                    ["MongoDbSettings__ConnectionString"] = _runner.ConnectionString,
+                    ["MongoDbSettings__DatabaseName"] = DatabaseName,
+                    ["Eventing__Transport"] = "InMemory",
+                    ["Smtp__Enabled"] = "false",
+                    ["TenantResolution__DevBypassEnabled"] = "false",
+                    ["Observability__Metrics__Enabled"] = "false",
+                    ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                    ["JwtSettings__Secret"] = jwtSecret
+                };
+                foreach (var (key, value) in overrides)
+                {
+                    _previousEnvironment[key] = Environment.GetEnvironmentVariable(key);
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+
+                // C1 §1(a) — self-check: the loop above actually applied every override (catches a coding mistake
+                // in the loop itself, e.g. an exception mid-iteration leaving a later key unset).
+                foreach (var (key, value) in overrides)
+                {
+                    AccountKindAcceptanceGuard.EnsureEnvironmentTookTheOverride(key, value);
+                }
+
+                // C1 §1(c) — resolve the SAME configuration chain Program.cs will read (appsettings.json →
+                // appsettings.Development.json → user secrets → environment variables), WITHOUT building the host,
+                // and refuse here if it does not already land on the isolated database.
+                var preview = BuildEffectiveHostConfigurationPreview();
+                AccountKindAcceptanceGuard.EnsureEffectiveConfigurationTargetsTheIsolatedDatabase(
+                    preview, _runner.ConnectionString, DatabaseName);
+
+                if (injectFailureForTesting)
+                {
+                    throw new InvalidOperationException(
+                        "TEST-INJECTED-FAILURE: AccountKindAcceptanceGuardTests simulated a startup failure after the pre-flight checks passed.");
+                }
+
+                _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+                {
+                    builder.UseEnvironment("Development");
+                });
+
+                // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
+                _ = _factory.Server;
+
+                // Kept as a second, redundant line of defense — see the class remarks on C1. Should be unreachable
+                // now that §1(c) already proved the effective configuration resolves correctly before this point.
+                var settings = _factory.Services.GetRequiredService<MongoDbSettings>();
+                if (settings.ConnectionString != _runner.ConnectionString || settings.DatabaseName != DatabaseName)
+                {
+                    throw new InvalidOperationException(
+                        $"The host did not take the isolated Mongo settings (got {settings.ConnectionString}/{settings.DatabaseName}). Refusing to run against anything else.");
+                }
+
+                // C1 §3 — the env-var-mutation window this lock protects ends HERE: the host's MongoDbSettings (and
+                // every other overridden option) is now a captured singleton inside `_factory`'s DI container, so a
+                // SECOND host mutating the SAME environment variables from this point on can no longer affect this
+                // one. Releasing now — rather than holding until DisposeAsync — lets a second Start() proceed as
+                // soon as it is safe, instead of blocking on this instance's full lifetime (including SeedAsync,
+                // which touches no environment variable) or its eventual Dispose.
+                ReleaseStartLockIfHeld();
+
+                Console.WriteLine($"[AccountKindAcceptance] AuthService test host READY on {settings.DatabaseName}");
+                _seed = await SeedAsync(this);
+            }
+            catch
             {
-                ["MongoDbSettings__ConnectionString"] = _runner.ConnectionString,
-                ["MongoDbSettings__DatabaseName"] = DatabaseName,
-                ["Eventing__Transport"] = "InMemory",
-                ["Smtp__Enabled"] = "false",
-                ["TenantResolution__DevBypassEnabled"] = "false",
-                ["Observability__Metrics__Enabled"] = "false",
-                ["ASPNETCORE_ENVIRONMENT"] = "Development"
-            };
-            foreach (var (key, value) in overrides)
+                // C1 §2 — a failure ANYWHERE above (pre-flight check, host build, seed) reverts the environment,
+                // kills the mongod process and its data directory, releases the start lock, and rethrows the
+                // ORIGINAL exception (via the bare `throw;` below) so the caller sees the real cause, not a wrapper.
+                await CleanupAfterFailedStartAsync().ConfigureAwait(false);
+                throw;
+            }
+        }
+
+        private async Task CleanupAfterFailedStartAsync()
+        {
+            if (_factory is not null)
             {
-                _previousEnvironment[key] = Environment.GetEnvironmentVariable(key);
-                Environment.SetEnvironmentVariable(key, value);
+                await _factory.DisposeAsync().ConfigureAwait(false);
+                _factory = null;
             }
 
-            _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-            {
-                builder.UseEnvironment("Development");
-            });
+            RestoreEnvironment();
 
-            // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
-            _ = _factory.Server;
-
-            var settings = _factory.Services.GetRequiredService<MongoDbSettings>();
-            if (settings.ConnectionString != _runner.ConnectionString || settings.DatabaseName != DatabaseName)
+            if (_runner is not null)
             {
-                throw new InvalidOperationException(
-                    $"The host did not take the isolated Mongo settings (got {settings.ConnectionString}/{settings.DatabaseName}). Refusing to run against anything else.");
+                // No best-effort DropDatabaseAsync here (unlike the success-path DisposeAsync below): the whole
+                // runner and its temp data directory are about to be deleted, and a failure path should not risk a
+                // second exception on top of the one already propagating.
+                _runner.Dispose();
+                _runner = null;
+                Console.WriteLine("[AccountKindAcceptance] ephemeral mongod STOPPED after a startup failure (data directory removed)");
             }
 
-            Console.WriteLine($"[AccountKindAcceptance] AuthService test host READY on {settings.DatabaseName}");
-            _seed = await SeedAsync(this);
+            ReleaseStartLockIfHeld();
         }
 
         public async Task DisposeAsync()
@@ -167,12 +319,7 @@ public static class AccountKindAcceptance
                 _factory = null;
             }
 
-            foreach (var (key, previous) in _previousEnvironment)
-            {
-                Environment.SetEnvironmentVariable(key, previous);
-            }
-
-            _previousEnvironment.Clear();
+            RestoreEnvironment();
 
             if (_runner is not null)
             {
@@ -189,6 +336,86 @@ public static class AccountKindAcceptance
                 _runner = null;
                 Console.WriteLine("[AccountKindAcceptance] ephemeral mongod STOPPED and its data directory removed");
             }
+
+            ReleaseStartLockIfHeld();
+        }
+
+        private void RestoreEnvironment()
+        {
+            foreach (var (key, previous) in _previousEnvironment)
+            {
+                Environment.SetEnvironmentVariable(key, previous);
+            }
+
+            _previousEnvironment.Clear();
+        }
+
+        private void ReleaseStartLockIfHeld()
+        {
+            if (_lockHeld)
+            {
+                _lockHeld = false;
+                Interlocked.Decrement(ref ActiveCriticalSections);
+                StartLock.Release();
+            }
+        }
+
+        /// <summary>C1 §4 — ≥64 random bytes, base64-encoded (~88 chars, well above the 32-char minimum the
+        /// secret validator enforces for JwtSettings:Secret). A fresh value every run.</summary>
+        private static string GenerateTestOnlyJwtSecret()
+        {
+            Span<byte> bytes = stackalloc byte[64];
+            RandomNumberGenerator.Fill(bytes);
+            return Convert.ToBase64String(bytes);
+        }
+
+        /// <summary>
+        /// C1 §1(c) — builds the SAME configuration chain <c>WebApplication.CreateBuilder</c> assembles inside
+        /// Program.cs: appsettings.json → appsettings.{Environment}.json → user secrets (Development only, when the
+        /// entry assembly carries a UserSecretsId) → environment variables. Environment variables are added LAST —
+        /// by the time this runs the overrides above are already live in THIS process's environment, so the
+        /// preview resolves to exactly what Program.cs will resolve once the host is actually built.
+        /// </summary>
+        private static IConfigurationRoot BuildEffectiveHostConfigurationPreview()
+        {
+            var apiContentRoot = ResolveApiContentRoot();
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.json"), optional: true, reloadOnChange: false)
+                .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.Development.json"), optional: true, reloadOnChange: false);
+
+            var userSecretsId = typeof(Program).Assembly.GetCustomAttribute<UserSecretsIdAttribute>()?.UserSecretsId;
+            if (!string.IsNullOrWhiteSpace(userSecretsId))
+            {
+                builder.AddUserSecrets(userSecretsId);
+            }
+
+            builder.AddEnvironmentVariables();
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Locates <c>services/Diten.AuthService/src/Diten.AuthService.Api</c> — the SAME source directory
+        /// WebApplicationFactory resolves as the host's content root (it reads the API project's own
+        /// appsettings.json/appsettings.Development.json directly, not a copy in the test output directory), so the
+        /// pre-flight preview reads the identical physical files Program.cs will read.
+        /// </summary>
+        private static string ResolveApiContentRoot()
+        {
+            var probe = new DirectoryInfo(AppContext.BaseDirectory);
+            while (probe is not null)
+            {
+                var candidate = Path.Combine(probe.FullName, "services", "Diten.AuthService", "src", "Diten.AuthService.Api");
+                if (File.Exists(Path.Combine(candidate, "appsettings.json")))
+                {
+                    return candidate;
+                }
+
+                probe = probe.Parent;
+            }
+
+            throw new DirectoryNotFoundException(
+                "Diten.AuthService.Api's appsettings.json was not found above the test assembly — the C1 §1(c) "
+                + "pre-flight target check cannot read the same configuration files Program.cs will read.");
         }
 
         /// <summary>An HTTP client against the in-process host, optionally authenticated as a disposable actor.</summary>
