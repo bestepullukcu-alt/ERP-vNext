@@ -7004,6 +7004,14 @@
             return;
         }
 
+        /*
+         * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is ONE server code for TWO refusals: "this person cannot be
+         * assigned work" (assign / reassign) and inquire's own "this person cannot be waited on". The base map
+         * answers with the assignment sentence, because every other action IS an assignment; inquire is the one
+         * action that must ask for the other sentence, and it asks here, at its only call site.
+         */
+        const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released
         // this yet" — nothing was overwritten and refreshing changes nothing. Routing every 409 to the concurrency
@@ -7020,12 +7028,12 @@
             // so the row should stop offering the action it cannot honour.
             await loadWorkItems();
             render();
-            toast(global.TasksApi.failureMessage(result), 'error');
+            toast(global.TasksApi.failureMessage(result, overrides), 'error');
             return;
         }
 
         render();
-        toast(global.TasksApi.failureMessage(result), 'error');
+        toast(global.TasksApi.failureMessage(result, overrides), 'error');
     };
 
     /*

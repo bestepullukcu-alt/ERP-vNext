@@ -43,6 +43,8 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
     private readonly ITaskAssignmentDirection? _direction;
     private readonly ITaskUpwardRequestService? _upwardRequests;
     private readonly TaskDocumentReferenceFreezer _documentFreezer;
+    // BL-057 at the write — who the work may go to. The same rule the pickers ask.
+    private readonly ITaskAssignmentGuard _assignmentGuard;
     private readonly ITenantContext _tenantContext;
     private readonly ILogger<CreateTaskItemHandler> _logger;
 
@@ -77,6 +79,12 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
          */
         TaskDocumentReferenceFreezer documentFreezer,
         /*
+         * BL-057 — REQUIRED, for the freezer's reason and more so: an optional guard that defaults to "do not
+         * check" is an open door that compiles, passes every unit test and reads fine in review. Required, a
+         * missing registration fails at STARTUP (ValidateOnBuild) instead of admitting everybody.
+         */
+        ITaskAssignmentGuard assignmentGuard,
+        /*
          * BL-023 — OPTIONAL on purpose, and NOT the same case. A caller that supplies neither gets exactly
          * the behaviour that shipped before this change (every assignment is a plain order), which is what
          * the existing suites pin. An absent pair can only ever SKIP the request; it can never open one by
@@ -103,6 +111,7 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
         _upwardRequests = upwardRequests;
         _tenantContext = tenantContext;
         _documentFreezer = documentFreezer;
+        _assignmentGuard = assignmentGuard;
         _logger = logger;
     }
 
@@ -150,9 +159,29 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                     TaskReasonCodes.AssignmentTargetInvalid, command.CorrelationId);
         }
 
+        /*
+         * ── BL-057 — may THIS caller hand work to THAT person or pool? ───────
+         *
+         * The pickers answered this on screen and nothing answered it again here, so a client posting straight to
+         * the API could name anybody. Asked BEFORE anything is written, and before BL-023's upward test further
+         * down: a superior in my own company passes here and then becomes a request; a superior in another company
+         * is refused here and never becomes anything. Self is not an assignment and is not checked.
+         *
+         * Skipped only for the recurrence sweep, which has no caller to ask about — see IsScheduledGeneration.
+         */
+        if (!command.IsScheduledGeneration
+            && await _assignmentGuard.CheckTargetAsync(
+                request.AssignmentTarget, assigneeUserId, poolPositionId, ct) is { } refused)
+        {
+            return Response<Guid>.Fail(
+                refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
+        }
+
         // ── Pool position must be genuinely assignable ───────────────────────
         if (poolPositionId is { } positionId)
         {
+            // For a person's create the guard above has already said yes; this is the test the SWEEP has always
+            // had, kept exactly as it was (it asks no scope because the sweep has none).
             var position = await _positions.GetByIdAsync(positionId, ct);
             if (position is null || position.IsArchived || position.Status != PositionStatus.Active)
             {

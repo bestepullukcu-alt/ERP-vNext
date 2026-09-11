@@ -502,6 +502,88 @@ public static class WorkReportTally
     }
 
     /// <summary>
+    /// EVERY ROW THE REPORT WAS COMPUTED FROM, once each, with the cells it counts toward — Dilim 1e.
+    ///
+    /// <para><b>⚠ MEMBERSHIP COMES FROM <see cref="Select"/>, CELL BY CELL.</b> Each flag is "is this id in the
+    /// rows <c>Select</c> returned for that cell" — so summing the <c>Late</c> column gives the number
+    /// <c>Measure</c> published for Late, because both came from the same call. A second predicate here — "late
+    /// means ClosedAt &gt; DueAt" written again — would be right today and wrong the day the report changed.</para>
+    ///
+    /// <para><b>Three sets, one row per task.</b> A task can be touched in the period AND still open at its end,
+    /// or open AND unattended. The <see cref="WorkReportRowSet.Touched"/> copy is kept when it exists because it
+    /// carries the most fields (estimate, spent hours, creator); the other two reads project fewer.</para>
+    ///
+    /// <para>Title and names are left empty — they are strings the arithmetic never needs, and the repository
+    /// reads them only for the rows that will actually be written.</para>
+    /// </summary>
+    public static IReadOnlyList<WorkReportExportRow> Export(WorkReportCriteria criteria, WorkReportRowSet set)
+    {
+        ArgumentNullException.ThrowIfNull(criteria);
+        ArgumentNullException.ThrowIfNull(set);
+
+        HashSet<Guid> In(WorkReportBucketKind kind) =>
+            Select(criteria, set, kind).Select(row => row.Id).ToHashSet();
+
+        var opened = In(WorkReportBucketKind.Opened);
+        var closed = In(WorkReportBucketKind.Closed);
+        var completed = In(WorkReportBucketKind.Completed);
+        var cancelled = In(WorkReportBucketKind.Cancelled);
+        var unattended = In(WorkReportBucketKind.Unattended);
+        var onTime = In(WorkReportBucketKind.OnTime);
+        var late = In(WorkReportBucketKind.Late);
+        var withoutDue = In(WorkReportBucketKind.WithoutDueDate);
+        var aging0 = In(WorkReportBucketKind.AgingUpTo7Days);
+        var aging1 = In(WorkReportBucketKind.AgingFrom8To30Days);
+        var aging2 = In(WorkReportBucketKind.AgingOlderThan30Days);
+        var returned = In(WorkReportBucketKind.Returned);
+        var inPeriod = set.Touched.Select(row => row.Id).ToHashSet();
+
+        var rows = new Dictionary<Guid, WorkReportRow>();
+        foreach (var row in set.Touched.Concat(set.OpenAtPeriodEnd).Concat(set.Unattended))
+        {
+            rows.TryAdd(row.Id, row);
+        }
+
+        return rows.Values
+            // The same total order as Select, so the file reads like the lists a click opens.
+            .OrderByDescending(row => row.CreatedAt)
+            .ThenBy(row => row.Id)
+            .Select(row => new WorkReportExportRow(
+                row.Id,
+                Title: string.Empty,
+                // ⚠ .ToString(), never the bare enum — see WorkReportItem.Lifecycle.
+                row.Lifecycle.ToString(),
+                row.Priority.ToString(),
+                row.TaskTypeCode,
+                TaskTypeName: null,
+                row.OrganizationUnitId,
+                OrganizationUnitName: null,
+                row.LegalEntityId,
+                row.AssigneeUserId,
+                row.CreatedAt,
+                row.DueAt,
+                row.CompletedAt ?? row.CancelledAt,
+                row.ClosureReasonCode,
+                row.EstimateHours,
+                row.SpentHours,
+                set.ReturnsByTask.TryGetValue(row.Id, out var returns) ? returns : 0,
+                inPeriod.Contains(row.Id),
+                opened.Contains(row.Id),
+                closed.Contains(row.Id),
+                completed.Contains(row.Id),
+                cancelled.Contains(row.Id),
+                unattended.Contains(row.Id),
+                onTime.Contains(row.Id),
+                late.Contains(row.Id),
+                withoutDue.Contains(row.Id),
+                aging0.Contains(row.Id),
+                aging1.Contains(row.Id),
+                aging2.Contains(row.Id),
+                returned.Contains(row.Id)))
+            .ToList();
+    }
+
+    /// <summary>
     /// ONE PAGE of a cell, and the cell's OWN total — Dilim 1c.
     ///
     /// <para><b>⚠ THE TOTAL IS NOT THE PAGE'S LENGTH, and separating the two is the whole reason this is a

@@ -629,6 +629,51 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// THE REPORT'S ROWS, AS A FILE — Dilim 1e. The audit export's shape
+    /// (<c>PlatformAuditController.Export</c>): a <c>File(...)</c> on success, the envelope on failure, and the
+    /// row count in a header so the screen can say how many rows it delivered.
+    ///
+    /// <para><b>Guarded by <c>WorkReportRead</c>, the report's own key</b>, not a new one: the rows are the ones
+    /// the tiles already open, fifty at a time. Whose rows they are comes from the scope, inside the handler.</para>
+    ///
+    /// <para><b>The same five filters and the same scope preference as the report</b>, and no group axis — the
+    /// file is the totals' rows, with every axis in it as a column.</para>
+    /// </summary>
+    [HttpGet("work-report/export")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> ExportWorkReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] string? format = WorkReportExportFormats.Csv,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
+        [FromQuery] WorkReportScopePreference? scope = null,
+        CancellationToken ct = default)
+    {
+        // ⚠ THE SAME FILTER SHAPE AS THE REPORT, for the reason the items endpoint gives.
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportExportQuery(from, to, format, CorrelationId, filter, scope), ct);
+
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        Response.Headers[WorkReportExportRowCountHeader] =
+            response.Data.RowCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return File(response.Data.Content, response.Data.ContentType, response.Data.FileName);
+    }
+
+    /// <summary>How many rows the file carries — the audit export's <c>X-Audit-Export-Row-Count</c>, renamed.</summary>
+    public const string WorkReportExportRowCountHeader = "X-Work-Report-Export-Row-Count";
+
     // ── DCP-005 slice 1: task types ──────────────────────────────────────
 
     /// <summary>

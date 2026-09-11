@@ -679,9 +679,12 @@ public sealed class TaskTransitionLogTests
         => new ReassignTaskItemHandler(
                 tasks,
                 new FakeTaskAssignmentRepository(),
-                new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(newAssignee)),
-                new FakePositionRepository(ActivePosition()),
-                new FakeOrganizationUnitRepository(LiveUnit()),
+                TaskAssignmentGuards.Over(
+                    new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(newAssignee)),
+                    new FakePositionRepository(ActivePosition()),
+                    new FakeOrganizationUnitRepository(LiveUnit()),
+                    TaskTestData.Me,
+                    UnitId),
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant))
             .Handle(
@@ -707,7 +710,7 @@ public sealed class TaskTransitionLogTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister())
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll())
             .Handle(new CreateTaskItemCommand(NewTaskRequest(), "corr"), CancellationToken.None);
 
     private static UpdateTaskItemHandler UpdateHandler(FakeTaskItemRepository tasks)

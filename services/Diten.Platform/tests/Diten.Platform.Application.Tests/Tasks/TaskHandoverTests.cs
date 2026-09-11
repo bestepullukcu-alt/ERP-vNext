@@ -171,6 +171,68 @@ public sealed class TaskHandoverTests
         Assert.Equal(TaskTestData.Other, repository.Items.Single().AssigneeUserId);
     }
 
+    /// <summary>
+    /// BL-357 (live bug): a task explicitly marked not delegable still blocked the person who OPENED the request
+    /// from correcting their own instruction — the flag was answered for every caller, when it was only ever meant
+    /// to police a HOLDER's further hand-off. Rival is this task's requester (<c>CreatedByUserId</c>), not its
+    /// holder, so this is the caller the old rule refused by mistake.
+    /// </summary>
+    [Fact]
+    public async Task The_requester_reassigns_even_when_the_task_is_marked_not_delegable()
+    {
+        var task = AssignedTask();
+        task.DelegationAllowed = false;
+        var repository = new FakeTaskItemRepository(task);
+        var events = new FakeTaskAssignmentRepository();
+
+        var response = await Reassign(
+            repository, events, task, TaskTestData.Other, "Assigned to the wrong person",
+            actingAs: TaskTestData.Rival);
+
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(TaskTestData.Other, repository.Items.Single().AssigneeUserId);
+        Assert.Equal(TaskAssignmentEventType.Reassigned, Assert.Single(events.Events).EventType);
+    }
+
+    /// <summary>
+    /// The flip side, unchanged by BL-357: a holder who is NOT the requester still meets the flag. The requester
+    /// exemption names the person who opened the work, not everyone who happens to reassign it.
+    /// </summary>
+    [Fact]
+    public async Task The_HOLDER_alone_still_meets_the_not_delegable_flag()
+    {
+        var task = AssignedTask();
+        task.DelegationAllowed = false;
+        var repository = new FakeTaskItemRepository(task);
+
+        var response = await Reassign(
+            repository, new FakeTaskAssignmentRepository(), task, TaskTestData.Other, "Handing over before leave");
+
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.DelegationNotAllowed, response.ReasonCode);
+        Assert.Equal(TaskTestData.Me, repository.Items.Single().AssigneeUserId);
+    }
+
+    /// <summary>
+    /// BL-357 at the projection, in the Outbox: Rival OPENED this task and does not hold it (Me does), so this row
+    /// reaches <c>BuildActions</c> through the `initiatorOnly` branch. `reassign` is offered ENABLED there even
+    /// though the task forbids delegation — the flag never named the requester reading their own outbox.
+    /// </summary>
+    [Fact]
+    public async Task The_requesters_OUTBOX_row_offers_reassign_ENABLED_when_not_delegable()
+    {
+        var task = AssignedTask();
+        task.DelegationAllowed = false;
+        var repository = new FakeTaskItemRepository(task);
+
+        var item = Assert.Single(
+            await Provider(repository).GetWorkItemsAsync(Actor(task.CreatedByUserId!.Value), CancellationToken.None));
+
+        var reassign = Assert.Single(item.Actions, a => a.Code == "reassign");
+        Assert.True(reassign.Enabled);
+        Assert.Null(reassign.DisabledReasonCode);
+    }
+
     [Fact]
     public async Task A_bystander_may_not_move_work_onto_a_colleague()
     {
@@ -516,9 +578,12 @@ public sealed class TaskHandoverTests
         => new ReassignTaskItemHandler(
                 tasks,
                 events,
-                new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(TaskTestData.Other)),
-                new FakePositionRepository(ActivePosition()),
-                new FakeOrganizationUnitRepository(LiveUnit()),
+                TaskAssignmentGuards.Over(
+                    new FakePositionAssignmentRepository(Holder(TaskTestData.Me), Holder(TaskTestData.Other)),
+                    new FakePositionRepository(ActivePosition()),
+                    new FakeOrganizationUnitRepository(LiveUnit()),
+                    actingAs ?? TaskTestData.Me,
+                    UnitId),
                 new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant))
             .Handle(

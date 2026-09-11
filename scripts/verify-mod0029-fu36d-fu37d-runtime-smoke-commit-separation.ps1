@@ -1,6 +1,6 @@
 param([string]$RepoRoot = (Resolve-Path "$PSScriptRoot\..").Path)
 
-$audit = Join-Path $RepoRoot "docs/audits/mod-0029-fu36d-fu37d-authenticated-runtime-smoke-commit-separation-2026-07-25.md"
+$audit = Join-Path $RepoRoot "docs/records/audits/2026-07/mod-0029-fu36d-fu37d-authenticated-runtime-smoke-commit-separation-2026-07-25.md"
 if (!(Test-Path -LiteralPath $audit)) { Write-Error "Final runtime smoke audit is missing."; exit 1 }
 $text = Get-Content -Raw -LiteralPath $audit
 $required = @(

@@ -63,9 +63,18 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
-        // Naming somebody the tenant cannot assign work to — the SAME eligibility rule the assignment picker
-        // uses, so the refusal is the picker's own answer rather than a second opinion.
-        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorWaitingOnNotAssignable',
+        /*
+         * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
+         * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
+         * InquireTaskItemHandler's own check on WHO YOU ARE WAITING ON — the eligibility rule the assignment
+         * picker uses, so that refusal is the picker's own answer rather than a second opinion. A JS object
+         * literal keeps only the LAST value written for a repeated key: an earlier version of this file mapped
+         * the code here too, and that value silently never fired because the assignment mapping below always
+         * overwrote it — the waiting-on refusal read the assignment sentence instead of its own. The inquire
+         * call site must ask for the other sentence explicitly, via INQUIRE_REASON_CODE_OVERRIDES below, passed
+         * as failureMessage()'s second argument.
+         */
+
         /*
          * WC-1 — the personal overlay's three refusals. Mapped the moment the codes were written, not after a
          * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has now
@@ -152,6 +161,8 @@
         TASK_HANDOVER_REASON_REQUIRED: 'errorHandoverReasonRequired',
         TASK_RETURN_NOT_ASSIGNEE: 'errorReturnNotAssignee',
         TASK_REASSIGN_NOT_PERMITTED: 'errorReassignNotPermitted',
+        // The default for THIS code: assign/reassign refusals — every caller except the inquire one above
+        // (BL-351), which asks for the other sentence via INQUIRE_REASON_CODE_OVERRIDES instead.
         TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorAssigneeNotAssignable',
         // Every blocking code MOD-0023's gate can answer with, read from
         // EvaluateWorkflowTransitionGateHandler rather than guessed. A blocked transition used to arrive as a bare
@@ -164,6 +175,17 @@
         // The gate's own code when it cannot reach a verdict (kept at its original spelling, which is the value
         // already on the wire).
         WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable'
+    };
+
+    /*
+     * BL-351 — the ONE place TASK_ASSIGNEE_NOT_ASSIGNABLE resolves to the "waiting on" sentence instead of the
+     * assignment one. Pass this as failureMessage()'s second argument at the inquire / "waiting on" call site
+     * ONLY; every other caller passes nothing and keeps getting REASON_CODE_MESSAGE_KEYS' own answer. Kept
+     * beside the base map rather than inside it, on purpose — a second value for the same key is exactly how
+     * this code stopped reaching the reader the first time (see the comment above where the code IS mapped).
+     */
+    const INQUIRE_REASON_CODE_OVERRIDES = {
+        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorWaitingOnNotAssignable'
     };
 
     /*
@@ -210,9 +232,14 @@
         return false;
     };
 
-    const failureMessage = (result) => {
+    /*
+     * `overrides` (BL-351) lets ONE call site ask for a different sentence for a code the base map already
+     * covers — today only the inquire / "waiting on" site, with INQUIRE_REASON_CODE_OVERRIDES. Every other
+     * caller passes nothing and gets REASON_CODE_MESSAGE_KEYS' own answer, unchanged.
+     */
+    const failureMessage = (result, overrides) => {
         const t = (key) => global.TasksL10n?.t?.(key) ?? key;
-        const byReason = REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
+        const byReason = overrides?.[result?.reasonCode] ?? REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
         if (byReason) { return t(byReason); }
         if (result?.reasonCode) {
             // Never silent: an unmapped code degrades to the generic message, and says so in the console so the
@@ -227,6 +254,7 @@
 
     global.TasksApi = {
         REASON_CODE_MESSAGE_KEYS,
+        INQUIRE_REASON_CODE_OVERRIDES,
         BLOCKING_REASON_CODES,
         isTransitionBlocked,
         isConcurrencyConflict,

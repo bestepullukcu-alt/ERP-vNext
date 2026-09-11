@@ -1690,8 +1690,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // holder's path applies, read from the same condition.
             if (!isPool)
             {
-                outbox.Add(ReassignAction(task, actor));
+                // This branch IS the requester reading their own outbox (see the comment above `initiatorOnly`) —
+                // BL-357: the flag never gates the requester's own correction, only a holder's further delegation.
+                outbox.Add(ReassignAction(task, actor, isRequester));
                 outboxPrimary = "reassign";
+            }
+
+            /*
+             * BL-361 — `plan` belongs here too: a plan date is the requester's note as much as the holder's, and
+             * this branch IS the requester (see above). Same condition the holder's own row uses further down
+             * (`openOrPlanned && !unclaimed`) — read directly rather than falling through to it, since this
+             * branch returns before that code is reached. `outboxPrimary` is left alone: reassign still leads
+             * when it is offered, matching the row's existing primary before this change.
+             */
+            if (openOrPlanned && !unclaimed)
+            {
+                outbox.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
             }
 
             outbox.Add(CancelAction(actor));
@@ -1703,6 +1717,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Nobody holds it yet, so claiming is the only way to move it forward.
             actions.Add(Build("claim", ActionClaimKey, actor.Has(TaskPermissions.Claim)));
             primary = "claim";
+        }
+        else if (!isHolder)
+        {
+            /*
+             * BL-361/BL-362 — none of accept/start/resume/submitReview/complete is the actor's act to offer, and
+             * "offer" is the whole bug: the handlers behind all five already refuse a non-holder correctly, so
+             * this branch is not closing a write-side hole, it is removing a control that lied about being
+             * pressable. Measured live via `?scope=team` (BL-023 Ekibim) — a manager viewing a SUBORDINATE's own
+             * task saw a fully enabled, working "Tamamla"/"Başlat" button, because this method never asked
+             * `isHolder` for any of the four.
+             *
+             * WITHHELD, not disabled — the same call BL-016's outbox branch above already made for the opposite
+             * direction (the requester's view of a holder's work): a greyed "Tamamla" here would say "you could
+             * finish this if only…", and the honest sentence is the ROW itself, not a tooltip on a dead button.
+             * `inquire` and `release` get the identical gate further down, where they are built independently of
+             * this chain; `plan` gets a WIDER one (holder OR requester) at its own site, because a plan date is a
+             * personal note either of them may legitimately set.
+             *
+             * `claim`/`cancel`/`reassign`/`return` are UNTOUCHED: each already asks its own, narrower question
+             * (pool-seat-holding, requester-hood) that has nothing to do with lifecycle holdership.
+             */
         }
         else if (task.AssignmentTarget == TaskAssignmentTarget.Person && openOrPlanned)
         {
@@ -1826,8 +1861,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             }
         }
 
-        // Planning a personal date is available while the work has not started (Open ⇄ Planned on the server).
-        if (openOrPlanned && !unclaimed)
+        /*
+         * Planning a personal date is available while the work has not started (Open ⇄ Planned on the server).
+         *
+         * BL-361 — WIDER than the holder-only zone above, deliberately: a plan date is a note about when the
+         * work will happen, and both the person doing it and the person who asked for it have a legitimate
+         * reason to set one (the requester's own outbox row offers `plan` too — see the `initiatorOnly` branch's
+         * sibling instance further up, which this condition must keep matching). A bystander with neither
+         * relationship may not.
+         */
+        if (openOrPlanned && !unclaimed && (isHolder || isRequester))
         {
             actions.Add(Build("plan", ActionPlanKey, actor.Has(TaskPermissions.Update)));
         }
@@ -1840,7 +1883,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * into the URL segment, so the two names are one name. `requestInfo` is MOD-0023's verb for an approver
          * asking a submitter for more information and is deliberately untouched.
          */
-        if (!unclaimed && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress)
+        // BL-361/BL-362 — holder-only, like the handler already refuses: "I am blocked" is a statement only the
+        // person actually doing the work can make. Same withhold-not-disable reasoning as the branch above.
+        if (!unclaimed && isHolder
+            && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress)
         {
             actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true));
         }
@@ -1863,12 +1909,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
         if (!isPool && (isHolder || isRequester))
         {
-            // Drawn-and-greyed rather than hidden when the task forbids delegation — see ReassignAction.
-            actions.Add(ReassignAction(task, actor));
+            // Drawn-and-greyed rather than hidden when the task forbids delegation AND the actor is only the
+            // holder — see ReassignAction. A requester (self-assigned, or a Team-scope read of their own opened
+            // work) is never greyed by this flag.
+            actions.Add(ReassignAction(task, actor, isRequester));
         }
 
-        // Only a pooled task that someone has taken can be handed back to the pool.
-        if (isPool && !unclaimed)
+        // Only a pooled task that someone has taken can be handed back to the pool — and only BY that someone
+        // (BL-361/BL-362): the handler already refuses anybody else, and releasing a colleague's claimed pool
+        // work out from under them is not a lesser version of the same act, it is a different one.
+        if (isPool && !unclaimed && isHolder)
         {
             actions.Add(Build("release", ActionReleaseKey, actor.Has(TaskPermissions.Claim),
                 requiresConfirmation: true));
@@ -1914,15 +1964,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// is drawn, greyed, and explains itself. Hiding it would leave the holder wondering why a task they hold
     /// cannot be handed on.</para>
     ///
-    /// <para>The task's own policy is checked BEFORE the permission: "nobody may delegate this" outranks "you may
+    /// <para><b>BL-357 — the flag names the HOLDER, not the requester.</b> `DelegationAllowed` stops a holder from
+    /// passing work along a THIRD leg the requester never asked for; it was never meant to stop the requester from
+    /// correcting their own instruction. <paramref name="isRequester"/> — the same fact <c>BuildActions</c> already
+    /// derived once and passes in here, never a second read — bypasses the flag entirely. The task's own policy is
+    /// still checked BEFORE the permission for a holder-only actor: "nobody may delegate this" outranks "you may
     /// not delegate", and reporting the permission first would send a reader after an authority that would never
     /// help.</para>
     ///
     /// <para>One factory rather than one construction per caller: the holder's path and BL-016's outbox path both
     /// offer this act, and two copies would be free to drift on the policy-before-permission order.</para>
     /// </summary>
-    private static WorkItemActionDto ReassignAction(TaskItem task, WorkItemActor actor)
-        => !task.DelegationAllowed
+    private static WorkItemActionDto ReassignAction(TaskItem task, WorkItemActor actor, bool isRequester)
+        => !isRequester && !task.DelegationAllowed
             ? Disabled("reassign", ActionReassignKey,
                 TaskReasonCodes.DelegationNotAllowed, DisabledDelegationKey)
             : Build("reassign", ActionReassignKey, actor.Has(TaskPermissions.Assign), requiresReason: true);

@@ -123,9 +123,11 @@ ikisi de **kod içindeydi** — bir Python kapısı ve bir CSS yorumu.
 2. **`git mv` kullan.** Kopyala-sil değil; geçmiş korunur.
 3. **Referansları AYNI commit'te güncelle.** Ayrı commit'e bölme; arada kalan
    commit'te belgeler kırıktır.
-4. **Kod uzantılarını da tara.** `.md` yetmez: `.py .sh .cs .cshtml .js .css
+4. **Kod uzantılarını da tara.** `.md` yetmez: `.py .sh .ps1 .cs .cshtml .js .css
    .html .json .yaml .xml .resx`. Bu adım atlanırsa kırılan şey belge değil,
-   çalışan bir kapı olur.
+   çalışan bir kapı olur. Bu adımı
+   `TenantArchitecture.ArchitectureTests.DocsPathGuardTests.NoCodeFilePointsIntoDocsOutsideTheFiveFolders`
+   ölçer. Test kırmızıysa taşıma bitmemiştir.
 5. **Doğrula** — ölü bağ kalmadığını göster (§5), iddia etme.
 6. **Referansı çok olan en sona.** Blueprint xlsx ve `product-backlog.md`
    birden çok workflow'un kanonik kaynağıdır.

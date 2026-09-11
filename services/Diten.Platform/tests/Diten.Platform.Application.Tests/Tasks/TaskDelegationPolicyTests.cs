@@ -53,19 +53,41 @@ public sealed class TaskDelegationPolicyTests
     }
 
     /// <summary>
-    /// The policy is checked BEFORE "are you the holder". "Nobody may delegate this" outranks "you may not
-    /// delegate it" — answering the second to a bystander would send them looking for an authority that would
-    /// never help.
+    /// BL-357 — the who-are-you check answers FIRST now, and a bystander gets "not you" (403) whatever the flag
+    /// says. Refusing them with "not delegable" (409) would send them looking for an authority — Assign — that
+    /// would never help someone with no relationship to the task at all. Only once the caller is confirmed to be
+    /// the holder or the requester does the flag get to speak, and then only for the holder (see the two tests
+    /// below): the requester was never the shape this flag was written to police.
     /// </summary>
     [Fact]
-    public async Task The_policy_answers_before_the_who_are_you_check()
+    public async Task A_bystander_is_refused_whatever_the_flag_says()
+    {
+        var fixture = new Fixture(delegationAllowed: false);
+
+        var response = await fixture.ReassignAsync(actingAs: TaskTestData.Watcher);
+
+        Assert.Equal(403, response.StatusCode);
+        Assert.Equal(TaskReasonCodes.ReassignNotPermitted, response.ReasonCode);
+        Assert.NotEqual(TaskReasonCodes.DelegationNotAllowed, response.ReasonCode);
+        // Nothing moved: the holder is who it was.
+        Assert.Equal(TaskTestData.Me, fixture.Task.AssigneeUserId);
+    }
+
+    /// <summary>
+    /// BL-357 (live bug, backlog): the flag closed a real gap (§ above) and opened this one — the person who
+    /// OPENED the request could no longer redirect their own instruction. Rival is this fixture's REQUESTER
+    /// (<c>CreatedByUserId</c>), not the holder (<c>Me</c> holds it) — exactly the caller who used to be refused
+    /// by a rule meant for a holder's further hand-off, not the requester's own correction.
+    /// </summary>
+    [Fact]
+    public async Task The_REQUESTER_reassigns_even_when_the_task_is_marked_not_delegable()
     {
         var fixture = new Fixture(delegationAllowed: false);
 
         var response = await fixture.ReassignAsync(actingAs: TaskTestData.Rival);
 
-        Assert.Equal(TaskReasonCodes.DelegationNotAllowed, response.ReasonCode);
-        Assert.NotEqual(TaskReasonCodes.ReassignNotPermitted, response.ReasonCode);
+        Assert.Equal(204, response.StatusCode);
+        Assert.Equal(TaskTestData.Other, fixture.Task.AssigneeUserId);
     }
 
     // ── The projection explains it ───────────────────────────────────────────
@@ -96,6 +118,23 @@ public sealed class TaskDelegationPolicyTests
 
         var reassign = Assert.Single(
             (await fixture.ProjectAsync()).Actions.Where(a => a.Code == "reassign"));
+
+        Assert.True(reassign.Enabled);
+        Assert.Null(reassign.DisabledReasonCode);
+    }
+
+    /// <summary>
+    /// BL-357, at the projection: the REQUESTER's own row (<c>Rival</c> here) shows `reassign` enabled even though
+    /// the task is marked not delegable — the flag is drawn-and-greyed for a HOLDER (see the two tests above), not
+    /// for the person who asked for the work in the first place.
+    /// </summary>
+    [Fact]
+    public async Task The_REQUESTERs_row_offers_reassign_ENABLED_even_when_not_delegable()
+    {
+        var fixture = new Fixture(delegationAllowed: false);
+
+        var reassign = Assert.Single(
+            (await fixture.ProjectAsync(TaskTestData.Rival)).Actions.Where(a => a.Code == "reassign"));
 
         Assert.True(reassign.Enabled);
         Assert.Null(reassign.DisabledReasonCode);
@@ -158,9 +197,12 @@ public sealed class TaskDelegationPolicyTests
             => new ReassignTaskItemHandler(
                     _tasks,
                     new FakeTaskAssignmentRepository(),
-                    new FakePositionAssignmentRepository([.. _seats]),
-                    new FakePositionRepository([.. _positions]),
-                    new FakeOrganizationUnitRepository([.. _units]),
+                    TaskAssignmentGuards.Over(
+                        new FakePositionAssignmentRepository([.. _seats]),
+                        new FakePositionRepository([.. _positions]),
+                        new FakeOrganizationUnitRepository([.. _units]),
+                        actingAs ?? TaskTestData.Me,
+                        _units[0].Id),
                     new FakeCurrentUserContext(actingAs ?? TaskTestData.Me),
                     new FakeTenantContext(TaskTestData.Tenant))
                 .Handle(
@@ -170,7 +212,7 @@ public sealed class TaskDelegationPolicyTests
                         "corr"),
                     CancellationToken.None);
 
-        public async Task<WorkItemProjectionDto> ProjectAsync()
+        public async Task<WorkItemProjectionDto> ProjectAsync(Guid? actorId = null)
         {
             var provider = new TaskWorkItemProvider(
                 _tasks,
@@ -192,7 +234,7 @@ public sealed class TaskDelegationPolicyTests
                 new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
 
             var items = await provider.GetWorkItemsAsync(
-                new WorkItemActor(TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()),
+                new WorkItemActor(actorId ?? TaskTestData.Me, IsPlatformActor: true, new HashSet<string>()),
                 CancellationToken.None);
             return Assert.Single(items.Where(i => i.Id == Task.Id.ToString()));
         }

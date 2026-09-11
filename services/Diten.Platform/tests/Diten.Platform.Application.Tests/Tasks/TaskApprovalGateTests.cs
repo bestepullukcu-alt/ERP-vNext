@@ -275,7 +275,7 @@ public sealed class TaskApprovalGateTests
             new FakeTaskNotificationService(),
             new FakeCurrentUserContext(TaskTestData.Me), new FakeTenantContext(TaskTestData.Tenant),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
 
         var request = new CreateTaskItemRequest(
             Title: "Needs sign-off", Description: null, Priority: TaskPriority.High,

@@ -9,13 +9,21 @@ namespace Diten.Platform.Infrastructure.Persistence.Configurations;
 
 public static class PositionSeed
 {
+    /// <summary>
+    /// Opt-in switch for this seed and <see cref="PositionAssignmentSeed"/>, read together with the Development
+    /// environment (both must hold). Absent means false. Set it only in a local, never-committed
+    /// appsettings.Development.json — see the gate in <c>DependencyInjection.AddInfrastructure</c> for why the
+    /// environment alone stopped being enough.
+    /// </summary>
+    public const string OptInConfigurationKey = "DevSeeds:OrganizationPositions";
+
     private static readonly Guid DefaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
     private static readonly Guid Tenant97c5Id = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
 
     public static async Task EnsureSeededAsync(IMongoDatabase database, CancellationToken ct = default)
     {
         // FIX-ORG-UNIT-SEED-COLLECTION — this read the literal "organizationUnits" while every other
-        // reader uses PlatformCollections.OrganizationUnits ("organization_units"). It therefore never
+        // reader uses PlatformCollections.OrganizationUnits. It therefore never
         // saw a real unit, invented a phantom "HEADQUARTERS" in a collection no screen reads, and hung
         // five mock positions off it — positions that exist, resolve to no unit, and carry no Status,
         // so every assignment lookup skips them as PositionNotActive.

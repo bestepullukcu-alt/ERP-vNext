@@ -895,6 +895,16 @@ cd frontend/Diten.Web && npx vitest run tests/validation-reason-code-bridge.test
 ### BL-057 — 🔴 TEMEL: şirket (Legal Entity) kapsamı örtük; açık hâle gelmeli
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
 
+**⚠ ATAMA TARAFI SUNUCUDA DA KAPANDI (KISMİ) — 2026-09-10, commit `01bc0915`.** Kural artık yalnız
+seçicilerde değil, her yazma yolunda soruluyor: `TaskAssigneeEligibility.Judge` (aktif pozisyon + canlı birim
++ kapsam) tek kural; `TaskAssignmentGuard` oluşturma (kişi: `platform.tasks.assign` + uygunluk + kapsam ·
+havuz: uygunluk + kapsam), şablondan oluşturma, yeniden atama ve tekrarlayan kural oluştur/güncelle
+yollarında kayıt yazılmadan önce çağrılıyor; zamanlanmış üretim muaf (`IsScheduledGeneration`, yalnız
+komutta). Kanıt E3: görev testleri 1234/1234 (97 yeni); CT sabotajı — oluşturmadaki koruma çağrısı kaynakta
+durup hiç çalışmayınca 13 kırmızı, geri konunca 97/97. **Canlı oturumla doğrulanmadı** → ✅ sahibin kontrol
+turunda. Sonuçları: BL-352 (kural kapatılamıyor) · BL-356 (pozisyonsuz kullanıcı iş veremiyor) · BL-353,
+BL-354, BL-355 (aynı kuralın hâlâ sorulmadığı üç yol). Listeleme yarısı hâlâ AÇIK; BL-349 (detay erişimi) ona bağlı.
+
 **⚠ ÖLÇÜM DÜZELTMESİ — 2026-08-29, kayıt İKİYE AYRILIYOR.**
 - **Atama tarafı ARTIK AÇIK (bu yarı kapandı):** kural tek yerde — `TaskAssignmentScopeResolver.cs:112-116` (aynı şirket **veya** ast pozisyon **veya** verilmiş birim), `IDataScopeResolver`'dan besleniyor; iki arama işleyicisi de `scope.Allows(position, unit, legalEntityId)` çağırıyor. Kaydın "yeniden ölç" ipuçları da bayatlamış: `AssignablePersonDto` `LegalEntityId` TAŞIYOR (`TaskModels.cs:816`).
 - **LİSTELEME tarafı hâlâ örtük (bu yarı AÇIK):** repository yüklemleri kiracı + atanan, ya da kiracı + havuz pozisyonu — **hiçbir yerde şirket koşulu yok** (`TaskRepositories.cs:34-40`, `:82-99`). Projeksiyonda ve `WorkItemActor`'da `LegalEntityId` YOK (grep: 0). `TaskItem`'da da yok — yalnız `OrganizationUnitId`, yani şirket iki sıçramalık bir birleştirme. Ekranda şirket seçici yok.
@@ -3868,68 +3878,6 @@ Ayrı madde açılmalı.
 
 ---
 
-### BL-334 — Rol İzinleri ekranında doğru izni bulmak pratikte imkânsız (2026-09-04, CANLI, sahip gördü)
-
-**Durum:** AÇIK · **Boyut:** M · **Sahip:** erişim yönetimi / platform UI
-
-Ekran 236 izni listeliyor ve kullanıcıya "hangisini seçmeliyim" sorusunda
-hiçbir yardım vermiyor. Sahip bugün canlıda bir role görev izinleri eklemeye
-çalıştı; beş izin ekledi ve **en kritik olanı atladı**.
-
-**Ölçülmüş vaka (2026-09-04, canlı).** Görev atanan kullanıcı görevi kabul
-edemiyordu. Ekranda dört buton kilitliydi: Kabul et · Planla · Bilgi bekle ·
-İade et. Sahip role şunları ekledi:
-
-    ✅ tasks.claim · tasks.complete · tasks.create · tasks.delete · tasks.read
-    ❌ tasks.update        ← dördünün DE bağlı olduğu izin
-
-`update` eksik olduğu için hiçbiri açılmadı. Ekranda o dört butonun tek bir
-izne bağlı olduğunu söyleyen hiçbir şey yok.
-
-Sayıyı üreten komut (kayıt bayatlamasın diye):
-
-    mongosh --quiet diten_auth_v3 --eval \
-      'db.permissions.aggregate([{$group:{_id:"$Module",n:{$sum:1}}},{$sort:{n:-1}}])'
-
-**Dört ayrı kusur, hepsi ölçüldü:**
-
-1. **Gruplar işe yaramıyor.** `Module` alanına göre 23 grup var ama dağılım
-   bozuk: `platform` tek başına **167 izin** taşıyor — bu bir grup değil, çöp
-   kutusu. Yanında `crm` 41, `crm-contact` 8 (neden ayrı belli değil),
-   `mod0251` 14 — bu sonuncusu bir MODÜL KODU, kullanıcıya böyle görünüyor.
-
-   ⚠ `platform` 167'nin yeniden gruplanması manifest işi DEĞİL: 87'si
-   `IsSystem: true` ve `InternalPermissionsController.cs:130` `moduleLocked`
-   kuralı bunları kasten kilitliyor (yetki yükselme sınırı). Bu bir izin göçü.
-
-2. **İzin ↔ ekran bağı görünmüyor.** `platform.tasks.update`'in "Kabul et /
-   Planla / Bilgi bekle / İade et / Başlat" butonlarını açtığı hiçbir yerde
-   yazmıyor. Kullanıcı anahtarın adından tahmin etmek zorunda — ve `update`
-   adı bu dört fiilin hiçbirini çağrıştırmıyor.
-
-3. **Eksik izni ekran söylemiyor.** Kullanıcı tarafında mesaj yalnız "Bu işlem
-   için yetkiniz yok" diyor. HANGİ izin eksik olduğunu söylemiyor; yönetici
-   tarafında da "bu butonu açan izin şudur" bilgisi yok. İki uç da sebebi
-   biliyor, ikisi de sessiz.
-
-4. **Tehlikeli izin uyarısız.** `tasks.delete` "General User" adlı bir role
-   tek tıkla eklenebiliyor; ekran bunun silme yetkisi olduğunu ve denetim izini
-   etkilediğini söylemiyor.
-
-**Kapanış ölçütü:** bir yönetici, "kullanıcı görevi kabul edemiyor" cümlesinden
-yola çıkıp doğru izni **arama yapmadan, tahmin etmeden** bulabilmeli. Ölçümü:
-aynı senaryoyu bilmeyen birine verip kaç denemede doğru izni eklediğine bakmak.
-
-**Yön önerisi (tasarım kararı sahipte):** izinleri anahtar adına göre değil
-**ekrandaki eyleme göre** gruplamak — "Görev üzerinde çalışma" başlığı altında
-accept/plan/inquire/return/start'ı tek satırda toplamak gibi. Bugün kullanıcı
-fiilden anahtara çeviri yapmak zorunda ve o çeviri hiçbir yerde yazılı değil.
-
-**İlişkili:** [[BL-333]] (aynı izin sisteminin token'ı 21,5 KB'a şişirmesi) —
-ikisi de "407 izin tek düzlemde duruyor" kökünden geliyor.
-
----
-
 ### BL-335 — 29 offcanvas hâlâ Golden Slim'in ESKİ desende; ikon sözleşmesi yayılmadı (2026-09-08, ölçüldü)
 
 > **DURUM:** AÇIK · **SAHİP:** SAHİPSİZ
@@ -4311,9 +4259,9 @@ cezalandırılan desendir; onun yerine kural tek ve istisnasız tutuldu.
 
 ### BL-343
 
-**Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi ve on üç ön yüz dosyası**
+**Ana dalda kırmızı duran muhafızlar: bir gizlilik sözleşmesi, on üç ön yüz dosyası, Platform'da yetmişe yakın test**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08 · GENİŞLETİLDİ: 2026-09-10
 
 RBAC turunun bağımsız doğrulaması sırasında ölçüldü. **Hiçbiri o turun ürünü
 değil**; hepsi dal açılmadan önce kırmızıydı ve bu yüzden ayrı bir madde.
@@ -4352,56 +4300,541 @@ takım "testler geçiyor mu" sorusunu cevaplanamaz hale getirir — her tur bu 1
 elle ayıklamak zorunda kalır ve bir gün biri fazladan bir kırmızıyı da eski
 sanar. Bu maddenin asıl maliyeti budur.
 
+**d) `TenantArchitecture.ArchitectureTests` — `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun` kırmızı (ölçüldü 2026-09-11,
+main'i dala aldıktan sonra, 96b0eaf1).** Muhafız iki dosyayı gösteriyor: `Audit/PpmAuditRetentionPolicySeedMongoTests.cs` ve
+`Persistence/DisposableStandaloneMongo.cs` — ikisi de `KnownPerRunDatabase` listesinde değil. Üç dosya (muhafız + ikisi) tabandan
+(7b11f3e9) beri değişmemiş; son commit'ler 27–31 Ağustos → main o günden beri bu kuralda kırmızı. Sahip: PPM denetim testi (Audit) /
+Platform test altyapısı. **Ölçüm komutu:** `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter MongoTestDatabaseGuard`
+
+**c) `Platform.Application.Tests` — bu madde onları hiç yazmıyordu**
+
+2026-09-10 tam koşum: **4070 testin 75'i kırmızı**. Dal `fix/workcenter-role-testing`; bu
+dalın `main`'e göre değiştirdiği Platform dosyalarının **hiçbiri** aşağıdaki alanlara
+dokunmuyor (`git diff --name-only main...HEAD -- services/Diten.Platform` → yalnız WorkReport
+dosyaları ve `DocumentReferenceListTests.cs` düzeltmesi). Yani hepsi dal öncesi.
+**Düzeltilmedi, yalnız kaydedildi** — sahipleri başka ekipler.
+
+⚠ Sayılar bu koşumdan; kayar. Her satırın **ölçüm komutu** sayının yerine geçer.
+
+| sebep | sınıflar | 2026-09-10 | sahip |
+|---|---|---:|---|
+| aynı aksiyonda birden çok `[HasPermission]` (`0f71a237`) → `GetCustomAttribute<HasPermissionAttribute>` `AmbiguousMatchException` | `Mod0029Fu29aEndpointAttributionTests` | 3 | Doküman Yönetimi |
+| 2 menü sayfası eklendi, test güncellenmedi (`fb4245f0`) | `DocumentManagementManifestProviderTests` | 3 | Doküman Yönetimi |
+| yaşam döngüsü / onay kapısı / eğitim — disk okumuyor, saf mantık | `DocumentLifecycleStatusTests` · `DocumentReleaseGateTests` · `DocumentTrainingMatrixTests` | 14 | Doküman Yönetimi |
+| **ayrıca:** testin aradığı `Name = CorporateActiveInstanceIndexName` metni index yapılandırmasında artık yok | `CorporateCollectionInstanceFoundationTests.Corporate_unique_index_uses_positive_active_filter_only` | 1 | Doküman Yönetimi |
+| **ayrıca:** 8 abonelik handler'ından yalnız `SuspendTenantSubscriptionCommandHandler`, `Handle` çağrı grafiğinde `TenantSubscriptionTransactionWriter` göstermiyor (test `261f9910`) | `SubscriptionHandlerTransactionArchitectureTests` | 1 | Kiracı abonelikleri |
+| BRD Mongo ailesi — aşağıya bak | `BusinessReferenceData*MongoTests` (sweeper hariç) | 49 | BRD / ortam |
+| flaky — ardışık koşumlar birbirinin artığını süpürüyor | `BusinessReferenceDataMongoResidueSweeperTests` | 4 | BRD |
+
+**BRD ailesi TEK sebep değil, ve dağılımı koşumdan koşuma değişiyor.** Brifingde "≈43, hepsi
+`Timestamp`" deniyordu (tek örnek mesajdan). Her mesaj ölçüldü, iki ayrı belirti çıktı:
+
+- `System.FormatException : ObjectSerializer does not support BSON type 'Timestamp'.` —
+  test Mongo'su **replica set** (`rs0`, `DisposableMongoReplicaSet.cs`), komut yanıtında
+  `Timestamp` taşıyor.
+- `MongoCommandException : Command dropDatabase failed: The database is currently being dropped.`
+  — sınıflar paralel koşarken aynı anda veritabanı düşürüyor.
+
+Aynı test bir koşumda birinden, sonrakinde ötekinden düşüyor: tam koşumda **36 Timestamp +
+13 dropDatabase**, hemen ardından yalnız BRD koşumunda **11 Timestamp + 38 dropDatabase**
+(+3 sweeper). Toplam ~50 sabit, bölüşüm değil. Ayrıca ölçüldü: iki gün önceki koşumlardan
+kalma **4 sahipsiz `diten-platform-mongo-rs-*` `mongod`** süreci hâlâ açık — harness
+süreçlerini her zaman kapatmıyor.
+
+**Ölçüm komutları:**
+
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~Mod0029Fu29aEndpointAttributionTests"
+    git show 0f71a237 -- services/Diten.Platform/src/Diten.Platform.API/Controllers/ | grep "^+.*HasPermission"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~DocumentManagementManifestProviderTests"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~DocumentLifecycleStatusTests|FullyQualifiedName~DocumentReleaseGateTests|FullyQualifiedName~DocumentTrainingMatrixTests"
+    grep -c "Name = CorporateActiveInstanceIndexName" services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Configurations/MongoDbIndexConfigurations.cs
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~SubscriptionHandlerTransactionArchitectureTests"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~BusinessReferenceData" --logger "console;verbosity=normal" | grep -c "BSON type 'Timestamp'"
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~BusinessReferenceData" --logger "console;verbosity=normal" | grep -c "currently being dropped"
+    ps -eo command | grep -c '[d]iten-platform-mongo-rs-'
+
+**d) Mimari muhafız da kırmızı — bir test**
+
+    MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun
+      → Audit/PpmAuditRetentionPolicySeedMongoTests.cs · Persistence/DisposableStandaloneMongo.cs
+
+Her koşumda veritabanı adını yeni bir GUID'den kuran iki dosyayı gösteriyor. Ölçüm:
+
+    dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter "FullyQualifiedName~MongoTestDatabaseGuardTests"
+
 ---
 
-### BL-344
 
-**İzin aksiyonları tek yazımda değil — dört farklı yazım, dokuz çakışma**
+### BL-345
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-08
+**Kontrol listesinde "kanıt zorunlu" işaretlenemiyor — form sabit `false` gönderiyor**
 
-Aynı fiil kataloğa dört ayrı yazımla giriyor: kebab (`bulk-delete`), PascalCase
-(`Read`, `PublishOverride` — BRD tohumu kurucuya böyle geçiyor; `Key` küçülüyor
-ama `Action` alanı büyük harfli kalıyor), snake (`view_sensitive`,
-`change_status` — MOD-0251), ve düz küçük harf.
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-09
 
-Sonucu: aynı fiil iki ayrı kod gibi davranıyor. Çeviri köprüsünü ıskalıyor
-(bir satırda "Görüntüle", yanındakinde "Read"), aile eşlemesini ıskalıyor
-(renksiz kalıyor), ve aksiyon dağılımı panelinde iki ayrı çubuk üretiyor.
+Kontrol listesi maddesinde `EvidenceRequired` alanı var, saklanıyor, izdüşüme taşınıyor
+ve **motor gerçekten uyguluyor** — kanıt yoksa eylem kapatılıyor:
 
-Ölçüm komutu (sayı yazmıyorum — kayar):
+    WorkItemProjectionService.cs:186
+      Disabled("approve", ActionApproveKey, WorkAggregationReasonCodes.EvidenceRequired, …)
 
-    mongosh "mongodb://localhost:27017/diten_auth_v3" --quiet --eval '
-      const a={}; db.permissions.find({},{Action:1,_id:0}).toArray()
-        .forEach(x=>a[x.Action]=(a[x.Action]||0)+1);
-      const n=s=>s.toLowerCase().replace(/_/g,"-"); const m={};
-      Object.keys(a).forEach(k=>{(m[n(k)]=m[n(k)]||[]).push(k+"("+a[k]+")")});
-      print(JSON.stringify(Object.entries(m).filter(([,v])=>v.length>1)));'
+Ama görev formundan madde eklerken değer **sabit yazılıyor**:
 
-2026-09-08 ölçümünde dokuz çakışma vardı: sekizi büyük/küçük harf
-(`read/Read`, `create/Create`, `update/Update`, `approve/Approve`,
-`publish/Publish`, `submit/Submit`, `preview/Preview`, `validate/Validate`),
-biri kebab/snake (`lookup-validation` **ve** `lookup_validation` — bunlar iki
-ayrı izin, iki ayrı modülde).
+    form-page.js:226
+      { text, requirement: checklistDraftLevel, evidenceRequired: false }
 
-⚠ **Bugün yapılan yalnız görüntü yamasıdır.** `PermLabel.normalizeAction`
-ekrana basmadan önce küçültüp `_` → `-` çeviriyor, böylece kullanıcı tek bir
-fiil görüyor. `Permission.Key`, `Action` alanı, filtre ve atama çağrısı
-**dokunulmadan** duruyor — ADR-001 §1 anahtarı dondurdu. Kusur yerinde duruyor,
-yalnız görünmüyor.
+Yani alan var, motor sayıyor, **hiç kimse işaretleyemiyor**. Kutu ekranda yok, dolayısıyla
+`EvidenceRequired = true` olan bir madde yalnız şablondan gelebilir.
 
-⚠ Şu an bir birleşme sorunu YOK: aynı satırda aynı normalize-aksiyondan iki izin
-taşıyan hiçbir kaynak yok (ölçüldü: sıfır). Ama bu bir garanti değil, bir
-rastlantı — iki modül aynı kaynak altında `Read` ve `read` tanımlarsa kullanıcı
-aynı yetkiyi iki kez görür ve hangisini verdiğini bilemez.
+⚠ Bu, MOD-0024 paketinin anlattığı `reasonCode: null` hatasının **birebir kardeşi**:
+istemci bir alanı sabit gönderir, motor sadakatle onu yazar, ve sütun aylarca boş kalır
+— kimse fark etmez çünkü hata bir istisna değil, bir varsayılan.
 
-**Ne yapılır:** tohum/manifest düzeyinde aksiyonu tek yazıma (küçük harf kebab)
-normalize et, ve `Permission` kurucusunda `Action`'ı `Key` ile aynı kurala sokan
-bir guard test yaz — bugün `Key` küçülüyor, `Action` küçülmüyor; ayrışmanın
-kaynağı tam olarak bu.
+**Ne zaman yapılır:** ⚠ Tek başına DEĞİL. Kanıtın kendisi **MOD-0031 (Evidence Linking
+Service)**'in işi ve o modül **kayıtta var, kodda yok** (`services/` altında karşılığı
+bulunmuyor, 2026-09-09 ölçümü). Bugün kutuyu açmak, işaretlenebilir ama sağlanamaz bir
+zorunluluk üretir: madde işaretlenemez, ekleyecek kanıt da yoktur.
 
-**Ne zaman yapılır:** `Action` alanını değiştirmek veri migration'ı gerektirir.
-`ModulePermissionResolver` / `SelectFor` bu alanı okumaz, ama `SelectFor`'un
-Viewer dalı `p.Action == "read"` karşılaştırması yapar (`StringComparison.
-OrdinalIgnoreCase`) ve `GetPermissionsByModule` gibi yollar ayrıca sınanmalıdır.
-Ayrı bir turda, kendi Scope-korunumu ölçümüyle.
+Doğru turu **MOD-0024 Faz 2 (görev kapanış zarfı)** — aynı dosyalara dokunuyor ve aynı
+soruyu cevaplıyor: bir görev kapanırken neyi kanıtlamış olması gerekir.
+
+**Ölçüm komutu:**
+
+    grep -n "evidenceRequired: false" frontend/Diten.Web/wwwroot/assets/js/Tasks/form-page.js
+    grep -rn "EvidenceRequired" services/Diten.Platform/src/Diten.Platform.Application/Features/WorkAggregation/
+
+### BL-346
+
+**MOD-0024 Dilim 1e — İş Raporu dışa aktarma: düğme ve davranış birlikte**
+
+DURUM: ⚠️ KAPANIŞ (KISMİ) · SAHİP: ali.tufanoglu · KOD: 2026-09-10 (commit: CONTROL TOWER alacak)
+
+**Ne yapıldı.** `GET /api/v1/tasks/work-report/export?format=csv|json` + web proxy
+`/Tasks/api/work-report/export` + araç çubuğunda, filtre rozetinin yanında indirme menüsü
+(CSV · JSON). Dosya, raporun **arkasındaki satırlar**: her görev bir kez, ve her satırda
+ekrandaki hangi hücreye girdiğini söyleyen `1/0` sütunları (`Opened`, `Late`,
+`AgingOlderThan30Days`, …). Bir sütunu toplamak, ekrandaki o sayıyı verir.
+
+**Kararlar ve neden.**
+- **Aynı sorgu, ayrı sorgu değil.** `WorkReportRepository.ExportAsync`, sayıların kullandığı
+  `ReadAsync`'i çağırır; üyelik `WorkReportTally.Select`'ten gelir. Kapsam
+  (`IWorkReportScopeSource` → MOD-0018-FU15 `IDataScopeResolver`), dönem, beş filtre ve
+  kapsam tercihi ekranınkiyle aynıdır. Reddedilen: `work-report/items`'ı sayfa sayfa
+  çağırmak — o uç **tek hücre** döndürür, "raporun satırları" diye bir hücre yok.
+- **İzin aynı:** `WorkReportRead`. Ayrı `work-report.export` açılmadı.
+- **Sınır aşılırsa ret, kesme yok:** 50 000 (audit'in `MaxRows`'u).
+  `WORK_REPORT_EXPORT_TOO_LARGE` → ekran "filtreyi daraltın" der, "başarısız" demez.
+- **Sütun başlıkları çevrilmez** — ölçüldü: audit CSV'si sabit İngilizce tanımlayıcı yazıyor.
+- **Audit'ten iki bilinçli fark:** UTF-8 BOM (Excel'de Türkçe/Arapça başlık bozulmasın) ve
+  sayılar invariant kültürde (`1,5` virgüllü dosyada hücre böler).
+- **Dosya adı öneki yerelleşir:** sunucu `work-report_{ilk gün}_{son sayılan gün}` yazar,
+  ekran yalnız öneki okuyucunun diline çevirir (`is-raporu_…`).
+- **Object URL `finally` içinde bırakılır** — audit'te `click()`'ten sonraki satırdaydı.
+
+**Kasten yapılmayanlar.** XLSX (audit deseninde yok, kütüphane getirir) · grafik/PNG ·
+zamanlanmış rapor · **dışa aktarma denetim kaydı** (→ BL-347).
+
+**Canlı doğrulama — 2026-09-10, `admin@diten.com`, `/Tasks/WorkReport`:**
+
+Ölçüldü ✅
+- Rota üç katmanda var: web proxy 302 (oturumsuz → giriş), gateway 401, Platform 401;
+  karşılaştırma için var olmayan yol 404.
+- Düğme menüsü açılıyor, iki giriş (CSV · JSON) çalışıyor; rapor yüklenince etkin.
+- CSV: 200, `text/csv; charset=utf-8`, ilk üç bayt `EF BB BF` (BOM), başlık satırı doğru.
+  `Content-Disposition` ve `X-Work-Report-Export-Row-Count` gateway + web proxy'den sağ geçiyor.
+- JSON: 200, `application/json`, dizi. `format=xlsx` → 400 `VALIDATION_FAILED`.
+- Dosya adı yerel önekle ve dönemle iniyor: `is-raporu_2026-08-12_2026-09-10.csv`,
+  `تقرير-العمل_2026-08-12_2026-09-10.csv`.
+- Her indirmede 1 `createObjectURL`, aynı URL için 1 `revokeObjectURL`; sayfada `<a download>` kalmıyor.
+- Işık ve koyu tema; tr ve ar (`dir="rtl"`, menü sola açılıyor, bildirim Arapça).
+- Konsol: tek hata, bilerek gönderilen `format=xlsx` isteğinin 400'ü.
+
+Ölçülemedi ⚠️ — **kapanışı bekleten madde bu**
+- **Sütun toplamı = kart, filtresiz ve iki filtreli.** Geliştirme veritabanında
+  (`diten_personalization_dev`) görev yok: `scripts/seed-closure-outcomes-dev.sh --status` →
+  `tasks: 0`. Rapor boş, dosya yalnız başlık; 0 = 0 kanıt değildir. Kimlik bugün
+  `WorkReportExportTests.Summing_a_column_…` ve S1/S2 sabotajlarıyla korunuyor, canlıda değil.
+- **403 → yetki cümlesi.** İzinsiz bir kullanıcıyla oturum açılmadı; yalnız vitest'te ölçüldü.
+
+**Ölçüm komutları:**
+
+    dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests --filter "FullyQualifiedName~WorkReportExport"
+    (cd frontend/Diten.Web && npx vitest run tests/work-report-export.test.js)
+    grep -n "await ReadAsync(criteria, ct" services/Diten.Platform/src/Diten.Platform.Infrastructure/Persistence/Repositories/WorkReportRepository.cs
+
+**Kalan ölçümün yeri:** `docs/guides/operations/organization-chain-walkthrough.md` §8 —
+sahibin walkthrough'unda gerçek görevlerle, filtresiz ve tüzel kişilik filtreli iki
+indirmeyle kapanır. Ajanın test görevi yazması reddedildi: dev veritabanında tüzel kişilik 0,
+atama 0 (2026-09-10 ölçümü) — "iki filtreli" kontrol için gereken veri, sahibin elle girmek
+üzere sıfırladığı walkthrough verisinin ta kendisi.
+
+### BL-347
+
+**İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+Dilim 1e (BL-346) audit export'unu taklit etti, bir yer hariç: audit handler'ı indirmeden
+sonra `AuditMetaAuditWriter.WriteAsync(... AuditCategory.DataExport ...)` çağırıyor. Aynı
+çağrı İş Raporu için **yazılmadı**, çünkü o yazıcı her olayı şöyle damgalıyor:
+
+    AuditMetaAuditWriter.cs  ActorType = PlatformAdministrator · IsPlatformGlobal = true · SourceModule = "Audit"
+
+Bir kiracı kullanıcısının indirmesi bununla kaydedilseydi, kayıt "bir platform yöneticisi
+yaptı" diyecekti — yanlış kayıt, kayıtsızlıktan kötüdür.
+
+**Risk:** GxP bağlamında "kim, hangi veriyi, ne zaman sistemden çıkardı" sorusunun bugün
+cevabı yok. Veri kapsamla sınırlı (kişi zaten görebildiğini indiriyor), ama iz yok.
+
+**Ne zaman yapılır:** kiracı tarafı denetim yazıcısı (`IAuditableCommand` hattının sorgu
+eşdeğeri veya `AuditMetaAuditWriter`'a aktör tipi parametresi) karara bağlandığında. Tek
+satırlık ekleme olarak değil — önce aktör tipini doğru yazan bir yazıcı gerekir.
+
+**Ölçüm komutu:**
+
+    grep -n "ActorType\|IsPlatformGlobal\|SourceModule" services/Diten.Platform/src/Diten.Platform.Application/Features/Audit/Services/AuditMetaAuditWriter.cs
+    grep -n "AuditMetaAuditWriter\|DataExport" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/WorkReportExportQueryHandler.cs
+
+### BL-348
+
+**Docs yol muhafızı: `docs/` altında beşli dışına işaret eden kod artık derlemede değil testte düşer**
+
+DURUM: ✅ KAPANDI · SAHİP: ali.tufanoglu · KOD: 2026-09-10 · COMMIT: `fe8aaa6e` (CT doğruladı: yeşil → kendi sabotajı `scripts/ct-sabotage-docsguard.ps1:2 → docs/audits` kırmızı → yeşil)
+
+**Ne yapıldı.** `tests/architecture/TenantArchitecture.ArchitectureTests/DocsPathGuardTests.cs`
+— kod dosyalarında (`.cs .cshtml .js .py .sh .ps1 .json .csproj .css .html .yaml .yml .xml
+.resx`) `docs/` altında `vendor · records · roadmap · guides · reference` dışındaki bir
+klasöre giden yolu bulur; hata `dosya:satır → docs/<eski> — bkz. docs-organization.md §4`.
+`.antigravity/rules/docs-organization.md` §4 madde 4'e `.ps1` ve testin adı eklendi.
+
+**Neden.** 2026-09-07 taşıması (`9d8551e1`) kodu dört kez kırdı — `.py`, `.css`,
+`.cs` (`DocumentReferenceListTests`, 10 test), `.ps1` — ve kural bunu **hatırlamaya**
+bırakıyordu; listesinde `.ps1` bile yoktu.
+
+**Kararlar.**
+- Klasör sayılan yalnız ayraçla devam eden segment (`docs/x/`, `docs\x\`) ve ardından
+  başka argüman gelen `Path.Combine(…, "docs", "x", …)`. `docs/` kökündeki DOSYA başka soru.
+- `Path.Combine` biçiminde klasör adı boşluk içeremez — ilk yanlış pozitif bir UI etiketiydi
+  (`DemandIdeaCapturePageMapper.cs:197`, `"docs", "Supporting documents attached"`).
+- Servislerin kendi `docs/` klasörleri (`Diten.AuthService`, `Diten.Platform`) diskten
+  bulunur, listelenmez. Yorumlar taranır — kırılan CSS bir yorumdu.
+- `.yml` listeye eklendi (CI iş akışları); brifingde `.yaml` vardı.
+
+**Sabotaj kanıtı.**
+1. `DocumentReferenceListTests.cs`'de `"docs", "integration"` → kırmızı,
+   `…DocumentReferenceListTests.cs:30 → docs/integration`.
+2. `scripts/smoke-mod0155-visit-planning-authenticated.ps1`'e `docs/audits/x.md` → kırmızı,
+   `…:72 → docs/audits` — `.ps1` kapsamını kanıtlar.
+İkisi de geri alındı (sağlama değerleri aynı), muhafız yeşil.
+
+**Kasten yapılmayanlar.** `docs/` kökündeki var olmayan DOSYAYA işaret eden referanslar
+(ör. `ActivateModuleCatalogItemCommandHandler.cs:50` → `docs/workflow-transition-gate-standard.md`)
+bu muhafızın kapsamı dışında; ayrı iş. Metin taraması — iki ifadeye bölünmüş yol kaçar.
+
+**Ölçüm komutu:**
+
+    dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --filter "FullyQualifiedName~DocsPathGuardTests"
+
+### BL-349
+
+**Görev detayı: kimliğini bilen herkes açabiliyor — liste süzülüyor, detay süzülmüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`GetTaskItemListHandler` yalnız bana atanan + havuzumdaki görevleri döner. `GetTaskItemByIdHandler` ise
+yalnız kiracı filtresi + `platform.tasks.read` ister: görevle hiçbir ilişkisi olmayan kullanıcı, kimliğini
+bilirse (bağlantı, tahmin, başka ekrandan kopya) kiracıdaki her görevin başlığını, açıklamasını ve alanlarını
+okur. Toplantı modülü görev bağlarını göstermeye başlayınca bu yol görünür olur.
+
+**Karar gerekli:** "kim hangi görevi görebilir" — atanan/talep eden/izleyen mi, birim/şirket kapsamı mı,
+yoksa okuma yetkisi olan herkes mi (bugünkü fiilî durum). Cevap BL-057'nin listeleme yarısıyla aynı yerden
+çıkmalı; iki ayrı kural yazılmamalı.
+
+**Ölçüm komutu:**
+
+    grep -n "GetByIdAsync\|_actor" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/GetTaskItemByIdHandler.cs
+
+### BL-350
+
+**Tekrarlayan kural formunda kişi listesi hep boş — ekran düz liste bekliyor, sunucu zarf gönderiyor**
+
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `b7d8918b` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** `fetchJson` dizi değilse `rows.people` / `rows.People` zarfını açıyor (`Tasks/api.js`'in kendi `assignablePeople()`
+yolunun aynısı); havuz ve şablon listeleri değişmedi; kayıtlı seçim düzenlemede yine yerine geliyor. 3 test
+(`recurrence-rule-assignable-people-envelope.test.js`) eski kodda 2 kırmızı, yenide yeşil — CT kendi sabotajıyla ölçtü.
+**Not:** aynı kalıp `Tasks/Templates/form.js:26`'da da var; o üç uç bugün zarf döndürmediği için bozuk değil, gizli aynı hata.
+
+`Tasks/RecurrenceRules/form.js:17-30` `fetchJson` yalnız dizi kabul ediyor (`Array.isArray(rows) ? rows : []`).
+`GET api/v1/tasks/lookups/assignable-people` ise `AssignablePersonLookupDto { People, Excluded }` döner
+(`TaskModels.cs:975`). Sonuç: kişi seçici boş; kural yalnız havuza yazılabiliyor. Görev formu aynı uca
+`Tasks/api.js:307` üzerinden gidiyor ve zarfı açıyor — kural formu onu kullanmıyor.
+
+**Ölçüm komutu:**
+
+    sed -n 17,30p frontend/Diten.Web/wwwroot/assets/js/Tasks/RecurrenceRules/form.js
+    grep -n "record AssignablePersonLookupDto" -A2 services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/TaskModels.cs
+
+### BL-351
+
+**`Tasks/api.js`: aynı hata kodu iki mesaja bağlı — "bekleme kişisi" reddinde yanlış cümle**
+
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `be8c3ecf` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** Temel eşleme tek: atama cümlesi (çağıranların hepsi atama). `INQUIRE_REASON_CODE_OVERRIDES`
+bekleme cümlesini taşıyor; `failureMessage(result, overrides)` ikinci argüman aldı; `inquire`'ı gönderen TEK yer
+(`WorkCenterNext/app.js` `submitRealTransition`) onu geçiyor. Yeni resx yok, sunucu değişmedi. Muhafızlar: temel eşlemede
+her kod bir kez · geçersiz kılma yalnız verilince · `submitRealTransition` içindeki her çağrı geçiyor ve inquire'ı başka
+gönderen yok — her biri kendi yarısı çıkarılınca kırmızı (alt ajan + CT sabotajı).
+
+`REASON_CODE_MESSAGE_KEYS` içinde `TASK_ASSIGNEE_NOT_ASSIGNABLE` iki kez: satır 68 (`errorWaitingOnNotAssignable`)
+ve 155 (`errorAssigneeNotAssignable`). JavaScript nesne sabitinde sonraki kazanır; `InquireTaskItemHandler`
+(`TaskItemTransitionHandlers.cs`, bekleme kişisi reddi) aynı kodu döndüğünde kullanıcı "Bu kişiye iş atanamaz.
+Listeden birini seçin." okur, oysa beklediği kişiyi seçiyordu. `ErrorWaitingOnNotAssignable` 7 dilde var ama
+hiç gösterilmiyor (ölü anahtar).
+
+**Ölçüm komutu:**
+
+    grep -n "TASK_ASSIGNEE_NOT_ASSIGNABLE" frontend/Diten.Web/wwwroot/assets/js/Tasks/api.js
+
+### BL-352
+
+**Atananı uygunluğunu kaybetmiş tekrarlayan kural kapatılamıyor — koruma her kayıtta soruyor**
+
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-11 · COMMIT: `2eb678e6` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı.** Güncellemede koruma yalnız bu kayıt bir atama SEÇİYORSA sorulur: hedef (tür/kişi/havuz) kayıtlıdan farklıysa
+VEYA kural pasiften aktife dönüyorsa (CT eki: yeniden etkinleştirme = yeniden atama). Değişmeyen hedef — kapatmak dahil —
+sorgusuz kaydedilir. Oluşturma ve zamanlanmış üretim değişmedi; koruma çağrısı yazmadan önce ve zorunlu bağımlılık olarak
+duruyor (kaynak tarayan muhafız yeşil). 5 test kayıt eden koruma ikizi üzerinde: kapatma / başka alan düzenleme sormaz,
+yeniden etkinleştirme reddedilir, hedef değişince sorar. Sabotaj: alt ajan (a,b kırmızı) + CT iki ayrı (1 + 2 kırmızı).
+Tasks+WorkAggregation 1355/1355. Açık kalan BL-354: aktif kalan kuralın uygunsuz atananına üretim devam eder.
+
+`01bc0915` ile `UpdateTaskRecurrenceRuleHandler` (`TaskRecurrenceRuleHandlers.cs:162`) her kayıtta
+atama korumasını çağırıyor. Kuralın kişisi pozisyonunu kaybettiyse kural **pasife almak için bile**
+kaydedilemiyor (400 `TASK_ASSIGNEE_NOT_ASSIGNABLE`); önce başkasına atamak gerekiyor.
+
+**Karar (sahip):** koruma yalnız atama hedefi (tür/kişi/havuz) **değiştiğinde** sorulur; kuralı kapatmak her
+zaman serbesttir. Atamayı değiştirmeden kaydeden, o atamadan sorumlu değildir (yeniden atama ile aynı ilke).
+Açık kalan: BL-354 — aktif kalan ama atananı uygunsuz kural üretmeye devam eder.
+
+**Ölçüm komutu:**
+
+    grep -n "_assignmentGuard.CheckTargetAsync" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskRecurrenceRuleHandlers.cs
+
+### BL-353
+
+**Şablon kaydında varsayılan havuz kapsamdan geçmiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`TaskTemplateHandlers.cs:98,134` (oluştur) ve `:216,240` (güncelle) `DefaultPoolPositionId`'yi yalnız biçim
+olarak doğruluyor (`TaskTemplateRules.ValidateAssignment`): pozisyon aktif mi, birimi canlı mı, kaydedenin
+kapsamında mı sorulmuyor. Şablondan görev açma `01bc0915`'ten beri soruyor; yani kapsam dışı havuzlu şablon
+kaydedilebilir ama ondan görev açılamaz — kullanıcıya "şablon bozuk" diye görünür. Şablonun kişi alanı yok.
+
+**Ölçüm komutu:**
+
+    grep -n "DefaultPoolPositionId\|_assignmentGuard" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskTemplateHandlers.cs
+
+### BL-354
+
+**Zamanlanmış üretim atananın uygunluğunu yeniden sormuyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+
+`GenerateDueRecurringTasksHandler.cs:87-99` yalnız "atama hedefi söylenmiş mi" (`TaskAssignmentIntentRules`)
+bakıyor; havuz için "pozisyon aktif mi" `CreateTaskItemHandler`'ın havuz dalında kalıyor; kişi için
+pozisyon/birim, her ikisi için kapsam sorulmuyor (`IsScheduledGeneration` muafiyeti — bilinçli: çağıran yok).
+Kural kaydedilirken kapsam soruldu; kişi sonradan ayrılırsa üretim ona görev açmaya devam eder. Kabul
+edilebilir davranış: hedef uygunsuzsa dönemi yakmadan atla ve `task.recurrence.rule_unassigned` gibi logla;
+kimin kapsamıyla sorulacağı (kuralı kaydeden mi?) karar ister. BL-352 ile birlikte ele alınmalı.
+
+**Ölçüm komutu:**
+
+    grep -n "IsScheduledGeneration\|TaskAssignmentIntentRules" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/GenerateDueRecurringTasksHandler.cs
+
+### BL-355
+
+**Görev oluşturmada istekle gelen `OrganizationUnitId` kapsamdan geçmiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10 (`01bc0915` öncesi de böyleydi)
+
+`CreateTaskItemHandler.cs:193` (havuz) ve `:200` (kişi) `request.OrganizationUnitId` verilmişse olduğu gibi
+alıyor; birimin var/aktif olduğu ve çağıranın kapsamında olduğu sorulmuyor. Ekran birim göndermiyor
+(pack §12 K6: "kullanıcı birim seçmez"), yani yalnız doğrudan API çağrısı; ama görev başka şirketin birimine
+kaydedilebilir ve BL-057'nin şirket raporları yanlış şirkete yazar.
+
+**Ölçüm komutu:**
+
+    grep -n "request.OrganizationUnitId" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/CreateTaskItemHandler.cs
+
+### BL-356
+
+**Pozisyonsuz kullanıcı başkasına iş veremiyor — "sorumluluk alanı" kavramı yok**
+
+DURUM: KARAR VERİLDİ (sahip, 2026-09-10) · SAHİP: sahip (veri) · ÖLÇÜLDÜ: 2026-09-10
+
+`01bc0915` sonrası sunucu, seçicinin zaten uyguladığı kuralı uyguluyor: kapsam (`OrgDataScopeResolver.cs:9-24,
+65-78`) yalnız **aktif pozisyon atamasından** türetiliyor; pozisyonu olmayan kullanıcı (yerel `admin@diten.com`
+dahil) boş kapsamla başkasına kişi/havuz ataması, yeniden atama ve kural yazamıyor; kendine açabiliyor.
+
+**Karar:** iş dağıtacak gerçek kullanıcılara pozisyon tanımlanır (SAP: iş dağıtan herkes org şemasında bir
+pozisyondadır). `admin@diten.com` kurulum hesabıdır, iş dağıtmaz. **Ertelenen:** Oracle'daki "sorumluluk alanı"
+gibi hatta olmayan birimlere (Kalite, İK) elle verilen kapsam — gerektiğinde `EntitlementDataScope` üzerinden;
+`Allows`'ın (3) bacağı zaten "bana verilmiş birim/pozisyon" diye okuyor, yalnız kaynağı yok.
+
+**Ölçüm komutu:**
+
+    sed -n 9,24p services/Diten.Platform/src/Diten.Platform.Application/Authorization/OrgDataScopeResolver.cs
+
+### BL-357
+
+**Devir bayrağı görevi açana da uygulanıyor — canlıdan gelen bug**
+
+DURUM: ⚠️ KAPANDI (KISMİ) · SAHİP: CT · KOD: 2026-09-10 · COMMIT: `d35f8f32` · ✅ için: sahibin kontrol turu (canlı oturumla doğrulanmadı)
+
+**Ne yapıldı** (WP-PSS-MOD0024-REASSIGN-REQUESTER-01, Antigravity; CT doğruladı). Sıra: önce "sen kimsin" (üçüncü kişi →
+403 `TASK_REASSIGN_NOT_PERMITTED`, gerçek sebep), sonra bayrak yalnız `isHolder && !isRequester` için (409, mesaj aynı), sonra
+`01bc0915` koruması değişmeden (Assign + uygunluk + kapsam talep sahibine de sorulur). Projeksiyon aynı kural: talep sahibinin
+satırında reassign bayrak kapalıyken de ENABLED; yalnız holder gri + `DELEGATION_NOT_ALLOWED`. **Davranış değişikliği:** üçüncü
+kişi + bayrak kapalı artık 409 değil 403 (eskiden yanlış sebep). `The_policy_answers_before_the_who_are_you_check` testi
+yeniden yazıldı — "rakip" aktörü görevin AÇANIydı, yani test bu hatayı doğru davranış diye kilitliyordu. +5 test; ajanın
+sabotajı 5 kırmızı, CT'nin iki ayrı sabotajı (handler / projeksiyon) 2+2 kırmızı; Tasks+WorkAggregation 1350/1350; yazma
+koruması 97/97. Yeni metin yok. Eski /Tasks ekranında reassign düğmesi hiç yok (tarandı).
+
+`ReassignTaskItemHandler` (`TaskItemTransitionHandlers.cs:1220`) `DelegationAllowed` kapalıysa aktör kim
+olursa olsun 409 `TASK_DELEGATION_NOT_ALLOWED` döner; holder/requester ayrımı (`:1227`) ondan SONRA; kapsam
+koruması (`:1256`) en sonda. Görev Merkezi de aynı bayrakla düğmeyi herkese kapatıyor
+(`TaskWorkItemProvider.cs:1924-1928`). Bayrağın kodda tanımı "policy flag only" (`TaskItem.cs:232`) — kime
+uygulanacağı yazılmamış. Sonuç: görevi açan (talep sahibi) kendi görevini başkasına veremiyor; kendine açtığı
+görevi de.
+
+**Karar (sahip):** bayrak **alan kişinin** ileri devrini sınırlar; **açan kişi** her zaman yeniden atar (Assign
+yetkisi + `01bc0915` kapsam koruması yine sorulur). Kendi açtığı kendi görevi → bayrak gerekmez. SAP'de iletme
+kısıtı alıcıya konur, işi başlatan yeniden atar; Oracle'da görev sahibi her zaman reassign yapabilir.
+
+**Ölçüm komutu:**
+
+    grep -n "DelegationAllowed" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskItemTransitionHandlers.cs services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-358
+
+**Canlı bildirim: "kişi kendine görev açamıyor" — kanıt bekliyor**
+
+DURUM: AÇIK · KANIT BEKLİYOR · SAHİP: sahip (ortam · kullanıcı · tam hata mesajı) · KAYIT: 2026-09-10
+
+Testlerde kendine açma 201 (`TaskAssignmentWriteGuardHttpTests.A_task_for_MYSELF_is_201_without_assign`);
+canlıdaki kod `01bc0915`'i içermiyor. Koddaki tek aday: pozisyonsuz kullanıcının görevi kök birime düşer
+(`CreateTaskItemHandler.cs:587-600`, HQ öncelikli tek kök); aktif kök yoksa `ORGANIZATION_UNIT_UNRESOLVED`.
+Tahmin değil ölçüm için ekran görüntüsü + kullanıcı + ortam gerekiyor.
+
+### BL-359
+
+**PPM `assign-owner` izni otomatik grant yollarından dışlanmıyor — altyapı (AuthService) işi**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · TALEP: Codex / PPM, 2026-09-10 · ÖLÇÜLDÜ: 2026-09-10
+
+Anahtar `ppm.portfolios.assign-owner` henüz hiçbir dalda/pakette yok (`git log --all -S'assign-owner'` boş;
+MOD-0117/DCP-006 kapsamı genişletilmeli). Eklendiğinde: `FullCatalogPermissionGrantService` ve
+`DefaultRolePermissionTemplate` PPM politikasına hiç bakmıyor (`_ppmPolicy.Applies` yalnız
+`TenantEffectivePermissionResolver.cs:51` ve `EntitlementPermissionSyncService.cs:55,75,185`'te) → SuperAdmin
+tam katalogla, kiracı Admin modül eşitlemesiyle anahtarı otomatik alır; onaylı karar "portföy sahibi ataması
+yalnız açık grant". Genel dışlama mekanizması yok. Sıra: PPM yönetişim genişletmesi (anahtar) → Auth dışlama +
+BL-360 aynı WP'de. Auth, PPM için korumalı yol; iş CT'nin altyapı kulvarında.
+
+**Ölçüm komutu:**
+
+    grep -rn "_ppmPolicy.Applies\|IPpmEntitlementPermissionPolicy" services/Diten.AuthService/src --include=*.cs
+
+### BL-360
+
+**PPM toplu-grant kapısında harf tutarsızlığı: `Applies` "PPM" (Ordinal) sorulur, kod sonra küçültülür**
+
+DURUM: AÇIK · SAHİP: CT (altyapı) · ÖLÇÜLDÜ: 2026-09-10
+
+`PpmEntitlementPermissionPolicy.Applies` (`:16-17`) `StringComparison.Ordinal` ile `"PPM"` arar.
+`EntitlementPermissionSyncService` (`:55,:75,:185`) kapıyı `NormalizeModuleCode` (trim + lowercase,
+`ModulePermissionResolver.cs:50-51`) çağrısından ÖNCE soruyor; Auth DB'de modül `"ppm"`. `"ppm"`/`"Ppm"` gelen
+kod kapıyı geçer → PPM izinleri kiracı Admin'e toplu grant edilir; `"PPM"` gelen reddedilir. Düzeltme: kapıyı
+normalize edilmiş kodla sor **ve** `Applies`'ı harf duyarsız yap; resolver (`TenantEffectivePermissionResolver.cs:51`)
+aynı `Applies`'ı paylaştığından süzme sonucunun değişmediği testle gösterilir (sessiz genişleme yok).
+
+**Ölçüm komutu:**
+
+    grep -n "_ppmPolicy.Applies\|NormalizeModuleCode" services/Diten.AuthService/src/Diten.AuthService.Application/Common/Services/EntitlementPermissionSyncService.cs
+
+### BL-361
+
+**Görev üzerindeki yazma yolları ilişki sormuyor: yetkisi olan herkes, kimliğini bildiği her görevi başlatıp tamamlayabiliyor**
+
+DURUM: ⚠️ İLK YARI KAPANDI (KISMİ) · COMMIT: `e904bdfe` (2026-09-11) · İKİNCİ YARI AÇIK (güncelle/sil/toplu sil/bağımlılık/kontrol listesi + okuma BL-349) · ✅ için: sahibin kontrol turu
+
+**İlk yarı — ne yapıldı** (WP-PSS-MOD0024-LIFECYCLE-AUTHORITY-01, Antigravity; CT doğruladı). Handler'lar: start/resume/complete/
+submitReview yalnız holder, plan holder veya talep sahibi; üçüncü kişi 403 (`PERM_DENIED`, ön yüz `errorNoAccess`), CanTransition'dan
+sonra, kapılardan ve yazmadan önce; reddedilende geçiş kaydı ve bildirim yok. Projeksiyon: holder olmayana holder fiilleri sunulmaz;
+talep sahibi outbox'ta plan görür; Ekibim'de yönetici yalnız talep sahibiyse cancel/reassign. 15 yeni test (11 HTTP gerçek yönlendirme
++ [HasPermission], 3 Ekibim, 1 kendine açılan); 2 outbox testi karara göre güncellendi. Sabotaj: ajan 8 hunk → 8 kırmızı; CT handler /
+projeksiyon ayrı → 2+2 kırmızı. Tasks+WorkAggregation 1370/1370. Kullanıcı dışı çağıran yok (tarandı). Alt görev özet listesi
+(`WorkItemSubtaskDto`) aksiyon taşımıyor; alt görevin kendi satırı aynı kuraldan geçiyor.
+
+**Karar ve bölme (2026-09-11):** başlat / sürdür / tamamla / incelemeye gönder = yalnız holder; planla = holder veya talep
+sahibi; kabul / sor / bırak projeksiyonda holder olmayana sunulmaz (BL-362) — hepsi **WP-PSS-MOD0024-LIFECYCLE-AUTHORITY-01**.
+Güncelle / sil / toplu sil / bağımlılık / kontrol listesi işaretleme **bu WP'de değil**: "talep sahibi + ayrı yönetim yetkisi"
+yeni izin anahtarı (manifest, AuthService eşitlemesi, 7 dilde çip etiketi → l10n kapısı) ister; ayrı karar ve paket. Okuma
+tarafı (BL-349) da o pakette.
+
+`TransitionTaskItemHandler` (`TaskItemTransitionHandlers.cs:201-707`) tek aktör kontrolünü iptal için yapıyor (talep sahibi,
+`:296-303`); **başlat** (`platform.tasks.update`), **sürdür**, **tamamla** (`platform.tasks.complete`) holder/talep sahibi sormuyor.
+`SubmitTaskForReviewHandler` (`:708-834`) ve `PlanTaskItemHandler` (`:835-921`) hiç aktör sormuyor. Update/Delete/BulkDelete
+(`TaskItemWriteHandlers.cs`), bağımlılık ekle/çıkar (`TaskDependencyHandlers.cs`), kontrol listesi işaretle/sırala: aynı —
+yalnız yetki + kiracı filtresi. Görünür kılan: **Ekibim** kapsamı (BL-023; `WorkItemsController.cs:77-88`,
+`TaskWorkItemProvider.cs:217-240`) astların görevlerini listeliyor ve projeksiyon başlat/tamamla düğmelerini `isHolder`'a bakmadan
+etkin çiziyor (`TaskWorkItemProvider.cs:1741-1752, 1781-1826`) → yönetici astının görevini tek tıkla başlatır/tamamlar; geçiş
+kaydı yöneticinin adıyla yazılır, kapanış kaydını işi yapan yazmamış olur (kapanış paketinin "yazarlık tersine dönmesin"
+ilkesine aykırı). Task-User rolünde Güncelle çipi var → her görev kullanıcısı için geçerli. Kod düzeyinde kesin; kimin hangi
+yetkiyi taşıdığı canlıda ölçülmedi.
+
+**Karar:** görev erişim modeli — (a) yalnız yetki + kiracı (bugün) · (b) ilişki şart. **CT önerisi:** başlat / sürdür /
+tamamla / incelemeye gönder = yalnız holder · planla = holder veya talep sahibi · güncelle / sil = talep sahibi (yönetim yetkisi
+ayrı, açık) · "X adına" işlem ileride açık ve damgalı bir özellik (rebuild spec'teki "X adına" damgaları). SAP: iş kalemini yalnız
+olası ajanı yürütür, yönetici vekâlet/yönlendirme ile; Oracle: sahip/yönetici "on behalf" yalnız açık yetkiyle. Okuma tarafı
+BL-349 ve listeleme BL-057 ile aynı karardan çıkmalı; BL-362 aynı WP'de. Tablo:
+`docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.
+
+**Ölçüm komutu:**
+
+    awk 'NR>=201 && NR<=921' services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/CommandHandlers/TaskItemTransitionHandlers.cs | grep -n "AssigneeUserId\|CreatedByUserId\|403"
+    grep -n "Build(\"start\"\|Build(\"complete\"\|var isHolder" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-362
+
+**Projeksiyon holder'a bakmıyor: kabul et / sor / bırak düğmeleri holder olmayana etkin çiziliyor, sunucu 403 diyor**
+
+DURUM: ⚠️ KAPANDI (KISMİ) · COMMIT: `e904bdfe` (2026-09-11, BL-361 ile aynı WP) · ✅ için: sahibin kontrol turu
+
+**Ne yapıldı.** accept (`:1721-1739` dalı), inquire, release yalnız `isHolder` ise sunuluyor; holder olmayana gizli (gri değil). Ekibim testleri kırmızı→yeşil (CT sabotajı 2 kırmızı).
+
+Handler'lar doğru: Accept (`TaskItemTransitionHandlers.cs:28-31`), Release (`:133-137`), Inquire (`:966-971`) holder değilse 403.
+Projeksiyon `isHolder`'ı hesaplıyor (`TaskWorkItemProvider.cs:1648`) ama accept (`:1712`), inquire (`:1847`), release (`:1877`)
+yapılarında kullanmıyor → Ekibim'de yönetici tıklar, 403 alır ("düğme açık, sunucu reddediyor"; K5 üretici ≠ tüketici).
+Düzeltme: holder olmayana bu üçü hiç sunulmaz (gizle; gri değil — "senin değil" için sebep metni gerekmez, yeni resx yok).
+BL-361 kararından bağımsız; aynı fonksiyon değiştiği için aynı WP'de.
+
+**Ölçüm komutu:**
+
+    grep -n "Build(\"accept\"\|Build(\"inquire\"\|Build(\"release\"\|var isHolder" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Providers/TaskWorkItemProvider.cs
+
+### BL-363
+
+**Görev motorunda üç küçük tutarsızlık (alt ajan tablosu; CT doğrulamadı)**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · KAYIT: 2026-09-11
+
+- Bağımlılık ekleme: döngü/çift kontrolü oku-sonra-yaz, kilit/versiyon yok (`TaskDependencyHandlers.cs:65-140`) — dar yarış:
+  iki eşzamanlı ekleme tek tek geçip birlikte döngü kurabilir.
+- `ChecklistWriteGuards` yorumu "ekle fiilinde kapalı görev kontrolü yok (BL-093)" diyor; `AddChecklistItemHandler` kontrolü
+  yapıyor (`ChecklistHandlers.cs:126-139` vs `:391-393`) — bayat yorum.
+- Yorum güncelle/geri çek kapalı görevde `Lifecycle` sormuyor, ekleme soruyor (`TaskCommentHandlers.cs:78-83` vs `:170-243`) —
+  kasıtlıysa belgelenmeli.
+
+Tablo: `docs/records/audits/2026-09/task-action-rules-matrix-2026-09-11.md`.

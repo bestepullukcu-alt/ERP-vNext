@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
-$auditPath = Join-Path $repoRoot 'docs/audits/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md'
-$fixAuditPath = Join-Path $repoRoot 'docs/audits/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md'
+$auditPath = Join-Path $repoRoot 'docs/records/audits/2026-07/mod-0028-fu06-runtime-smoke-reconciliation-2026-07-25.md'
+$fixAuditPath = Join-Path $repoRoot 'docs/records/audits/2026-07/mod-0028-fu06-mongo-index-compatibility-fix-2026-07-25.md'
 $dcpPath = Join-Path $repoRoot 'execution/portfolio/delivery-capability-packs/DCP-004-corporate-collection-controlled-document-registration-scope.md'
 $packPath = Join-Path $repoRoot 'execution/domains/platform-shared-services/module-packs/MOD-0028-FU06-corporate-collection-instance-foundation.md'
 $fu37Path = Join-Path $repoRoot 'execution/domains/platform-shared-services/module-packs/MOD-0029-FU37-corporate-company-registration-amendment.md'
