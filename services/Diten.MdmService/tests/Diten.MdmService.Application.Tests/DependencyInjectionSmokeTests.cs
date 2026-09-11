@@ -3,6 +3,9 @@ using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
+using Diten.MdmService.Infrastructure.Security;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -10,6 +13,30 @@ namespace Diten.MdmService.Application.Tests;
 
 public sealed class DependencyInjectionSmokeTests
 {
+    [Fact]
+    public void Finished_good_human_admission_context_is_scoped_and_existing_actor_registrations_remain()
+    {
+        var services = new ServiceCollection();
+        Diten.MdmService.Infrastructure.DependencyInjection.AddInfrastructure(
+            services,
+            new ConfigurationBuilder().Build());
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+
+        using var firstScope = provider.CreateScope();
+        var first = firstScope.ServiceProvider.GetRequiredService<IFinishedGoodHumanAdmissionContext>();
+        var firstAgain = firstScope.ServiceProvider.GetRequiredService<IFinishedGoodHumanAdmissionContext>();
+
+        Assert.IsType<FinishedGoodHumanAdmissionContext>(first);
+        Assert.Same(first, firstAgain);
+        Assert.NotNull(firstScope.ServiceProvider.GetRequiredService<IProductIdentityActorContext>());
+        Assert.NotNull(firstScope.ServiceProvider.GetRequiredService<IProductIdentityLifecycleActorContext>());
+        Assert.NotNull(firstScope.ServiceProvider.GetRequiredService<IProductAbbreviationActorContext>());
+
+        using var secondScope = provider.CreateScope();
+        var second = secondScope.ServiceProvider.GetRequiredService<IFinishedGoodHumanAdmissionContext>();
+        Assert.NotSame(first, second);
+    }
+
     [Fact]
     public void Fu03_scope_dependencies_are_registered_without_audit_transport_or_operational_runner()
     {

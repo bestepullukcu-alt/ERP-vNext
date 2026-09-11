@@ -27,6 +27,25 @@ public sealed class ProductIdentityLifecycleActorContextTests
     }
 
     [Theory]
+    [InlineData("tenant_user", "mdm.global-products.submit")]
+    [InlineData("platform_admin", "mdm.gskus.submit")]
+    [InlineData("partner_admin", "mdm.lskus.submit")]
+    [InlineData("tenant_user", "mdm.product-abbreviations.request")]
+    public void Shared_context_existing_actor_and_permission_behavior_is_preserved(
+        string actorType,
+        string permission)
+    {
+        var context = Create(
+            new("actor_type", actorType),
+            new("sub", ActorId.ToString("D")),
+            new("PERMISSIONS", permission.ToUpperInvariant()));
+
+        Assert.True(context.TryResolveCanonicalHumanSubject(out var subjectId));
+        Assert.Equal(ActorId, subjectId);
+        Assert.True(context.HasPermission(permission));
+    }
+
+    [Theory]
     [InlineData("service")]
     [InlineData("")]
     public void Resolve_non_tenant_human_actor_fails_closed(string actorType)

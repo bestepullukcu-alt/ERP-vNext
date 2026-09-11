@@ -4902,3 +4902,438 @@ has aggregate SHA-256 `750877b7b2b35be489013869ed9159f0f73a6460f0040300cedffb258
 This inventory baseline does not alter the diagnostic conclusions: the historical root cause remains `UNKNOWN`, the
 current two-second scenario remains `NOT REPRODUCED`, and P1A remains `CONDITIONAL PASS`. It grants no acceptance,
 status promotion, lifecycle completion, live acceptance or merge-ready claim.
+
+### 21.15 Phase 1.5 — Finished Good human-admission boundary — draft proposal (2026-09-11)
+
+This amendment remains a **planning-only draft** for every slice except the exact Slice B boundary recorded in
+§21.15.4. User approval on 2026-09-11 grants runtime/test code-start only for Slice B's seven exact paths; it does not
+change this pack's frontmatter or status, authorize Slice A/C, promote any lifecycle stage, or claim that P1A is
+accepted. P0A's exact FU21 pairs and audit mappings are consumed unchanged and must not be re-added. P1A remains a
+conditional storage/integrity/CAS/recovery foundation; it is not human authorization, coherent scope capture, a
+production caller, or workflow activation.
+
+The proposed admission boundary is:
+
+`canonical tenant human → exact mdm.finished-goods.submit → real FG/GSKU/revision/product chain → trusted and local
+finite Legal Entity scope → coherent immutable snapshot → existing operation reservation`.
+
+The first slice stops at a durable `Prepared` reservation. It does not start a workflow, apply a terminal decision,
+create a background authority, mutate the source lifecycle, produce a lifecycle audit intent, or advertise UI/
+Gateway behavior.
+
+#### 21.15.1 Re-measured code truth and authority gaps
+
+| Concern | Current code truth | Consequence for this amendment |
+|---|---|---|
+| Tenant | `ITenantContext` exposes the middleware-resolved tenant at `services/Diten.MdmService/src/Diten.MdmService.Application/Common/ITenantContext.cs:3-7`. Current MDM middleware accepts `jwtTenant ?? headerTenant`, including header-only input, at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Middleware/TenantResolutionMiddleware.cs:27-46`. FU21's trusted human boundary instead requires exactly one authenticated JWT `tenant_id` at `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeJwtContext.cs:18-41`. | Header/body tenant alone is not admission authority. The new MDM admission boundary must require exactly one authenticated JWT `tenant_id`, exact equality with `ITenantContext.TenantId`, and exact equality with any canonical gateway header; absent, duplicate, malformed or mismatched facts deny before parent/provider/reserve. |
+| Canonical human | `ProductIdentityLifecycleActorContext` rejects unauthenticated, duplicate or conflicting `sub`/name-identifier facts at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs:16-39`, but admits `tenant_user`, `platform_admin` and `partner_admin` at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs:65-66`. | FU21's current end-to-end human contract admits only exact `tenant_user` at `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeJwtContext.cs:25-41`; the other types are not automatic FG authority. Service actors are denied. |
+| Exact local permission | The same context parses permission claims but compares values case-insensitively at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityLifecycleActorContext.cs:41-56`. FU21 accepts ordinal module/permission pairs at `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:33-50`; the FG submit pair is recorded in `execution/domains/platform-shared-services/module-packs/MOD-0018-FU21-trusted-multi-legal-entity-scope-resolution.md:602-623`. | Admission needs a separate exact check for literal `mdm.finished-goods.submit`; read/create, prefix, wildcard and case drift are not substitutes. The client cannot supply the permission name. |
+| Actor consistency | `ProductLegalEntityScopeCandidateFacade` uses `IProductIdentityActorContext` at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs:15-31`; that context takes the first name-identifier or `sub` without lifecycle actor-type/cardinality/equality checks at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductIdentityActorContext.cs:16-25`. | Resolve the lifecycle human once and require exact equality with the candidate/provider subject. A facade success for another subject is rejected. |
+| Trusted candidates | Provider result carries tenant, subject, module, permission, `EvaluatedAtUtc` and Legal Entity IDs at `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:13-39`. The client validates echoed context, UTC freshness window and bounded canonical IDs at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:358-415`. | These are provider observations, not client authority. Credential/JWT material is never persisted. Current provider window is `[-5m,+1m]`; a narrower number is a new owner decision. |
+| Local candidates | The facade validates provider facts and intersects once with same-tenant active/non-deleted Legal Entities at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs:88-150`; the bounded referenceable read is documented at `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILegalEntityRepository.cs:11-19`. | Foreign, deleted or non-referenceable IDs are removed; an empty verified result is denial, never wildcard or GroupWide fallback. |
+| Policy evaluation | `ProductLegalEntityScopeEvaluator` allows existing tenant access in Preparation at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeEvaluator.cs:37-46`; Enforced computes intersections at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeEvaluator.cs:58-109`. | Preparation is a compatibility decision, not complete immutable admission evidence. The approved first slice is Enforced-only. |
+| Existing consumer guard | `ProductLegalEntityScopeConsumerGuard` is inside `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductsHandler.cs:82-274`. Missing rollout synthesizes Preparation at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Handlers/QueryHandlers/GetGlobalProductsHandler.cs:114-122`; the result does not preserve matched policy-period evidence. | It cannot be the source of a complete admission snapshot. Existing query behavior remains unchanged. |
+| Parent chain | FG→GSKU is `FinishedGood.GskuId` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGood.cs:5-12`; GSKU→revision is `Gsku.ProductDefinitionRevisionId` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs:6-20`; revision→Global Product is `ProductDefinitionRevision.GlobalProductId` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs:6-16`. Tenant/non-deleted reads are at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs:113-115`, `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs:34-49`, `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs:27-29` and `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs:32-34`. | All four records are re-read from the current tenant. Client-supplied parent IDs cannot establish the chain. The FG must be Draft at the expected version. |
+| Snapshot/storage | Snapshot v1 is `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:8-185`. P1A reserves and compares it at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:25-118,834-895`. | Hash equality proves integrity, not authorization or coherent capture. V1 lacks Global Product, exact permission/module, expected version, distinct observation times and effective period identity. |
+| Production wiring | Persistence registration moves from `IFinishedGoodRepository` directly to LSKU at `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs:52-55`; no P1A operation registration exists. API/manifest expose only read/create at `services/Diten.MdmService/src/Diten.MdmService.Api/Controllers/FinishedGoodsController.cs:20-44` and `services/Diten.MdmService/src/Diten.MdmService.Api/ModuleRegistration/ProductItemSkuMasterManifestProvider.cs:76-89`. | There is no production human-admission caller. API/manifest are a later substep and are advertised only after the internal boundary exists. |
+
+#### 21.15.2 Complete admission snapshot field/source contract
+
+The table covers every current v1 field and every additional fact required for coherent admission. “Persist” means
+inside `FinishedGoodIdentityWorkflowOperation.AdmissionScopeSnapshot`; outer operation facts stay independently
+equality-checked. A new version must not reinterpret a v1 row silently.
+
+| Field | State | Authoritative source / exact evidence | Binding, freshness, failure and replay rule |
+|---|---|---|---|
+| `SnapshotVersion` | v1 present | Server factory/constant at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:34,37-75`. | Server assigns at first reserve. Unknown/old shape fails closed pending explicit compatibility. Replay preserves it. |
+| `TenantId` | v1 present | Resolved `ITenantContext` at `services/Diten.MdmService/src/Diten.MdmService.Application/Common/ITenantContext.cs:3-7`; operation repo binds tenant at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:25-35,52`. | Admission additionally requires exactly one authenticated JWT tenant at `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeJwtContext.cs:25-41`, equal to resolved context and any gateway header. Header/body-only, duplicate, malformed or mismatch denies. Persist once; replay rechecks current tenant. |
+| `FinishedGoodId`, `FinishedGoodVersion`, `FinishedGoodLifecycleStatus` | ID v1 present; version/status proposed v2 | Tenant/non-deleted read at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs:113-115`; identity/version at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:5-11`; status at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGood.cs:11`. | Read under the ordered capture; require exact Draft and the requested expected version. Foreign/deleted/missing/status/version drift denies. Retry with another FG conflicts. |
+| `GskuId`, `GskuVersion`, `GskuLifecycleStatus` | ID v1 present; version/status proposed v2 | Persisted FG link at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGood.cs:7`; tenant/referenceable GSKU read at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs:34-49`; inherited version at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`; status at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs:16`. | Must equal the live link and the approved parent state/version. Foreign/deleted/changed/non-referenceable parent denies; replay cannot substitute another GSKU. |
+| `ProductDefinitionRevisionId`, `ProductDefinitionRevisionVersion`, `ProductDefinitionRevisionLifecycleStatus` | ID v1 present; version/status proposed v2 | Persisted GSKU link at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/Gsku.cs:8`; tenant revision read at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs:27-29`; inherited version at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`; status at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs:10`. | Must equal the live GSKU link and approved parent contract. Missing/foreign/link, status or version drift denies. Persist/fingerprint/replay unchanged. |
+| `GlobalProductId`, `GlobalProductVersion`, `GlobalProductLifecycleStatus` | **v1 missing; proposed v2** | Persisted revision link at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductDefinitionRevision.cs:8`; tenant product read at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs:32-34`; inherited version at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`; status at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/GlobalProduct.cs:10`; policy binding at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:11`. | Capture with parents. Foreign/deleted/link, status or version drift denies. Persist and fingerprint; replay cannot follow a changed link. |
+| `AdmissionCommandId` | v1 present | Operation ID contract at `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodIdentityWorkflowOperationResults.cs:7-17`; snapshot currently accepts caller value at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:37-51`. | Require non-empty server-validated ID and snapshot command = outer operation ID. Identical facts replay; actor/payload/parent/version drift conflicts. |
+| `StartIdempotencyKey` binding | outer only; proposed v2 hash fact | Outer immutable fact at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs:10-18`; lookup contract at `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowOperationRepository.cs:11-17`. | Normalize under P1A rule and bind into operation/snapshot fingerprints. Same key with different facts conflicts. |
+| `AdmissionActorSubjectId` | v1 present | V1 factory currently accepts a caller value at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:37-63`; no production human-admission caller exists. The planned FG-specific context is Slice B. | First slice exact `tenant_user`; candidate/provider subject must match. Duplicate/conflicting/service/platform/partner denies before scope/repo. Persist GUID only; recheck current authority on replay. |
+| `ExpectedFinishedGoodVersion` | outer only; proposed v2 | Outer operation at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs:15`; reservation contract at `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodIdentityWorkflowOperationResults.cs:13`; live version at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`. | Compare during capture. Stale/negative/mismatch conflicts with zero reserve. Persist/fingerprint; replay preserves first value. |
+| `ModuleCode` | **v1 missing; proposed v2** | Server constant `product-item-sku-master` at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs:11-13` and FU21 pack `execution/domains/platform-shared-services/module-packs/MOD-0018-FU21-trusted-multi-legal-entity-scope-resolution.md:602-623`. | No client input. Provider echo must be ordinal-equal. Persist/fingerprint; mismatch/case drift denies. |
+| `PermissionKey` | **v1 missing; proposed v2** | Server constant `mdm.finished-goods.submit` at `execution/domains/platform-shared-services/module-packs/MOD-0018-FU21-trusted-multi-legal-entity-scope-resolution.md:602-623` and `services/Diten.Platform/src/Diten.Platform.API/Security/TrustedLegalEntityScopeCredentialAuthenticator.cs:33-50`. | Exact local claim then exact provider echo. Read/create/wildcard/prefix/case drift deny. Recheck current permission on replay without rewriting history. |
+| `ProviderEvaluatedAtUtcTicksV1` | v1 conflated; proposed distinct v2 | Trusted result at `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/ITrustedLegalEntityScopeProvider.cs:13-39`; client validation at `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Authorization/PlatformTrustedLegalEntityScopeProviderClient.cs:358-415`. | Must satisfy current provider UTC window in the same attempt. Missing/future/stale/malformed denies. Persist first observation; retry cannot replace it. |
+| Local scope evaluation time | not persisted separately in v1; no separate v2 field | Local narrowing occurs at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs:110-124`. | The locally referenceable IDs are re-read against the single server-evaluated admission instant below. A second process-clock field would duplicate the same local validity decision and could imply false ordering, so it is not added. Empty intersection denies. |
+| `ScopePolicyId` | v1 present | Tenant/product lookup at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopePolicyRepository.cs:55-65`; ID at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:5`. | First slice requires real current policy; synthetic/empty forbidden. Capture coherently; changed/deleted/foreign policy conflicts or denies. |
+| `ScopePolicyVersion` | v1 present | Policy `EntityBase.Version` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`. | Capture exact non-negative version. Read→reserve drift gives one coherent later set or zero-write conflict. Replay preserves. |
+| `ScopePeriodId` | **v1 missing; proposed v2** | Effective period selection at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:53-65`; identity at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:280-307`. | Require exactly one current real period. Empty/synthetic ID forbidden. Persist/fingerprint; missing/overlap/change denies or conflicts. |
+| `ScopeEffectiveFromUtcTicksV1` | **v1 missing; proposed v2** | `ProductLegalEntityScopePeriod.EffectiveFromUtc` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:280-307`. | Persist/fingerprint the bound selected at policy-evaluation time. Non-UTC/future/mismatch denies; replay preserves the original bound. |
+| `ScopeEffectiveToUtcTicksV1` | **v1 missing; proposed nullable v2** | `ProductLegalEntityScopePeriod.EffectiveToUtc` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:280-307`. | Persist/fingerprint null or exact exclusive end. Invalid/expired/mismatch denies; replay preserves the original bound. |
+| `ScopeMode` | v1 present | Effective period mode at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:53-65,280-286`. | First slice accepts Enforced Scoped or GroupWide; never infer mode from empty set. Persist/replay unchanged. |
+| Policy evaluation time | not persisted separately in v1; no separate v2 field | Effective-period bounds are at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopePolicy.cs:280-307`. | Period selection uses the same `AdmissionValidityEvaluatedAtUtcTicksV1` instant below. A second process-clock field would duplicate the local decision. Provider observation time remains separate because it is remote evidence. |
+| `RolloutStateId` | v1 present | Tenant rollout read at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs:56-59`; entity ID at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:5`. | First slice requires real non-deleted rollout. Missing denies; no sentinel/synthetic ID. Persist/replay unchanged. |
+| `RolloutVersion` | v1 present | `EntityBase.Version` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/EntityBase.cs:11`; rollout validation at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopeRolloutState.cs:49-59`. | Capture with policy/parents. Drift gives a coherent later set or zero-write conflict. Persist/replay unchanged. |
+| `RolloutMode` | v1 present | `ProductLegalEntityScopeRolloutState.Mode` at `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopeRolloutState.cs:5-8`. | Approved first slice requires Enforced. Missing, Preparation or Suspended creates no snapshot/reservation. |
+| `LegalEntityIds` | v1 present | Provider/local narrowing at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeCandidateFacade.cs:88-150`; effective policy at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeEvaluator.cs:58-109`. | Sorted distinct finite `exact-submit provider ∩ tenant active/referenceable local ∩ effective policy`. Scoped intersects period IDs; GroupWide keeps finite provider/local. Empty denies; 200 accepted, 201/duplicate/empty rejected without truncation. Later expansion never enlarges first set. |
+| `AdmissionValidityEvaluatedAtUtcTicksV1` | **v1 missing; proposed v2** | No reservation server-time capture exists today: current `ReserveAsync` uses process `UtcNowTicks()` at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:38-88`; existing Mongo `$$NOW` expression at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:979-989` supports other mutations, not reserve. | The first transaction-bound rollout write establishes ordering but does **not** supply the validity time. After all time-independent facts are read, a final lease-qualified rollout update evaluates/returns `$$NOW`; the selected period is then checked against that final instant before hashing/insertion. Mongo defines [`$$NOW`](https://www.mongodb.com/docs/manual/reference/aggregation-variables/) as the current datetime held constant through that aggregation pipeline; it is **not** commit/ack time and does not prove commit order. It becomes a valid admission instant only if that transaction commits while every invalidating writer remains ordered by the same lease. Ambiguous outcome uses exact persisted read-back; timestamp is never regenerated. |
+| `AdmissionObservedAtUtcTicksV1` | v1 present but ambiguous | Caller-supplied single time at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:19,37-75`; only `>0` validation at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:118-145`. | V2 cannot let one value impersonate provider observation and the local server-evaluated validity instant. No snapshot field is called commit/ack time. V1 compatibility stays fail-closed pending separate reconciliation/migration. |
+| `IntegrityFingerprint` | v1 present | Canonical SHA-256 at `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs:161-185`; repo equality/read validation at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:834-895`. | Create an uncommitted operation shell; obtain and read back the server-evaluated admission instant under the lease-bound transaction; re-read/final-check every fact and period bound; then compute the canonical fingerprint client-side from that complete immutable set, finalize the shell and commit. Invalid/mismatch denies or quarantines. It is integrity, not signature/authorization. Ambiguous outcome finds the first row by exact tenant/operation/idempotency identity and validates its stored hash; it never regenerates time or hash. |
+
+The complete stored operation, including all BSON fields, remains at most 1,048,576 bytes and the snapshot at most
+200 Legal Entity IDs. The two limits are independent; meeting the ID cap does not prove the BSON cap.
+
+#### 21.15.3 Approved planning decisions and unresolved owner choices
+
+The following five directions are approved for this plan. They grant no runtime code-start beyond the exact bounded
+Slice B authorization in §21.15.4:
+
+1. **Human actor:** the first admission slice accepts exact `tenant_user` only. `platform_admin`/`partner_admin` need a
+   separate Platform/FU21 owner decision and authenticator/test amendment. Service actors remain denied.
+2. **Preparation/no-policy:** admission is fail-closed Enforced-only. Missing rollout, Preparation, Suspended, missing
+   policy or no current period creates no snapshot/reservation. Supporting Preparation later needs an approved
+   discriminated evidence shape; fake IDs/versions, wildcard and implicit legacy→Enforced promotion are forbidden.
+3. **Provider freshness:** retain the current `[-5m,+1m]` client contract. This bounds an observed remote result; it
+   is not instantaneous revocation or an atomic cross-service authorization guarantee. No narrower numeric contract
+   is invented here.
+4. **Exposure:** the first slice remains internal. No public submit API or manifest entry is in this slice, and
+   `Prepared` does not mean workflow started or approval submitted.
+5. **V1 compatibility:** v1 rows are neither silently upgraded nor rewritten. Missing admission facts deny
+   continuation until a separately approved reconciliation/migration. Actual v1 data presence remains an operational
+   inventory question because this documentation-only turn did not connect to MongoDB.
+
+Replay ordering is explicit and separates history from current authority:
+
+1. Resolve the current authenticated JWT tenant and canonical human; bind both to `ITenantContext` and the requested
+   operation/key. A tenant, actor, operation, payload, expected-version or parent mismatch with an existing row is a
+   conflict before any new snapshot is constructed.
+2. Lookup the existing operation by operation ID/idempotency key. Its first snapshot, provider time, policy/rollout
+   versions, admitted set and hash are historical immutable facts; do not call the v1 `ReserveAsync` equality path
+   with a freshly captured replacement snapshot. Current exact replay comparison at
+   `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs:862-895`
+   remains storage evidence, but the new admission contract must separate historical lookup from current authority.
+3. Recheck current exact `mdm.finished-goods.submit` and current trusted/local/policy scope. Revoked permission,
+   missing/expired policy, Suspended/Preparation mode, empty set, or a contraction that no longer admits every LE
+   required by the operation denies continuation without changing the stored row. A changed provider timestamp alone
+   is not payload drift and is never copied into history.
+4. Current permission and effective scope must still contain **every** Legal Entity in the historical admitted set.
+   If so, return the original Prepared reservation; any additional newly allowed IDs are ignored. If the current set
+   drops any historical admitted ID, deny without mutation. Policy/rollout version, time or provider-observation drift
+   alone is not a conflict; only the current semantic containment result controls allow/deny, and history never grows.
+5. Only when no existing operation exists may the coordinator construct one new v2 snapshot and attempt the atomic
+   local reserve. Duplicate/ambiguous write reads back and compares that first persisted operation; it does not recapture.
+
+Local read→reserve coherence needs ordering plus a transaction; reads and an unrelated operation insert are not
+enough. MongoDB documents that transaction reads can be stale and that an actual write/lock on a shared document is
+needed to create write-conflict ordering ([Transactions - Production Considerations](https://www.mongodb.com/docs/manual/core/transactions-production-consideration/)).
+The approved planning mechanism therefore consumes the existing tenant rollout-state writer lease; it does not add a
+new general lock collection:
+
+1. Resolve exact tenant human, permission and provider facts without mutation. Existing operation lookup happens
+   before recapture and preserves the replay rules above.
+2. Acquire the tenant writer lease by the existing rollout-document CAS at
+   `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs:190-237`.
+   Admission starts no transaction and creates no operation when the rollout document is absent, not Enforced, fenced
+   or already leased.
+3. Start the MDM transaction with snapshot read concern and majority write concern, then perform a real
+   lease-token/generation-qualified binding write on that same rollout document. It binds the admission operation to
+   the lease and establishes the common-document conflict/serialization point, but does not claim a validity time.
+   Snapshot reads alone do not establish this ordering.
+4. In that transaction re-read, in order, rollout → policy and its period set → Global Product → revision → GSKU → FG
+   → sorted finite Legal Entity documents. Require the exact lease token/generation, Enforced mode, no activation
+   fence and the approved parent states/versions.
+5. After those time-independent reads, perform a second lease-qualified rollout update/read that evaluates and returns
+   `AdmissionValidityEvaluatedAtUtcTicksV1` with Mongo `$$NOW`. Select and validate exactly one period using
+   `EffectiveFrom <= final admission instant < EffectiveTo` (or null end). This final evaluation catches a period that
+   expires after the initial lock but before reservation; `$$NOW` is not commit or acknowledgment time.
+6. Build the complete immutable facts, compute the canonical hash only after final server time/read-back, insert/finalize the
+   Prepared operation, and pre-commit revalidate the same rollout tenant/lease token/generation. Commit while the lease
+   remains held. Release only after a verified successful commit or verified abort; an abort leaves no reservation,
+   while an unknown result keeps the lease/fence fail-closed until exact persisted read-back determines the outcome.
+   Never recapture time or recompute a candidate hash.
+
+This handles distinct races explicitly: the rollout-document write orders concurrent admissions and prevents
+write-skew between operations that otherwise insert different documents; enrolled invalidating writers cannot pass
+the held lease, closing read→reserve drift; the final period-bound check closes expiry during capture. It is still
+insufficient until **every** invalidating writer participates. Current participation is incomplete:
+
+| Mutation family | Current writer path / actual lease status | Narrow owner amendment before code-start |
+|---|---|---|
+| Scope policy create/replace/end | Marker commands at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/Commands/CreateProductLegalEntityScopePolicyCommand.cs:6-10`, `ReplaceProductLegalEntityScopePolicyCommand.cs:6-10` and `EndProductLegalEntityScopePolicyCommand.cs:6-10`; behavior enters the lease at `services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ProductLegalEntityScopeWriteFenceBehavior.cs:17-36`. | Already participates; add race regression only. |
+| Rollout activation/suspension/reconciliation | Activation fence and writer-lease exclusion are persisted at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs:281-315,343-389`; runner uses them at `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductLegalEntityScopes/ProductLegalEntityScopeOperationalRunner.cs:210-296`. | Already mutually excludes the lease; add admission-vs-transition regression only. |
+| Legal Entity referenceability | Activate/Suspend/Archive/Delete handlers call writes at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/ActivateLegalEntityHandler.cs:17-38`, `SuspendLegalEntityHandler.cs:17-34`, `ArchiveLegalEntityHandler.cs:17-34` and `DeleteLegalEntityHandler.cs:16-21`; `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LegalEntityRepository.cs:9` inherits generic `RepositoryBase.cs:40-66`, which has no rollout lease. | **Missing; MOD-0220 owner amendment required.** These exact handlers must acquire the coordinator explicitly; `LegalEntityRepository` must enforce the same lease token/generation so direct callers cannot bypass it. Prove active/referenceable changes cannot cross admission capture. No behavior change to other Legal Entity operations is implied. |
+| Global Product lifecycle/correction/retirement | Direct CAS mutations at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs:410-927` are not marker-enrolled. | **Missing; MOD-0290 amendment required.** Exact invalidating handler/processor entry points must acquire the coordinator explicitly; repository CAS writes enforce token/generation so background paths cannot bypass it. |
+| GSKU lifecycle/correction/retirement | Direct CAS mutations at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs:417-436,576-799,833-875` are not marker-enrolled. | **Missing; MOD-0290 amendment required.** Exact invalidating handler/processor entry points must acquire the coordinator explicitly and repository CAS writes enforce the lease; do not wrap unrelated reads or create a second bridge. |
+| Product Definition Revision lifecycle/retirement | Direct mutations at `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs:151-210` are not marker-enrolled. | **Missing; MOD-0290 amendment required.** Exact revision processor entry points acquire the coordinator explicitly and the repository writer enforces token/generation. |
+| Finished Good admission/lifecycle | Draft create is marker-enrolled at `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Commands/CreateFinishedGoodDraftCommand.cs:6-8`; no human-admission writer exists. | New internal admission command must acquire/verify and hold the same lease through its transaction, then release separately after verified commit/abort; future FG mutation paths must not bypass it. |
+
+The existing coordinator at
+`services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeWriteFenceCoordinator.cs:33-85,98-129`
+and rollout repository provide a reusable base, but current coverage is not a coherent-admission guarantee. Lease
+acquisition currently treats any persisted lease as occupied without evaluating expiry at
+`ProductLegalEntityScopeRolloutStateRepository.cs:202-210`. The safety-preserving default therefore leaves every
+persisted lease, including an expired one, fail-closed for manual reconciliation. **Unresolved liveness decision:** the
+FU03 owner may separately approve an expired-lease takeover. The recommended bounded design is one Mongo-server-time
+CAS matching the old token/generation/expiry and setting generation+1; stale owners must then be rejected in every
+guarded repository mutation/commit/baseline-bind/release, while unexpired or ambiguous ownership remains fail-closed.
+No blind/unmanaged cleanup is permitted. Transaction-session overloads are also missing, and none of these guarantees
+is claimed as present. Remote FU21 revocation cannot join the Mongo transaction, so current authorization is rechecked
+on continuation while the historical provider observation remains immutable.
+
+#### 21.15.4 Smallest dependency-ordered implementation slices
+
+**Slice A — owner writer-participation amendments; no admission or endpoint.**
+
+MOD-0220 exact runtime allow-list amendment:
+
+1. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/ActivateLegalEntityHandler.cs`
+2. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/SuspendLegalEntityHandler.cs`
+3. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/ArchiveLegalEntityHandler.cs`
+4. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/LegalEntity/Handlers/CommandHandlers/DeleteLegalEntityHandler.cs`
+5. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/ILegalEntityRepository.cs`
+6. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/LegalEntityRepository.cs`
+
+These handlers must acquire the coordinator explicitly and pass its token/generation into guarded repository writes;
+this amendment does not claim that editing a handler alone makes the existing marker behavior run, and it does not add
+unlisted command files merely to satisfy the marker interface.
+
+MOD-0290 exact runtime allow-list amendment for the repository contracts/implementations that own the direct mutation
+spans identified in §21.15.3:
+
+7. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGlobalProductRepository.cs`
+8. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GlobalProductRepository.cs`
+9. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IGskuRepository.cs`
+10. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/GskuRepository.cs`
+11. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductDefinitionRevisionRepository.cs`
+12. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductDefinitionRevisionRepository.cs`
+13. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodRepository.cs`
+14. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodRepository.cs`
+
+Exact MOD-0290 mutation callers verified by `rg`, and therefore part of the owner amendment rather than inferred names:
+
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/UpdateGlobalProductDraftHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/SubmitGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/ReconcileGlobalProductIdentityDecisionHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/RetireGlobalProductIdentityHandler.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductCorrectionWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GlobalProductRetirementRequestWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/FirstGskuIdentityWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FirstGskuIdentityRetirementProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuCorrectionWorkflowProcessor.cs`
+- `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Workflow/GskuRetirementRequestWorkflowProcessor.cs`
+
+Each listed foreground handler/background processor must call the coordinator explicitly around the bounded write;
+this plan does not pretend that a handler/processor is marker-enrolled. Repository-level token/generation enforcement
+is the invariant because background processors do not pass through the request-scoped MediatR behavior. Existing
+marker-enrolled commands keep their current early-denial behavior; no additional command-marker amendment is implied.
+
+MOD-0290-FU03 exact scope/rollout owner amendment:
+
+15. `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopeWriterLease.cs`
+16. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopePolicyRepository.cs`
+17. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopePolicyRepository.cs`
+18. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopeRolloutStateRepository.cs`
+19. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs`
+20. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeWriteFenceCoordinator.cs`
+21. `services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ProductLegalEntityScopeWriteFenceBehavior.cs`
+22. `services/Diten.MdmService/src/Diten.MdmService.Api/Services/ProductLegalEntityScopes/ProductLegalEntityScopeOperationalRunner.cs`
+
+**Slice B — FG-specific actor boundary; shared behavior unchanged — bounded code-start approved 2026-09-11.**
+
+Existing shared `IProductIdentityLifecycleActorContext` and `ProductIdentityLifecycleActorContext` remain unchanged so
+Global Product/GSKU/LSKU/ABB retain current actor and ordinal-comparison behavior. Exact new paths:
+
+23. `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/IFinishedGoodHumanAdmissionContext.cs`
+24. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/FinishedGoodHumanAdmissionContext.cs`
+25. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+
+This is the only executable sub-slice authorized by this §21.15 amendment. The exact minimal Application contract is
+frozen before implementation as follows; it introduces no `HttpContext`, `ClaimsPrincipal`, token, header, permission
+parameter, public DTO or additional model:
+
+```csharp
+namespace Diten.MdmService.Application.Contracts;
+
+public interface IFinishedGoodHumanAdmissionContext
+{
+    bool TryResolveSubmitter(out Guid tenantId, out Guid subjectId);
+}
+```
+
+`TryResolveSubmitter` returns `true` only after the complete authenticated human, tenant and exact server-owned submit
+permission boundary succeeds. Every failure returns `false` with **both** `tenantId` and `subjectId` equal to
+`Guid.Empty`; callers must never observe or use a partial identity. The Infrastructure implementation is scoped and
+may consume only the already validated request principal, `IHttpContextAccessor` and `ITenantContext`. It must enforce:
+
+1. an authenticated principal and exactly one ordinal `actor_type=tenant_user`; missing, duplicate,
+   `service`, `platform_admin`, `partner_admin`, case drift and every other value fail closed;
+2. at most one ordinal `sub` and at most one ordinal `ClaimTypes.NameIdentifier`, with at least one present; each
+   present value is a non-empty canonical `D`-format GUID and both, when present, identify the same subject;
+3. exactly one ordinal `tenant_id`, a non-empty canonical `D`-format GUID equal to resolved
+   `ITenantContext.TenantId`; unresolved/empty context fails closed;
+4. no `X-Tenant-Id` header is required, but when present it has exactly one non-empty canonical `D`-format value,
+   contains no comma-list, and equals both the JWT tenant and `ITenantContext.TenantId`; header-only authority is
+   forbidden;
+5. the server-owned ordinal value `mdm.finished-goods.submit` only. Existing `permission` and `permissions` claim-type
+   transport forms remain consumable, including their existing comma/space/semicolon tokenization, but each candidate
+   value is compared with `StringComparison.Ordinal`; missing, read/create, wildcard, prefix and case-drift values do
+   not substitute. No caller supplies a permission or module name; and
+6. no provider/repository call, writer lease, mutation, lifecycle/workflow action or audit production. Principal,
+   header, bearer, token and credential values are neither logged nor persisted.
+
+Exact Slice B runtime write allow-list:
+
+1. `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/IFinishedGoodHumanAdmissionContext.cs` — new,
+   exact interface above only.
+2. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/FinishedGoodHumanAdmissionContext.cs` — new,
+   exact fail-closed implementation only.
+3. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs` — only the scoped context
+   registration and its required using.
+
+Exact Slice B writable test allow-list:
+
+1. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodHumanAdmissionContextTests.cs` — new;
+   all positive claim/header transport forms and every actor/subject/tenant/permission rejection above, including
+   both outputs remaining empty on every rejection.
+2. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityLifecycleActorContextTests.cs` —
+   preservation assertions only; the shared implementation remains byte-for-byte unchanged.
+3. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/DependencyInjectionSmokeTests.cs` — only scoped
+   resolution of the new interface plus preservation of existing registrations.
+
+Slice B explicitly excludes provider/FU21 transport, parent or Legal Entity reads, scope evaluation, writer lease,
+snapshot/reservation, repository/persistence, lifecycle handler/API/manifest, background authority, Auth/Platform/
+Legal Entity changes, Gateway/frontend and operational configuration. A successful context means only that local
+human/tenant/exact-permission resolution passed; it is not admission, workflow authority or current-grant revocation
+proof. Slice A/C remain blocked from code-start.
+
+**Slice C — snapshot plus ordered atomic local reservation; internal only.**
+
+Changed existing runtime paths:
+
+26. `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/FinishedGoodLifecycleAdmissionScopeSnapshot.cs`
+27. `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/FinishedGoodIdentityWorkflowOperation.cs`
+28. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/FinishedGoodIdentityWorkflowOperationResults.cs`
+29. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IFinishedGoodIdentityWorkflowOperationRepository.cs`
+30. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/FinishedGoodIdentityWorkflowOperationRepository.cs`
+31. `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+
+New runtime paths:
+
+32. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/FinishedGoodIdentityAdmissionModels.cs`
+33. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Commands/ReserveFinishedGoodIdentityAdmissionCommand.cs`
+34. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Handlers/CommandHandlers/ReserveFinishedGoodIdentityAdmissionHandler.cs`
+35. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductItemSkuMaster/Lifecycle/Validators/ReserveFinishedGoodIdentityAdmissionValidator.cs`
+
+No public controller/manifest path is allowed in the first slice. No Auth/Platform runtime delta is proposed for
+tenant-user-only admission. Consumed unchanged: `ITenantContext`, trusted provider/client, candidate facade, evaluator,
+P0A FU21 pair, and P1A collection/index/claim/recovery/BSON behavior. The broad query consumer guard is not admission
+evidence. Mongo `$$NOW` supplies the admission-evaluation instant only; it is not an authoritative commit time.
+
+Future Slice A/C planning test inventory follows. It is not current code-start authority. For the approved Slice B
+work package, only the three exact writable test paths stated in the Slice B block above are writable:
+
+1. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodHumanAdmissionContextTests.cs` — new
+2. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeCandidateFacadeTests.cs`
+3. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityLifecycleContractTests.cs`
+4. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowStorageMongoTests.cs`
+5. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowAdmissionHandlerTests.cs` — new
+6. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowAdmissionMongoTests.cs` — new
+7. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeWriteAdmissionContractTests.cs`
+8. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeWriteAdmissionMongoTests.cs`
+9. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeActivationMongoTests.cs`
+10. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityCommandTests.cs`
+11. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/LegalEntityScopeWriteFenceMongoTests.cs` — new MOD-0220 amendment test
+12. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodAuthorizationTests.cs`
+13. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/DependencyInjectionSmokeTests.cs`
+14. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductIdentityLifecycleActorContextTests.cs` — preservation assertions only
+15. `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeMongoTests.cs` — only if the affected tests cannot consume `AuditIntentTemporalMongoFixture.ReplicaConnectionString` directly; the sole allowed change is removing its application-`localhost:27017` fallback at lines 463-475 in favor of the supplied test-owned replica connection.
+
+Run unchanged as dependency regressions, not writable scope:
+
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/PlatformTrustedLegalEntityScopeProviderClientTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/TrustedLegalEntityScopeProviderContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/TrustedLegalEntityScopeDelegatedTokenForwardingTests.cs`
+- `services/Diten.Platform/tests/Diten.Platform.Application.Tests/Authorization/TrustedLegalEntityScopeRequestExecutorTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodApiContractTests.cs`
+- `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ModuleRegistration/ProductItemSkuMasterManifestProviderTests.cs`
+
+Order: exact human/permission → provider and actor echo → tenant parent chain → local LE narrowing → rollout/policy/
+period → acquire/validate common lease → initial ordering write → bounded reads → final server admission instant and
+period check → v2 snapshot/hash → reserve transaction commit → exact outcome read-back → separate token/generation
+lease release → repo DI. Public API/manifest are deliberately absent. No later step manufactures skipped evidence.
+
+#### 21.15.5 Measurable acceptance matrix
+
+| Case | Required result / side-effect boundary | Minimum evidence |
+|---|---|---|
+| Enforced Scoped | Canonical finite intersection persisted once in Prepared reservation. | Unit + existing-fixture real Mongo. |
+| Enforced GroupWide | Mode remains GroupWide; snapshot stores finite provider/local set; empty denies. | Unit + provider contract + real Mongo. |
+| Service/platform/partner actor | Approved first slice rejects before provider/parent/reserve. | FG-specific actor/security unit + HTTP-shape; real transport separate. |
+| Duplicate/conflicting subject or actor/provider drift | Fail closed; provider/repository/reserve counts zero. | Strict unit mocks + actor tests. |
+| Tenant mismatch | Non-disclosing denial; no cross-tenant read/write/reserve. | Unit + real-Mongo isolation. |
+| Wrong permission | Only exact submit succeeds; missing/read/create/wildcard/prefix/case variants deny before scope. | Actor unit + unchanged FU21 regression. |
+| Provider failure | Echo/time/timeout/body/list violations and confirmed empty deny; no partial fallback. | Provider client/contract; mocks are not real transport. |
+| Parent failure | Foreign/deleted/non-referenceable/changed chain, non-Draft FG or stale version deny with zero reserve. | Unit + real Mongo. |
+| Local LE failure | Invalid IDs narrow; empty denies; no truncation/wildcard. | Candidate tests + real Mongo. |
+| Missing/legacy evidence | No rollout, Preparation, Suspended, no policy/current period produces no snapshot/reserve. | Unit + real-Mongo counts. |
+| Preparation/legacy→Enforced race | Admission reads before the transition barrier; both operations contend on the rollout document. Result is one coherent Enforced set or zero-write denial; no permissive legacy snapshot. | Barrier-controlled real Mongo with exact rollout/lease state assertions. |
+| Policy/rollout race | Admission pauses after first read and before reserve while the other operation writes a different business document but must acquire the same tenant lease. Exactly one ordering wins; stale admission never persists. | Transaction/barrier real Mongo; an operation-document insert race or mock precheck is insufficient. |
+| Parent lifecycle race | Global Product/revision/GSKU/FG invalidating writer crosses the same post-read/pre-reserve barrier. Until exact writer enrolment exists this case must stay red/block code-start; after amendment it yields a matching version/status set or zero-write conflict. | Per-writer barrier real Mongo plus exact version/status read-back. |
+| Legal Entity race | Activate/Suspend/Archive/Delete crosses the post-local-read/pre-reserve barrier on a different Legal Entity document. Until MOD-0220 enrolment exists this case must stay red; afterward a now-unreferenceable ID cannot enter the stored snapshot. | `LegalEntityScopeWriteFenceMongoTests` plus admission Mongo test; assert both different documents and common lease ordering. |
+| Effective-period expiry race | Admission instant is before/at/after the exclusive end under barriers; the final bound check rejects an expired period and creates no operation. | Test-owned server-time real Mongo; no process-clock-only mock. |
+| Lease expiry/stale owner | Default: expired and unexpired persisted leases deny unchanged. If the unresolved liveness amendment is later approved, takeover is one server-time token/generation CAS and an old owner cannot mutate, commit, bind or release. Ambiguous ownership remains fail-closed. | Default denial regression; conditional barrier real Mongo for takeover-vs-stale-owner plus contract tests for every guarded repository. |
+| Exact replay | Reauthorize now; return original snapshot/times/hash with unchanged row count/version. | Unit + real Mongo. |
+| Replay drift/revocation | Drift conflicts; revocation denies continuation without rewriting history. | Unit + provider contract + real Mongo. |
+| Rejection effects | Zero reserve, workflow start, lifecycle mutation and lifecycle audit intent. | Strict mocks + real-Mongo counts. |
+| Immutability | Defensive copy, ordering, hash, stale/legacy/fact-drift rejection, unknown BSON preservation. | Domain + P1A Mongo regression. |
+| V1 compatibility | V1 remains readable as historical storage where supported but continuation is denied without manufacturing v2 facts; row/hash/version are not rewritten. Operational v1 count remains unknown until separately authorized inventory. | Domain + P1A Mongo regression; no live inventory claim. |
+| Limits | 200 accepted if full BSON ≤1 MiB; 201/duplicate/empty/>1 MiB fails atomically, no truncation. | Domain + real-Mongo BSON tests. |
+| Internal exposure | No controller or manifest mutation; Prepared is observable only through the internal contract and is not workflow submission. | API/manifest regression proves no new endpoint/action. |
+
+Exact candidate-test traceability (names are proposed and must be used or replaced by equally explicit names in the
+same exact files before code-start):
+
+| Acceptance rows | Exact test file and proposed test method(s) |
+|---|---|
+| Enforced Scoped / GroupWide / local LE | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowAdmissionHandlerTests.cs` — `ReserveAsync_EnforcedScoped_PersistsExactFiniteIntersection`, `ReserveAsync_EnforcedGroupWide_PersistsFiniteCandidates`, `ReserveAsync_EmptyIntersection_DeniesWithoutEffects`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowAdmissionMongoTests.cs` — `ReserveAsync_EnforcedScope_PersistsOnePreparedOperation`. |
+| Actor/subject/tenant failures | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodHumanAdmissionContextTests.cs` — `Resolve_DuplicateOrConflictingTenantSubject_Denies`, `Resolve_HeaderOnlyTenant_DeniesForAdmission`, `Resolve_ServicePlatformOrPartnerActor_DeniesFinishedGoodAdmission`; handler tests — `ReserveAsync_ActorOrProviderSubjectMismatch_DeniesBeforeEffects`; Mongo tests — `ReserveAsync_CrossTenantParent_DoesNotReadOrWrite`. |
+| Exact permission / shared actor regression | FG actor tests — `HasExactPermission_SubmitOnly_IsOrdinal`; handler tests — `ReserveAsync_MissingSubstituteWildcardOrCaseDriftPermission_DeniesBeforeScope`; unchanged `ProductIdentityLifecycleActorContextTests` proves Global Product/GSKU/LSKU/ABB behavior is unchanged; unchanged Platform executor tests remain the FU21 component regression. |
+| Provider failure/freshness | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/Authorization/PlatformTrustedLegalEntityScopeProviderClientTests.cs` — existing echo/time/body boundary tests; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/ProductLegalEntityScopeCandidateFacadeTests.cs` — existing canonical/local narrowing tests; handler tests — `ReserveAsync_ProviderFailureOrEmpty_DeniesBeforeReserve`. |
+| Parent/status/version | Handler tests — `ReserveAsync_ForeignDeletedOrBrokenParent_Denies`, `ReserveAsync_NonDraftOrStaleVersion_ConflictsWithoutEffects`; Mongo tests — `ReserveAsync_ParentChainAndExpectedVersion_AreTenantAtomic`. |
+| Missing/legacy evidence | Handler tests — `ReserveAsync_MissingPreparationSuspendedOrNoPolicy_DeniesWithoutSnapshot`; Mongo tests — `ReserveAsync_LegacyToEnforcedRace_NeverPersistsLegacyAdmission`. |
+| Read→reserve races | Admission Mongo tests — `ReserveAsync_DifferentOperationDocuments_CommonRolloutWriteSerializes`, `ReserveAsync_ParentForegroundAndBackgroundWriterAfterReadBeforeReserve_CommitsMatchingVersionSetOrNothing`, `ReserveAsync_EffectivePeriodExpiresAtBarrier_CreatesNoOperation`; scope Mongo tests — `AdmissionFence_ConcurrentPolicyCreateReplaceEnd_AreOrderedInBothDirections`, `AdmissionFence_ConcurrentRolloutTransition_IsOrderedInBothDirections`; Legal Entity fence tests — `AdmissionFence_ConcurrentActivateSuspendArchiveDelete_AreOrdered`. Each test writes distinct business documents and asserts the common rollout lease/token/generation, not merely the operation unique index. |
+| Lease expiry/stale owner | Scope write-admission contract/Mongo tests — required now: `WriterLease_ExpiredOrUnexpiredPersistedLease_FailsClosedWithoutMutation`; conditional on a later owner-approved liveness amendment: `WriterLease_ExpiredTakeover_UsesServerTimeTokenGenerationCas`, `WriterLease_StaleOwnerCannotMutateCommitBindOrRelease`; repeat against each parent/Legal Entity guarded repository seam. |
+| Replay/revocation/drift | Handler tests — `ReserveAsync_ExistingOperation_ReauthorizesWithoutRecapture`, `ReserveAsync_CurrentRevocation_DeniesWithoutHistoryRewrite`, `ReserveAsync_ActorPayloadParentOrVersionDrift_Conflicts`; Mongo tests — `ReserveAsync_Replay_PreservesAdmissionInstantSnapshotHashAndRowVersion`, `ReserveAsync_AmbiguousCommit_ReadsBackFirstSnapshotWithoutRegeneratingTimeOrHash`. |
+| Zero side effects | Handler tests — `ReserveAsync_EachRejectedBoundary_HasZeroReserveWorkflowLifecycleAndAuditCalls`; Mongo tests — `ReserveAsync_Rejection_LeavesOperationAndAuditCollectionsEmpty`. |
+| Immutability/limits/BSON/V1 | `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityLifecycleContractTests.cs` — `AdmissionSnapshotV2_IsCanonicalImmutableAndRejectsInvalidBounds`; `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/FinishedGoodIdentityWorkflowStorageMongoTests.cs` — `ReserveAsync_V2PreservesUnknownFieldsAndOneMiBBound`, `ReserveAsync_LegalEntityBoundary200Accepted201RejectedAtomically`, `ReadV1_DoesNotUpgradeAndContinuationFailsClosed`. |
+| Writer inventory / DI / internal-only API/manifest | `ProductLegalEntityScopeWriteAdmissionContractTests.cs` expands the current frozen foreground inventory to every admitted command and background/recovery entry point that reaches guarded repositories; `DependencyInjectionSmokeTests.cs` — `FinishedGoodAdmissionRepository_IsRegistered`; existing API/manifest tests run unchanged and prove no submit endpoint/action was added. |
+
+The MDM→Platform real-transport acceptance row remains **PENDING and blocks transport acceptance** for this slice.
+The three unchanged MDM provider/delegated-token tests and Platform executor test prove components/HTTP shape only;
+their totals must not be presented as live or real transport evidence.
+
+Real-Mongo tests use the existing `AuditIntentTemporalMongoFixture`, serialized
+`ProductLegalEntityScopeMongoCollection`, fixed `diten_mdm_product_scope_itest`, fresh TenantId and tenant-owned
+cleanup. No GUID database, new harness, application `localhost:27017` fallback, Platform schema copy, guard exception,
+service start or operational data. Report discovery and passed/failed/skipped per non-overlapping run. Fake HTTP
+handlers prove shapes only; real MDM→Platform transport is a separate Development live-smoke gate.
+
+#### 21.15.6 Exclusions, non-claims and review record
+
+Except for the exact bounded Slice B context/DI/tests, excluded: Slice A/C, workflow start/transport, terminal apply,
+background authority, draft cancellation, correction/retirement, audit production/delivery changes,
+UI/L10n/Gateway/navigation, provisioning, config/data, migration/cutover, service start, live WorkCenter/browser
+acceptance and Production/Staging. P1A historical flakiness remains `UNKNOWN`; no worker activation or lifecycle
+completion is authorized.
+
+Planning review chain:
+
+- `module-pack-author`: sole writer of §21.15.
+- `orchestrator`: read-only scope/dependency coordination — `CONDITIONAL PASS`, planning-only.
+- combined `data-agent` + `backend-architect`: transaction/fence/time/fingerprint and current writer-path review —
+  `CONDITIONAL PASS`, planning-only.
+- `security-agent`: actor/tenant/scope/replay/race — `CONDITIONAL PASS`, planning-only.
+- `testing-agent`: measurable matrix/harness discipline — `CONDITIONAL PASS`, planning-only.
+- independent `read-only-auditor`: first verdict `CONDITIONAL` identified final-period timing, false marker-enrolment
+  wording and release-order defects; after the author corrected only §21.15, the second narrow verdict was `PASS —
+  planning-only` with no open finding.
+
+The module-pack-author amendment itself changes no runtime/test code and performs no build/test, Mongo/service
+operation or Git stage/commit/push. It authorizes only the exact Slice B runtime/test code-start above for the
+orchestrated implementation turn; it authorizes no other §21.15 slice. Previous §21 sections and P0A/P1A evidence
+remain unchanged; `.testoutput/**` remains untracked evidence outside this amendment.

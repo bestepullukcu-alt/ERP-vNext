@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<IProductIdentityActorContext, ProductIdentityActorContext>();
         services.AddScoped<IProductIdentityLifecycleActorContext, ProductIdentityLifecycleActorContext>();
+        services.AddScoped<IFinishedGoodHumanAdmissionContext, FinishedGoodHumanAdmissionContext>();
         services.AddScoped<IProductAbbreviationActorContext, ProductAbbreviationActorContext>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
