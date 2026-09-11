@@ -39,12 +39,31 @@ public static class DependencyInjection
             services.AddHttpClient<HttpCrmAuditPublisher>();
             services.AddScoped<IAccountAuditPublisher>(sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
             services.AddScoped<Application.Features.Contact.IContactAuditPublisher>(sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // SCMM-09 audit bundle — concept graph events forwarded with SourceModule "MOD-0162".
+            services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
+            // SCMM-12 audit — claim / composition events forwarded with SourceModule "CAND-CAP-0011".
+            services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher>(
+                sp => sp.GetRequiredService<HttpCrmAuditPublisher>());
         }
         else
         {
             services.AddScoped<IAccountAuditPublisher, LoggingAccountAuditPublisher>();
             services.AddScoped<Application.Features.Contact.IContactAuditPublisher, LoggingContactAuditPublisher>();
+            // SCMM-09 audit bundle — structured-logging fallback for concept graph events.
+            services.AddScoped<Application.Features.Knowledge.Concept.IKnowledgeConceptAuditPublisher,
+                LoggingKnowledgeConceptAuditPublisher>();
+            // SCMM-12 audit — structured-logging fallback for claim / composition events.
+            services.AddScoped<Application.Features.ContentComposition.IContentCompositionAuditPublisher,
+                LoggingContentCompositionAuditPublisher>();
         }
+
+        // SCMM-11 (CAND-CAP-0011) — eligibility gate: the in-process port (thin over the resolver query) and the RM4
+        // evaluation-log writer (structured-logging default; a durable/audit sink is a follow).
+        services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationPort,
+            Application.Features.ContentComposition.Eligibility.EligibilityEvaluationPort>();
+        services.AddScoped<Application.Features.ContentComposition.Eligibility.IEligibilityEvaluationLogWriter,
+            ContentComposition.LoggingEligibilityEvaluationLogWriter>();
 
         // MOD-0150 FU05 — read-only consent/preference seam. Default is the no-op reader (MOD-0164 not built yet);
         // it fabricates no consent state and makes no network call. A config-gated HTTP reader replaces it when MOD-0164 ships.

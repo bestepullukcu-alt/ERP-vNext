@@ -1,6 +1,8 @@
 using System.Net.Http.Json;
 using Diten.CrmService.Application.Features.Account;
 using Diten.CrmService.Application.Features.Contact;
+using Diten.CrmService.Application.Features.ContentComposition;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -17,7 +19,8 @@ namespace Diten.CrmService.Infrastructure.Audit;
 /// </para>
 /// Opt-in: registered only when <c>Crm:Audit:Mode=http</c>; the default logging seam stays otherwise.
 /// </summary>
-public sealed class HttpCrmAuditPublisher : IContactAuditPublisher, IAccountAuditPublisher
+public sealed class HttpCrmAuditPublisher
+    : IContactAuditPublisher, IAccountAuditPublisher, IKnowledgeConceptAuditPublisher, IContentCompositionAuditPublisher
 {
     private const string AppendPath = "/api/v1/platform/audit/events";
     private const string TenantHeaderName = "X-Tenant-Id";
@@ -44,11 +47,26 @@ public sealed class HttpCrmAuditPublisher : IContactAuditPublisher, IAccountAudi
     public Task PublishAsync(string eventName, Guid tenantId, Guid contactId, string? detail, CancellationToken cancellationToken)
         => AppendAsync(eventName, tenantId, "Contact", contactId, detail, cancellationToken);
 
-    private async Task AppendAsync(string eventName, Guid tenantId, string entityType, Guid entityId, string? detail, CancellationToken cancellationToken)
+    private async Task AppendAsync(
+        string eventName, Guid tenantId, string entityType, Guid entityId, string? detail,
+        CancellationToken cancellationToken, string sourceModule = "MOD-0150", int? objectVersion = null)
     {
         if (tenantId == Guid.Empty)
         {
             return;
+        }
+
+        // detail is counts/correlation only (see class remarks) — safe to carry as metadata. objectVersion, when
+        // supplied, records the object/version of the audited aggregate alongside its type + id.
+        var metadata = new Dictionary<string, object?>();
+        if (!string.IsNullOrWhiteSpace(detail))
+        {
+            metadata["detail"] = detail;
+        }
+
+        if (objectVersion is { } version)
+        {
+            metadata["objectVersion"] = version;
         }
 
         var body = new AuditAppendBody
@@ -62,13 +80,10 @@ public sealed class HttpCrmAuditPublisher : IContactAuditPublisher, IAccountAudi
             EntityId = entityId == Guid.Empty ? null : entityId,
             Operation = eventName,
             Outcome = "Succeeded",
-            // detail is counts/correlation only (see class remarks) — safe to carry as metadata.
-            Metadata = string.IsNullOrWhiteSpace(detail)
-                ? new Dictionary<string, object?>()
-                : new Dictionary<string, object?> { ["detail"] = detail },
+            Metadata = metadata,
             OccurredAtUtc = DateTimeOffset.UtcNow,
             SourceService = "CrmService",
-            SourceModule = "MOD-0150"
+            SourceModule = sourceModule
         };
 
         try
@@ -95,6 +110,20 @@ public sealed class HttpCrmAuditPublisher : IContactAuditPublisher, IAccountAudi
     // IAccountAuditPublisher — explicit implementation so both interfaces coexist on one type.
     Task IAccountAuditPublisher.PublishAsync(string eventName, Guid tenantId, Guid accountId, string? detail, CancellationToken cancellationToken)
         => AppendAsync(eventName, tenantId, "Account", accountId, detail, cancellationToken);
+
+    // IKnowledgeConceptAuditPublisher (SCMM-09) — concept graph events tagged SourceModule "MOD-0162" with object/version.
+    Task IKnowledgeConceptAuditPublisher.PublishAsync(
+        string eventName, Guid tenantId, string entityType, Guid entityId, int version, string? detail,
+        CancellationToken cancellationToken)
+        => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
+            sourceModule: "MOD-0162", objectVersion: version);
+
+    // IContentCompositionAuditPublisher (SCMM-12) — claim / composition events tagged SourceModule "CAND-CAP-0011".
+    Task IContentCompositionAuditPublisher.PublishAsync(
+        string eventName, Guid tenantId, string entityType, Guid entityId, int version, string? detail,
+        CancellationToken cancellationToken)
+        => AppendAsync(eventName, tenantId, entityType, entityId, detail, cancellationToken,
+            sourceModule: "CAND-CAP-0011", objectVersion: version);
 
     private void ForwardContextHeaders(HttpRequestMessage message, Guid correlationId)
     {

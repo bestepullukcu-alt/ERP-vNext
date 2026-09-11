@@ -278,8 +278,11 @@ public sealed class Mod0029Fu29aEndpointAttributionTests
     {
         foreach (var method in controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
         {
-            var perm = method.GetCustomAttribute<HasPermissionAttribute>();
-            if (perm is null)
+            // [HasPermission] is AllowMultiple=true (each attribute is its own authorization filter, AND-semantics),
+            // so a single action may stack several. Read them all (plural) — GetCustomAttribute<T> (singular) throws
+            // AmbiguousMatchException on multi-attribute actions.
+            var perms = method.GetCustomAttributes<HasPermissionAttribute>().ToList();
+            if (perms.Count == 0)
             {
                 continue;
             }
@@ -289,7 +292,10 @@ public sealed class Mod0029Fu29aEndpointAttributionTests
                 .Select(a => a.Template)
                 .FirstOrDefault(t => !string.IsNullOrEmpty(t)) ?? string.Empty;
 
-            yield return (route, perm.Permission);
+            foreach (var perm in perms)
+            {
+                yield return (route, perm.Permission);
+            }
         }
     }
 }

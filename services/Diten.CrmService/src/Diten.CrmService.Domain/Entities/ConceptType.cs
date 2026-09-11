@@ -23,6 +23,22 @@ public sealed class ConceptType : EntityBase
     /// <summary>Management ordering — NOT the chain order (that is <see cref="ConceptChainTemplate.OrderedConceptTypes"/>).</summary>
     public int SortOrder { get; set; }
 
+    /// <summary>SCMM-09 (①) — optional display colour as a CSS hex string (<c>#RGB</c> or <c>#RRGGBB</c>). Presentation
+    /// only; no business rule is ever read from it.</summary>
+    public string? Color { get; set; }
+
+    /// <summary>SCMM-09 (①) — legacy <c>UCLEType.isGroup</c>: this type groups other types (a heading) rather than
+    /// holding leaf value nodes. Metadata only; no traversal or engine behaviour changes.</summary>
+    public bool IsGroup { get; set; }
+
+    /// <summary>SCMM-09 (①) — legacy <c>UCLEType.isList</c>: this type is authored as a list of nodes. Metadata only.</summary>
+    public bool IsList { get; set; }
+
+    /// <summary>SCMM-09 (①) — optional hierarchical parent type within the SAME subject (RM1, DEC-SCMM-03). A self-parent,
+    /// an archived/cross-subject parent or a cycle is rejected 400. This is the type hierarchy — distinct from
+    /// <see cref="SortOrder"/> (management ordering) and from the chain order. Archiving does not cascade.</summary>
+    public Guid? ParentConceptTypeId { get; set; }
+
     /// <summary><see cref="ConceptStatuses"/> — draft / active / inactive / archived.</summary>
     public string Status { get; set; } = ConceptStatuses.Draft;
 

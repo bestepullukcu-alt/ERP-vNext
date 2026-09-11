@@ -1,0 +1,116 @@
+openapi: 3.1.0
+info:
+  title: ATP-BUNDLE
+  description: >
+    MOD-0172 Allocation & ATP/CTP — Wave-0 frozen (v1). Commercial/O2C bridge.
+    Availability/promise KARARI üretir. INVENTORY availability+reservation + DEMAND okur;
+    IKINCI STOK BALANCE YOK (DEC-INV-05). Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0172
+  x-consumes: [INVENTORY, DEMAND]
+servers: [{ url: /api/atp }]
+security: [{ bearerAuth: [] }]
+paths:
+  /check:
+    post:
+      operationId: atpCheck
+      summary: Available-to-Promise sorgusu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AtpCheckRequest' }
+            example: { itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, quantity: "50.000", requestedDate: "2026-09-20" }
+      responses:
+        '200':
+          description: ATP sonucu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AtpResult' }
+              example:
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                requestedQty: "50.000"
+                availableQty: "70.000"
+                promiseDate: "2026-09-20"
+                ctpDate: null
+                contractVersion: v1
+  /allocation:
+    post:
+      operationId: allocate
+      summary: Allocation kararı (stok üzerinde reservation 0173'te yapılır)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AllocationRequest' }
+            example: { idempotencyKey: alloc-1, orderRef: SO-900, itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, quantity: "30.000", priority: 10 }
+      responses:
+        '201':
+          description: Allocation kararı
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AllocationDecision' }
+              example:
+                allocationId: alloc-4001
+                orderRef: SO-900
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                allocatedQty: "30.000"
+                priority: 10
+                status: Allocated
+                inventoryReservationId: rsv-4001
+                contractVersion: v1
+        '422': { $ref: '#/components/responses/AllocationUnprocessable' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    AtpCheckRequest:
+      type: object
+      required: [itemId, skuId, skuLevel, quantity, requestedDate]
+      properties:
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        requestedDate: { type: string, format: date }
+    AtpResult:
+      type: object
+      properties:
+        itemId: { type: string }
+        requestedQty: { $ref: '#/components/schemas/Decimal' }
+        availableQty: { $ref: '#/components/schemas/Decimal' }
+        promiseDate: { type: string, format: date, nullable: true }
+        ctpDate: { type: string, format: date, nullable: true }
+        contractVersion: { type: string }
+    AllocationRequest:
+      type: object
+      required: [idempotencyKey, orderRef, itemId, skuId, skuLevel, quantity]
+      properties:
+        idempotencyKey: { type: string }
+        orderRef: { type: string }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        priority: { type: integer }
+    AllocationDecision:
+      type: object
+      properties:
+        allocationId: { type: string }
+        orderRef: { type: string }
+        itemId: { type: string }
+        allocatedQty: { $ref: '#/components/schemas/Decimal' }
+        priority: { type: integer }
+        status: { type: string, enum: [Allocated, PartiallyAllocated, Rejected] }
+        inventoryReservationId: { type: string, nullable: true, description: "0173 reservation (fiziksel hold)" }
+        contractVersion: { type: string }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, details: { type: object, additionalProperties: true }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    AllocationUnprocessable:
+      description: Yetersiz available (INVENTORY reservation başarısız)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INSUFFICIENT_AVAILABLE, message: "yetersiz available", details: { available: "20.000", requested: "30.000" }, correlationId: req-1 }, contractVersion: v1 } } }

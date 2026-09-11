@@ -103,6 +103,9 @@ public sealed record UpdateTopicRequest(
     IReadOnlyList<string>? Alias = null,
     IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null);
 
+// SCMM-11 (AUD, RM3) multi-axis assignment request shape.
+public sealed record AudienceDimensionAssignmentRequest(string AxisCode, IReadOnlyList<string> Values);
+
 public sealed record CreateAudienceProfileRequest(
     string ProfileCode,
     string ProfileName,
@@ -113,7 +116,9 @@ public sealed record CreateAudienceProfileRequest(
     int SortOrder = 0,
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<string>? Alias = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null);
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    Guid? SubjectId = null,
+    IReadOnlyList<AudienceDimensionAssignmentRequest>? Dimensions = null);
 
 public sealed record UpdateAudienceProfileRequest(
     string ProfileName,
@@ -124,4 +129,6 @@ public sealed record UpdateAudienceProfileRequest(
     int SortOrder = 0,
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<string>? Alias = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null);
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    Guid? SubjectId = null,
+    IReadOnlyList<AudienceDimensionAssignmentRequest>? Dimensions = null);

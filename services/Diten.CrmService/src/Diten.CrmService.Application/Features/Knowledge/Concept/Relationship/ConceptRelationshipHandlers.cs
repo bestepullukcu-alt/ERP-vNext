@@ -98,18 +98,22 @@ public sealed class CreateConceptRelationshipHandler
     private readonly IConceptNodeRepository _nodes;
     private readonly IConceptChainTemplateRepository _templates;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public CreateConceptRelationshipHandler(
         ITenantContext tenant,
         IActorContext actor,
         IConceptRelationshipRepository relationships,
         IConceptNodeRepository nodes,
-        IConceptChainTemplateRepository templates)
+        IConceptChainTemplateRepository templates,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _relationships = relationships;
         _nodes = nodes;
         _templates = templates;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateConceptRelationshipCommand request, CancellationToken cancellationToken)
@@ -213,6 +217,12 @@ public sealed class CreateConceptRelationshipHandler
         };
 
         await _relationships.InsertAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.RelationshipCreated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptRelationship, entity.Id, entity.Version, entity.RelationshipCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(entity.Id, 201);
     }
 }
@@ -226,18 +236,22 @@ public sealed class UpdateConceptRelationshipHandler
     private readonly IConceptNodeRepository _nodes;
     private readonly IConceptChainTemplateRepository _templates;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public UpdateConceptRelationshipHandler(
         ITenantContext tenant,
         IActorContext actor,
         IConceptRelationshipRepository relationships,
         IConceptNodeRepository nodes,
-        IConceptChainTemplateRepository templates)
+        IConceptChainTemplateRepository templates,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _relationships = relationships;
         _nodes = nodes;
         _templates = templates;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateConceptRelationshipCommand request, CancellationToken cancellationToken)
@@ -321,6 +335,12 @@ public sealed class UpdateConceptRelationshipHandler
         entity.UpdatedBy = _actor.ActorName;
 
         await _relationships.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.RelationshipUpdated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptRelationship, entity.Id, entity.Version, entity.RelationshipCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -332,12 +352,16 @@ public sealed class ArchiveConceptRelationshipHandler
     private readonly IActorContext _actor;
     private readonly IConceptRelationshipRepository _relationships;
 
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
     public ArchiveConceptRelationshipHandler(
-        ITenantContext tenant, IActorContext actor, IConceptRelationshipRepository relationships)
+        ITenantContext tenant, IActorContext actor, IConceptRelationshipRepository relationships,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _relationships = relationships;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -367,6 +391,12 @@ public sealed class ArchiveConceptRelationshipHandler
         entity.UpdatedBy = _actor.ActorName;
 
         await _relationships.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.RelationshipArchived, tenantId,
+                KnowledgeConceptAuditEntities.ConceptRelationship, entity.Id, entity.Version, entity.RelationshipCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }

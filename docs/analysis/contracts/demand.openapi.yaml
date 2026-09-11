@@ -1,0 +1,79 @@
+openapi: 3.1.0
+info:
+  title: DEMAND
+  description: >
+    MOD-0188 Demand Planning — Wave-0 frozen (v1). Talep planı/forecast SoR.
+    Shared seam — freeze sonrası 0172/0176/0189/0192 paralel tüketir. Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0188
+  x-consumes: [PRODUCT-MASTER, DWH]
+servers: [{ url: /api/demand }]
+security: [{ bearerAuth: [] }]
+paths:
+  /plan:
+    get:
+      operationId: getDemandPlan
+      summary: Talep planı (0172/0189 tüketir)
+      parameters:
+        - { name: itemId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: period, in: query, schema: { type: string, description: "YYYY-MM veya YYYY-Www" } }
+      responses:
+        '200':
+          description: Talep planı
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DemandPlanRef' }
+              example:
+                planId: dp-2026-09
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                period: "2026-09"
+                quantity: "1200.000"
+                uomId: EA
+                confidence: "0.80"
+                status: Published
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownPlan' }
+  /forecast:
+    get:
+      operationId: getForecast
+      summary: Forecast serisi (horizon boyunca)
+      parameters:
+        - { name: itemId, in: query, required: true, schema: { type: string, format: uuid } }
+        - { name: horizon, in: query, schema: { type: integer, description: "dönem sayısı" } }
+      responses:
+        '200':
+          description: Forecast serisi
+          content:
+            application/json:
+              example:
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                series:
+                  - { period: "2026-09", quantity: "1200.000" }
+                  - { period: "2026-10", quantity: "1350.000" }
+                uomId: EA
+                contractVersion: v1
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    DemandPlanRef:
+      type: object
+      properties:
+        planId: { type: string }
+        itemId: { type: string, format: uuid }
+        period: { type: string }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        confidence: { $ref: '#/components/schemas/Decimal' }
+        status: { type: string, enum: [Draft, Published, Archived] }
+        contractVersion: { type: string }
+    DemandPlanPublishedEvent:
+      description: "Event — 0189 MRP / 0192 Capacity dinler"
+      type: object
+      properties: { planId: { type: string }, itemId: { type: string }, period: { type: string } }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    UnknownPlan:
+      description: Plan bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_PLAN, message: "plan bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }

@@ -135,6 +135,10 @@ public static class DependencyInjection
         // (ResolveDocumentEffectivenessQuery). The MediatR handler is auto-registered; only the port needs binding.
         services.AddScoped<Features.DocumentManagementMasterRegister.Services.IControlledDocumentEffectivenessPort,
             Features.DocumentManagementMasterRegister.Services.ControlledDocumentEffectivenessPort>();
+        // DCP-005 Phase 2a — in-process controlled-document citation gate (rich sibling of the effectiveness gate) over
+        // the single citation resolver. The MediatR handlers are auto-registered; only the port needs binding.
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.IControlledDocumentCitationPort,
+            Features.DocumentManagementMasterRegister.Services.ControlledDocumentCitationPort>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<Features.DocumentManagementControlledDocumentRegistration.Services.ControlledDocumentRegistrationService>();
         // MOD-0029-FU07 — Permanent UID / Document Code allocation engine (ledger + atomic sequence counter).

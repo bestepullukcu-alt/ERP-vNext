@@ -92,6 +92,9 @@
     const loadNodes = async () => {
         try {
             const data = await envelope(await fetch(`${base}/concept-nodes?includeArchived=true`, { credentials: 'same-origin', headers }));
+            // Idempotent: a combined-write (②) reloads nodes so the new node resolves in labels + pickers.
+            nodeRows.length = 0;
+            Object.keys(nodeMap).forEach(k => delete nodeMap[k]);
             (data?.items || []).forEach(n => {
                 nodeMap[n.conceptNodeId] = {
                     label: `${n.conceptNodeCode} — ${n.conceptNodeName}`,
@@ -456,14 +459,28 @@
     const statusBadge = v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' || v === 'published' ? 'success' : 'primary'));
     const archivedBadge = v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success');
     const nameCell = v => `<span class="fw-medium text-heading">${esc(v)}</span>`;
+    // SCMM-09 (①): ConceptType name cell carries a colour swatch + group/list badges (kompakt, no extra columns).
+    const colorSwatch = c => c
+        ? `<span class="d-inline-block rounded-circle me-2 align-middle flex-shrink-0" style="width:10px;height:10px;background:${esc(c)};border:1px solid rgba(0,0,0,.15)" title="${esc(c)}"></span>`
+        : '';
+    const typeNameCell = (v, row) => {
+        const badges = (row.isGroup ? ` <span class="badge bg-label-info">${esc(L.IsGroup || 'Group')}</span>` : '')
+            + (row.isList ? ` <span class="badge bg-label-secondary">${esc(L.IsList || 'List')}</span>` : '');
+        return `<span class="d-inline-flex align-items-center">${colorSwatch(row.color)}<span class="fw-medium text-heading">${esc(v)}</span></span>${badges}`;
+    };
     const refCell = (v, label) => v ? `<span class="text-muted" title="${esc(v)}">${esc(label(v))}</span>` : '<span class="text-muted">—</span>';
     const conformanceBadge = v => v
         ? `<span class="badge bg-label-success">${esc(L.Conforming || 'Conforming')}</span>`
         : `<span class="badge bg-label-warning" title="${esc(L.NonConformingNote || '')}">${esc(L.NonConforming || 'Non-conforming')}</span>`;
-    const sequenceCell = ids => {
+    const sequenceCell = (ids, row) => {
         const list = Array.isArray(ids) ? ids : [];
         if (!list.length) return '<span class="text-muted">—</span>';
-        return `<span>${list.map(id => esc(labelType(id))).join(' <i class="bx bx-chevron-right"></i> ')}</span>`;
+        // SCMM-10 (③): a multi-branch template shows a branch-count badge before the spine (no extra column).
+        const branchCount = Array.isArray(row?.branches) ? row.branches.length : 0;
+        const branchBadge = branchCount > 1
+            ? `<span class="badge bg-label-info me-2"><i class="bx bx-git-branch me-1"></i>${branchCount} ${esc(L.BranchCountLabel || '')}</span>`
+            : '';
+        return `<span>${branchBadge}${list.map(id => esc(labelType(id))).join(' <i class="bx bx-chevron-right"></i> ')}</span>`;
     };
 
     const columnsFor = kind => {
@@ -479,7 +496,7 @@
                 { data:'sortOrder' }, { data:'description' }, { data:'isArchived' }, { data:'updatedAt' }, act],
             columnDefs: [
                 { targets:0, className:'control', orderable:false, render:() => '' },
-                { targets:2, render:v => nameCell(v) },
+                { targets:2, render:(v, t, row) => typeNameCell(v, row) },
                 { targets:3, render:v => refCell(v, labelSubject) },
                 { targets:4, render:v => statusBadge(v) },
                 { targets:6, render:v => muted(v) },
@@ -519,7 +536,7 @@
                 { targets:0, className:'control', orderable:false, render:() => '' },
                 { targets:2, render:v => nameCell(v) },
                 { targets:3, render:v => refCell(v, labelSubject) },
-                { targets:4, orderable:false, render:v => sequenceCell(v) },
+                { targets:4, orderable:false, render:(v, t, row) => sequenceCell(v, row) },
                 { targets:5, render:v => esc(String((v || []).length)) },
                 { targets:6, render:v => muted(v) },
                 { targets:7, render:v => statusBadge(v) },
@@ -680,6 +697,38 @@
     // "archived" is deliberately not offered: archiving is its own action and an update carrying it is a 400.
     const liveStatuses = name => vocab(name).filter(o => o.value !== 'archived');
 
+    // SCMM-09 (①): cycle-safe parent-type options. The backend rejects a self/cycle parent (RM1, 400); the UI mirrors
+    // that by excluding the type itself and all of its descendants from the picker. Same subject, non-archived only.
+    const typeDescendants = rootId => {
+        const childrenOf = {};
+        state['concept-types'].rows.forEach(t => {
+            const p = t.parentConceptTypeId;
+            if (p) (childrenOf[p] = childrenOf[p] || []).push(t.conceptTypeId);
+        });
+        const out = new Set();
+        const stack = [rootId];
+        while (stack.length) {
+            const cur = stack.pop();
+            (childrenOf[cur] || []).forEach(c => { if (!out.has(c)) { out.add(c); stack.push(c); } });
+        }
+        return out;
+    };
+    const parentTypeOptions = (subjectId, selfId) => {
+        const excluded = selfId ? typeDescendants(selfId) : new Set();
+        return state['concept-types'].rows
+            .filter(t => String(t.subjectId) === String(subjectId)
+                && !t.isArchived
+                && String(t.conceptTypeId) !== String(selfId)
+                && !excluded.has(t.conceptTypeId))
+            .map(t => ({ value: t.conceptTypeId, text: `${t.conceptTypeCode} — ${t.conceptTypeName}` }));
+    };
+    const refreshTypeParentPicker = () => {
+        const subjectId = norm(document.getElementById('typeSubjectId')?.value);
+        const selfId = norm(document.getElementById('typeFormId')?.value);
+        fillFormSelect('typeParentConceptTypeId', parentTypeOptions(subjectId, selfId), true, null, null);
+        initFormSelect2('offcanvasTypeCreateEdit');
+    };
+
     // ─── Tab 1 · ConceptType form ────────────────────────────────────────────
     const openTypeForm = row => {
         const form = document.getElementById('conceptTypeForm');
@@ -687,6 +736,9 @@
         showAlert('conceptTypeFormAlert', '');
         fillFormSelect('typeSubjectId', liveSubjects(row?.subjectId), true, row?.subjectId, labelSubject(row?.subjectId));
         fillFormSelect('typeStatus', liveStatuses('conceptStatuses'), false, row?.status, row?.status);
+        // SCMM-09 (①): cycle-safe parent picker (same subject, excludes self + descendants).
+        fillFormSelect('typeParentConceptTypeId', parentTypeOptions(row?.subjectId, row?.conceptTypeId), true,
+            row?.parentConceptTypeId, labelType(row?.parentConceptTypeId));
         initFormSelect2('offcanvasTypeCreateEdit');
 
         setValue('typeFormId', row?.conceptTypeId || '');
@@ -696,6 +748,15 @@
         setValue('typeStatus', row?.status || 'active');
         setValue('typeSortOrder', row?.sortOrder ?? 0);
         setValue('typeDescription', row?.description || '');
+        // SCMM-09 (①): color / group / list / parent.
+        setValue('typeParentConceptTypeId', row?.parentConceptTypeId || '');
+        const typeColor = row?.color || '';
+        const colorText = document.getElementById('typeColor');
+        const colorPicker = document.getElementById('typeColorPicker');
+        if (colorText) colorText.value = typeColor;
+        if (colorPicker) colorPicker.value = typeColor || '#6366f1';
+        document.getElementById('typeIsGroup').checked = !!row?.isGroup;
+        document.getElementById('typeIsList').checked = !!row?.isList;
         // SubjectId and the code are not in the update contract — they are fixed at creation.
         setDisabled('typeSubjectId', !!row);
         setReadOnly('typeConceptTypeCode', !!row);
@@ -709,7 +770,12 @@
             conceptTypeName: norm(document.getElementById('typeConceptTypeName').value),
             description: norm(document.getElementById('typeDescription').value) || null,
             sortOrder: Number(document.getElementById('typeSortOrder').value || 0),
-            status: norm(document.getElementById('typeStatus').value) || null
+            status: norm(document.getElementById('typeStatus').value) || null,
+            // SCMM-09 (①) — additive fields carried on both create and update.
+            color: norm(document.getElementById('typeColor').value) || null,
+            isGroup: document.getElementById('typeIsGroup').checked,
+            isList: document.getElementById('typeIsList').checked,
+            parentConceptTypeId: norm(document.getElementById('typeParentConceptTypeId').value) || null
         };
         if (!id) {
             payload.subjectId = norm(document.getElementById('typeSubjectId').value);
@@ -737,6 +803,24 @@
         setValue('relFromNodeId', from || '');
         setValue('relToNodeId', to || '');
     };
+    // SCMM-09 (②): the new-node pickers (type + counterpart) are scoped to the chosen subject, exactly like From/To.
+    const refreshRelationshipNewNodePickers = () => {
+        const subjectId = norm(document.getElementById('relSubjectId').value);
+        fillFormSelect('relNewNodeTypeId', typeOptionsFor(subjectId), true, null, null);
+        fillFormSelect('relCounterpartNodeId', nodeOptionsFor(subjectId, null), true, null, null);
+        initFormSelect2('offcanvasRelationshipCreateEdit');
+    };
+    const REL_EXISTING_NODE_IDS = ['relFromNodeId', 'relToNodeId'];
+    const REL_NEW_NODE_IDS = ['relNewNodeTypeId', 'relNewNodeCode', 'relNewNodeName', 'relNewNodeEffectiveFrom', 'relCounterpartNodeId'];
+    // Toggle blocks + disable the inactive one's inputs so native `required` validation only fires on the active mode.
+    const setRelationshipMode = mode => {
+        const isNew = mode === 'new-node';
+        document.getElementById('relExistingNodesBlock')?.classList.toggle('d-none', isNew);
+        document.getElementById('relNewNodeBlock')?.classList.toggle('d-none', !isNew);
+        REL_EXISTING_NODE_IDS.forEach(id => setDisabled(id, isNew));
+        REL_NEW_NODE_IDS.forEach(id => setDisabled(id, !isNew));
+    };
+
     const openRelationshipForm = row => {
         const form = document.getElementById('conceptRelationshipForm');
         form.reset();
@@ -759,6 +843,19 @@
         setValue('relEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setValue('relEffectiveTo', toDateInput(row?.effectiveTo));
 
+        // SCMM-09 (②): combined write is a create-only convenience — the mode selector is hidden on edit.
+        refreshRelationshipNewNodePickers();
+        setValue('relNewNodeTypeId', '');
+        setValue('relCounterpartNodeId', '');
+        document.getElementById('relNewNodeCode').value = '';
+        document.getElementById('relNewNodeName').value = '';
+        setValue('relNewNodeEffectiveFrom', todayInput());
+        document.getElementById('relNewNodeSource').checked = true;
+        document.getElementById('relModeExisting').checked = true;
+        document.getElementById('relModeNewNode').checked = false;
+        document.getElementById('relModeBlock')?.classList.toggle('d-none', !!row);
+        setRelationshipMode('existing');
+
         // Subject, both endpoints, the type and the code are fixed at creation: the update contract carries none.
         ['relSubjectId', 'relFromNodeId', 'relToNodeId', 'relRelationshipType'].forEach(id => setDisabled(id, !!row));
         setReadOnly('relRelationshipCode', !!row);
@@ -770,6 +867,35 @@
     };
     const submitRelationshipForm = async () => {
         const id = norm(document.getElementById('relationshipFormId').value);
+        const mode = document.querySelector('input[name="relMode"]:checked')?.value || 'existing';
+
+        // SCMM-09 (②): combined write — new node + edge in ONE atomic call (create-only).
+        if (!id && mode === 'new-node') {
+            const newNodeIsSource = (document.querySelector('input[name="relNewNodeIsSource"]:checked')?.value || 'true') === 'true';
+            const combined = {
+                subjectId: norm(document.getElementById('relSubjectId').value),
+                conceptTypeId: norm(document.getElementById('relNewNodeTypeId').value),
+                conceptNodeCode: norm(document.getElementById('relNewNodeCode').value),
+                conceptNodeName: norm(document.getElementById('relNewNodeName').value),
+                nodeEffectiveFrom: fromDateInput(document.getElementById('relNewNodeEffectiveFrom').value),
+                counterpartConceptNodeId: norm(document.getElementById('relCounterpartNodeId').value),
+                relationshipType: norm(document.getElementById('relRelationshipType').value),
+                relationshipCode: norm(document.getElementById('relRelationshipCode').value),
+                relationshipName: norm(document.getElementById('relRelationshipName').value),
+                relationshipEffectiveFrom: fromDateInput(document.getElementById('relEffectiveFrom').value),
+                newNodeIsSource,
+                direction: norm(document.getElementById('relDirection').value) || null,
+                priority: Number(document.getElementById('relPriority').value || 0),
+                relationshipStatus: norm(document.getElementById('relStatus').value) || null,
+                relationshipEffectiveTo: fromDateInput(document.getElementById('relEffectiveTo').value)
+            };
+            await envelope(await fetch(`${base}/concept-nodes/with-relationship`, {
+                method: 'POST', credentials: 'same-origin', headers: jsonHeaders, body: JSON.stringify(combined)
+            }));
+            await loadNodes(); // the new node must resolve in edge labels + node pickers
+            return false;      // created
+        }
+
         const payload = {
             relationshipName: norm(document.getElementById('relRelationshipName').value),
             effectiveFrom: fromDateInput(document.getElementById('relEffectiveFrom').value),
@@ -791,32 +917,78 @@
         return !!id;
     };
 
-    // ─── Tab 4 · ConceptChainTemplate form + sequence editor ─────────────────
-    let sequence = [];
+    // ─── Tab 4 · ConceptChainTemplate branched builder (SCMM-10 ③) ───────────
     const typeOptionsFor = subjectId => state['concept-types'].rows
         .filter(t => String(t.subjectId) === String(subjectId) && !t.isArchived)
         .map(t => ({ value: t.conceptTypeId, text: `${t.conceptTypeCode} — ${t.conceptTypeName}` }));
-    const renderSequence = readOnly => {
-        const host = document.getElementById('tplSequence');
-        const empty = document.getElementById('tplSequenceEmpty');
-        if (!host) return;
-        host.innerHTML = sequence.map((id, index) => `
-            <li class="list-group-item d-flex justify-content-between align-items-center gap-2">
-                <span class="text-truncate">${esc(labelType(id))}</span>
-                <span class="d-flex gap-1 flex-shrink-0">
-                    <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-tpl-move" data-index="${index}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${readOnly || index === 0 ? 'disabled' : ''}><i class="bx bx-up-arrow-alt"></i></button>
-                    <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-tpl-move" data-index="${index}" data-delta="1" title="${esc(L.MoveDown || '')}" ${readOnly || index === sequence.length - 1 ? 'disabled' : ''}><i class="bx bx-down-arrow-alt"></i></button>
-                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-tpl-remove" data-index="${index}" title="${esc(L.RemoveStep || '')}" ${readOnly ? 'disabled' : ''}><i class="bx bx-x"></i></button>
-                </span>
-            </li>`).join('');
-        empty?.classList.toggle('d-none', sequence.length > 0);
-        setValue('tplOrderedConceptTypes', sequence.join(','));
+
+    // Builder model: [{ name, steps:[{ conceptTypeId, min, max, roles:[], audiences:[] }] }].
+    let branches = [];
+    let templateReadOnly = false;
+    // Moderator / for-whom refs are opaque config strings (D8 — no engine); the editor takes them comma-separated.
+    const splitRefs = v => norm(v).split(',').map(x => x.trim()).filter(Boolean);
+    // The spine (OrderedConceptTypes) is the DISTINCT type ids across every branch step, first-occurrence order — it is
+    // sent alongside Branches so conformance + backward-compat keep working (SCMM-10 contract).
+    const spineFromBranches = () => {
+        const seen = new Set();
+        const out = [];
+        branches.forEach(b => b.steps.forEach(s => {
+            const id = String(s.conceptTypeId || '');
+            if (id && !seen.has(id)) { seen.add(id); out.push(id); }
+        }));
+        return out;
     };
-    const refreshTemplateTypePicker = () => {
+    const bumpVersion = v => {
+        const m = /^v?(\d+)(?:\.(\d+))?$/i.exec(norm(v));
+        if (!m) return norm(v) ? `${norm(v)}-2` : 'v2';
+        const major = parseInt(m[1], 10);
+        return m[2] != null ? `v${major}.${parseInt(m[2], 10) + 1}` : `v${major + 1}`;
+    };
+    const renderBranches = () => {
+        const host = document.getElementById('tplBranches');
+        const empty = document.getElementById('tplBranchesEmpty');
+        if (!host) return;
         const subjectId = norm(document.getElementById('tplSubjectId').value);
-        // A type already in the sequence is not offered again: V12 forbids the same type twice (v1; recursion is F7).
-        fillFormSelect('tplTypePicker', typeOptionsFor(subjectId).filter(o => !sequence.includes(String(o.value))), true, null, null);
-        initFormSelect2('offcanvasTemplateCreateEdit');
+        const ro = templateReadOnly;
+        host.innerHTML = branches.map((b, bi) => {
+            const steps = b.steps.map((s, si) => `
+                <li class="list-group-item">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <span class="fw-medium text-truncate">${esc(labelType(s.conceptTypeId))}</span>
+                        <span class="d-flex gap-1 flex-shrink-0">
+                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-up-arrow-alt"></i></button>
+                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" ${ro || si === b.steps.length - 1 ? 'disabled' : ''}><i class="bx bx-down-arrow-alt"></i></button>
+                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-x"></i></button>
+                        </span>
+                    </div>
+                    <div class="row g-2 mt-1">
+                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MinSelection || 'Min')}</label><input type="number" min="0" step="1" class="form-control form-control-sm js-step-min" data-b="${bi}" data-s="${si}" value="${esc(String(s.min ?? 1))}" ${ro ? 'disabled' : ''}></div>
+                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MaxSelection || 'Max')}</label><input type="number" min="1" step="1" class="form-control form-control-sm js-step-max" data-b="${bi}" data-s="${si}" value="${s.max == null ? '' : esc(String(s.max))}" ${ro ? 'disabled' : ''}></div>
+                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.Moderator || '')}</label><input type="text" class="form-control form-control-sm js-step-roles" data-b="${bi}" data-s="${si}" value="${esc((s.roles || []).join(', '))}" placeholder="${esc(L.RefsCommaHint || '')}" ${ro ? 'disabled' : ''}></div>
+                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.ForWhom || '')}</label><input type="text" class="form-control form-control-sm js-step-aud" data-b="${bi}" data-s="${si}" value="${esc((s.audiences || []).join(', '))}" placeholder="${esc(L.RefsCommaHint || '')}" ${ro ? 'disabled' : ''}></div>
+                    </div>
+                </li>`).join('');
+            const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
+            return `
+                <div class="card border shadow-none">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                            <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
+                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
+                        </div>
+                        <ol class="list-group list-group-numbered mb-2">${steps || `<li class="list-group-item text-muted">${esc(L.BranchStepsEmpty || '')}</li>`}</ol>
+                        <div class="d-flex gap-2">
+                            <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" ${ro ? 'disabled' : ''}>
+                                <option value=""></option>
+                                ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
+                            </select>
+                            <button type="button" class="btn btn-sm btn-label-primary js-branch-add-step" data-b="${bi}" ${ro ? 'disabled' : ''}><i class="bx bx-plus"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+        }).join('');
+        empty?.classList.toggle('d-none', branches.length > 0);
+        setValue('tplOrderedConceptTypes', spineFromBranches().join(','));
     };
     const openTemplateForm = row => {
         const form = document.getElementById('conceptTemplateForm');
@@ -837,14 +1009,28 @@
         setValue('tplEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setValue('tplEffectiveTo', toDateInput(row?.effectiveTo));
 
-        sequence = (row?.orderedConceptTypes || []).map(String);
-        // A published chain freezes its sequence; changing it needs a new version.
+        // The backend always returns branches (a legacy flat template read-migrates to a single branch), so the builder
+        // loads them directly. A brand-new create starts with one empty branch for convenience.
+        branches = (row?.branches || []).map(b => ({
+            name: b.branchName || '',
+            steps: (b.steps || []).map(s => ({
+                conceptTypeId: s.conceptTypeId,
+                min: s.minSelection ?? 1,
+                max: s.maxSelection ?? null,
+                roles: (s.allowedRoleRefs || []).slice(),
+                audiences: (s.audienceDimensionRefs || []).slice()
+            }))
+        }));
+        if (!row && branches.length === 0) branches = [{ name: '', steps: [] }];
+
+        // A published chain freezes its structure; the builder is read-only and "New version" clones it into a draft.
         const frozen = norm(row?.status) === 'published';
+        templateReadOnly = frozen;
         document.getElementById('conceptTemplateFrozenNote')?.classList.toggle('d-none', !frozen);
-        renderSequence(frozen);
-        refreshTemplateTypePicker();
-        setDisabled('tplTypePicker', frozen);
-        setDisabled('btnTplAddType', frozen);
+        document.getElementById('btnTplNewVersion')?.classList.toggle('d-none', !frozen);
+        document.getElementById('btnSaveConceptTemplate')?.classList.toggle('d-none', frozen);
+        renderBranches();
+        setDisabled('btnTplAddBranch', frozen);
         // SubjectId and the chain code are stable across versions and are not in the update contract.
         setDisabled('tplSubjectId', !!row);
         setReadOnly('tplChainCode', !!row);
@@ -852,23 +1038,55 @@
         document.getElementById('offcanvasTemplateCreateEditLabel').textContent = row ? (L.EditTemplate || L.Edit) : (L.CreateTemplate || '');
         canvasOf('concept-chain-templates')?.show();
     };
+    // SCMM-10 (③): "New version" clones the published template's structure into a fresh DRAFT create form (same code +
+    // subject, bumped version, new effective window). The user edits + publishes it as a NON-overlapping version (V13).
+    const startNewTemplateVersion = () => {
+        templateReadOnly = false;
+        setValue('templateFormId', '');
+        setValue('tplStatus', 'draft');
+        setValue('tplEffectiveFrom', todayInput());
+        setValue('tplEffectiveTo', '');
+        setValue('tplChainVersion', bumpVersion(document.getElementById('tplChainVersion').value));
+        setDisabled('tplSubjectId', false);   // same subject, but must be sent on create
+        setReadOnly('tplChainCode', false);    // same code, new version
+        document.getElementById('conceptTemplateFrozenNote')?.classList.add('d-none');
+        document.getElementById('btnTplNewVersion')?.classList.add('d-none');
+        document.getElementById('btnSaveConceptTemplate')?.classList.remove('d-none');
+        renderBranches();
+        setDisabled('btnTplAddBranch', false);
+        document.getElementById('offcanvasTemplateCreateEditLabel').textContent = L.CreateTemplate || '';
+    };
     const submitTemplateForm = async () => {
         const id = norm(document.getElementById('templateFormId').value);
         const error = document.getElementById('tplSequenceError');
-        // Keep the sequence honest while it is being built; V12/V13 remain the backend's call.
-        if (sequence.length < 2) {
+        const spine = spineFromBranches();
+        // The backend requires the spine (min 2 DISTINCT types across all branches); keep the builder honest first.
+        if (spine.length < 2) {
             if (error) { error.textContent = L.SequenceMinTwo || ''; error.classList.remove('d-none'); }
             throw Object.assign(new Error(L.SequenceMinTwo || ''), { handled: true });
         }
-        if (new Set(sequence).size !== sequence.length) {
-            if (error) { error.textContent = L.SequenceDuplicateType || ''; error.classList.remove('d-none'); }
-            throw Object.assign(new Error(L.SequenceDuplicateType || ''), { handled: true });
-        }
         error?.classList.add('d-none');
+
+        // Send BOTH the spine and the rich branch structure (SCMM-10 contract; update = full replace).
+        const branchPayload = branches
+            .filter(b => b.steps.length > 0)
+            .map((b, i) => ({
+                branchCode: `BR${i + 1}`,
+                branchName: norm(b.name) || null,
+                sortOrder: i,
+                steps: b.steps.map(s => ({
+                    conceptTypeId: String(s.conceptTypeId),
+                    minSelection: Number.isFinite(Number(s.min)) ? Number(s.min) : 1,
+                    maxSelection: (s.max === '' || s.max == null) ? null : Number(s.max),
+                    allowedRoleRefs: s.roles || [],
+                    audienceDimensionRefs: s.audiences || []
+                }))
+            }));
 
         const payload = {
             chainName: norm(document.getElementById('tplChainName').value),
-            orderedConceptTypes: sequence.slice(),
+            orderedConceptTypes: spine,
+            branches: branchPayload,
             effectiveFrom: fromDateInput(document.getElementById('tplEffectiveFrom').value),
             description: norm(document.getElementById('tplDescription').value) || null,
             status: norm(document.getElementById('tplStatus').value) || null,
@@ -922,6 +1140,14 @@
             setText('pv-type-subject', labelSubject(row.subjectId));
             setBadge('pv-type-status', row.status, row.status === 'active' ? 'success' : 'secondary');
             setText('pv-type-sortorder', row.sortOrder);
+            // SCMM-09 (①) — colour swatch + parent + group/list flags.
+            const pvColor = document.getElementById('pv-type-color');
+            if (pvColor) pvColor.innerHTML = row.color
+                ? `${colorSwatch(row.color)}<span class="align-middle">${esc(row.color)}</span>`
+                : '<span class="text-muted">—</span>';
+            setText('pv-type-parent', row.parentConceptTypeId ? labelType(row.parentConceptTypeId) : '');
+            setBadge('pv-type-group', row.isGroup ? L.Yes : L.No, row.isGroup ? 'info' : 'secondary');
+            setBadge('pv-type-list', row.isList ? L.Yes : L.No, row.isList ? 'info' : 'secondary');
             setText('pv-type-description', row.description);
             setBadge('pv-type-archived', row.isArchived ? L.Yes : L.No, row.isArchived ? 'warning' : 'success');
             setText('pv-type-updated', stamp(row.updatedAt || row.createdAt));
@@ -958,6 +1184,22 @@
                     || `<li class="list-group-item text-muted">${esc(L.SequenceEmpty || '')}</li>`;
             }
             document.getElementById('pv-tpl-frozen')?.classList.toggle('d-none', norm(row.status) !== 'published');
+            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality + moderator/for-whom.
+            const brHost = document.getElementById('pv-tpl-branches');
+            if (brHost) {
+                const list = Array.isArray(row.branches) ? row.branches : [];
+                brHost.innerHTML = list.length ? list.map(b => {
+                    const steps = (b.steps || []).map(s => {
+                        const card = `${s.minSelection ?? 1}–${s.maxSelection == null ? '∞' : s.maxSelection}`;
+                        const roles = (s.allowedRoleRefs || []).length ? ` · ${esc(L.Moderator || '')}: ${esc((s.allowedRoleRefs || []).join(', '))}` : '';
+                        const aud = (s.audienceDimensionRefs || []).length ? ` · ${esc(L.ForWhom || '')}: ${esc((s.audienceDimensionRefs || []).join(', '))}` : '';
+                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})${roles}${aud}</span></li>`;
+                    }).join('');
+                    return `<div class="card border shadow-none"><div class="card-body p-3">
+                        <div class="fw-medium mb-2">${esc(b.branchName || b.branchCode || '')}</div>
+                        <ol class="list-group list-group-numbered mb-0">${steps}</ol></div></div>`;
+                }).join('') : `<span class="text-muted">—</span>`;
+            }
             setText('pv-tpl-description', row.description);
             setText('pv-tpl-from', stamp(row.effectiveFrom));
             setText('pv-tpl-to', row.effectiveTo ? stamp(row.effectiveTo) : '');
@@ -1027,34 +1269,61 @@
             return;
         }
 
-        // Sequence editor (tab 4).
-        const move = event.target.closest('.js-tpl-move');
-        if (move) {
+        // SCMM-10 (③) branched builder (tab 4).
+        const addBranch = event.target.closest('#btnTplAddBranch');
+        if (addBranch) {
             event.preventDefault();
-            const index = Number(move.dataset.index);
-            const target = index + Number(move.dataset.delta);
-            if (target < 0 || target >= sequence.length) return;
-            const [item] = sequence.splice(index, 1);
-            sequence.splice(target, 0, item);
-            renderSequence(false);
+            if (templateReadOnly) return;
+            branches.push({ name: '', steps: [] });
+            renderBranches();
             return;
         }
-        const remove = event.target.closest('.js-tpl-remove');
-        if (remove) {
+        const newVersion = event.target.closest('#btnTplNewVersion');
+        if (newVersion) {
             event.preventDefault();
-            sequence.splice(Number(remove.dataset.index), 1);
-            renderSequence(false);
-            refreshTemplateTypePicker();
+            startNewTemplateVersion();
             return;
         }
-        const addType = event.target.closest('#btnTplAddType');
-        if (addType) {
+        const branchRemove = event.target.closest('.js-branch-remove');
+        if (branchRemove) {
             event.preventDefault();
-            const value = norm(document.getElementById('tplTypePicker').value);
-            if (!value || sequence.includes(value)) return;
-            sequence.push(value);
-            renderSequence(false);
-            refreshTemplateTypePicker();
+            if (templateReadOnly) return;
+            branches.splice(Number(branchRemove.dataset.b), 1);
+            renderBranches();
+            return;
+        }
+        const addStep = event.target.closest('.js-branch-add-step');
+        if (addStep) {
+            event.preventDefault();
+            if (templateReadOnly) return;
+            const bi = Number(addStep.dataset.b);
+            const picker = document.querySelector(`.js-branch-type-picker[data-b="${bi}"]`);
+            const value = norm(picker?.value);
+            if (!value || branches[bi].steps.some(s => String(s.conceptTypeId) === value)) return;
+            branches[bi].steps.push({ conceptTypeId: value, min: 1, max: null, roles: [], audiences: [] });
+            renderBranches();
+            return;
+        }
+        const stepMove = event.target.closest('.js-step-move');
+        if (stepMove) {
+            event.preventDefault();
+            if (templateReadOnly) return;
+            const bi = Number(stepMove.dataset.b);
+            const si = Number(stepMove.dataset.s);
+            const target = si + Number(stepMove.dataset.delta);
+            const steps = branches[bi].steps;
+            if (target < 0 || target >= steps.length) return;
+            const [item] = steps.splice(si, 1);
+            steps.splice(target, 0, item);
+            renderBranches();
+            return;
+        }
+        const stepRemove = event.target.closest('.js-step-remove');
+        if (stepRemove) {
+            event.preventDefault();
+            if (templateReadOnly) return;
+            branches[Number(stepRemove.dataset.b)].steps.splice(Number(stepRemove.dataset.s), 1);
+            renderBranches();
             return;
         }
 
@@ -1091,8 +1360,46 @@
             el.addEventListener('change', handler);
             if (window.jQuery) window.jQuery(el).on('change', handler);
         };
-        bind('relSubjectId', () => refreshRelationshipNodePickers(null));
-        bind('tplSubjectId', () => { sequence = []; renderSequence(false); refreshTemplateTypePicker(); });
+        bind('relSubjectId', () => { refreshRelationshipNodePickers(null); refreshRelationshipNewNodePickers(); });
+        // SCMM-10 (③): changing the subject resets the branch builder (types are subject-scoped).
+        bind('tplSubjectId', () => { branches = [{ name: '', steps: [] }]; renderBranches(); });
+        // SCMM-09 (①): subject drives the cycle-safe parent-type picker on the ConceptType form.
+        bind('typeSubjectId', () => refreshTypeParentPicker());
+        // SCMM-09 (②): connection-mode radios toggle the existing/new-node blocks.
+        document.querySelectorAll('input[name="relMode"]').forEach(radio =>
+            radio.addEventListener('change', () => setRelationshipMode(radio.value)));
+    };
+
+    // SCMM-10 (③): keep the branch-step model in sync as the user types (no re-render, so focus is never lost).
+    const bindTemplateBuilderInputs = () => {
+        const host = document.getElementById('tplBranches');
+        if (!host) return;
+        host.addEventListener('input', event => {
+            const el = event.target;
+            if (!el?.dataset || el.dataset.b == null) return;
+            const bi = Number(el.dataset.b);
+            if (!branches[bi]) return;
+            if (el.classList.contains('js-branch-name')) { branches[bi].name = el.value; return; }
+            if (el.dataset.s == null) return;
+            const step = branches[bi].steps[Number(el.dataset.s)];
+            if (!step) return;
+            if (el.classList.contains('js-step-min')) step.min = el.value === '' ? 0 : Number(el.value);
+            else if (el.classList.contains('js-step-max')) step.max = el.value === '' ? null : Number(el.value);
+            else if (el.classList.contains('js-step-roles')) step.roles = splitRefs(el.value);
+            else if (el.classList.contains('js-step-aud')) step.audiences = splitRefs(el.value);
+        });
+    };
+
+    // SCMM-09 (①): keep the native colour picker and the hex text input in sync (either can drive the value).
+    const bindTypeColorSync = () => {
+        const picker = document.getElementById('typeColorPicker');
+        const text = document.getElementById('typeColor');
+        if (!picker || !text) return;
+        picker.addEventListener('input', () => { text.value = picker.value; });
+        text.addEventListener('input', () => {
+            const v = text.value.trim();
+            if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) picker.value = v;
+        });
     };
 
     KINDS.forEach(kind => {
@@ -1132,6 +1439,8 @@
 
     registerTableFilter();
     bindSubjectCascade();
+    bindTypeColorSync();
+    bindTemplateBuilderInputs();
     (async () => {
         L = window.ConceptL10n || window.L10n || {};
         // The contract first (it supplies every vocabulary the filters and forms pick from), then the read-only

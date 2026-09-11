@@ -1,3 +1,4 @@
+using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services;

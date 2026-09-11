@@ -1,0 +1,118 @@
+openapi: 3.1.0
+info:
+  title: GRN-EVENT
+  description: >
+    MOD-0142 Receiving/GRN — Wave-0 frozen (v1). Mal kabulü SoR.
+    GRN kaydı → INVENTORY POST /movements (GOODS_RECEIPT_PO) çağırır (shadow stok YOK) +
+    GoodsReceived event yayınlar (invoice-match/QC dinler). Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0142
+  x-consumes: [PRODUCT-MASTER, INVENTORY, LOCATION, TRACE]
+servers: [{ url: /api/grn }]
+security: [{ bearerAuth: [] }]
+paths:
+  /:
+    post:
+      operationId: recordGrn
+      summary: Mal kabul kaydet (INVENTORY'ye post eder)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GrnRequest' }
+            example:
+              idempotencyKey: grn-abc
+              poId: PO-5001
+              warehouseId: wh-01
+              locationId: loc-A-12-3
+              lines:
+                - { poLineId: "3", itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, lotNumber: "L2026-0455", quantity: "100.000", uomId: BOX, toStockStatus: QUALITY_INSPECTION }
+      responses:
+        '201':
+          description: GRN kaydedildi + INVENTORY'ye post edildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GrnResponse' }
+              example:
+                grnId: GRN-10001
+                poId: PO-5001
+                status: Posted
+                lines:
+                  - { poLineId: "3", inventoryTransactionId: txn-55010, lotId: lot-777, quantity: "100.000" }
+                receivedAt: "2026-09-10T10:00:00Z"
+                contractVersion: v1
+        '422': { $ref: '#/components/responses/GrnUnprocessable' }
+  /{grnId}:
+    get:
+      operationId: getGrn
+      parameters: [{ name: grnId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: GRN, content: { application/json: { schema: { $ref: '#/components/schemas/GrnResponse' } } } }
+        '404': { $ref: '#/components/responses/UnknownGrn' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    GrnLine:
+      type: object
+      required: [itemId, skuId, skuLevel, quantity, uomId]
+      properties:
+        poLineId: { type: string, nullable: true }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotNumber: { type: string, nullable: true, description: "TRACE createLot ile lot oluşturulur" }
+        serialIds: { type: array, items: { type: string }, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        toStockStatus: { type: string, enum: [AVAILABLE, QUALITY_INSPECTION, QUARANTINE] }
+    GrnRequest:
+      type: object
+      required: [idempotencyKey, warehouseId, lines]
+      properties:
+        idempotencyKey: { type: string }
+        poId: { type: string, nullable: true }
+        warehouseId: { type: string }
+        locationId: { type: string, nullable: true }
+        lines: { type: array, items: { $ref: '#/components/schemas/GrnLine' } }
+    GrnResponse:
+      type: object
+      properties:
+        grnId: { type: string }
+        poId: { type: string, nullable: true }
+        status: { type: string, enum: [Draft, Posted, Reversed] }
+        lines:
+          type: array
+          items:
+            type: object
+            properties:
+              poLineId: { type: string, nullable: true }
+              inventoryTransactionId: { type: string, description: "INVENTORY POST /movements sonucu" }
+              lotId: { type: string, nullable: true }
+              quantity: { $ref: '#/components/schemas/Decimal' }
+        receivedAt: { type: string, format: date-time }
+        contractVersion: { type: string }
+    GoodsReceivedEvent:
+      description: "Event — invoice-match(0143)/QC(0175) dinler"
+      type: object
+      properties:
+        grnId: { type: string }
+        poId: { type: string }
+        itemId: { type: string }
+        skuId: { type: string }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        inventoryTransactionId: { type: string }
+        receivedAt: { type: string, format: date-time }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    GrnUnprocessable:
+      description: İş kuralı ihlali (item/lokasyon/PO)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_ITEM, message: "item PRODUCT-MASTER'da yok", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownGrn:
+      description: GRN bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_GRN, message: "grn bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }

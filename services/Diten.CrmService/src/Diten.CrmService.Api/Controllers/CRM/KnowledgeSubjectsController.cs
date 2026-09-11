@@ -26,7 +26,7 @@ public sealed class KnowledgeSubjectsController : CustomBaseController
     }
 
     [HttpGet("api/crm/knowledge/subjects")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.SubjectRead)]
     public async Task<IActionResult> List(
         [FromQuery] string? status,
         [FromQuery] string? search,
@@ -36,12 +36,12 @@ public sealed class KnowledgeSubjectsController : CustomBaseController
             new ListSubjectsQuery(status, search, includeArchived), cancellationToken));
 
     [HttpGet("api/crm/knowledge/subjects/{subjectId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.SubjectRead)]
     public async Task<IActionResult> Get(Guid subjectId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetSubjectQuery(subjectId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/subjects")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateSubjectRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -52,7 +52,7 @@ public sealed class KnowledgeSubjectsController : CustomBaseController
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/subjects/{subjectId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Update(
         Guid subjectId, [FromBody] UpdateSubjectRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -62,12 +62,12 @@ public sealed class KnowledgeSubjectsController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/subjects/{subjectId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Archive(Guid subjectId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new ArchiveSubjectCommand(subjectId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/subjects/{subjectId:guid}/unarchive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.SubjectManage)]
     public async Task<IActionResult> Unarchive(Guid subjectId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new UnarchiveSubjectCommand(subjectId), cancellationToken));
 }

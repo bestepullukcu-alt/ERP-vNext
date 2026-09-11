@@ -20,7 +20,7 @@ public sealed class KnowledgePathContractController : CustomBaseController
     public KnowledgePathContractController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/path/contract")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> GetContract(CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetKnowledgePathContractQuery(), cancellationToken));
 }

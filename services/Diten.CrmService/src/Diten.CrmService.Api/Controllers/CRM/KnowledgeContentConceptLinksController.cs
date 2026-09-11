@@ -18,7 +18,7 @@ public sealed class KnowledgeContentConceptLinksController : CustomBaseControlle
     public KnowledgeContentConceptLinksController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/content-concept-links")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? contentId,
         [FromQuery] Guid? conceptNodeId,
@@ -29,7 +29,7 @@ public sealed class KnowledgeContentConceptLinksController : CustomBaseControlle
             new ListContentConceptLinksQuery(contentId, conceptNodeId, linkRole, includeArchived), cancellationToken));
 
     [HttpPost("api/crm/knowledge/content-concept-links")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.LinkManage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateContentConceptLinkRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -39,7 +39,7 @@ public sealed class KnowledgeContentConceptLinksController : CustomBaseControlle
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/content-concept-links/{linkId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.LinkManage)]
     public async Task<IActionResult> Archive(Guid linkId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveKnowledgeContentConceptLinkCommand(linkId), cancellationToken));

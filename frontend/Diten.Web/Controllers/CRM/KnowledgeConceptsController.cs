@@ -196,6 +196,11 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> ArchiveNode(Guid nodeId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/concept-nodes/{nodeId}/archive", null, ManagePermission, ct, ManageFallback);
 
+    // SCMM-09 (②) — combined node+edge write ("New UCLN List"): creates a new node and connects it atomically.
+    [HttpPost("api/concept-nodes/with-relationship")]
+    public Task<IActionResult> CreateNodeWithRelationship([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Post, "/api/crm/knowledge/concept-nodes/with-relationship", body, ManagePermission, ct, ManageFallback);
+
     // Concept relationships (Slim tab).
     [HttpGet("api/concept-relationships")]
     public Task<IActionResult> RelationshipList(CancellationToken ct) =>

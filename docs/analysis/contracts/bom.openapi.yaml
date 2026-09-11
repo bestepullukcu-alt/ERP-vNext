@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: BOM
+  description: >
+    MOD-0193 BOM & Routings — Wave-0 frozen (v1). Manufacturing malzeme/rota yapısı.
+    Ürün kimliği = PRODUCT-MASTER (item SoR). MVP-4 MRP tüketir. Tenant+LegalEntity scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0193
+  x-consumes: [PRODUCT-MASTER, ChangeControl]
+servers: [{ url: /api/bom }]
+security: [{ bearerAuth: [] }]
+paths:
+  /{itemId}/current:
+    get:
+      operationId: getCurrentBom
+      summary: Ürünün effective (yürürlükteki) BOM versiyonu
+      parameters:
+        - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: asOfDate, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Effective BOM
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BomView' }
+              example:
+                bomVersionId: bom-v3
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                version: 3
+                status: Effective
+                effectiveFrom: "2026-06-01T00:00:00Z"
+                components:
+                  - { componentItemId: comp-1, quantity: "2.000", uomId: EA, position: 10 }
+                  - { componentItemId: comp-2, quantity: "0.500", uomId: L, position: 20 }
+                routing: { routingId: rt-1, steps: [ { stepNo: 10, operation: "Karıştırma", workCenter: WC-01 } ] }
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownBom' }
+  /version/{bomVersionId}:
+    get:
+      operationId: getBomVersion
+      parameters: [{ name: bomVersionId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: BOM version, content: { application/json: { schema: { $ref: '#/components/schemas/BomView' } } } }
+        '404': { $ref: '#/components/responses/UnknownBom' }
+  /explode:
+    post:
+      operationId: explodeBom
+      summary: BOM patlat — component ihtiyaçları (MRP için)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [itemId, quantity], properties: { itemId: { type: string, format: uuid }, quantity: { $ref: '#/components/schemas/Decimal' }, asOfDate: { type: string, format: date } } }
+            example: { itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000" }
+      responses:
+        '200':
+          description: Patlatılmış ihtiyaçlar
+          content:
+            application/json:
+              example:
+                itemId: b1f2c3d4-0000-0000-0000-000000000001
+                requestedQuantity: "100.000"
+                requirements:
+                  - { componentItemId: comp-1, requiredQuantity: "200.000", uomId: EA }
+                  - { componentItemId: comp-2, requiredQuantity: "50.000", uomId: L }
+                bomVersionId: bom-v3
+                contractVersion: v1
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    BomComponent:
+      type: object
+      properties:
+        componentItemId: { type: string, format: uuid }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        position: { type: integer }
+        alternates: { type: array, items: { type: string }, nullable: true }
+    RoutingStep:
+      type: object
+      properties:
+        stepNo: { type: integer }
+        operation: { type: string }
+        workCenter: { type: string, nullable: true }
+    BomView:
+      type: object
+      properties:
+        bomVersionId: { type: string }
+        itemId: { type: string, format: uuid }
+        version: { type: integer }
+        status: { type: string, enum: [Draft, Effective, Superseded] }
+        effectiveFrom: { type: string, format: date-time, nullable: true }
+        effectiveTo: { type: string, format: date-time, nullable: true }
+        components: { type: array, items: { $ref: '#/components/schemas/BomComponent' } }
+        routing:
+          type: object
+          nullable: true
+          properties:
+            routingId: { type: string }
+            steps: { type: array, items: { $ref: '#/components/schemas/RoutingStep' } }
+        contractVersion: { type: string }
+    Error: { type: object, properties: { error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }, contractVersion: { type: string } } }
+  responses:
+    UnknownBom:
+      description: BOM bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_BOM, message: "bom bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }

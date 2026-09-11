@@ -17,7 +17,7 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
     public KnowledgeConceptNodesController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-nodes")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] Guid? conceptTypeId,
@@ -33,12 +33,12 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid conceptNodeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetConceptNodeQuery(conceptNodeId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-nodes")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptNodeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -48,8 +48,23 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
                 request.ExternalRefType, request.ExternalRefId, request.MetadataJson),
             cancellationToken));
 
+    // SCMM-09 (②) — combined node+edge write ("New UCLN List"): new node + relationship to an existing node, atomically.
+    [HttpPost("api/crm/knowledge/concept-nodes/with-relationship")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> CreateWithRelationship(
+        [FromBody] CreateConceptNodeWithRelationshipRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new CreateConceptNodeWithRelationshipCommand(
+                request.SubjectId, request.ConceptTypeId, request.ConceptNodeCode, request.ConceptNodeName,
+                request.NodeEffectiveFrom, request.CounterpartConceptNodeId, request.RelationshipType,
+                request.RelationshipCode, request.RelationshipName, request.RelationshipEffectiveFrom,
+                request.NewNodeIsSource, request.NodeDescription, request.NodeStatus, request.NodeEffectiveTo,
+                request.ExternalRefType, request.ExternalRefId, request.MetadataJson, request.Direction,
+                request.Priority, request.RelationshipStatus, request.RelationshipEffectiveTo),
+            cancellationToken));
+
     [HttpPut("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid conceptNodeId, [FromBody] UpdateConceptNodeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -59,7 +74,7 @@ public sealed class KnowledgeConceptNodesController : CustomBaseController
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-nodes/{conceptNodeId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(Guid conceptNodeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptNodeCommand(conceptNodeId), cancellationToken));

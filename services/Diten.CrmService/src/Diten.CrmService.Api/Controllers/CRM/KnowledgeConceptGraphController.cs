@@ -21,12 +21,12 @@ public sealed class KnowledgeConceptGraphController : CustomBaseController
     public KnowledgeConceptGraphController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-graph/contract")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Contract(CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetConceptGraphContractQuery(), cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-graph")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Graph(
         [FromQuery] Guid subjectId,
         [FromQuery] DateTimeOffset? effectiveAt,
@@ -36,14 +36,14 @@ public sealed class KnowledgeConceptGraphController : CustomBaseController
             new GetConceptGraphQuery(subjectId, effectiveAt, includeArchived), cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-graph/by-node/{nodeId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> ByNode(
         Guid nodeId, [FromQuery] bool includeArchived = false, CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(
             new GetConceptGraphByNodeQuery(nodeId, includeArchived), cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-graph/by-content/{contentId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> ByContent(
         Guid contentId, [FromQuery] bool includeArchived = false, CancellationToken cancellationToken = default)
         => CreateActionResultInstance(await _mediator.Send(

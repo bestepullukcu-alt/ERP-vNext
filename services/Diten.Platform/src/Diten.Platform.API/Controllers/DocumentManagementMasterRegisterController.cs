@@ -123,6 +123,43 @@ public sealed class DocumentManagementMasterRegisterController : CustomBaseContr
             new ResolveDocumentEffectivenessQuery(request.Identifiers!, by, CorrelationId), ct));
     }
 
+    /// <summary>
+    /// DCP-005 (WP-DM-2b) — resolve controlled-document CITATION rows for a batch of identifiers (the Task Center's
+    /// governing-docs resolution + citation freezer). Screen only, mirroring effectiveness:batch: validate the request
+    /// shape (a parseable <c>by</c> and at least one non-blank identifier) and dispatch the single citation resolver.
+    /// An identifier with no register row is simply absent from the result — a 400 is emitted ONLY for a malformed request.
+    /// </summary>
+    [HttpPost("document-master-register/citations:resolve")]
+    [HasPermission(DocumentMasterRegisterPermissions.CitationRead)]
+    public async Task<IActionResult> ResolveCitations([FromBody] ResolveCitationApiRequest request, CancellationToken ct)
+    {
+        if (!EffectivenessApiMapper.TryParseIdentifierKind(request?.By, out var by))
+        {
+            return CreateActionResultInstance(Response<DocumentCitationResult>.Fail(
+                "The 'by' discriminator is required and must be 'code' or 'uid'.",
+                400, EffectivenessApiMapper.InvalidRequestReasonCode, CorrelationId));
+        }
+
+        if (!EffectivenessApiMapper.HasResolvableIdentifier(request!.Identifiers))
+        {
+            return CreateActionResultInstance(Response<DocumentCitationResult>.Fail(
+                "At least one non-empty identifier is required.",
+                400, EffectivenessApiMapper.InvalidRequestReasonCode, CorrelationId));
+        }
+
+        return CreateActionResultInstance(await _mediator.Send(
+            new ResolveDocumentCitationQuery(request.Identifiers!, by, CorrelationId), ct));
+    }
+
+    /// <summary>
+    /// DCP-005 (WP-DM-2b) — search citable controlled documents for the picker. Blocked rows are RETURNED (shown, not
+    /// citable), never hidden; the resolver bounds the result. Dispatches the single citation search query.
+    /// </summary>
+    [HttpGet("document-master-register/citations/search")]
+    [HasPermission(DocumentMasterRegisterPermissions.CitationRead)]
+    public async Task<IActionResult> SearchCitations([FromQuery] string? term, [FromQuery] int limit, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new SearchDocumentCitationQuery(term, limit, CorrelationId), ct));
+
     private string CorrelationId =>
         string.IsNullOrWhiteSpace(_correlationContext.CorrelationId) ? HttpContext.TraceIdentifier : _correlationContext.CorrelationId!;
 }

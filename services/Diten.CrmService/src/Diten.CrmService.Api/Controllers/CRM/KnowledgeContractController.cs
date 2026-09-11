@@ -23,7 +23,7 @@ public sealed class KnowledgeContractController : CustomBaseController
     }
 
     [HttpGet("api/crm/knowledge/contract")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> GetContract(CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetKnowledgeContractQuery(), cancellationToken));
 }

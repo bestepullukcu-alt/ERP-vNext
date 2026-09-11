@@ -48,19 +48,18 @@
                     <input type="text" id="tplChainName" class="form-control" maxlength="240" required />
                 </div>
 
-                @* ---- Expected type sequence editor ---- *@
+                @* ---- SCMM-10 (③) branched builder ---- Each branch is an ordered step list; the OrderedConceptTypes
+                     spine (min 2 distinct types) is derived from all branches and sent alongside Branches. *@
                 <div class="col-12">
-                    <label for="tplTypePicker" class="form-label fw-medium">@Localizer["OrderedConceptTypes"] <span class="text-danger">*</span></label>
-                    <div class="d-flex flex-wrap gap-2 align-items-start">
-                        <div class="flex-grow-1">
-                            <select id="tplTypePicker" class="form-select concept-form-select2" data-placeholder="@Localizer["SelectOption"]"></select>
-                        </div>
-                        <button type="button" id="btnTplAddType" class="btn btn-label-primary">
-                            <i class="bx bx-plus me-1"></i>@Localizer["AddToSequence"]
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="form-label fw-medium mb-0">@Localizer["Branches"] <span class="text-danger">*</span></label>
+                        <button type="button" id="btnTplAddBranch" class="btn btn-sm btn-label-primary">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddBranch"]
                         </button>
                     </div>
-                    <ol id="tplSequence" class="list-group list-group-numbered mt-3 mb-0"></ol>
-                    <div id="tplSequenceEmpty" class="form-text">@Localizer["SequenceEmpty"]</div>
+                    <div class="form-text mb-2">@Localizer["BranchesNote"]</div>
+                    <div id="tplBranches" class="d-flex flex-column gap-3"></div>
+                    <div id="tplBranchesEmpty" class="form-text">@Localizer["BranchesEmpty"]</div>
                     <div id="tplSequenceError" class="text-danger small mt-1 d-none"></div>
                 </div>
 
@@ -94,6 +93,12 @@
 
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
-        <button type="submit" form="conceptTemplateForm" id="btnSaveConceptTemplate" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        <div class="d-flex gap-2">
+            @* SCMM-10 (③): a published (frozen) template is read-only; "New version" clones its structure into a fresh draft. *@
+            <button type="button" id="btnTplNewVersion" class="btn btn-label-primary d-none">
+                <i class="bx bx-git-branch me-1"></i>@Localizer["NewVersion"]
+            </button>
+            <button type="submit" form="conceptTemplateForm" id="btnSaveConceptTemplate" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+        </div>
     </div>
 </div>
