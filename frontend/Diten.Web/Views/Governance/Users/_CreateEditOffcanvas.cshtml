@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<UsersIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 
 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
     <div class="offcanvas-header p-4">
@@ -56,6 +57,24 @@
                     </div>
                     <div class="invalid-feedback"></div>
                 </div>
+
+                @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — account classification on create. UAS-001 shape: a caller without
+                   auth.users.account-kind.manage gets NO control here (not a disabled one), and the backend refuses a
+                   supplied kind from such a caller with 403 anyway — this gate is display only. Shown only on create
+                   (toggled in index.js): UpdateUser carries no kind, the quick view's "Change type" is the edit path.
+                   Deliberately not a .diten-field wrapper: the offcanvas icon map pins the three typed fields. *@
+                @if (Perms.Has("auth.users.account-kind.manage"))
+                {
+                    <div class="col-12" id="userAccountKindRow">
+                        <label for="userAccountKind" class="form-label fw-medium">@Localizer["AccountKind"]</label>
+                        <select id="userAccountKind" name="AccountKind" class="form-select">
+                            <option value="">@Localizer["AccountKindUnknown"]</option>
+                            <option value="Human">@Localizer["AccountKindHuman"]</option>
+                            <option value="Service">@Localizer["AccountKindService"]</option>
+                        </select>
+                        <div class="form-text">@Localizer["AccountKindCreateHint"]</div>
+                    </div>
+                }
 
                 @* Invitation flow: no password field. A "set your password" link is emailed to the
                    new user; they activate the account themselves via /account/set-password.

@@ -185,7 +185,11 @@ public sealed class InternalEventsController : ControllerBase
     private static User CreateUser(TenantAdminInvitationProvisioningRequest request, string passwordHash)
     {
         var (firstName, lastName) = SplitName(request.Name, request.Email);
-        return new User(request.Email.Trim().ToLowerInvariant(), passwordHash, firstName, lastName, request.TenantId);
+        var user = new User(request.Email.Trim().ToLowerInvariant(), passwordHash, firstName, lastName, request.TenantId);
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — an invited tenant admin is a person in every real case, and is STILL
+        // Unknown here: no automatic path classifies (owner decision 2026-09-11). Classification is an explicit act.
+        user.SetAccountKind(Diten.AuthService.Domain.Enums.AccountKind.Unknown);
+        return user;
     }
 
     private static (string FirstName, string LastName) SplitName(string? name, string email)

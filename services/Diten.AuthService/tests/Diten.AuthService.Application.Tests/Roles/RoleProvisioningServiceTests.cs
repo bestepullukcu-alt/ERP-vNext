@@ -100,6 +100,26 @@ public sealed class RoleProvisioningServiceTests
         Assert.DoesNotContain(rolePerms.Assigned, rp => rp.RoleId == adminB && rp.TenantId == TenantA);
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — a freshly provisioned tenant's Admin never receives the explicit-grant-only key.
+    [Fact]
+    public async Task Provisioning_never_grants_account_kind_manage_but_grants_lookup_to_admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("auth", "users", "lookup", "Lookup Users", null, moduleOverride: "access-governance"));
+        catalog.Add(new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance"));
+        var roles = new FakeRoleRepository();
+        var rolePerms = new FakeRolePermissionRepository(catalog);
+        var service = new RoleProvisioningService(roles, new FakePermissionRepository(catalog), rolePerms);
+
+        await service.EnsureDefaultRolesAsync(TenantA, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), TenantA, catalog).ToList();
+        var viewerKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Viewer"), TenantA, catalog).ToList();
+        Assert.Contains("auth.users.lookup", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", viewerKeys);
+    }
+
     [Fact]
     public async Task Empty_catalog_creates_roles_without_grants_and_does_not_throw()
     {

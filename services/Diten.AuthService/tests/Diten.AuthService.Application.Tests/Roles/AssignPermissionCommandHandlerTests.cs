@@ -89,6 +89,24 @@ public sealed class AssignPermissionCommandHandlerTests
         Assert.Null(rolePerms.AssignedCall);
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the ONE path that may grant the explicit-grant-only key: a person's explicit
+    // assignment to a tenant role. Scope=Tenant (access-governance), so the escalation guard lets it through.
+    [Fact]
+    public async Task Tenant_context_allows_manual_assignment_of_account_kind_manage()
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+        var manage = new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance");
+        var handler = CreateHandler(Role(), manage, rolePerms, version, platformContext: false);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Equal((RoleId, PermissionId, TenantId), rolePerms.AssignedCall);
+        Assert.Equal(1, version.IncrementCount);
+    }
+
     private static Role Role() => new("admin", "Admin", null, TenantId);
 
     private static AssignPermissionCommandHandler CreateHandler(

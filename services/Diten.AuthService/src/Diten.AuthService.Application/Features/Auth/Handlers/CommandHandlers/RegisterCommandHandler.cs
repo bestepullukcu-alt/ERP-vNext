@@ -3,6 +3,7 @@ using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Auth.Commands;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -75,6 +76,9 @@ public sealed class RegisterCommandHandler : IRequestHandler<RegisterCommand, Re
 
         var hashedPassword = _passwordHasher.Hash(request.Password);
         var user = new User(request.Email, hashedPassword, request.FirstName, request.LastName, _tenantContext.TenantId);
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — an automatic creation path never classifies: self-registration is Unknown,
+        // stated here so the intent is readable (and guarded), not merely inherited from the constructor.
+        user.SetAccountKind(AccountKind.Unknown);
         var created = await _userRepository.CreateAsync(user, ct);
         await _userRoleRepository.AssignAsync(new UserRole(created.Id, role.Id, _tenantContext.TenantId, "System"), ct);
 
