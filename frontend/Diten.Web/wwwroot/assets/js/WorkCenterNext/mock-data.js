@@ -515,11 +515,25 @@
                 }))
             }
             : item.blockedState;
-        item.attachments = item.attachments ? item.attachments.map((entry) => ({
-            ...entry,
-            name: resolveLabel(entry.label) || entry.name || entry.id,
-            size: entry.version ? `v${entry.version}` : ''
-        })) : null;
+        /*
+         * MOD-0024 Slice ATT-1 — TWO SHAPES SHARE THIS FIELD.
+         *
+         * The array is the pre-existing shape (a fixture's read-only reference into another module's
+         * document — {label, version, …}); this label-resolving map is for THAT shape alone. The engine's own
+         * attachments arrive wrapped as {items: [...]} (WorkItemAttachmentsDto), already carrying plain strings
+         * (fileName, not a resource label), so they pass through untouched — mapping them here would either
+         * crash on `.map` not existing on an object or, worse, silently coerce a real file's name through
+         * `resolveLabel`, which expects a {kind, text|key} label and not a bare string.
+         */
+        item.attachments = !item.attachments
+            ? null
+            : Array.isArray(item.attachments)
+                ? item.attachments.map((entry) => ({
+                    ...entry,
+                    name: resolveLabel(entry.label) || entry.name || entry.id,
+                    size: entry.version ? `v${entry.version}` : ''
+                }))
+                : item.attachments;
         /*
          * Activity carries an ABSOLUTE `at`; "3 days ago" is computed where it is rendered.
          *

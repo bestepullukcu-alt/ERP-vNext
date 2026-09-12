@@ -357,6 +357,22 @@ public static class TaskReasonCodes
 
     /// <summary>The checklist item code does not exist on this task's run.</summary>
     public const string ChecklistItemNotFound = "CHECKLIST_ITEM_NOT_FOUND";
+
+    // ── MOD-0024 Slice ATT-1 — task attachments ─────────────────────────────
+    /// <summary>Neither the current holder nor the requester — attachments are their act, nobody else's.</summary>
+    public const string AttachmentNotAuthorized = "TASK_ATTACHMENT_NOT_AUTHORIZED";
+    /// <summary>A closed task (Done/Cancelled) cannot gain or lose attachments — its record is history.</summary>
+    public const string AttachmentTaskClosed = "TASK_ATTACHMENT_TASK_CLOSED";
+    /// <summary>The attachment id does not resolve for this task/tenant — never distinguished from "not yours".</summary>
+    public const string AttachmentNotFound = "TASK_ATTACHMENT_NOT_FOUND";
+    /// <summary><c>checklistItemCode</c> was given but does not name a real item on this task's run.</summary>
+    public const string AttachmentChecklistItemNotFound = "TASK_ATTACHMENT_CHECKLIST_ITEM_NOT_FOUND";
+    /// <summary>
+    /// The checklist item requires evidence and none is attached — the enforcement AC2 asks for. Thrown by the
+    /// SAME handler that ticks the item, not by the attachment endpoints: completing is the moment the gate must
+    /// hold, not the moment a (possibly unrelated) file is added.
+    /// </summary>
+    public const string ChecklistEvidenceRequired = "CHECKLIST_EVIDENCE_REQUIRED";
     public const string DependencyInvalid = "TASK_DEPENDENCY_INVALID";
 
     /// <summary>The other end of the edge does not exist, or belongs to another tenant.</summary>

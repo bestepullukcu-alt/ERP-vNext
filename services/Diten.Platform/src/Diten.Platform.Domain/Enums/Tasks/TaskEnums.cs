@@ -415,3 +415,17 @@ public enum TaskClosureDisposition
     /// <summary>Offered when the task is being CANCELLED (<see cref="TaskLifecycle.Cancelled"/>).</summary>
     Cancelled = 1
 }
+
+/// <summary>
+/// MOD-0024 Slice ATT-1 — what a task attachment IS, not what it is FOR. <see cref="Evidence"/> is the one kind
+/// that satisfies a checklist item's <c>EvidenceRequired</c> gate (see <c>SetChecklistItemStateHandler</c>);
+/// <see cref="Deliverable"/> and <see cref="Attachment"/> carry no enforcement — they are the author's own
+/// classification of "the thing I produced" versus "a file I attached for reference".
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskAttachmentKind
+{
+    Evidence = 0,
+    Deliverable = 1,
+    Attachment = 2
+}

@@ -357,3 +357,34 @@ public interface IDocumentReferenceListRepository
     Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
         Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default);
 }
+
+/// <summary>
+/// MOD-0024 Slice ATT-1 — task attachment metadata (the binary itself lives in MOD-0262-FU01's repository,
+/// addressed here only by <see cref="TaskAttachment.ContentId"/>). Soft delete only; the stored object is never
+/// removed by this repository (AD-6 — no purge path).
+/// </summary>
+public interface ITaskAttachmentRepository
+{
+    Task<TaskAttachment> CreateAsync(TaskAttachment attachment, CancellationToken ct = default);
+
+    /// <summary>Null for another tenant's row, a hard-deleted row (never happens) or a missing id.</summary>
+    Task<TaskAttachment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Live (not soft-deleted) attachments for one task, newest first.</summary>
+    Task<IReadOnlyList<TaskAttachment>> ListByTaskIdAsync(Guid taskId, CancellationToken ct = default);
+
+    /// <summary>Attachments for MANY tasks in one read — the same N+1 reason every other Tasks batch read gives.</summary>
+    Task<IReadOnlyList<TaskAttachment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// The checklist evidence gate's own question: does this item have at least one LIVE Evidence-kind
+    /// attachment? A count, not a list — the gate only ever needs to know "zero or more".
+    /// </summary>
+    Task<int> CountEvidenceForChecklistItemAsync(
+        Guid taskId, string checklistItemCode, CancellationToken ct = default);
+
+    /// <summary>Marks the row deleted. The physical object is untouched — this repository never calls the
+    /// storage gateway's delete; that decision belongs to the caller (it does not, per the pack: AD-6).</summary>
+    Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default);
+}

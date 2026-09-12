@@ -129,6 +129,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
 
+    /// <summary>MOD-0024 Slice ATT-1 — optional; see the constructor parameter's own doc comment.</summary>
+    private readonly ITaskAttachmentRepository? _attachments;
+
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
         ITaskSeatDirectory seats,
@@ -162,8 +165,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         IRecordLinkService? recordLinks = null,
         IRelatedRecordResolverRegistry? relatedRecordResolvers = null,
+        /*
+         * MOD-0024 Slice ATT-1 — OPTIONAL for the same reason teamResolver/recordLinks are: every existing
+         * caller (every test in this suite predates ATT-1) is unaffected, and an absent repository can only
+         * ever narrow the projection to "no attachments, zero evidence counts" — it can never widen one.
+         */
+        ITaskAttachmentRepository? attachments = null,
         ILogger<TaskWorkItemProvider>? logger = null)
     {
+        _attachments = attachments;
         _recordLinks = recordLinks;
         _relatedRecordResolvers = relatedRecordResolvers;
         _logger = logger;
@@ -318,6 +328,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var checklistByTask = (await _checklistRuns.ListByTaskIdsAsync(taskIds, ct))
             .GroupBy(run => run.TaskItemId)
             .ToDictionary(group => group.Key, group => group.First());
+
+        // MOD-0024 Slice ATT-1 — same batched-read reason as checklist/children above. Optional: an absent
+        // repository (compat-only DI paths, existing tests) projects every task with zero attachments.
+        var attachmentsByTask = _attachments is null
+            ? new Dictionary<Guid, IReadOnlyList<TaskAttachment>>()
+            : (await _attachments.ListByTaskIdsAsync(taskIds, ct))
+                .GroupBy(a => a.TaskId)
+                .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskAttachment>)group.ToList());
 
         // Only TOP-LEVEL tasks can have children (one level only), so nothing else needs asking about.
         var parentIds = tasks.Where(t => t.ParentTaskItemId is null).Select(t => t.Id).ToList();
@@ -483,7 +501,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     personalByTask.GetValueOrDefault(t.Id),
                     watchersByTask.GetValueOrDefault(t.Id, []),
                     initiatorOnly.Contains(t.Id),
-                    relatedRecordsByTask.GetValueOrDefault(t.Id));
+                    relatedRecordsByTask.GetValueOrDefault(t.Id),
+                    attachmentsByTask.GetValueOrDefault(t.Id, []));
             })
             .ToList();
     }
@@ -521,7 +540,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool initiatorOnly = false,
         // MOD-0357 S1 — this task's resolved related records, already capped at the contract's own limit.
         // Null (not merely empty) means "no capability" — see ResolveCapabilities.
-        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null)
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null,
+        // MOD-0024 Slice ATT-1 — this task's live (non-deleted) attachments, batched above.
+        IReadOnlyList<TaskAttachment>? attachments = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -586,10 +607,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          *
          * Declared-and-empty is a state the contract models (CAPABILITY_CONTAINER_REQUIRED); a half is not.
          */
-        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist, actor);
+        var taskAttachments = attachments ?? [];
+        var checklistBlock = checklist is null
+            ? EmptyChecklist
+            : ToChecklist(checklist, actor, taskAttachments);
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
+        // MOD-0024 Slice ATT-1 — same declared-and-empty rule as checklist/subtasks: the shell's "add file"
+        // affordance needs the container even on a task with zero attachments today.
+        var attachmentsBlock = ToAttachments(taskAttachments, actor, displayNames);
         var businessContext = ToBusinessContext(task, fieldDefinitions, _permissions);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
@@ -665,7 +692,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
                 dependencyList, checklistBlock, subtasks, businessContext,
-                task.EstimateHours, task.SpentHours, relatedRecords),
+                task.EstimateHours, task.SpentHours, relatedRecords, attachmentsBlock),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -700,6 +727,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // see the block that builds them. No condition is restated here, so none can drift.
             Checklist: checklistBlock,
             Subtasks: subtasks,
+            Attachments: attachmentsBlock,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
                 task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
@@ -933,7 +961,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         WorkItemBusinessContextDto? businessContext,
         decimal? estimateHours,
         decimal spentHours,
-        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords)
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords,
+        WorkItemAttachmentsDto? attachments)
     {
         // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
@@ -951,6 +980,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         if (subtasks is not null)
         {
             capabilities.Add("subtasks");
+        }
+
+        // MOD-0024 Slice ATT-1 — same "declared for every task, run or no run" rule checklist follows: the
+        // container is never null on MOD-0024's own projection (ToAttachments never returns null), so this is
+        // effectively unconditional for this provider, exactly like checklist above.
+        if (attachments is not null)
+        {
+            capabilities.Add("attachments");
         }
 
         if (dependencies is not null)
@@ -1010,7 +1047,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static readonly WorkItemChecklistDto EmptyChecklist = new([], Version: 0);
 
-    private static WorkItemChecklistDto ToChecklist(ChecklistRun run, WorkItemActor actor)
+    private static WorkItemChecklistDto ToChecklist(
+        ChecklistRun run, WorkItemActor actor, IReadOnlyList<TaskAttachment> attachments)
         => new(run.Items
             .OrderBy(item => item.SortOrder)
             .Select(item => new WorkItemChecklistItemDto(
@@ -1031,9 +1069,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  * firmly if this line said true for everything; drawing a control that the server will reject is
                  * simply a worse way to tell someone the answer.
                  */
-                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId))
+                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId,
+                // MOD-0024 Slice ATT-1 — computed from the same batched attachments read, never a per-item query.
+                EvidenceCount: attachments.Count(a =>
+                    a.Kind == TaskAttachmentKind.Evidence
+                    && string.Equals(a.ChecklistRunItemCode, item.Code, StringComparison.Ordinal))))
             .ToList(),
             Version: run.Version);
+
+    /// <summary>MOD-0024 Slice ATT-1 — never null; an empty <see cref="TaskAttachment"/> list still projects a
+    /// container with zero items (the same "declared-and-empty" rule <c>ToChecklist</c>'s caller follows).</summary>
+    private static WorkItemAttachmentsDto ToAttachments(
+        IReadOnlyList<TaskAttachment> attachments, WorkItemActor actor, IReadOnlyDictionary<Guid, string> displayNames)
+        => new(attachments
+            .OrderByDescending(a => a.UploadedAt)
+            .Select(a => new WorkItemAttachmentDto(
+                Id: a.Id.ToString(),
+                FileName: a.FileName,
+                MediaType: a.MediaType,
+                ByteSize: a.ByteSize,
+                Kind: a.Kind.ToString(),
+                Note: a.Note,
+                UploadedBy: Person(a.UploadedByUserId, actor, displayNames),
+                UploadedAt: a.UploadedAt,
+                ChecklistItemId: a.ChecklistRunItemCode))
+            .ToList());
 
     /// <summary>
     /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are

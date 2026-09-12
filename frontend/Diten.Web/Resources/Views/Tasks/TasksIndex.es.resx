@@ -158,7 +158,7 @@
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Bloqueante</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve"><value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Exigir evidencia</value></data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia para los elementos marcados. Adjúntela desde la página de la tarea una vez creada.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Quitar elemento</value></data>
   <data name="ChecklistMoveUp" xml:space="preserve"><value>Subir</value></data>
   <data name="ChecklistMoveDown" xml:space="preserve"><value>Bajar</value></data>
@@ -210,4 +210,11 @@
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>No tiene permiso para realizar esta acción.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Esta acción necesita más información de la que se ha proporcionado. Rellene los campos obligatorios.</value></data>
   <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>El sistema propietario de este elemento no respondió, por lo que se desconoce si la acción se llevó a cabo. Actualice la lista para ver su estado actual y vuelva a intentarlo.</value></data>
+  <data name="ErrorAttachmentNotAuthorized" xml:space="preserve"><value>Solo el responsable o el solicitante de la tarea pueden gestionar sus adjuntos.</value></data>
+  <data name="ErrorAttachmentTaskClosed" xml:space="preserve"><value>Esta tarea está cerrada, por lo que sus adjuntos ya no se pueden modificar.</value></data>
+  <data name="ErrorAttachmentNotFound" xml:space="preserve"><value>No se encontró este adjunto.</value></data>
+  <data name="ErrorAttachmentChecklistItemNotFound" xml:space="preserve"><value>No se encontró ese elemento de la lista de verificación.</value></data>
+  <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Este elemento requiere evidencia antes de poder completarse.</value></data>
+  <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>No se pudo subir este archivo. Compruebe su tipo y tamaño e inténtelo de nuevo.</value></data>
+  <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Los adjuntos, incluida la evidencia, se pueden añadir una vez creada la tarea.</value></data>
 </root>

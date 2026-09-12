@@ -7291,10 +7291,19 @@ tags.diten-tags .tagify__input {
     color: var(--bs-secondary-color);
     cursor: help;
 }
-.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; cursor: pointer; }
+.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; }
 .wcn-attach:hover { border-color: var(--bs-primary); }
-.wcn-attach-name { flex: 1; }
-.wcn-attach-size { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-attach-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wcn-attach-size { flex: 0 0 auto; font-size: .6875rem; color: var(--bs-secondary-color); }
+/* Slice ATT-1 — the name and its "who/when" sit in one column so the row stays one line of controls tall
+   regardless of how long the uploader's name is; `min-inline-size: 0` is what lets the ellipsis above actually
+   engage inside a flex row instead of pushing the row wider. */
+.wcn-attach-main { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: .0625rem; }
+.wcn-attach-meta { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The checklist row's "kanıt ekle" — same bare-icon-button family the row's own controls use
+   (.diten-checkitem-btn), plus the live count `ToChecklist`/`WorkItemChecklistItemDto.EvidenceCount` sends. */
+.wcn-check-evidence-add { gap: .1875rem; }
+.wcn-check-evidence-count { font-size: .6875rem; font-weight: 600; }
 /* The personal plan, at the head of the Personal card. Same row shape as a summary pair so the two cards read
    as one family, but this one KEEPS its empty state: "I have not planned this yet" is a thing the holder needs
    to notice about themselves, where an absent due date is simply absent. */
