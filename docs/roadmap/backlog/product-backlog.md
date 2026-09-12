@@ -5110,3 +5110,21 @@ admin@diten.com AccountKind=Unknown (seeder'ın kendi upsert'i); ajanın ilk hos
 CT reconcile kararı; (2) ilk sınıflandırıcıyı sahip Rol İzinleri'nden elle atar; (3) doğrulama hataları ProblemDetails (zarf dışı) — servis geneli, PPM adapter'ı
 bunu "sağlayıcı/sözleşme hatası → 503" sınıfına koyar; (4) PPM HTTP eşlemesi (403 vs 409, 401) açık delta, iki taraf henüz dondurmadı; (5) Codex'in kendi pack
 düzeltmesi (MOD-0117 / DCP-006) PPM'de.
+
+### BL-372
+
+**S4'ün açtığı 9 kırmızı WorkAggregation testi — CT kabulünde kaçtı, 2026-09-12'de bulundu ve kapatıldı**
+
+DURUM: KAPANDI (commit `d6e75fe3`) · BULAN: S5c ajanı (raporunda "9 pre-existing" diye bildirdi), CT doğruladı · KAYIT: 2026-09-12
+
+**Ne oldu:** S4 (`680cb888`) görev projeksiyonuna `scheduleReviewMeeting` eylemini ekledi. İki muhafız o günden beri kırmızıydı:
+`WorkItemActionDispatchTests` (projeksiyondaki her eylemin gönderim yolu olmalı) ve `ProviderActionPermissionTests` (beyan edilen izinler verilince
+hiçbir eylem PermissionDenied kalmamalı). Eylem `TaskPermissions.Read` ile kapılanmıştı; oysa sağlayıcının kendi kuralı "okuma/oluşturma/silme uçları korur,
+projeksiyondaki eylemleri değil" ve Read beyan listesinde yok.
+**Neden kaçtı:** S4 ve S5 kabullerinde `Meetings|Tasks` filtresiyle koştum, **WorkAggregation** paketini koşturmadım. Ders: bir sağlayıcı/projeksiyon değişince
+WorkAggregation da koşulacak.
+**Düzeltme:** eylem `TaskPermissions.Update` ile kapılandı (beyan edilen, görev tarafı yetkisi; toplantı tarafı yetkisi alıcı uçta kalır, MOD-0024 → MOD-0357
+bağımlılığı yok, ADR-003); gönderim muhafızına `DispatchedByAnotherModule` listesi eklendi (S4'ün `TaskActionCodeReachabilityTests`'te zaten kullandığı desen)
+ve liste kendini denetliyor: listedeki kod burada gönderilebilir hale gelirse test kırmızı. Sonuç: Meetings+WorkAggregation+Tasks 1513/1513.
+**Ek not:** aynı koşuda 3 Mongo testi kırmızı göründü (AgendaItem, RecordLink, TaskCommentOrder); tek başlarına ve tekrar koşumda yeşiller — paylaşımlı
+yerel Mongo çakışması (BL-343 d), S5c'nin işi değil.
