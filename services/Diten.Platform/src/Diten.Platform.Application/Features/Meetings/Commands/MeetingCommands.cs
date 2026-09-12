@@ -68,3 +68,9 @@ public sealed record PublishMinutesCommand(
 public sealed record CorrectPublishedMinutesCommand(
     Guid MeetingId, CorrectPublishedMinutesRequest Request, string CorrelationId)
     : IRequest<Response<MeetingMinutesVersionDto>>;
+
+// ── S7 — continuation scheduling ────────────────────────────────────────────────────────────────────────────
+
+public sealed record ScheduleFollowUpMeetingCommand(
+    Guid SourceMeetingId, ScheduleFollowUpMeetingRequest Request, string CorrelationId)
+    : IRequest<Response<ScheduleFollowUpMeetingResultDto>>;

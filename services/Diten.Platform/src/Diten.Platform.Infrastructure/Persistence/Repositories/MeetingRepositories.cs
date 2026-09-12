@@ -205,6 +205,24 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
             Builders<Meeting>.Filter.Eq(x => x.MeetingTypeId, meetingTypeId));
         return await Collection.Find(filter).AnyAsync(ct);
     }
+
+    public async Task<Meeting?> FindByFollowUpOfMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<Meeting>.Filter.And(
+            ExecutionFilter,
+            Builders<Meeting>.Filter.Eq(x => x.FollowUpOfMeetingId, meetingId));
+
+        // LIVE-MEASURED (S7): ordered IN MEMORY, not by the server — the same reason
+        // BusinessReferenceDataStewardshipRepository.GetUsageRegistrationsAsync and
+        // WorkflowInstanceRepository.GetLatestByObjectRefAsync already do (BL-030): with no
+        // DateTimeOffsetSerializer registered, CreatedAt is stored as a BSON [ticks, offsetMinutes] array, and a
+        // server-side sort on it does not reliably reflect chronological order. Verified broken against a real
+        // Mongo here too — two follow-ups seeded 15ms apart came back in a non-deterministic order. This
+        // repository's own row count per source meeting is always small (a handful of accidental duplicate
+        // schedules at most), so an in-memory sort costs nothing worth avoiding a full-collection scan for.
+        var rows = await Collection.Find(filter).ToListAsync(ct);
+        return rows.OrderBy(x => x.CreatedAt).FirstOrDefault();
+    }
 }
 
 /// <summary>Raw storage for <see cref="MeetingAttendee"/>.</summary>

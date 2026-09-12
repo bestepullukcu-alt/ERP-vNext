@@ -19,4 +19,12 @@ public interface IMeetingIdempotencyKeyResolver
     /// web — this only makes that key resolvable per (meeting, actor) rather than trusting it tenant-wide.
     /// </summary>
     string ResolveForTaskBridge(Guid meetingId, Guid actorUserId, string clientIdempotencyKey);
+
+    /// <summary>
+    /// MOD-0357 S7 (pack §8 K11, K6) — the continuation-meeting bridge's own key, same shape as
+    /// <see cref="ResolveForTaskBridge"/> and for the same reason: "schedule a follow-up of THIS meeting" has
+    /// no small set of business fields whose repetition alone implies a retry (two DIFFERENT continuations of
+    /// the same meeting are not the same request), so the caller states its own retry intent.
+    /// </summary>
+    string ResolveForFollowUp(Guid meetingId, Guid actorUserId, string clientIdempotencyKey);
 }

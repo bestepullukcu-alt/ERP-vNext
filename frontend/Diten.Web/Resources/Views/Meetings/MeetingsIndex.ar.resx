@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>اختر مهمة للربط.</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>تم إنشاء المهمة وربطها بهذا الاجتماع.</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>تم ربط المهمة بهذا الاجتماع.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>جدولة اجتماع متابعة</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>سيتم نقل المهام المرتبطة بجدول أعمال هذا الاجتماع والتي ما زالت مفتوحة إلى الاجتماع الجديد، بترتيبها الأصلي.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>متابعة</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>تمت جدولة اجتماع المتابعة.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>تمت جدولة اجتماع المتابعة بجدول أعمال فارغ — لا توجد مهام مفتوحة لنقلها.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>الاجتماع السابق</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>اجتماع المتابعة</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>من الاجتماع السابق</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>

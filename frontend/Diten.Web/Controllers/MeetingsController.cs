@@ -159,6 +159,12 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiCorrectPublishedMinutes(Guid id)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/correct", readBody: true);
 
+    // ── S7 — continuation scheduling (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────
+
+    [HttpPost("api/{id:guid}/follow-up")]
+    public Task<IActionResult> ApiScheduleFollowUp(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/follow-up", readBody: true);
+
     // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
 
     [HttpPost("api/{id:guid}/tasks")]

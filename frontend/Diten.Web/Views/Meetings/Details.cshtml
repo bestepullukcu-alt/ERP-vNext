@@ -33,6 +33,10 @@
         <div class="d-flex align-items-center gap-2" id="detailsActionBar">
             <a href="/Meetings" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
             <a href="/Meetings/@meetingId/Minutes" class="btn btn-label-secondary d-none" id="btnOpenMinutes"><i class="bx bx-file me-1"></i>@Localizer["Minutes"]</a>
+            @* MOD-0357 S7 — openable on a Cancelled or Completed meeting too: continuing does not undo a
+               cancellation, and Completed is the common case a follow-up gets scheduled from. Only a meeting that
+               ALREADY has a follow-up hides this (see the FollowedByMeetingId toggle in form.js). *@
+            <button type="button" class="btn btn-label-secondary d-none" id="btnScheduleFollowUp"><i class="bx bx-calendar-plus me-1"></i>@Localizer["ScheduleFollowUp"]</button>
             <button type="button" class="btn btn-label-secondary d-none" id="btnReassignOrganizer">@Localizer["ReassignOrganizer"]</button>
             <button type="button" class="btn btn-label-danger d-none" id="btnCancelMeeting">@Localizer["CancelMeeting"]</button>
             <a href="#" class="btn btn-primary d-none" id="btnEditMeeting">@SharedLocalizer["Edit"]</a>
@@ -59,6 +63,17 @@
                         <div class="col-12 d-none" id="dCancellationReasonRow">
                             <div class="backbone-preview-label">@Localizer["CancellationReason"]</div>
                             <div class="backbone-preview-value mt-1" id="dCancellationReason">-</div>
+                        </div>
+                        @* MOD-0357 S7 — cross-links, both directions. Never both visible at once for a single
+                           meeting in practice (a follow-up's own source is a different meeting than one it was
+                           itself followed by), but the markup does not assume that. *@
+                        <div class="col-12 col-md-6 d-none" id="dFollowUpOfRow">
+                            <div class="backbone-preview-label">@Localizer["PreviousMeetingLabel"]</div>
+                            <div class="backbone-preview-value mt-1"><a href="#" id="dFollowUpOfLink">-</a></div>
+                        </div>
+                        <div class="col-12 col-md-6 d-none" id="dFollowedByRow">
+                            <div class="backbone-preview-label">@Localizer["FollowUpMeetingLabel"]</div>
+                            <div class="backbone-preview-value mt-1"><a href="#" id="dFollowedByLink">-</a></div>
                         </div>
                     </div>
                 </section>
@@ -126,5 +141,7 @@
     <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
     @* MOD-0357 S6 — the "create task from meeting" dialog body, shared with the Minutes editor. *@
     <script src="~/assets/js/Meetings/task-from-meeting-dialog.js" asp-append-version="true"></script>
+    @* MOD-0357 S7 — the "schedule follow-up" dialog body. *@
+    <script src="~/assets/js/Meetings/follow-up-dialog.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
 }

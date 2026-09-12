@@ -73,7 +73,10 @@ const KNOWN_RAW = [
   "Meetings/task-from-meeting-dialog.js",
   // MOD-0357 S6 K4 — the correction dialog needs a reason TEXTAREA plus its own validation
   // (Swal.showValidationMessage), the same shape the reason-capture dialogs already listed above take.
-  "Meetings/minutes-editor.js"
+  "Meetings/minutes-editor.js",
+  // MOD-0357 S7 K6 — "schedule follow-up" needs FOUR fields (title, meeting type, start, end), the same reason
+  // task-from-meeting-dialog.js is listed above.
+  "Meetings/follow-up-dialog.js"
 ];
 
 describe("one confirm implementation, product-wide", () => {

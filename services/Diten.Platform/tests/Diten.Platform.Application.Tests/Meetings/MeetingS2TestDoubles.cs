@@ -72,6 +72,12 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Task<bool> AnyByMeetingTypeIdAsync(Guid meetingTypeId, CancellationToken ct = default)
         => Task.FromResult(_items.Any(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingTypeId == meetingTypeId));
+
+    public Task<Meeting?> FindByFollowUpOfMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.FollowUpOfMeetingId == meetingId)
+            .OrderBy(x => x.CreatedAt)
+            .FirstOrDefault());
 }
 
 internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository

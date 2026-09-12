@@ -190,6 +190,18 @@ public sealed class MeetingsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── S7 — continuation scheduling (pack §3/§4, K6). Delegates meeting creation to the SAME Create path
+    // (Create permission, not Update — this is a new meeting, not an edit to the source one). ─────────────────
+
+    [HttpPost("{id:guid}/follow-up")]
+    [HasPermission(MeetingPermissions.Create)]
+    public async Task<IActionResult> ScheduleFollowUp(
+        Guid id, [FromBody] ScheduleFollowUpMeetingRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ScheduleFollowUpMeetingCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── S4 — the meeting↔task bridge (pack §3 Commands "bridge", §14 K9). Every action below stacks a
     // Meetings permission with an ORDINARY MOD-0024 permission — AND semantics (HasPermissionAttribute's own
     // doc comment) — so platform.meetings.* alone grants nothing over TaskItem (K9), the same precedent

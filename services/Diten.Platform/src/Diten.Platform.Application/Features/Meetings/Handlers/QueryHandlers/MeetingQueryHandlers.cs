@@ -56,8 +56,16 @@ public sealed class GetMeetingByIdHandler : IRequestHandler<GetMeetingByIdQuery,
         var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
         var agendaItems = await _agendaItems.ListByMeetingIdAsync(query.Id, ct);
 
+        // MOD-0357 S7 — both cross-links resolved for display; neither failure (a dangling ancestor, no
+        // continuation yet) is an error for THIS read, so both are simply null rather than refused.
+        var followUpOf = meeting.FollowUpOfMeetingId is { } followUpId
+            ? await _meetings.GetByIdAsync(followUpId, ct)
+            : null;
+        var followedBy = await _meetings.FindByFollowUpOfMeetingIdAsync(query.Id, ct);
+
         return Response<MeetingDto>.Success(
-            MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems), 200, query.CorrelationId);
+            MeetingEligibility.ToDto(meeting, type?.Name ?? string.Empty, attendees, agendaItems, followUpOfMeetingTitle: followUpOf?.Title, followedByMeeting: followedBy),
+            200, query.CorrelationId);
     }
 }
 
@@ -105,6 +113,9 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
 
         var types = await _types.ListAsync(ct);
         var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
+        // MOD-0357 S7 — `all` already holds every meeting in the tenant; titles for FollowUpOfMeetingId are
+        // resolved from THAT same in-memory list, never a second query per row.
+        var titleById = all.ToDictionary(m => m.Id, m => m.Title);
 
         var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
         var callerId = _currentUser.UserId;
@@ -137,7 +148,9 @@ public sealed class GetMeetingListHandler : IRequestHandler<GetMeetingListQuery,
                 m.Id, m.Title, m.MeetingTypeId, typeNameById.GetValueOrDefault(m.MeetingTypeId, string.Empty),
                 m.StartAt, m.EndAt, m.OrganizerUserId, m.Lifecycle,
                 attendeesByMeeting.GetValueOrDefault(m.Id, []).Contains(callerId),
-                hasLinkedTasks.Contains(m.Id)))
+                hasLinkedTasks.Contains(m.Id),
+                m.FollowUpOfMeetingId,
+                m.FollowUpOfMeetingId is { } sourceId ? titleById.GetValueOrDefault(sourceId) : null))
             .ToList();
 
         return Response<MeetingListResultDto>.Success(new MeetingListResultDto(items, totalCount), 200, query.CorrelationId);

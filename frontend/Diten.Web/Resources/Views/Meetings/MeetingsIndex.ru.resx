@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Выберите задачу для связывания.</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>Задача создана и связана с этим совещанием.</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>Задача связана с этим совещанием.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Запланировать повторную встречу</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>Ещё открытые задачи, связанные с повесткой этой встречи, будут перенесены в новую встречу в исходном порядке.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>продолжение</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Повторная встреча запланирована.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Повторная встреча запланирована с пустой повесткой — нет открытых задач для переноса.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Предыдущая встреча</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Повторная встреча</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Из предыдущей встречи</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Сведения о совещании</value></data>

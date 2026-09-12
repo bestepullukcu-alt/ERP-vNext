@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Bağlanacak bir görev seçin.</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>Görev oluşturuldu ve bu toplantıya bağlandı.</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>Görev bu toplantıya bağlandı.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Devam toplantısı planla</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>Bu toplantının gündemine bağlı, hâlâ açık olan görevler, orijinal sırasıyla yeni toplantıya taşınacaktır.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>devam</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Devam toplantısı planlandı.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Devam toplantısı boş gündemle planlandı — taşınacak açık iş yok.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Önceki toplantı</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Devam toplantısı</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Önceki toplantıdan</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Toplantı Bilgileri</value></data>

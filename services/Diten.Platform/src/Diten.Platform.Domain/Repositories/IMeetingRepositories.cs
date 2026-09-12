@@ -94,6 +94,16 @@ public interface IMeetingRepository
     /// <c>DeleteMeetingTypeCommand</c> refuses on (pack §13, <c>MEETING_TYPE_IN_USE</c>), without loading every
     /// meeting in the tenant just to answer one boolean.</summary>
     Task<bool> AnyByMeetingTypeIdAsync(Guid meetingTypeId, CancellationToken ct = default);
+
+    /// <summary>
+    /// MOD-0357 S7 (K6) — the REVERSE of <see cref="Meeting.FollowUpOfMeetingId"/>: which meeting (if any)
+    /// continues this one. Derived, never stored — a meeting does not know its own successor, the same
+    /// "read-only convenience over an existing field" shape <c>GetLinkedTasksHandler</c> already takes for
+    /// `relatedRecords`. The EARLIEST match by <c>CreatedAt</c> when more than one exists (nothing in the pack
+    /// forbids scheduling a second continuation by mistake; the first one scheduled is "the" follow-up for
+    /// display purposes).
+    /// </summary>
+    Task<Meeting?> FindByFollowUpOfMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="MeetingAttendee"/>.</summary>

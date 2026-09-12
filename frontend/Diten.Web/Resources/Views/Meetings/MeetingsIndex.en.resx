@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Choose a task to link.</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>Task created and linked to this meeting.</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>Task linked to this meeting.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Schedule follow-up</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>The still-open tasks linked to this meeting's agenda will be carried over to the new meeting, in their original order.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>follow-up</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Follow-up meeting scheduled.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Follow-up meeting scheduled with an empty agenda — no open work to carry over.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Previous meeting</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Follow-up meeting</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>From previous meeting</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Meeting Details</value></data>

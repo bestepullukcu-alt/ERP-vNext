@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Elija una tarea para vincular.</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>Tarea creada y vinculada a esta reunión.</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>Tarea vinculada a esta reunión.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Programar reunión de seguimiento</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>Las tareas aún abiertas vinculadas a la agenda de esta reunión se trasladarán a la nueva reunión, en su orden original.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>seguimiento</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Reunión de seguimiento programada.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Reunión de seguimiento programada con una agenda vacía: no hay tareas abiertas que trasladar.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Reunión anterior</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Reunión de seguimiento</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>De la reunión anterior</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Información de la reunión</value></data>

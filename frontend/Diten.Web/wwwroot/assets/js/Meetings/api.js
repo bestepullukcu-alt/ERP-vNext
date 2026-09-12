@@ -123,6 +123,9 @@
         scheduleReviewMeetingForTask: (taskId, payload) =>
             request('POST', `/tasks/${taskId}/schedule-review-meeting`, payload),
 
+        // ── S7 — continuation scheduling ─────────────────────────────────────
+        scheduleFollowUp: (id, payload) => request('POST', `/${id}/follow-up`, payload),
+
         lookupAttendees: () => request('GET', '/lookups/attendees'),
         lookupTypes: () => request('GET', '/lookups/types'),
 

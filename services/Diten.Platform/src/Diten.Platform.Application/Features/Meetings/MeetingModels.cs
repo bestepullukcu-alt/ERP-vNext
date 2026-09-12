@@ -134,7 +134,14 @@ public sealed record MeetingDto(
     /// K12 (§S5) — whether the invite/change/cancel e-mail this write triggered went out. Null when this write
     /// triggers no e-mail at all (e.g. <c>GetById</c>'s own re-read) — never a stand-in for "nothing failed".
     /// </summary>
-    MeetingInviteDeliveryDto? InviteDelivery = null);
+    MeetingInviteDeliveryDto? InviteDelivery = null,
+    /// <summary>MOD-0357 S7 — resolved alongside <see cref="FollowUpOfMeetingId"/> for display; null when that
+    /// id is null OR (rare) the source meeting could not be re-read.</summary>
+    string? FollowUpOfMeetingTitle = null,
+    /// <summary>K6's reverse read — the continuation THIS meeting was followed up by, if any (a derived query,
+    /// never a stored field; see <c>IMeetingRepository.FindByFollowUpOfMeetingIdAsync</c>).</summary>
+    Guid? FollowedByMeetingId = null,
+    string? FollowedByMeetingTitle = null);
 
 /// <summary>K12 — a failed dispatch is reported, never silently absorbed into a 201. <paramref name="Sent"/> and
 /// <paramref name="Failed"/> are deliberately NOT each other's negation: no attendee to tell (organizer-only
@@ -151,7 +158,11 @@ public sealed record MeetingListItemDto(
     Guid OrganizerUserId,
     MeetingLifecycle Lifecycle,
     bool IAmAttendee,
-    bool HasLinkedTasks);
+    bool HasLinkedTasks,
+    /// <summary>MOD-0357 S7 — resolved from the SAME in-tenant meeting list this handler already loaded (no
+    /// extra query); null when this meeting is not a continuation of another.</summary>
+    Guid? FollowUpOfMeetingId = null,
+    string? FollowUpOfMeetingTitle = null);
 
 public sealed record GetMeetingListFilter(
     DateTimeOffset? FromUtc,
@@ -192,7 +203,12 @@ public sealed record UpdateAgendaItemRequest(string Text, int ExpectedVersion);
 
 public sealed record ReorderAgendaRequest(IReadOnlyList<Guid> OrderedAgendaItemIds);
 
-public sealed record AgendaItemDto(Guid Id, string Text, int SortOrder, int Version, Guid? RecordLinkId);
+public sealed record AgendaItemDto(
+    Guid Id, string Text, int SortOrder, int Version, Guid? RecordLinkId,
+    /// <summary>MOD-0357 S7 (K6) — set only when this line was carried forward from a previous meeting's still-open
+    /// linked tasks; see <c>AgendaItem.CarriedFromMeetingId</c>'s own doc comment for why this is not inferred
+    /// from <see cref="RecordLinkId"/> alone.</summary>
+    Guid? CarriedFromMeetingId = null);
 
 // ── Linked tasks (read-only, via RecordLink — S1's IRecordLinkService) ─────────────────────────────────────────
 
@@ -357,3 +373,29 @@ public sealed record MeetingMinutesVersionDto(
 
 /// <summary>All versions for a meeting, newest first — the editor's own history/audit view.</summary>
 public sealed record MeetingMinutesDto(IReadOnlyList<MeetingMinutesVersionDto> Versions);
+
+// ── S7 — continuation scheduling (pack §3/§4 "Scheduling a follow-up", K6) ──────────────────────────────────────
+
+/// <summary>
+/// Schedules a NEW meeting that continues the one named in the route, via the SAME <c>CreateMeetingCommand</c>
+/// path a Create-page meeting uses (K2-equivalent for meetings: no second creation path). <paramref name="Title"/>
+/// defaults to "&lt;source title&gt; (devam)" when omitted; <paramref name="MeetingTypeId"/> defaults to the
+/// source meeting's own type; <paramref name="OrganizerUserId"/> defaults to the source meeting's own organizer.
+/// <paramref name="IdempotencyKey"/> is CALLER-supplied (K11), the same shape the S4 bridge's own requests use —
+/// see <see cref="Services.IMeetingIdempotencyKeyResolver.ResolveForFollowUp"/>.
+/// </summary>
+public sealed record ScheduleFollowUpMeetingRequest(
+    DateTimeOffset StartAt,
+    DateTimeOffset EndAt,
+    string? Title,
+    Guid? MeetingTypeId,
+    string? Location,
+    Guid? OrganizerUserId,
+    string? Description,
+    IReadOnlyList<Guid>? AttendeeUserIds,
+    string IdempotencyKey);
+
+/// <summary>The new meeting's id plus how many of the source meeting's still-open linked-task agenda lines
+/// were carried forward (K6) — enough for the caller to navigate to the new meeting and know what to expect
+/// on its agenda without a second round trip.</summary>
+public sealed record ScheduleFollowUpMeetingResultDto(Guid MeetingId, int CarriedAgendaItemCount);

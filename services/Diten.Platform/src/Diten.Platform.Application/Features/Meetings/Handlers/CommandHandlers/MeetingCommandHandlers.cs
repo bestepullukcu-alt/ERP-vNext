@@ -28,7 +28,9 @@ internal static class MeetingEligibility
     public static MeetingDto ToDto(
         Meeting meeting, string meetingTypeName,
         IReadOnlyList<MeetingAttendee> attendees, IReadOnlyList<AgendaItem> agendaItems,
-        MeetingInviteDeliveryResult? delivery = null) => new(
+        MeetingInviteDeliveryResult? delivery = null,
+        string? followUpOfMeetingTitle = null,
+        Meeting? followedByMeeting = null) => new(
         Id: meeting.Id,
         Title: meeting.Title,
         MeetingTypeId: meeting.MeetingTypeId,
@@ -47,11 +49,14 @@ internal static class MeetingEligibility
             .ToList(),
         AgendaItems: agendaItems
             .OrderBy(a => a.SortOrder)
-            .Select(a => new AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId))
+            .Select(a => new AgendaItemDto(a.Id, a.Text, a.SortOrder, a.Version, a.RecordLinkId, a.CarriedFromMeetingId))
             .ToList(),
         InviteDelivery: delivery is null
             ? null
-            : new MeetingInviteDeliveryDto(delivery.Sent, delivery.Failed, delivery.Reason));
+            : new MeetingInviteDeliveryDto(delivery.Sent, delivery.Failed, delivery.Reason),
+        FollowUpOfMeetingTitle: followUpOfMeetingTitle,
+        FollowedByMeetingId: followedByMeeting?.Id,
+        FollowedByMeetingTitle: followedByMeeting?.Title);
 
     /// <summary>D3 (§22): visible to the organizer, any attendee, or whoever holds <c>read-all</c>.</summary>
     public static bool CanView(Meeting meeting, Guid callerUserId, bool hasReadAll, IReadOnlySet<Guid> attendeeUserIds)

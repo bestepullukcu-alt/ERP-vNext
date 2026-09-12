@@ -108,4 +108,14 @@ public static class RecordLinkTypes
     /// <summary>The receiving side of MOD-0024's `scheduleReviewMeeting` — a meeting opened to satisfy a task
     /// type's `reviewMeetingPolicy.required`.</summary>
     public const string ReviewMeeting = "reviewMeeting";
+
+    /// <summary>
+    /// MOD-0357 S7 (K6) — a NEW meeting scheduled as a continuation of a previous one; both
+    /// <see cref="RecordLink.SourceModuleCode"/> and <see cref="RecordLink.TargetModuleCode"/> are `"meetings"`.
+    /// Carries the request's own <see cref="RecordLink.IdempotencyKey"/> (K11), exactly like the bridge's own
+    /// links — purely so a resubmitted schedule-follow-up request is recognized. The user-facing cross-link
+    /// display never reads this row; it reads <c>Meeting.FollowUpOfMeetingId</c> directly (see
+    /// <c>GetMeetingByIdHandler</c>).
+    /// </summary>
+    public const string FollowUp = "followUp";
 }

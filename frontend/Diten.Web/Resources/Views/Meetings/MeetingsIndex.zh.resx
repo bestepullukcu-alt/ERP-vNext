@@ -63,6 +63,14 @@
   <data name="LinkExistingTaskRequired" xml:space="preserve"><value>选择要链接的任务。</value></data>
   <data name="ToastTaskCreated" xml:space="preserve"><value>任务已创建并链接到此会议。</value></data>
   <data name="ToastTaskLinked" xml:space="preserve"><value>任务已链接到此会议。</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>安排后续会议</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>与本次会议议程关联且仍未完成的任务，将按原始顺序转移到新会议中。</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>后续</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>后续会议已安排。</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>后续会议已安排，议程为空——没有可转移的未完成任务。</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>上一次会议</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>后续会议</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>来自上一次会议</value></data>
   <data name="Yes" xml:space="preserve"><value>是</value></data>
   <data name="No" xml:space="preserve"><value>否</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>会议信息</value></data>

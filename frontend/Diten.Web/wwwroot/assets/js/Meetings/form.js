@@ -236,6 +236,27 @@
         document.getElementById('dCancellationReasonRow')?.classList.toggle('d-none', !cancelled);
         if (cancelled) { document.getElementById('dCancellationReason').textContent = meeting.cancellationReason || '-'; }
 
+        // MOD-0357 S7 — cross-links. Shown regardless of lifecycle: a Cancelled/Completed meeting's own history
+        // (what it followed, what followed it) does not stop being true once it is no longer editable.
+        const followUpOfRow = document.getElementById('dFollowUpOfRow');
+        followUpOfRow?.classList.toggle('d-none', !meeting.followUpOfMeetingId);
+        if (meeting.followUpOfMeetingId) {
+            const link = document.getElementById('dFollowUpOfLink');
+            link.textContent = meeting.followUpOfMeetingTitle || meeting.followUpOfMeetingId;
+            link.href = `/Meetings/${meeting.followUpOfMeetingId}`;
+        }
+        const followedByRow = document.getElementById('dFollowedByRow');
+        followedByRow?.classList.toggle('d-none', !meeting.followedByMeetingId);
+        if (meeting.followedByMeetingId) {
+            const link = document.getElementById('dFollowedByLink');
+            link.textContent = meeting.followedByMeetingTitle || meeting.followedByMeetingId;
+            link.href = `/Meetings/${meeting.followedByMeetingId}`;
+        }
+
+        // MOD-0357 S7 — openable on ANY lifecycle (not gated by `editable`): continuing does not undo a
+        // cancellation, and Completed is the common case a follow-up gets scheduled from.
+        document.getElementById('btnScheduleFollowUp')?.classList.remove('d-none');
+
         // AC5 — Cancelled/Completed: editing controls are withdrawn, not merely disabled (UAS-001's own posture).
         const editable = !cancelled && !completed;
         // MOD-0357 S6 — minutes make sense for a Scheduled meeting (drafting ahead of/during it) and a
@@ -275,7 +296,14 @@
         items.forEach((item) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${esc(item.text)}</span>`;
+            // MOD-0357 S7 — a carried-forward line is marked by CarriedFromMeetingId, never inferred from
+            // RecordLinkId alone (a manually typed line later linked via "link existing task" also gets one —
+            // see AgendaItem.CarriedFromMeetingId's own doc comment). The task itself is already reachable
+            // through the Linked Tasks section below; this badge is the "why is this line already here" answer.
+            const carriedBadge = item.carriedFromMeetingId
+                ? `<span class="badge bg-label-info ms-2">${esc(t('carriedFromPreviousMeetingBadge'))}</span>`
+                : '';
+            li.innerHTML = `<span>${esc(item.text)}${carriedBadge}</span>`;
             if (editable) {
                 const rowActions = document.createElement('div');
                 rowActions.className = 'd-flex gap-1';
@@ -422,6 +450,9 @@
 
         document.getElementById('btnCreateTaskFromMeeting')?.addEventListener('click', () => openCreateTaskDialog(null));
         document.getElementById('btnLinkExistingTask')?.addEventListener('click', () => openLinkExistingTaskDialog());
+        document.getElementById('btnScheduleFollowUp')?.addEventListener('click', () => {
+            window.MeetingsFollowUpDialog.open({ meeting: currentMeeting, t });
+        });
 
         /*
          * M1 — the shared confirm's TEXTAREA, in place of the hand-rolled `#cancelMeetingModal` (WP-WC-SHARED-UI-01).
