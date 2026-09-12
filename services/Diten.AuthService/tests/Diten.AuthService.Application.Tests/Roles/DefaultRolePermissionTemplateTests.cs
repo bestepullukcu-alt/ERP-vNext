@@ -323,6 +323,26 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("ppm.portfolios.assign-owner", viewerKeys);
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the second explicit-grant-only key (K1-a: remove it from
+    // ExplicitGrantOnlyPermissions.Keys and this goes red together with its siblings in the other grant paths).
+    [Fact]
+    public void Account_kind_manage_enters_no_default_role_even_under_the_Admin_module_while_lookup_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("auth", "users", "lookup", "Lookup Users", null, moduleOverride: "access-governance"));
+        catalog.Add(new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("auth.users.account-kind.manage", superAdminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", viewerKeys);
+        Assert.Contains("auth.users.lookup", adminKeys);      // ordinary tenant key: Admin breadth clause
+        Assert.DoesNotContain("auth.users.lookup", viewerKeys); // not a read action
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

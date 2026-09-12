@@ -4,6 +4,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Queries;
+using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Infrastructure.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -53,11 +54,51 @@ public sealed class UsersController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    // ── WP-INFRA-AUTH-ACCOUNT-KIND-01 ─────────────────────────────────────────────────────────────────
+    // Two reads under the ordinary tenant key auth.users.lookup, one write under the explicit-grant-only key
+    // auth.users.account-kind.manage. "lookup" as a literal segment never collides with {id:guid}.
+
+    // GET api/users/lookup?search=&limit=  →  [{ userId, displayLabel }] (no email, no roles)
+    [HttpGet("lookup")]
+    [HasPermission("auth.users.lookup")]
+    public async Task<IActionResult> Lookup([FromQuery] string? search, [FromQuery] int limit = 20, CancellationToken ct = default)
+    {
+        var result = await _mediator.Send(new LookupUsersQuery(search, limit), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // GET api/users/{id}/account-assertion  →  { userId, active, accountKind, assertedAt, userUpdatedAt }; 404 for a
+    // missing user AND for another tenant's user, byte-identical.
+    [HttpGet("{id:guid}/account-assertion")]
+    [HasPermission("auth.users.lookup")]
+    public async Task<IActionResult> GetAccountAssertion(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetAccountAssertionQuery(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
+    // POST api/users/{id}/account-kind { kind }  →  the new assertion; audited (authAuditLogs) with old→new.
+    [HttpPost("{id:guid}/account-kind")]
+    [HasPermission(ExplicitGrantOnlyPermissions.UsersAccountKindManage)]
+    public async Task<IActionResult> SetAccountKind(Guid id, [FromBody] SetAccountKindRequest request, CancellationToken ct)
+    {
+        // TraceIdentifier IS the correlation id here: CorrelationIdMiddleware assigns it from X-Correlation-Id
+        // (or mints one) before this action runs, so the audit row and the request log share it.
+        var result = await _mediator.Send(new SetAccountKindCommand(id, request.Kind, HttpContext.TraceIdentifier), ct);
+        return CreateActionResultInstance(result);
+    }
+
     [HttpPost]
     [HasPermission("auth.users.create")]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request, CancellationToken ct)
     {
-        var command = new CreateUserCommand(request.Email, request.Password, request.FirstName, request.LastName);
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — whether THIS caller may classify is read from the authenticated principal's
+        // permission claims (the same claim set [HasPermission] evaluates), never from the request body. The handler
+        // refuses a supplied kind without it (403 PERM_DENIED); an omitted kind never needs it.
+        var callerCanManageAccountKind = User.HasClaim("permission", ExplicitGrantOnlyPermissions.UsersAccountKindManage);
+        var command = new CreateUserCommand(
+            request.Email, request.Password, request.FirstName, request.LastName,
+            request.AccountKind, callerCanManageAccountKind);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
     }
