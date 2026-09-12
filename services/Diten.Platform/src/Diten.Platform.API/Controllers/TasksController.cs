@@ -436,71 +436,19 @@ public sealed class TasksController : CustomBaseController
     // Each route has to be listed on the Diten.Web proxy too: one that exists here and not there answers 404
     // before the request leaves the web tier, which is how `inquire` shipped unreachable.
 
-    // ── DCP-005 slice 2: the controlled-document reference list ──────────
-
-    /// <summary>
-    /// Read the register WITHOUT storing it: how many rows, how many citable, which columns are unread, and
-    /// whether these exact bytes are already a stored version. Same two-step the folder taxonomy import uses.
-    /// </summary>
-    [HttpPost("document-list/dry-run")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> DryRunDocumentList(
-        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(new DryRunDocumentReferenceListCommand(request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>Store the register as a new list VERSION.</summary>
-    [HttpPost("document-list/import")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> ImportDocumentList(
-        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(new ImportDocumentReferenceListCommand(request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>
-    /// Take a list version out of service.
-    ///
-    /// ⚠ THERE IS NO DELETE ROUTE, deliberately: a closed task may have resolved against this version, so the
-    /// row and its history stay. Guarded by IMPORT, not Read — deciding what the tenant may cite is the same
-    /// authority as replacing it.
-    /// </summary>
-    [HttpPut("document-list/versions/{id:guid}/withdraw")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> WithdrawDocumentListVersion(
-        Guid id, [FromBody] WithdrawDocumentListVersionRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(
-            new WithdrawDocumentListVersionCommand(id, request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>Every import, newest first — "which list did this task resolve against".</summary>
-    [HttpGet("document-list/versions")]
-    [HasPermission(TaskPermissions.DocumentListRead)]
-    public async Task<IActionResult> GetDocumentListVersions(CancellationToken ct)
-    {
-        var response = await _mediator.Send(new GetDocumentReferenceListVersionsQuery(CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>
-    /// Search the current list.
-    ///
-    /// ⚠ Guarded by <c>Read</c>, like the task-type picker and for the same reason: citing a procedure is
-    /// ordinary work, importing the register is not.
-    /// </summary>
-    [HttpGet("document-list/search")]
-    [HasPermission(TaskPermissions.DocumentListRead)]
-    public async Task<IActionResult> SearchDocumentList(
-        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
-    {
-        var response = await _mediator.Send(new SearchDocumentReferencesQuery(term, limit, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
+    // ── DCP-005 slice 2's CSV screen (BL-369, retired here) ───────────────
+    //
+    // ⚠ WP-DM-DCP005-RETIRE-CSV-01 — document-list/dry-run, /import, /versions/{id}/withdraw, /versions and
+    // /search (5 endpoints) were removed together with the /Tasks/DocumentList screen that was their only
+    // caller (confirmed: a repo-wide search found no other consumer of any of the five). The command/query
+    // handlers behind them (DryRunDocumentReferenceListHandler, ImportDocumentReferenceListHandler,
+    // WithdrawDocumentListVersionHandler, GetDocumentReferenceListVersionsHandler, SearchDocumentReferencesHandler
+    // — Features/Tasks/Handlers/{CommandHandlers,QueryHandlers}/DocumentReferenceList*.cs) and
+    // IDocumentReferenceListRepository are DELIBERATELY left registered: this WP's own scope, as given, names
+    // the screen and its endpoints, not those classes — they are now unreachable from HTTP, and flagged in the
+    // report as a follow-up cleanup candidate rather than removed on this pass. TaskPermissions.DocumentListRead
+    // stays in use below (SearchDocumentCitations, GetTaskTypeGoverningDocuments); DocumentListImport becomes
+    // unused by any endpoint here but is a catalog concern the backlog assigns to Control Tower separately.
 
     /// <summary>
     /// DCP-005 Step 2 — the picker's search, against the live Document Master Register

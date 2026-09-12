@@ -114,4 +114,37 @@ public static class DocumentRegisterIngestMapping
             target.StatusReason = null;
         }
     }
+
+    /// <summary>
+    /// True when applying <paramref name="src"/> onto <paramref name="existing"/> would change any field
+    /// <see cref="Apply"/> actually sets. Scoped to exactly those fields (not the whole entity) — comparing
+    /// unrelated data (ownership, dates, …) that <see cref="Apply"/> never touches would report "changed" for
+    /// rows the import cannot possibly affect.
+    ///
+    /// <para>WP-DM-DCP005-RETIRE-CSV-01, AC1 — moved here from <c>DocumentRegisterImportPreviewService</c> so the
+    /// PREVIEW's "N to update / N unchanged" forecast and the COMMIT's actual write decision read the identical
+    /// comparison. Before this move the preview computed this and the commit handler did not compute it at all —
+    /// it called <see cref="Apply"/> and wrote every existing row unconditionally, so a byte-identical re-import
+    /// still reported (and persisted) "N updated" while the preview, moments earlier, had said "0 to update".</para>
+    /// </summary>
+    public static bool WouldChange(
+        DocumentMasterRegisterEntry existing, DocumentReferenceEntry src, ControlledDocumentLifecycleStatus mappedStatus)
+    {
+        var mappedCode = string.IsNullOrWhiteSpace(src.DocumentCode) ? null : src.DocumentCode.Trim();
+        var mappedCitable = src.LinkableInErp;
+        var mappedCompatibility = !src.LinkableInErp
+            ? DocumentLinkScopeCompatibilityStatus.Invalid
+            : DocumentLinkScopeCompatibilityStatus.Unvalidated;
+        var mappedReason = !src.LinkableInErp
+            ? src.LinkBlockedReason
+            : (IsExecutedRecord(src.Status) ? ExecutedRecordStatusReason : null);
+
+        return existing.DocumentCode != mappedCode
+            || existing.DocumentTitle != src.Title
+            || existing.CurrentVersionLabel != src.DocumentVersion
+            || existing.LifecycleStatus != mappedStatus
+            || existing.CitableByQualityDecision != mappedCitable
+            || existing.LinkScopeCompatibilityStatus != mappedCompatibility
+            || existing.StatusReason != mappedReason;
+    }
 }

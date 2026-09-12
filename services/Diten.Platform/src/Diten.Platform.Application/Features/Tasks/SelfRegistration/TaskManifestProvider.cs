@@ -37,7 +37,6 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskEdit = "TASK_EDIT";
     private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
     private const string PageTaskTypes = "TASK_TYPES";
-    private const string PageDocumentList = "TASK_DOCUMENT_LIST";
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
     private const string PageChecklistTemplates = "TASK_CHECKLIST_TEMPLATES";
     private const string PageTaskTemplates = "TASK_TEMPLATES";
@@ -48,8 +47,9 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
             ModuleName: "Task Engine",
             /*
              * ⚠ "GÖREV TANIMLARI", NOT "GÖREVLER". Every page this manifest publishes to the sidebar
-             * (TASK_FIELD_DEFINITIONS, TASK_TYPES, TASK_DOCUMENT_LIST, TASK_RECURRENCE_RULES) is a
-             * definition/settings screen. The four work surfaces — TASKS, TASK_CREATE, TASK_DETAIL, TASK_EDIT —
+             * (TASK_FIELD_DEFINITIONS, TASK_TYPES, TASK_RECURRENCE_RULES) is a definition/settings screen — the
+             * CSV controlled-document list (TASK_DOCUMENT_LIST) that used to be one of them was retired here
+             * (WP-DM-DCP005-RETIRE-CSV-01, BL-369). The four work surfaces — TASKS, TASK_CREATE, TASK_DETAIL, TASK_EDIT —
              * are IsNavigationVisible: false on purpose (see the Nav visibility note above), so "Görevler"
              * promised the user a task LIST from the menu and handed them a configuration screen instead.
              *
@@ -203,34 +203,15 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     ]),
 
                 /*
-                 * The controlled-document reference LIST (DCP-005 slice 2).
-                 *
-                 * ⚠ ONE ACTION, AND IT IS AN IMPORT. There is no create, no edit and no delete — the list is a
-                 * lookup, not a table, and a row that could be edited here would be the second authority over a
-                 * document that §6.1 exists to prevent. The manifest says so too, because an action declared
-                 * here is an action the catalogue will offer.
+                 * WP-DM-DCP005-RETIRE-CSV-01 (BL-369) — the controlled-document reference LIST page (DCP-005
+                 * slice 2) was REMOVED from this manifest here: the view (/Tasks/DocumentList), its controller
+                 * actions and its client JS were deleted in the same change, so a page entry pointing at them
+                 * would be exactly the "promise the menu cannot keep" the page's own prior comment warned about.
+                 * TaskPermissions.DocumentListRead/.Import are unaffected — DocumentListRead still gates
+                 * SearchDocumentCitations and GetTaskTypeGoverningDocuments below; removing either key from the
+                 * Auth permission catalog itself is a separate, Control-Tower-owned cleanup (backlog, Faz 1.5),
+                 * not part of this manifest change.
                  */
-                new ModuleManifestPage(
-                    PageCode: PageDocumentList,
-                    DisplayName: "Controlled Documents",
-                    RoutePath: "/Tasks/DocumentList",
-                    // ⚠ READ, NOT IMPORT. Measured: the page was published behind the import permission while the search it
-                    // exists for asks only Read — so a QA reader who could see every row could not open the screen
-                    // showing them. The WRITE surfaces inside are gated separately, in the view.
-                    RequiredPermission: TaskPermissions.DocumentListRead,
-                    ParentPageCode: PageTasks,
-                    // ⚠ PUBLISHED VISIBLE ONLY NOW, in the round the screen was measured open. It shipped `true` once with no
-                    // view and no route: the sidebar would have grown an entry pointing at a 404 on the next
-                    // reconciliation. A manifest page is a promise the menu keeps — it is made when it can be kept.
-                    IsNavigationVisible: true,
-                    PageType: "List",
-                    SortOrder: 27,
-                    Actions:
-                    [
-                        new ModuleManifestAction("IMPORT", "Import Document List",
-                            TaskPermissions.DocumentListImport, "Toolbar", 10,
-                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
-                    ]),
 
                 /*
                  * The recurring-rule admin surface (BL-052). Registered here for the same reason the field

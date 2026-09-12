@@ -454,111 +454,20 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiSetPinned(Guid id)
         => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/tasks/{id}/personal/pin", readBody: true);
 
-    /// <summary>The document-list management screen (DCP-005 slice 2).</summary>
-    [HttpGet("DocumentList")]
-    public IActionResult DocumentList()
-    {
-        ViewBag.ActiveMenu = "tasks";
-        return View("~/Views/Tasks/DocumentList.cshtml");
-    }
-
-    /*
-     * ── THE UPLOAD HOP IS MULTIPART; THE GATEWAY HOP IS BASE64 ────────────────────────────────────────────
-     *
-     * MEASURED before choosing (the brief asked): the taxonomy wizard's browser posts `multipart/form-data` to
-     * ITS MVC controller, which base64s the bytes and forwards JSON to the gateway. So the two "different
-     * transports" were never in conflict — they are two hops of the same path, and our gateway endpoint already
-     * takes `ContentBase64` exactly as the precedent's does.
-     *
-     * The screen is aligned to the precedent rather than the endpoint changed, for two reasons: base64-ing a
-     * file in the browser doubles it in memory for no gain, and the gateway contract is already committed.
-     */
-    [HttpPost("DocumentList/dry-run")]
-    [ValidateAntiForgeryToken]
-    public Task<IActionResult> DocumentListDryRun(IFormFile? file, [FromForm] string? sourceKey, CancellationToken ct)
-        => ForwardDocumentListAsync("dry-run", file, sourceKey, listVersion: null, ct);
-
-    [HttpPost("DocumentList/import")]
-    [ValidateAntiForgeryToken]
-    public Task<IActionResult> DocumentListImport(
-        IFormFile? file, [FromForm] string? sourceKey, [FromForm] string? listVersion, CancellationToken ct)
-        => ForwardDocumentListAsync("import", file, sourceKey, listVersion, ct);
-
-    private async Task<IActionResult> ForwardDocumentListAsync(
-        string action, IFormFile? file, string? sourceKey, string? listVersion, CancellationToken ct)
-    {
-        if (file is null || file.Length == 0)
-        {
-            return UnprocessableEntity(new { isSuccessful = false, errors = new[] { "invalid_document_list_upload" } });
-        }
-
-        using var buffer = new MemoryStream();
-        await file.CopyToAsync(buffer, ct);
-
-        var payload = new
-        {
-            fileName = file.FileName,
-            contentBase64 = Convert.ToBase64String(buffer.ToArray()),
-            sourceKey = sourceKey ?? string.Empty,
-            listVersion = listVersion ?? string.Empty
-        };
-
-        return await ProxyAsync(
-            HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/{action}", readBody: false, body: payload);
-    }
-
-    // ── DCP-005 slice 2: the controlled-document reference list ──────────
+    // ── DCP-005 slice 2's CSV screen (BL-369, retired here) ───────────────
     //
-    // ⚠ Named one by one because this controller is a PROXY: a route that exists on the service is invisible to
-    // the browser until it is listed here. Measured the expensive way once already, on the pin endpoint.
-
-    [HttpPost("api/document-list/dry-run")]
-    public Task<IActionResult> ApiDocumentListDryRun()
-        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/dry-run", readBody: true);
-
-    [HttpPost("api/document-list/import")]
-    public Task<IActionResult> ApiDocumentListImport()
-        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/document-list/import", readBody: true);
-
-    /// <summary>
-    /// Take a list version out of service.
-    ///
-    /// ⚠ THIRD TIME THIS PROXY GAP HAS BITTEN (pin, task types, and now this). A route added to the SERVICE is
-    /// invisible to the browser until it is named here, and the symptom is always the same: the button appears
-    /// to do nothing. Measured again rather than assumed — the withdraw click 404'd with the handler in place.
-    /// </summary>
-    [HttpPut("api/document-list/versions/{id:guid}/withdraw")]
-    public Task<IActionResult> ApiWithdrawDocumentListVersion(Guid id)
-        => ProxyAsync(
-            HttpMethod.Put,
-            $"{_gatewayUrl}/api/v1/tasks/document-list/versions/{id}/withdraw",
-            readBody: true);
-
-    [HttpGet("api/document-list/versions")]
-    public Task<IActionResult> ApiDocumentListVersions()
-        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/document-list/versions", readBody: false);
-
-    /// <summary>
-    /// Search the current CSV list. The query string travels; blocked rows come back and are shown.
-    ///
-    /// ⚠ Retained for the admin import page (<c>/Tasks/DocumentList</c>) only — the task-form picker moved to
-    /// <see cref="ApiDocumentCitationsLookup"/> (DCP-005 Step 2, WP-PSS-DCP005-STEP2-CITATION-REPOINT-01).
-    /// </summary>
-    [HttpGet("api/document-list/search")]
-    public Task<IActionResult> ApiDocumentListSearch([FromQuery] string? term, [FromQuery] int limit)
-        => ProxyAsync(
-            HttpMethod.Get,
-            $"{_gatewayUrl}/api/v1/tasks/document-list/search?term={Uri.EscapeDataString(term ?? string.Empty)}&limit={limit}",
-            readBody: false);
+    // ⚠ WP-DM-DCP005-RETIRE-CSV-01 — the /Tasks/DocumentList page, its 4 named proxy actions (view, dry-run,
+    // import, withdraw, versions, search — 6 in total) and two additional proxy methods with no caller at all
+    // (ApiDocumentListDryRun/ApiDocumentListImport, confirmed unreferenced anywhere in this codebase before
+    // removal) were removed together. The task-form's own document picker never called any of these — it already
+    // used ApiDocumentCitationsLookup below, repointed to the Document Master Register in an earlier WP. The
+    // backend endpoints these proxied to, the command/query handlers behind them, and the
+    // document_reference_entries / document_reference_list_versions Mongo collections are DELIBERATELY left in
+    // place: a closed task's frozen citation (TaskDocumentReference.ListVersionId) still names a row in that
+    // data, and BL-369 retires the SCREEN, not the record of what it once produced.
 
     /// <summary>
     /// DCP-005 Step 2 — the task-form document picker's search, against the live Document Master Register.
-    /// Replaces <see cref="ApiDocumentListSearch"/> as the picker's source (<c>api.js</c>'s <c>searchDocuments</c>);
-    /// that route stays for the admin CSV import page, which this WP does not retire (BL-369).
-    ///
-    /// ⚠ Named here because this controller is a PROXY with one method per endpoint — a route that exists on the
-    /// service is invisible to the browser until it is listed (measured three times already in this module: the
-    /// pin, the task types, the withdrawal).
     /// </summary>
     [HttpGet("api/lookups/document-citations")]
     public Task<IActionResult> ApiDocumentCitationsLookup([FromQuery] string? term, [FromQuery] int limit)
