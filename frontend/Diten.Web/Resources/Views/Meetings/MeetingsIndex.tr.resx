@@ -99,8 +99,14 @@
   <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Düzeltme gerekçesi zorunludur.</value></data>
   <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>Kayıt bu sırada değişti; sayfayı yenileyip tekrar deneyin.</value></data>
   <data name="ErrorDecisionNotFound" xml:space="preserve"><value>Bu karar bulunamadı.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>Bu toplantı serisi bulunamadı.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>Bu adla bir toplantı serisi zaten var.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Serinin başlangıcını, bitişini ve hazırlık süresini kontrol edin — takvim geçersiz.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>Aralık en az 1 olmalıdır.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Bir organizatör gereklidir.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Toplantı Serileri</value></data>
 </root>

@@ -37,6 +37,7 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
     private const string PageMeetingDetail = "MEETING_DETAIL";
     private const string PageMeetingEdit = "MEETING_EDIT";
     private const string PageMeetingTypes = "MEETING_TYPES";
+    private const string PageMeetingSeries = "MEETING_SERIES";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -79,6 +80,8 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "RowAction", 60, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("TYPES_MANAGE", "Manage Meeting Types", MeetingPermissions.TypesManage,
                             "Toolbar", 70, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("SERIES_MANAGE", "Manage Meeting Series", MeetingPermissions.SeriesManage,
+                            "Toolbar", 75, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("READ_ALL", "View All Meetings", MeetingPermissions.ReadAll,
                             "Toolbar", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
@@ -137,6 +140,27 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                         new ModuleManifestAction("EDIT", "Edit Meeting Type", MeetingPermissions.TypesManage,
                             "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete Meeting Type", MeetingPermissions.TypesManage,
+                            "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                // S11 — the recurring cadence rule catalogue (pack §19). Nav-visible under MEETINGS, same shape
+                // the MEETING_TYPES page above takes.
+                new ModuleManifestPage(
+                    PageCode: PageMeetingSeries,
+                    DisplayName: "Meeting Series",
+                    RoutePath: "/Meetings/Series",
+                    RequiredPermission: MeetingPermissions.SeriesManage,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 21,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Meeting Series", MeetingPermissions.SeriesManage,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Meeting Series", MeetingPermissions.SeriesManage,
+                            "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Meeting Series", MeetingPermissions.SeriesManage,
                             "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],

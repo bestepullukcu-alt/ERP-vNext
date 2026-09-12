@@ -71,7 +71,14 @@
         MEETING_MINUTES_NOT_PUBLISHED: 'errorMinutesNotPublished',
         MEETING_MINUTES_CORRECTION_REASON_REQUIRED: 'errorMinutesCorrectionReasonRequired',
         MEETING_MINUTES_CONCURRENCY_CONFLICT: 'errorMinutesConcurrencyConflict',
-        MEETING_DECISION_NOT_FOUND: 'errorDecisionNotFound'
+        MEETING_DECISION_NOT_FOUND: 'errorDecisionNotFound',
+
+        // ── S11 — recurring meeting series ───────────────────────────────────
+        MEETING_SERIES_NOT_FOUND: 'errorSeriesNotFound',
+        MEETING_SERIES_NAME_DUPLICATE: 'errorSeriesNameDuplicate',
+        MEETING_SERIES_INVALID_WINDOW: 'errorSeriesInvalidWindow',
+        MEETING_SERIES_INTERVAL_INVALID: 'errorSeriesIntervalInvalid',
+        MEETING_SERIES_ORGANIZER_REQUIRED: 'errorSeriesOrganizerRequired'
     };
 
     const isConcurrencyConflict = (result) =>
@@ -134,6 +141,13 @@
         typesGet: (id) => request('GET', `/types/${id}`),
         typesCreate: (payload) => request('POST', '/types', payload),
         typesUpdate: (id, payload) => request('PUT', `/types/${id}`, payload),
-        typesDelete: (id) => request('DELETE', `/types/${id}`)
+        typesDelete: (id) => request('DELETE', `/types/${id}`),
+
+        // ── S11 — Meeting Series (series-manage) ─────────────────────────────
+        seriesList: () => request('GET', '/series'),
+        seriesGet: (id) => request('GET', `/series/${id}`),
+        seriesCreate: (payload) => request('POST', '/series', payload),
+        seriesUpdate: (id, payload) => request('PUT', `/series/${id}`, payload),
+        seriesDelete: (id) => request('DELETE', `/series/${id}`)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

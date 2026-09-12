@@ -295,6 +295,62 @@ internal sealed class FakeMeetingTypeRepository : IMeetingTypeRepository
     }
 }
 
+/// <summary>MOD-0357 S11 — in-memory double for <see cref="IMeetingSeriesRepository"/>, the same shape
+/// <see cref="FakeMeetingTypeRepository"/> already takes.</summary>
+internal sealed class FakeMeetingSeriesRepository : IMeetingSeriesRepository
+{
+    private readonly List<MeetingSeries> _items = [];
+    public Guid Tenant { get; init; }
+
+    public void Seed(MeetingSeries series) => _items.Add(series);
+
+    public Task<MeetingSeries> CreateAsync(MeetingSeries series, CancellationToken ct = default)
+    {
+        _items.Add(series);
+        return Task.FromResult(series);
+    }
+
+    public Task<MeetingSeries?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_items.FirstOrDefault(x => x.Id == id && x.TenantId == Tenant && !x.IsDeleted));
+
+    public Task<IReadOnlyList<MeetingSeries>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingSeries>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted).OrderBy(x => x.Name, StringComparer.Ordinal).ToList());
+
+    public Task<IReadOnlyList<MeetingSeries>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingSeries>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.Name, StringComparer.Ordinal).ToList());
+
+    public Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default)
+        => Task.FromResult(_items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.Name == name));
+
+    public Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _items.FirstOrDefault(x => x.Id == series.Id && x.TenantId == Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        series.Version = expectedVersion + 1;
+        if (!ReferenceEquals(stored, series))
+        {
+            _items.Remove(stored);
+            _items.Add(series);
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.Id == id);
+        if (item is not null) { item.IsDeleted = true; }
+        return Task.CompletedTask;
+    }
+}
+
 /// <summary>S5 — records every call so a test can assert WHO was mailed and WHICH event, without a real
 /// <c>INotificationEventDispatchAdapter</c>. <see cref="NextResult"/> is read at call time, not fixed at
 /// construction, so a K12 test can flip it to a failure mid-scenario.</summary>

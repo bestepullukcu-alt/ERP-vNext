@@ -99,8 +99,14 @@
   <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>سبب التصحيح مطلوب.</value></data>
   <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>تم تغيير السجل في هذه الأثناء؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
   <data name="ErrorDecisionNotFound" xml:space="preserve"><value>تعذر العثور على هذا القرار.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>تعذر العثور على سلسلة الاجتماعات هذه.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>توجد بالفعل سلسلة اجتماعات بهذا الاسم.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>تحقق من بداية السلسلة ونهايتها ومدة المهلة — الجدول غير صالح.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>يجب أن تكون الفترة الفاصلة 1 على الأقل.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>يلزم وجود منظم.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
 </root>

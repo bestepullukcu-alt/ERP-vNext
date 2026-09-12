@@ -99,8 +99,14 @@
   <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Se requiere un motivo de corrección.</value></data>
   <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>El registro cambió mientras tanto; recargue e inténtelo de nuevo.</value></data>
   <data name="ErrorDecisionNotFound" xml:space="preserve"><value>No se pudo encontrar esta decisión.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>No se pudo encontrar esta serie de reuniones.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>Ya existe una serie de reuniones con este nombre.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Revise el inicio, el fin y el tiempo de antelación de la serie — el calendario no es válido.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>El intervalo debe ser de al menos 1.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Se requiere un organizador.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Tipos de reunión</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Series de reuniones</value></data>
 </root>

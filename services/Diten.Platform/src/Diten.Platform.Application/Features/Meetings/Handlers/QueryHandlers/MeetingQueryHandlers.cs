@@ -353,3 +353,55 @@ public sealed class GetMeetingTypeLookupHandler
         return Response<IReadOnlyList<MeetingTypeLookupItemDto>>.Success(items, 200, query.CorrelationId);
     }
 }
+
+// ── S11 — recurring meeting series ──────────────────────────────────────────────────────────────────────────
+
+public sealed class GetMeetingSeriesListHandler
+    : IRequestHandler<GetMeetingSeriesListQuery, Response<IReadOnlyList<MeetingSeriesDto>>>
+{
+    private readonly IMeetingSeriesRepository _series;
+    private readonly IMeetingTypeRepository _types;
+
+    public GetMeetingSeriesListHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
+    {
+        _series = series;
+        _types = types;
+    }
+
+    public async Task<Response<IReadOnlyList<MeetingSeriesDto>>> Handle(
+        GetMeetingSeriesListQuery query, CancellationToken ct)
+    {
+        var all = await _series.ListAllAsync(ct);
+        var types = await _types.ListAsync(ct);
+        var typeNameById = types.ToDictionary(t => t.Id, t => t.Name);
+
+        IReadOnlyList<MeetingSeriesDto> dtos = all
+            .Select(s => MeetingSeriesMapping.ToDto(s, typeNameById.GetValueOrDefault(s.MeetingTypeId)))
+            .ToList();
+        return Response<IReadOnlyList<MeetingSeriesDto>>.Success(dtos, 200, query.CorrelationId);
+    }
+}
+
+public sealed class GetMeetingSeriesByIdHandler : IRequestHandler<GetMeetingSeriesByIdQuery, Response<MeetingSeriesDto>>
+{
+    private readonly IMeetingSeriesRepository _series;
+    private readonly IMeetingTypeRepository _types;
+
+    public GetMeetingSeriesByIdHandler(IMeetingSeriesRepository series, IMeetingTypeRepository types)
+    {
+        _series = series;
+        _types = types;
+    }
+
+    public async Task<Response<MeetingSeriesDto>> Handle(GetMeetingSeriesByIdQuery query, CancellationToken ct)
+    {
+        var series = await _series.GetByIdAsync(query.Id, ct);
+        if (series is null)
+        {
+            return Response<MeetingSeriesDto>.Fail("The meeting series does not exist.", 404, MeetingReasonCodes.SeriesNotFound, query.CorrelationId);
+        }
+
+        var type = await _types.GetByIdAsync(series.MeetingTypeId, ct);
+        return Response<MeetingSeriesDto>.Success(MeetingSeriesMapping.ToDto(series, type?.Name), 200, query.CorrelationId);
+    }
+}

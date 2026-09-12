@@ -99,8 +99,14 @@
   <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>需要填写更正原因。</value></data>
   <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>记录已被同时更改；请刷新后重试。</value></data>
   <data name="ErrorDecisionNotFound" xml:space="preserve"><value>未找到该决定。</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>未找到此会议系列。</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>已存在同名的会议系列。</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>请检查系列的开始时间、结束时间和提前天数——排期无效。</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>间隔必须至少为 1。</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>需要指定组织者。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>会议系列</value></data>
 </root>

@@ -31,3 +31,11 @@ public sealed record GetMeetingAttendeeLookupQuery(string CorrelationId)
 
 public sealed record GetMeetingTypeLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<MeetingTypeLookupItemDto>>>;
+
+// ── S11 — recurring meeting series ──────────────────────────────────────────────────────────────────────────
+
+public sealed record GetMeetingSeriesListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<MeetingSeriesDto>>>;
+
+public sealed record GetMeetingSeriesByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<MeetingSeriesDto>>;

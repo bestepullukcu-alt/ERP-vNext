@@ -166,6 +166,28 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.MeetingId)
                         .Ascending(x => x.Status),
                     new CreateIndexOptions { Name = "ix_meeting_minutes_versions_tenant_meeting_status" })
+            }),
+
+        // MOD-0357 S11 — one row per recurring cadence rule. Name is tenant-unique (pack §12, same convention
+        // MeetingType.Name already uses); IsDeleted joins the unique key so a deleted series' name can be
+        // reused. The (tenant, isActive) index is the sweep's own read (ListActiveAsync, KS5) — a tenant with a
+        // large paused history should not force a collection scan every hour.
+        Collection<MeetingSeries>(
+            SchemaProfile.Meetings,
+            PlatformCollections.MeetingSeries,
+            () => new CreateIndexModel<MeetingSeries>[]
+            {
+                new CreateIndexModel<MeetingSeries>(
+                    Builders<MeetingSeries>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.Name)
+                        .Ascending(x => x.IsDeleted),
+                    new CreateIndexOptions { Name = "ux_meeting_series_tenant_name", Unique = true }),
+                new CreateIndexModel<MeetingSeries>(
+                    Builders<MeetingSeries>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.IsActive),
+                    new CreateIndexOptions { Name = "ix_meeting_series_tenant_active" })
             })
     };
 }

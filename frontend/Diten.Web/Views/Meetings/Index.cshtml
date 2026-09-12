@@ -32,6 +32,13 @@
             <i class="bx bx-purchase-tag me-1"></i>@Localizer["ManageTypes"]
         </a>
     }
+    @* S11 — the manifest's own SERIES_MANAGE toolbar action, same shape TYPES_MANAGE already takes above. *@
+    @if (Perms.Has("platform.meetings.series-manage"))
+    {
+        <a href="/Meetings/Series" class="btn btn-label-secondary">
+            <i class="bx bx-repeat me-1"></i>@Localizer["ManageSeries"]
+        </a>
+    }
 </div>
 
 @* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-meetings" data-dt-standard="v2"> *@

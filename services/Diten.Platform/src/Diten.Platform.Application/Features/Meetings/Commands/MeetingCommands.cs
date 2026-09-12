@@ -74,3 +74,22 @@ public sealed record CorrectPublishedMinutesCommand(
 public sealed record ScheduleFollowUpMeetingCommand(
     Guid SourceMeetingId, ScheduleFollowUpMeetingRequest Request, string CorrelationId)
     : IRequest<Response<ScheduleFollowUpMeetingResultDto>>;
+
+// ── S11 — recurring meeting series ──────────────────────────────────────────────────────────────────────────
+
+public sealed record CreateMeetingSeriesCommand(CreateMeetingSeriesRequest Request, string CorrelationId)
+    : IRequest<Response<MeetingSeriesDto>>;
+
+public sealed record UpdateMeetingSeriesCommand(
+    Guid Id, UpdateMeetingSeriesRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+public sealed record DeleteMeetingSeriesCommand(Guid Id, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>Generate whatever the tenant's ACTIVE series owe right now — tenant-scoped, callable on its own
+/// (the sweep job runs it inside each tenant's own <c>TenantScope</c>), same shape
+/// <c>GenerateDueRecurringTasksCommand</c> already takes for MOD-0024's own recurrence sweep.</summary>
+public sealed record GenerateDueMeetingSeriesCommand(
+    DateTimeOffset? NowUtc, int MaxSeries, string CorrelationId)
+    : IRequest<Response<GenerateDueMeetingSeriesResponse>>;

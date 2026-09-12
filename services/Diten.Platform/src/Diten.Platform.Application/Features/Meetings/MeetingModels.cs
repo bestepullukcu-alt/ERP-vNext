@@ -23,6 +23,10 @@ public static class MeetingPermissions
     /// A SECOND key, deliberately, never implied by <see cref="Read"/> — the same posture
     /// <c>TaskPermissions.WorkReportReadTenantWide</c> already takes for its own tenant-wide widening.</summary>
     public const string ReadAll = "platform.meetings.read-all";
+
+    /// <summary>MOD-0357 S11 — one key, same shape as <see cref="TypesManage"/> (S8): a single permission gates
+    /// list/create/edit/deactivate/delete for the whole recurring-series catalogue.</summary>
+    public const string SeriesManage = "platform.meetings.series-manage";
 }
 
 public static class MeetingReasonCodes
@@ -76,6 +80,13 @@ public static class MeetingReasonCodes
     /// <summary>The bridge's own decision-side lookup: <c>DecisionCode</c> does not name a decision on the
     /// meeting's latest minutes version.</summary>
     public const string DecisionNotFound = "MEETING_DECISION_NOT_FOUND";
+
+    // ── S11 — recurring meeting series ───────────────────────────────────────────────────────────────────────
+    public const string SeriesNotFound = "MEETING_SERIES_NOT_FOUND";
+    public const string SeriesNameDuplicate = "MEETING_SERIES_NAME_DUPLICATE";
+    public const string SeriesInvalidWindow = "MEETING_SERIES_INVALID_WINDOW";
+    public const string SeriesIntervalInvalid = "MEETING_SERIES_INTERVAL_INVALID";
+    public const string SeriesOrganizerRequired = "MEETING_SERIES_ORGANIZER_REQUIRED";
 }
 
 public static class MeetingFieldLimits
@@ -399,3 +410,61 @@ public sealed record ScheduleFollowUpMeetingRequest(
 /// were carried forward (K6) — enough for the caller to navigate to the new meeting and know what to expect
 /// on its agenda without a second round trip.</summary>
 public sealed record ScheduleFollowUpMeetingResultDto(Guid MeetingId, int CarriedAgendaItemCount);
+
+// ── S11 — recurring meeting series (pack §19) ───────────────────────────────────────────────────────────────
+
+public sealed record CreateMeetingSeriesRequest(
+    string Name,
+    Guid MeetingTypeId,
+    MeetingSeriesFrequency Frequency,
+    int Interval,
+    DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
+    int DurationMinutes,
+    string? Location,
+    Guid OrganizerUserId,
+    IReadOnlyList<Guid>? AttendeeUserIds,
+    int LeadTimeDays,
+    bool ChainAsFollowUp,
+    bool IsActive);
+
+public sealed record UpdateMeetingSeriesRequest(
+    string Name,
+    Guid MeetingTypeId,
+    MeetingSeriesFrequency Frequency,
+    int Interval,
+    DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
+    int DurationMinutes,
+    string? Location,
+    Guid OrganizerUserId,
+    IReadOnlyList<Guid>? AttendeeUserIds,
+    int LeadTimeDays,
+    bool ChainAsFollowUp,
+    bool IsActive,
+    int ExpectedVersion);
+
+public sealed record MeetingSeriesDto(
+    Guid Id,
+    string Name,
+    Guid MeetingTypeId,
+    string? MeetingTypeName,
+    MeetingSeriesFrequency Frequency,
+    int Interval,
+    DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
+    int DurationMinutes,
+    string? Location,
+    Guid OrganizerUserId,
+    IReadOnlyList<Guid> AttendeeUserIds,
+    int LeadTimeDays,
+    bool ChainAsFollowUp,
+    Guid? LastGeneratedMeetingId,
+    DateTimeOffset? LastGeneratedAt,
+    bool IsActive,
+    int Version);
+
+/// <summary>What one sweep pass did for one tenant — same shape <c>GenerateDueRecurringTasksResponse</c>
+/// already takes for MOD-0024's own recurrence sweep.</summary>
+public sealed record GenerateDueMeetingSeriesResponse(
+    int SeriesConsidered, int MeetingsGenerated, int AlreadyGenerated, int Failed);

@@ -99,8 +99,14 @@
   <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>A correction reason is required.</value></data>
   <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>The record changed meanwhile; reload and retry.</value></data>
   <data name="ErrorDecisionNotFound" xml:space="preserve"><value>This decision could not be found.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>This meeting series could not be found.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>A meeting series with this name already exists.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Check the series' start, end and lead time — the schedule is invalid.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>The interval must be at least 1.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>An organizer is required.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Meeting Types</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Meeting Series</value></data>
 </root>

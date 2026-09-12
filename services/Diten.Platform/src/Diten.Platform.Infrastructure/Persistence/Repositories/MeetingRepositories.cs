@@ -427,3 +427,58 @@ public sealed class MeetingMinutesVersionRepository
         return previous is not null;
     }
 }
+
+/// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>
+public sealed class MeetingSeriesRepository : TenantRepository<MeetingSeries>, IMeetingSeriesRepository
+{
+    public MeetingSeriesRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.MeetingSeries)
+    {
+    }
+
+    // CreateAsync is NOT overridden here — TenantRepository<T>'s own base implementation already stamps
+    // TenantId from the ambient context on every write (defensively, regardless of what the candidate object
+    // was constructed with), the same convention MeetingTypeRepository already relies on without overriding it.
+
+    public async Task<MeetingSeries?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(ExecutionFilter, Builders<MeetingSeries>.Filter.Eq(x => x.Id, id));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    // Sorted by Name — a STRING field. BL-030: this entity carries three DateTimeOffset fields (StartsAt,
+    // EndsAt, LastGeneratedAt), and a server-side sort on any of them is not trusted for exact chronological
+    // order in this codebase (no DateTimeOffsetSerializer registered — see MeetingRepository.
+    // FindByFollowUpOfMeetingIdAsync's own doc comment, measured broken against a real server). Neither list
+    // below needs date order at all, so the safe field is used instead of adding a needless in-memory sort.
+    public async Task<IReadOnlyList<MeetingSeries>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.Name).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<MeetingSeries>> ListActiveAsync(CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.IsActive, true));
+        return await Collection.Find(filter).SortBy(x => x.Name).ToListAsync(ct);
+    }
+
+    public Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.Name, name));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+    {
+        series.Version = expectedVersion + 1;
+        series.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.Id, series.Id),
+            Builders<MeetingSeries>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, series, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
+    }
+}

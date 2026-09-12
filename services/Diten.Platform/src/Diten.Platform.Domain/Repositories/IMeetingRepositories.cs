@@ -200,3 +200,24 @@ public interface IMeetingMinutesVersionRepository
     /// the type's own doc comment on why a Published row is never replaced).</summary>
     Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default);
 }
+
+/// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>
+public interface IMeetingSeriesRepository
+{
+    Task<MeetingSeries> CreateAsync(MeetingSeries series, CancellationToken ct = default);
+
+    Task<MeetingSeries?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Every series the tenant can see, active or not — the management surface has to show a
+    /// deactivated series (a series that vanishes when switched off could never be switched back on).</summary>
+    Task<IReadOnlyList<MeetingSeries>> ListAllAsync(CancellationToken ct = default);
+
+    /// <summary>Only <see cref="MeetingSeries.IsActive"/> rows, not-deleted — the sweep's own read (KS5).</summary>
+    Task<IReadOnlyList<MeetingSeries>> ListActiveAsync(CancellationToken ct = default);
+
+    Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default);
+
+    Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default);
+
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
+}

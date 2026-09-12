@@ -5134,3 +5134,26 @@ bağımlılığı yok, ADR-003); gönderim muhafızına `DispatchedByAnotherModu
 ve liste kendini denetliyor: listedeki kod burada gönderilebilir hale gelirse test kırmızı. Sonuç: Meetings+WorkAggregation+Tasks 1513/1513.
 **Ek not:** aynı koşuda 3 Mongo testi kırmızı göründü (AgendaItem, RecordLink, TaskCommentOrder); tek başlarına ve tekrar koşumda yeşiller — paylaşımlı
 yerel Mongo çakışması (BL-343 d), S5c'nin işi değil.
+---
+
+### BL-373
+
+**Seri üretimi her örnekte davet postası atıyor — organizatör dahil**
+
+DURUM: AÇIK (karar sahipte) · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
+
+**Ölçülen davranış:** S11'in süpürmesi bir örnek ürettiğinde `CreateMeetingCommand` normal yolunu kullanıyor; o yol da her YENİ
+toplantı için `IMeetingInviteMailer.SendInviteAsync` çağırıyor (`MeetingCommandHandlers.cs:197-199`). Mailer alıcı listesinden
+yalnız *eylemi yapan kullanıcıyı* çıkarır (`MeetingInviteMailer.cs:69-73`); arka plan süpürmesinde eylemi yapan kimse olmadığı için
+`actingUserId = Guid.Empty` gider ve **hiç kimse dışarıda kalmaz** — organizatör de kendi serisinin toplantısı için davet alır.
+
+**Neden bir karar:** haftalık bir seri + 10 katılımcı = haftada 11 posta ve organizatör hiç planlamadığı bir toplantı için davet alıyor.
+Davranış savunulabilir (gerçekten kimse "yapmadı", herkesin haberi olmalı) ama bilinçli seçilmedi, ortaya çıktı.
+
+**Seçenekler:** (a) olduğu gibi bırak, dokümante et · (b) süpürme yolunda organizatörü hariç tut (mailer'a "sistem üretti" sinyali) ·
+(c) seri örnekleri için ayrı bir "seri toplantısı planlandı" şablonu (S5'in üç şablonuna dördüncü) · (d) seri kuralında
+`SendInviteMail` bayrağı.
+
+**Nerede:** `GenerateDueMeetingSeriesHandler.GenerateInstanceAsync` → `CreateMeetingCommand` / `ScheduleFollowUpMeetingCommand`.
+Testle sabitlenmedi: seri işleyici testleri `RecordingMediator` kullanıyor, gerçek oluşturma hattını (dolayısıyla posta yolunu)
+çalıştırmıyor. Karar hangisi olursa olsun, o kararı kanıtlayan test aynı işte yazılır.
