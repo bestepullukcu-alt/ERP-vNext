@@ -41,4 +41,11 @@
   <data name="KpiActiveUsers" xml:space="preserve"><value>Actif</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>Passif</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>Sans rôle</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>Type de compte</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>Non confirmé</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>Personne</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>Compte de service</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>Modifier le type</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>Type de compte mis à jour</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>Laissez vide pour garder le compte non confirmé.</value></data>
 </root>

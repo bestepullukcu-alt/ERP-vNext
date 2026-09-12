@@ -28,7 +28,11 @@ public sealed record PlatformAdminSyncRequest(
 public sealed record AssignRoleRequest(Guid RoleId);
 public sealed record AssignPermissionRequest(Guid PermissionId);
 // Password is optional: omit it to create the user as an invitation (set-password link emailed).
-public sealed record CreateUserRequest(string Email, string? Password, string FirstName, string LastName);
+// WP-INFRA-AUTH-ACCOUNT-KIND-01 — AccountKind is optional (enum NAME: Unknown | Human | Service). Omitted ⇒ Unknown;
+// supplied ⇒ the caller must also hold auth.users.account-kind.manage, else 403 PERM_DENIED.
+public sealed record CreateUserRequest(string Email, string? Password, string FirstName, string LastName, string? AccountKind = null);
+// WP-INFRA-AUTH-ACCOUNT-KIND-01 — body of POST api/users/{id}/account-kind. Kind is the enum NAME, case-insensitive.
+public sealed record SetAccountKindRequest(string Kind);
 public sealed record SetTenantPasswordRequest(string Email, string Token, string NewPassword);
 public sealed record UpdateUserRequest(string FirstName, string LastName, bool IsActive);
 public sealed record CreateRoleRequest(string Name, string DisplayName, string? Description);

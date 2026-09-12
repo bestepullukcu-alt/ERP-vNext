@@ -8,7 +8,9 @@
         'FormTitleCreate', 'FormTitleEdit', 'FormValidationError', 'LastName', 'NotAvailable',
         'Passive', 'QuickView', 'RecordCreated', 'RecordDeleted', 'RecordSaved', 'RecordUpdated',
         'Reset', 'Roles', 'Save', 'SaveView', 'Search', 'ShowAll', 'Status', 'Unknown', 'Update',
-        'ViewDetails', 'Details'
+        'ViewDetails', 'Details',
+        'AccountKind', 'AccountKindUnknown', 'AccountKindHuman', 'AccountKindService', 'ChangeAccountKind',
+        'AccountKindChanged'
     ];
 
     const logMissingKeys = (dictionary) => {
