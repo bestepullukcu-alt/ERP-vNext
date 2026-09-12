@@ -37,6 +37,19 @@ namespace Diten.Platform.Application.Tests.WorkAggregation;
 /// </summary>
 public sealed class WorkItemActionDispatchTests
 {
+    /// <summary>
+    /// Codes the task provider projects that ANOTHER module's endpoint dispatches, not the generic work-item action
+    /// route — the same claim, and the same shape, as <c>TaskActionCodeReachabilityTests.NotTransitionRoutes</c>.
+    /// An entry says: this action is reachable, just not through <c>TaskWorkItemActionDispatcher</c>. The assertion
+    /// in the theory below keeps the list honest, so an entry cannot outlive the action it excuses.
+    /// </summary>
+    private static readonly HashSet<string> DispatchedByAnotherModule = new(StringComparer.Ordinal)
+    {
+        // MOD-0357 S4 — posts to "api/v1/meetings/tasks/{taskId}/schedule-review-meeting"; MOD-0357 owns the meeting
+        // it creates and the RecordLink back. Reachability is pinned by TaskActionCodeReachabilityTests.
+        "scheduleReviewMeeting",
+    };
+
     // ── (a) EVERY PROVIDER THAT PUBLISHES ACTIONS HAS A DISPATCHER ────────────
 
     /// <summary>
@@ -90,10 +103,14 @@ public sealed class WorkItemActionDispatchTests
         var codes = Assert.Single(items).Actions.Select(a => a.Code).ToList();
 
         Assert.NotEmpty(codes);
-        foreach (var code in codes)
+        foreach (var code in codes.Where(code => !DispatchedByAnotherModule.Contains(code)))
         {
             Assert.True(dispatcher.CanDispatch(code), $"'{code}' is projected but has no dispatch path.");
         }
+
+        // The exception list stays honest: a listed code must NOT be dispatchable here, or the entry is stale cover
+        // for an action that has since grown a normal dispatch path.
+        Assert.Empty(DispatchedByAnotherModule.Where(dispatcher.CanDispatch));
     }
 
     [Fact]

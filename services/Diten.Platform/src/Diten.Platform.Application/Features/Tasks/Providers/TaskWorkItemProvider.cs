@@ -668,8 +668,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             var isHolderForReview = task.AssigneeUserId == actor.UserId;
             if (isHolderForReview || isRequesterForReview)
             {
+                /*
+                 * CT 2026-09-12 — gated on Update, the TASK-side authority to attach a review meeting to this task.
+                 * It was gated on Read, which this provider declares nowhere (Read gates ENDPOINTS, not projected
+                 * actions — its own rule, pinned by ProviderActionPermissionTests), so the action stayed
+                 * PermissionDenied for everyone holding the declared set: 9 red tests since S4. Update is declared
+                 * and is the key every other act-on-this-task action already uses. The MEETING-side authority
+                 * (MeetingPermissions.Create) is enforced by the receiving endpoint and is deliberately not read
+                 * here — MOD-0024 does not depend on MOD-0357 (ADR-003).
+                 */
                 actions = actions
-                    .Append(Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Read)))
+                    .Append(Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Update)))
                     .ToList();
                 overflowActionCodes = overflowActionCodes.Append("scheduleReviewMeeting").ToList();
             }
