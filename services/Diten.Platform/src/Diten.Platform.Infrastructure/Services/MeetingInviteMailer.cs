@@ -1,3 +1,4 @@
+using System.Text;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Notifications;
@@ -42,22 +43,25 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
 
     public Task<MeetingInviteDeliveryResult> SendInviteAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(InviteEventCode, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(InviteEventCode, MeetingIcsEventType.Invite, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     public Task<MeetingInviteDeliveryResult> SendChangeAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(ChangeEventCode, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(ChangeEventCode, MeetingIcsEventType.Change, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     public Task<MeetingInviteDeliveryResult> SendCancelAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(CancelEventCode, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(CancelEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     /// <summary>
     /// K12 — this method's own try/catch is the whole rule: whatever happens below, the caller (a meeting
-    /// create/update/cancel handler already past its own write) gets a RESULT, never an exception.
+    /// create/update/cancel handler already past its own write) gets a RESULT, never an exception. S5b — the
+    /// same posture extends to .ics generation: a malformed attendee address or any other failure building the
+    /// attachment is caught by this SAME try/catch, never a reason the meeting write itself is threatened.
     /// </summary>
     private async Task<MeetingInviteDeliveryResult> SendAsync(
         string eventCode,
+        MeetingIcsEventType icsEventType,
         Meeting meeting,
         string meetingTypeName,
         IReadOnlyList<MeetingAttendee> recipients,
@@ -87,11 +91,20 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                 return new MeetingInviteDeliveryResult(Sent: false, Failed: true, Reason: "NO_RECIPIENTS");
             }
 
-            // The organizer's NAME is content, not a recipient decision — resolved on its own so it still
+            // The organizer's identity is content, not a recipient decision — resolved on its own so it still
             // appears even when the organizer is excluded from `audience` above (the common case: they are
-            // the actor themselves).
-            var organizerName = (await _recipients.ResolveAsync([meeting.OrganizerUserId], ct))
-                .FirstOrDefault()?.DisplayName ?? meeting.OrganizerUserId.ToString();
+            // the actor themselves). S5b needs the organizer's own EMAIL too (the .ics ORGANIZER line), not
+            // just the display name the mail body already used.
+            var organizer = (await _recipients.ResolveAsync([meeting.OrganizerUserId], ct)).FirstOrDefault()
+                ?? new TaskNotificationRecipient(meeting.OrganizerUserId, string.Empty, meeting.OrganizerUserId.ToString());
+            var organizerName = organizer.DisplayName ?? meeting.OrganizerUserId.ToString();
+
+            // S5b — the calendar attachment. Built from data already resolved above (organizer + attendees),
+            // never a second recipient-resolution path. A malformed/unresolvable organizer email (empty string,
+            // the fallback just above) produces a syntactically odd but harmless "mailto:" line — not a reason
+            // to withhold the invite body itself, and K12's own try/catch around this whole method is the
+            // backstop if building the string throws for any other reason.
+            var icsAttachment = BuildIcsAttachment(icsEventType, meeting, organizer, resolved);
 
             var response = await _notifications.DispatchByEventCodeAsync(
                 new NotificationEventDispatchRequest(
@@ -101,7 +114,8 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                     Variables: BuildVariables(meeting, meetingTypeName, organizerName),
                     // Same posture as TaskNotificationService: the reader's own language is not known here, so
                     // the adapter resolves the TENANT's configured language rather than guessing at the actor's.
-                    Locale: null),
+                    Locale: null,
+                    Attachments: [icsAttachment]),
                 ct);
 
             if (!response.IsSuccessful)
@@ -142,4 +156,15 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
         ["Location"] = meeting.Location ?? string.Empty,
         ["MeetingUrl"] = MeetingDeepLink(meeting.Id)
     };
+
+    /// <summary>S5b — pack's own .ics sözleşme: filename "invite.ics" for all three moments (the METHOD
+    /// parameter inside <see cref="MeetingIcsBuilder.ContentType"/> is what distinguishes REQUEST from CANCEL,
+    /// not the filename).</summary>
+    private static MessagingProviderAttachment BuildIcsAttachment(
+        MeetingIcsEventType eventType, Meeting meeting, TaskNotificationRecipient organizer, IReadOnlyList<TaskNotificationRecipient> attendees)
+    {
+        var ics = MeetingIcsBuilder.Build(meeting, organizer, attendees, eventType);
+        return new MessagingProviderAttachment(
+            MeetingIcsBuilder.FileName, MeetingIcsBuilder.ContentType(eventType), Encoding.UTF8.GetBytes(ics));
+    }
 }

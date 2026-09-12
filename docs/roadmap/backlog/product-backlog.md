@@ -5157,3 +5157,37 @@ Davranış savunulabilir (gerçekten kimse "yapmadı", herkesin haberi olmalı) 
 **Nerede:** `GenerateDueMeetingSeriesHandler.GenerateInstanceAsync` → `CreateMeetingCommand` / `ScheduleFollowUpMeetingCommand`.
 Testle sabitlenmedi: seri işleyici testleri `RecordingMediator` kullanıyor, gerçek oluşturma hattını (dolayısıyla posta yolunu)
 çalıştırmıyor. Karar hangisi olursa olsun, o kararı kanıtlayan test aynı işte yazılır.
+
+---
+
+### BL-374
+
+**S5b `.ics` ekinin iki sınırı — tekrar denemede ek düşüyor, organizatör e-postası çözülemezse ORGANIZER boş**
+
+DURUM: AÇIK · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+
+**(1) Tekrar deneme eki taşımıyor.** Davet postası ilk denemede SMTP'de düşerse `EmailDispatchSweepJob` →
+`EmailDispatchJob` postayı kalıcı `NotificationDispatch` satırından yeniden kurar; o satırda ek yok (S5b eki bilerek
+kalıcılaştırmadı) ve gövdenin de yalnız önizlemesi var. Sonuç: tekrar denenen davet takvim eki olmadan ve kısaltılmış
+gövdeyle gider. Gövde kısıtı S5b'den önce de vardı; ek kısıtı S5b ile görünür oldu.
+Seçenekler: (a) ek içeriğini dispatch kaydına yazmak (kalıcılık kararı, PII değil ama boyut) · (b) tekrar denemede
+.ics'i toplantıdan yeniden üretmek (dispatch → meeting bağı gerekir) · (c) kabul edip dokümante etmek.
+
+**(2) Organizatör çözülemezse `ORGANIZER;…:mailto:` boş.** `MeetingInviteMailer` organizatörü çözemediğinde boş
+e-postalı bir yedek kayıt kullanıyor; RFC 5546'ya göre METHOD:REQUEST bir ORGANIZER adresi ister, Outlook böyle bir
+daveti "desteklenmeyen takvim iletisi" olarak gösterebilir. Gövde yine gider (K12). Yalnız e-postası olmayan bir
+organizatörde olur; Auth kullanıcılarında e-posta zorunlu olduğu için bugün pratikte beklenmiyor.
+
+---
+
+### BL-375
+
+**Görev tipi güncellemesinde eşzamanlılık koruması yok — son yazan kazanır**
+
+DURUM: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-REVIEW-MEETING-POLICY-01), CT doğruladı · KAYIT: 2026-09-13
+
+`UpdateTaskTypeRequest` / `UpdateTaskTypeHandler` `ExpectedVersion` taşımıyor; güncelleme tam değiştirme. İki yönetici
+aynı tipi aynı anda düzenlerse ikincisi birincinin değişikliğini sessizce ezer. Görev tipi L3 bir yapılandırma
+(kayıt sınıfı, GQMS alanı, yönetici belgeler, kapanış sonuçları ve artık gözden geçirme toplantısı gerekliliği).
+Not: CT'nin prompt'u bu korumanın var olduğunu varsaymıştı; yanlıştı, ajan doğru ölçtü ve kapsamı genişletmedi.
+Çözüm şekli bu depoda hazır: toplantı ve seri güncellemelerinin `ExpectedVersion` + 409 deseni.

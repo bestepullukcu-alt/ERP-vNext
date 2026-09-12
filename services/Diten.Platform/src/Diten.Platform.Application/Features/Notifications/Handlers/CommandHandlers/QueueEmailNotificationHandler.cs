@@ -159,7 +159,12 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.BodyHtmlPreview,
                 dispatch.BodyTextPreview,
                 renderResponse.Data.BodyHtml,
-                renderResponse.Data.BodyText),
+                renderResponse.Data.BodyText,
+                // MOD-0357 S5b — carried straight from the caller's request into THIS SAME synchronous provider
+                // call; never assigned to `dispatch` above, so it is never persisted (NotificationDispatch has
+                // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
+                // comment on why a later retry already cannot have one anyway).
+                request.Request.Attachments),
             ct);
 
         if (providerResult.Accepted)
