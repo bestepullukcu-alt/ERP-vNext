@@ -1,7 +1,14 @@
 'use strict';
 
 (function (global) {
-    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception'];
+    /*
+     * MOD-0357 S5c — `meetingInvite` ADDED (CT decision, 2026-09-11), the SIXTH value and the first contract
+     * change this array has taken since WC-1. `review`/`issue`/`exception` are still fixture-only placeholders
+     * (no provider emits them); `meetingInvite` is not — `MeetingWorkItemProvider` is a REAL source. The name
+     * is not new: app.js's own icon/chip/filter maps (`TYPE_ICON_MAP`, `TYPE_KEY`) and the trigger-only
+     * showcase this replaces already spelled it exactly this way.
+     */
+    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception', 'meetingInvite'];
     const ASSIGNMENT_MODES = ['direct', 'approval', 'groupQueue', 'offered'];
     const OWNERSHIP_STATES = ['unowned', 'assigned', 'owned', 'notApplicable'];
     const ADMISSION_STATES = ['pendingAcceptance', 'pendingClaim', 'pendingOffer', 'admitted', 'notApplicable'];
@@ -335,6 +342,31 @@
             push(errors, fixture, 'SOURCE_REQUIRED', 'source');
         }
         if (fixture.actionDepth === 'deeplink' && !isSafeLink(fixture.source?.deepLink)) { push(errors, fixture, 'DEEPLINK_REQUIRED', 'source.deepLink'); }
+        /*
+         * MOD-0357 S5c — a meeting invite is nothing BUT a deep link and a deadline: there is no detail page of
+         * its own to fall back on the way a task or an approval has, and no third answer besides Accept/Decline
+         * (K5 — no "maybe"). So both are required regardless of `actionDepth` (the rule above only fires when
+         * `actionDepth === 'deeplink'`, and this card's actions stay inline), and the action set is closed to
+         * exactly the two codes the card offers, in the exact placement the card was built for.
+         */
+        if (fixture.workIntent === 'meetingInvite') {
+            if (!isSafeLink(fixture.source?.deepLink)) {
+                push(errors, fixture, 'MEETING_INVITE_DEEPLINK_REQUIRED', 'source.deepLink');
+            }
+            if (!fixture.dueAt || Number.isNaN(new Date(fixture.dueAt).getTime())) {
+                push(errors, fixture, 'MEETING_INVITE_DUE_AT_REQUIRED', 'dueAt');
+            }
+            const inviteCodes = (fixture.actions || []).map((action) => action.code);
+            if (inviteCodes.length !== 2 || !inviteCodes.includes('acceptInvite') || !inviteCodes.includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_ACTIONS_INVALID', 'actions');
+            }
+            if (fixture.primaryActionCode !== 'acceptInvite') {
+                push(errors, fixture, 'MEETING_INVITE_PRIMARY_ACTION_INVALID', 'primaryActionCode');
+            }
+            if (!(fixture.secondaryActionCodes || []).includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_SECONDARY_ACTION_INVALID', 'secondaryActionCodes');
+            }
+        }
         if ((fixture.normalizedStatus === 'Waiting') !== !!fixture.waitingContext) { push(errors, fixture, 'WAITING_CONTEXT_BIDIRECTIONAL', 'waitingContext'); }
         // An unknown type is a CONTRACT error, not a rendering quirk: the shell can only translate what it is
         // told about, so a type nobody declared reaches the user as silence.

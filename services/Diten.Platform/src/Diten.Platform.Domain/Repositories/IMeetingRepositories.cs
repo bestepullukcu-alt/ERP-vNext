@@ -115,6 +115,11 @@ public interface IMeetingAttendeeRepository
     /// idempotent" needs no optimistic-concurrency token, since setting the SAME value twice is a no-op either
     /// way and there is no other writer of this one field to race against.</summary>
     Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default);
+
+    /// <summary>S5c — <c>MeetingWorkItemProvider</c>'s own source query: every invitation still awaiting THIS
+    /// user's Accept/Decline, across every meeting in the tenant. Filtered at the query, not in memory — an
+    /// actor's own Pending set stays small regardless of how large the tenant's meeting history grows.</summary>
+    Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>

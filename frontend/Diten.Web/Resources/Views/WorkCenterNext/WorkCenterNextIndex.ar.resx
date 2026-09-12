@@ -1447,6 +1447,9 @@
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>موافقة: {objectType} {objectId}</value>
   </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>قيد الانتظار</value>
+  </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>بانتظار الموافقة</value>
   </data>
@@ -1557,6 +1560,12 @@
   </data>
   <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
     <value>جدولة اجتماع مراجعة</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>قبول</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>رفض</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>إعادة</value>

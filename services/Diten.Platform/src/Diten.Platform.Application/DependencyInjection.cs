@@ -340,6 +340,9 @@ public static class DependencyInjection
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.Tasks.Providers.TaskWorkItemProvider>();
+        // MOD-0357 S5c — the THIRD work-item provider: the actor's own pending meeting invitations (K5).
+        services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
+            Features.Meetings.Providers.MeetingWorkItemProvider>();
 
         /*
          * WC-D2 (DCP-004 §2 D2) — the WRITE half, registered as its own IEnumerable beside the read providers.
@@ -356,6 +359,8 @@ public static class DependencyInjection
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemActionDispatcher>();
         services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
             Features.Tasks.Providers.TaskWorkItemActionDispatcher>();
+        services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
+            Features.Meetings.Providers.MeetingWorkItemActionDispatcher>();
 
         // MOD-0024 Task Engine services. The lifecycle service is the SINGLE owner of the lifecycle→normalized
         // map, so the API and the Task Center projection can never disagree.

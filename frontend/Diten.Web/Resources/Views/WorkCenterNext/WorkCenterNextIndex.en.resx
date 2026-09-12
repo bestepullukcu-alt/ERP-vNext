@@ -1447,6 +1447,9 @@
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approval: {objectType} {objectId}</value>
   </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Waiting for approval</value>
   </data>
@@ -1557,6 +1560,12 @@
   </data>
   <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
     <value>Schedule review meeting</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Decline</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Return</value>

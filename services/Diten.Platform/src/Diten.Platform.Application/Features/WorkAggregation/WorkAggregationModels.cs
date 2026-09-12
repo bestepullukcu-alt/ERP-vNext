@@ -97,6 +97,11 @@ public static class WorkItemContract
     // workIntent
     public const string IntentApproval = "approval";
 
+    // MOD-0357 S5c — a pending meeting invitation, awaiting Accept/Decline (K5). Named "meetingInvite", not
+    // "invitation", because the frontend contract (fixture-contract.js) and app.js's own icon/chip/filter maps
+    // already spelled it this way for the trigger-only showcase this replaces — one name, not two.
+    public const string IntentMeetingInvite = "meetingInvite";
+
     // assignmentMode
     public const string AssignmentApproval = "approval";
 
@@ -147,6 +152,10 @@ public static class WorkItemContract
     // ("tasks") and to the permission namespace (platform.tasks.*) so provider, catalog and permissions cannot
     // drift apart — the workflow provider holds the same property.
     public const string ProviderCodeTasks = "tasks";
+
+    // source provider code (MOD-0357 S5c provider) — identical to the module manifest's ModuleCode ("meetings")
+    // and to the permission namespace (platform.meetings.*), same reason the two above match theirs.
+    public const string ProviderCodeMeetings = "meetings";
 
     // viewerRelation (BL-016). The C# mirror of fixture-contract.js VIEWER_RELATIONS — declared on both sides for
     // the reason slaState above is: a value spelled differently across this seam is a row in the wrong tab.
@@ -636,7 +645,17 @@ public sealed record WorkItemProjectionDto(
     /// null), so a caller that has not wired the bridge yet serializes unchanged.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemReviewMeetingPolicyDto? ReviewMeetingPolicy = null);
+    WorkItemReviewMeetingPolicyDto? ReviewMeetingPolicy = null,
+    /// <summary>
+    /// A second action the shell may show ALONGSIDE the primary one, distinct from <see cref="OverflowActionCodes"/>
+    /// (the executable contract, fixture-contract.js's own <c>validatePlacement</c>, has always kept the two
+    /// separate; no C# provider had emitted this one until now). MOD-0357 S5c's own reason: "Kabul" and "Reddet"
+    /// are the whole decision an invite card asks for, and burying "Reddet" a click deeper behind a menu answers
+    /// a question the card was not asked. Trailing and optional, like every other placement field, so a
+    /// provider that says nothing about it compiles and serializes unchanged.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? SecondaryActionCodes = null);
 
 /// <summary>
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/

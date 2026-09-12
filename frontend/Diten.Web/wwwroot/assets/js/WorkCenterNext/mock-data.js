@@ -231,10 +231,13 @@
         if (item.viewerRelation === 'initiator') { return 'baslattiklarim'; }
         if (item.admissionState === 'pendingClaim' || item.admissionState === 'pendingOffer') { return 'havuz'; }
         if (item.admissionState === 'pendingAcceptance') { return 'inbox'; }
-        // Act-directly intents (approval/review/issue/exception) awaiting the viewer's
-        // first decision live in the Inbox even though they are 'admitted' (no accept
-        // gate) — they are resolved on the spot (approve/signoff/resolve), not owned work.
-        if (['approval', 'review', 'issue', 'exception'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
+        // Act-directly intents (approval/review/issue/exception/meetingInvite) awaiting the viewer's
+        // first decision live in the Inbox even though they are 'admitted'/'notApplicable' (no accept
+        // gate) — they are resolved on the spot (approve/signoff/resolve/acceptInvite), not owned work.
+        // MOD-0357 S5c, K5 (BL-026): a Pending invite is exactly the kind of item this line exists for — a
+        // decision waiting on the reader — and the alternative (falling through to `islerim`) is the defect
+        // this rule closes: an invite is not owned work, and never becomes an İşlerim item.
+        if (['approval', 'review', 'issue', 'exception', 'meetingInvite'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
         return 'islerim';
     };
     const segmentFor = (item) => {
@@ -258,7 +261,7 @@
         kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
             : ['approve', 'complete', 'resolve', 'signoff', 'submitReview'].includes(action.code) ? 'success'
                 : action.code === 'requestInfo' ? 'warning'
-                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' ? 'primary'
+                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' || action.code === 'acceptInvite' ? 'primary'
                         : 'secondary',
         primary: false,
         enabled: action.enabled,
@@ -283,8 +286,8 @@
          * item-level `actionDepth` default itself, exactly the way the contract resolves it.
          */
         depth: action.depth || null,
-        role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
-            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'submitReview'].includes(action.code) ? 'accept'
+        role: ['reject', 'return', 'declineMeeting', 'declineInvite'].includes(action.code) ? 'reject'
+            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'acceptInvite', 'submitReview'].includes(action.code) ? 'accept'
                 : null
     });
     const allFixtureGroups = () => {

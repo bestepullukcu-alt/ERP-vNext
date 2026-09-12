@@ -1598,8 +1598,12 @@
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
+        // MOD-0357 S5c — tür · zaman · organizatör (pack), all three already flattened by toPresentation:
+        // sourceType is the MEETING's own type name (Source.ObjectType), dueAt is its start, requester is
+        // whoever organized it. No meeting-specific field was added to the wire for this — every one of the
+        // three already exists for every provider.
         const summary = item.itemType === 'meetingInvite'
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation, item.requester].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : item.summary;
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
             <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
@@ -1642,6 +1646,8 @@
     const inboxActionIcon = (action) => ({
         accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
         reject: 'bx-x-circle', decline: 'bx-x-circle', cancel: 'bx-x-circle', return: 'bx-undo',
+        // MOD-0357 S5c — same tone as accept/decline above, the codes just differ (acceptInvite/declineInvite).
+        acceptInvite: 'bx-check', declineInvite: 'bx-x-circle',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         scheduleReviewMeeting: 'bx-calendar-event',
@@ -1741,6 +1747,21 @@
     const needsSourceRecovery = (item) =>
         ['stale', 'sourceUnavailable', 'reconciliationRequired'].includes(item.systemState);
 
+    /*
+     * MOD-0357 S5c — the ONE item type today whose provider actually emits `secondaryActionCodes`
+     * (pack §3: "primary=acceptInvite, secondary=declineInvite"). Every other provider's non-primary
+     * actions stay in the ··· overflow (see the comment above `actionCluster`); a meeting invite's
+     * Reddet is a plain, un-confirmed, un-reasoned action (K-series: no dialog, no reason) that the
+     * pack explicitly wants ONE VISIBLE CLICK away, not a deliberate second click behind a menu.
+     * Gated on itemType so no other provider's row shape changes.
+     */
+    const secondaryInlineAction = (item) => {
+        if (item.itemType !== 'meetingInvite') { return null; }
+        const code = (item.secondaryActionCodes || [])[0];
+        if (!code) { return null; }
+        return itemActions(item).find((action) => action.code === code) || null;
+    };
+
     // Inbox is a decision queue, not a second task-detail surface. Each row answers
     // what needs attention, why it is here and when it matters. The primary action
     // appears once; less frequent actions stay behind a compact overflow menu.
@@ -1759,16 +1780,25 @@
         // et…); every other action — including reject — lives behind the ··· overflow,
         // so a destructive choice takes a deliberate second click. Same shape in the
         // inbox rows and the Table view's İşlemler column.
+        //
+        // meetingInvite is the one exception (see secondaryInlineAction): Reddet is promoted next to
+        // Kabul et instead of into the overflow, so it is excluded from `overflow` below too.
         const primary = rowPrimaryAction(actions);
-        const overflow = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const overflow = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         const primaryButton = primary
             ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
             : '';
+        const secondaryButton = secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const overflowMenu = overflow.length
             ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end">${actionMenuBody(item, overflow)}</ul></div>`
             : '';
-        return `<span class="wcn-inbox-actions">${primaryButton}${overflowMenu}</span>`;
+        return `<span class="wcn-inbox-actions">${primaryButton}${secondaryButton}${overflowMenu}</span>`;
     };
 
     // Table view "İşlemler" cell — same decision-queue shape as the list rows: the
@@ -1804,7 +1834,10 @@
         }
         const actions = itemActions(item);
         const primary = rowPrimaryAction(actions);
-        const rest = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const rest = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         // Stale source → refresh is the primary; real actions come back after it clears.
         const primaryButton = needsSourceRecovery(item)
@@ -1812,9 +1845,12 @@
             : (primary
                 ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
                 : '');
+        const secondaryButton = !needsSourceRecovery(item) && secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const viewItem = `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-detail="${item.id}"><i class="bx bx-show"></i><span>${esc(t('RowView'))}</span></button></li>`;
         const kebab = `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${actionMenuBody(item, needsSourceRecovery(item) ? [] : rest, viewItem)}</ul></div>`;
-        return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
+        return `<div class="d-flex align-items-center justify-content-end gap-1 wcn-table-actions">${primaryButton}${secondaryButton}${kebab}</div>`;
     };
 
     const inboxRowHtml = (item) => {
@@ -1909,8 +1945,10 @@
         const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
         const typeKind = item.itemType === 'meetingInvite' ? 'meeting' : item.itemType;
         const isMeeting = item.itemType === 'meetingInvite';
+        // MOD-0357 S5c — tür · zaman (organizatör is already the row's own metaLine second half elsewhere via
+        // `item.requester`, kept here too so this card reads the same three facts the list row does).
         const metaLine = isMeeting
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
         const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
         return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
@@ -6210,6 +6248,11 @@
         const quick = prim
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${prim.kind}" data-wcn-action="${prim.key}" data-wcn-id="${item.id}">${esc(t(prim.labelKey))}</button>`
             : '';
+        // MOD-0357 S5c — Reddet stays visible next to Kabul et here too (see secondaryInlineAction).
+        const sec = secondaryInlineAction(item);
+        const quickSecondary = sec
+            ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
+            : '';
         return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
@@ -6217,7 +6260,7 @@
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
             </div>
-            ${quick ? `<div class="wcn-kcard-actions">${quick}</div>` : ''}
+            ${quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : ''}
         </div>`;
     };
 
@@ -6265,8 +6308,8 @@
 
     // ── Empty states ──────────────────────────────────────────────────────────
     const emptyState = () => {
-        // Meeting invitations are trigger-only projections. They use a dedicated
-        // empty state but never enter the task-detail resolver or task lifecycle.
+        // MOD-0357 S5c — a real MeetingWorkItemProvider row now, same as any other item type; this dedicated
+        // empty state is just the nicer message for "no pending invites" over the generic one.
         if (state.typeFilter.has('meetingInvite')) {
             return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
@@ -6691,18 +6734,6 @@
             // Triage-inbox admission — take on a directly-assigned item; it moves
             // from the Inbox to İşlerim but stays at its current lifecycle stage.
             case 'accept':
-                if (item.itemType === 'meetingInvite') {
-                    item.dismissed = true;
-                    state.meetings.push({
-                        id: item.sourceId,
-                        title: item.title,
-                        start: item.meetingStart || '09:00',
-                        end: item.meetingEnd || '10:00',
-                        location: item.meetingLocation || '—',
-                        owner: item.requester
-                    });
-                    return 'removed';
-                }
                 item.accepted = true;
                 item.admissionState = 'admitted';
                 item.ownershipState = 'owned';

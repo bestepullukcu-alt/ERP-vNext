@@ -5769,7 +5769,7 @@ tags.diten-tags .tagify__input {
 .wcn-kcard.unread { border-inline-start: 3px solid var(--bs-primary); }
 .wcn-kcard-title { font-size: .8125rem; font-weight: 600; margin-block-end: .375rem; }
 .wcn-kcard-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
-.wcn-kcard-actions { margin-block-start: .5rem; }
+.wcn-kcard-actions { margin-block-start: .5rem; display: flex; gap: .375rem; }
 
 /* Calendar (read-only deadline clustering) --------------------------------- */
 .wcn-cal-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: .625rem; flex-wrap: wrap; gap: .5rem; }
@@ -6135,6 +6135,10 @@ tags.diten-tags .tagify__input {
 .wcn-inbox-actions { display: flex; align-items: center; gap: .375rem; flex: 0 0 auto; }
 .wcn-inbox-actions .btn { transform: none !important; box-shadow: none !important; }
 .wcn-inbox-action-primary { white-space: nowrap; font-weight: 600; }
+/* MOD-0357 S5c — the meetingInvite card's second visible action (Reddet), never folded into the
+   ··· overflow the way every other provider's non-primary actions are. Shares the primary's nowrap
+   so "Reddet" cannot wrap onto its own line next to "Kabul et". */
+.wcn-inbox-action-secondary { white-space: nowrap; }
 
 /* Split-detail: the master rail stays pinned below Sneat's fixed navbar while
    the detail surface follows the page. Long master lists scroll inside the rail. */

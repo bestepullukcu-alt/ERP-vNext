@@ -1447,6 +1447,9 @@
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Onay: {objectType} {objectId}</value>
   </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Bekliyor</value>
+  </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Onay bekliyor</value>
   </data>
@@ -1557,6 +1560,12 @@
   </data>
   <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
     <value>İnceleme toplantısı planla</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Kabul et</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Reddet</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>İade et</value>

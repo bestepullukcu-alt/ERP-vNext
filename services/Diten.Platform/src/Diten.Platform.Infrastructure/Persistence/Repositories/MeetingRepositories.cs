@@ -254,6 +254,15 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
         var update = Builders<MeetingAttendee>.Update.Set(x => x.InvitationResponse, response);
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
+
+    public async Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.InvitationResponse, InvitationResponse.Pending));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>

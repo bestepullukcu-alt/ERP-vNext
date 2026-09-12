@@ -114,6 +114,11 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
         if (item is not null) { item.InvitationResponse = response; }
         return Task.CompletedTask;
     }
+
+    public Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingAttendee>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted
+                              && x.UserId == userId && x.InvitationResponse == InvitationResponse.Pending).ToList());
 }
 
 internal sealed class FakeAgendaItemRepository : IAgendaItemRepository
