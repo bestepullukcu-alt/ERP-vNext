@@ -4994,6 +4994,12 @@ DtDefaults 401'i hata olarak mı loglamalı, sessiz tekrar mı? Görev Merkezi v
 
 DURUM: AÇIK · KARAR: sahip + DM geliştiricisi, 2026-09-10 (G1 = (a), WP-0029-EFFECTIVENESS-P2.md:150) · SAHİP: taşımayı yapan (DM geliştiricisi) · KAYIT: 2026-09-11
 
+**KAPANDI (CT, 2026-09-12):** WP-DM-DCP005-RETIRE-CSV-01, dal `feature/dm/dcp-005-retire-csv-list`, commit `60189308` (sahip push edecek, kendi PR'ı).
+Kaldırılan: `/Tasks/DocumentList` görünümü + istemcisi + 7 dil anahtarları (38), Web proxy aksiyonları, Platform'daki 5 uç (`document-list/*`), manifest sayfası, ekranın test dosyası.
+Kalan (bilerek): CSV koleksiyonları ve `DocumentReferenceListParser` (kütük içe aktarma onu kullanıyor; eski dondurulmuş alıntılar `ListVersionId` ile o satırlara bakıyor).
+Ayrıca içe aktarma ekranının iki küçük kusuru düzeltildi: değişmeyen satır artık "güncellendi" sayılmıyor (önizleme = onay, dördüncü sütun) ve ikinci onay 409'unda ekran kırmızıya düşmüyor, yerelleştirilmiş uyarı gösteriyor.
+**İki takip (CT):** (1) kaldırılan uçların arkasındaki handler/repository sınıfları artık erişilemez — ayrı bir temizlik turunda silinecek; (2) `platform.tasks.document-list.read` / `.import` anahtarları manifest evsiz kaldı, muhafız bunu "bilinen yetim" olarak kabul ediyor — Auth kataloğundan temizlik Faz 1.5'te CT'nin işi.
+
 **İLERLEME (CT, 2026-09-11):** Devir planı **Adım 2 teslim edildi** — WP-PSS-DCP005-STEP2-CITATION-REPOINT-01, dal `feature/pss/dcp-005-citation-repoint`
 (main `11befc07` üzerinden, commit `ac2a8d54`, worktree `.claude/worktrees/pss+dcp-005-citation-repoint`, sahip push edecek, kendi PR'ı).
 Görev formu seçicisi `GET api/v1/tasks/lookups/document-citations` → `IControlledDocumentCitationPort`; freezer yeni alıntıları kütükten dondurur
