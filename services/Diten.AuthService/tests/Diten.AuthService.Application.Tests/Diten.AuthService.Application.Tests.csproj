@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- WP-INFRA-AUTH-ACCOUNT-KIND-01 — isolated real-provider fixture (Testing/AccountKindAcceptance.cs).
+         EphemeralMongo.Core starts a test-owned, throwaway mongod PROCESS (random port, temp data directory,
+         disposed with the fixture) — never the shared localhost:27017.
+         ⚠ 1.1.3, not 3.x, deliberately: EphemeralMongo 3.x / EphemeralMongo.v2 3.x require MongoDB.Driver ≥ 2.28.0,
+         the first STRONG-NAMED driver build, while every src project pins 2.27.0 (unsigned). Mixing the two in one
+         compilation is a type-identity error (CS0012: 'IMongoDatabase' lives in MongoDB.Driver 2.27.0 PKT=null),
+         not a runtime nuance. Core 1.1.3 floors the driver at 2.20.0, so the graph keeps resolving 2.27.0 and
+         nothing in src moves. 1.x ships no binaries and downloads none: the fixture points BinaryDirectory at the
+         machine's own mongod (DITEN_ITEST_MONGOD_BIN_DIR, then PATH, then Homebrew). If the driver pin is ever
+         raised to ≥ 2.28.0, EphemeralMongo.v2 3.x (auto-download, Version=V7) is the drop-in successor.
+         Mvc.Testing hosts the REAL Api (Program.cs `public partial class Program`) in-process so every assertion
+         travels over HTTP through JWT auth, tenant resolution and [HasPermission]. -->
+    <PackageReference Include="EphemeralMongo.Core" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.11" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">

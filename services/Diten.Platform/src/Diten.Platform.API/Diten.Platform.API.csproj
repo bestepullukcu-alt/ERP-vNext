@@ -32,6 +32,9 @@
   <ItemGroup>
     <Content Update="Seed\business-reference-data\document-management-qms.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Update="Seed\business-reference-data\legal-entity-reference.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- WP-DM-1c: the GMG reference CSV is a runtime asset. A .csv is a default None item (not Content like the BRD
+         .json files above), so it is copied via None Update (the Content Update mirror for a non-Content file type). -->
+    <None Update="Seed\document-management\GMG_ERP_Document_Reference_List_2026-08-24.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

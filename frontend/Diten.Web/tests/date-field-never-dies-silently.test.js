@@ -134,6 +134,7 @@ describe("a date field that cannot be enhanced is never left quietly dead", () =
 
   test("TaskForm.enhanceDates says which SCREEN forgot the component, not just that one is missing", () => {
     // The Task Center's exact failure: form.js loaded, diten-datefield.js not.
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     const host = dateFieldMarkup();
     const errors = [];

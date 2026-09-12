@@ -201,7 +201,9 @@ public sealed class GenerateDueRecurringTasksHandler
                         AssignmentTargetOverride: rule.AssignmentTarget,
                         AssigneeUserId: rule.AssigneeUserId,
                         PoolPositionId: rule.PoolPositionId),
-                    correlationId),
+                    correlationId,
+                    // No caller, so no scope to ask. The assignment was checked when a person saved the rule.
+                    IsScheduledGeneration: true),
                 ct);
         }
         else
@@ -252,7 +254,9 @@ public sealed class GenerateDueRecurringTasksHandler
                      * anyway, which is the exact failure this handler already fixed once for assignment.
                      * Recorded as BL-058: the rule editor has to carry field values before this can tighten.
                      */
-                    EnforceRequiredFields: false),
+                    EnforceRequiredFields: false,
+                    // No caller, so no scope to ask. The assignment was checked when a person saved the rule.
+                    IsScheduledGeneration: true),
                 ct);
         }
 

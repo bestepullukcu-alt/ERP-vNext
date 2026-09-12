@@ -1,4 +1,4 @@
-﻿namespace Diten.Platform.Infrastructure.Persistence.Schema;
+namespace Diten.Platform.Infrastructure.Persistence.Schema;
 
 /// <summary>
 /// Every platform collection name, declared ONCE.
@@ -26,6 +26,7 @@ public static class PlatformCollections
     public const string BusinessReferenceDataValidationResults = "business_reference_data_validation_results";
     public const string BusinessReferenceDataVersions = "business_reference_data_versions";
     public const string ChecklistRuns = "checklist_runs";
+    public const string TaskAttachments = "task_attachments";
     public const string ChecklistTemplates = "checklist_templates";
     public const string ConsumedEvents = "consumed_events";
     public const string DocumentManagementAccessPolicies = "document_management_access_policies";
@@ -69,6 +70,7 @@ public static class PlatformCollections
     public const string DocumentManagementLegalHolds = "document_management_legal_holds";
     public const string DocumentManagementLifecycleTransitions = "document_management_lifecycle_transitions";
     public const string DocumentManagementMasterRegister = "document_management_master_register";
+    public const string DocumentRegisterImportBatches = "document_management_register_import_batches";
     public const string DocumentManagementObsoleteCopyFindings = "document_management_obsolete_copy_findings";
     public const string DocumentManagementPeriodicReviewEscalations = "document_management_periodic_review_escalations";
     public const string DocumentManagementPeriodicReviewExtensions = "document_management_periodic_review_extensions";
@@ -81,6 +83,9 @@ public static class PlatformCollections
     public const string DocumentManagementReleaseGateResults = "document_management_release_gate_results";
     public const string DocumentManagementRepositoryAssessmentFindings = "document_management_repository_assessment_findings";
     public const string DocumentManagementRepositoryAssessments = "document_management_repository_assessments";
+
+    // MOD-0262-FU01 — Internal Document Repository Service system-of-record objects.
+    public const string DocumentRepositoryObjects = "document_repository_objects";
     public const string DocumentManagementRepositoryDowntimeEvents = "document_management_repository_downtime_events";
     public const string DocumentManagementRetentionPolicies = "document_management_retention_policies";
     public const string DocumentManagementRetentionSubjects = "document_management_retention_subjects";
@@ -110,6 +115,13 @@ public static class PlatformCollections
     public const string InterfaceDiscoveryBatches = "platform_interface_discovery_batches";
     public const string InterfaceDiscoveryDiffItems = "platform_interface_discovery_diff_items";
     public const string JobExecutionLogs = "job_execution_logs";
+    // MOD-0357 S1 — the one bridge between a meeting and anything else (a task today). See RecordLink.cs.
+    public const string MeetingRecordLinks = "meeting_record_links";
+    // MOD-0357 S2 — the meeting aggregate's own collections.
+    public const string MeetingMeetings = "meeting_meetings";
+    public const string MeetingAttendees = "meeting_attendees";
+    public const string MeetingAgendaItems = "meeting_agenda_items";
+    public const string MeetingTypes = "meeting_types";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";
@@ -118,6 +130,16 @@ public static class PlatformCollections
     public const string NotificationDispatches = "notification_dispatches";
     public const string NotificationEventDefinitions = "notification_event_definitions";
     public const string NotificationTemplates = "notification_templates";
+    public const string OrganizationFieldDefinitions = "organization_field_definitions";
+    public const string OrganizationFieldValues = "organization_field_values";
+
+    /*
+     * MOD-0288-FU02 — ONE DOCUMENT PER TENANT, and its whole job is to be contended for. Every reporting-line
+     * mutation must win a compare-and-set on it before it writes, which is what makes two concurrent
+     * re-parentings serialize across PROCESSES rather than merely within one. Keyed by `_id` = TenantId, so
+     * Mongo's implicit index is the only one it needs and the manifest declares none for it.
+     */
+    public const string OrganizationStructureTokens = "organization_structure_tokens";
     public const string OrganizationUnits = "organization_units";
     public const string OutboxEvents = "outbox_events";
     public const string PlanFeatureMappings = "platform_plan_feature_mappings";

@@ -21,7 +21,7 @@ public sealed class KnowledgeConceptTypesController : CustomBaseController
     public KnowledgeConceptTypesController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-types")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] string? status,
@@ -32,31 +32,33 @@ public sealed class KnowledgeConceptTypesController : CustomBaseController
             new ListConceptTypesQuery(subjectId, status, search, includeArchived), cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-types/{conceptTypeId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid conceptTypeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetConceptTypeQuery(conceptTypeId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-types")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptTypeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new CreateConceptTypeCommand(
                 request.SubjectId, request.ConceptTypeCode, request.ConceptTypeName, request.Description,
-                request.SortOrder, request.Status),
+                request.SortOrder, request.Status, request.Color, request.IsGroup, request.IsList,
+                request.ParentConceptTypeId),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-types/{conceptTypeId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid conceptTypeId, [FromBody] UpdateConceptTypeRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new UpdateConceptTypeCommand(
-                conceptTypeId, request.ConceptTypeName, request.Description, request.SortOrder, request.Status),
+                conceptTypeId, request.ConceptTypeName, request.Description, request.SortOrder, request.Status,
+                request.Color, request.IsGroup, request.IsList, request.ParentConceptTypeId),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-types/{conceptTypeId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(Guid conceptTypeId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptTypeCommand(conceptTypeId), cancellationToken));

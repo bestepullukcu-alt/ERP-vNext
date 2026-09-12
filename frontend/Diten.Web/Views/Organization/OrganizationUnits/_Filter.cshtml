@@ -8,6 +8,21 @@
         <div class="pt-0 pb-3">
             <form class="m-0" id="filterForm" data-no-tracker>
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+                    @* MOD-0288-FU03 — one filter per reporting line. A lone administrative filter beside an
+                       unfiltered functional line is the same unlabelled asymmetry FU02 §21.1 refuses. Neither
+                       select defaults to the other's value. *@
+                    <div class="filter-chip filter-functional-parent">
+                        <select id="filterFunctionalParent" class="form-select form-select-sm select2" data-placeholder="@Localizer["FunctionalParentLabel"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-chip filter-administrative-parent">
+                        <select id="filterAdministrativeParent" class="form-select form-select-sm select2" data-placeholder="@Localizer["AdministrativeParentLabel"]">
+                            <option value="">@SharedLocalizer["ShowAll"]</option>
+                        </select>
+                    </div>
+
                     <div class="filter-chip filter-archived">
                         <select id="filterArchived" class="form-select form-select-sm select2" data-placeholder="@Localizer["Archived"]">
                             <option value="">@SharedLocalizer["ShowAll"]</option>

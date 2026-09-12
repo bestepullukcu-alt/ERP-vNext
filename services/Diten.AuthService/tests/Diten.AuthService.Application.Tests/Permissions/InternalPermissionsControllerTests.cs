@@ -1,5 +1,6 @@
 using Diten.AuthService.Api.Controllers;
 using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Common.Services;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -109,10 +110,13 @@ public sealed class InternalPermissionsControllerTests
     }
 
     [Fact]
-    public async Task Update_of_seeded_platform_permission_is_module_and_scope_locked()
+    public async Task Update_of_seeded_platform_permission_refreshes_module_but_never_downgrades_scope()
     {
-        // A seeded system permission still on Module=="platform" (e.g. document-management, excluded this phase, or
-        // the seeded-only tenants/administrators keys) must NOT be migrated by the sync — the boundary stays put.
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — this used to assert the sync could change NEITHER field on a seeded
+        // system permission attributed to "platform". That lock protected the escalation boundary back when Module
+        // WAS the boundary. Now Module is grouping and Scope is the boundary, so the two halves part company: the
+        // manifest may refresh the Module attribution, and the Scope tie-break still refuses to downgrade a
+        // PlatformAdmin key to Tenant no matter what the sender claims.
         var repo = new FakePermissionRepository();
         repo.Items.Add(new Permission("platform", "document-management.controlled-documents", "view", "View", null));
         var controller = Build(repo, authorized: true);
@@ -122,8 +126,8 @@ public sealed class InternalPermissionsControllerTests
             CancellationToken.None);
 
         var p = Assert.Single(repo.Items);
-        Assert.Equal("platform", p.Module);                     // NOT moved to "document-management"
-        Assert.Equal(PermissionScope.PlatformAdmin, p.Scope);   // NOT downgraded to Tenant
+        Assert.Equal("document-management", p.Module);          // grouping follows the manifest
+        Assert.Equal(PermissionScope.PlatformAdmin, p.Scope);   // boundary refuses the downgrade
     }
 
     // FIX-PERM-MODULE-CASE-CONSISTENCY — the Platform sender upper-cases the catalog ModuleCode; the receiver stores
@@ -191,7 +195,9 @@ public sealed class InternalPermissionsControllerTests
     public async Task Update_from_old_sender_without_fields_leaves_module_and_scope_untouched()
     {
         var repo = new FakePermissionRepository();
-        repo.Items.Add(new Permission("auth", "users", "read", "Read User", null)); // Module="auth", Scope=Tenant
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — "auth" is a service namespace, so an un-overridden auth.users.read is
+        // attributed to "users"; the point of the test is that an old sender changes NOTHING, whatever it was.
+        repo.Items.Add(new Permission("auth", "users", "read", "Read User", null)); // Module="users", Scope=Tenant
         var controller = Build(repo, authorized: true);
 
         // 3-arg request (no ModuleCode/Scope) — backward-compatible with an older sender.
@@ -199,7 +205,7 @@ public sealed class InternalPermissionsControllerTests
             "auth.users.read", "Updated", null), CancellationToken.None);
 
         var p = Assert.Single(repo.Items);
-        Assert.Equal("auth", p.Module);                 // untouched
+        Assert.Equal("users", p.Module);                // untouched
         Assert.Equal(PermissionScope.Tenant, p.Scope);  // untouched
         Assert.Equal("Updated", p.DisplayName);         // display still refreshed
     }
@@ -248,7 +254,7 @@ public sealed class InternalPermissionsControllerTests
         var repo = new FakePermissionRepository();
         repo.Items.Add(new Permission("goldenslim", "records", "read", "x", null));
         repo.Items.Add(new Permission("goldenslim", "records", "create", "x", null));
-        repo.Items.Add(new Permission("mdm", "legal-entities", "read", "x", null));
+        repo.Items.Add(new Permission("mdm", "legal-entities", "read", "x", null, moduleOverride: "legal-entity"));
         var controller = Build(repo, authorized: true);
 
         var result = await controller.GetModules(CancellationToken.None);
@@ -257,7 +263,7 @@ public sealed class InternalPermissionsControllerTests
         var modules = Assert.IsAssignableFrom<IEnumerable<InternalPermissionsController.PermissionModuleSummary>>(ok.Value).ToList();
         Assert.Equal(2, modules.Count);
         Assert.Contains(modules, m => m.Module == "goldenslim" && m.PermissionCount == 2);
-        Assert.Contains(modules, m => m.Module == "mdm" && m.PermissionCount == 1);
+        Assert.Contains(modules, m => m.Module == "legal-entity" && m.PermissionCount == 1);
     }
 
     // ── FEAT-CATALOG-PERM-DELETE-SYNC — DELETE endpoint ──────────────────────────
@@ -366,6 +372,71 @@ public sealed class InternalPermissionsControllerTests
         Assert.IsType<UnauthorizedObjectResult>(result);
     }
 
+    // BL-359 — MOD-0117-FU01: wired against the REAL FullCatalogPermissionGrantService (not the fake) so this
+    // proves the create AND reactivate sync paths never auto-grant ppm.portfolios.assign-owner to SuperAdmin,
+    // even though the role is genuinely available and would receive any other first-time/reactivated permission.
+    [Fact]
+    public async Task Create_and_reactivate_sync_never_auto_grant_explicit_grant_only_permission_to_full_catalog_role()
+    {
+        var repo = new FakePermissionRepository();
+        var rolePerms = new WorkingRolePermissionRepository();
+        var realGrantService = new FullCatalogPermissionGrantService(
+            new WorkingRoleRepository(), rolePerms, NullLogger<FullCatalogPermissionGrantService>.Instance);
+        var controller = Build(repo, authorized: true, realGrantService, rolePerms);
+
+        var created = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "ppm.portfolios.assign-owner", "Assign Owner", null), CancellationToken.None);
+        Assert.Equal("created",
+            Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(created).Value).Status);
+        Assert.Empty(rolePerms.Assigned); // create path: no auto-grant
+
+        Assert.IsType<NoContentResult>(await controller.Delete("ppm.portfolios.assign-owner", CancellationToken.None));
+
+        var reactivated = await controller.Sync(new InternalPermissionsController.SyncPermissionRequest(
+            "ppm.portfolios.assign-owner", "Assign Owner again", null), CancellationToken.None);
+        Assert.Equal("reactivated",
+            Assert.IsType<InternalPermissionsController.SyncPermissionResponse>(Assert.IsType<OkObjectResult>(reactivated).Value).Status);
+        Assert.Empty(rolePerms.Assigned); // reactivate path: still no auto-grant
+    }
+
+    private sealed class WorkingRoleRepository : IRoleRepository
+    {
+        private readonly Role _superAdmin = new("SuperAdmin", "Super Administrator", null,
+            Guid.Parse("00000000-0000-0000-0000-000000000001"));
+
+        public Task<Role?> GetByNameAndTenantAsync(string name, Guid tenantId, CancellationToken ct) =>
+            Task.FromResult(string.Equals(name, "SuperAdmin", StringComparison.Ordinal) ? _superAdmin : null);
+
+        public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    // A genuinely working (non-throwing) rolePermission repository — unlike the file's other FakeRolePermissionRepository,
+    // which throws on AssignAsync/GetByRoleAsync because those tests never exercise the real grant service.
+    private sealed class WorkingRolePermissionRepository : IRolePermissionRepository
+    {
+        public List<RolePermission> Assigned { get; } = [];
+
+        public Task<IReadOnlyList<RolePermission>> GetByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<RolePermission>>(Assigned.Where(rp => rp.RoleId == roleId).ToList());
+
+        public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
+        {
+            Assigned.Add(rolePermission);
+            return Task.CompletedTask;
+        }
+
+        public Task<long> RemoveByPermissionIdAsync(Guid permissionId, CancellationToken ct) => Task.FromResult(0L);
+        public Task<IEnumerable<string>> GetPermissionsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IEnumerable<string>> GetPermissionsByRolesAsync(List<Guid> roleIds, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAsync(Guid roleId, Guid permissionId, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task RemoveByIdAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+    }
+
     private static InternalPermissionsController Build(
         FakePermissionRepository repo,
         bool authorized,
@@ -390,10 +461,12 @@ public sealed class InternalPermissionsControllerTests
     private sealed class FakeFullCatalogPermissionGrantService : IFullCatalogPermissionGrantService
     {
         public List<Guid> GrantedPermissionIds { get; } = [];
+        public List<string> GrantedPermissionKeys { get; } = [];
 
-        public Task GrantToFullCatalogRolesAsync(Guid permissionId, CancellationToken ct)
+        public Task GrantToFullCatalogRolesAsync(Guid permissionId, string permissionKey, CancellationToken ct)
         {
             GrantedPermissionIds.Add(permissionId);
+            GrantedPermissionKeys.Add(permissionKey);
             return Task.CompletedTask;
         }
     }

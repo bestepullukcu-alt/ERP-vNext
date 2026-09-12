@@ -46,7 +46,78 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.ParentOrganizationUnitId)
                             .Ascending(x => x.IsDeleted)
                             .Ascending(x => x.IsArchived),
-                        new CreateIndexOptions { Name = "ix_organization_units_tree_scope" })
+                        new CreateIndexOptions { Name = "ix_organization_units_tree_scope" }),
+                    // MOD-0288-FU02 — the SECOND reporting line gets its own scan path. The tree index above
+                    // is keyed on the functional parent, so a query for "who reports administratively to X"
+                    // would have gone unindexed — and an unindexed query in Mongo raises no error, it is
+                    // merely slow, so it ships.
+                    new CreateIndexModel<OrganizationUnit>(
+                        Builders<OrganizationUnit>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.AdministrativeParentOrganizationUnitId),
+                        new CreateIndexOptions { Name = "ix_organization_units_administrative_parent" })
+
+            }),
+        // ── MOD-0288-FU02 — tenant-defined Organization Unit fields ────────────────────────────────────────
+        Collection<OrganizationFieldDefinition>(
+            SchemaProfile.Organization,
+            PlatformCollections.OrganizationFieldDefinitions,
+            () => new CreateIndexModel<OrganizationFieldDefinition>[]
+            {
+                    // Mirrors ux_organization_units_tenant_code_active exactly, including the partial filter:
+                    // uniqueness applies to LIVE rows only, so a soft-deleted definition does not permanently
+                    // reserve its code.
+                    new CreateIndexModel<OrganizationFieldDefinition>(
+                        Builders<OrganizationFieldDefinition>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.Code),
+                        new CreateIndexOptions<OrganizationFieldDefinition>
+                        {
+                            Unique = true,
+                            Name = "ux_organization_field_definitions_tenant_code_active",
+                            PartialFilterExpression =
+                                Builders<OrganizationFieldDefinition>.Filter.Eq(x => x.IsDeleted, false)
+                        })
+
+            }),
+        Collection<OrganizationFieldValue>(
+            SchemaProfile.Organization,
+            PlatformCollections.OrganizationFieldValues,
+            () => new CreateIndexModel<OrganizationFieldValue>[]
+            {
+                    /*
+                     * ⚠ THIS IS WHAT ENFORCES "one active value per unit per definition" — in the DATABASE,
+                     * not in a handler that a second writer can race past between its read and its write.
+                     */
+                    new CreateIndexModel<OrganizationFieldValue>(
+                        Builders<OrganizationFieldValue>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.OrganizationUnitId)
+                            .Ascending(x => x.DefinitionId),
+                        new CreateIndexOptions<OrganizationFieldValue>
+                        {
+                            Unique = true,
+                            Name = "ux_organization_field_values_tenant_unit_definition_active",
+                            PartialFilterExpression =
+                                Builders<OrganizationFieldValue>.Filter.Eq(x => x.IsDeleted, false)
+                        }),
+                    /*
+                     * The filter index. ⚠ ONE index serves ALL fifty definitions, because values live in their
+                     * own documents rather than in an array on the unit — so there is no $elemMatch here and
+                     * no index per field. Measured ceiling context: organization_units carried 3 indexes and
+                     * task_items 6, against Mongo's 64 per collection.
+                     */
+                    new CreateIndexModel<OrganizationFieldValue>(
+                        Builders<OrganizationFieldValue>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.DefinitionId)
+                            .Ascending(x => x.Value),
+                        new CreateIndexOptions { Name = "ix_organization_field_values_tenant_definition_value" }),
+                    new CreateIndexModel<OrganizationFieldValue>(
+                        Builders<OrganizationFieldValue>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.OrganizationUnitId),
+                        new CreateIndexOptions { Name = "ix_organization_field_values_tenant_unit" })
 
             }),
         Collection<Position>(

@@ -116,7 +116,7 @@ Bu pack persisted entity eklemez. Asagidaki tablo **contract sema**'sini belgele
 **Step 0 (doc-only PR, prerequisite):**
 - `execution/domains/platform-shared-services/module-packs/MOD-0018-rbac-abac-authorization.md` (§16.2 + §18 checklist + §19 "EntitlementCheckResult Extension Policy" revize)
 - `execution/domains/platform-shared-services/module-packs/MOD-0018-FU10-authorization-decision-contract-extension.md` (bu pack)
-- `docs/platform/master-plan.md` (§12 Track G-prime alt bolumu + Track G gating notu)
+- `docs/reference/modules/platform/master-plan.md` (§12 Track G-prime alt bolumu + Track G gating notu)
 
 **FU10a — Pure Contract Extension PR:**
 - `services/Diten.Platform.Common/src/Diten.Platform.Common/Authorization/EntitlementCheckResult.cs` (additive alanlar)
@@ -407,7 +407,7 @@ Bu revize MOD-0018 pack'inin **§19 Implementation Notes** veya **§16 Acceptanc
 - Transient hata → `EntitlementResolutionSource.Unknown`
 
 **Roadmap bagi:**
-- Bu pack `docs/platform/master-plan.md` §12'ye **Track G-prime — Authorization Foundation Extension** alt bolumu eklenecek planinin **birinci** adimidir.
+- Bu pack `docs/reference/modules/platform/master-plan.md` §12'ye **Track G-prime — Authorization Foundation Extension** alt bolumu eklenecek planinin **birinci** adimidir.
 - Sonraki adimlar: MOD-0018-FU11 (`ITemporaryAccessProvider` pipeline) ∥ MOD-0018-FU12 (`ITenantAuthorizationContext`) → MOD-0018-FU13 → MOD-0018-FU14 → MOD-0040 → MOD-0041 → MOD-AUTH-001.
 - **MVF eshigi (kullanici onayli):** Tenant Users/Roles development ancak FU10 + FU12 + minimal MOD-0040 tamamlandiginda baslar.
 

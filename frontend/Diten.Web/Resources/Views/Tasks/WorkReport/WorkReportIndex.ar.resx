@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>نتائج أخرى</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>أُغلقت {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>تصدير</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>تنزيل بتنسيق CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>تنزيل بتنسيق JSON</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>تقرير-العمل</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>تم تنزيل {0} صف.</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>يتضمن هذا التقرير مهامَّ أكثر مما يمكن أن يحمله تصدير واحد. ضيِّق الفترة أو عوامل التصفية ثم أعد المحاولة.</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>ليس لديك إذن بتصدير هذا التقرير.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>تعذّر إعداد ملف التصدير.</value></data>
 </root>

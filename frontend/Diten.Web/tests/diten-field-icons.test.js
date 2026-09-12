@@ -491,6 +491,7 @@ describe("clicking the calendar icon opens the calendar", () => {
     delete global.TaskForm;
     delete global.DitenDateField;
     loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
 
     document.body.innerHTML = `
@@ -537,5 +538,197 @@ describe("the shared add row keeps the form's field shape", () => {
       path.resolve(__dirname, "..", "wwwroot/assets/js/shared/diten-checkitem.js"), "utf8");
     expect(component).toContain("'diten-field flex-grow-1'");
     expect(component).toContain("'bx bx-list-plus diten-field-icon'");
+  });
+});
+
+// ── 6. the pattern travels — a census, and a list that may only shrink ──────
+
+/*
+ * WHY THIS SECTION EXISTS, and what it answers.
+ *
+ * The owner asked a question this file could not answer: the Golden Slim offcanvas was updated, 23 other
+ * offcanvases stayed on the old markup, and NOTHING went red. Measured: this file reads `Views/Tasks/_Form.cshtml`
+ * and `_QuickCreateOffcanvas.cshtml`; `golden-reference-form-icons.test.js` reads the two reference forms. Between
+ * them they cover four files. The other offcanvases were never in scope of any guard, so "the reference moved and
+ * the product did not" was invisible by construction — not a test that failed, a test that was never asked.
+ *
+ * Widening the scope outright would produce 29 reds today, which teaches the reader to delete the guard. So the
+ * census is pinned with a KNOWN list instead, the `mongo-indexing.md` shape:
+ *
+ *   - a file NOT on the list that carries form controls without .diten-field → RED (the pattern stops spreading)
+ *   - a file ON the list that has since adopted the wrapper → RED (the list may only shrink)
+ *
+ * ⚠ Adding a line here to turn a red green is forbidden. Every line is a debt, not a licence.
+ */
+const VIEWS_ROOT = web("Views");
+
+/** Every `*Offcanvas*.cshtml` under Views/ that actually holds an editable control. */
+const offcanvasForms = () => {
+  const out = [];
+  const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).forEach((e) => {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) { walk(p); }
+    else if (e.name.includes("Offcanvas") && e.name.endsWith(".cshtml")) { out.push(p); }
+  });
+  walk(VIEWS_ROOT);
+  // A shell with no control has no field to mark; including it would be a red nobody can fix.
+  return out.filter((f) => /class="[^"]*\b(?:form-control|form-select)\b/.test(fs.readFileSync(f, "utf8")));
+};
+const relView = (f) => path.relative(VIEWS_ROOT, f).split(path.sep).join("/");
+
+/*
+ * MEASURED 2026-09-08, after Governance/Roles and Governance/Users were ported. Each of these draws an editable
+ * control with no `.diten-field` wrapper and therefore no icon. Grouped as the owner counted them:
+ *   CRM 10 · EnterpriseStrategy 2 · MasterDataManagement 4 · MDM 1 · ManagementGovernance 1
+ *   Organization 3 · PPM 2 · Platform 6
+ */
+const KNOWN_NO_ICONS = [
+  "CRM/Accounts/_ContactLinkEndOffcanvas.cshtml",
+  "CRM/Accounts/_ContactLinkOffcanvas.cshtml",
+  "CRM/Accounts/_RelationshipEndOffcanvas.cshtml",
+  "CRM/Accounts/_RelationshipOffcanvas.cshtml",
+  "CRM/Campaigns/_TargetCreateEditOffcanvas.cshtml",
+  "CRM/KnowledgeConcepts/_RelationshipCreateEditOffcanvas.cshtml",
+  "CRM/KnowledgeConcepts/_TemplateCreateEditOffcanvas.cshtml",
+  "CRM/KnowledgeConcepts/_TypeCreateEditOffcanvas.cshtml",
+  "CRM/TerritoryManagement/_CreateEditOffcanvas.cshtml",
+  "CRM/TerritoryManagement/_CreateNodeOffcanvas.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_PlanningCycleOffcanvas.cshtml",
+  "EnterpriseStrategyBusinessPerformance/Components/Planning/_StrategyPeriodOffcanvas.cshtml",
+  "MDM/ProductAbbreviationRegister/_CreateEditOffcanvas.cshtml",
+  "ManagementGovernance/ProcessModeling/_CreateEditOffcanvas.cshtml",
+  "MasterDataManagement/FinishedGoods/_CreateEditOffcanvas.cshtml",
+  "MasterDataManagement/GlobalProducts/_CreateEditOffcanvas.cshtml",
+  "MasterDataManagement/Gskus/_CreateEditOffcanvas.cshtml",
+  "MasterDataManagement/Lskus/_CreateEditOffcanvas.cshtml",
+  "Organization/OrganizationUnits/_CreateEditOffcanvas.cshtml",
+  "Organization/PositionAssignments/_CreateEditOffcanvas.cshtml",
+  "Organization/Positions/_CreateEditOffcanvas.cshtml",
+  "PPM/Initiatives/_CreateEditOffcanvas.cshtml",
+  "PPM/Shared/_CreateEditOffcanvas.cshtml",
+  "Platform/Administrators/_CreateEditOffcanvas.cshtml",
+  "Platform/DomainManagement/_CreateEditOffcanvas.cshtml",
+  "Platform/ServiceManagement/_CreateEditOffcanvas.cshtml",
+  "Platform/SubscriptionFeatures/_CategoryOffcanvas.cshtml",
+  "Platform/Tenants/Commercial/_AddModuleEntitlementOffcanvas.cshtml",
+  "Platform/WorkingCalendarImports/_CreateEditOffcanvas.cshtml"
+];
+
+describe("every offcanvas form carries the leading-icon pattern, or is a named debt", () => {
+  test("the census sees a real population — guards against a vacuous sweep", () => {
+    // A walk that found nothing would make both assertions below pass while measuring the empty set.
+    expect(offcanvasForms().length, "no offcanvas form was found at all").toBeGreaterThan(30);
+  });
+
+  test("no NEW offcanvas ships without the wrapper", () => {
+    const offenders = offcanvasForms()
+      .filter((f) => !fs.readFileSync(f, "utf8").includes("diten-field"))
+      .map(relView)
+      .filter((f) => !KNOWN_NO_ICONS.includes(f))
+      .sort();
+    expect(offenders,
+      "these offcanvas forms draw a control with no .diten-field wrapper — copy the golden reference "
+      + "(Views/DevEnablement/GoldenReferenceSlim/_CreateEditOffcanvas.cshtml). Do NOT add them to KNOWN_NO_ICONS.")
+      .toEqual([]);
+  });
+
+  test("the debt list may only shrink — a fixed file must leave it", () => {
+    /*
+     * The half that makes the list honest. Without it a ported screen keeps its exemption, and the next
+     * regression in that same file walks in free.
+     */
+    const stale = KNOWN_NO_ICONS.filter((f) => {
+      const full = path.join(VIEWS_ROOT, f);
+      return !fs.existsSync(full) || fs.readFileSync(full, "utf8").includes("diten-field");
+    });
+    expect(stale, "these files now carry the pattern (or are gone) — delete their KNOWN_NO_ICONS entries")
+      .toEqual([]);
+  });
+});
+
+// ── 7. the two governance offcanvases, field by field ──────────────────────
+
+describe("Roles and Users wear the reference's shape", () => {
+  const wrapperIn = (source, id) => {
+    const at = source.indexOf(`id="${id}"`);
+    if (at < 0) { return null; }
+    const openedAt = source.lastIndexOf('class="diten-field', at);
+    if (openedAt < 0) { return null; }
+    const between = source.slice(openedAt, at);
+    return between.includes("</div>") ? null : between;
+  };
+
+  /*
+   * Roles: the two "name" fields are deliberately DIFFERENT glyphs. `Name` is the immutable key (bx-hash, the
+   * reference's own identifier glyph); `DisplayName` is the prose a human reads (bx-text). Two adjacent fields
+   * both called a name are exactly where a reader needs the mark to disambiguate.
+   *
+   * Users: both name halves wear bx-user, deliberately the SAME. They are one kind of thing, and the reference
+   * already pairs one glyph with two fields where that holds (EffectiveDate/ExpirationDate → bx-calendar).
+   */
+  const GOVERNANCE_ICONS = {
+    "Governance/Roles/_CreateEditOffcanvas.cshtml": {
+      roleName: "bx-hash",
+      roleDisplayName: "bx-text",
+      roleDescription: "bx-align-left"
+    },
+    "Governance/Users/_CreateEditOffcanvas.cshtml": {
+      userEmail: "bx-envelope",
+      userFirstName: "bx-user",
+      userLastName: "bx-user"
+    }
+  };
+
+  Object.entries(GOVERNANCE_ICONS).forEach(([file, map]) => {
+    test(`${file} — every field has a wrapper and its glyph`, () => {
+      const source = fs.readFileSync(path.join(VIEWS_ROOT, file), "utf8");
+      Object.entries(map).forEach(([id, glyph]) => {
+        const wrapper = wrapperIn(source, id);
+        expect(wrapper, `${id} has no .diten-field wrapper`).toBeTruthy();
+        expect(wrapper, `${id} does not carry ${glyph}`).toMatch(new RegExp(`${glyph}(?![a-z-])`));
+        expect(wrapper, `${id}'s icon is announced to screen readers twice`).toMatch(/aria-hidden="true"/);
+      });
+
+      // Pinned count, same reason as the task form's: a field added later cannot slip through unmarked.
+      // The Users switch is excluded on purpose — a switch has no text inset to mark (golden reference rule).
+      const wrappers = [...source.matchAll(/class="diten-field[ "]/g)].length;
+      expect(wrappers, "a field was added or removed without updating this map").toBe(Object.keys(map).length);
+    });
+  });
+
+  test("the textarea's glyph is top-aligned, not parked beside line three", () => {
+    const source = fs.readFileSync(path.join(VIEWS_ROOT, "Governance/Roles/_CreateEditOffcanvas.cshtml"), "utf8");
+    expect(wrapperIn(source, "roleDescription"), "the description's icon centres on four rows")
+      .toMatch(/diten-field-icon--top/);
+  });
+
+  test("the help texts the golden reference has no counterpart for are KEPT", () => {
+    /*
+     * "Imitate, do not copy." The reference has no immutable-name hint, and its absence there is not a verdict
+     * on this form: these two lines are the only place the user is told the key cannot be changed later.
+     */
+    expect(fs.readFileSync(path.join(VIEWS_ROOT, "Governance/Roles/_CreateEditOffcanvas.cshtml"), "utf8"))
+      .toContain("NameImmutableHint");
+    expect(fs.readFileSync(path.join(VIEWS_ROOT, "Governance/Users/_CreateEditOffcanvas.cshtml"), "utf8"))
+      .toContain("EmailImmutableHint");
+  });
+
+  test("the wrapper does not swallow the validation message", () => {
+    /*
+     * MEASURED IN THE THEME, not guessed. core.css shows an error with `.was-validated :invalid ~ .invalid-feedback`
+     * — a SIBLING combinator. Wrapping the control makes the message a sibling of the wrapper instead, so adopting
+     * the icon pattern silently disables every inline error on the form. The theme hit this with `.input-group`
+     * and answered with `:has()`; backbone-custom.css must carry the same answer for `.diten-field`, or the two
+     * screens ported in this round validate into the void.
+     */
+    const theme = THEME();
+    expect(theme, "the theme no longer shows errors by sibling — re-derive this guard")
+      .toMatch(/\.was-validated\s+:invalid\s*~\s*\.invalid-feedback/);
+
+    const css = CSS();
+    expect(css, "nothing restores the error message through the .diten-field wrapper")
+      .toMatch(/\.diten-field:has\(:invalid\)\s*~\s*\.invalid-feedback/);
+    expect(css, "the JS-set .is-invalid path is not covered")
+      .toMatch(/\.diten-field:has\(\.is-invalid\)\s*~\s*\.invalid-feedback/);
   });
 });

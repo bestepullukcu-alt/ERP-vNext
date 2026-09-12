@@ -3,7 +3,7 @@
 ## Metadata
 - **Title**: ERP-vNext Master Development Plan
 - **Canonical Path**: [master-development-plan.md](./master-development-plan.md)
-- **Legacy Source**: [master-plan.md](../../docs/platform/master-plan.md)
+- **Legacy Source**: [master-plan.md](../../docs/reference/modules/platform/master-plan.md)
 - **Migration Phase**: IA Phase 3B-1
 - **Status**: Migrated high-level roadmap and inventory only
 - **Usage Warning**: This file is a target representation and not a complete system-wide replacement until AGENTS, workflows, and prompts are officially updated in later phases.
@@ -80,8 +80,8 @@ Below is the macro status catalog.
 | **MOD-0027** | Central Tenant Email / Notification Service | W1-D | Blocker | in-progress | 82% | Notification sender. |
 | **MOD-0263** | External Messaging Provider | W1-D | Blocker | partial | 55% | Provider adapter. |
 | **MOD-0028** | Document / Evidence Metadata | W2-A | High | planned | 0% | Document model storage. |
-| **MOD-0266** | Blob / File Storage Provider | W2-A | High | planned | 0% | S3 storage backend. |
-| **MOD-0262** | External Document Provider | W2-A | High | planned | 0% | Integrations metadata. |
+| **MOD-0266** | Cloud Infrastructure (AWS/Azure/GCP) [External Provider] | W2-A | High | planned | 0% | External infra provider (Blueprint MOD-0266). Not the blob-storage module — internal binary storage is MOD-0262. |
+| **MOD-0262** | Internal Document Repository Service | W-1 | High | planned | 0% | Internal binary/evidence repository (Build, R1-PPM MVP, RC=Y). MOD-0028 + MOD-0313 HARD depend on it. |
 | **MOD-0021** | General Audit Trail | W2-B | High | in-progress | 98% | System logger mapping. |
 | **MOD-0287** | User Notification Preferences | W2-C | High | planned | 0% | Settings CRUD. |
 | **MOD-0034** | Webhook Delivery | W2-C | High | planned | 0% | Outbound HTTP triggers. |
@@ -220,4 +220,4 @@ Development work package sequencing follows a logical dependency track (Track A 
 ## Migration Notes
 - **Migration Scope**: Only Section 2 (Module Inventory) and Section 12 (Wave Track Sequencing) have been migrated into this document.
 - **Excluded Content**: Detailed module specifications, active checklists, codebase test statistics, and linter rule definitions are excluded from this file.
-- **Legacy Monolith State**: The file `docs/platform/master-plan.md` remains temporarily active to prevent build script errors and path dependency faults.
+- **Legacy Monolith State**: The file `docs/reference/modules/platform/master-plan.md` remains temporarily active to prevent build script errors and path dependency faults.

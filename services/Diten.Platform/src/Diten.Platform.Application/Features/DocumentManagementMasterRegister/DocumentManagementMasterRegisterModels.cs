@@ -23,6 +23,17 @@ public static class DocumentMasterRegisterPermissions
     // DCP-005 — gates the effectiveness:batch read endpoint (the screen side of the effectiveness resolver). Declared
     // with the endpoint (P-EFF-P2 Faz 3) so the controller compiles; catalogued + role-granted in the seed (Faz 4).
     public const string EffectivenessRead = "platform.document-management.master-register.effectiveness.read";
+
+    // DCP-005 (WP-DM-2b) — gates the citation read endpoints (citations:resolve + citations/search) the Task Center
+    // consumes for governing-docs resolution, the citation freezer and the document picker. Mirrors EffectivenessRead;
+    // catalogued + role-granted in the seed (RBAC grant is a separate seed change, not hardcoded here).
+    public const string CitationRead = "platform.document-management.master-register.citation.read";
+
+    // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — gates the audited two-step CSV import screen (preview/commit/history).
+    // Deliberately its OWN key, not Manage: importing the whole register from a file is a heavier act than editing
+    // one entry's metadata, and the two should be independently grantable. Catalogued + role-granted in the seed
+    // (RBAC grant is a separate seed change, not hardcoded here).
+    public const string Import = "platform.document-management.master-register.import";
 }
 
 public static class MasterRegisterReasonCodes
@@ -42,6 +53,12 @@ public static class MasterRegisterReasonCodes
     public const string ProtectedFieldChange = "PROTECTED_FIELD_CHANGE";
     public const string NotFoundNonLeakage = "NOT_FOUND_NON_LEAKAGE";
     public const string PermissionDenied = "PERMISSION_DENIED";
+
+    // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the commit idempotency pair. ContentChanged fires when the recomputed
+    // hash no longer matches what the caller previewed; AlreadyApplied fires when that exact content was already
+    // committed for this tenant. Different corrections, so different codes (see CommitDocumentRegisterImportHandler).
+    public const string ImportContentChanged = "IMPORT_CONTENT_CHANGED";
+    public const string ImportAlreadyApplied = "IMPORT_ALREADY_APPLIED";
 }
 
 // ── inputs ───────────────────────────────────────────────────────────────────

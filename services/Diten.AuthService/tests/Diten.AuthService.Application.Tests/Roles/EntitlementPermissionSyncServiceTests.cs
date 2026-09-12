@@ -19,9 +19,9 @@ public sealed class EntitlementPermissionSyncServiceTests
     // the SAME permission id below.
     private static List<Permission> Catalog() =>
     [
-        new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-        new("mdm", "legal-entities", "create", "Create Legal Entity", null),
-        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
+        new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "create", "Create Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 
@@ -44,7 +44,9 @@ public sealed class EntitlementPermissionSyncServiceTests
     {
         var (svc, roles, rolePerms, catalog) = Build();
 
-        await svc.GrantModuleAsync(TenantA, "MDM", Actor, CancellationToken.None);
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the entitlement code is the manifest ModuleCode the catalog carries
+        // ("legal-entity"), not the service namespace. "MDM" has resolved nothing since the manifest flip.
+        await svc.GrantModuleAsync(TenantA, "LEGAL-ENTITY", Actor, CancellationToken.None);
 
         var adminId = roles.IdOf(TenantA, "Admin");
         var viewerId = roles.IdOf(TenantA, "Viewer");
@@ -57,7 +59,7 @@ public sealed class EntitlementPermissionSyncServiceTests
 
         // All written as Module grants tagged with the normalized module code; platform.* never added.
         Assert.All(rolePerms.Rows, rp => Assert.Equal(GrantSource.Module, rp.GrantSource));
-        Assert.All(rolePerms.Rows, rp => Assert.Equal("mdm", rp.SourceModuleCode));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal("legal-entity", rp.SourceModuleCode));
         Assert.DoesNotContain(rolePerms.Rows, rp => catalog.Single(p => p.Id == rp.PermissionId).Key.StartsWith("platform."));
     }
 
@@ -152,6 +154,107 @@ public sealed class EntitlementPermissionSyncServiceTests
         await svc.GrantModuleAsync(TenantA, "platform", Actor, CancellationToken.None);
 
         Assert.Empty(rolePerms.Rows);
+    }
+
+    // ── BL-360: PPM module-code case consistency — grant/revoke gate must accept "PPM"/"ppm"/"Ppm" alike ──
+
+    [Theory]
+    [InlineData("PPM")]
+    [InlineData("ppm")]
+    [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
+    public async Task GrantModule_is_a_no_op_for_any_case_variant_of_PPM(string moduleCode)
+    {
+        var (svc, _, rolePerms) = BuildWith(CatalogWithPpm());
+
+        await svc.GrantModuleAsync(TenantA, moduleCode, Actor, CancellationToken.None);
+
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    [Theory]
+    [InlineData("PPM")]
+    [InlineData("ppm")]
+    [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
+    public async Task GrantModuleWithKeys_is_a_no_op_for_any_case_variant_of_PPM(string moduleCode)
+    {
+        var (svc, _, rolePerms) = BuildWith(CatalogWithPpm());
+
+        await svc.GrantModuleWithKeysAsync(TenantA, moduleCode, ["ppm.portfolios.read"], Actor, CancellationToken.None);
+
+        Assert.Empty(rolePerms.Rows);
+    }
+
+    [Theory]
+    [InlineData("PPM")]
+    [InlineData("ppm")]
+    [InlineData("Ppm")]
+    // Padded spellings: NormalizeModuleCode trims + lowercases, so the gate must see the same code the
+    // processing sees — gating on the raw string let " PPM " through (Codex review of 0bf3b283).
+    [InlineData(" PPM ")]
+    [InlineData(" ppm ")]
+    [InlineData("\tPpm\n")]
+    public async Task RevokeModule_is_a_no_op_for_any_case_variant_of_PPM_and_leaves_other_grants_untouched(string moduleCode)
+    {
+        var (svc, roles, rolePerms, _) = Build();
+        var adminId = roles.IdOf(TenantA, "Admin");
+        var mdmRead = CatalogPermissionId("mdm.legal-entities.read");
+        // A hypothetical pre-existing "ppm"-sourced row: proves the case-insensitive gate blocks the whole
+        // revoke path (not just the grant path), so it can never be used to strip a PPM grant either.
+        rolePerms.Seed(RolePermission.ModuleGrant(adminId, mdmRead, TenantA, Actor, "ppm"));
+
+        await svc.RevokeModuleAsync(TenantA, moduleCode, Actor, CancellationToken.None);
+
+        var row = Assert.Single(rolePerms.Rows);
+        Assert.Equal("ppm", row.SourceModuleCode);
+    }
+
+    // ── BL-359: explicit-grant-only keys never enter the module-sync grant set, even under a grantable module ──
+
+    [Fact]
+    public async Task Grant_excludes_an_explicit_grant_only_key_even_when_attributed_to_a_grantable_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            // Hypothetical mis-attribution guard: even if this key ever carried a grantable module override,
+            // the explicit-grant-only exclusion must still keep it out of the module-sync grant set.
+            new("ppm", "portfolios", "assign-owner", "Assign Owner", null, moduleOverride: "legal-entity")
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleAsync(TenantA, "legal-entity", Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), catalog).ToList();
+        Assert.Contains("mdm.legal-entities.read", adminKeys);
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", adminKeys);
+    }
+
+    [Fact]
+    public async Task Grant_excludes_account_kind_manage_even_when_attributed_to_a_grantable_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — hypothetical mis-attribution: the exclusion must still hold.
+            new("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "legal-entity")
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleAsync(TenantA, "legal-entity", Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), catalog).ToList();
+        Assert.Contains("mdm.legal-entities.read", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
     }
 
     // ── FIX-2: reconcile against the full entitled set ──
@@ -687,6 +790,19 @@ public sealed class EntitlementPermissionSyncServiceTests
         var svc = new EntitlementPermissionSyncService(new FakePermissionRepository(catalog), roles, rolePerms, new PpmEntitlementPermissionPolicy(), NullLogger<EntitlementPermissionSyncService>.Instance);
         return (svc, roles, rolePerms);
     }
+
+    /// <summary>
+    /// The shared catalog plus real PPM permissions (Module = ppm). Without them the two BL-360 grant-side theories
+    /// cannot fail: a lower-case "ppm" that slips past the gate finds nothing to grant, and <c>Assert.Empty</c> passes
+    /// anyway. Measured by the Control Tower (2026-09-11): with both grant gates reverted to the exact-case
+    /// <c>Applies</c>, all 38 tests in this class stayed green before this catalog was added.
+    /// </summary>
+    private static List<Permission> CatalogWithPpm() =>
+    [
+        .. Catalog(),
+        new("ppm", "portfolios", "read", "Read Portfolio", null, moduleOverride: "ppm"),
+        new("ppm", "portfolios", "update", "Update Portfolio", null, moduleOverride: "ppm")
+    ];
 
     private static readonly List<Permission> SharedCatalog = Catalog();
     private static Guid CatalogPermissionId(string key) => SharedCatalog.Single(p => p.Key == key).Id;

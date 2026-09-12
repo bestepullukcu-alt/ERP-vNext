@@ -1,7 +1,9 @@
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Attachments;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
@@ -288,6 +290,68 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── MOD-0024 Slice ATT-1: task attachments ────────────────────────────────
+    //
+    // Guarded by UPDATE, like checklist writes — the handler itself narrows further (holder or requester only,
+    // AC3). Upload/download are multipart/stream, never JSON-with-base64 (AD-4).
+
+    /// <summary>Uploads one file. The 400/413/415-style validation (extension, media type, size) is the
+    /// repository's own (MOD-0262-FU01) — this endpoint adds no rule of its own beyond task-level authorization.</summary>
+    [HttpPost("{id:guid}/attachments")]
+    [HasPermission(TaskPermissions.Update)]
+    [RequestSizeLimit(long.MaxValue)]
+    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
+    public async Task<IActionResult> AddAttachment(
+        Guid id,
+        [FromForm] IFormFile? file,
+        [FromForm] TaskAttachmentKind kind,
+        [FromForm] string? checklistItemCode,
+        [FromForm] string? note,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return CreateActionResultInstance(Response<TaskAttachmentDto>.Fail(
+                "A file is required.", 400, TaskReasonCodes.ValidationFailed, CorrelationId));
+        }
+
+        await using var content = file.OpenReadStream();
+        var response = await _mediator.Send(
+            new AddTaskAttachmentCommand(
+                id, content, file.FileName, file.ContentType, kind,
+                string.IsNullOrWhiteSpace(checklistItemCode) ? null : checklistItemCode.Trim(),
+                string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
+                CorrelationId),
+            ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("{id:guid}/attachments")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> ListAttachments(Guid id, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new ListTaskAttachmentsQuery(id, CorrelationId), ct));
+
+    /// <summary>Streams the stored bytes. Addressed by attachment id only — the repository's object key is never
+    /// exposed (MOD-0262-FU01 AD-4/AD-5), and another task's/tenant's attachment id resolves to 404.</summary>
+    [HttpGet("{id:guid}/attachments/{attachmentId:guid}/content")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> AttachmentContent(Guid id, Guid attachmentId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new OpenTaskAttachmentQuery(id, attachmentId, CorrelationId), ct);
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        return File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
+
+    /// <summary>Soft delete only — the stored object is untouched (AD-6).</summary>
+    [HttpDelete("{id:guid}/attachments/{attachmentId:guid}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> RemoveAttachment(Guid id, Guid attachmentId, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new RemoveTaskAttachmentCommand(id, attachmentId, CorrelationId), ct));
+
     // ── Comments (BL-034 item 7) ─────────────────────────────────────────────
 
     /*
@@ -503,6 +567,24 @@ public sealed class TasksController : CustomBaseController
     }
 
     /// <summary>
+    /// DCP-005 Step 2 — the picker's search, against the live Document Master Register
+    /// (<c>IControlledDocumentCitationPort</c>) instead of the retired CSV list above.
+    ///
+    /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission the CSV search and the governing-documents
+    /// read use, and for the same reason those two give: citing a procedure is ordinary work every task author
+    /// (create OR update) needs, so gating it behind <c>TaskPermissions.Create</c> would leave a caller who may
+    /// only update a task's citations unable to search for one to add.</para>
+    /// </summary>
+    [HttpGet("lookups/document-citations")]
+    [HasPermission(TaskPermissions.DocumentListRead)]
+    public async Task<IActionResult> SearchDocumentCitations(
+        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SearchDocumentCitationsQuery(term, limit, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
     /// DCP-005 slice 3 — the governing documents a task type suggests, resolved against the current register.
     ///
     /// <para>⚠ Guarded by <c>DocumentListRead</c>, the SAME permission as the search, and that is a decision
@@ -628,6 +710,51 @@ public sealed class TasksController : CustomBaseController
 
         return CreateActionResultInstance(response);
     }
+
+    /// <summary>
+    /// THE REPORT'S ROWS, AS A FILE — Dilim 1e. The audit export's shape
+    /// (<c>PlatformAuditController.Export</c>): a <c>File(...)</c> on success, the envelope on failure, and the
+    /// row count in a header so the screen can say how many rows it delivered.
+    ///
+    /// <para><b>Guarded by <c>WorkReportRead</c>, the report's own key</b>, not a new one: the rows are the ones
+    /// the tiles already open, fifty at a time. Whose rows they are comes from the scope, inside the handler.</para>
+    ///
+    /// <para><b>The same five filters and the same scope preference as the report</b>, and no group axis — the
+    /// file is the totals' rows, with every axis in it as a column.</para>
+    /// </summary>
+    [HttpGet("work-report/export")]
+    [HasPermission(TaskPermissions.WorkReportRead)]
+    public async Task<IActionResult> ExportWorkReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] string? format = WorkReportExportFormats.Csv,
+        [FromQuery] Guid? legalEntityId = null,
+        [FromQuery] Guid? organizationUnitId = null,
+        [FromQuery] Guid? assigneeUserId = null,
+        [FromQuery] string? taskTypeCode = null,
+        [FromQuery] TaskPriority? priority = null,
+        [FromQuery] WorkReportScopePreference? scope = null,
+        CancellationToken ct = default)
+    {
+        // ⚠ THE SAME FILTER SHAPE AS THE REPORT, for the reason the items endpoint gives.
+        var filter = new WorkReportFilter(
+            legalEntityId, organizationUnitId, assigneeUserId, taskTypeCode, priority);
+
+        var response = await _mediator.Send(
+            new WorkReportExportQuery(from, to, format, CorrelationId, filter, scope), ct);
+
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        Response.Headers[WorkReportExportRowCountHeader] =
+            response.Data.RowCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return File(response.Data.Content, response.Data.ContentType, response.Data.FileName);
+    }
+
+    /// <summary>How many rows the file carries — the audit export's <c>X-Audit-Export-Row-Count</c>, renamed.</summary>
+    public const string WorkReportExportRowCountHeader = "X-Work-Report-Export-Row-Count";
 
     // ── DCP-005 slice 1: task types ──────────────────────────────────────
 

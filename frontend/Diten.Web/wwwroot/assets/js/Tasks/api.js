@@ -7,6 +7,20 @@
 (function (global) {
     const BASE = '/Tasks/api';
 
+    // Shared by every call: the envelope is the same shape whether the request carried JSON or a multipart body.
+    const toResult = async (response) => {
+        let payload = null;
+        try { payload = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
+        return {
+            ok: response.ok,
+            status: response.status,
+            // The upstream reason code is passed through so the UI can react precisely (e.g. a claim race).
+            reasonCode: payload?.reason_code ?? payload?.reasonCode ?? null,
+            data: payload?.data ?? null,
+            errors: payload?.errors ?? []
+        };
+    };
+
     const request = async (method, path, body) => {
         let response;
         try {
@@ -20,18 +34,33 @@
         } catch (_) {
             return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
         }
+        return toResult(response);
+    };
 
-        let payload = null;
-        try { payload = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
-
-        return {
-            ok: response.ok,
-            status: response.status,
-            // The upstream reason code is passed through so the UI can react precisely (e.g. a claim race).
-            reasonCode: payload?.reason_code ?? payload?.reasonCode ?? null,
-            data: payload?.data ?? null,
-            errors: payload?.errors ?? []
-        };
+    /*
+     * MULTIPART, for the one payload this module ever sends that is not JSON: a file. AD-4 (the document store's
+     * own rule) is stream-only, never base64 — so this is `FormData`, not `request()` with a data-URI string
+     * squeezed into a JSON field. No `Content-Type` header is set: the browser writes the multipart boundary
+     * itself, and overriding it here is the one reliable way to corrupt the body the gateway forwards.
+     */
+    const requestMultipart = async (path, fields) => {
+        const form = new global.FormData();
+        Object.keys(fields).forEach((key) => {
+            const value = fields[key];
+            if (value !== undefined && value !== null && value !== '') { form.append(key, value); }
+        });
+        let response;
+        try {
+            response = await global.fetch(`${BASE}${path}`, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: form
+            });
+        } catch (_) {
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
+        }
+        return toResult(response);
     };
 
     /*
@@ -63,9 +92,18 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
-        // Naming somebody the tenant cannot assign work to — the SAME eligibility rule the assignment picker
-        // uses, so the refusal is the picker's own answer rather than a second opinion.
-        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorWaitingOnNotAssignable',
+        /*
+         * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
+         * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
+         * InquireTaskItemHandler's own check on WHO YOU ARE WAITING ON — the eligibility rule the assignment
+         * picker uses, so that refusal is the picker's own answer rather than a second opinion. A JS object
+         * literal keeps only the LAST value written for a repeated key: an earlier version of this file mapped
+         * the code here too, and that value silently never fired because the assignment mapping below always
+         * overwrote it — the waiting-on refusal read the assignment sentence instead of its own. The inquire
+         * call site must ask for the other sentence explicitly, via INQUIRE_REASON_CODE_OVERRIDES below, passed
+         * as failureMessage()'s second argument.
+         */
+
         /*
          * WC-1 — the personal overlay's three refusals. Mapped the moment the codes were written, not after a
          * user read "İşlem sırasında bir hata oluştu": an unmapped code IS that sentence, and this map has now
@@ -152,6 +190,8 @@
         TASK_HANDOVER_REASON_REQUIRED: 'errorHandoverReasonRequired',
         TASK_RETURN_NOT_ASSIGNEE: 'errorReturnNotAssignee',
         TASK_REASSIGN_NOT_PERMITTED: 'errorReassignNotPermitted',
+        // The default for THIS code: assign/reassign refusals — every caller except the inquire one above
+        // (BL-351), which asks for the other sentence via INQUIRE_REASON_CODE_OVERRIDES instead.
         TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorAssigneeNotAssignable',
         // Every blocking code MOD-0023's gate can answer with, read from
         // EvaluateWorkflowTransitionGateHandler rather than guessed. A blocked transition used to arrive as a bare
@@ -163,7 +203,35 @@
         WORKFLOW_NOT_TERMINAL_APPROVED: 'errorApprovalNotApproved',
         // The gate's own code when it cannot reach a verdict (kept at its original spelling, which is the value
         // already on the wire).
-        WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable'
+        WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable',
+        /*
+         * MOD-0024 Slice ATT-1 — task attachments (evidence/deliverable/attachment files on the Document Binary
+         * Store). `TASK_ATTACHMENT_NOT_AUTHORIZED` (403, neither holder nor requester) and
+         * `TASK_ATTACHMENT_NOT_FOUND` (404, non-leakage — a stale row, a cross-tenant/cross-task id, or an
+         * already-removed attachment) both keep their own sentence for the same reason every other refusal on
+         * this map does: the generic "İşlem sırasında bir hata oluştu" names nothing the reader can act on.
+         */
+        TASK_ATTACHMENT_NOT_AUTHORIZED: 'errorAttachmentNotAuthorized',
+        TASK_ATTACHMENT_TASK_CLOSED: 'errorAttachmentTaskClosed',
+        TASK_ATTACHMENT_NOT_FOUND: 'errorAttachmentNotFound',
+        TASK_ATTACHMENT_CHECKLIST_ITEM_NOT_FOUND: 'errorAttachmentChecklistItemNotFound',
+        // The checklist completion gate (SetChecklistItemStateHandler): ticking an evidence-required item with
+        // zero live Evidence-kind attachments refuses with this code before ANY other state changes.
+        CHECKLIST_EVIDENCE_REQUIRED: 'errorChecklistEvidenceRequired',
+        // The repository's OWN upload rule (extension/size) refusing the file — DocumentRepositoryReasonCodes.
+        // ValidationFailed on the wire, passed through untouched from the repository slice this endpoint calls.
+        VALIDATION_FAILED: 'errorAttachmentInvalid'
+    };
+
+    /*
+     * BL-351 — the ONE place TASK_ASSIGNEE_NOT_ASSIGNABLE resolves to the "waiting on" sentence instead of the
+     * assignment one. Pass this as failureMessage()'s second argument at the inquire / "waiting on" call site
+     * ONLY; every other caller passes nothing and keeps getting REASON_CODE_MESSAGE_KEYS' own answer. Kept
+     * beside the base map rather than inside it, on purpose — a second value for the same key is exactly how
+     * this code stopped reaching the reader the first time (see the comment above where the code IS mapped).
+     */
+    const INQUIRE_REASON_CODE_OVERRIDES = {
+        TASK_ASSIGNEE_NOT_ASSIGNABLE: 'errorWaitingOnNotAssignable'
     };
 
     /*
@@ -181,6 +249,9 @@
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',
         'TASK_COMMENT_TASK_CLOSED',
+        // Both RULES about the task's state, not a race — see the map above.
+        'TASK_ATTACHMENT_TASK_CLOSED',
+        'CHECKLIST_EVIDENCE_REQUIRED',
         'WORKFLOW_PENDING_APPROVAL',
         'WORKFLOW_WAITING_EVIDENCE',
         'WORKFLOW_REJECTED',
@@ -210,9 +281,14 @@
         return false;
     };
 
-    const failureMessage = (result) => {
+    /*
+     * `overrides` (BL-351) lets ONE call site ask for a different sentence for a code the base map already
+     * covers — today only the inquire / "waiting on" site, with INQUIRE_REASON_CODE_OVERRIDES. Every other
+     * caller passes nothing and gets REASON_CODE_MESSAGE_KEYS' own answer, unchanged.
+     */
+    const failureMessage = (result, overrides) => {
         const t = (key) => global.TasksL10n?.t?.(key) ?? key;
-        const byReason = REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
+        const byReason = overrides?.[result?.reasonCode] ?? REASON_CODE_MESSAGE_KEYS[result?.reasonCode];
         if (byReason) { return t(byReason); }
         if (result?.reasonCode) {
             // Never silent: an unmapped code degrades to the generic message, and says so in the console so the
@@ -227,6 +303,7 @@
 
     global.TasksApi = {
         REASON_CODE_MESSAGE_KEYS,
+        INQUIRE_REASON_CODE_OVERRIDES,
         BLOCKING_REASON_CODES,
         isTransitionBlocked,
         isConcurrencyConflict,
@@ -361,15 +438,42 @@
         // an administrative act.
         activeTaskTypes: () => request('GET', '/task-types/active'),
         // ── DCP-005 slice 3 — citing a controlled document ───────────────────────────────────────────────
-        // Search the CURRENT register. Blocked rows come back like any other and the picker refuses them with
-        // their reason visible; hiding them would leave "why can I not cite this SOP" unanswerable.
+        // Search the LIVE Document Master Register (DCP-005 Step 2 — moved off the CSV list). Blocked rows come
+        // back like any other and the picker refuses them with their reason visible; hiding them would leave
+        // "why can I not cite this SOP" unanswerable.
         searchDocuments: (term) =>
-            request('GET', `/document-list/search?term=${encodeURIComponent(term || '')}&limit=25`),
+            request('GET', `/lookups/document-citations?term=${encodeURIComponent(term || '')}&limit=25`),
         // What a type SUGGESTS citing. A suggestion the author may untick, never a requirement — and the answer
         // says WHICH kind of empty it is when it is empty, because three different things look alike here.
         typeGoverningDocuments: (typeId, organizationCode) =>
             request('GET', `/task-types/${encodeURIComponent(typeId)}/governing-documents`
                 + `?organizationCode=${encodeURIComponent(organizationCode || '')}`),
-        createFromTemplate: (payload) => request('POST', '/from-template', payload)
+        createFromTemplate: (payload) => request('POST', '/from-template', payload),
+
+        // ── MOD-0024 Slice ATT-1 — task attachments ──────────────────────────
+        // Backed by the MOD-0262-FU01 Document Binary Store, via the API's own /attachments slice. No
+        // expectedVersion: an attachment is its own row, not a field on the checklist run or the task, so there
+        // is nothing here for two writers to race over the way a checklist edit or a reorder can.
+        listAttachments: (taskId) => request('GET', `/${taskId}/attachments`),
+        /**
+         * @param {object} payload {file, kind, checklistItemCode, note}
+         */
+        addAttachment: (taskId, payload) => requestMultipart(`/${taskId}/attachments`, {
+            file: payload.file,
+            kind: payload.kind,
+            checklistItemCode: payload.checklistItemCode,
+            note: payload.note
+        }),
+        removeAttachment: (taskId, attachmentId) =>
+            request('DELETE', `/${taskId}/attachments/${encodeURIComponent(attachmentId)}`),
+        /*
+         * NOT a `request()` call — this is a URL for an `<a href>` / `download` attribute, not a fetch this
+         * module makes for the caller. The browser's own navigation carries the same-origin cookie the way
+         * `credentials: 'same-origin'` does for fetch, and lets the server's `Content-Disposition` name the
+         * saved file — a blob fetched here and re-served through a manufactured anchor would have to reinvent
+         * both for no benefit.
+         */
+        attachmentContentUrl: (taskId, attachmentId) =>
+            `${BASE}/${taskId}/attachments/${encodeURIComponent(attachmentId)}/content`
     };
 })(typeof window !== 'undefined' ? window : globalThis);

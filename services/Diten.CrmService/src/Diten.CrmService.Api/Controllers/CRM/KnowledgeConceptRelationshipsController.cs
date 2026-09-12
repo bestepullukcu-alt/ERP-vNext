@@ -18,7 +18,7 @@ public sealed class KnowledgeConceptRelationshipsController : CustomBaseControll
     public KnowledgeConceptRelationshipsController(IMediator mediator) => _mediator = mediator;
 
     [HttpGet("api/crm/knowledge/concept-relationships")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> List(
         [FromQuery] Guid? subjectId,
         [FromQuery] Guid? fromNodeId,
@@ -34,13 +34,13 @@ public sealed class KnowledgeConceptRelationshipsController : CustomBaseControll
             cancellationToken));
 
     [HttpGet("api/crm/knowledge/concept-relationships/{relationshipId:guid}")]
-    [HasPermission(Perms.ReadFallback)]
+    [HasPermission(Perms.Read)]
     public async Task<IActionResult> Get(Guid relationshipId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new GetConceptRelationshipQuery(relationshipId), cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-relationships")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Create(
         [FromBody] CreateConceptRelationshipRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -51,7 +51,7 @@ public sealed class KnowledgeConceptRelationshipsController : CustomBaseControll
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-relationships/{relationshipId:guid}")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Update(
         Guid relationshipId, [FromBody] UpdateConceptRelationshipRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
@@ -61,7 +61,7 @@ public sealed class KnowledgeConceptRelationshipsController : CustomBaseControll
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-relationships/{relationshipId:guid}/archive")]
-    [HasPermission(Perms.ManageFallback)]
+    [HasPermission(Perms.Manage)]
     public async Task<IActionResult> Archive(Guid relationshipId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptRelationshipCommand(relationshipId), cancellationToken));

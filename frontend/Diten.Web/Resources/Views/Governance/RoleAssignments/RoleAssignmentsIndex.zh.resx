@@ -4,17 +4,17 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
-  <data name="Title" xml:space="preserve"><value>Role Permissions</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Assign or remove permissions for a role.</value></data>
-  <data name="SelectRole" xml:space="preserve"><value>Role</value></data>
-  <data name="SearchPermissions" xml:space="preserve"><value>Search permissions…</value></data>
-  <data name="SelectRolePrompt" xml:space="preserve"><value>Select a role to manage its permissions.</value></data>
-  <data name="NoPermissions" xml:space="preserve"><value>No permissions are available.</value></data>
-  <data name="Assign" xml:space="preserve"><value>Assign</value></data>
-  <data name="BadgeBaseline" xml:space="preserve"><value>Baseline</value></data>
-  <data name="BadgeModule" xml:space="preserve"><value>Module</value></data>
-  <data name="BadgeManual" xml:space="preserve"><value>Manual</value></data>
-  <data name="LockedHint" xml:space="preserve"><value>Baseline and module-granted permissions cannot be changed here.</value></data>
+  <data name="Title" xml:space="preserve"><value>角色权限</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>为角色分配或移除权限。</value></data>
+  <data name="SelectRole" xml:space="preserve"><value>角色</value></data>
+  <data name="SearchPermissions" xml:space="preserve"><value>搜索权限…</value></data>
+  <data name="SelectRolePrompt" xml:space="preserve"><value>选择一个角色以管理其权限。</value></data>
+  <data name="NoPermissions" xml:space="preserve"><value>没有可用的权限。</value></data>
+  <data name="Assign" xml:space="preserve"><value>分配</value></data>
+  <data name="BadgeBaseline" xml:space="preserve"><value>基线</value></data>
+  <data name="BadgeModule" xml:space="preserve"><value>模块</value></data>
+  <data name="BadgeManual" xml:space="preserve"><value>手动</value></data>
+  <data name="LockedHint" xml:space="preserve"><value>基线权限和模块授予的权限无法在此更改。</value></data>
   <data name="LockedHintSystem" xml:space="preserve"><value>此权限属于系统基线，无法在此处更改。</value></data>
   <data name="LockedHintModule" xml:space="preserve"><value>此权限由 {0} 模块自动授予，无法在此处更改。</value></data>
   <data name="FilterModuleLabel" xml:space="preserve"><value>模块</value></data>
@@ -44,6 +44,16 @@
   <data name="ShowingCount" xml:space="preserve"><value>显示 {0} 项权限</value></data>
   <data name="CountBadge" xml:space="preserve"><value>{0}/{1}</value></data>
   <!-- FEAT-ROLEPERMS-LABEL-DERIVE — action verbs (imperative) used to derive Role Permissions row labels from the permission KEY (verb · entity). Bridged to JS as window.L10n.ActionVerbs. -->
+  <data name="ScopeLabel_TenantWide" xml:space="preserve"><value>整个租户</value></data>
+  <data name="ActionVerb_Claim" xml:space="preserve"><value>认领</value></data>
+  <data name="ActionVerb_Complete" xml:space="preserve"><value>完成</value></data>
+  <data name="ActionVerb_Review" xml:space="preserve"><value>审查</value></data>
+  <data name="ActionVerb_Reconcile" xml:space="preserve"><value>核对</value></data>
+  <data name="ActionVerb_Record" xml:space="preserve"><value>记录</value></data>
+  <data name="ActionVerb_Search" xml:space="preserve"><value>搜索</value></data>
+  <data name="ActionVerb_Verify" xml:space="preserve"><value>验证</value></data>
+  <data name="ActionVerb_Request" xml:space="preserve"><value>申请</value></data>
+  <data name="ActionVerb_ChangeLifecycle" xml:space="preserve"><value>更改生命周期</value></data>
   <data name="ActionVerb_Read" xml:space="preserve"><value>查看</value></data>
   <data name="ActionVerb_View" xml:space="preserve"><value>查看</value></data>
   <data name="ActionVerb_Create" xml:space="preserve"><value>创建</value></data>

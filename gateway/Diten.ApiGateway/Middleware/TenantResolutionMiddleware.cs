@@ -343,6 +343,9 @@ public sealed class TenantResolutionMiddleware
         return path.StartsWithSegments("/api/platform-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/login", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/tenant-auth/register", StringComparison.OrdinalIgnoreCase)
+               // Anonymous invitation redemption: user resolved by token hash, no tenant signal
+               // exists at this step (mirrors AuthService IsPublicAuthPath — keep the two in sync).
+               || path.StartsWithSegments("/api/users/set-password", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth/refresh-token", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/api/auth/health", StringComparison.OrdinalIgnoreCase)
                || path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);

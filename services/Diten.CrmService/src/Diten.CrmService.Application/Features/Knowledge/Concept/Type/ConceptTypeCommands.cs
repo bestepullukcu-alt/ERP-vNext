@@ -11,15 +11,24 @@ public sealed record CreateConceptTypeCommand(
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null) : IRequest<Response<Guid>>;
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null) : IRequest<Response<Guid>>;
 
 /// <summary>Full replace of the mutable fields. <c>ConceptTypeCode</c> and <c>SubjectId</c> are immutable (rename goes
-/// through <c>ConceptTypeName</c>). An archived type cannot be updated.</summary>
+/// through <c>ConceptTypeName</c>). An archived type cannot be updated. <c>ParentConceptTypeId</c> is a same-subject
+/// hierarchy edge with a self/cycle guard (RM1).</summary>
 public sealed record UpdateConceptTypeCommand(
     Guid ConceptTypeId,
     string ConceptTypeName,
     string? Description = null,
     int SortOrder = 0,
-    string? Status = null) : IRequest<Response<bool>>;
+    string? Status = null,
+    string? Color = null,
+    bool IsGroup = false,
+    bool IsList = false,
+    Guid? ParentConceptTypeId = null) : IRequest<Response<bool>>;
 
 public sealed record ArchiveConceptTypeCommand(Guid ConceptTypeId) : IRequest<Response<bool>>;

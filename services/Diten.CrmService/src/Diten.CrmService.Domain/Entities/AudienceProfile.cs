@@ -16,8 +16,21 @@ public sealed class AudienceProfile : EntityBase
 
     public string? Description { get; set; }
 
-    /// <summary>Optional <see cref="AudienceProfileTypes"/> classification (person-shaped kind of audience).</summary>
+    /// <summary>SCMM-11 (AUD) — optional owning subject (MOD-0162 FU02). NULLABLE and additive: a legacy profile keeps
+    /// <c>SubjectId == null</c> and stays tenant-global; a new profile is subject-scoped. Making it required would break
+    /// every existing profile, so the migration stance is nullable + optional later backfill (DEC-SCMM-03 AUD).</summary>
+    public Guid? SubjectId { get; set; }
+
+    /// <summary>Optional <see cref="AudienceProfileTypes"/> classification (person-shaped kind of audience). RETAINED for
+    /// backward compatibility — the single-axis legacy view. New profiles express their targeting through
+    /// <see cref="Dimensions"/>; this field is never removed.</summary>
     public string? ProfileType { get; set; }
+
+    /// <summary>SCMM-11 (AUD, RM3) — the multi-axis targeting model: a profile carries values on several open axes
+    /// (specialty · seniority · setting · channel · …). The axis names are CONFIG-DRIVEN strings, never a hardcoded
+    /// sector-specific enum (sector-neutral). This is DATA ONLY — no eligibility / membership is computed here (D8;
+    /// that is SCMM-11).</summary>
+    public List<AudienceDimensionAssignment> Dimensions { get; set; } = new();
 
     /// <summary><see cref="TaxonomyStatuses"/> — draft / active / inactive / archived.</summary>
     public string Status { get; set; } = TaxonomyStatuses.Draft;
@@ -37,6 +50,21 @@ public sealed class AudienceProfile : EntityBase
     public string? ArchivedBy { get; set; }
 
     public bool IsArchived() => ArchivedAt is not null;
+}
+
+/// <summary>
+/// SCMM-11 (AUD, RM3) — one axis of a profile's multi-axis targeting: an open <see cref="AxisCode"/> plus the
+/// <see cref="Values"/> the profile carries on it. Embedded value object (no <c>TenantId</c>, no <c>Version</c>, no
+/// repository). The axis code and values are CONFIG strings — the model is sector-neutral, so nothing medical (or any
+/// other domain) is hardcoded. Purely descriptive data; no engine reads it (D8).
+/// </summary>
+public sealed class AudienceDimensionAssignment
+{
+    /// <summary>Open axis key (e.g. <c>specialty</c>, <c>seniority</c>, <c>setting</c>). Config-driven; not an enum.</summary>
+    public string AxisCode { get; set; } = string.Empty;
+
+    /// <summary>The values carried on this axis (at least one). Opaque config strings.</summary>
+    public List<string> Values { get; set; } = new();
 }
 
 /// <summary>Optional kind of audience profile. In-domain (structural); optional on the aggregate, but when supplied it

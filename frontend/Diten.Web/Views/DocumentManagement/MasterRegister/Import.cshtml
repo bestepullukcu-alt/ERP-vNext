@@ -1,0 +1,100 @@
+@using Diten.Web.Views.DocumentManagement.MasterRegister
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MasterRegisterIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ImportPageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canImport = Perms.Has("platform.document-management.master-register.import");
+}
+
+@if (!canImport)
+{
+    <partial name="_AccessDenied" model="@Localizer["ImportPageTitle"].Value" />
+    return;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h5 class="mb-0">@Localizer["ImportPageTitle"]</h5>
+        <p class="mb-0 text-muted">@Localizer["ImportPageDescription"]</p>
+    </div>
+    <a href="/DocumentManagementMasterRegister" class="btn btn-label-secondary">
+        <i class="icon-base bx bx-arrow-back me-1"></i>@Localizer["Back"]
+    </a>
+</div>
+
+@* Step indicator — reuses the QMS Baselines import wizard's .qms-steps styling (backbone-custom.css). *@
+<ul class="qms-steps d-flex list-unstyled mb-4" id="registerImportSteps">
+    <li class="qms-step active flex-fill text-center" data-step="1"><span class="qms-step-num">1</span> <span class="d-none d-sm-inline">@Localizer["Step1SelectFile"]</span></li>
+    <li class="qms-step flex-fill text-center" data-step="2"><span class="qms-step-num">2</span> <span class="d-none d-sm-inline">@Localizer["Step2Preview"]</span></li>
+    <li class="qms-step flex-fill text-center" data-step="3"><span class="qms-step-num">3</span> <span class="d-none d-sm-inline">@Localizer["Step3Confirm"]</span></li>
+</ul>
+
+<div class="card mb-4">
+    <div class="card-header"><h6 class="mb-0">@Localizer["Step1SelectFile"]</h6></div>
+    <div class="card-body">
+        <form id="registerImportForm" class="row g-3" novalidate>
+            <div class="col-md-6">
+                <label class="form-label" for="registerImportFile">@Localizer["ImportFileLabel"] <span class="text-danger">*</span></label>
+                <input type="file" id="registerImportFile" name="file" accept=".csv" class="form-control" />
+                <div class="form-text">@Localizer["ImportFileHint"]</div>
+                <div class="form-text text-body d-none mt-1" id="registerImportFileInfo"></div>
+            </div>
+            <div class="col-12">
+                <button type="button" id="btnRegisterImportPreview" class="btn btn-primary">
+                    <span class="spinner-border spinner-border-sm me-1 d-none" id="registerImportPreviewSpinner" role="status"></span>
+                    <i class="icon-base bx bx-check-shield me-1"></i>@Localizer["RunPreview"]
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Step 2: preview summary (hidden until a dry-run returns) *@
+<div class="card mb-4 d-none" id="registerImportSummaryCard">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">@Localizer["Step2Preview"]</h6>
+        <span class="badge" id="registerImportSummaryBadge"></span>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning d-none" id="registerImportAlreadyAppliedAlert"></div>
+        <div class="row text-center mb-3" id="registerImportSummaryCounts"></div>
+        <div id="registerImportSummaryFindings"></div>
+    </div>
+</div>
+
+@* Step 3: commit (enabled only after a valid preview for the current file) *@
+<div class="card mb-4 d-none" id="registerImportCommitCard">
+    <div class="card-body">
+        <button type="button" id="btnRegisterImportCommit" class="btn btn-success" disabled>
+            <span class="spinner-border spinner-border-sm me-1 d-none" id="registerImportCommitSpinner" role="status"></span>
+            <i class="icon-base bx bx-save me-1"></i>@Localizer["CommitImport"]
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h6 class="mb-0">@Localizer["ImportHistoryTitle"]</h6></div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-register-import-history" data-dt-standard="v2" class="table border-top">
+            <thead>
+                <tr>
+                    <th>@Localizer["HistoryFileNameColumn"]</th>
+                    <th>@Localizer["HistoryActorColumn"]</th>
+                    <th>@Localizer["HistoryAppliedAtColumn"]</th>
+                    <th>@Localizer["HistoryCountsColumn"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="~/Views/DocumentManagement/MasterRegister/_IndexL10n.cshtml" />
+    <script src="~/assets/js/DocumentManagement/MasterRegister/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/DocumentManagement/MasterRegister/import.js" asp-append-version="true"></script>
+}

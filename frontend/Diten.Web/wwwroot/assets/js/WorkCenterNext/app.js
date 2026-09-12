@@ -510,25 +510,14 @@
     };
 
     /*
-     * A PERSON'S MONOGRAM — the same rule the assignee picker uses (Tasks/form.js personInitials), because a
-     * person has to look like the same person wherever they appear.
+     * A PERSON'S MONOGRAM — the same rule the assignee picker uses, because a person has to look like the same
+     * person wherever they appear.
      *
-     * Two or more words take the first and last initial; a single word takes its first two characters, which is
-     * what keeps "Ayşe" from rendering as a lone "A" beside "AT". Locale-aware upper-casing, so Turkish dotted
-     * and dotless i do not swap places.
-     *
-     * ⚠ The picker's copy still lives in Tasks/form.js — a different bundle with no export seam. Consolidating
-     * them is raised as its own item rather than smuggled into this round; what matters here is that app.js has
-     * ONE algorithm rather than a second improvised one.
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — this file's own copy (the one the
+     * comment just above used to invite consolidating) and Tasks/form.js's original are the same algorithm, so
+     * both now call the one place it is written.
      */
-    const personInitials = (name) => {
-        const words = String(name || '').trim().split(/\s+/).filter(Boolean);
-        if (!words.length) { return '?'; }
-        const raw = words.length > 1
-            ? words[0].charAt(0) + words[words.length - 1].charAt(0)
-            : words[0].slice(0, 2);
-        return raw.toLocaleUpperCase();
-    };
+    const personInitials = (name) => global.DitenPersonPicker.personInitials(name);
 
     /*
      * WHAT AN EVENT SAYS, in the reader's language.
@@ -3208,41 +3197,75 @@
          * `.outerHTML` because this file builds strings — the component builds nodes so that the one field
          * carrying typed text is set with `textContent` and cannot become markup.
          */
-        const rows = items.map((c, index) => global.DitenCheckItem.row(
-            {
-                id: `${item.id}:${c.id}`,
-                text: c.text,
-                requirement: c.requirement,
-                evidenceRequired: c.evidenceRequired,
-                done: c.done,
-                // A template item's words belong to every task made from that template; the server refuses to
-                // reword one, and the row says so rather than letting someone find out on reload.
-                templateOwned: !!c.templateOwned,
-                // Somebody else's step — or the process's. Its controls are not drawn; see the component.
-                editable: c.editable !== false
-            },
-            {
-                mode: 'working',
-                // A closed task's checklist is history. The server refuses these writes too — this is the
-                // courtesy, not the guard.
-                readOnly: ro,
-                labels: {
-                    optional: t('ChecklistLevelOptional'),
-                    required: t('ChecklistLevelRequired'),
-                    blocking: t('ChecklistLevelBlocking'),
-                    levelHint: t('ChecklistLevelHint'),
-                    // The two read-only faces of the same two facts. `ChecklistLevelHint` is an instruction
-                    // ("Change the level: …") and would be a lie on a chip nobody here can change; the mark's
-                    // label is a statement rather than the button's verb, for the same reason.
-                    levelStatic: t('ChecklistLevelReadOnly'),
-                    evidenceMark: t('ChecklistEvidenceMark'),
-                    moveUp: t('ChecklistMoveUp'),
-                    moveDown: t('ChecklistMoveDown'),
-                    evidenceToggle: t('ChecklistEvidenceToggle'),
-                    remove: t('ChecklistRemove'),
-                    toggle: t('ChecklistLabel')
+        const rows = items.map((c, index) => {
+            const rowEl = global.DitenCheckItem.row(
+                {
+                    id: `${item.id}:${c.id}`,
+                    text: c.text,
+                    requirement: c.requirement,
+                    evidenceRequired: c.evidenceRequired,
+                    done: c.done,
+                    // A template item's words belong to every task made from that template; the server refuses
+                    // to reword one, and the row says so rather than letting someone find out on reload.
+                    templateOwned: !!c.templateOwned,
+                    // Somebody else's step — or the process's. Its controls are not drawn; see the component.
+                    editable: c.editable !== false
+                },
+                {
+                    mode: 'working',
+                    // A closed task's checklist is history. The server refuses these writes too — this is the
+                    // courtesy, not the guard.
+                    readOnly: ro,
+                    labels: {
+                        optional: t('ChecklistLevelOptional'),
+                        required: t('ChecklistLevelRequired'),
+                        blocking: t('ChecklistLevelBlocking'),
+                        levelHint: t('ChecklistLevelHint'),
+                        // The two read-only faces of the same two facts. `ChecklistLevelHint` is an instruction
+                        // ("Change the level: …") and would be a lie on a chip nobody here can change; the
+                        // mark's label is a statement rather than the button's verb, for the same reason.
+                        levelStatic: t('ChecklistLevelReadOnly'),
+                        evidenceMark: t('ChecklistEvidenceMark'),
+                        moveUp: t('ChecklistMoveUp'),
+                        moveDown: t('ChecklistMoveDown'),
+                        evidenceToggle: t('ChecklistEvidenceToggle'),
+                        remove: t('ChecklistRemove'),
+                        toggle: t('ChecklistLabel')
+                    }
+                });
+            /*
+             * "KANIT EKLE" — Slice ATT-1's one addition to a row `DitenCheckItem` itself knows nothing about.
+             * The component draws the FLAG (does this item want evidence); this appends the ACT (attach one),
+             * as an extra child on the returned NODE rather than a second vocabulary inside the shared
+             * component — the same reason the grip and Sortable are wired here and not there.
+             *
+             * Gated on `!ro` alone, not on `mine`: `mine` answers "may I reword this item", a different
+             * question from "may I attach evidence to this task", which is TASK_ATTACHMENT_NOT_AUTHORIZED's
+             * question (holder or requester) and the server's alone to answer — this button is offered to any
+             * reader of an open task and the 403, if it comes, explains itself.
+             */
+            if (c.evidenceRequired && !ro) {
+                const addEvidence = document.createElement('button');
+                addEvidence.type = 'button';
+                addEvidence.className = 'diten-checkitem-btn wcn-check-evidence-add';
+                addEvidence.setAttribute('data-wcn-check-evidence-add', `${item.id}:${c.id}`);
+                const label = c.evidenceCount > 0 ? tf('ChecklistEvidenceCount', c.evidenceCount) : t('ChecklistAddEvidence');
+                addEvidence.title = label;
+                addEvidence.setAttribute('aria-label', label);
+                const icon = document.createElement('i');
+                icon.className = 'bx bx-paperclip';
+                icon.setAttribute('aria-hidden', 'true');
+                addEvidence.appendChild(icon);
+                if (c.evidenceCount > 0) {
+                    const count = document.createElement('span');
+                    count.className = 'wcn-check-evidence-count';
+                    count.textContent = String(c.evidenceCount);
+                    addEvidence.appendChild(count);
                 }
-            }).outerHTML).join('');
+                rowEl.appendChild(addEvidence);
+            }
+            return rowEl.outerHTML;
+        }).join('');
         // The reason completion is unavailable must be READABLE on the page — a disabled button with only a
         // tooltip leaves a keyboard or touch user with no explanation at all.
         const blocked = items.some((c) => c.blocking && !c.done);
@@ -3954,14 +3977,116 @@
         </div>`;
     };
 
-    // Attachments — readonly references (open in source).
+    // How big a file is, in the units every reader already knows — never localized, the same choice every
+    // product on this desk makes for "KB"/"MB".
+    const formatByteSize = (bytes) => {
+        const n = Number(bytes);
+        if (!Number.isFinite(n) || n < 0) { return ''; }
+        if (n < 1024) { return `${n} B`; }
+        const units = ['KB', 'MB', 'GB'];
+        let value = n / 1024;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) { value /= 1024; unitIndex += 1; }
+        return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
+    };
+
+    const ATTACHMENT_KIND_BADGE = { Evidence: 'primary', Deliverable: 'success', Attachment: 'secondary' };
+    // Resolved by literal calls, one per kind — the same rule diten-checkitem.js's own levelLabel follows and
+    // for the same reason: the l10n guard scans callers for literal resource-key calls, and a key assembled
+    // from a variable is invisible to it, so a missing translation would reach a reader instead of failing a
+    // test. Deliberately not a template-literal or string-concatenation lookup for that reason.
+    const attachmentKindLabel = (kind) =>
+        kind === 'Evidence' ? t('AttachmentKindEvidence')
+            : kind === 'Deliverable' ? t('AttachmentKindDeliverable')
+                : t('AttachmentKindAttachment');
+
+    /*
+     * ── ATTACHMENTS — Slice ATT-1, and the ONE CAPABILITY NAME TWO SHAPES ANSWER TO ──────────────────────────
+     *
+     * `attachments` was declared in the fixture contract before this round and already had a LIVE caller:
+     * documentation-fixtures.js / islerim-showcase-fixtures.js (dev-only, `?fixtures=showcase`) send a bare
+     * ARRAY of read-only document REFERENCES — {id, label, version, accessState, deepLink} — a citation into
+     * another module's controlled document, never uploaded here and never removable. That is what the OLD
+     * `renderAttachments` below this comment used to draw, on the wrong field names (`a.name`/`a.size` on an
+     * object shaped `{label, version}` — it rendered blank on every one of those fixtures, silently).
+     *
+     * MOD-0024's OWN attachments are a different thing wearing the same capability: files THIS task holds
+     * itself, addable and removable, wrapped in {items: [...]} — this shell's own wrapper shape for every list
+     * it owns (WorkItemChecklistDto, WorkItemSubtasksDto, and now WorkItemAttachmentsDto). An array is never an
+     * object and an object is never an array, so `Array.isArray` tells the two apart with certainty: no
+     * fixture is rewritten, and no live projection has to pretend to be the other one.
+     */
     const renderAttachments = (item) => {
-        if (!hasCap(item, 'attachments') || !item.attachments || !item.attachments.length) { return ''; }
+        if (!hasCap(item, 'attachments') || !item.attachments) { return ''; }
+        return Array.isArray(item.attachments)
+            ? renderAttachmentReferences(item)
+            : renderTaskAttachments(item);
+    };
+
+    // The PRE-EXISTING shape. Read-only by construction — there was never a write path for a reference into
+    // another module's document, and Slice ATT-1 does not invent one.
+    const renderAttachmentReferences = (item) => {
+        if (!item.attachments.length) { return ''; }
         const rows = item.attachments.map((a) =>
-            `<li class="wcn-attach" data-wcn-attach="${esc(a.name)}"><i class="bx bx-paperclip"></i><span class="wcn-attach-name">${esc(a.name)}</span><span class="wcn-attach-size">${esc(a.size)}</span></li>`).join('');
+            `<li class="wcn-attach" data-wcn-attach="${esc(a.id)}">
+                <i class="bx bx-paperclip" aria-hidden="true"></i>
+                <span class="wcn-attach-name">${esc(data.resolveLabel(a.label) || a.id)}</span>
+                <span class="wcn-attach-size">${a.version ? esc(`v${a.version}`) : ''}</span>
+            </li>`).join('');
         return `<div class="wcn-detail-section">
             ${cardHead('bx-paperclip', 'AttachmentsLabel')}
             <ul class="wcn-attachments">${rows}</ul>
+        </div>`;
+    };
+
+    /*
+     * MOD-0024's OWN attachments (AC1/AC3). The provider ships {items: []} for every dispatchable task — the
+     * same "declared-and-empty" rule the checklist and subtask cards follow — so the add button IS the empty
+     * state, exactly as `renderChecklist` draws it: a sentence above an empty box for putting something there
+     * is noise, and this card is the only place the capability can be discovered at all.
+     *
+     * `canManage` mirrors the checklist's own `canAdd`: a closed task's attachments are history (server refusal
+     * is TASK_ATTACHMENT_TASK_CLOSED, 409) and this is the courtesy, not the guard.
+     */
+    const renderTaskAttachments = (item) => {
+        const attachments = item.attachments.items || [];
+        const canManage = !isTerminal(item);
+        const addButton = canManage
+            ? `<button type="button" class="btn btn-sm btn-label-primary" data-wcn-attach-add="${item.id}">
+                   <i class="bx bx-plus" aria-hidden="true"></i> ${esc(t('AttachmentAddButton'))}</button>`
+            : '';
+        if (!attachments.length) {
+            return `<div class="wcn-detail-section">
+                ${cardHead('bx-paperclip', 'AttachmentsLabel')}
+                ${canManage ? addButton : `<p class="wcn-block-hint">${esc(t('AttachmentsEmpty'))}</p>`}
+            </div>`;
+        }
+        const rows = attachments.map((a) => {
+            const url = global.TasksApi.attachmentContentUrl(item.id, a.id);
+            const uploader = a.uploadedBy?.displayName || t('PersonNameUnavailable');
+            const when = agoLabel(Date.parse(a.uploadedAt), item.provenance);
+            const whenAbsolute = absoluteInstant(a.uploadedAt);
+            const kindBadge = ATTACHMENT_KIND_BADGE[a.kind] || 'secondary';
+            return `<li class="wcn-attach" data-wcn-attach="${esc(a.id)}">
+                <i class="bx bx-paperclip" aria-hidden="true"></i>
+                <div class="wcn-attach-main">
+                    <a class="wcn-attach-name" href="${esc(url)}" download="${esc(a.fileName)}"
+                       title="${esc(a.fileName)}">${esc(a.fileName)}</a>
+                    <span class="wcn-attach-meta"${whenAbsolute ? ` title="${esc(whenAbsolute)}"` : ''}>${
+                        esc(tf('AttachmentUploadedBy', uploader, when))}</span>
+                </div>
+                <span class="wcn-badge wcn-badge-${kindBadge}">${esc(attachmentKindLabel(a.kind))}</span>
+                <span class="wcn-attach-size">${esc(formatByteSize(a.byteSize))}</span>
+                ${canManage ? `<button type="button" class="diten-checkitem-btn diten-checkitem-remove"
+                        data-wcn-attach-remove="${item.id}:${esc(a.id)}"
+                        aria-label="${esc(t('AttachmentRemove'))}" title="${esc(t('AttachmentRemove'))}">
+                    <i class="bx bx-trash" aria-hidden="true"></i></button>` : ''}
+            </li>`;
+        }).join('');
+        return `<div class="wcn-detail-section">
+            ${cardHead('bx-paperclip', 'AttachmentsLabel', `<span class="wcn-count-inline">${attachments.length}</span>`)}
+            <ul class="wcn-attachments">${rows}</ul>
+            ${addButton ? `<div class="mt-2">${addButton}</div>` : ''}
         </div>`;
     };
 
@@ -4399,10 +4524,17 @@
     };
 
 
+    /*
+     * The row markup delegates to shared/diten-related-records.js (WP-WC-SHARED-UI-01, E3) — this section's own
+     * wrapper (sectionHead + .wcn-related-list) stays here; only "one record → one row" moved, unchanged.
+     */
     const renderRelated = (item) => {
-        if (!hasCap(item, 'related') || !(item.related || []).length) { return ''; }
+        if (!hasCap(item, 'relatedRecords') || !(item.relatedRecords || []).length) { return ''; }
         const typeKeys = { parent: 'RelatedTypeParent', child: 'RelatedTypeChild', transaction: 'RelatedTypeTransaction', document: 'RelatedTypeDocument' };
-        const rows = item.related.map((record) => `<a class="wcn-related-row" href="${esc(record.link)}"><span class="wcn-related-type">${esc(t(typeKeys[record.type] || 'RelatedTypeDocument'))}</span><span><strong>${esc(record.title)}</strong><small>${esc(record.id)}</small></span><i class="bx bx-chevron-right"></i></a>`).join('');
+        const rows = global.DitenRelatedRecords.renderRelatedRows(item.relatedRecords, {
+            esc,
+            resolveTypeLabel: (record) => t(typeKeys[record.type] || 'RelatedTypeDocument')
+        });
         return `<section class="wcn-detail-section wcn-business-section">${sectionHead('bx-link', 'RelatedRecordsTitle')}<div class="wcn-related-list">${rows}</div></section>`;
     };
 
@@ -7004,6 +7136,14 @@
             return;
         }
 
+        /*
+         * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is ONE server code for TWO refusals: "this person cannot be
+         * assigned work" (assign / reassign) and inquire's own "this person cannot be waited on". The base map
+         * answers with the assignment sentence, because every other action IS an assignment; inquire is the one
+         * action that must ask for the other sentence, and it asks here, at its only call site.
+         */
+        const overrides = action.code === 'inquire' ? global.TasksApi.INQUIRE_REASON_CODE_OVERRIDES : undefined;
+
         // A 409 means two very different things, and they must not share a message. A CONCURRENCY conflict is
         // "someone changed it first, here is the fresh screen"; a workflow BLOCK is "the approver has not released
         // this yet" — nothing was overwritten and refreshing changes nothing. Routing every 409 to the concurrency
@@ -7020,12 +7160,12 @@
             // so the row should stop offering the action it cannot honour.
             await loadWorkItems();
             render();
-            toast(global.TasksApi.failureMessage(result), 'error');
+            toast(global.TasksApi.failureMessage(result, overrides), 'error');
             return;
         }
 
         render();
-        toast(global.TasksApi.failureMessage(result), 'error');
+        toast(global.TasksApi.failureMessage(result, overrides), 'error');
     };
 
     /*
@@ -7698,84 +7838,36 @@
      * so it renders (the reader still gets to answer the question) and the console says why it looks wrong.
      */
     /*
-     * ── SELECT2 INSIDE A DIALOG (2026-08-24, A2 job 4) ────────────────────────────────────────────────────
+     * ── SELECT2 INSIDE A DIALOG (2026-08-24, A2 job 4; delegated 2026-09-11, WP-WC-SHARED-UI-01 M2b) ────────
      *
-     * The rest of this product picks from a select2; two dialog selects were native `<select>`s. This binds
-     * them with the SAME configuration `mountPanelSelect2` uses — no second wrapper, no new options object.
-     *
-     * ⚠⚠ `dropdownParent` IS THE POPUP, AND THAT IS THE WHOLE POINT.
-     *
-     * select2's default parent is `<body>`, where its list lands at the library's own z-index. That is exactly
-     * how flatpickr's calendar shipped BEHIND this dialog earlier in this session — calendar 1074, SweetAlert
-     * 1090 — and every click on a day reached the page behind. It passed every test and survived days.
-     * Parenting the list INSIDE the popup removes the stacking question rather than answering it with a number:
-     * a descendant cannot be behind its ancestor.
-     *
-     * ⚠ THE `<select>` STAYS A DIRECT CHILD of whatever held it. select2 hides the original in place and
-     * inserts `.select2-container` as its SIBLING, so `Swal.getInput()` (which walks the popup's fixed slot
-     * list) still finds `.swal2-select`. This is measured, not assumed — a wrapper around a dialog input is
-     * the defect that cost this session a whole round.
+     * Delegates to shared/diten-dialog.js's own `bindDialogSelect2` — the SAME dropdownParent-into-the-popup
+     * fix this file worked out first (that file's own top comment carries the full "why", including the
+     * flatpickr-behind-the-dialog measurement that made the fix non-negotiable). This module keeps its OWN
+     * pinned class names (`wcn-dialog-select`/`wcn-dialog-select-dropdown`, styled in backbone-custom.css)
+     * by passing them as options — a shared component does not reach into a module's own CSS hook.
      */
-    const bindDialogSelect2 = (element, popup) => {
-        const jq = global.jQuery;
-        if (!element || !jq || !jq.fn || !jq.fn.select2) { return false; }
-        const $s = jq(element);
-        if ($s.hasClass('select2-hidden-accessible')) { return true; }
-        /*
-         * ⚠ NO `placeholder` KEY UNLESS THERE IS A PLACEHOLDER — MEASURED, and it cost a real sentence.
-         *
-         * Passing `placeholder: ''` still switches select2's placeholder decorator ON, and that decorator
-         * treats the first option with an EMPTY VALUE as the placeholder and renders nothing for it. The
-         * waiting-on picker's first option is not a placeholder at all: "Belirli bir kişi değil" is a REAL
-         * CHOICE (this file's own comment says so), and select2 blanked it — the control opened showing an
-         * empty box where the native select had shown the words.
-         */
-        /*
-         * ⚠ `selectionCssClass` DOES NOTHING ON THIS SELECT2 BUILD — MEASURED, and it shipped a visible defect.
-         *
-         * It was passed as `'form-select'` so the control would wear the product's field styling. The class
-         * never reached the element: the rendered node measured `class="select2-selection
-         * select2-selection--single"` with NO `form-select`, and its text came out at **18px** beside a
-         * textarea, a label and a page full of controls at **15px** — which is what the owner photographed.
-         * (`selectionCssClass` is a 4.1 option; this bundle ignores unknown keys silently.)
-         *
-         * `containerCssClass` IS honoured here, so the hook is a real class and the styling lives in
-         * `backbone-custom.css` under `.wcn-dialog-select` — which is also where it belongs (FG-003), and how
-         * this product already styles select2 on its other surfaces (the filter chips do the same).
-         */
-        const config = {
-            dropdownParent: jq(popup || element.closest('.swal2-popup') || document.body),
+    const bindDialogSelect2 = (element, popup) => (global.DitenDialog
+        ? global.DitenDialog.bindDialogSelect2(element, popup, {
             containerCssClass: 'wcn-dialog-select',
-            dropdownCssClass: 'wcn-dialog-select-dropdown',
-            minimumResultsForSearch: 10,
-            width: '100%',
-            allowClear: false
-        };
-        const declared = String($s.data('placeholder') || '');
-        if (declared) { config.placeholder = declared; }
-        $s.select2(config);
-        return true;
-    };
+            dropdownCssClass: 'wcn-dialog-select-dropdown'
+        })
+        : false);
 
-    const dialogLook = (options) => {
-        if (typeof global.DitenDialogAppearance !== 'function') {
-            console.error('[WorkCenterNext] window.DitenDialogAppearance is unavailable (is _GlobalConfirmation loaded?).');
-            return {};
-        }
-        return global.DitenDialogAppearance(options);
-    };
+    // Delegates to shared/diten-dialog.js (WP-WC-SHARED-UI-01 M2b) — the same appearance-package reader this
+    // file used to keep as its own copy.
+    const dialogLook = (options) => (global.DitenDialog ? global.DitenDialog.dialogLook(options) : {});
     /*
      * THE ICON, for a dialog that cannot go through `showConfirm`. Read from the published builder — the same
      * one the shared confirm uses — so the circle, its tint and the glyph cannot become a second design here.
+     *
+     * Delegates to shared/diten-dialog.js (WP-WC-SHARED-UI-01, E1) — like `dialogLook` and `bindDialogSelect2`
+     * just above, now that WP-WC-SHARED-UI-01 M2b retired their own local bodies too.
      */
-    const dialogIcon = (type, glyph) => (typeof global.DitenDialogAppearance === 'function'
-        && typeof global.DitenDialogAppearance.iconHtml === 'function'
-        ? global.DitenDialogAppearance.iconHtml(type, glyph)
+    const dialogIcon = (type, glyph) => (global.DitenDialog
+        ? global.DitenDialog.dialogIcon(type, glyph)
         : '');
     // The class the product's dialog DESCRIPTION wears — 13px secondary copy, read from the same one place.
-    const dialogDescriptionClass = () => (typeof global.DitenDialogAppearance === 'function'
-        ? global.DitenDialogAppearance.description
-        : '');
+    const dialogDescriptionClass = () => (global.DitenDialog ? global.DitenDialog.dialogDescriptionClass() : '');
 
     const sharedConfirm = (options) => {
         const confirm = global.showConfirm;
@@ -8230,6 +8322,73 @@
             },
             onConfirm: (value) => { if (value) { apply(value).catch(reportSwalFailure); } }
         });
+    };
+
+    /*
+     * ── MOD-0024 Slice ATT-1 — task attachments ──────────────────────────────────────────────────────────────
+     *
+     * Real files on the Document Binary Store, not a personal overlay: unlike the note/snooze/pin above, there
+     * is NO browser-only fallback here. A fixture or showcase item's own `attachments` is the OTHER shape
+     * entirely (a plain array — see renderAttachmentReferences) and carries no add/remove affordance at all, so
+     * this code is only ever reached from a control the real shape drew, on a real, dispatchable task.
+     */
+    const openAttachmentDialog = (taskId, options) => {
+        const opts = options || {};
+        if (!global.Swal) { return; }
+        const item = itemById(taskId);
+        if (!isDispatchableItem(item)) {
+            console.warn(`[WorkCenterNext] Attachment upload ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+        const lockedKind = opts.lockKind || null;
+        const kindOptions = ['Evidence', 'Deliverable', 'Attachment'].map((kind) =>
+            `<option value="${kind}"${kind === (lockedKind || 'Attachment') ? ' selected' : ''}>`
+            + `${esc(attachmentKindLabel(kind))}</option>`).join('');
+        global.Swal.fire(Object.assign({
+            title: dialogIcon('info', 'bx-paperclip') + '<span>' + esc(t('AttachmentUploadTitle')) + '</span>',
+            html: `<label class="form-label d-block text-start" for="wcnAttachFile">`
+                + `${esc(t('AttachmentFileLabel'))}</label>`
+                + `<input type="file" id="wcnAttachFile" class="form-control">`
+                + `<label class="form-label d-block text-start" for="wcnAttachKind">`
+                + `${esc(t('AttachmentKindLabel'))}</label>`
+                + `<select id="wcnAttachKind" class="form-select"${lockedKind ? ' disabled' : ''}>${kindOptions}</select>`
+                + `<label class="form-label d-block text-start" for="wcnAttachNote">`
+                + `${esc(t('AttachmentNoteLabel'))}</label>`
+                + `<textarea id="wcnAttachNote" class="form-control" rows="2" `
+                + `placeholder="${esc(t('AttachmentNotePlaceholder'))}"></textarea>`,
+            showCancelButton: true,
+            confirmButtonText: t('AttachmentUploadConfirm'),
+            cancelButtonText: t('DialogDismiss'),
+            preConfirm: () => {
+                const file = document.getElementById('wcnAttachFile')?.files?.[0];
+                if (!file) { global.Swal.showValidationMessage(t('AttachmentFileRequired')); return false; }
+                const kind = lockedKind || document.getElementById('wcnAttachKind')?.value || 'Attachment';
+                const note = String(document.getElementById('wcnAttachNote')?.value || '').trim();
+                return { file, kind, note };
+            }
+        }, dialogLook())).then(async (res) => {
+            if (res.isConfirmed && res.value) {
+                await uploadAttachment(taskId, {
+                    file: res.value.file,
+                    kind: res.value.kind,
+                    checklistItemCode: opts.checklistItemCode,
+                    note: res.value.note
+                });
+            }
+        });
+    };
+
+    const uploadAttachment = async (taskId, payload) => {
+        const result = await global.TasksApi.addAttachment(taskId, payload);
+        await afterPhase2Write(result, 'ToastAttachmentAdded');
+    };
+
+    const removeAttachmentRow = async (taskId, attachmentId) => {
+        // A file is not a private note: it is worth confirming before it goes, unlike the note remove above.
+        if (!(await confirmDestructive(t('AttachmentRemoveConfirm')))) { return; }
+        const result = await global.TasksApi.removeAttachment(taskId, attachmentId);
+        await afterPhase2Write(result, 'ToastAttachmentRemoved');
     };
 
     // ── "+ Yeni" — WorkCenter owns only self-tasks; module items are created in
@@ -9164,6 +9323,25 @@
             const rowEl = checkMoveEl.closest('[data-diten-check-row]');
             const [taskId, itemCode] = rowEl.getAttribute('data-diten-check-row').split(':');
             await moveChecklistItem(taskId, itemCode, checkMoveEl.getAttribute('data-diten-check-move'));
+            return;
+        }
+        // ── Slice ATT-1: task attachments ───────────────────────────────────
+        const attachAddEl = event.target.closest('[data-wcn-attach-add]');
+        if (attachAddEl) {
+            openAttachmentDialog(attachAddEl.getAttribute('data-wcn-attach-add'), {});
+            return;
+        }
+        const attachRemoveEl = event.target.closest('[data-wcn-attach-remove]');
+        if (attachRemoveEl) {
+            const [taskId, attachmentId] = attachRemoveEl.getAttribute('data-wcn-attach-remove').split(':');
+            await removeAttachmentRow(taskId, attachmentId);
+            return;
+        }
+        // The checklist row's own "kanıt ekle" — the same dialog, pre-locked to Evidence and to this item.
+        const checkEvidenceAddEl = event.target.closest('[data-wcn-check-evidence-add]');
+        if (checkEvidenceAddEl) {
+            const [taskId, itemCode] = checkEvidenceAddEl.getAttribute('data-wcn-check-evidence-add').split(':');
+            openAttachmentDialog(taskId, { lockKind: 'Evidence', checklistItemCode: itemCode });
             return;
         }
         // Opening a subtask's own detail. Checked BEFORE the toggle so the two never compete for the same click;

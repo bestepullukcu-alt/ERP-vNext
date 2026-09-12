@@ -4639,9 +4639,90 @@ div.dt-container div.dt-search input {
 }
 /* Hover mirrors the Golden Compact DataTable row hover tint. */
 .entity-row-card:hover { background-color: rgba(var(--bs-primary-rgb), .035); }
-/* Baseline / locked permissions read as muted, non-actionable rows (light tint, matches menu settings). */
-.ra-row[data-locked="1"] { background-color: rgba(0, 0, 0, .025); }
-[data-bs-theme="dark"] .ra-row[data-locked="1"] { background-color: rgba(255, 255, 255, .04); }
+/* FIX-RBAC-PERM-MODULE-ATTRIBUTION — a permission row is now a SOURCE plus its action chips. The source column
+   holds a fixed share of the row so the chips of neighbouring rows line up into readable columns; below the
+   layout's comfortable width the row stacks and the chips wrap under the source name. */
+/* Chips sit on ONE line while the source cell carries two (name + key), so flex-start left the chips hugging the
+   top of a taller row. Centring is what makes the row read as one thing; when chips wrap it still centres the
+   block against the source. The column layout below (narrow screens) sets its own direction and is unaffected. */
+.ra-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.ra-row-source {
+    flex: 0 0 14rem;
+    max-inline-size: 14rem;
+}
+.ra-row .ra-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .375rem;
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    padding-block-start: .0625rem;
+}
+@media (max-width: 991.98px) {
+    .ra-row { flex-direction: column; gap: .5rem; }
+    .ra-row-source { flex: 1 1 auto; max-inline-size: 100%; }
+}
+
+/* The chip is the affordance, so it has to read as pressable and as ON/OFF at a glance: an outline chip is a
+   permission the role does NOT have, a filled one is a permission it does. */
+.ra-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 50rem;
+    background-color: transparent;
+    color: var(--bs-body-color);
+    padding: .1875rem .5rem;
+    font-size: .8125rem;
+    line-height: 1.4;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+.ra-chip .ra-chip-icon { font-size: .9375rem; }
+.ra-chip:not(:disabled):hover { border-color: currentColor; }
+.ra-chip:disabled { opacity: .75; cursor: default; }
+.ra-chip:focus-visible {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* FIX-ROLEPERMS-ACTION-FAMILIES — tone follows the action's FAMILY (reading / creating / changing / destructive /
+   lifecycle / reversing / ownership), the same resolver the role panel's bars use. Seven tones, not seven hundred
+   verbs. `success` and `dark` join the five that were already here. */
+.ra-chip--info { color: var(--bs-info); }
+.ra-chip--primary { color: var(--bs-primary); }
+.ra-chip--warning { color: var(--bs-warning); }
+.ra-chip--danger { color: var(--bs-danger); }
+.ra-chip--success { color: var(--bs-success); }
+.ra-chip--secondary { color: var(--bs-secondary); }
+/* `dark` is the ownership family (assign / claim / delegate). Bootstrap's --bs-dark is near-black in light mode
+   and near-white in dark, so the token is read through the emphasis colour, which flips with the theme. */
+.ra-chip--dark { color: var(--bs-emphasis-color); }
+
+.ra-chip--on { border-color: transparent; }
+.ra-chip--on.ra-chip--info { background-color: rgba(var(--bs-info-rgb), .16); }
+.ra-chip--on.ra-chip--primary { background-color: rgba(var(--bs-primary-rgb), .16); }
+.ra-chip--on.ra-chip--warning { background-color: rgba(var(--bs-warning-rgb), .16); }
+.ra-chip--on.ra-chip--danger { background-color: rgba(var(--bs-danger-rgb), .16); }
+.ra-chip--on.ra-chip--success { background-color: rgba(var(--bs-success-rgb), .16); }
+.ra-chip--on.ra-chip--secondary { background-color: rgba(var(--bs-secondary-rgb), .16); }
+.ra-chip--on.ra-chip--dark { background-color: rgba(var(--bs-emphasis-color-rgb), .12); }
+
+/* The reach pill sits INSIDE the chip but reads as its own token — "read" and "read across the whole tenant"
+   must never look like the same grant with a longer word. */
+.ra-chip-scope {
+    border-radius: 50rem;
+    background-color: rgba(var(--bs-secondary-rgb), .18);
+    color: var(--bs-secondary-color);
+    padding: 0 .375rem;
+    font-size: .6875rem;
+    white-space: nowrap;
+}
+.ra-chip-lock { font-size: .875rem; opacity: .7; }
 
 /* Prevent the native <select> from flashing as a raw multi-row listbox before select2 upgrades it. */
 select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
@@ -4679,18 +4760,13 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .select2-selection--multiple.ra-filter-multi .select2-selection__choice,
 .select2-selection--multiple.ra-filter-multi .select2-search--inline,
 .select2-selection--multiple.ra-filter-multi .select2-search__field { display: none !important; }
-.select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__summary {
-  display: block;
-  position: absolute;
-  inset-inline: .85rem 3.85rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: calc(2.2505001rem);
-  font-size: .9375rem;
-  color: var(--bs-secondary-color);
-}
-.select2-selection--multiple.ra-filter-multi.dt-inline-filter-multi--has-value .dt-inline-filter-multi__summary { color: var(--bs-body-color); }
+
+/* The search does NOT live in this control. select2 renders a MULTI select's search field inline, inside the
+   closed box, where the summary above must cover it — two things cannot occupy one line. The Role select beside it
+   is a plain SINGLE select2 and gets its search inside the DROPDOWN, which is what a person expects and what this
+   control now does too via a dropdownAdapter (see initModuleSelect2). So the inline field stays hidden in both
+   states and the rules that used to reveal it on open are gone. */
+
 .select2-selection--multiple.ra-filter-multi .dt-inline-filter-multi__actions {
   position: absolute;
   inset-inline-end: 1.95rem;
@@ -5180,6 +5256,19 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
     position: relative;
 }
 
+/* THE WRAPPER BREAKS THE THEME'S VALIDATION SELECTOR, and this puts it back.
+   core.css shows a message with `.was-validated :invalid ~ .invalid-feedback` / `.is-invalid ~ .invalid-feedback`
+   — SIBLING combinators. Wrapping the control in .diten-field makes the message a sibling of the WRAPPER, not of
+   the control, so every field that adopted the icon pattern silently stopped showing its error. The theme hit the
+   same wall with .input-group and solved it with `:has()`; this is that rule, for this wrapper.
+   Shared, not per-screen: the reference forms and Tasks' quick-create carry the same wrapper and the same hole. */
+form.was-validated .diten-field:has(:invalid) ~ .invalid-feedback,
+form.was-validated .diten-field:has(:invalid) ~ .invalid-tooltip,
+form .diten-field:has(.is-invalid) ~ .invalid-feedback,
+form .diten-field:has(.is-invalid) ~ .invalid-tooltip {
+    display: block;
+}
+
 /* Quiet by design: the icon is a hint, and it must not compete with the value
    the user typed. Placed on the INLINE start so Arabic moves it to the right
    with no second rule. */
@@ -5268,6 +5357,22 @@ select.ra-select2:not(.select2-hidden-accessible) { display: none !important; }
 .diten-field tags.diten-tags:focus-within,
 .diten-field tags.diten-tags.tagify--focus {
     padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* …AND THE VALIDATED STATE, which the rule above loses outright.
+   MEASURED LIVE on /Roles: submit the create form empty and the text jumps from 39px to 13px — it runs UNDER the
+   glyph, because core.css carries
+     `.was-validated .form-control:invalid, .form-control.is-invalid { padding-inline: calc(-2px + 0.9375rem) }`
+   at (0,3,0) against this file's (0,2,0). Focus was already safe (`.form-control:focus` ties and this file loads
+   later); validation was not, and no test saw it because the icon and the error state were never on screen at
+   the same moment.
+   The `-2px` is the theme's own border compensation, kept: the border thickens to 2px in this state, and dropping
+   the subtraction would step the text 2px sideways the instant the user pressed Save. */
+.was-validated .diten-field .form-control:invalid,
+.was-validated .diten-field .form-control:valid,
+.diten-field .form-control.is-invalid,
+.diten-field .form-control.is-valid {
+    padding-inline-start: calc(-2px + 0.9375rem + 1rem + 0.5rem);
 }
 
 /* Nothing here on purpose: the icon pushes the TEXT inward, not the chips. See .diten-tags-strip — the chips
@@ -5437,7 +5542,7 @@ tags.diten-tags .tagify__input {
 }
 
 /* ==========================================================================
-   WorkCenterNext — cross-module personal work inbox (docs/workcenter-rebuild-spec.md)
+   WorkCenterNext — cross-module personal work inbox (docs/reference/modules/tenant/workcenter/workcenter-rebuild-spec.md)
    Sneat FOUNDATION (tokens/card/badge/button) + bespoke work-management
    components (list-row, split-detail, table board). Fully namespaced .wcn-*
    so it never collides with the legacy /WorkCenter. Logical properties + tokens
@@ -7186,10 +7291,19 @@ tags.diten-tags .tagify__input {
     color: var(--bs-secondary-color);
     cursor: help;
 }
-.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; cursor: pointer; }
+.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; }
 .wcn-attach:hover { border-color: var(--bs-primary); }
-.wcn-attach-name { flex: 1; }
-.wcn-attach-size { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-attach-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wcn-attach-size { flex: 0 0 auto; font-size: .6875rem; color: var(--bs-secondary-color); }
+/* Slice ATT-1 — the name and its "who/when" sit in one column so the row stays one line of controls tall
+   regardless of how long the uploader's name is; `min-inline-size: 0` is what lets the ellipsis above actually
+   engage inside a flex row instead of pushing the row wider. */
+.wcn-attach-main { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: .0625rem; }
+.wcn-attach-meta { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The checklist row's "kanıt ekle" — same bare-icon-button family the row's own controls use
+   (.diten-checkitem-btn), plus the live count `ToChecklist`/`WorkItemChecklistItemDto.EvidenceCount` sends. */
+.wcn-check-evidence-add { gap: .1875rem; }
+.wcn-check-evidence-count { font-size: .6875rem; font-weight: 600; }
 /* The personal plan, at the head of the Personal card. Same row shape as a summary pair so the two cards read
    as one family, but this one KEEPS its empty state: "I have not planned this yet" is a thing the holder needs
    to notice about themselves, where an absent due date is simply absent. */
@@ -7683,11 +7797,18 @@ tags.diten-tags .tagify__input {
 .wcn-empty .btn { margin-block-start: .75rem; }
 
 /* Loading/error boundary --------------------------------------------------- */
-.wcn-system-page { display: flex; min-block-size: 20rem; flex-direction: column; align-items: center; justify-content: center;
+/* UAS-001 — `.diten-access-denied` is the SAME surface, shared out of the Task Center (Views/Shared/_AccessDenied.cshtml).
+   It joins the selector rather than copying the declarations: the Task Center invented this shape, and a second
+   copy would be two surfaces that drift. It wears `.card` in the markup for the same reason .wcn-empty does —
+   --bs-card-bg is card-scoped and a non-card resolves nothing. */
+.wcn-system-page, .diten-access-denied { display: flex; min-block-size: 20rem; flex-direction: column; align-items: center; justify-content: center;
     gap: .5rem; padding: 2rem; text-align: center; color: var(--bs-secondary-color); }
-.wcn-system-page h5, .wcn-system-page p { margin: 0; }
-.wcn-system-page h5 { color: var(--bs-heading-color); }
+.wcn-system-page h5, .wcn-system-page p, .diten-access-denied h5, .diten-access-denied p { margin: 0; }
+.wcn-system-page h5, .diten-access-denied h5 { color: var(--bs-heading-color); }
 .wcn-system-error > i { color: var(--bs-danger); font-size: 2.5rem; }
+/* Deliberately NOT --bs-danger: a missing permission is not a fault. UAS-001 §6 forbids telling the user
+   "you have no access" in the visual language of a breakage. */
+.diten-access-denied > i { color: var(--bs-secondary-color); font-size: 2.5rem; }
 .wcn-skeleton { display: flex; flex-direction: column; gap: .5rem; inline-size: min(30rem, 100%); margin-block-start: 1rem; }
 .wcn-skeleton span { display: block; block-size: 2.75rem; border-radius: .375rem;
     background: linear-gradient(90deg, var(--bs-body-bg), var(--bs-border-color), var(--bs-body-bg)); background-size: 200% 100%; animation: wcn-shimmer 1.2s linear infinite; }

@@ -129,6 +129,12 @@ public static class DependencyInjection
         services.AddScoped<IConceptRelationshipRepository, ConceptRelationshipRepository>();
         services.AddScoped<IConceptChainTemplateRepository, ConceptChainTemplateRepository>();
         services.AddScoped<IKnowledgeContentConceptLinkRepository, KnowledgeContentConceptLinkRepository>();
+        // SCMM-09 (②) — atomic node+edge combined-write (transaction when supported, else compensation).
+        services.AddScoped<IConceptNodeWithRelationshipUnitOfWork, ConceptNodeWithRelationshipUnitOfWork>();
+        // SCMM-11 (CAND-CAP-0011) — eligibility policy master (versioned; publish freezes conditions).
+        services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
+        // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
+        services.AddScoped<IClaimRepository, ClaimRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -529,7 +535,39 @@ public static class DependencyInjection
             map.GetMemberMap(t => t.SubjectId).SetSerializer(stringGuid);
             map.GetMemberMap(t => t.ParentTopicId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
-        Map<AudienceProfile>(_ => { });
+        // SCMM-11 (AUD) — the new SubjectId FK takes the string-Guid convention (else it stores binary and every
+        // subject filter silently returns nothing). The embedded AudienceDimensionAssignment carries no Guid, but is
+        // registered so the driver maps it explicitly rather than treating it as an anonymous document.
+        Map<AudienceProfile>(map =>
+            map.GetMemberMap(p => p.SubjectId).SetSerializer(new NullableSerializer<Guid>(stringGuid)));
+        if (!BsonClassMap.IsClassMapRegistered(typeof(AudienceDimensionAssignment)))
+        {
+            BsonClassMap.RegisterClassMap<AudienceDimensionAssignment>(map => map.AutoMap());
+        }
+
+        // SCMM-11 (CAND-CAP-0011) — eligibility policy. Its only Guids are Id/TenantId (mapped on the EntityBase base
+        // map, inherited here); the embedded EligibilityCondition carries no Guid but is registered so the driver maps
+        // it explicitly rather than treating it as an anonymous document.
+        Map<EligibilityPolicy>(_ => { });
+        if (!BsonClassMap.IsClassMapRegistered(typeof(EligibilityCondition)))
+        {
+            BsonClassMap.RegisterClassMap<EligibilityCondition>(map => map.AutoMap());
+        }
+
+        // SCMM-12 (CAND-CAP-0011) — claim. ComponentRefs (List<Guid> → KnowledgeContent) and the embedded applicability's
+        // EligibilityPolicyId take the string-Guid convention; without it those FKs store binary and every ref lookup
+        // silently returns nothing (the new-aggregate class-map trap).
+        Map<Claim>(map =>
+            map.GetMemberMap(x => x.ComponentRefs)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid)));
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ClaimApplicability)))
+        {
+            BsonClassMap.RegisterClassMap<ClaimApplicability>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(a => a.EligibilityPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            });
+        }
         Map<KnowledgeExternalReference>(_ => { });
 
         // MOD-0162 FU03 — Concept graph. Every Guid FK takes the string-Guid convention like every other CRM aggregate:
@@ -537,7 +575,13 @@ public static class DependencyInjection
         // binary, and the lookup silently returns NOTHING (the failure AccountTerritoryAssignment already hit). For a
         // graph that would mean "this subject has no nodes/edges" on every read — silently. OrderedConceptTypes is a
         // List<Guid> and needs the enumerable string-Guid serializer (like TerritoryRuleCriteria account-id lists).
-        Map<ConceptType>(map => map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid));
+        Map<ConceptType>(map =>
+        {
+            map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);
+            // SCMM-09 (①) — hierarchical parent FK. Without the string-Guid serializer this nullable Guid would store as
+            // binary and every parent lookup would silently return nothing (the new-aggregate class-map trap).
+            map.GetMemberMap(x => x.ParentConceptTypeId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<ConceptNode>(map =>
         {
             map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);
@@ -555,6 +599,21 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.OrderedConceptTypes)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
+        // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
+        // ConceptTypeId Guid falls through to the global Standard (binary sub-type 4) serializer and every branch-step
+        // type lookup silently returns nothing (the KnowledgePathStep lesson).
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ConceptChainBranch)))
+        {
+            BsonClassMap.RegisterClassMap<ConceptChainBranch>(map => map.AutoMap());
+        }
+        if (!BsonClassMap.IsClassMapRegistered(typeof(ConceptChainStep)))
+        {
+            BsonClassMap.RegisterClassMap<ConceptChainStep>(map =>
+            {
+                map.AutoMap();
+                map.GetMemberMap(s => s.ConceptTypeId).SetSerializer(stringGuid);
+            });
+        }
         Map<KnowledgeContentConceptLink>(map =>
         {
             map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);
@@ -1402,6 +1461,19 @@ public static class DependencyInjection
             knowledgeProfiles.Indexes.CreateOne(new CreateIndexModel<AudienceProfile>(
                 Builders<AudienceProfile>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.ProfileCode),
                 new CreateIndexOptions { Name = "ix_knowledge_audience_profiles_tenant_code" }));
+
+            // SCMM-11 (CAND-CAP-0011) — eligibility policy index (tenant scoped). PolicyCode is shared across versions,
+            // so this is NOT unique. EffectiveFrom/EffectiveTo are DateTimeOffset (BSON array) — never index keys.
+            var eligibilityPolicies = database.GetCollection<EligibilityPolicy>(EligibilityPolicyRepository.CollectionName);
+            eligibilityPolicies.Indexes.CreateOne(new CreateIndexModel<EligibilityPolicy>(
+                Builders<EligibilityPolicy>.IndexKeys.Ascending(p => p.TenantId).Ascending(p => p.PolicyCode),
+                new CreateIndexOptions { Name = "ix_eligibility_policies_tenant_code" }));
+
+            // SCMM-12 (CAND-CAP-0011) — claim index (tenant scoped). ClaimCode is shared across versions ⇒ NOT unique.
+            var claims = database.GetCollection<Claim>(ClaimRepository.CollectionName);
+            claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
+                Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
+                new CreateIndexOptions { Name = "ix_claims_tenant_code" }));
 
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code

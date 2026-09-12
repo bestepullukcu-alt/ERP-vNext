@@ -514,6 +514,7 @@
   <data name="Nav.Domain.ADMINISTRATION" xml:space="preserve"><value>Administration</value></data>
   <data name="Nav.Domain.DEVENABLEMENT" xml:space="preserve"><value>Activation développeur</value></data>
   <data name="Nav.Domain.DOCUMENTMANAGEMENT" xml:space="preserve"><value>Gestion documentaire</value></data>
+  <data name="Nav.Domain.MANAGEMENTGOVERNANCE" xml:space="preserve"><value>Management et gouvernance</value></data>
   <data name="Nav.Domain.MASTERDATAMANAGEMENT" xml:space="preserve"><value>Gestion des données de référence</value></data>
   <data name="Nav.Domain.PLATFORMSHAREDSERVICES" xml:space="preserve"><value>Services partagés de la plateforme</value></data>
   <data name="Nav.Module.WORKINGCALENDAR" xml:space="preserve"><value>Calendrier de travail</value></data>
@@ -528,6 +529,7 @@
   <data name="Nav.Module.ORGANIZATION" xml:space="preserve"><value>Organisation</value></data>
   <data name="Nav.Module.TASKS" xml:space="preserve"><value>Paramètres des tâches</value></data>
   <data name="Nav.Module.WORKFLOW" xml:space="preserve"><value>Flux de travail</value></data>
+  <data name="Nav.Module.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
   <data name="Nav.Page.USERS" xml:space="preserve"><value>Utilisateurs</value></data>
   <data name="Nav.Page.ROLES" xml:space="preserve"><value>Rôles</value></data>
   <data name="Nav.Page.ROLEPERMISSIONS" xml:space="preserve"><value>Autorisations de rôle</value></data>
@@ -738,4 +740,64 @@
   <data name="Nav.Page.BENEFITCOMMITMENTS" xml:space="preserve">
     <value>Engagements de bénéfices</value>
   </data>
+  <data name="Nav.Module.TENANTS" xml:space="preserve"><value>Locataires</value></data>
+  <data name="Nav.Module.NOTIFICATIONS" xml:space="preserve"><value>Notifications</value></data>
+  <data name="Nav.Module.ADMINISTRATORS" xml:space="preserve"><value>Administrateurs</value></data>
+  <data name="Nav.Module.AUDIT" xml:space="preserve"><value>Audit</value></data>
+  <data name="Nav.Module.MODULECATALOG" xml:space="preserve"><value>Catalogue des modules</value></data>
+  <data name="Nav.Module.MODULEDOMAINS" xml:space="preserve"><value>Domaines de modules</value></data>
+  <data name="Nav.Module.MODULESERVICES" xml:space="preserve"><value>Services de modules</value></data>
+  <data name="Nav.Module.INTERFACEREGISTRY" xml:space="preserve"><value>Registre des interfaces</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONPLANS" xml:space="preserve"><value>Formules d'abonnement</value></data>
+  <data name="Nav.Module.SUBSCRIPTIONFEATURES" xml:space="preserve"><value>Fonctionnalités d'abonnement</value></data>
+  <data name="Nav.Module.PERSON" xml:space="preserve"><value>Annuaire des personnes</value></data>
+  <data name="Nav.Module.LOOKUPS" xml:space="preserve"><value>Listes de référence</value></data>
+  <data name="Perm.Module.TASKS" xml:space="preserve"><value>Tâches</value></data>
+  <data name="Nav.Page.PRODUCTS" xml:space="preserve"><value>Produits</value></data>
+  <data name="Nav.Page.ACCOUNT" xml:space="preserve"><value>Compte</value></data>
+  <data name="Nav.Page.CAMPAIGN" xml:space="preserve"><value>Campagne</value></data>
+  <data name="Nav.Page.CAMPAIGNSNAPSHOT" xml:space="preserve"><value>Instantané de campagne</value></data>
+  <data name="Nav.Page.CAMPAIGNTARGET" xml:space="preserve"><value>Cible de campagne</value></data>
+  <data name="Nav.Page.CONSENT" xml:space="preserve"><value>Consentement</value></data>
+  <data name="Nav.Page.CONTACT" xml:space="preserve"><value>Contact</value></data>
+  <data name="Nav.Page.CYCLECAPACITY" xml:space="preserve"><value>Capacité de cycle</value></data>
+  <data name="Nav.Page.CYCLEPERIOD" xml:space="preserve"><value>Période de cycle</value></data>
+  <data name="Nav.Page.KNOWLEDGECONCEPT" xml:space="preserve"><value>Concept de connaissance</value></data>
+  <data name="Nav.Page.KNOWLEDGECONTENTENGAGEMENTJOURNEY" xml:space="preserve"><value>Parcours d'engagement de contenu</value></data>
+  <data name="Nav.Page.KNOWLEDGEPATH" xml:space="preserve"><value>Parcours de connaissance</value></data>
+  <data name="Nav.Page.KNOWLEDGESUBJECT" xml:space="preserve"><value>Sujet de connaissance</value></data>
+  <data name="Nav.Page.PLANNEDVISIT" xml:space="preserve"><value>Visite planifiée</value></data>
+  <data name="Nav.Page.PREFERENCE" xml:space="preserve"><value>Préférence</value></data>
+  <data name="Nav.Page.SEGMENT" xml:space="preserve"><value>Segment</value></data>
+  <data name="Nav.Page.STRATEGYTEMPLATE" xml:space="preserve"><value>Modèle de stratégie</value></data>
+  <data name="Nav.Page.TERRITORY" xml:space="preserve"><value>Territoire</value></data>
+  <data name="Nav.Page.TERRITORYMODEL" xml:space="preserve"><value>Modèle de territoire</value></data>
+  <data name="Nav.Page.TERRITORYNODE" xml:space="preserve"><value>Nœud de territoire</value></data>
+  <data name="Nav.Page.ATTRIBUTE" xml:space="preserve"><value>Attribut</value></data>
+  <data name="Nav.Page.HIERARCHY" xml:space="preserve"><value>Hiérarchie</value></data>
+  <data name="Nav.Page.OVERVIEW" xml:space="preserve"><value>Vue d'ensemble</value></data>
+  <data name="Nav.Page.ACCOUNTCONTACT" xml:space="preserve"><value>Contact du compte</value></data>
+  <data name="Nav.Page.ACCOUNTRELATIONSHIP" xml:space="preserve"><value>Relation de compte</value></data>
+  <data name="Nav.Page.MODEL" xml:space="preserve"><value>Modèle</value></data>
+  <data name="Nav.Page.NODE" xml:space="preserve"><value>Nœud</value></data>
+  <data name="Nav.Page.REPORTS" xml:space="preserve"><value>Rapports</value></data>
+  <data name="Nav.Page.DATAQUALITY" xml:space="preserve"><value>Qualité des données</value></data>
+  <data name="Nav.Page.EMPLOYEE" xml:space="preserve"><value>Employé</value></data>
+  <data name="Nav.Page.CUSTOMFIELDS" xml:space="preserve"><value>Champs personnalisés</value></data>
+  <data name="Nav.Page.REPORTINGLINE" xml:space="preserve"><value>Ligne hiérarchique</value></data>
+  <data name="Nav.Page.FINISHEDGOODS" xml:space="preserve"><value>Produits finis</value></data>
+  <data name="Nav.Page.LSKUS" xml:space="preserve"><value>UGS locales</value></data>
+  <data name="Nav.Page.PRODUCTABBREVIATIONS" xml:space="preserve"><value>Abréviations de produit</value></data>
+  <data name="Nav.Page.DOCUMENTLIST" xml:space="preserve"><value>Liste de documents</value></data>
+  <data name="Nav.Page.FIELDDEFINITIONS" xml:space="preserve"><value>Définitions de champs</value></data>
+  <data name="Nav.Page.RECURRENCERULES" xml:space="preserve"><value>Règles de récurrence</value></data>
+  <data name="Nav.Page.TENANTNAVIGATION" xml:space="preserve"><value>Paramètres de menu</value></data>
+  <data name="Nav.Page.TENANTSECURITY" xml:space="preserve"><value>Paramètres de sécurité</value></data>
+  <data name="Nav.Page.INBOX" xml:space="preserve"><value>Boîte de réception</value></data>
+  <data name="Nav.Page.OVERRIDE" xml:space="preserve"><value>Dérogation</value></data>
+  <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Définitions de champs</value></data>
+  <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
+  <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Types de réunion</value></data>
+  <data name="AccessDeniedTitle" xml:space="preserve"><value>Vous n'avez pas accès à {0}</value></data>
+  <data name="AccessDeniedMessage" xml:space="preserve"><value>Demandez à votre administrateur de vous accorder l'accès à cette page.</value></data>
 </root>

@@ -200,5 +200,12 @@ public sealed class WorkReportScopePreferenceTests
                 criteria.Report.Scope.TenantWide ? WorkReportDto.ScopeTenant : WorkReportDto.ScopeScoped,
                 0, criteria.Skip, [], false));
         }
+
+        public Task<WorkReportExportSet> ExportAsync(
+            WorkReportCriteria criteria, int maxRows, CancellationToken ct = default)
+        {
+            LastCriteria = criteria;
+            return Task.FromResult(WorkReportExportSet.Empty);
+        }
     }
 }

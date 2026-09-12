@@ -1,6 +1,7 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Commands;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -8,18 +9,94 @@ using AudienceProfileEntity = Diten.CrmService.Domain.Entities.AudienceProfile;
 
 namespace Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Handlers;
 
+/// <summary>SCMM-11 (AUD, RM3) — shared multi-axis + subject-scope rules for the audience-profile write handlers. The
+/// axis vocabulary is NEVER validated against a hardcoded set (sector-neutral); only structural rules apply. No
+/// eligibility/membership is computed anywhere (D8).</summary>
+internal static class AudienceProfileRules
+{
+    /// <summary>Structural validation of the optional dimension list (400 message or null): non-empty axis code, at
+    /// least one non-blank value per axis, and no duplicate axis.</summary>
+    public static string? ValidateDimensions(IReadOnlyList<AudienceDimensionAssignmentInput>? dimensions)
+    {
+        if (dimensions is null || dimensions.Count == 0)
+        {
+            return null;
+        }
+
+        var axes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var dimension in dimensions)
+        {
+            var axis = dimension.AxisCode?.Trim() ?? string.Empty;
+            if (axis.Length == 0)
+            {
+                return "Each audience dimension requires a non-empty AxisCode.";
+            }
+
+            if (!axes.Add(axis))
+            {
+                return $"Audience dimension axis '{axis}' is assigned more than once.";
+            }
+
+            var values = CleanValues(dimension.Values);
+            if (values.Count == 0)
+            {
+                return $"Audience dimension axis '{axis}' must carry at least one value.";
+            }
+        }
+
+        return null;
+    }
+
+    public static List<AudienceDimensionAssignment> ToDomain(IReadOnlyList<AudienceDimensionAssignmentInput>? dimensions)
+        => (dimensions ?? Array.Empty<AudienceDimensionAssignmentInput>()).Select(d => new AudienceDimensionAssignment
+        {
+            AxisCode = d.AxisCode.Trim(),
+            Values = CleanValues(d.Values)
+        }).ToList();
+
+    /// <summary>Subject-scope guard: a supplied <c>SubjectId</c> must reference an existing, non-archived subject.
+    /// Null / empty is allowed — the profile stays tenant-global (backward compatible).</summary>
+    public static async Task<string?> ValidateSubjectAsync(
+        ISubjectRepository subjects, Guid tenantId, Guid? subjectId, CancellationToken cancellationToken)
+    {
+        if (subjectId is not { } id || id == Guid.Empty)
+        {
+            return null;
+        }
+
+        var subject = await subjects.GetByIdAsync(tenantId, id, cancellationToken);
+        if (subject is null)
+        {
+            return "SubjectId does not reference an existing subject.";
+        }
+
+        return subject.IsArchived() ? "SubjectId cannot reference an archived subject." : null;
+    }
+
+    public static Guid? NormalizeSubject(Guid? subjectId) => subjectId is { } id && id != Guid.Empty ? id : null;
+
+    private static List<string> CleanValues(IReadOnlyList<string>? values)
+        => (values ?? Array.Empty<string>()).Select(v => v?.Trim() ?? string.Empty).Where(v => v.Length > 0).ToList();
+}
+
 public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienceProfileCommand, Response<Guid>>
 {
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly ISubjectRepository _subjects;
+
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<Guid>> Handle(CreateAudienceProfileCommand request, CancellationToken cancellationToken)
@@ -34,7 +111,8 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
             ?? KnowledgeValidation.ValidateProfileType(request.ProfileType)
             ?? KnowledgeValidation.ValidateTaxonomyStatus(request.Status)
             ?? KnowledgeValidation.ValidateEffectiveFrom(request.EffectiveFrom)
-            ?? KnowledgeValidation.ValidateEffectiveRange(request.EffectiveFrom, request.EffectiveTo);
+            ?? KnowledgeValidation.ValidateEffectiveRange(request.EffectiveFrom, request.EffectiveTo)
+            ?? AudienceProfileRules.ValidateDimensions(request.Dimensions);
         if (error is not null)
         {
             return Response<Guid>.Fail(error, 400);
@@ -44,6 +122,14 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
         if (refError is not null)
         {
             return Response<Guid>.Fail(refError, isConflict ? 409 : 400);
+        }
+
+        // SCMM-11 (AUD) — subject-scope guard (only when a SubjectId is supplied; null = tenant-global, back-compat).
+        var subjectError = await AudienceProfileRules.ValidateSubjectAsync(
+            _subjects, tenantId, request.SubjectId, cancellationToken);
+        if (subjectError is not null)
+        {
+            return Response<Guid>.Fail(subjectError, 400);
         }
 
         var code = request.ProfileCode.Trim();
@@ -60,9 +146,11 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
             ProfileCode = code,
             ProfileName = request.ProfileName.Trim(),
             Description = KnowledgeValidation.Trim(request.Description),
+            SubjectId = AudienceProfileRules.NormalizeSubject(request.SubjectId),
             ProfileType = string.IsNullOrWhiteSpace(request.ProfileType)
                 ? null
                 : AudienceProfileTypes.Normalize(request.ProfileType),
+            Dimensions = AudienceProfileRules.ToDomain(request.Dimensions),
             Status = TaxonomyStatuses.Normalize(request.Status),
             SortOrder = request.SortOrder,
             EffectiveFrom = request.EffectiveFrom,
@@ -74,6 +162,12 @@ public sealed class CreateAudienceProfileHandler : IRequestHandler<CreateAudienc
         };
 
         await _repository.InsertAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileCreated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<Guid>.Success(profile.Id, 201);
     }
 }
@@ -83,13 +177,19 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly ISubjectRepository _subjects;
+
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public UpdateAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository, ISubjectRepository subjects,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _subjects = subjects;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateAudienceProfileCommand request, CancellationToken cancellationToken)
@@ -119,7 +219,8 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
             ?? KnowledgeValidation.ValidateProfileType(request.ProfileType)
             ?? KnowledgeValidation.ValidateTaxonomyStatus(request.Status)
             ?? KnowledgeValidation.ValidateEffectiveFrom(request.EffectiveFrom)
-            ?? KnowledgeValidation.ValidateEffectiveRange(request.EffectiveFrom, request.EffectiveTo);
+            ?? KnowledgeValidation.ValidateEffectiveRange(request.EffectiveFrom, request.EffectiveTo)
+            ?? AudienceProfileRules.ValidateDimensions(request.Dimensions);
         if (error is not null)
         {
             return Response<bool>.Fail(error, 400);
@@ -131,12 +232,21 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
             return Response<bool>.Fail(refError, isConflict ? 409 : 400);
         }
 
+        var subjectError = await AudienceProfileRules.ValidateSubjectAsync(
+            _subjects, tenantId, request.SubjectId, cancellationToken);
+        if (subjectError is not null)
+        {
+            return Response<bool>.Fail(subjectError, 400);
+        }
+
         var now = DateTimeOffset.UtcNow;
         profile.ProfileName = request.ProfileName.Trim();
         profile.Description = KnowledgeValidation.Trim(request.Description);
+        profile.SubjectId = AudienceProfileRules.NormalizeSubject(request.SubjectId);
         profile.ProfileType = string.IsNullOrWhiteSpace(request.ProfileType)
             ? null
             : AudienceProfileTypes.Normalize(request.ProfileType);
+        profile.Dimensions = AudienceProfileRules.ToDomain(request.Dimensions);
         profile.Status = TaxonomyStatuses.Normalize(request.Status ?? profile.Status);
         profile.SortOrder = request.SortOrder;
         profile.EffectiveFrom = request.EffectiveFrom;
@@ -147,6 +257,12 @@ public sealed class UpdateAudienceProfileHandler : IRequestHandler<UpdateAudienc
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileUpdated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -156,13 +272,16 @@ public sealed class ArchiveAudienceProfileHandler : IRequestHandler<ArchiveAudie
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public ArchiveAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -192,6 +311,12 @@ public sealed class ArchiveAudienceProfileHandler : IRequestHandler<ArchiveAudie
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileArchived, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }
@@ -202,13 +327,16 @@ public sealed class UnarchiveAudienceProfileHandler
     private readonly ITenantContext _tenant;
     private readonly IActorContext _actor;
     private readonly IAudienceProfileRepository _repository;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public UnarchiveAudienceProfileHandler(
-        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository)
+        ITenantContext tenant, IActorContext actor, IAudienceProfileRepository repository,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _repository = repository;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(
@@ -247,6 +375,12 @@ public sealed class UnarchiveAudienceProfileHandler
         profile.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(profile, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(KnowledgeReasonCodes.AudienceProfileUpdated, tenantId,
+                KnowledgeConceptAuditEntities.AudienceProfile, profile.Id, profile.Version, profile.ProfileCode, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
     }
 }

@@ -16,7 +16,11 @@ public sealed class OrganizationUnitL10nContractTests
     [
         "OrgUnitType", "OrgUnitTypeDepartment", "OrgUnitTypeDivision", "OrgUnitTypeBranch", "OrgUnitTypeTeam", "OrgUnitTypeHQ",
         "StatusLabel", "StatusInactive", "ManagerPosition", "Description", "EffectiveFrom", "EffectiveTo",
-        "SectionBasic", "SectionAdvanced", "ViewTree", "ViewFlat", "TreeEmpty", "DetailsTitle"
+        "SectionBasic", "SectionAdvanced", "ViewTree", "ViewFlat", "TreeEmpty", "DetailsTitle",
+        // MOD-0288-FU03 §7 — the second reporting line, the Group function type and the custom-value strings.
+        // Pinned here so a language that quietly loses one of them fails the build rather than the screen.
+        "FunctionalParentLabel", "AdministrativeParentLabel", "AdministrativeParentNone", "AdministrativeParentHelp",
+        "OrgUnitTypeGroupFunction", "CustomFieldsSectionTitle", "CustomFieldRequiredError", "CustomFieldTypeError"
     ];
 
     private static string ResxPath(string language) =>
@@ -53,6 +57,38 @@ public sealed class OrganizationUnitL10nContractTests
         }
     }
 
+    /// <summary>
+    /// MOD-0288-FU03 §11 — parity is asserted in BOTH directions and against empties.
+    ///
+    /// <para>⚠ THE ONE-WAY CHECK ABOVE IS NOT ENOUGH. It proves no English key is missing elsewhere; it says
+    /// nothing about a key that exists ONLY in, say, Turkish — a leftover that reads fine in the language it was
+    /// added to and is invisible everywhere else. And a key present with an EMPTY value passes every key-set
+    /// comparison there is while rendering as blank on screen, which is the failure this pack cares about.</para>
+    /// </summary>
+    [Fact]
+    public void Seven_files_carry_identical_key_sets_with_no_empty_value()
+    {
+        var englishKeys = ResxKeys(ResxPath("en"));
+
+        foreach (var language in SupportedLanguages)
+        {
+            var values = ResxValues(ResxPath(language));
+            var keys = values.Keys.ToHashSet(StringComparer.Ordinal);
+
+            var extra = keys.Except(englishKeys).OrderBy(k => k).ToList();
+            Assert.True(extra.Count == 0,
+                $"OrganizationUnitsIndex.{language}.resx carries {extra.Count} key(s) English does not: {string.Join(", ", extra)}");
+
+            var missing = englishKeys.Except(keys).OrderBy(k => k).ToList();
+            Assert.True(missing.Count == 0,
+                $"OrganizationUnitsIndex.{language}.resx is missing {missing.Count} key(s): {string.Join(", ", missing)}");
+
+            var empty = values.Where(kv => string.IsNullOrWhiteSpace(kv.Value)).Select(kv => kv.Key).OrderBy(k => k).ToList();
+            Assert.True(empty.Count == 0,
+                $"OrganizationUnitsIndex.{language}.resx has {empty.Count} empty value(s): {string.Join(", ", empty)}");
+        }
+    }
+
     [Fact]
     public void Non_english_files_are_actually_translated()
     {
@@ -62,6 +98,11 @@ public sealed class OrganizationUnitL10nContractTests
             var values = ResxValues(ResxPath(language));
             Assert.NotEqual(english["ManagerPosition"], values["ManagerPosition"]);
             Assert.NotEqual(english["OrgUnitTypeDepartment"], values["OrgUnitTypeDepartment"]);
+            // FU03 — the same proof for the strings this pack adds: a copied English sentence is a missing
+            // translation that passes every key check.
+            Assert.NotEqual(english["AdministrativeParentLabel"], values["AdministrativeParentLabel"]);
+            Assert.NotEqual(english["AdministrativeParentHelp"], values["AdministrativeParentHelp"]);
+            Assert.NotEqual(english["OrgUnitTypeGroupFunction"], values["OrgUnitTypeGroupFunction"]);
         }
     }
 

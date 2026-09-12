@@ -4,7 +4,8 @@
     Layout = null;
     ViewData["Title"] = SharedLocalizer["Login.Title"];
     var authMode = (ViewBag.AuthMode as string ?? "tenant").ToLowerInvariant();
-    var defaultRedirect = (ViewBag.PostLoginDefault as string) ?? "/WorkCenter";
+    // The fallback only fires when the controller set nothing; it still must not be the mock surface.
+    var defaultRedirect = (ViewBag.PostLoginDefault as string) ?? "/WorkCenterNext";
 
     // Tenant branding (pre-auth). Falls back to the platform default when no tenant branding is set.
     var brandingLogo = ViewBag.BrandingLogoDataUrl as string;

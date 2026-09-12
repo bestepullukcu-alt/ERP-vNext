@@ -179,7 +179,7 @@ An approved implementation may authorize only the following concrete ES-owned pa
 - `services/Diten.EnterpriseStrategyService/tests/Diten.EnterpriseStrategy.EndToEnd.Tests/**`
 - New ES-owned foundation test project paths under `services/Diten.EnterpriseStrategyService/tests/**`
 - ES migration evidence under a future explicitly approved
-  `docs/audits/enterprise-strategy-security-tenancy-migration/**`
+  `docs/records/audits/enterprise-strategy-security-tenancy-migration/**`
 
 Gate 2 blocked files remain read-only until the gate passes even if they appear under a broad listed
 directory.

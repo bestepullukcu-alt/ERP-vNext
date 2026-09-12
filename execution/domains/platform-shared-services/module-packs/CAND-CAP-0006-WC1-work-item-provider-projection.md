@@ -25,7 +25,7 @@ form_field_count: 0
 > [DCP-004](../../../portfolio/delivery-capability-packs/DCP-004-work-aggregation-task-center.md)** (§8 order 1).
 > `CAND-CAP-0006` is a governance identity **only** — it is **never** written into runtime code, namespaces,
 > or literals. The runtime feature slug is `Features/WorkAggregation` (clean). The real Blueprint `MOD-xxxx`
-> is minted after WC-1 is proven ([BL-019](../../../../docs/product-backlog.md)).
+> is minted after WC-1 is proven ([BL-019](../../../../docs/roadmap/backlog/product-backlog.md)).
 >
 > **This pack is `ready-for-dev`.** No code lives in this document itself; it remains a development contract.
 > Per CAP-001 §7 two-condition gate, DCP-004 is `approved` (condition 1) **and** this pack is `ready-for-dev`
@@ -51,7 +51,7 @@ concurrency).
    **WC-1b**). The frontend already consumes the `fixture-contract.js` shape; WC-1 produces a backend
    projection matching that shape.
 3. **PROVIDER SCOPE = MOD-0023 `ApprovalTask` only** (Binding A — charter §10.4). Enterprise Strategy and
-   other providers are deferred ([BL-018](../../../../docs/product-backlog.md)). The projection is nonetheless
+   other providers are deferred ([BL-018](../../../../docs/roadmap/backlog/product-backlog.md)). The projection is nonetheless
    structured behind a **provider abstraction** so WC-5 can add providers later **without rewrite**; in WC-1,
    only the MOD-0023 provider is bound.
 
@@ -259,7 +259,7 @@ no entity class may be created by this slice. WC-1 **reads** existing MOD-0023 a
   context) consumed, never modified.
 - MOD-0023 / MOD-0024 owned files and their module packs — consumed via contract only; the charter did not
   modify them.
-- `docs/System Capability & Implementation Blueprint - master 7.xlsx` — never touched.
+- `docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx` — never touched.
 - `execution/registries/module-id-registry.md`, `execution/portfolio/blueprint-master-plan-reconciliation.md`
   — `CAND-CAP-0006` reservation already recorded by DCP-004; not re-touched here.
 

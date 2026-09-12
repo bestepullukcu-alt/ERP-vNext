@@ -42,7 +42,7 @@ Her domain altinda:
     └── {ID}-{slug}.md
 ```
 
-> Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `execution/portfolio/master-development-plan.md` uzerinden yurutulur. `docs/platform/master-plan.md` legacy bridge olarak gecici aktif kalir.
+> Tarihsel `controls/`, `decisions/` ve `batches/` katmanlari `archive/domains/` altina tasinmistir. Engineering kurallari `.antigravity/rules/`, MVP scope ve modul envanteri `execution/portfolio/master-development-plan.md` uzerinden yurutulur. `docs/reference/modules/platform/master-plan.md` legacy bridge olarak gecici aktif kalir.
 
 ## Yetki Hiyerarsisi
 
@@ -82,9 +82,9 @@ Bu tarihten sonraki yeni moduller veya major feature'lar module pack ile acilir.
 ## Kullanilmayan Katmanlar
 
 - `batches/`: YOK. `/add-module` workflow'u phase orchestration saglar.
-- `snapshots/`: YOK. Git history + `docs/audits/` yeterlidir.
+- `snapshots/`: YOK. Git history + `docs/records/audits/` yeterlidir.
 - `controls/`: YOK. Engineering standartlari `.antigravity/rules/`'dedir; arsivlendi.
-- `decisions/`: YOK. Scope/MVP kararlari `execution/portfolio/master-development-plan.md`'dedir; `docs/platform/master-plan.md` legacy bridge olarak gecici aktif kalir; arsivlendi.
+- `decisions/`: YOK. Scope/MVP kararlari `execution/portfolio/master-development-plan.md`'dedir; `docs/reference/modules/platform/master-plan.md` legacy bridge olarak gecici aktif kalir; arsivlendi.
 
 ## Kullanim Rehberi
 
@@ -110,4 +110,4 @@ Uretilen dosya: `execution/DASHBOARD.md` (gitignore'da tutulur, local artifact).
 ## SOP Referansları
 
 Proje operasyonel standartları (SOP) şu dizin altındadır:
-- `docs/sop/upstream/`
+- `docs/guides/sop-upstream/`

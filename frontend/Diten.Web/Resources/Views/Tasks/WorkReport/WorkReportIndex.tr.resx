@@ -104,4 +104,12 @@
   <data name="OutcomesOther" xml:space="preserve"><value>Diğer sonuçlar</value></data>
   <data name="ItemsColClosed" xml:space="preserve"><value>kapanış {0}</value></data>
   <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>CSV olarak indir</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>JSON olarak indir</value></data>
+  <data name="ExportFilePrefix" xml:space="preserve"><value>is-raporu</value></data>
+  <data name="ExportDownloaded" xml:space="preserve"><value>{0} satır indirildi.</value></data>
+  <data name="ExportTooManyRows" xml:space="preserve"><value>Bu rapor tek bir dışa aktarmanın taşıyabileceğinden fazla görev içeriyor. Dönemi veya filtreleri daraltıp yeniden deneyin.</value></data>
+  <data name="ExportForbidden" xml:space="preserve"><value>Bu raporu dışa aktarma yetkiniz yok.</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Dışa aktarma hazırlanamadı.</value></data>
 </root>

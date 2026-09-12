@@ -1615,9 +1615,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>Не отмечено обязательных пунктов: {0}. Задача всё равно будет закрыта.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Для отмеченных пунктов требуется подтверждение. Используйте скрепку в строке, чтобы прикрепить его.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value>
   </data>
@@ -2259,4 +2257,23 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>Возвращалась {0} раз, последний раз: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Пока нет вложений.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Добавить файл</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Результат</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Примечание (необязательно)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Добавьте краткое примечание к файлу</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Файл</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Загрузить</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Добавить вложение</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Сначала выберите файл.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Удалить это вложение?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Удалить вложение</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>Загрузил(а) {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Вложение добавлено.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Вложение удалено.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Добавить подтверждение</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>Файлов подтверждения: {0}</value></data>
 </root>

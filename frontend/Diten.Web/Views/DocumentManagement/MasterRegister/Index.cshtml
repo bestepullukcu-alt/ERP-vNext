@@ -12,6 +12,8 @@
         && canManage
         && Perms.Has("platform.document-management.master-register.link")
         && Perms.Has("platform.document-management.controlled-documents.create");
+    // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — its own permission, not Manage (see the backend constant's doc comment).
+    var canImport = Perms.Has("platform.document-management.master-register.import");
 }
 
 @* Contract marker: <partial name="_Filter" /> *@
@@ -30,7 +32,8 @@
     <script>
         window.MasterRegisterPerms = {
             canManage: @Json.Serialize(canManage),
-            canCreateControlledDocument: @Json.Serialize(canCreateControlledDocument)
+            canCreateControlledDocument: @Json.Serialize(canCreateControlledDocument),
+            canImport: @Json.Serialize(canImport)
         };
     </script>
     <script src="~/assets/js/DocumentManagement/MasterRegister/index.l10n.js" asp-append-version="true"></script>

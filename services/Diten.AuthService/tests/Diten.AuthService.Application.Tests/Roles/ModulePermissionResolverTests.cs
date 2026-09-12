@@ -8,18 +8,22 @@ namespace Diten.AuthService.Application.Tests.Roles;
 // unmatched → empty (fail-safe).
 public sealed class ModulePermissionResolverTests
 {
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the fixture carries the module codes the LIVE catalog carries. It used to
+    // leave auth.*/mdm.* un-attributed so their Module came out "auth"/"mdm", but a service name is no longer a
+    // module code (PermissionModuleAttribution), and no row in the catalog has looked like that since the manifest
+    // flip. A fixture that keeps a shape production no longer has proves nothing about production.
     private static List<Permission> Catalog() =>
     [
-        new("auth", "users", "read", "Read User", null),
-        new("mdm", "legal-entities", "read", "Read Legal Entity", null),
-        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null),
+        new("auth", "users", "read", "Read User", null, moduleOverride: "access-governance"),
+        new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+        new("mdm", "legal-entities", "delete", "Delete Legal Entity", null, moduleOverride: "legal-entity"),
         new("platform", "tenants", "read", "Read Tenant", null)
     ];
 
     [Fact]
     public void Convention_maps_module_code_to_lowercase_permission_module()
     {
-        var keys = ModulePermissionResolver.ResolvePermissions("MDM", Catalog()).Select(p => p.Key).ToList();
+        var keys = ModulePermissionResolver.ResolvePermissions("LEGAL-ENTITY", Catalog()).Select(p => p.Key).ToList();
 
         Assert.Equal(
             new[] { "mdm.legal-entities.read", "mdm.legal-entities.delete" }.OrderBy(k => k),
@@ -27,9 +31,9 @@ public sealed class ModulePermissionResolverTests
     }
 
     [Theory]
-    [InlineData("MDM")]
-    [InlineData("mdm")]
-    [InlineData("  Mdm  ")]
+    [InlineData("LEGAL-ENTITY")]
+    [InlineData("legal-entity")]
+    [InlineData("  Legal-Entity  ")]
     public void Module_code_matching_is_case_and_whitespace_insensitive(string moduleCode)
     {
         var keys = ModulePermissionResolver.ResolvePermissions(moduleCode, Catalog()).Select(p => p.Key);
@@ -98,9 +102,9 @@ public sealed class ModulePermissionResolverTests
     public void Override_map_takes_precedence_over_convention()
     {
         // Mechanism test only — the production override map ships empty (no guessed mappings).
-        var overrides = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["mod-0018"] = "auth" };
+        var overrides = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["mod-0018"] = "access-governance" };
 
-        Assert.Equal("auth", ModulePermissionResolver.ResolvePermissionModule("MOD-0018", overrides));
+        Assert.Equal("access-governance", ModulePermissionResolver.ResolvePermissionModule("MOD-0018", overrides));
         var keys = ModulePermissionResolver.ResolvePermissions("MOD-0018", Catalog(), overrides).Select(p => p.Key);
         Assert.Equal(new[] { "auth.users.read" }, keys);
     }
@@ -144,7 +148,7 @@ public sealed class ModulePermissionResolverTests
         var catalog = Catalog();
         catalog[1].IsDeleted = true; // mdm.legal-entities.read
 
-        var keys = ModulePermissionResolver.ResolvePermissions("MDM", catalog).Select(p => p.Key).ToList();
+        var keys = ModulePermissionResolver.ResolvePermissions("LEGAL-ENTITY", catalog).Select(p => p.Key).ToList();
 
         Assert.DoesNotContain("mdm.legal-entities.read", keys);
         Assert.Contains("mdm.legal-entities.delete", keys);

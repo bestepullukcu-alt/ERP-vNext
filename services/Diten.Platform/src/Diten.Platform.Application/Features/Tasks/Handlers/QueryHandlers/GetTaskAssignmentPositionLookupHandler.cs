@@ -68,23 +68,17 @@ public sealed class GetTaskAssignmentPositionLookupHandler
         var result = new List<AssignablePositionDto>();
         foreach (var position in positions)
         {
-            // Only genuinely usable positions may receive pooled work.
-            if (position.IsArchived || position.Status != PositionStatus.Active)
+            /*
+             * The SHARED rule, asked exactly as the pool write asks it: only an active position, in a unit that
+             * still resolves (an unlabelled pool entry is how work reaches the wrong facility), inside my scope.
+             */
+            if (TaskAssigneeEligibility.Judge(position, unitById, scope, out var judgedUnit)
+                != TaskAssigneeVerdict.Assignable)
             {
                 continue;
             }
 
-            // A position whose unit cannot be resolved is skipped rather than shown without its facility label:
-            // an unlabelled pool entry is exactly how work reaches the wrong facility.
-            if (!unitById.TryGetValue(position.OrganizationUnitId, out var unit) || unit.IsArchived)
-            {
-                continue;
-            }
-
-            if (!scope.Allows(position.Id, unit.Id, unit.LegalEntityId))
-            {
-                continue;
-            }
+            var unit = judgedUnit!;
 
             result.Add(new AssignablePositionDto(
                 PositionId: position.Id,

@@ -23,7 +23,9 @@ public sealed class DocumentManagementManifestProviderTests
         typeof(DocumentManagementControlledDocumentsController),
         typeof(DocumentManagementTemplateMastersController),
         typeof(DocumentManagementTemplateVariantsController),
-        typeof(DocumentManagementAccessPoliciesController));
+        typeof(DocumentManagementAccessPoliciesController),
+        typeof(DocumentManagementMasterRegisterController),
+        typeof(DocumentManagementRepositoryAssessmentController));
 
     // Real frontend view-routes (Diten.Web QmsBaselines + Instantiations + ControlledDocuments +
     // TemplateMasters + TemplateVariants + AccessMatrix controllers), hard-coded.
@@ -50,7 +52,13 @@ public sealed class DocumentManagementManifestProviderTests
         "/DocumentManagementAccessMatrix",
         "/DocumentManagementAccessMatrix/Create",
         "/DocumentManagementAccessMatrix/Details/{id}",
-        "/DocumentManagementAccessMatrix/Edit/{id}"
+        "/DocumentManagementAccessMatrix/Edit/{id}",
+        // MOD-0029-FU24 Master Register + FU28A Repository Assessments — catalogue pages (fb4245f0),
+        // real frontend controllers exist (DocumentManagementMasterRegister/RepositoryAssessments).
+        "/DocumentManagementMasterRegister",
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the audited two-step CSV import screen.
+        "/DocumentManagementMasterRegister/Import",
+        "/DocumentManagementRepositoryAssessments"
     };
 
     [Fact]
@@ -103,7 +111,8 @@ public sealed class DocumentManagementManifestProviderTests
         Assert.True(navPages.SetEquals(new[]
         {
             "QMS_BASELINES", "INSTANCES",
-            "CONTROLLED_DOCUMENTS", "TEMPLATE_MASTERS", "TEMPLATE_VARIANTS", "ACCESS_MATRIX"
+            "CONTROLLED_DOCUMENTS", "TEMPLATE_MASTERS", "TEMPLATE_VARIANTS", "ACCESS_MATRIX",
+            "MASTER_REGISTER", "REPOSITORY_ASSESSMENT"
         }));
         // Top-level entries have no parent; every sub-page does.
         Assert.All(Manifest.Pages, p =>

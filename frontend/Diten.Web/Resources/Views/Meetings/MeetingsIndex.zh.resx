@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingsTitle" xml:space="preserve"><value>会议</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>您组织或参加的会议，包括议程和关联任务。</value></data>
+  <data name="Title" xml:space="preserve"><value>标题</value></data>
+  <data name="MeetingType" xml:space="preserve"><value>会议类型</value></data>
+  <data name="StartAt" xml:space="preserve"><value>开始时间</value></data>
+  <data name="EndAt" xml:space="preserve"><value>结束时间</value></data>
+  <data name="Organizer" xml:space="preserve"><value>组织者</value></data>
+  <data name="IAmAttendee" xml:space="preserve"><value>是否参加</value></data>
+  <data name="HasLinkedTasks" xml:space="preserve"><value>关联任务</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="Segment" xml:space="preserve"><value>时段</value></data>
+  <data name="SegmentUpcoming" xml:space="preserve"><value>即将举行</value></data>
+  <data name="SegmentPast" xml:space="preserve"><value>已结束</value></data>
+  <data name="IAmAttendeeFilter" xml:space="preserve"><value>我是参会者</value></data>
+  <data name="HasLinkedTasksFilter" xml:space="preserve"><value>有关联任务</value></data>
+  <data name="FromDate" xml:space="preserve"><value>起始日期</value></data>
+  <data name="ToDate" xml:space="preserve"><value>结束日期</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新建会议</value></data>
+  <data name="StatusScheduled" xml:space="preserve"><value>已安排</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="StatusCompleted" xml:space="preserve"><value>已完成</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新建会议</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑会议</value></data>
+  <data name="DetailsTitle" xml:space="preserve"><value>会议详情</value></data>
+  <data name="Location" xml:space="preserve"><value>地点</value></data>
+  <data name="LocationPlaceholder" xml:space="preserve"><value>会议室、大楼或视频会议链接</value></data>
+  <data name="FollowUpOfMeeting" xml:space="preserve"><value>延续自会议</value></data>
+  <data name="Attendees" xml:space="preserve"><value>参会人员</value></data>
+  <data name="AttendeesPlaceholder" xml:space="preserve"><value>搜索要邀请的人员</value></data>
+  <data name="NoEligibleAttendees" xml:space="preserve"><value>未找到符合条件的人员。只有担任职位的在职租户用户才能被邀请。</value></data>
+  <data name="AddAgendaItem" xml:space="preserve"><value>添加</value></data>
+  <data name="AgendaItemPlaceholder" xml:space="preserve"><value>议程项</value></data>
+  <data name="RemoveAttendee" xml:space="preserve"><value>移除参会人员</value></data>
+  <data name="AddAttendee" xml:space="preserve"><value>添加</value></data>
+  <data name="ReassignOrganizer" xml:space="preserve"><value>更换组织者</value></data>
+  <data name="NewOrganizer" xml:space="preserve"><value>新组织者</value></data>
+  <data name="CancelMeeting" xml:space="preserve"><value>取消会议</value></data>
+  <data name="CancellationReason" xml:space="preserve"><value>取消原因</value></data>
+  <data name="InvitationPending" xml:space="preserve"><value>待回复</value></data>
+  <data name="InvitationAccepted" xml:space="preserve"><value>已接受</value></data>
+  <data name="InvitationDeclined" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="LinkedTasks" xml:space="preserve"><value>关联任务</value></data>
+  <data name="NoLinkedTasks" xml:space="preserve"><value>此会议尚无关联任务。</value></data>
+  <data name="Agenda" xml:space="preserve"><value>议程</value></data>
+  <data name="NoAgendaItems" xml:space="preserve"><value>暂无议程项。</value></data>
+  <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="No" xml:space="preserve"><value>否</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>会议信息</value></data>
+  <data name="ErrorMeetingNotFound" xml:space="preserve"><value>未找到此会议。</value></data>
+  <data name="ErrorEndBeforeStart" xml:space="preserve"><value>结束时间必须晚于开始时间。</value></data>
+  <data name="ErrorMeetingCancelled" xml:space="preserve"><value>此会议已取消。</value></data>
+  <data name="ErrorMeetingCompleted" xml:space="preserve"><value>此会议已完成。</value></data>
+  <data name="ErrorCancellationReasonRequired" xml:space="preserve"><value>必须填写取消原因。</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>此会议在此期间已被更改，请刷新后重试。</value></data>
+  <data name="ErrorSelfFollowUp" xml:space="preserve"><value>会议不能是自身的延续会议。</value></data>
+  <data name="ErrorFollowUpNotFound" xml:space="preserve"><value>未找到此会议所延续的会议。</value></data>
+  <data name="ErrorOrganizerInvalid" xml:space="preserve"><value>组织者必须是在职的租户用户。</value></data>
+  <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>此人目前无法被邀请。</value></data>
+  <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>此人已被邀请。</value></data>
+  <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>此参会人员不在该会议中。</value></data>
+  <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>未找到此议程项。</value></data>
+  <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>议程排序失败，请刷新后重试。</value></data>
+  <data name="ErrorTypeNotFound" xml:space="preserve"><value>未找到此会议类型。</value></data>
+  <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>已存在同名的会议类型。</value></data>
+  <data name="ErrorTypeInUse" xml:space="preserve"><value>此会议类型正被某个会议使用，无法删除。</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
+  <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>
+  <data name="ManageTypes" xml:space="preserve"><value>会议类型</value></data>
+</root>

@@ -263,7 +263,7 @@ public sealed class TaskReviewerRequiredHttpTests
                 new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeTenantContext(TaskTestData.Tenant),
                 NullLogger<CreateTaskItemHandler>.Instance,
-                TaskDocumentFreezerDoubles.OverAnEmptyRegister());
+                TaskDocumentFreezerDoubles.OverAnEmptyRegister(), TaskAssignmentGuards.AdmitAll());
 
             var update = new UpdateTaskItemHandler(
                 Tasks,

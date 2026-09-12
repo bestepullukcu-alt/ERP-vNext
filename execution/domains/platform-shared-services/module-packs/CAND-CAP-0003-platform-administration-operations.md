@@ -24,7 +24,7 @@ Platform Administrators Management answers the platform-level question "who is a
 This is a draft module pack. Runtime implementation must not begin until user review changes `status` to `approved` or `ready-for-dev`.
 
 Master-plan traceability:
-- Source module: `docs/platform/master-plan.md`, NEW-002 - Platform Administrators Management.
+- Source module: `docs/reference/modules/platform/master-plan.md`, NEW-002 - Platform Administrators Management.
 - Wave: W1-*.
 - Priority: High.
 - Master-plan state before implementation: Missing, 0%.
@@ -448,4 +448,4 @@ Index contract:
 - Integrate real notification delivery when MOD-0027 is available.
 - Replace audit placeholder with MOD-0021 audit trail events when that service is available.
 - Add Partner Management lookup/validation when the partner SoR module exists.
-- Update `docs/platform/master-plan.md` NEW-002 status after implementation verification passes.
+- Update `docs/reference/modules/platform/master-plan.md` NEW-002 status after implementation verification passes.

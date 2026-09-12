@@ -1,0 +1,70 @@
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["FieldDefinitionsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = ViewData["CanManage"] as bool? ?? false;
+
+    // ⚠ The bulk action DEACTIVATES. FU02 has no delete for a definition, so a "delete" here would be a
+    // button whose name is the only thing that ever deleted anything.
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "deactivate",
+                Text = Localizer["BulkDeactivate"].Value,
+                Icon = "bx bx-block",
+                ButtonClass = "btn btn-label-warning",
+                ConfirmKey = "BulkDeactivateConfirm",
+                Endpoint = "/Organization/FieldDefinitions/api/bulk",
+                Method = "POST"
+            }
+        ]
+    };
+}
+
+@* Contract marker: <partial name="_Filter" /> *@
+@* ⚠ ABSOLUTE PATH, and not a style choice. Razor resolves a bare partial name against
+   /Views/{Controller}/ — here /Views/OrganizationFieldDefinitions/ — which does not exist, because this
+   view set lives under /Views/Organization/FieldDefinitions/ beside the units it configures. The short
+   form threw InvalidOperationException on first load. Same fix, same reason, as the Task precedent. *@
+<partial name="~/Views/Organization/FieldDefinitions/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["FieldDefinitionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    @* Remaining capacity, filled by index.js from the SAME createGate() that opens or closes the create
+       button — so the number on screen and the number that gates the button cannot drift apart. Measured on
+       the live page: this host was missing and applyCreateGate() returned early, so the line never rendered
+       at all while the gate itself worked. *@
+    <p class="mb-0 text-muted small d-none" id="fieldDefinitionCapacity"></p>
+</div>
+
+@* ⚠ A READER GETS NO WRITE SURFACE AT ALL (§5). The bulk bar is the selection→action path, so it is not
+   rendered without `manage`; index.js applies the same rule to the create button and the row actions, from
+   the same permission snapshot. *@
+@if (canManage)
+{
+    <partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+}
+else
+{
+    <div class="alert alert-info" role="note">@Localizer["ReadOnlyNotice"]</div>
+}
+
+<partial name="~/Views/Organization/FieldDefinitions/_DataTable.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Organization/FieldDefinitions/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Organization/FieldDefinitions/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Organization/FieldDefinitions/index.js" asp-append-version="true"></script>
+}

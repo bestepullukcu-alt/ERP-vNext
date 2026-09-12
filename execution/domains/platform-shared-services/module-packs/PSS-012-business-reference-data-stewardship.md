@@ -25,7 +25,7 @@ approved_on: 2026-05-25
 
 # PSS-012 - Business Reference Data Stewardship
 
-> **Bu pack bir refactor/standartlaştırma paketidir, greenfield değildir.** Kod `feature/erp-project-integration` dalında zaten yazılmış durumda (untracked). Geliştirici bu durumu **bilerek** ele almalı ve mevcut kodu standarda çekmelidir. Bu pack, `/docs/audits/` altındaki "BusinessReferenceData Standart Audit ve Düzeltme Planı" denetiminin module-pack karşılığıdır.
+> **Bu pack bir refactor/standartlaştırma paketidir, greenfield değildir.** Kod `feature/erp-project-integration` dalında zaten yazılmış durumda (untracked). Geliştirici bu durumu **bilerek** ele almalı ve mevcut kodu standarda çekmelidir. Bu pack, `/docs/records/audits/` altındaki "BusinessReferenceData Standart Audit ve Düzeltme Planı" denetiminin module-pack karşılığıdır.
 
 > **Frontend kapsam dışıdır.** Bu pack yalnız Domain/Application/Infrastructure/API katmanlarını kapsar. Razor view, JS, DataTable, layout, frontend localization ve frontend proxy değişikliği yapılmayacaktır. Frontend gerekiyorsa ayrı module pack/plan hazırlanır.
 
@@ -153,7 +153,7 @@ Golden Reference decision: `golden_reference: none`. DataTable/Razor UI bu pack'
 ## Repo Scope
 Allowed documentation scope:
 - `execution/domains/platform-shared-services/module-packs/PSS-012-business-reference-data-stewardship.md`.
-- `docs/audits/**` denetim raporunun korunması (silinmez).
+- `docs/records/audits/**` denetim raporunun korunması (silinmez).
 
 Allowed backend scope:
 - `services/Diten.Platform/src/Diten.Platform.Domain/Entities/ReferenceDataEntitiesv2.cs` (+ önerilen rename hedefi `BusinessReferenceDataEntities.cs`).

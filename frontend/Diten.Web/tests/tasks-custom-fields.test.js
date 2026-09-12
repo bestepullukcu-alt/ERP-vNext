@@ -21,6 +21,7 @@ describe("MOD-0024 configurable task fields", () => {
   beforeEach(() => {
     delete global.TaskForm;
     document.body.innerHTML = "";
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
   });
 

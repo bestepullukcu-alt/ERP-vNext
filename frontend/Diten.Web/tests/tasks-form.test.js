@@ -6,6 +6,7 @@ const { loadScript } = require("./load-script");
 describe("MOD-0024 task form", () => {
   beforeEach(() => {
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
   });
 

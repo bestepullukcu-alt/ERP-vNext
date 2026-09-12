@@ -11,7 +11,7 @@ This rule defines how new Platform/Admin modules consume and extend system looku
 - Platform/Admin system lookups are owned by `Diten.Platform`.
 - The canonical API surface is `GET /api/lookups/...` behind Gateway.
 - Browser-facing Platform/Admin UI must call a same-origin MVC proxy or Gateway route. It must not call service port `5057` directly.
-- Existing PSS lookup module pack of record: `execution/domains/platform-shared-services/module-packs/PSS-011-lookups-reference-data.md`.
+- Existing PSS lookup module pack of record: `execution/domains/platform-shared-services/module-packs/MOD-0048-lookups-reference-data.md`.
 
 ## Canonical Response Contract
 

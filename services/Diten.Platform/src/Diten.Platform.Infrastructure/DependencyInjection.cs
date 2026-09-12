@@ -170,8 +170,9 @@ public static class DependencyInjection
         // MOD-0029-FU01 — controlled-document feature flags + Phase 1 content-storage options.
         services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ControlledDocumentsFeatureFlagOptions.SectionName));
-        services.Configure<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions>(
-            configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementControlledDocuments.ContentStorageOptions.SectionName));
+        // MOD-0262-FU01 — content storage options relocated to the DocumentRepository contract namespace (AD-8 / OD-A).
+        services.Configure<Diten.Platform.Application.Contracts.DocumentRepository.ContentStorageOptions>(
+            configuration.GetSection(Diten.Platform.Application.Contracts.DocumentRepository.ContentStorageOptions.SectionName));
         // MOD-0029-FU04 — access matrix rollout/enforcement mode (defaults to Compatibility when unset).
         services.Configure<Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions>(
             configuration.GetSection(Diten.Platform.Application.Features.DocumentManagementAccessMatrix.Services.AccessMatrixOptions.SectionName));
@@ -325,7 +326,15 @@ public static class DependencyInjection
         services.AddScoped<INotificationDispatchRepository, NotificationDispatchRepository>();
         services.AddScoped<INotificationEventDefinitionRepository, NotificationEventDefinitionRepository>();
         services.AddScoped<IUserNotificationRepository, UserNotificationRepository>();
-        services.AddScoped<IOrganizationUnitRepository, OrganizationUnitRepository>();
+        // ONE instance answers both contracts: the unit repository and, for MOD-0288-FU02, the reporting
+        // graph. Registering the concrete type first is what keeps them the same object per request — two
+        // registrations of the same class would give the graph guard a different tenant-scoped instance.
+        services.AddScoped<OrganizationUnitRepository>();
+        services.AddScoped<IOrganizationUnitRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        services.AddScoped<IOrganizationReportingGraphRepository>(sp => sp.GetRequiredService<OrganizationUnitRepository>());
+        // MOD-0288-FU02 — tenant-defined Organization Unit field definitions and values.
+        services.AddScoped<IOrganizationFieldDefinitionRepository, OrganizationFieldDefinitionRepository>();
+        services.AddScoped<IOrganizationFieldValueRepository, OrganizationFieldValueRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
         services.AddScoped<IPositionAssignmentRepository, PositionAssignmentRepository>();
         services.AddScoped<IPersonReferenceRepository, PersonReferenceRepository>();
@@ -355,6 +364,13 @@ public static class DependencyInjection
         services.AddScoped<IWorkReportRepository, WorkReportRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+        // MOD-0357 S1 — the one bridge collection's storage. See IRecordLinkRepository/IRecordLinkService.
+        services.AddScoped<IRecordLinkRepository, RecordLinkRepository>();
+        // MOD-0357 S2 — the meeting aggregate's own storage.
+        services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
+        services.AddScoped<IAgendaItemRepository, AgendaItemRepository>();
+        services.AddScoped<IMeetingTypeRepository, MeetingTypeRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
@@ -363,6 +379,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        // MOD-0024 Slice ATT-1 — task attachment metadata.
+        services.AddScoped<ITaskAttachmentRepository, TaskAttachmentRepository>();
         services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
         services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
 
@@ -399,6 +417,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentCollectionDeviationRepository, DocumentCollectionDeviationRepository>();
         // MOD-0029-FU06 — Document Master Register (LOG-0001) repository (sidecar governance projection).
         services.AddScoped<IDocumentMasterRegisterRepository, DocumentMasterRegisterRepository>();
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the register's CSV upload history.
+        services.AddScoped<IDocumentRegisterImportBatchRepository, DocumentRegisterImportBatchRepository>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<IControlledDocumentRegistrationRepository, ControlledDocumentRegistrationRepository>();
         // MOD-0029-FU07 — document identifier (Permanent UID / Document Code) allocation ledger + sequence counter.
@@ -481,8 +501,12 @@ public static class DependencyInjection
             Diten.Platform.Infrastructure.Services.DocumentManagement.CollectionInstanceReferenceReader>();
         services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IDocumentAccessPrincipalAccessor,
             Diten.Platform.Infrastructure.Services.DocumentManagement.DocumentAccessPrincipalAccessor>();
-        services.AddScoped<Diten.Platform.Application.Features.DocumentManagementControlledDocuments.Services.IContentStorageGateway,
+        // MOD-0262-FU01 — the binary store seam is now owned by MOD-0262 (Internal Document Repository Service).
+        services.AddScoped<Diten.Platform.Application.Contracts.DocumentRepository.IContentStorageGateway,
             Diten.Platform.Infrastructure.Services.DocumentManagement.LocalFileSystemContentStorageGateway>();
+        services.AddScoped<Diten.Platform.Domain.Repositories.IRepositoryObjectRepository,
+            Diten.Platform.Infrastructure.Persistence.Repositories.RepositoryObjectRepository>();
+        services.AddScoped<Diten.Platform.Application.Features.DocumentRepository.Services.DocumentRepositoryService>();
 
         services.AddScoped<IMessagingProvider, FakeMessagingProvider>();
         services.AddScoped<IMessagingProvider, SmtpMessagingProvider>();
@@ -549,8 +573,35 @@ public static class DependencyInjection
         // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
         // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
         TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        // WP-DM-1b — tenant-AGNOSTIC Document Master Register auto-seed. Config-driven (DocumentRegisterSeed:*):
+        // EnsureSeededAsync self-gates on Development + Enabled + a configured target tenant + a real CSV path +
+        // a one-time marker; absent/blank/prod ⇒ skip (no hardcoded tenant). Reuses the DM-1a mapping + parser.
+        services.Configure<DocumentRegisterSeedOptions>(
+            configuration.GetSection(DocumentRegisterSeedOptions.SectionName));
+        var documentRegisterSeedOptions = configuration
+            .GetSection(DocumentRegisterSeedOptions.SectionName)
+            .Get<DocumentRegisterSeedOptions>() ?? new DocumentRegisterSeedOptions();
+        DocumentRegisterSeed.EnsureSeededAsync(database, documentRegisterSeedOptions, environment).GetAwaiter().GetResult();
+        // DEV-ONLY SEEDS — these two write MOCK organization data: five invented positions
+        // (CEO/CTO/HR_MGR/DEV_LEAD/DEV_ENG) and an assignment binding a named developer's personal
+        // mailbox to the CEO position of one hardcoded tenant. PositionAssignmentSeed already
+        // declared itself "DEV-ONLY" in its header, but nothing enforced it: both ran in EVERY
+        // environment, production included. The gate below is what makes the header true.
+        //
+        // ...and the environment alone is no longer enough. Development is also where the owner walks the
+        // organisation chain by hand on an emptied tenant, and where the dev server is restarted without asking,
+        // by standing instruction. Both seeds fill only an EMPTY tenant, so every restart after a reset put a
+        // phantom "HEADQUARTERS" and five mock positions (CEO, CTO, HR_MGR, DEV_LEAD, DEV_ENG) back into the
+        // tenant being walked — measured 2026-09-10: all CreatedBy="system", one set per seeded tenant. "Restart
+        // freely" and "restarting pollutes" cannot both be rules, so the seeds are OPT-IN now and default OFF.
+        // Nothing in the test suites reads this data; the two tests that name these seeds do so in comments.
+        var seedDevOrganizationPositions =
+            environment.IsDevelopment() && configuration.GetValue<bool>(PositionSeed.OptInConfigurationKey);
+        if (seedDevOrganizationPositions)
+        {
+            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        }
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
@@ -608,7 +659,9 @@ public static class DependencyInjection
         RunMongoStartupInitialization(
             database,
             mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
+            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions(),
+            environment.IsDevelopment(),
+            seedDevOrganizationPositions);
 
         return services;
     }
@@ -643,7 +696,9 @@ public static class DependencyInjection
     private static void RunMongoStartupInitialization(
         IMongoDatabase database,
         MongoDbSettings mongoSettings,
-        SmtpOptions smtpOptions)
+        SmtpOptions smtpOptions,
+        bool isDevelopment,
+        bool seedDevOrganizationPositions)
     {
         try
         {
@@ -683,8 +738,12 @@ public static class DependencyInjection
             // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
             // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
             TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // DEV-ONLY, OPT-IN SEEDS — see the gate in AddInfrastructure; same reason, same rule, same flag.
+            if (seedDevOrganizationPositions)
+            {
+                PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+                PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            }
         }
         catch (Exception ex) when (mongoSettings.AllowStartupWithoutDatabase)
         {

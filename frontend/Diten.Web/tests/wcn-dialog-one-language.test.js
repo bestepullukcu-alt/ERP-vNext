@@ -24,6 +24,8 @@ const path = require("path");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+// WP-WC-SHARED-UI-01 M2b (2026-09-11) — dialogLook's body now lives here; app.js delegates to it.
+const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
 const VIEW = fs.readFileSync(web("Views", "Shared", "_GlobalConfirmation.cshtml"), "utf8");
 const CSS = fs.readFileSync(web("wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
 const LANGS = ["en", "tr", "fr", "es", "zh", "ar", "ru"];
@@ -157,15 +159,25 @@ describe("eight dialogs, four moved and four dressed", () => {
      * category as the survivor above — a shape the shared wrapper cannot express — and it is DRESSED with the
      * declared package rather than inventing an appearance, which is what this test is actually protecting.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(2);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(2);
+    /*
+     * ⚠ THREE (MOD-0024 Slice ATT-1). The third is the ATTACHMENT UPLOAD dialog: a file input, a kind select
+     * and a note textarea. `showConfirm` supports one value (BL-146); this asks for three, so it is the same
+     * category as the other two survivors — a shape the shared wrapper cannot express — and it is DRESSED with
+     * the declared package the same way, not given an appearance of its own.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
     // Each raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(2);
+      "a raw dialog opened without the appearance").toHaveLength(3);
   });
 
   it("reads the package instead of copying it", () => {
-    expect(APP).toContain("global.DitenDialogAppearance(options)");
+    // WP-WC-SHARED-UI-01 M2b — app.js's own dialogLook is a one-line delegation now; the literal read of the
+    // package lives in shared/diten-dialog.js.
+    expect(SHARED).toContain("global.DitenDialogAppearance(options)");
+    expect(APP, "app.js rebuilt dialogLook's own body instead of delegating to the shared one")
+      .toContain("DitenDialog.dialogLook(options)");
     expect(APP, "the module started writing its own dialog classes")
       .not.toContain("rounded-4 shadow-lg");
   });
@@ -192,10 +204,13 @@ describe("eight dialogs, four moved and four dressed", () => {
     const callers = sourceFiles().filter((f) => f.endsWith(".js") && CALL.test(fs.readFileSync(f, "utf8")));
     expect(callers.length, "nobody calls the shared confirm — the scan is broken").toBeGreaterThan(20);
 
-    // THE RULE: `inputOptions` is opt-in, so no caller outside this module may be passing it.
+    // THE RULE: `inputOptions` is opt-in, so only a caller that names it may pass it.
+    // WP-WC-SHARED-UI-01 (M2) added the second one: Meetings' reassign-organizer dialog, modeled directly on
+    // this module's own `openCreateInSource` (a select seeded through `didOpen`, same as this one).
     const passing = callers.filter((f) => /inputOptions/.test(fs.readFileSync(f, "utf8")));
-    expect(passing.map((f) => path.relative(repoRoot, f)),
-      "a caller outside WorkCenterNext started passing inputOptions").toEqual([
+    expect(passing.map((f) => path.relative(repoRoot, f)).sort(),
+      "an unnamed caller started passing inputOptions").toEqual([
+      "frontend/Diten.Web/wwwroot/assets/js/Meetings/form.js",
       "frontend/Diten.Web/wwwroot/assets/js/WorkCenterNext/app.js"
     ]);
   });

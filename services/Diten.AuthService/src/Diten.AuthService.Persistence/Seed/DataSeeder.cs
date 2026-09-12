@@ -1,5 +1,6 @@
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Repositories;
 using MongoDB.Driver;
 
@@ -136,6 +137,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding tenant-97c5 CRM territory (MOD-0151 FU01) grants...");
             await SeedTenant97c5CrmTerritoryGrantAsync(database);
 
+            Console.WriteLine("Seeding tenant-97c5 CRM knowledge (WP-SCMM-05-S1) grants...");
+            await SeedTenant97c5CrmKnowledgeGrantAsync(database);
+
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
 
@@ -169,7 +173,201 @@ public static class DataSeeder
     private static async Task SeedPermissionsAsync(IMongoDatabase database)
     {
         var col = database.GetCollection<Permission>("permissions");
-        var permissions = new List<Permission>
+        var permissions = BuildCanonicalPermissions();
+
+        foreach (var p in permissions)
+        {
+            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
+            var exists = await col.Find(filter).AnyAsync();
+            if (!exists) await col.InsertOneAsync(p);
+        }
+
+        await ReconcilePermissionModulesAsync(col, permissions);
+        await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
+        await ReconcilePermissionScopesAsync(col, permissions);
+        await ReconcilePermissionModuleCasingAsync(col);
+        await ReconcileServiceNamespaceModuleAttributionAsync(col);
+        await ReconcilePermissionSegmentSpellingAsync(col);
+    }
+
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — the one-time (idempotent) spelling migration for rows already in the database.
+    ///
+    /// <para>
+    /// The constructor now normalizes <c>Resource</c>/<c>Action</c>, but a row inserted before that keeps whatever
+    /// it was created with, and the catalog-sync UPDATE path deliberately refreshes display metadata only. Measured
+    /// in the live catalog: the BRD seed stored fourteen PascalCase actions (<c>Read</c>, <c>PublishOverride</c>, …)
+    /// and MOD-0251 eight snake_case ones, so the same verb rendered as two verbs — two labels, two colours, two
+    /// bars in the action-distribution panel.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ SEGMENTS ONLY. <c>Key</c> is absent from the update because ADR-001 §1 froze it — the key is the identity
+    /// every grant row and every <c>[HasPermission]</c> attribute resolves through. <c>Scope</c> is absent because
+    /// it is the tenant/platform escalation boundary and this migration has no business moving it. Adding either
+    /// field to this update is the dangerous edit in this method; PermissionScopePreservationTests guards the second.
+    /// </para>
+    /// </summary>
+    /// <summary>
+    /// FIX-PERM-ACTION-SPELLING — for a key the SEED declares, the seed owns the segment spelling.
+    ///
+    /// <para>
+    /// The whole-collection normalizer below can only clean up what is still separable. Once a boundary is gone
+    /// from the stored data it is gone for good: <c>platform.businessreferencedata.fixture.manage</c> reached the
+    /// catalog through the A1 reflection worker, which parses the lowercased KEY, so its Resource was stored as
+    /// <c>businessreferencedata.fixture</c> — one unreadable word that no rule can split back apart, sitting next
+    /// to fourteen siblings reading <c>business-reference-data.*</c>. The seed literal still knows where the words
+    /// are, so for seeded keys it is the authority — the same key-exact, Module-and-Scope pattern already used
+    /// above, extended to the two segments.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ Segments only, and only for keys the seed declares. <c>Key</c> and <c>Scope</c> are absent for the reasons
+    /// given on the migration below; a synced-only permission is not the seed's to rewrite.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcilePermissionSegmentsFromSeedAsync(IMongoCollection<Permission> col, List<Permission> permissions)
+    {
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in permissions)
+        {
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.And(
+                    Builders<Permission>.Filter.Eq(x => x.Key, p.Key),
+                    Builders<Permission>.Filter.Or(
+                        Builders<Permission>.Filter.Ne(x => x.Resource, p.Resource),
+                        Builders<Permission>.Filter.Ne(x => x.Action, p.Action))),
+                Builders<Permission>.Update
+                    .Set(x => x.Resource, p.Resource)
+                    .Set(x => x.Action, p.Action)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Aligned Resource/Action to the seed literal for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    /// <summary>
+    /// One row's spelling correction. The type carries the Id and the two SEGMENTS and nothing else — no
+    /// <c>Key</c>, no <c>Scope</c>, no <c>Module</c> — so the migration is incapable of writing them. That is the
+    /// point: a field this record does not have cannot be added to the update by accident, and
+    /// <c>PermissionSegmentNormalizerTests</c> asserts the shape so it cannot be added on purpose either without
+    /// a test going red. (Precedent: <c>TaskModuleDisplayNameRenameMigration.Plan</c>.)
+    /// </summary>
+    public sealed record SegmentSpellingRewrite(Guid Id, string? Resource, string? Action);
+
+    /// <summary>
+    /// Pure, unit-testable core of <see cref="ReconcilePermissionSegmentSpellingAsync"/>: decides which rows need
+    /// a spelling correction. No IO, so a test can drive it with a hand-built catalog.
+    /// </summary>
+    public static IReadOnlyList<SegmentSpellingRewrite> PlanSegmentSpellingRewrites(IEnumerable<Permission> permissions)
+    {
+        var plan = new List<SegmentSpellingRewrite>();
+
+        foreach (var p in permissions ?? Enumerable.Empty<Permission>())
+        {
+            var resource = PermissionSegmentNormalizer.Normalize(p.Resource);
+            var action = PermissionSegmentNormalizer.Normalize(p.Action);
+
+            // A normalization that empties a segment is refused rather than written: an empty Action would make the
+            // row unreadable on every screen, and the row is better left ugly than left broken.
+            var newResource = resource.Length > 0 && !string.Equals(resource, p.Resource, StringComparison.Ordinal) ? resource : null;
+            var newAction = action.Length > 0 && !string.Equals(action, p.Action, StringComparison.Ordinal) ? action : null;
+
+            if (newResource is null && newAction is null)
+            {
+                continue; // already canonical
+            }
+
+            plan.Add(new SegmentSpellingRewrite(p.Id, newResource, newAction));
+        }
+
+        return plan;
+    }
+
+    private static async Task ReconcilePermissionSegmentSpellingAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+        var plan = PlanSegmentSpellingRewrites(all);
+        if (plan.Count == 0) return;
+
+        var writes = plan.Select(rewrite =>
+        {
+            var sets = new List<UpdateDefinition<Permission>>(2);
+            if (rewrite.Resource is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Resource, rewrite.Resource));
+            if (rewrite.Action is not null) sets.Add(Builders<Permission>.Update.Set(x => x.Action, rewrite.Action));
+
+            return (WriteModel<Permission>)new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, rewrite.Id),
+                Builders<Permission>.Update.Combine(sets));
+        }).ToList();
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Normalized Resource/Action spelling for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    /// <summary>
+    /// FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one-time (idempotent) migration for rows already in the database.
+    ///
+    /// <para>
+    /// The seed-list reconcile above only reaches keys the seed declares; the catalog sync and the A1 auto-registration
+    /// worker create keys it has never heard of. Those rows kept <c>Module = "platform"</c> forever — 168 of them at
+    /// the time of writing, 40% of the catalog in one box. This scans the WHOLE collection and re-attributes any row
+    /// whose Module is a SERVICE namespace to the module in its Key, via the same
+    /// <see cref="PermissionModuleAttribution"/> rule the constructor uses. Rows with a real module attribution
+    /// (including deliberate overrides like <c>tenant-settings</c>) are not candidates and are never touched.
+    /// </para>
+    ///
+    /// <para>
+    /// ⚠ MODULE-ONLY. <c>Scope</c> is deliberately absent from the update — the tenant/platform escalation boundary
+    /// must survive this migration bit-for-bit, so a re-attributed permission keeps exactly the Scope it already had.
+    /// Adding Scope to this update is the single most dangerous edit in this file; PermissionScopePreservationTests
+    /// exists to catch it.
+    /// </para>
+    /// </summary>
+    private static async Task ReconcileServiceNamespaceModuleAttributionAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(_ => true).ToListAsync();
+
+        var writes = new List<WriteModel<Permission>>();
+        foreach (var p in all)
+        {
+            if (!PermissionModuleAttribution.IsServiceNamespace(p.Module))
+            {
+                continue; // already attributed to a real module (derived, seeded override, or manifest ModuleCode)
+            }
+
+            var derived = PermissionModuleAttribution.DeriveFromKey(p.Key);
+            if (derived.Length == 0 || string.Equals(derived, p.Module, StringComparison.Ordinal))
+            {
+                continue; // nothing safe to derive, or already correct
+            }
+
+            writes.Add(new UpdateOneModel<Permission>(
+                Builders<Permission>.Filter.Eq(x => x.Id, p.Id),
+                Builders<Permission>.Update.Set(x => x.Module, derived)));
+        }
+
+        if (writes.Count == 0) return;
+
+        var result = await col.BulkWriteAsync(writes, new BulkWriteOptions { IsOrdered = false });
+        if (result.ModifiedCount > 0)
+        {
+            Console.WriteLine($"Re-attributed Module (service namespace -> owning module) for {result.ModifiedCount} existing permission(s).");
+        }
+    }
+
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the canonical seed catalog, lifted out of SeedPermissionsAsync so a
+    // guard test can read the REAL list (PermissionModuleAttributionGuardTests) instead of re-deriving the rule
+    // against a copy. Pure: it constructs Permission objects and touches no database.
+    public static List<Permission> BuildCanonicalPermissions() => new List<Permission>
         {
             new("auth", "users", "create", "Create User", "Permission to create a new user", moduleOverride: "access-governance"),
             new("auth", "users", "read", "Read User", "Permission to view user lists and details", moduleOverride: "access-governance"),
@@ -177,6 +375,13 @@ public static class DataSeeder
             new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
             new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — two keys, two natures. `auth.users.lookup` is an ORDINARY tenant key
+            // (name search + account assertion for reference pickers; no email, no roles) and reaches the tenant Admin
+            // baseline like its siblings. `auth.users.account-kind.manage` is EXPLICIT-GRANT-ONLY
+            // (ExplicitGrantOnlyPermissions): it is seeded into the catalog so an authorized person can assign it, and
+            // NO role — SuperAdmin included — receives it here or in any automatic path. Both Scope=Tenant.
+            new("auth", "users", "lookup", "Lookup Users", "Permission to search active tenant users by name and read the account assertion (no email, no roles)", moduleOverride: "access-governance"),
+            new("auth", "users.account-kind", "manage", "Manage Account Kind", "Permission to classify a tenant user account as Unknown, Human or Service (explicit grant only; never granted automatically)", moduleOverride: "access-governance"),
 
             new("auth", "roles", "create", "Create Role", "Permission to create a new role", moduleOverride: "access-governance"),
             new("auth", "roles", "read", "Read Role", "Permission to view role lists", moduleOverride: "access-governance"),
@@ -254,6 +459,23 @@ public static class DataSeeder
             new("crm", "territory.node", "read", "CRM Territory Node Read", "Permission to view CRM territory hierarchy nodes", moduleOverride: "crm-territory"),
             new("crm", "territory.node", "manage", "CRM Territory Node Manage", "Permission to create/update draft CRM territory nodes", moduleOverride: "crm-territory"),
 
+            // MOD-0162 / SCMM concept-foundation (Commercial Suite / CRM, Diten.CrmService). Tenant-scoped keys
+            // (module code "crm-knowledge" ∉ PlatformAdminModules → Scope=Tenant). Canonical PKS-001 keys for the SCMM
+            // knowledge surface: Concept graph (FU03), Knowledge/Subject taxonomy (FU02) and KnowledgePath (FU04). They
+            // replace the DEV-ONLY crm.territory.* fallback the concept-foundation controllers ran on (WP-SCMM-05-S1).
+            // ContentEngagementJourney (FU05) keys are intentionally NOT seeded here — out of S1 concept-foundation scope.
+            new("crm", "knowledge.concept", "read", "CRM Knowledge Concept Read", "Permission to view the SCMM concept graph (types, nodes, relationships, chain templates, graph)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept", "manage", "CRM Knowledge Concept Manage", "Permission to create/update/archive SCMM concept types, nodes and relationships", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept-template", "manage", "CRM Knowledge Concept Template Manage", "Permission to author SCMM concept chain templates", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.concept-link", "manage", "CRM Knowledge Concept Link Manage", "Permission to author SCMM content-to-concept links", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge", "read", "CRM Knowledge Read", "Permission to view SCMM knowledge content and the knowledge contract", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge", "manage", "CRM Knowledge Manage", "Permission to create/update/archive SCMM knowledge content", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.subject", "read", "CRM Knowledge Subject Read", "Permission to view the SCMM knowledge taxonomy (subjects, topics, audience profiles)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.subject", "manage", "CRM Knowledge Subject Manage", "Permission to author the SCMM knowledge taxonomy (subjects, topics, audience profiles)", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "read", "CRM Knowledge Path Read", "Permission to view SCMM knowledge paths and the path contract", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "manage", "CRM Knowledge Path Manage", "Permission to author SCMM knowledge paths and their steps", moduleOverride: "crm-knowledge"),
+            new("crm", "knowledge.path", "publish", "CRM Knowledge Path Publish", "Permission to publish SCMM knowledge paths (freezes the step set)", moduleOverride: "crm-knowledge"),
+
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
             new("mod0251", "employee", "view_sensitive", "View Sensitive Employee Fields", "Permission to view sensitive MOD-0251 employee fields when masking policy allows"),
@@ -288,6 +510,12 @@ public static class DataSeeder
             new("platform", "BusinessReferenceData.Import", "Commit", "Commit Business Reference Data Import", "Permission to commit BusinessReferenceData imports", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Usage", "Register", "Register Business Reference Data Usage", "Permission to register BusinessReferenceData usage", moduleOverride: "reference-data"),
             new("platform", "BusinessReferenceData.Consumer", "Read", "Read Published Business Reference Data", "Permission to consume published BusinessReferenceData values", moduleOverride: "reference-data"),
+            // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the one BRD key the seed never declared (it reached the catalog via
+            // the A1 controller-reflection worker), so it stayed on Module="platform" while its 14 siblings were
+            // corrected. Left to the generic derivation it would land in its own "businessreferencedata" group,
+            // one row away from the reference-data module that actually owns it. Declared here so the key-exact
+            // seed reconcile puts it with its siblings.
+            new("platform", "BusinessReferenceData.Fixture", "Manage", "Manage Business Reference Data Fixtures", "Permission to manage BusinessReferenceData fixtures", moduleOverride: "reference-data"),
 
             // MOD-0288 — Organization, Person & Position Directory (platform-admin screens).
             // FIX-PERM-MODULE-ATTRIBUTION — organization-units.* is owned by the organization module
@@ -297,6 +525,16 @@ public static class DataSeeder
             new("platform", "organization-units", "update", "Update Organization Unit", "Permission to edit organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "archive", "Archive Organization Unit", "Permission to archive organization units", moduleOverride: "organization"),
             new("platform", "organization-units", "delete", "Delete Organization Unit", "Permission to delete organization units", moduleOverride: "organization"),
+            // MOD-0288-FU02 — the second reporting line and the custom field mechanism. These four MUST carry
+            // moduleOverride: "organization" for the same reason the five above do. Without it they reach the
+            // catalog with Module = "platform", DefaultRolePermissionTemplate refuses platform.* to tenant roles
+            // as a privilege-escalation boundary, and the keys become undelegable: the seeded Admin holds them,
+            // every tenant role is refused, and FU02's whole point — that renaming a unit must not silently
+            // permit re-parenting it — cannot be handed to anyone.
+            new("platform", "organization-units.reporting-line", "update", "Update Reporting Line", "Permission to change a unit's functional or administrative reporting line", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "read", "Read Organization Custom Fields", "Permission to view organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "manage", "Manage Organization Custom Fields", "Permission to create, update and deactivate organization unit custom field definitions", moduleOverride: "organization"),
+            new("platform", "organization-units.custom-fields", "write-value", "Write Organization Custom Field Value", "Permission to record a custom field value on an organization unit", moduleOverride: "organization"),
             // FIX-PERM-ATTRIBUTION-2 — positions.* and position-assignments.* are the same tenant-side
             // Organization/Position Directory as organization-units.* (all served by /OrganizationUnits,
             // /Positions, /PositionAssignments — none under /Platform/); Key stays platform.positions.* /
@@ -542,17 +780,6 @@ public static class DataSeeder
             new("platform", "workflow.escalations", "run", "Run Workflow Escalations", "Permission to run the workflow escalation/timeout processor")
         };
 
-        foreach (var p in permissions)
-        {
-            var filter = Builders<Permission>.Filter.Eq(x => x.Key, p.Key);
-            var exists = await col.Find(filter).AnyAsync();
-            if (!exists) await col.InsertOneAsync(p);
-        }
-
-        await ReconcilePermissionModulesAsync(col, permissions);
-        await ReconcilePermissionScopesAsync(col, permissions);
-        await ReconcilePermissionModuleCasingAsync(col);
-    }
 
     // FIX-PERM-MODULE-CASE-CONSISTENCY — the seed writes Module lowercase, but the catalog sync historically stored
     // the Platform-uppercased ModuleCode (ACCESS-GOVERNANCE, GOLDENCOMPACT, WORKFLOW...), so the same module appeared
@@ -693,6 +920,8 @@ public static class DataSeeder
             user.SetPlatformActorType("platform_admin");
             user.Activate();
             user.ConfirmEmail();
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the seed is an automatic creation path: Unknown, never Human by structure.
+            user.SetAccountKind(AccountKind.Unknown);
             await userCol.InsertOneAsync(user);
             Console.WriteLine("Created admin user with static Guid.");
         }
@@ -751,6 +980,7 @@ public static class DataSeeder
                 mu.SetUserName($"user-{suffix}-{i + 1}");
                 mu.Activate();
                 mu.ConfirmEmail();
+                mu.SetAccountKind(AccountKind.Unknown); // WP-INFRA-AUTH-ACCOUNT-KIND-01 — seed never classifies
                 await userCol.InsertOneAsync(mu);
             }
             Console.WriteLine($"Seeded 5 mock users for tenant {tenantId}.");
@@ -1046,6 +1276,75 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Granted {granted} missing crm.territory.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    /// <summary>
+    /// WP-SCMM-05-S1 — grants the SCMM concept-foundation canonical <c>crm.knowledge.*</c> permissions to the
+    /// tenant-97c5 Admin role (mirrors <see cref="SeedTenant97c5CrmTerritoryGrantAsync"/>). These go to the SAME role
+    /// that today holds the DEV-ONLY <c>crm.territory.*</c> fallback the SCMM knowledge controllers ran on, so
+    /// switching those controllers to canonical keys causes NO access regression. Idempotent: existing grants are
+    /// skipped; no Mongo hand-edit. EXPLICIT allowlist — ContentEngagementJourney (FU05) keys are NOT granted here
+    /// (out of S1 concept-foundation scope).
+    /// </summary>
+    private static async Task SeedTenant97c5CrmKnowledgeGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM knowledge grant: Admin role not found.");
+            return;
+        }
+
+        // WP-SCMM-05-S1 — the 11 SCMM concept-foundation canonical keys (ConceptPermissions.All +
+        // KnowledgePermissions.All + KnowledgePathPermissions.All). Explicit allowlist; no FU05 journey keys.
+        var knowledgeKeys = new[]
+        {
+            "crm.knowledge.concept.read",
+            "crm.knowledge.concept.manage",
+            "crm.knowledge.concept-template.manage",
+            "crm.knowledge.concept-link.manage",
+            "crm.knowledge.read",
+            "crm.knowledge.manage",
+            "crm.knowledge.subject.read",
+            "crm.knowledge.subject.manage",
+            "crm.knowledge.path.read",
+            "crm.knowledge.path.manage",
+            "crm.knowledge.path.publish"
+        };
+        var knowledgePerms = await permCol
+            .Find(p => !p.IsDeleted && knowledgeKeys.Contains(p.Key))
+            .ToListAsync();
+        if (knowledgePerms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM knowledge grant: no crm.knowledge.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in knowledgePerms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.knowledge.* permission(s) to tenant-97c5 Admin role.");
     }
 
     // MOD-0290-FU02-RBAC — grant the Brand/Product master permissions to the tenant-97c5 operator so the

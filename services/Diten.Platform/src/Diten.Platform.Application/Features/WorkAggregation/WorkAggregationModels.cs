@@ -91,6 +91,9 @@ public static class WorkItemContract
 {
     public const string FixtureKindWorkItem = "workItem";
 
+    /// <summary>Mirrors `fixture-contract.js` `LIMITS.maxRelatedRecords` — the cap on `relatedRecords[]`.</summary>
+    public const int MaxRelatedRecords = 20;
+
     // workIntent
     public const string IntentApproval = "approval";
 
@@ -342,6 +345,13 @@ public sealed record WorkItemProjectionDto(
     WorkItemChecklistDto? Checklist = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     WorkItemSubtasksDto? Subtasks = null,
+    /// <summary>
+    /// MOD-0024 Slice ATT-1 — files attached to the task (kind Attachment/Deliverable/Evidence), same
+    /// declared-and-empty rule as Checklist/Subtasks: MOD-0024 owns attachments for every task it projects, so
+    /// the container is emitted even with zero items (the shell's "add file" affordance needs it to exist).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemAttachmentsDto? Attachments = null,
     /// <summary>Set when this item IS a subtask, so the shell can show whose subtask it is.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? ParentTaskItemId = null,
@@ -364,6 +374,15 @@ public sealed record WorkItemProjectionDto(
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<WorkItemDependencyDto>? Dependencies = null,
+    /// <summary>
+    /// MOD-0357 S1 — read-only links to another module's records (a linked meeting, today; MOD-0007's
+    /// decisions later). Container ⇔ the <c>relatedRecords</c> capability, DATA-DRIVEN like <c>checklist</c>
+    /// and <c>businessContext</c> (not unconditional like <c>subtasks</c>): null/omitted when there are none,
+    /// present — capped at the contract's own <c>maxRelatedRecords</c> (20) — only when at least one link
+    /// resolved. Never an implicit blocker (pack §3 K1): nothing here gates any action.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemRelatedRecordDto>? RelatedRecords = null,
     /// <summary>
     /// What is stopping this work, and which actions it stops. Absent when nothing blocks — a
     /// <c>blocked: false</c> object would make every unblocked item carry a blocked state.
@@ -941,6 +960,22 @@ public sealed record WorkItemDependencyDto(
     bool Blocking);
 
 /// <summary>
+/// MOD-0357 S1 — one entry in `relatedRecords[]`. The contract (`fixture-contract.js`) declared this field,
+/// the `relatedRecords` capability and its `maxRelatedRecords: 20` limit long before any provider emitted
+/// data for it (measured 2026-09-11: zero `RelatedRecord` symbols anywhere in this file or
+/// `TaskWorkItemProvider.cs`). This is the field the contract already promised, filled in — not a new one.
+///
+/// <para><c>Title</c>/<c>Link</c> are resolved fresh from the far module every read (via
+/// <c>IRelatedRecordResolver</c>), never stored on the link itself — a title copied at link time would go
+/// stale the moment the far record was renamed.</para>
+/// </summary>
+public sealed record WorkItemRelatedRecordDto(
+    string Id,
+    string Type,
+    string Title,
+    string Link);
+
+/// <summary>
 /// blockedState { blocked, affectedActionCodes[], blockers[] } — the shape the executable contract validates.
 ///
 /// <para>Every code in <c>AffectedActionCodes</c> MUST appear in <c>actions[]</c>, disabled, with a reason: the
@@ -1022,13 +1057,41 @@ public sealed record WorkItemChecklistItemDto(
     /// nothing has to publish who wrote which line to every reader of the list. Defaulted true so that a
     /// provider which has no concept of authorship keeps behaving as it did.</para>
     /// </summary>
-    bool Editable = true);
+    bool Editable = true,
+    /// <summary>MOD-0024 Slice ATT-1 — live count of non-deleted Evidence-kind attachments joined to this item
+    /// by <c>ChecklistRunItemCode</c>. Zero even when <see cref="EvidenceRequired"/> is true and nothing was
+    /// uploaded yet — the shell reads that combination as "show the add-evidence affordance".</summary>
+    int EvidenceCount = 0);
 
 /// <summary>
 /// Subtasks. <c>mode: "full"</c> because MOD-0024 IS their source and may create/complete them here; a consumer
 /// that merely mirrors someone else's subtasks would send "readonly" and deep-link instead.
 /// </summary>
 public sealed record WorkItemSubtasksDto(string Mode, IReadOnlyList<WorkItemSubtaskDto> Items);
+
+/// <summary>MOD-0024 Slice ATT-1 — the task's attachments, newest first.</summary>
+public sealed record WorkItemAttachmentsDto(IReadOnlyList<WorkItemAttachmentDto> Items);
+
+/// <summary>
+/// One attached file. <c>ContentId</c> is the ONLY thing the client needs to download it
+/// (<c>GET {id}/attachments/{attachmentId}/content</c>) — no storage detail is projected here, matching
+/// MOD-0262-FU01's own AD-4/AD-5 (an object key never leaves the repository's boundary).
+/// </summary>
+public sealed record WorkItemAttachmentDto(
+    string Id,
+    string FileName,
+    string MediaType,
+    long ByteSize,
+    /// <summary>Attachment | Deliverable | Evidence, the domain enum's own spelling.</summary>
+    string Kind,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Note,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? UploadedBy,
+    DateTimeOffset UploadedAt,
+    /// <summary>Set when this file was uploaded as evidence for a specific checklist item.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ChecklistItemId);
 
 public sealed record WorkItemSubtaskDto(
     string Id,

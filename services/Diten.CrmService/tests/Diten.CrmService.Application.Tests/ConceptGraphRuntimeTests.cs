@@ -1,4 +1,5 @@
 using Diten.CrmService.Application.Common;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Application.Features.Knowledge.Concept.ChainTemplate;
 using Diten.CrmService.Application.Features.Knowledge.Concept.Contract;
 using Diten.CrmService.Application.Features.Knowledge.Concept.Graph;
@@ -51,6 +52,7 @@ public sealed class ConceptGraphRuntimeTests
         public UpdateConceptTypeHandler UpdateType() => new(Tenant(TenantId), new NullActorContext(), Types);
         public ArchiveConceptTypeHandler ArchiveType() => new(Tenant(TenantId), new NullActorContext(), Types);
         public ListConceptTypesHandler ListTypes(Guid? t = null) => new(Tenant(t ?? TenantId), Types);
+        public GetConceptTypeHandler GetType() => new(Tenant(TenantId), Types);
 
         public CreateConceptNodeHandler CreateNode() => new(Tenant(TenantId), new NullActorContext(), Nodes, Types);
         public UpdateConceptNodeHandler UpdateNode() => new(Tenant(TenantId), new NullActorContext(), Nodes);
@@ -58,6 +60,12 @@ public sealed class ConceptGraphRuntimeTests
 
         public CreateConceptRelationshipHandler CreateRel()
             => new(Tenant(TenantId), new NullActorContext(), Relationships, Nodes, Templates);
+        public FakeCombinedUow Uow { get; private set; } = null!;
+        public CreateConceptNodeWithRelationshipHandler CreateNodeWithRel()
+        {
+            Uow = new FakeCombinedUow(Nodes, Relationships);
+            return new(Tenant(TenantId), new NullActorContext(), Nodes, Types, Relationships, Templates, Uow);
+        }
         public UpdateConceptRelationshipHandler UpdateRel()
             => new(Tenant(TenantId), new NullActorContext(), Relationships, Nodes, Templates);
         public ListConceptRelationshipsHandler ListRels() => new(Tenant(TenantId), Relationships);
@@ -66,6 +74,7 @@ public sealed class ConceptGraphRuntimeTests
             => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
         public UpdateConceptChainTemplateHandler UpdateTemplate()
             => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
+        public GetConceptChainTemplateHandler GetTemplate() => new(Tenant(TenantId), Templates);
 
         public CreateKnowledgeContentConceptLinkHandler CreateLink()
             => new(Tenant(TenantId), new NullActorContext(), Links, Contents, Nodes, Relationships);
@@ -671,7 +680,369 @@ public sealed class ConceptGraphRuntimeTests
         Assert.DoesNotContain(n3, nodeIds); // third layer never surfaces (fixed depth)
     }
 
+    // ---------------- SCMM-09 (①) ConceptType extend: color / isGroup / isList / parent ----------------
+
+    [Fact] // 39  new fields round-trip through create + read
+    public async Task Create_type_with_new_fields_round_trips()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var created = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "grp", "Group type", Status: ConceptStatuses.Active,
+            Color: "#3366FF", IsGroup: true, IsList: true), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetType().Handle(new GetConceptTypeQuery(created.Data), default)).Data!;
+        Assert.Equal("#3366FF", dto.Color);
+        Assert.True(dto.IsGroup);
+        Assert.True(dto.IsList);
+        Assert.Null(dto.ParentConceptTypeId);
+    }
+
+    [Fact] // 40  invalid hex color rejected
+    public async Task Create_type_invalid_color_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var r = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "c", "Coloured", Color: "blue"), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 41  RM1 parent hierarchy: valid parent accepted, then cycle rejected
+    public async Task Parent_type_valid_then_cycle_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var a = await fx.SeedType(subjectId, "A");
+        var b = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectId, "B", "B", Status: ConceptStatuses.Active, ParentConceptTypeId: a), default);
+        Assert.Equal(201, b.StatusCode); // B -> A is fine
+
+        // A -> B would close the A -> B -> A loop.
+        var cycle = await fx.UpdateType().Handle(new UpdateConceptTypeCommand(
+            a, "A", ParentConceptTypeId: b.Data), default);
+        Assert.Equal(400, cycle.StatusCode);
+    }
+
+    [Fact] // 42  RM1 self-parent rejected
+    public async Task Self_parent_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var a = await fx.SeedType(subjectId, "A");
+        var r = await fx.UpdateType().Handle(new UpdateConceptTypeCommand(a, "A", ParentConceptTypeId: a), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 43  RM1 cross-subject parent rejected
+    public async Task Cross_subject_parent_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectA = fx.SeedSubject();
+        var subjectB = fx.SeedSubject();
+        var parentInB = await fx.SeedType(subjectB, "PB");
+        var r = await fx.CreateType().Handle(new CreateConceptTypeCommand(
+            subjectA, "child", "Child", ParentConceptTypeId: parentInB), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    // ---------------- SCMM-09 (②) combined node+edge write ----------------
+
+    [Fact] // 44  combined-write happy path: node + edge persisted atomically, edge newNode -> counterpart
+    public async Task Combined_write_creates_node_and_edge()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1,
+            NodeStatus: ConceptStatuses.Active, RelationshipStatus: ConceptStatuses.Active), default);
+
+        Assert.Equal(201, r.StatusCode);
+        Assert.True(fx.Uow.Called);
+        Assert.Contains(fx.Nodes.Items, n => n.Id == r.Data!.ConceptNodeId);
+        var edge = Assert.Single(fx.Relationships.Items, e => e.Id == r.Data!.ConceptRelationshipId);
+        Assert.Equal(r.Data!.ConceptNodeId, edge.FromConceptNodeId); // NewNodeIsSource=true default
+        Assert.Equal(counterpart, edge.ToConceptNodeId);
+    }
+
+    [Fact] // 45  combined-write reuses relationship validation: archived counterpart rejected, nothing written
+    public async Task Combined_write_archived_counterpart_returns_400_no_write()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+        await fx.ArchiveNode().Handle(new ArchiveConceptNodeCommand(counterpart), default);
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called); // no partial write on rejection
+    }
+
+    [Fact] // 46  combined-write cross-subject counterpart rejected
+    public async Task Combined_write_cross_subject_counterpart_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectA = fx.SeedSubject();
+        var subjectB = fx.SeedSubject();
+        var typeA = await fx.SeedType(subjectA, "A");
+        var typeB = await fx.SeedType(subjectB, "B");
+        var counterpartInB = await fx.SeedNode(subjectB, typeB, "NB");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectA, typeA, "n-new", "New value", Jan1,
+            counterpartInB, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called);
+    }
+
+    [Fact] // 47  combined-write reuses relationship-type validation
+    public async Task Combined_write_invalid_relationship_type_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, "not-a-real-type", "R1", "R1", Jan1), default);
+
+        Assert.Equal(400, r.StatusCode);
+        Assert.False(fx.Uow.Called);
+    }
+
+    [Fact] // 48  NewNodeIsSource=false flips the edge direction (counterpart -> newNode)
+    public async Task Combined_write_new_node_as_target()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+
+        var handler = fx.CreateNodeWithRel();
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1, NewNodeIsSource: false), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var edge = Assert.Single(fx.Relationships.Items);
+        Assert.Equal(counterpart, edge.FromConceptNodeId);
+        Assert.Equal(r.Data!.ConceptNodeId, edge.ToConceptNodeId);
+    }
+
+    // ---------------- SCMM-09 (audit bundle) ----------------
+
+    [Fact] // 49  concept create emits an audit event carrying object type + id + version
+    public async Task Concept_type_create_emits_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptTypeHandler(Tenant(TenantA), new NullActorContext(), fx.Types, fx.Subjects, audit);
+
+        var r = await handler.Handle(new CreateConceptTypeCommand(subjectId, "indication", "Indication"), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(ConceptGraphReasonCodes.TypeCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptType, evt.EntityType);
+        Assert.Equal(r.Data, evt.EntityId);      // object id
+        Assert.Equal(0, evt.Version);            // object/version (fresh create)
+    }
+
+    [Fact] // 50  combined-write emits a single combined audit event
+    public async Task Combined_write_emits_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = fx.SeedSubject();
+        var typeId = await fx.SeedType(subjectId);
+        var counterpart = await fx.SeedNode(subjectId, typeId, "N1");
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptNodeWithRelationshipHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Nodes, fx.Types, fx.Relationships, fx.Templates,
+            new FakeCombinedUow(fx.Nodes, fx.Relationships), audit);
+
+        var r = await handler.Handle(new CreateConceptNodeWithRelationshipCommand(
+            subjectId, typeId, "n-new", "New value", Jan1,
+            counterpart, ConceptRelationshipTypes.LeadsTo, "R1", "R1", Jan1), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(KnowledgeConceptAuditEvents.NodeWithRelationshipCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptNode, evt.EntityType);
+        Assert.Equal(r.Data!.ConceptNodeId, evt.EntityId);
+    }
+
+    // ---------------- SCMM-10 (③) ConceptChainTemplate branched extend ----------------
+
+    [Fact] // 51  branched structure persists + reads back with cardinality + moderator/for-whom refs
+    public async Task Branched_template_round_trips()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[]
+        {
+            new ConceptChainBranchInput("BR1", new[]
+            {
+                new ConceptChainStepInput(t1, 1, 2, new[] { "role:moderator" }, new[] { "aud:cardiology" }),
+                new ConceptChainStepInput(t2, 0, null)
+            }, "Primary", 0)
+        };
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-1", "Chain 1", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(created.Data), default)).Data!;
+        var br = Assert.Single(dto.Branches);
+        Assert.Equal("BR1", br.BranchCode);
+        Assert.Equal(2, br.Steps.Count);
+        Assert.Equal(1, br.Steps[0].MinSelection);
+        Assert.Equal(2, br.Steps[0].MaxSelection);
+        Assert.Contains("role:moderator", br.Steps[0].AllowedRoleRefs);       // moderator axis
+        Assert.Contains("aud:cardiology", br.Steps[0].AudienceDimensionRefs); // for-whom axis
+        Assert.Null(br.Steps[1].MaxSelection);                                // unbounded stays null (no engine fills it)
+    }
+
+    [Fact] // 52  a legacy flat template migrates read-time to a single branch (back-compat)
+    public async Task Legacy_flat_template_migrates_to_single_branch()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-2", "Chain 2", new[] { t1, t2 }, Jan1), default); // NO branches — legacy
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(created.Data), default)).Data!;
+        var br = Assert.Single(dto.Branches);                 // exactly one derived branch
+        Assert.Equal("B1", br.BranchCode);
+        Assert.Equal(new[] { t1, t2 }, br.Steps.Select(x => x.ConceptTypeId).ToArray());
+    }
+
+    [Fact] // 53  publish freezes the branch structure — changing it needs a new version (409)
+    public async Task Published_template_branch_change_returns_409()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[]
+            { new ConceptChainStepInput(t1), new ConceptChainStepInput(t2) }) };
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-3", "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: branches), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var changed = new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 2, 3) }) };
+        var upd = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            created.Data, "Chain 3", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published, Branches: changed), default);
+        Assert.Equal(409, upd.StatusCode);
+    }
+
+    [Fact] // 54  step cardinality: MaxSelection < MinSelection is rejected
+    public async Task Branch_step_max_below_min_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[] { new ConceptChainStepInput(t1, 3, 2) }) };
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-4", "Chain 4", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 55  a branch step type must belong to the template's subject
+    public async Task Branch_step_cross_subject_type_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var other = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var foreign = await fx.SeedType(other, "TX");
+        var branches = new[] { new ConceptChainBranchInput("BR1", new[]
+            { new ConceptChainStepInput(t1), new ConceptChainStepInput(foreign) }) };
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-5", "Chain 5", new[] { t1, t2 }, Jan1, Branches: branches), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact] // 56  chain create/publish emit MOD-0162 audit events with object type + id
+    public async Task Chain_template_audit_events()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var audit = new CapturingConceptAudit();
+        var handler = new CreateConceptChainTemplateHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, audit);
+
+        var draft = await handler.Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-A", "A", new[] { t1, t2 }, Jan1), default);
+        Assert.Equal(201, draft.StatusCode);
+        var e1 = Assert.Single(audit.Events);
+        Assert.Equal(ConceptGraphReasonCodes.ChainTemplateCreated, e1.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.ConceptChainTemplate, e1.EntityType);
+        Assert.Equal(draft.Data, e1.EntityId);
+
+        var published = await handler.Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-B", "B", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published), default);
+        Assert.Equal(201, published.StatusCode);
+        Assert.Equal(ConceptGraphReasonCodes.ChainTemplatePublished, audit.Events[^1].Event);
+    }
+
     // ============================================================ in-memory fakes
+
+    private sealed class CapturingConceptAudit : IKnowledgeConceptAuditPublisher
+    {
+        public List<(string Event, string EntityType, Guid EntityId, int Version, string? Detail)> Events { get; } = new();
+
+        public Task PublishAsync(string eventName, Guid tenantId, string entityType, Guid entityId, int version,
+            string? detail, CancellationToken cancellationToken)
+        {
+            Events.Add((eventName, entityType, entityId, version, detail));
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeCombinedUow : IConceptNodeWithRelationshipUnitOfWork
+    {
+        private readonly FakeNodeRepo _nodes;
+        private readonly FakeRelationshipRepo _relationships;
+        public bool Called { get; private set; }
+
+        public FakeCombinedUow(FakeNodeRepo nodes, FakeRelationshipRepo relationships)
+        {
+            _nodes = nodes;
+            _relationships = relationships;
+        }
+
+        public Task CommitAsync(ConceptNode node, ConceptRelationship relationship, CancellationToken cancellationToken)
+        {
+            Called = true;
+            _nodes.Items.Add(node);
+            _relationships.Items.Add(relationship);
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class FakeSubjectRepo : ISubjectRepository
     {

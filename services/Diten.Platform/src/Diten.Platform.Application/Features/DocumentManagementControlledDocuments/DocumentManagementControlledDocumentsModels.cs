@@ -47,18 +47,9 @@ public sealed class ControlledDocumentsFeatureFlagOptions
     public bool FolderShareCopyOnAdoptEnabled { get; set; }             // mod0029.folder_share_copy_on_adopt.enabled (off until copy lineage verified)
 }
 
-/// <summary>Phase 1 local content-storage config (config-driven root; never under wwwroot).</summary>
-public sealed class ContentStorageOptions
-{
-    public const string SectionName = "DocumentManagement:ContentStorage";
-
-    public string Provider { get; set; } = "local-filesystem";
-    public string RootPath { get; set; } = string.Empty;
-    public long MaxFileSizeBytes { get; set; } = 52_428_800; // 50 MB
-    public List<string> AllowedExtensions { get; set; } =
-        [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv", ".md", ".png", ".jpg", ".jpeg"];
-    public List<string> AllowedMediaTypes { get; set; } = [];
-}
+// MOD-0262-FU01: `ContentStorageOptions` moved to
+// Diten.Platform.Application.Contracts.DocumentRepository together with the IContentStorageGateway seam
+// (DCP-008 AD-8 / OD-A). The configuration section name is unchanged, so no appsettings edit is required.
 
 // ── shared input value objects ───────────────────────────────────────────────
 

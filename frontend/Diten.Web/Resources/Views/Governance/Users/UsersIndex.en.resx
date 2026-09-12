@@ -34,9 +34,18 @@
   <data name="FormTitleEdit" xml:space="preserve"><value>Edit User</value></data>
   <data name="GeneralInformation" xml:space="preserve"><value>General Information</value></data>
   <data name="EmailPlaceholder" xml:space="preserve"><value>e.g. user@example.com</value></data>
+  <data name="FirstNamePlaceholder" xml:space="preserve"><value>e.g. Jane</value></data>
+  <data name="LastNamePlaceholder" xml:space="preserve"><value>e.g. Smith</value></data>
   <data name="EmailImmutableHint" xml:space="preserve"><value>The email cannot be changed after creation.</value></data>
   <data name="KpiTotalUsers" xml:space="preserve"><value>Total Users</value></data>
   <data name="KpiActiveUsers" xml:space="preserve"><value>Active</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>Passive</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>No Role</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>Account Type</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>Unconfirmed</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>Person</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>Service account</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>Change type</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>Account type updated</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>Leave unset to keep the account unconfirmed.</value></data>
 </root>

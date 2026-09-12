@@ -155,4 +155,31 @@
   <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
   <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
   <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="Color" xml:space="preserve"><value>Цвет</value></data>
+  <data name="IsGroup" xml:space="preserve"><value>Тип группы</value></data>
+  <data name="IsList" xml:space="preserve"><value>Тип списка</value></data>
+  <data name="ParentConceptType" xml:space="preserve"><value>Родительский тип понятия</value></data>
+  <data name="ParentConceptTypeNote" xml:space="preserve"><value>Родительский тип в рамках той же темы. Сам тип и его потомки недоступны для выбора.</value></data>
+  <data name="ConnectionMode" xml:space="preserve"><value>Режим связи</value></data>
+  <data name="ConnectExisting" xml:space="preserve"><value>Связать два существующих узла</value></data>
+  <data name="ConnectNewNode" xml:space="preserve"><value>Создать новый узел и связать</value></data>
+  <data name="NewNodeSection" xml:space="preserve"><value>Новый узел</value></data>
+  <data name="CounterpartNode" xml:space="preserve"><value>Узел для связи</value></data>
+  <data name="NewNodeDirection" xml:space="preserve"><value>Направление</value></data>
+  <data name="NewNodeAsSource" xml:space="preserve"><value>Новый узел → контрагент</value></data>
+  <data name="NewNodeAsTarget" xml:space="preserve"><value>Контрагент → новый узел</value></data>
+  <data name="Branches" xml:space="preserve"><value>Ветви</value></data>
+  <data name="AddBranch" xml:space="preserve"><value>Добавить ветвь</value></data>
+  <data name="RemoveBranch" xml:space="preserve"><value>Удалить ветвь</value></data>
+  <data name="BranchNamePlaceholder" xml:space="preserve"><value>Название ветви</value></data>
+  <data name="BranchesNote" xml:space="preserve"><value>Каждая ветвь — упорядоченная последовательность типов понятий. Основа (не менее двух различных типов) выводится из всех ветвей.</value></data>
+  <data name="BranchesEmpty" xml:space="preserve"><value>Ветвей пока нет. Добавьте ветвь, чтобы начать.</value></data>
+  <data name="BranchStepsEmpty" xml:space="preserve"><value>В этой ветви пока нет шагов.</value></data>
+  <data name="MinSelection" xml:space="preserve"><value>Мин</value></data>
+  <data name="MaxSelection" xml:space="preserve"><value>Макс</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Роли модератора</value></data>
+  <data name="ForWhom" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="RefsCommaHint" xml:space="preserve"><value>Ссылки через запятую</value></data>
+  <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
+  <data name="BranchCountLabel" xml:space="preserve"><value>ветв(и)</value></data>
 </root>

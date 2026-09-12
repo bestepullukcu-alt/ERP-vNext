@@ -38,37 +38,28 @@ const RoleAssignments = (function () {
         return role.displayName || role.name || '';
     };
 
-    // Action → glyph/tone for the row-card icon AND the action-distribution bars (single source, shared by both).
-    // Unknown actions fall back to a neutral icon/tone.
-    const ACTION_ICON = {
-        read: 'bx-show', create: 'bx-plus', update: 'bx-edit', delete: 'bx-trash',
-        archive: 'bx-archive-in', export: 'bx-export'
-    };
-    const ACTION_TONE = {
-        read: 'info', create: 'primary', update: 'warning', delete: 'danger',
-        archive: 'secondary', export: 'secondary'
-    };
-    const actionIcon = (action) => ACTION_ICON[(action || '').toLowerCase()] || 'bx-cog';
-    const actionTone = (action) => ACTION_TONE[(action || '').toLowerCase()] || 'secondary';
+    // Action → glyph/tone for the chip AND the action-distribution bars (single source, shared by both).
+    //
+    // FIX-ROLEPERMS-ACTION-FAMILIES — both now come from window.PermLabel's family resolver rather than a local
+    // exact-match table. The table here knew six verbs while the catalog carries 97, so the panel's bars and the
+    // chips could also disagree about the same verb. One resolver, one answer, and a verb the resolver has never
+    // seen is neutral rather than absent.
+    const actionFamily = (action) =>
+        window.PermLabel.resolveFamily(window.PermLabel.normalizeAction(action)) || window.PermLabel.UNFAMILIAR;
+    const actionIcon = (action) => actionFamily(action).icon;
+    const actionTone = (action) => actionFamily(action).tone;
 
-    // FEAT-ROLEPERMS-LABEL-DERIVE — the row label is DERIVED from the permission KEY, not the drifted stored
-    // DisplayName (which mixed languages and mislabelled shared keys, e.g. "Menu Settings"/"Archive"). Format is
-    // "{Verb} · {Entity}": the action verb is localized (window.L10n.ActionVerbs, user's language), the entity is
-    // the humanized resource segment (product term, kept language-neutral so new self-registered modules just work).
-    const humanize = (s) => (s || '')
-        .split(/[-.]/)
-        .filter(Boolean)
-        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-    const deriveVerb = (action) => {
-        const a = (action || '').toLowerCase();
-        return (L.ActionVerbs && L.ActionVerbs[a]) || humanize(action);
-    };
-    const deriveLabel = (perm) => {
-        const verb = deriveVerb(perm.action);
-        const entity = humanize(perm.resource);
-        return entity ? verb + ' · ' + entity : verb;
-    };
+    // FEAT-ROLEPERMS-LABEL-DERIVE — labels are DERIVED from the permission KEY, not the drifted stored DisplayName
+    // (which mixed languages and mislabelled shared keys, e.g. "Menu Settings"/"Archive").
+    //
+    // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the derivation now lives in window.PermLabel.split (pure, DOM-free,
+    // unit-tested) and returns the three parts SEPARATELY: the source is the row, the verb is a chip on it, and a
+    // wider reach ("read-tenant-wide") is a second chip rather than a 98th verb spelling. The old single string
+    // "{Verb} · {Entity}" is gone — it put the verb first on 415 rows and repeated the module inside a group card
+    // whose header already named it.
+    const humanize = (s) => window.PermLabel.humanize(s);
+    const deriveVerb = (action) => window.PermLabel.split({ action }, L).action.label;
+    const splitPermLabel = (perm) => window.PermLabel.split(perm, L);
 
     const els = {};
     const cacheEls = () => {
@@ -84,6 +75,7 @@ const RoleAssignments = (function () {
         els.skeleton = document.getElementById('raSkeleton');
         els.rightSkeleton = document.getElementById('raRightSkeleton');
         els.groupTpl = document.getElementById('raGroupCardTemplate');
+        els.chipTpl = document.getElementById('raChipTemplate');
         els.rowTpl = document.getElementById('raRowCardTemplate');
         els.actionTpl = document.getElementById('raActionDistTemplate');
         // Right panel
@@ -176,51 +168,109 @@ const RoleAssignments = (function () {
         return label || moduleCanonicalLabel[moduleKey] || moduleKey || (L.ModuleUngrouped || 'Other');
     };
 
-    const renderRow = (perm) => {
+    /*
+     * FIX-RBAC-PERM-MODULE-ATTRIBUTION — one chip per PERMISSION. The chip is both the label and the affordance:
+     * click to grant, click again to revoke, locked chips do neither and say why on hover. Filtering happens at
+     * this level too (a permission is what the user searches for), so the chip carries the data-* the filter reads.
+     */
+    const renderChip = (perm) => {
         const grant = grantsByPermissionId[perm.id] || null;
         const state = window.RoleGrantState.evaluate(perm, grant, canAssign());
-        const moduleCode = perm.module || '';
-        const moduleKey = normalizeModuleKey(perm.module);
+        const parts = splitPermLabel(perm);
 
-        const label = deriveLabel(perm);
-        const node = els.rowTpl.content.firstElementChild.cloneNode(true);
-        node.dataset.key = (perm.key || '').toLowerCase();
-        // Search matches the VISIBLE derived label (not the stored DisplayName), so results track what the user sees.
-        node.dataset.display = label.toLowerCase();
-        node.dataset.permissionId = perm.id;
-        node.dataset.module = moduleKey;
-        node.dataset.assigned = state.assigned ? '1' : '0';
-        node.dataset.locked = state.locked ? '1' : '0';
+        const chip = els.chipTpl.content.firstElementChild.cloneNode(true);
+        chip.dataset.key = (perm.key || '').toLowerCase();
+        chip.dataset.permissionId = perm.id;
+        chip.dataset.assigned = state.assigned ? '1' : '0';
+        chip.dataset.locked = state.locked ? '1' : '0';
+        chip.dataset.action = parts.action.code;
+        // Search matches what the user can SEE (verb + reach) as well as the raw key underneath.
+        chip.dataset.display = (parts.action.label + ' ' + (parts.scope ? parts.scope.label : '')).trim().toLowerCase();
 
-        node.querySelector('.ra-row-icon-wrap').classList.add('bg-label-' + actionTone(perm.action));
-        node.querySelector('.ra-row-icon').classList.add(actionIcon(perm.action));
-        node.querySelector('.ra-display').textContent = label;
-        node.querySelector('.ra-key').textContent = perm.key || '';
+        chip.classList.add('ra-chip--' + parts.action.tone);
+        chip.classList.toggle('ra-chip--on', state.assigned);
+        chip.querySelector('.ra-chip-icon').classList.add(parts.action.icon);
+        chip.querySelector('.ra-chip-label').textContent = parts.action.label;
 
-        const badgeEl = node.querySelector('.ra-badge');
-        const b = badgeFor(state.badge);
-        if (b) { badgeEl.textContent = b.text; badgeEl.className = 'badge ra-badge ' + b.cls; }
-        else badgeEl.remove();
+        // The scope pill is deliberately its own element: "read" and "read across the whole tenant" must not look
+        // like the same permission with a longer word.
+        if (parts.scope) {
+            const scopeEl = chip.querySelector('.ra-chip-scope');
+            scopeEl.textContent = parts.scope.label;
+            scopeEl.classList.remove('d-none');
+        }
 
-        const lockEl = node.querySelector('.ra-lock');
-        const assignBtn = node.querySelector('.ra-assign');
-        const removeBtn = node.querySelector('.ra-remove');
-
+        const badge = badgeFor(state.badge);
         if (state.locked) {
-            lockEl.classList.remove('d-none');
-            lockEl.title = lockHintFor(state, moduleCode);
+            chip.querySelector('.ra-chip-lock').classList.remove('d-none');
+            chip.disabled = true;
+            chip.title = lockHintFor(state, perm.module || '');
+        } else if (state.assignable) {
+            chip.title = (L.Assign || 'Assign') + ' — ' + (perm.key || '');
+            chip.addEventListener('click', () => doAssign(perm));
+        } else if (state.removable) {
+            chip.title = (L.Delete || L.Remove || 'Remove') + ' — ' + (perm.key || '');
+            chip.addEventListener('click', () => doRevoke(perm));
+        } else {
+            chip.disabled = true;
+            chip.title = perm.key || '';
         }
-        if (state.assignable) {
-            assignBtn.querySelector('.ra-assign-text').textContent = L.Assign || 'Assign';
-            assignBtn.classList.remove('d-none');
-            assignBtn.addEventListener('click', () => doAssign(perm));
+
+        if (badge && state.assigned) {
+            // The grant SOURCE (baseline / module entitlement / manual) rides on the chip's own tooltip rather than
+            // a fourth pill — with up to a dozen chips on a row, a badge per chip is noise, not information.
+            chip.title = badge.text + ' — ' + (perm.key || '');
         }
-        if (state.removable) {
-            removeBtn.querySelector('.ra-remove-text').textContent = L.Delete || L.Remove || 'Remove';
-            removeBtn.classList.remove('d-none');
-            removeBtn.addEventListener('click', () => doRevoke(perm));
-        }
-        return { node, state };
+
+        return { chip, state };
+    };
+
+    /*
+     * A SOURCE row: the thing permissions are about ("Field Definitions"), then its verbs. `entityCode` is '' when
+     * the permissions are about the module itself, and then the row borrows the module's own name — the group
+     * header says it once and the row says it once, instead of every permission repeating it.
+     */
+    const renderRow = (moduleKey, entityCode, perms) => {
+        const node = els.rowTpl.content.firstElementChild.cloneNode(true);
+        node.dataset.module = moduleKey;
+        node.dataset.entity = entityCode;
+
+        const first = splitPermLabel(perms[0]);
+        node.querySelector('.ra-entity').textContent = first.entity.label || groupLabel(moduleKey);
+
+        // The raw keys stay visible but quiet — the shared prefix, so a row of a dozen chips still shows exactly
+        // which namespace it grants without printing a dozen near-identical strings.
+        node.querySelector('.ra-key').textContent = commonKeyPrefix(perms);
+
+        const chips = node.querySelector('.ra-chips');
+        let assigned = 0;
+        let locked = 0;
+        perms.forEach((perm) => {
+            const { chip, state } = renderChip(perm);
+            if (state.assigned) assigned++;
+            if (state.locked) locked++;
+            chips.appendChild(chip);
+        });
+
+        return { node, assigned, locked };
+    };
+
+    // "platform.tasks.field-definitions.manage" + ".read" → "platform.tasks.field-definitions.*"; a single
+    // permission shows its whole key.
+    const commonKeyPrefix = (perms) => {
+        const keys = perms.map((p) => p.key || '').filter(Boolean);
+        if (keys.length === 0) return '';
+        if (keys.length === 1) return keys[0];
+
+        const segments = keys[0].split('.');
+        let shared = segments.length;
+        keys.forEach((key) => {
+            const parts = key.split('.');
+            let i = 0;
+            while (i < shared && i < parts.length && parts[i] === segments[i]) i++;
+            shared = i;
+        });
+        return shared === 0 ? '' : segments.slice(0, shared).join('.') + '.*';
     };
 
     const wireGroupToggle = (card) => {
@@ -244,12 +294,25 @@ const RoleAssignments = (function () {
         const body = card.querySelector('.ra-group-body');
         let assigned = 0;
         let locked = 0;
+
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the module's permissions collapse into one row per SOURCE. The row
+        // order follows the first key of each source so the module's own row (entity code '') leads, and the
+        // chips inside a row follow the catalog's key order — stable across re-renders either way.
+        const bySource = new Map();
         perms.forEach((perm) => {
-            const { node, state } = renderRow(perm);
-            if (state.assigned) assigned++;
-            if (state.locked) locked++;
-            body.appendChild(node);
+            const code = splitPermLabel(perm).entity.code;
+            if (!bySource.has(code)) bySource.set(code, []);
+            bySource.get(code).push(perm);
         });
+
+        Array.from(bySource.keys())
+            .sort((a, b) => (a === '' ? -1 : b === '' ? 1 : a.localeCompare(b)))
+            .forEach((code) => {
+                const row = renderRow(moduleKey, code, bySource.get(code));
+                assigned += row.assigned;
+                locked += row.locked;
+                body.appendChild(row.node);
+            });
 
         card.querySelector('.ra-group-count').textContent = format(L.CountBadge || '{0}/{1}', assigned, perms.length);
         const lockBadge = card.querySelector('.ra-group-locks');
@@ -397,6 +460,18 @@ const RoleAssignments = (function () {
         });
 
         if (!els.moduleFilter) return;
+
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — each option carries a search haystack alongside its label: the raw
+        // module code AND every permission key in that module. With 30+ modules, a user knows ONE of the three
+        // spellings — the Turkish name, the slug, or a key they saw in an error — and should not have to guess
+        // which one this dropdown speaks. See moduleFilterMatcher.
+        const keysByModule = {};
+        catalog.forEach((p) => {
+            const key = normalizeModuleKey(p.module);
+            if (!key) return;
+            (keysByModule[key] = keysByModule[key] || []).push((p.key || '').toLowerCase());
+        });
+
         // Sorted by the VISIBLE label so the dropdown reads alphabetically to the user; the option VALUE stays the
         // normalized module code, which is what applyFilters() matches against each row's data-module.
         const keys = Object.keys(moduleCanonicalLabel)
@@ -405,8 +480,24 @@ const RoleAssignments = (function () {
             const opt = document.createElement('option');
             opt.value = key;
             opt.textContent = groupLabel(key);
+            opt.dataset.search = (key + ' ' + (keysByModule[key] || []).join(' ')).trim();
             els.moduleFilter.appendChild(opt);
         });
+    };
+
+    /*
+     * The module dropdown's search. select2's default matcher only sees the option TEXT — the localized name — so
+     * "task", "work-report" and every raw slug found nothing while the module sat right there in the list. This
+     * matches the localized name OR the module code OR any permission key in the module, which is the whole point:
+     * the user is looking for one module and does not know which of its three names this screen prints.
+     *
+     * The option VALUE is untouched — still the module code — so what the filter selects and posts never changes.
+     */
+    const moduleFilterMatcher = (params, data) => {
+        const term = (params.term || '').trim().toLowerCase();
+        if (term.length === 0) return data;
+        const haystack = ((data.text || '') + ' ' + (data.element?.dataset?.search || '')).toLowerCase();
+        return haystack.includes(term) ? data : null;
     };
 
     /*
@@ -424,9 +515,16 @@ const RoleAssignments = (function () {
             if (key) el.textContent = groupLabel(key);
         });
         if (!els.moduleFilter) return;
-        Array.from(els.moduleFilter.options).forEach((opt) => {
-            if (opt.value) opt.textContent = groupLabel(opt.value);
-        });
+        const opts = Array.from(els.moduleFilter.options).filter((o) => o.value);
+        opts.forEach((opt) => { opt.textContent = groupLabel(opt.value); });
+        /*
+         * ...and re-sort, which the first version forgot. The options were built and ordered from the RESX map, then
+         * this pass renamed them in place: a module whose Turkish name arrived only now kept the slot its English
+         * name had won, so the list read "Brand Product Master, Crm Account, … , Çalışma Takvimi" with Abonelik and
+         * Bildirimler further down. Renaming without reordering is not a relabel, it is a shuffle.
+         */
+        opts.sort((a, b) => a.textContent.localeCompare(b.textContent, undefined, { sensitivity: 'base' }))
+            .forEach((opt) => els.moduleFilter.appendChild(opt));
         if (window.jQuery && window.jQuery(els.moduleFilter).hasClass('select2-hidden-accessible')) {
             window.jQuery(els.moduleFilter).trigger('change.select2');
         }
@@ -447,7 +545,7 @@ const RoleAssignments = (function () {
             .then((json) => {
                 const nav = (json && (json.data !== undefined ? json.data : json.Data)) ?? json;
                 if (!Array.isArray(nav) || nav.length === 0) return;
-                moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, nav);
+                moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, nav, L.PermModuleNames || {});
                 refreshModuleLabels();
             })
             .catch(() => { /* label upgrade is optional — the resx/humanize labels already on screen stand. */ });
@@ -462,19 +560,34 @@ const RoleAssignments = (function () {
             ? Array.from(els.moduleFilter.selectedOptions).map((o) => o.value).filter(Boolean)
             : [];
 
+        // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the filter unit is the CHIP, because a chip is a permission and a
+        // permission is what the user is looking for. A source row hides when none of its chips survive, and a
+        // group hides when none of its rows do; the count still counts permissions, so the summary is unchanged.
         let visibleCount = 0;
         els.groups.querySelectorAll('.ra-group').forEach((card) => {
             let groupVisible = 0;
             card.querySelectorAll('.ra-row').forEach((row) => {
-                const matchesSearch = q.length === 0
-                    || (row.dataset.key || '').includes(q)
-                    || (row.dataset.display || '').includes(q);
                 const matchesModule = selectedModules.length === 0 || selectedModules.includes(row.dataset.module);
-                const matchesState = !currentStateFilter
-                    || (currentStateFilter === 'assigned' ? row.dataset.assigned === '1' : row.dataset.assigned === '0');
-                const visible = matchesSearch && matchesModule && matchesState;
-                row.classList.toggle('d-none', !visible);
-                if (visible) { groupVisible++; visibleCount++; }
+                const entityText = (row.querySelector('.ra-entity')?.textContent || '').toLowerCase();
+                let rowVisible = 0;
+
+                row.querySelectorAll('.ra-chip').forEach((chip) => {
+                    // A search hit anywhere on the row's source (its name or its key namespace) keeps the whole
+                    // row: typing "work-report" should show what you may do with it, not silently drop the verbs.
+                    const matchesSearch = q.length === 0
+                        || (chip.dataset.key || '').includes(q)
+                        || (chip.dataset.display || '').includes(q)
+                        || entityText.includes(q)
+                        || (row.querySelector('.ra-key')?.textContent || '').toLowerCase().includes(q);
+                    const matchesState = !currentStateFilter
+                        || (currentStateFilter === 'assigned' ? chip.dataset.assigned === '1' : chip.dataset.assigned === '0');
+                    const visible = matchesModule && matchesSearch && matchesState;
+                    chip.classList.toggle('d-none', !visible);
+                    if (visible) { rowVisible++; visibleCount++; }
+                });
+
+                row.classList.toggle('d-none', rowVisible === 0);
+                if (rowVisible > 0) groupVisible++;
             });
             card.classList.toggle('d-none', groupVisible === 0);
         });
@@ -598,6 +711,16 @@ const RoleAssignments = (function () {
         }
     };
 
+    /*
+     * select2 4.0.13 ships the pieces but wires DropdownSearch only for single selects. Composing it here gives a
+     * MULTI select the dropdown search box.
+     *
+     * Delegates to shared/diten-person-picker.js (WP-WC-SHARED-UI-01, E2) — Meetings/form.js carried an
+     * identical copy, memoized the same way, for its own attendee/organizer selects; both now call the one
+     * place it is built.
+     */
+    const buildSearchableDropdownAdapter = () => window.DitenPersonPicker.buildSearchableDropdownAdapter();
+
     const initModuleSelect2 = (selector) => {
         if (!window.jQuery || !window.jQuery.fn?.select2) return;
         const $select = window.jQuery(selector);
@@ -608,7 +731,25 @@ const RoleAssignments = (function () {
             dropdownCssClass: 'dt-inline-filter-dropdown',
             containerCssClass: 'ra-filter-multi',
             placeholder: $select.data('placeholder') || '',
-            minimumResultsForSearch: Infinity,
+            /*
+             * The search goes in the DROPDOWN, not in the box — the same place the Role select beside it puts one.
+             *
+             * select2 does that for free on a SINGLE select and never on a multi: a multi's search is an inline
+             * field inside the closed control, exactly where this control's summary ("Tüm modüller + N") has to
+             * sit. Two things, one line. Revealing the inline field on open was tried and measured on the real
+             * DOM: it works, it is focusable, it is 128px wide — and it wears the summary's own placeholder, so
+             * the open state is pixel-identical to the closed one and nobody can tell there is a search. The
+             * owner's question settled it: make it behave like the control next to it.
+             *
+             * dropdownAdapter is select2's own composition point for this; DropdownSearch is the same class that
+             * gives the Role select its box.
+             */
+            dropdownAdapter: buildSearchableDropdownAdapter(),
+            // FIX-RBAC-PERM-MODULE-ATTRIBUTION — the search box used to be suppressed (Infinity) on a list of 30+
+            // modules, so finding one meant scrolling and knowing its localized name. It is on now, with a matcher
+            // that also reads the module code and the permission keys.
+            minimumResultsForSearch: 0,
+            matcher: moduleFilterMatcher,
             closeOnSelect: false,
             width: '100%'
         });
@@ -628,7 +769,7 @@ const RoleAssignments = (function () {
         // FIX-ROLEPERMS-MODULE-LABEL — the synchronous half of the label map (resx Nav.Module.* via the page's
         // L10n bridge). Built BEFORE the first render so the very first paint already shows friendly names; the
         // nav call below only adds tenant overrides / non-resx modules on top.
-        moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, []);
+        moduleLabelMap = window.ModuleLabel.buildMap(L.ModuleNames || {}, [], L.PermModuleNames || {});
         upgradeModuleLabelsFromNav();
 
         // select2 emits selection via jQuery's .trigger('change'), which does NOT reach vanilla

@@ -49,14 +49,14 @@ dependencies:
 > **7-language RESX parity = 113 keys** + SharedResource `KnowledgeMenu` ×7. **Remaining:** authenticated Gateway smoke
 > (needs live fleet + operator login; script ready), RBAC seed/grant (FU02-RBAC), MOD-0048 reference-set publish, FU01A/01B/
 > 01C runtime. Evidence:
-> [implementation audit](../../../../docs/audits/mod-0162-fu02-knowledge-content-runtime-ui-implementation-2026-08-09.md).
+> [implementation audit](../../../../docs/records/audits/2026-08/mod-0162-fu02-knowledge-content-runtime-ui-implementation-2026-08-09.md).
 > No Campaign/Consent/Brand-Product/MOD-0155 change; no RBAC seed/grant; no MOD-0048 publish; no Mongo hand-edit;
 > `ocelot.json` unchanged.
 >
 > **✅ READY-FOR-DEV (2026-08-09) — her iki blocker kapandı; pack `@orchestrator` implementasyonuna AÇIK.**
 > **F-BND** resolved (MOD-0162-FU01 approved) + **F-GW** resolved (Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}`
 > route'ları eklendi → downstream `Diten.CrmService:5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok;
-> [F-GW audit](../../../../docs/audits/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md)).
+> [F-GW audit](../../../../docs/records/audits/2026-08/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md)).
 > `status: draft → ready-for-dev`.
 >
 > **RUNTIME + UI IMPLEMENTATION AUTHORIZATION (2026-08-09) — `runtime_code_allowed: true`, `status: ready-for-dev`.**
@@ -77,7 +77,7 @@ dependencies:
 >
 > **Ready-for-dev geçiş kaydı (iki blocker da kapandı):**
 > 1. **✅ F-BND RESOLVED (2026-08-09):** MOD-0162-FU01 (FU02'nin tek zorunlu SoT boundary'si) `approved`'a çekildi
->    ([boundary approval review](../../../../docs/audits/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)).
+>    ([boundary approval review](../../../../docs/records/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)).
 >    FU01A/FU01C de `approved`; FU01B `draft` kaldı ama **FU02 EngagementJourney runtime açmadığı için blocker değil**.
 > 2. **✅ F-GW RESOLVED (2026-08-09):** Gateway `/api/crm/knowledge` + `/api/crm/knowledge/{everything}` route'ları
 >    `ocelot.json`'a eklendi (downstream `5061`, `GET/POST/PUT/OPTIONS`, DELETE/PATCH yok; mevcut CRM/MDM/legal-entities
@@ -411,7 +411,7 @@ Yalnız aşağıdaki alanlarda değişiklik yapılabilir:
 - `frontend/Diten.Web/wwwroot/assets/js/CRM/Knowledge/**` (yeni)
 - `frontend/Diten.Web/Resources/SharedResource.{en,fr,es,zh,ar,ru,tr}.resx` — yalnız Knowledge menü/shared key'leri
 - `frontend/Diten.Web/Views/Shared/_LayoutTenantShell.cshtml` — yalnız §13 dar navigation istisnası
-- `docs/audits/mod-0162-fu02-knowledge-content-runtime-ui-*.md` — implementation evidence
+- `docs/records/audits/mod-0162-fu02-knowledge-content-runtime-ui-*.md` — implementation evidence
 
 Ortak helper'lar tüketilebilir ama değiştirilemez; zorunlu görünürse orchestrator **durur** ve ayrı authorization ister.
 
@@ -657,7 +657,7 @@ Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
 - Brand/Product için `/api/mdm/*` route'u değişmedi; Knowledge için `/api/mdm/*` **kullanılmaz**.
 - Runtime henüz yok olduğundan canlıda `/api/crm/knowledge` 404/502 dönebilir; bu route authorization için FAIL değildir
   (implementation FU02 kapsamında). Gateway restart gerekebilir. Bkz.
-  [F-GW audit](../../../../docs/audits/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md).
+  [F-GW audit](../../../../docs/records/audits/2026-08/mod-0162-fu02-f-gw-knowledge-gateway-route-authorization-2026-08-09.md).
 
 ## Implementation Notes
 
@@ -676,7 +676,7 @@ Campaigns precedent'i birebir iki blok eklendi (toplam route 114 → 116):
 ## 19. Created / Updated Files
 
 - **Created:** `execution/domains/commercial-suite/module-packs/MOD-0162-FU02-knowledge-content-runtime-ui.md` (bu dosya).
-- **Created:** `docs/audits/mod-0162-fu02-knowledge-content-runtime-ui-module-pack-authorization-2026-08-09.md` (authorization evidence).
+- **Created:** `docs/records/audits/2026-08/mod-0162-fu02-knowledge-content-runtime-ui-module-pack-authorization-2026-08-09.md` (authorization evidence).
 - **Updated:** yok (registry/status/Mongo/kod değişmedi — authorization task'ı).
 
 ## 20. Follow-up Items

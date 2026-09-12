@@ -72,6 +72,10 @@ public static class DependencyInjection
         // CONSUMES IDataScopeResolver rather than recomputing anything; see TaskAssignmentScopeResolver.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentScopeResolver,
             Features.Tasks.Services.TaskAssignmentScopeResolver>();
+        // BL-057 at the WRITE — the same rule asked again by every path that hands work to somebody, so the server
+        // accepts exactly who the pickers offer.
+        services.AddScoped<Features.Tasks.Services.ITaskAssignmentGuard,
+            Features.Tasks.Services.TaskAssignmentGuard>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();
@@ -102,6 +106,8 @@ public static class DependencyInjection
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsFolderTreeValidator>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.DottedOutlineTreeBuilder>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsBaselineImportService>();
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the Document Master Register CSV import preview (dry-run + commit share it).
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.DocumentRegisterImportPreviewService>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.BaselineSnapshotHasher>();
         services.AddScoped<Features.DocumentManagementQmsBaseline.Services.QmsManualStructureService>();
         services.AddScoped<CompanyInstanceKeyFactory>();
@@ -131,6 +137,10 @@ public static class DependencyInjection
         // (ResolveDocumentEffectivenessQuery). The MediatR handler is auto-registered; only the port needs binding.
         services.AddScoped<Features.DocumentManagementMasterRegister.Services.IControlledDocumentEffectivenessPort,
             Features.DocumentManagementMasterRegister.Services.ControlledDocumentEffectivenessPort>();
+        // DCP-005 Phase 2a — in-process controlled-document citation gate (rich sibling of the effectiveness gate) over
+        // the single citation resolver. The MediatR handlers are auto-registered; only the port needs binding.
+        services.AddScoped<Features.DocumentManagementMasterRegister.Services.IControlledDocumentCitationPort,
+            Features.DocumentManagementMasterRegister.Services.ControlledDocumentCitationPort>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<Features.DocumentManagementControlledDocumentRegistration.Services.ControlledDocumentRegistrationService>();
         // MOD-0029-FU07 — Permanent UID / Document Code allocation engine (ledger + atomic sequence counter).
@@ -308,6 +318,24 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        /*
+         * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
+         * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"
+         * list — one registration, one query shape, never two. `IRelatedRecordResolverRegistry` collects every
+         * `IRelatedRecordResolver` registered below via the `IEnumerable<T>` constructor pattern, so a future
+         * resolver (a "meetings" one, in S2) needs only its own registration line, never a change here.
+         */
+        services.AddScoped<Features.Meetings.RecordLinks.IRecordLinkService,
+            Features.Meetings.RecordLinks.RecordLinkService>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolverRegistry,
+            Features.Meetings.RecordLinks.RelatedRecordResolverRegistry>();
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolver,
+            Features.Meetings.RecordLinks.TaskRelatedRecordResolver>();
+        // MOD-0357 S2 — the "meetings" side of the same registry, the twin of TaskRelatedRecordResolver above.
+        services.AddScoped<Features.Meetings.RecordLinks.IRelatedRecordResolver,
+            Features.Meetings.RecordLinks.MeetingRelatedRecordResolver>();
+        services.AddScoped<Features.Meetings.Services.IMeetingIdempotencyKeyResolver,
+            Features.Meetings.Services.MeetingIdempotencyKeyResolver>();
         // MOD-0024 — the SECOND work-item provider. This single line is the only WorkAggregation touch point:
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
@@ -417,6 +445,9 @@ public static class DependencyInjection
         // MOD-0024 / İş Raporu — the Work Report is its OWN module, not a page under "Görev Tanımları": the
         // sidebar groups by module, so no ParentPageCode could have moved it out of the settings group.
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Tasks.SelfRegistration.WorkReportManifestProvider>();
+        // MOD-0357 S2 — Meetings. See MeetingManifestProvider's own doc comment for a reported, unresolved
+        // conflict this registration creates with NavManifestL10nGuardTests (frontend/**, protected this WP).
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.Meetings.SelfRegistration.MeetingManifestProvider>();
 
         return services;
     }

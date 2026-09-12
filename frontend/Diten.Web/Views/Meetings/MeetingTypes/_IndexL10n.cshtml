@@ -1,0 +1,39 @@
+@using Diten.Web.Views.Meetings.MeetingTypes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingTypesIndex> Localizer
+
+@* S8 — this screen's OWN l10n payload (window.MeetingTypesL10n). Shared/common keys (Save, Cancel, Yes, No,
+   the reason-code bridge sentences, …) are NOT repeated here — they already live in the general Meetings
+   payload (Views/Meetings/_IndexL10n.cshtml → window.MeetingsL10n), loaded alongside this one on every
+   MeetingTypes page. Contract marker: id="meeting-types-l10n". *@
+<script id="meeting-types-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        MeetingTypesTitle = Localizer["MeetingTypesTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        Actions = Localizer["Actions"].Value,
+        Name = Localizer["Name"].Value,
+        IsQualityRecord = Localizer["IsQualityRecord"].Value,
+        IsQualityRecordHint = Localizer["IsQualityRecordHint"].Value,
+        RequiresESignature = Localizer["RequiresESignature"].Value,
+        RequiresESignatureHint = Localizer["RequiresESignatureHint"].Value,
+        AttendanceMandatory = Localizer["AttendanceMandatory"].Value,
+        FormTitleCreate = Localizer["FormTitleCreate"].Value,
+        FormTitleEdit = Localizer["FormTitleEdit"].Value,
+        IdentitySection = Localizer["IdentitySection"].Value,
+        FlagsSection = Localizer["FlagsSection"].Value,
+        DefaultActionTaskType = Localizer["DefaultActionTaskType"].Value,
+        DefaultActionTaskTypeHint = Localizer["DefaultActionTaskTypeHint"].Value,
+        AgendaTemplate = Localizer["AgendaTemplate"].Value,
+        AgendaTemplateHint = Localizer["AgendaTemplateHint"].Value,
+        AgendaTemplateEmpty = Localizer["AgendaTemplateEmpty"].Value,
+        AgendaTemplateAdd = Localizer["AgendaTemplateAdd"].Value,
+        AgendaTemplateMoveUp = Localizer["AgendaTemplateMoveUp"].Value,
+        AgendaTemplateMoveDown = Localizer["AgendaTemplateMoveDown"].Value,
+        AgendaTemplateRemove = Localizer["AgendaTemplateRemove"].Value,
+        AgendaTemplateLinePlaceholder = Localizer["AgendaTemplateLinePlaceholder"].Value,
+        ErrorConcurrencyConflict = Localizer["ErrorConcurrencyConflict"].Value,
+        DeleteConfirmTitle = Localizer["DeleteConfirmTitle"].Value,
+        DeleteConfirmText = Localizer["DeleteConfirmText"].Value
+    })
+</script>

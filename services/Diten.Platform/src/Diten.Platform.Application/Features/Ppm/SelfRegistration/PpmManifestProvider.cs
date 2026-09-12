@@ -23,7 +23,10 @@ public sealed class PpmManifestProvider : IModuleManifestProvider
                 [
                     new("CREATE", "Create Portfolio", "ppm.portfolios.create", "Toolbar", 10, false, true, false),
                     new("EDIT", "Edit Portfolio", "ppm.portfolios.update", "RowAction", 20, false, false, true),
-                    new("CHANGE_LIFECYCLE", "Change Portfolio Lifecycle", "ppm.portfolios.change-lifecycle", "RowAction", 30, false, false, true)
+                    new("CHANGE_LIFECYCLE", "Change Portfolio Lifecycle", "ppm.portfolios.change-lifecycle", "RowAction", 30, false, false, true),
+                    // MOD-0117-FU01 — Assign/Transfer only; never automatically granted (see
+                    // ExplicitGrantOnlyPermissions in Diten.AuthService).
+                    new("ASSIGN_OWNER", "Assign Owner", "ppm.portfolios.assign-owner", "RowAction", 40, false, false, true)
                 ]),
                 new ModuleManifestPage("INITIATIVES", "Initiatives", "/ppm/initiatives", "ppm.initiatives.read", null, true, "List", 20,
                 [

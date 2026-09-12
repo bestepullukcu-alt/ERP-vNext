@@ -33,7 +33,7 @@ dependencies:
 # MOD-0162-FU01C — Subject Concept Graph / Configurable Concept Chain Boundary
 
 > **✅ BOUNDARY APPROVAL (2026-08-09) — `status: draft → approved`.** Governance review
-> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/audits/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
+> [mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md](../../../../docs/records/audits/2026-08/mod-0162-boundary-approval-review-fu01-fu01a-fu01b-fu01c-2026-08-09.md)
 > ile onaylandı. `runtime_code_allowed` **`false` kalır**; concept-graph runtime MOD-0162-FU02 **kapsamı dışıdır**
 > (FU02 yalnız `ConceptNodeId`'yi format-level referans olarak taşır, resolve etmez). §2.1'in MOD-0058/MOD-0057
 > sınır kararı **kesin ve kendi kendine yeterli**dir (node hiçbir varlığın SoR'u değil; graph motoru açılmıyor);

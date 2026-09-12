@@ -3,6 +3,8 @@ using Diten.CrmService.Api.Controllers.CRM;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Commands;
 using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Handlers;
+using Diten.CrmService.Application.Features.Knowledge.AudienceProfile.Queries;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Application.Features.Knowledge.Content;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
 using Diten.CrmService.Application.Features.Knowledge.Content.Handlers;
@@ -88,7 +90,11 @@ public sealed class KnowledgeContentRuntimeTests
             => new(Tenant(TenantId), new NullActorContext(), Profiles);
 
         public CreateAudienceProfileHandler CreateProfile()
-            => new(Tenant(TenantId), new NullActorContext(), Profiles);
+            => new(Tenant(TenantId), new NullActorContext(), Profiles, Subjects);
+        public UpdateAudienceProfileHandler UpdateProfile()
+            => new(Tenant(TenantId), new NullActorContext(), Profiles, Subjects);
+        public GetAudienceProfileHandler GetProfile()
+            => new(Tenant(TenantId), Profiles);
 
         public ArchiveAudienceProfileHandler ArchiveProfile()
             => new(Tenant(TenantId), new NullActorContext(), Profiles);
@@ -704,6 +710,109 @@ public sealed class KnowledgeContentRuntimeTests
             .StatusCode);
 
         Assert.Null(fx.Subjects.Items.Single(s => s.Id == childId).ParentSubjectId);
+    }
+
+    // ---------------- SCMM-11 (AUD) AudienceProfile multi-axis + subject-bound ----------------
+
+    [Fact]
+    public async Task AudienceProfile_dimensions_round_trip_and_keep_profile_type()
+    {
+        var fx = new Fixture(TenantA);
+        var subjectId = await fx.SeedSubjectAsync("SUB-AUD");
+        var dims = new[]
+        {
+            new AudienceDimensionAssignmentInput("specialty", new[] { "cardiology", "oncology" }),
+            new AudienceDimensionAssignmentInput("seniority", new[] { "senior" })
+        };
+        var created = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-MX", "Multi-axis", Jan1, Status: TaxonomyStatuses.Active,
+            ProfileType: AudienceProfileTypes.HealthcareProfessional, SubjectId: subjectId, Dimensions: dims), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetProfile().Handle(new GetAudienceProfileQuery(created.Data), default)).Data!;
+        Assert.Equal(subjectId, dto.SubjectId);
+        Assert.Equal("healthcare-professional", dto.ProfileType);   // ProfileType RETAINED (back-compat)
+        Assert.Equal(2, dto.Dimensions.Count);
+        var specialty = Assert.Single(dto.Dimensions, d => d.AxisCode == "specialty");
+        Assert.Equal(new[] { "cardiology", "oncology" }, specialty.Values.ToArray());
+    }
+
+    [Fact]
+    public async Task AudienceProfile_without_subject_or_dimensions_is_tenant_global()
+    {
+        var fx = new Fixture(TenantA);
+        var created = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-LEGACY", "Legacy", Jan1, Status: TaxonomyStatuses.Active), default); // no SubjectId, no Dimensions
+        Assert.Equal(201, created.StatusCode);
+        var dto = (await fx.GetProfile().Handle(new GetAudienceProfileQuery(created.Data), default)).Data!;
+        Assert.Null(dto.SubjectId);           // legacy stays tenant-global
+        Assert.Empty(dto.Dimensions);
+    }
+
+    [Fact]
+    public async Task AudienceProfile_duplicate_axis_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var dims = new[]
+        {
+            new AudienceDimensionAssignmentInput("specialty", new[] { "cardiology" }),
+            new AudienceDimensionAssignmentInput("Specialty", new[] { "oncology" }) // case-insensitive duplicate
+        };
+        var r = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-DUP", "Dup", Jan1, Dimensions: dims), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task AudienceProfile_dimension_shape_is_validated()
+    {
+        var fx = new Fixture(TenantA);
+        var emptyAxis = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-EA", "EA", Jan1, Dimensions: new[] { new AudienceDimensionAssignmentInput("  ", new[] { "x" }) }), default);
+        Assert.Equal(400, emptyAxis.StatusCode);
+
+        var emptyValues = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-EV", "EV", Jan1, Dimensions: new[] { new AudienceDimensionAssignmentInput("specialty", Array.Empty<string>()) }), default);
+        Assert.Equal(400, emptyValues.StatusCode);
+    }
+
+    [Fact]
+    public async Task AudienceProfile_unknown_subject_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var r = await fx.CreateProfile().Handle(new CreateAudienceProfileCommand(
+            "AP-NS", "No subject", Jan1, SubjectId: Guid.NewGuid()), default);
+        Assert.Equal(400, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task AudienceProfile_create_emits_mod0162_audit_event()
+    {
+        var fx = new Fixture(TenantA);
+        var audit = new CapturingAudienceAudit();
+        var handler = new CreateAudienceProfileHandler(
+            Tenant(TenantA), new NullActorContext(), fx.Profiles, fx.Subjects, audit);
+
+        var r = await handler.Handle(new CreateAudienceProfileCommand(
+            "AP-AUD", "Audited", Jan1, Status: TaxonomyStatuses.Active), default);
+
+        Assert.Equal(201, r.StatusCode);
+        var evt = Assert.Single(audit.Events);
+        Assert.Equal(KnowledgeReasonCodes.AudienceProfileCreated, evt.Event);
+        Assert.Equal(KnowledgeConceptAuditEntities.AudienceProfile, evt.EntityType);
+        Assert.Equal(r.Data, evt.EntityId);
+    }
+
+    private sealed class CapturingAudienceAudit : IKnowledgeConceptAuditPublisher
+    {
+        public List<(string Event, string EntityType, Guid EntityId, int Version, string? Detail)> Events { get; } = new();
+
+        public Task PublishAsync(string eventName, Guid tenantId, string entityType, Guid entityId, int version,
+            string? detail, CancellationToken cancellationToken)
+        {
+            Events.Add((eventName, entityType, entityId, version, detail));
+            return Task.CompletedTask;
+        }
     }
 
     // ---------------- in-memory fakes (Update = no-op; handlers mutate the tracked reference in place) ----------------

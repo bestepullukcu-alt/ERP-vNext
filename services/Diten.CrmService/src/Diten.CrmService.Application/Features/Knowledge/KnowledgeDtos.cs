@@ -87,12 +87,17 @@ public sealed record TopicDto(
 public sealed record TopicListDto(IReadOnlyList<TopicDto> Items, int Total);
 
 /// <summary>MOD-0162 FU02 read model for an audience-profile row.</summary>
+/// <summary>SCMM-11 (AUD, RM3) read model for one multi-axis assignment.</summary>
+public sealed record AudienceDimensionAssignmentDto(string AxisCode, IReadOnlyList<string> Values);
+
 public sealed record AudienceProfileDto(
     Guid AudienceProfileId,
     string ProfileCode,
     string ProfileName,
     string? Description,
+    Guid? SubjectId,
     string? ProfileType,
+    IReadOnlyList<AudienceDimensionAssignmentDto> Dimensions,
     string Status,
     int SortOrder,
     DateTimeOffset EffectiveFrom,

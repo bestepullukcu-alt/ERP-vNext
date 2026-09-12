@@ -95,7 +95,7 @@ const LoginPage = (function () {
                 return;
             }
 
-            window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenter';
+            window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
 
         } catch (error) {
             showError(error.message);
@@ -137,7 +137,7 @@ const LoginPage = (function () {
             }
 
             const data = await response.json();
-            window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenter';
+            window.location.href = data.redirectUrl || window.PostLoginDefault || '/WorkCenterNext';
         } catch (error) {
             showError(error.message);
             submitBtn.disabled = false;

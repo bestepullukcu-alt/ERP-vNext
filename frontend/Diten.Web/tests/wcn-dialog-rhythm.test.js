@@ -22,6 +22,8 @@ const { bootSurface, app } = require("./wcn-boot");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const APP = fs.readFileSync(web("wwwroot", "assets", "js", "WorkCenterNext", "app.js"), "utf8");
+// WP-WC-SHARED-UI-01 M2b (2026-09-11) — bindDialogSelect2's mechanism now lives here; app.js delegates to it.
+const SHARED = fs.readFileSync(web("wwwroot", "assets", "js", "shared", "diten-dialog.js"), "utf8");
 const CSS = fs.readFileSync(web("wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
 
 /** The declaration block for a selector, so an assertion reads the rule and not the whole file. */
@@ -146,10 +148,13 @@ describe("the dialog's select2 is a field like the others", () => {
    * read back `class="select2-selection select2-selection--single"` with no `form-select` in it.
    */
   it("hooks the control with a class that actually lands, and styles it in CSS", () => {
-    const fn = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 2200);
+    // The mechanism (and the no-op option it must never regain) lives in shared/diten-dialog.js now.
+    const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2200);
     const code = fn.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
     expect(code, "the option that does nothing came back").not.toContain("selectionCssClass");
-    expect(fn).toContain("containerCssClass: 'wcn-dialog-select'");
+    // app.js still asks for its OWN pinned class name, as the option it hands the shared binder.
+    const wrapper = APP.slice(APP.indexOf("const bindDialogSelect2 ="), APP.indexOf("const bindDialogSelect2 =") + 400);
+    expect(wrapper).toContain("containerCssClass: 'wcn-dialog-select'");
     // FG-003: the numbers live in the stylesheet, never inline.
     expect(CSS).toContain(".wcn-dialog-select .select2-selection__rendered");
   });

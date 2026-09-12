@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingTypesTitle" xml:space="preserve"><value>Tipos de reunión</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Las cadencias de reuniones de revisión gobernadas que su tenant puede programar.</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Name" xml:space="preserve"><value>Nombre</value></data>
+  <data name="IsQualityRecord" xml:space="preserve"><value>Registro de calidad</value></data>
+  <data name="IsQualityRecordHint" xml:space="preserve"><value>QA establece esto explícitamente; nunca se infiere del nombre o el dominio del tipo.</value></data>
+  <data name="RequiresESignature" xml:space="preserve"><value>Requiere firma electrónica</value></data>
+  <data name="RequiresESignatureHint" xml:space="preserve"><value>Registrado solo como campo en esta entrega; el propio mecanismo de firma llegará más adelante.</value></data>
+  <data name="AttendanceMandatory" xml:space="preserve"><value>Asistencia obligatoria</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Nuevo tipo de reunión</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Editar tipo de reunión</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>Indicadores</value></data>
+  <data name="DefaultActionTaskType" xml:space="preserve"><value>Tipo de tarea de acción predeterminado</value></data>
+  <data name="DefaultActionTaskTypeHint" xml:space="preserve"><value>El tipo al que se asigna por defecto una acción originada en una reunión.</value></data>
+  <data name="AgendaTemplate" xml:space="preserve"><value>Plantilla de agenda</value></data>
+  <data name="AgendaTemplateHint" xml:space="preserve"><value>Prellena la agenda de una nueva reunión; la agenda de cada reunión permanece luego editable de forma independiente.</value></data>
+  <data name="AgendaTemplateEmpty" xml:space="preserve"><value>Este tipo aún no tiene una plantilla de agenda.</value></data>
+  <data name="AgendaTemplateAdd" xml:space="preserve"><value>Añadir línea</value></data>
+  <data name="AgendaTemplateMoveUp" xml:space="preserve"><value>Subir</value></data>
+  <data name="AgendaTemplateMoveDown" xml:space="preserve"><value>Bajar</value></data>
+  <data name="AgendaTemplateRemove" xml:space="preserve"><value>Quitar línea</value></data>
+  <data name="AgendaTemplateLinePlaceholder" xml:space="preserve"><value>Línea de agenda</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>¿Eliminar este tipo de reunión?</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>Esta acción no se puede deshacer. Un tipo usado por una reunión no se puede eliminar.</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Este tipo de reunión cambió mientras tanto; recargue la página e inténtelo de nuevo.</value></data>
+</root>

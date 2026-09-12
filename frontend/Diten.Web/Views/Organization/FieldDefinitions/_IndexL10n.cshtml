@@ -1,0 +1,91 @@
+@using System.Text.Json
+@using Diten.Web.Views.Organization.FieldDefinitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OrganizationFieldDefinitionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // MOD-0288-FU04 — every string index.js and form.js print. Nothing here is a fallback for a missing
+    // translation: a key that is absent from a resx renders as the key name, which is why the seven files are
+    // asserted for parity by a test rather than by reading them.
+    var payload = new
+    {
+        FieldDefinitionsTitle = Localizer["FieldDefinitionsTitle"].Value,
+        PageDescription = Localizer["PageDescription"].Value,
+        AddNew = Localizer["AddNewFieldDefinition"].Value,
+        Actions = Localizer["Actions"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Showing = Localizer["Showing"].Value,
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        DataType = Localizer["DataType"].Value,
+        Required = Localizer["Required"].Value,
+        Queryable = Localizer["Queryable"].Value,
+        Classification = Localizer["Classification"].Value,
+        DisplayOrder = Localizer["DisplayOrder"].Value,
+
+        // The eight FU02 types. index.js renders a stored value through THIS map, matched case-insensitively —
+        // never by re-capitalising the string, which is how `GroupFunction` became "Groupfunction" in FU03.
+        FieldTypeText = Localizer["FieldTypeText"].Value,
+        FieldTypeMultilineText = Localizer["FieldTypeMultilineText"].Value,
+        FieldTypeInteger = Localizer["FieldTypeInteger"].Value,
+        FieldTypeDecimal = Localizer["FieldTypeDecimal"].Value,
+        FieldTypeBoolean = Localizer["FieldTypeBoolean"].Value,
+        FieldTypeDate = Localizer["FieldTypeDate"].Value,
+        FieldTypeSingleSelect = Localizer["FieldTypeSingleSelect"].Value,
+        FieldTypeReference = Localizer["FieldTypeReference"].Value,
+
+        ClassificationNormal = Localizer["ClassificationNormal"].Value,
+        ClassificationInternal = Localizer["ClassificationInternal"].Value,
+        ClassificationConfidential = Localizer["ClassificationConfidential"].Value,
+        ClassificationRestricted = Localizer["ClassificationRestricted"].Value,
+
+        DefinitionLimitReached = Localizer["DefinitionLimitReached"].Value,
+        RemainingCapacity = Localizer["RemainingCapacity"].Value,
+        InactiveDefinitionHelp = Localizer["InactiveDefinitionHelp"].Value,
+        ReadOnlyNotice = Localizer["ReadOnlyNotice"].Value,
+        LoadFailed = Localizer["LoadFailed"].Value,
+
+        Deactivate = Localizer["Deactivate"].Value,
+        DeactivateConfirm = Localizer["DeactivateConfirm"].Value,
+        RecordDeactivated = Localizer["RecordDeactivated"].Value,
+        BulkDeactivate = Localizer["BulkDeactivate"].Value,
+        BulkDeactivateConfirm = Localizer["BulkDeactivateConfirm"].Value,
+        BulkDeactivateSuccess = Localizer["BulkDeactivateSuccess"].Value,
+
+        OptionAdd = Localizer["OptionAdd"].Value,
+        OptionRemove = Localizer["OptionRemove"].Value,
+        OptionPlaceholder = Localizer["OptionPlaceholder"].Value,
+
+        // ── Shared vocabulary the DataTable contract requires ────────────────────────────────────────────
+        // ⚠ BulkDelete / BulkDeleteConfirm are part of that shared contract and are carried for it. THIS
+        // SCREEN HAS NO DELETE: FU02 offers deactivation only, and the bulk action above says so.
+        Active = SharedLocalizer["Active"].Value,
+        Passive = SharedLocalizer["Passive"].Value,
+        Unknown = SharedLocalizer["Unknown"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        Edit = SharedLocalizer["Edit"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        BulkDelete = SharedLocalizer["BulkDelete"].Value,
+        BulkDeleteConfirm = SharedLocalizer["BulkDeleteConfirm"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Save = SharedLocalizer["Save"].Value,
+        Update = SharedLocalizer["Update"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Import = SharedLocalizer["Import"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        RecordCreated = SharedLocalizer["RecordCreated"].Value,
+        RecordUpdated = SharedLocalizer["RecordUpdated"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value
+    };
+}
+<script id="organizationfielddefinitions-l10n" type="application/json">
+@Html.Raw(JsonSerializer.Serialize(payload))
+</script>

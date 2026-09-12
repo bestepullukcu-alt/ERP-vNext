@@ -1081,4 +1081,42 @@
   <data name="ManualLinkReconciliationOnly" xml:space="preserve"><value>Ручная привязка предназначена только для сверки устаревших записей. Область, владелец, коллекция и папка должны точно совпадать.</value></data>
   <data name="ReconciliationReason" xml:space="preserve"><value>Причина сверки</value></data>
   <data name="ReconciliationReasonHint" xml:space="preserve"><value>Объясните, почему выполняется сверка этой устаревшей связи.</value></data>
+
+  <!-- WP-DM-DCP005-REGISTER-IMPORT-UI-01 — экран аудируемого импорта CSV -->
+  <data name="ImportPageTitle" xml:space="preserve"><value>Импорт главного реестра</value></data>
+  <data name="ImportPageDescription" xml:space="preserve"><value>Просмотрите CSV реестра контролируемых документов перед подтверждением. До подтверждения ничего не записывается.</value></data>
+  <data name="Step1SelectFile" xml:space="preserve"><value>Выбор файла</value></data>
+  <data name="Step2Preview" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="Step3Confirm" xml:space="preserve"><value>Подтвердить и применить</value></data>
+  <data name="ImportFileLabel" xml:space="preserve"><value>CSV-файл реестра</value></data>
+  <data name="ImportFileHint" xml:space="preserve"><value>Тот же формат из 17 столбцов, который читает начальная загрузка реестра (только .csv).</value></data>
+  <data name="RunPreview" xml:space="preserve"><value>Предпросмотр импорта</value></data>
+  <data name="PreviewTotalRows" xml:space="preserve"><value>Всего строк</value></data>
+  <data name="PreviewCreated" xml:space="preserve"><value>Новые</value></data>
+  <data name="PreviewUpdated" xml:space="preserve"><value>Обновляемые</value></data>
+  <data name="PreviewUnchanged" xml:space="preserve"><value>Без изменений</value></data>
+  <data name="PreviewBlocked" xml:space="preserve"><value>Заблокировано (CSV)</value></data>
+  <data name="PreviewCitableYes" xml:space="preserve"><value>Цитируемо по решению качества</value></data>
+  <data name="PreviewCitableNo" xml:space="preserve"><value>Не цитируемо по решению качества</value></data>
+  <data name="PreviewLifecycleDistribution" xml:space="preserve"><value>Распределение по жизненному циклу</value></data>
+  <data name="PreviewMissingColumns" xml:space="preserve"><value>Отсутствующие столбцы</value></data>
+  <data name="PreviewErrors" xml:space="preserve"><value>Ошибки строк</value></data>
+  <data name="AlreadyImportedWarning" xml:space="preserve"><value>Этот файл уже был импортирован {0} пользователем {1}.</value></data>
+  <data name="CommitImport" xml:space="preserve"><value>Подтвердить импорт</value></data>
+  <data name="CommitConfirmTitle" xml:space="preserve"><value>Подтвердить этот импорт?</value></data>
+  <data name="CommitConfirmMessage" xml:space="preserve"><value>Будет записано {0} строк(и) в действующий реестр. Повторный предпросмотр того же содержимого будет невозможен.</value></data>
+  <data name="CommitSucceeded" xml:space="preserve"><value>Импорт подтверждён.</value></data>
+  <data name="CommitFailed" xml:space="preserve"><value>Не удалось подтвердить импорт.</value></data>
+  <data name="PreviewFailed" xml:space="preserve"><value>Не удалось завершить предпросмотр.</value></data>
+  <data name="ReasonContentChanged" xml:space="preserve"><value>Файл изменился после предпросмотра. Просмотрите его снова перед подтверждением.</value></data>
+  <data name="ReasonAlreadyApplied" xml:space="preserve"><value>Этот файл уже был импортирован.</value></data>
+  <data name="ReasonValidationFailed" xml:space="preserve"><value>Загруженный файл недействителен.</value></data>
+  <data name="ImportHistoryTitle" xml:space="preserve"><value>История импорта</value></data>
+  <data name="HistoryFileNameColumn" xml:space="preserve"><value>Файл</value></data>
+  <data name="HistoryActorColumn" xml:space="preserve"><value>Кем импортировано</value></data>
+  <data name="HistoryAppliedAtColumn" xml:space="preserve"><value>Дата импорта</value></data>
+  <data name="HistoryCountsColumn" xml:space="preserve"><value>Строки (новые / обновлённые / заблокированные)</value></data>
+  <data name="HistoryEmpty" xml:space="preserve"><value>Импортов пока нет.</value></data>
+  <data name="ImportFileRequired" xml:space="preserve"><value>Сначала выберите файл CSV.</value></data>
+  <data name="ImportInvalidFileType" xml:space="preserve"><value>Принимаются только файлы .csv.</value></data>
 </root>

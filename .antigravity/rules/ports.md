@@ -22,11 +22,16 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 | **Diten.Auth.Api** | `5056` | Kimlik doğrulama, JWT ve RBAC yönetim servisi. |
 | **Diten.Platform.API** | `5057` | Platform shared services ve personalization. |
 | **Diten.DevEnablementService.Api** | `5058` | Golden reference ve developer enablement modülleri. |
+| **Diten.MdmService.Api** | `5059` | Master data: tüzel kişilik, ürün, marka. |
+| **Diten.HcmService.Api** | `5060` | Core HR / employment records. ⚠ Bandın **son portu**. |
 
 > **Kural:** Frontend (5001) hiçbir zaman doğrudan servis portlarına istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.
 
 ## Boş Port Seçme Kuralı (Yeni Servis Açarken)
 1) Yeni servis microservice bandından seçilir: **5011–5060**.
+   ⚠ **BANT DOLDU (2026-09-07):** 5060 HCM tarafından kullanılıyor. Yeni bir servis
+   eklenmeden önce bandın genişletilmesi bir Control Tower kararıdır — boş bir port
+   varsaymak, çakışan iki servisin sessizce birbirini beklemesiyle sonuçlanır.
 2) Seçmeden önce kontrol:
    - `lsof -nP -iTCP:<PORT> | grep LISTEN`
 3) Port boşsa bu dosyaya eklenir (Aktif kullanımlar listesine).

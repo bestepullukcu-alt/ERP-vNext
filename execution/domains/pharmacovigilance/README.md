@@ -65,7 +65,7 @@ Ilk governance kapsami DCP-004 tarafindan sinirlandirilan urgent W-3 delivery bl
 
 ## Yeni Modul Eklerken
 
-Tam akis icin: [docs/agent-usage-guide.md](../../../docs/agent-usage-guide.md). Kisa hali:
+Tam akis icin: [docs/guides/operations/agent-usage-guide.md](../../../docs/guides/operations/agent-usage-guide.md). Kisa hali:
 
 1. DCP-004 scope, blockers, and ordered delivery sequence are reviewed.
 2. DCP-002 preflight is run with the exact Blueprint ID and canonical name.
