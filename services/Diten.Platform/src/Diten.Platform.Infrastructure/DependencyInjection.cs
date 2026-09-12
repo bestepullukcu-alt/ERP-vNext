@@ -375,7 +375,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
         services.AddScoped<ITaskTypeRepository, TaskTypeRepository>();
-        services.AddScoped<IDocumentReferenceListRepository, DocumentReferenceListRepository>();
+        // WP-DM-DCP005-DEADCODE-01 — IDocumentReferenceListRepository's registration was removed here along
+        // with the interface and its implementation (zero live callers, measured).
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();

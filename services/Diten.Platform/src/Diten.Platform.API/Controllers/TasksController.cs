@@ -440,15 +440,20 @@ public sealed class TasksController : CustomBaseController
     //
     // ⚠ WP-DM-DCP005-RETIRE-CSV-01 — document-list/dry-run, /import, /versions/{id}/withdraw, /versions and
     // /search (5 endpoints) were removed together with the /Tasks/DocumentList screen that was their only
-    // caller (confirmed: a repo-wide search found no other consumer of any of the five). The command/query
-    // handlers behind them (DryRunDocumentReferenceListHandler, ImportDocumentReferenceListHandler,
-    // WithdrawDocumentListVersionHandler, GetDocumentReferenceListVersionsHandler, SearchDocumentReferencesHandler
-    // — Features/Tasks/Handlers/{CommandHandlers,QueryHandlers}/DocumentReferenceList*.cs) and
-    // IDocumentReferenceListRepository are DELIBERATELY left registered: this WP's own scope, as given, names
-    // the screen and its endpoints, not those classes — they are now unreachable from HTTP, and flagged in the
-    // report as a follow-up cleanup candidate rather than removed on this pass. TaskPermissions.DocumentListRead
-    // stays in use below (SearchDocumentCitations, GetTaskTypeGoverningDocuments); DocumentListImport becomes
-    // unused by any endpoint here but is a catalog concern the backlog assigns to Control Tower separately.
+    // caller (confirmed: a repo-wide search found no other consumer of any of the five).
+    //
+    // ⚠ WP-DM-DCP005-DEADCODE-01 — the command/query handlers those 5 endpoints called (DryRun/Import/Withdraw
+    // in Handlers/CommandHandlers/DocumentReferenceListHandlers.cs; GetDocumentReferenceListVersionsHandler and
+    // SearchDocumentReferencesHandler in Handlers/QueryHandlers/DocumentReferenceListQueryHandlers.cs), their
+    // command/query records, request/DTO records and IDocumentReferenceListRepository (interface, Mongo
+    // implementation, DI registration) had zero remaining callers once these endpoints were gone — measured by
+    // repo-wide search, not inferred from a green build — and were deleted in that follow-up. What is left in
+    // place, deliberately: the document_reference_entries / document_reference_list_versions Mongo collections
+    // and the DocumentReferenceListVersion / DocumentReferenceEntry entities (a schema/data decision, outside
+    // both WPs' scope — tenants may hold real imported data in them), DocumentReferenceListParser (the register
+    // import under DocumentManagementMasterRegister reuses it directly), and TaskPermissions.DocumentListRead /
+    // .DocumentListImport (removing either from the Auth permission catalog is a separate, Control-Tower-owned
+    // step). DocumentListRead stays enforced below (SearchDocumentCitations, GetTaskTypeGoverningDocuments).
 
     /// <summary>
     /// DCP-005 Step 2 — the picker's search, against the live Document Master Register

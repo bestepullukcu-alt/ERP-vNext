@@ -1320,41 +1320,13 @@ public sealed record TaskTypeDto(
     IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
 
 
-// ── DCP-005 slice 2: the controlled-document reference list ────────────────
-
-/// <summary>
-/// One import of the register. Shaped after <c>QmsBaselineCommitRequest</c> — same file/version/source triple,
-/// because a second import shape would be a second thing to keep in step.
-/// </summary>
-public sealed record ImportDocumentReferenceListRequest(
-    string FileName,
-    string ContentBase64,
-    string SourceKey,
-    string ListVersion);
-
-/// <summary>What a dry run reports without writing anything.</summary>
-public sealed record DocumentReferenceListDryRunResult(
-    int EntryCount,
-    int LinkableCount,
-    int BlockedCount,
-    IReadOnlyList<string> Errors,
-    IReadOnlyList<string> MissingColumns,
-    /// <summary>Columns the register carries that this importer does not read — reported, never ignored.</summary>
-    IReadOnlyList<string> UnreadColumns,
-    string ContentHash,
-    /// <summary>Set when these exact bytes are already stored: the import would add nothing.</summary>
-    string? AlreadyImportedAsVersion);
-
-public sealed record DocumentReferenceListVersionDto(
-    Guid Id, string ListVersion, string SourceKey, string FileName,
-    string ContentHash, int EntryCount, int LinkableCount, DateTimeOffset ImportedAt,
-    /// <summary>Set when this version is no longer in service. The row still travels — it is marked, not gone.</summary>
-    DateTimeOffset? WithdrawnAt = null,
-    string? WithdrawnReason = null,
-    string? WithdrawnBy = null);
-
-/// <summary>Take a version out of service. The reason is required; see the handler.</summary>
-public sealed record WithdrawDocumentListVersionRequest(string Reason);
+// WP-DM-DCP005-DEADCODE-01 — ImportDocumentReferenceListRequest, DocumentReferenceListDryRunResult,
+// DocumentReferenceListVersionDto and WithdrawDocumentListVersionRequest (DCP-005 slice 2, the CSV document
+// reference list) were removed here: the handlers that built/consumed them, their endpoints and the calling
+// screen are all gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide search found no other caller of any of the
+// four. TaskDocumentReferenceDto below is the LIVE frozen-citation shape (a task's own record of what it cited)
+// and is untouched; DocumentReferenceEntryDto further down is untouched too — the register's own citation
+// search and the task-type governing-documents read both still construct it.
 
 /// <summary>One row of the lookup, as the search returns it.</summary>
 /// <summary>

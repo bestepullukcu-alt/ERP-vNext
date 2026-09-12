@@ -183,20 +183,10 @@ public sealed record GetClosureOutcomeCatalogQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<TaskClosureOutcomeDto>>>;
 
 
-// ── DCP-005 slice 2: the document reference list ────────────────────────────
-
-public sealed record GetDocumentReferenceListVersionsQuery(string CorrelationId)
-    : IRequest<Response<IReadOnlyList<DocumentReferenceListVersionDto>>>;
-
-/// <summary>
-/// Search the CURRENT list. Blocked rows come back like any other — the caller shows them and refuses them.
-///
-/// <para>DCP-005 Step 2 — the CSV register this reads is retired as the picker's source (see
-/// <see cref="SearchDocumentCitationsQuery"/> below) but stays live for the admin import page
-/// (<c>/Tasks/DocumentList</c>, BL-369 retires it separately).</para>
-/// </summary>
-public sealed record SearchDocumentReferencesQuery(string? Term, int Limit, string CorrelationId)
-    : IRequest<Response<IReadOnlyList<DocumentReferenceEntryDto>>>;
+// WP-DM-DCP005-DEADCODE-01 — GetDocumentReferenceListVersionsQuery and SearchDocumentReferencesQuery (the CSV
+// document reference list's own reads) were removed here: their handlers, endpoints and calling screen are all
+// gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide search found no other caller of either. The register's own
+// SearchDocumentCitationsQuery below is the current, live picker source and is untouched.
 
 /// <summary>
 /// DCP-005 Step 2 — the picker's source, now the live Document Master Register instead of the CSV list. A thin
