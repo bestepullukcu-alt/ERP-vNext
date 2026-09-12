@@ -15,6 +15,12 @@
   <data name="QualityEvent" xml:space="preserve"><value>质量事件</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>质量事件</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>非质量事件</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>决策前评审会议</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>规定在评审人对此类工作作出最终决定之前，是否可以或必须召开评审会议。</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>不允许</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>可选</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>必需</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>评审会议设置必须为“不允许”、“可选”或“必需”。</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>非记录</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>运营记录</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP 质量记录</value></data>

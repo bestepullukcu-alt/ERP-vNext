@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -43,6 +44,11 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             return Response<Guid>.Fail(classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
+        if (TaskTypeRules.ValidateReviewMeetingRequirement(request.ReviewMeetingRequirement) is { } meetingInvalid)
+        {
+            return Response<Guid>.Fail(meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
+        }
+
         var (outcomes, outcomesInvalid) = TaskTypeRules.NormalizeClosureOutcomes(
             request.ClosureOutcomes?.Select(ToOutcome));
         if (outcomesInvalid is { } outcomeError)
@@ -76,6 +82,8 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments),
             LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments),
             ClosureOutcomes = outcomes!,
+            // Null takes Optional — the entity's own default, which changes no type's behaviour.
+            ReviewMeetingRequirement = request.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional,
             IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
@@ -141,6 +149,12 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
                 classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
+        if (TaskTypeRules.ValidateReviewMeetingRequirement(request.ReviewMeetingRequirement) is { } meetingInvalid)
+        {
+            return Response<NoContent>.Fail(
+                meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
+        }
+
         type.Name = request.Name.Trim();
         type.Description = CreateTaskTypeHandler.Trimmed(request.Description);
         type.RecordClass = request.RecordClass;
@@ -149,6 +163,15 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
         type.IsQualityEvent = request.IsQualityEvent;
         type.GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
         type.LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);
+
+        /*
+         * Null is "not asking" — the stored value stays. Only the TYPE changes: no task opened under it is read or
+         * written here, so the setting is forward-looking by construction.
+         */
+        if (request.ReviewMeetingRequirement is { } reviewMeetingRequirement)
+        {
+            type.ReviewMeetingRequirement = reviewMeetingRequirement;
+        }
 
         /*
          * ⚠ NULL IS "NOT ASKING", AND THIS BRANCH IS THE WHOLE REASON THE FIELD IS NULLABLE.

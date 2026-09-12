@@ -258,7 +258,7 @@ Diten.Platform tenant-aware runtime posture only; no entity class may be created
 | `relatedRecords` | No | Read-only provider/source record links; never implicit blockers | Provider |
 | `personal` | Yes | Pin/snooze/seen/plan/reminder/note | WorkCenter overlay |
 | `relatedWorkItems` | No | Minimal related item references | Provider/aggregation |
-| `reviewMeetingPolicy` | No | `{ requirement: notAllowed|optional|required, meetingId?, scheduledAt? }`; review/approval collaboration policy | Provider |
+| `reviewMeetingPolicy` | No | `{ requirement: notAllowed|optional|required, meetingId?, scheduledAt? }`; per-task projection — the TYPE carries the requirement only (`TaskType.ReviewMeetingRequirement`), `meetingId`/`scheduledAt` resolve from a related record | Provider |
 | `source` | Yes | Stable provider code/contract version, source system, object type/ID, optional process instance, deep link | Provider/aggregation |
 | `expectation` | Fixture only | Expected resolver result | Test fixture |
 

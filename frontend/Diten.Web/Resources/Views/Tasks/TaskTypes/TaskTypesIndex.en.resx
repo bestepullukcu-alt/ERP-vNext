@@ -15,6 +15,12 @@
   <data name="QualityEvent" xml:space="preserve"><value>Quality event</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Quality event</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Not a quality event</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Review meeting before decision</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Whether a review meeting may or must be held before the reviewer makes the final decision on work of this type.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>Not allowed</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Required</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>The review meeting setting must be Not allowed, Optional or Required.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Not a record</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operational record</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP quality record</value></data>

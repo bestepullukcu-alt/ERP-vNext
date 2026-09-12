@@ -622,6 +622,20 @@ public sealed class TaskType : TenantScopedEntity
     public List<TaskClosureOutcome> ClosureOutcomes { get; set; } = [];
 
     /// <summary>
+    /// Whether a review meeting may, must or must not precede the reviewer's final decision on work of this type.
+    ///
+    /// <para>⚠ <b>THE DEFAULT IS <see cref="TaskReviewMeetingRequirement.Optional"/> AND MUST STAY SO.</b> Before
+    /// this field existed the task projection emitted a constant <c>optional</c> for every task, so Optional is the
+    /// value that changes NO type's behaviour — for a new type, and for every stored type document that predates
+    /// the field and deserialises to this initializer. No migration exists or is needed.</para>
+    ///
+    /// <para><b>A TYPE setting, and forward-looking.</b> Changing it rewrites no task: nothing is copied onto
+    /// <see cref="TaskItem"/>. The meeting reference and its time are per-task projection data resolved from a
+    /// related record, which is why only the requirement is carried here.</para>
+    /// </summary>
+    public TaskReviewMeetingRequirement ReviewMeetingRequirement { get; set; } = TaskReviewMeetingRequirement.Optional;
+
+    /// <summary>
     /// Whether this type may be chosen on a NEW task. Retiring one never removes it: tasks already opened with
     /// it keep reading correctly, which is the same rule folders and documents follow.
     /// </summary>

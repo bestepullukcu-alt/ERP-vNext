@@ -41,6 +41,15 @@ public sealed class TaskTypeEditViewModel
     public bool IsQualityEvent { get; set; }
 
     /// <summary>
+    /// NotAllowed | Optional | Required — a CODE value, never translated.
+    ///
+    /// <para>⚠ NULL, NOT "Optional", WHEN NOTHING WAS POSTED. The API reads null as "not asking" and keeps the
+    /// stored value; a default here would reset a Required type to Optional from any post that did not carry the
+    /// select. The form shows Optional for null, which is what the server stores for a new type.</para>
+    /// </summary>
+    public string? ReviewMeetingRequirement { get; set; }
+
+    /// <summary>
     /// Controlled-document UIDs governing this type everywhere. One per line in the textarea — the document
     /// PICKER is slice 2; until the lookup exists there is nothing to pick from.
     /// </summary>

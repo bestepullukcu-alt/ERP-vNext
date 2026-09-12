@@ -119,6 +119,21 @@ public static class TaskTypeRules
             : null;
     }
 
+    public const string ReviewMeetingRequirementInvalidMessage =
+        "Review meeting requirement must be NotAllowed, Optional or Required.";
+
+    /// <summary>
+    /// Refuses a review meeting requirement outside the three defined values; null ("not asking") passes.
+    ///
+    /// <para>The string converter still accepts a bare integer on the wire, so <c>7</c> would otherwise be stored
+    /// as a fourth requirement no projection understands.</para>
+    /// </summary>
+    public static (string ReasonCode, string Message)? ValidateReviewMeetingRequirement(
+        TaskReviewMeetingRequirement? requirement)
+        => requirement is { } value && !Enum.IsDefined(value)
+            ? (TaskReasonCodes.TaskTypeReviewMeetingRequirementInvalid, ReviewMeetingRequirementInvalidMessage)
+            : null;
+
     /// <summary>
     /// Whether this code is already taken by a LIVE type in the tenant.
     ///

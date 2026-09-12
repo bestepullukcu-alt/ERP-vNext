@@ -15,6 +15,12 @@
   <data name="QualityEvent" xml:space="preserve"><value>حدث جودة</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>حدث جودة</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>ليس حدث جودة</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>اجتماع المراجعة قبل القرار</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>يحدد ما إذا كان يجوز أو يجب عقد اجتماع مراجعة قبل أن يتخذ المراجع القرار النهائي بشأن هذا النوع من العمل.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>غير مسموح</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>يجب أن يكون إعداد اجتماع المراجعة: غير مسموح أو اختياري أو مطلوب.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>ليس سجلًا</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>سجل تشغيلي</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>سجل جودة GxP</value></data>

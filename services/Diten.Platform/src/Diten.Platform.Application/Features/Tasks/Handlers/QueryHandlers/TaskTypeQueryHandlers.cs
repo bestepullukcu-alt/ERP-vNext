@@ -141,7 +141,8 @@ internal static class TaskTypeMapping
                 outcome.Disposition,
                 outcome.RequiresReason,
                 outcome.SortOrder))
-            .ToList());
+            .ToList(),
+        type.ReviewMeetingRequirement);
 }
 
 /// <summary>

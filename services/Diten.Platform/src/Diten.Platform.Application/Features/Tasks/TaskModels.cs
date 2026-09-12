@@ -461,6 +461,7 @@ public static class TaskReasonCodes
     public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
     public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
+    public const string TaskTypeReviewMeetingRequirementInvalid = "TASK_TYPE_REVIEW_MEETING_REQUIREMENT_INVALID";
 
     // ── Closure outcomes ─────────────────────────────────────────────────
     /// <summary>The type's outcome dictionary is malformed — a duplicate code, no label, or two labels.</summary>
@@ -1294,7 +1295,9 @@ public sealed record CreateTaskTypeRequest(
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    /// <summary>Null takes the entity default, <see cref="TaskReviewMeetingRequirement.Optional"/>.</summary>
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null);
 
 /// <summary>
 /// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
@@ -1315,7 +1318,12 @@ public sealed record UpdateTaskTypeRequest(
     /// client that does not yet know about the dictionary — the current type editor — would silently delete a
     /// type's outcomes on every save.
     /// </summary>
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    /// <summary>
+    /// ⚠ NULL MEANS "NOT ASKING" — the same contract as <see cref="ClosureOutcomes"/>, for the same reason: a
+    /// client written before this field existed must not reset a Required type to Optional on every save.
+    /// </summary>
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null);
 
 /// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive);
@@ -1333,7 +1341,8 @@ public sealed record TaskTypeDto(
     IReadOnlyList<string> GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
     bool IsActive,
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    TaskReviewMeetingRequirement ReviewMeetingRequirement = TaskReviewMeetingRequirement.Optional);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────
