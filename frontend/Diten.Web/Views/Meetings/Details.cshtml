@@ -32,6 +32,7 @@
         </div>
         <div class="d-flex align-items-center gap-2" id="detailsActionBar">
             <a href="/Meetings" class="btn btn-label-secondary">@SharedLocalizer["Back"]</a>
+            <a href="/Meetings/@meetingId/Minutes" class="btn btn-label-secondary d-none" id="btnOpenMinutes"><i class="bx bx-file me-1"></i>@Localizer["Minutes"]</a>
             <button type="button" class="btn btn-label-secondary d-none" id="btnReassignOrganizer">@Localizer["ReassignOrganizer"]</button>
             <button type="button" class="btn btn-label-danger d-none" id="btnCancelMeeting">@Localizer["CancelMeeting"]</button>
             <a href="#" class="btn btn-primary d-none" id="btnEditMeeting">@SharedLocalizer["Edit"]</a>
@@ -123,5 +124,7 @@
     <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
     @* WP-WC-SHARED-UI-01, M2 — the reassign-organizer dialog's select2 is bound through here. *@
     <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
+    @* MOD-0357 S6 — the "create task from meeting" dialog body, shared with the Minutes editor. *@
+    <script src="~/assets/js/Meetings/task-from-meeting-dialog.js" asp-append-version="true"></script>
     <script src="~/assets/js/Meetings/form.js" asp-append-version="true"></script>
 }

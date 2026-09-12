@@ -263,6 +263,17 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
             Builders<MeetingAttendee>.Filter.Eq(x => x.InvitationResponse, InvitationResponse.Pending));
         return await Collection.Find(filter).ToListAsync(ct);
     }
+
+    public async Task UpdateAttendanceStatusAsync(
+        Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>
@@ -331,6 +342,69 @@ public sealed class MeetingTypeRepository : TenantRepository<MeetingType>, IMeet
             filter,
             type,
             new FindOneAndReplaceOptions<MeetingType> { ReturnDocument = ReturnDocument.Before },
+            ct);
+        return previous is not null;
+    }
+}
+
+/// <summary>Raw storage for <see cref="MeetingMinutesVersion"/> — MOD-0357 S6. See the interface's own doc
+/// comment for why this is append-only by convention rather than by anything enforced here.</summary>
+public sealed class MeetingMinutesVersionRepository
+    : TenantRepository<MeetingMinutesVersion>, IMeetingMinutesVersionRepository
+{
+    public MeetingMinutesVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.MeetingMinutesVersions)
+    {
+    }
+
+    /// <summary>The one place a <c>MongoWriteException</c> from THIS collection is allowed to be caught
+    /// (architecture rule) — a genuine version-number race (two concurrent first-drafts, or two concurrent
+    /// corrections) is refused by the unique index and turned into "no" here, never a 500.</summary>
+    public async Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(version, ct);
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return null;
+        }
+    }
+
+    public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.MeetingId, meetingId));
+        return Collection.Find(filter)
+            .SortByDescending(x => x.VersionNumber)
+            .Limit(1)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.MeetingId, meetingId));
+        return await Collection.Find(filter).SortByDescending(x => x.VersionNumber).ToListAsync(ct);
+    }
+
+    public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+    {
+        version.Version = expectedVersion + 1;
+        version.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Id, version.Id),
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Version, expectedVersion));
+
+        var previous = await Collection.FindOneAndReplaceAsync(
+            filter,
+            version,
+            new FindOneAndReplaceOptions<MeetingMinutesVersion> { ReturnDocument = ReturnDocument.Before },
             ct);
         return previous is not null;
     }

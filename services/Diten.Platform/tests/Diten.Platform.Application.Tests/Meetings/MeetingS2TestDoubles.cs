@@ -119,6 +119,89 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
         => Task.FromResult<IReadOnlyList<MeetingAttendee>>(
             _items.Where(x => x.TenantId == Tenant && !x.IsDeleted
                               && x.UserId == userId && x.InvitationResponse == InvitationResponse.Pending).ToList());
+
+    public Task UpdateAttendanceStatusAsync(Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);
+        if (item is not null) { item.AttendanceStatus = status; }
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>MOD-0357 S6 — in-memory double for <see cref="IMeetingMinutesVersionRepository"/>. No unique-index
+/// enforcement here (that guarantee is proven against a REAL Mongo, in <c>MeetingMinutesVersionMongoTests</c>) —
+/// this fake exists to test the COMMAND HANDLERS' own logic in isolation, the same division of labour every
+/// other Fake*Repository in this suite already draws.</summary>
+internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersionRepository
+{
+    private readonly List<MeetingMinutesVersion> _items = [];
+    public Guid Tenant { get; init; }
+
+    public void Seed(MeetingMinutesVersion version) => _items.Add(version);
+
+    /// <summary>What THIS repository currently has stored for <paramref name="id"/>, before any in-flight
+    /// caller mutation — the "before" half of a source-guard test that watches <c>UpdateAsync</c> calls.</summary>
+    public MinutesStatus? StoredStatusOf(Guid id) => _items.FirstOrDefault(x => x.Id == id)?.Status;
+
+    /// <summary>
+    /// A real Mongo read deserializes a NEW object every call; a fake that hands back the SAME reference lets a
+    /// handler's in-place field mutation retroactively corrupt what this repository "has stored", which is
+    /// exactly backwards for a test that watches for an update against an ALREADY-published row (measured: the
+    /// naive version of this fake made <c>PublishMinutesHandler</c>'s own `latest.Status = Published;` — set
+    /// BEFORE its own `UpdateAsync` call — appear to have already been stored as Published, because `latest`
+    /// WAS the stored object). Every read below returns one of these instead.
+    /// </summary>
+    private static MeetingMinutesVersion Clone(MeetingMinutesVersion source) => new()
+    {
+        Id = source.Id, TenantId = source.TenantId, CreatedBy = source.CreatedBy, CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt, UpdatedBy = source.UpdatedBy, IsDeleted = source.IsDeleted, Version = source.Version,
+        MeetingId = source.MeetingId, VersionNumber = source.VersionNumber, Status = source.Status,
+        Attendance = source.Attendance.Select(a => new MinutesAttendanceRecord { AttendeeUserId = a.AttendeeUserId, Status = a.Status }).ToList(),
+        Decisions = source.Decisions.Select(d => new MinutesDecision { Code = d.Code, Text = d.Text, DecidedByUserId = d.DecidedByUserId, RecordLinkId = d.RecordLinkId }).ToList(),
+        ActionReferences = [.. source.ActionReferences],
+        PublishedAtUtc = source.PublishedAtUtc, PublishedByUserId = source.PublishedByUserId,
+        CorrectionOfVersionNumber = source.CorrectionOfVersionNumber, CorrectionReason = source.CorrectionReason
+    };
+
+    public Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default)
+    {
+        if (_items.Any(x => x.TenantId == version.TenantId && !x.IsDeleted
+                             && x.MeetingId == version.MeetingId && x.VersionNumber == version.VersionNumber))
+        {
+            return Task.FromResult<MeetingMinutesVersion?>(null);
+        }
+
+        _items.Add(Clone(version));
+        return Task.FromResult<MeetingMinutesVersion?>(version);
+    }
+
+    public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
+            .OrderByDescending(x => x.VersionNumber)
+            .Select(Clone)
+            .FirstOrDefault());
+
+    public Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingMinutesVersion>>(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
+            .OrderByDescending(x => x.VersionNumber)
+            .Select(Clone)
+            .ToList());
+
+    public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _items.FirstOrDefault(x => x.Id == version.Id && x.TenantId == Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        _items.Remove(stored);
+        version.Version = expectedVersion + 1;
+        _items.Add(Clone(version));
+        return Task.FromResult(true);
+    }
 }
 
 internal sealed class FakeAgendaItemRepository : IAgendaItemRepository

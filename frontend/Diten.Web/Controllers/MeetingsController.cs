@@ -58,6 +58,15 @@ public sealed class MeetingsController : Controller
         return View("~/Views/Meetings/Edit.cshtml");
     }
 
+    // ── S6 — Minutes editor (Compact satellite screen, own page not a tab — pack §5 :323) ────
+
+    [HttpGet("{id:guid}/Minutes")]
+    public IActionResult MinutesEditor(Guid id)
+    {
+        ViewData["MeetingId"] = id.ToString();
+        return View("~/Views/Meetings/MinutesEditor/Index.cshtml");
+    }
+
     // ── S8 — Meeting Types (Compact satellite settings screen, pack §5 :323) ──
 
     [HttpGet("MeetingTypes")]
@@ -131,6 +140,24 @@ public sealed class MeetingsController : Controller
     [HttpPost("api/{id:guid}/respond")]
     public Task<IActionResult> ApiRespond(Guid id)
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/respond", readBody: true);
+
+    // ── S6 — minutes (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────────────────────
+
+    [HttpGet("api/{id:guid}/minutes")]
+    public Task<IActionResult> ApiGetMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes", readBody: false);
+
+    [HttpPut("api/{id:guid}/minutes/draft")]
+    public Task<IActionResult> ApiSaveMinutesDraft(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/draft", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/publish")]
+    public Task<IActionResult> ApiPublishMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/publish", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/correct")]
+    public Task<IActionResult> ApiCorrectPublishedMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/correct", readBody: true);
 
     // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
 

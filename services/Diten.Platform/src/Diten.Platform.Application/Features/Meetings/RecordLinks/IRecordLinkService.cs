@@ -19,7 +19,7 @@ public interface IRecordLinkService
     /// </summary>
     Task<RecordLink> AddLinkAsync(
         RecordLinkEndpoint source, RecordLinkEndpoint target, string linkType,
-        string? idempotencyKey = null, CancellationToken ct = default);
+        string? idempotencyKey = null, bool createdAfterMinutesPublished = false, CancellationToken ct = default);
 
     /// <summary>Soft-deletes one link by id. Never cascades to either endpoint's own record (K1).</summary>
     Task RemoveLinkAsync(Guid linkId, CancellationToken ct = default);

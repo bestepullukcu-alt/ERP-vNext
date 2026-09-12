@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>Протокол</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Совещание</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>Опубликовано v</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="Publish" xml:space="preserve"><value>Опубликовать</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>Опубликовать исправление</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>Присутствие</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>На этом совещании нет участников.</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>Присутствовал</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>Отсутствовал</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>По уважительной причине</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>Решения</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>Добавить решение</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>Удалить</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>Решения пока не записаны.</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>Опишите решение...</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>Кем принято</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>Не указано</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>Создать задачу</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>Добавлено после публикации</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>История версий</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>Черновик</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>Опубликовано v</value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>Исправление v</value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>Опубликовать протокол?</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>После публикации эта версия блокируется. Исправления создают новую версию.</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>Причина исправления</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>Почему требуется это исправление?</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>Необходимо указать причину исправления.</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>Черновик сохранён</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>Протокол опубликован</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>Исправление опубликовано</value></data>
+</root>

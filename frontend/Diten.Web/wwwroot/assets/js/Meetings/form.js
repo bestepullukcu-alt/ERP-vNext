@@ -238,6 +238,10 @@
 
         // AC5 — Cancelled/Completed: editing controls are withdrawn, not merely disabled (UAS-001's own posture).
         const editable = !cancelled && !completed;
+        // MOD-0357 S6 — minutes make sense for a Scheduled meeting (drafting ahead of/during it) and a
+        // Completed one (reviewing what published) alike; only Cancelled withdraws the door, same posture as
+        // every other Cancelled/Completed control above.
+        document.getElementById('btnOpenMinutes')?.classList.toggle('d-none', cancelled);
         document.getElementById('btnEditMeeting')?.classList.toggle('d-none', !editable);
         if (editable) { document.getElementById('btnEditMeeting').href = `/Meetings/${meeting.id}/Edit`; }
         document.getElementById('btnCancelMeeting')?.classList.toggle('d-none', !editable);
@@ -487,80 +491,18 @@
 
     // ── S4 — the meeting↔task bridge ─────────────────────────────────────────────────────────────────────────
 
-    // Platform/Workflow/workflow.api.js's own precedent — the caller-supplied key K11 needs; neither bridge
-    // endpoint derives one server-side the way meeting create derives its own.
-    const newIdempotencyKey = () => {
-        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') { return crypto.randomUUID(); }
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-            const r = (Math.random() * 16) | 0;
-            const v = c === 'x' ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-        });
-    };
-
     /*
-     * "Create task" needs THREE fields (title, assignee, due date) — one more than `window.showConfirm` takes
-     * (_GlobalConfirmation.cshtml's own rule: "anything beyond this belongs in a form … takes
-     * DitenDialogAppearance and builds its own body"). This mirrors WorkCenterNext/app.js's own multi-field
-     * dialog (the reason+assignee form): a raw `Swal.fire` wearing the shared LOOK, never an unstyled one.
+     * MOD-0357 S6 — the dialog body itself moved to shared/../Meetings/task-from-meeting-dialog.js, so the
+     * Minutes editor's own "Görev oluştur" (a decision, not an agenda item) opens the SAME dialog rather than a
+     * second hand-rolled copy. This stays a one-line delegation, the same shape `dialogIcon`/`dialogLook`
+     * already took when THEY moved to shared/diten-dialog.js.
      */
     const openCreateTaskDialog = (agendaItemId) => {
-        if (!window.Swal || !window.DitenDialog) { return; }
-        const dialogLook = window.DitenDialog.dialogLook();
-        const dialogIcon = window.DitenDialog.dialogIcon('info', 'bx-task');
-
-        window.Swal.fire(Object.assign({
-            title: dialogIcon + '<span>' + esc(t('createTaskFromMeeting')) + '</span>',
-            html: `<label class="form-label d-block text-start" for="mtgTaskTitle">${esc(t('taskTitleLabel'))}</label>`
-                + `<input type="text" id="mtgTaskTitle" class="form-control" maxlength="200" autocomplete="off" />`
-                + `<label class="form-label d-block text-start mt-3" for="mtgTaskAssignee">${esc(t('taskAssigneeLabel'))}</label>`
-                + `<select id="mtgTaskAssignee" class="form-select"><option value="">${esc(t('taskAssigneeSelf'))}</option></select>`
-                + `<label class="form-label d-block text-start mt-3" for="mtgTaskDueAt">${esc(t('taskDueAtLabel'))}</label>`
-                + `<input type="text" id="mtgTaskDueAt" class="form-control wcn-date-input" autocomplete="off" />`,
-            showCancelButton: true,
-            confirmButtonText: t('createTaskFromMeeting'),
-            cancelButtonText: t('cancel'),
-            didOpen: async (popup) => {
-                const dateInput = document.getElementById('mtgTaskDueAt');
-                if (window.flatpickr) {
-                    window.flatpickr(dateInput, { enableTime: false, dateFormat: 'Y-m-d', disableMobile: true });
-                }
-                // The SAME assignable-people lookup TaskWorkItemProvider's own reassign dialog reads (BL-057's
-                // eligibility rule) — never a second, looser list built for this one dialog.
-                const peopleResult = await window.TasksApi?.assignablePeople?.();
-                const people = peopleResult?.ok ? peopleResult.data : [];
-                const select = document.getElementById('mtgTaskAssignee');
-                people.forEach((person) => {
-                    select.appendChild(new Option(person.displayName || person.userId, person.userId));
-                });
-                window.DitenDialog.bindDialogSelect2(select, popup);
-            },
-            preConfirm: () => {
-                const title = String(document.getElementById('mtgTaskTitle')?.value || '').trim();
-                if (!title) { window.Swal.showValidationMessage(t('taskTitleRequired')); return false; }
-                const assigneeUserId = String(document.getElementById('mtgTaskAssignee')?.value || '').trim() || null;
-                const dueAtLocal = String(document.getElementById('mtgTaskDueAt')?.value || '').trim();
-                const dueAtDate = dueAtLocal ? new Date(`${dueAtLocal}T00:00:00`) : null;
-                const dueAt = dueAtDate && !Number.isNaN(dueAtDate.getTime()) ? dueAtDate.toISOString() : null;
-                return { title, assigneeUserId, dueAt };
-            }
-        }, dialogLook)).then(async (res) => {
-            if (!res.isConfirmed || !res.value) { return; }
-            const result = await window.MeetingsApi.createTaskFromMeeting(currentMeeting.id, {
-                title: res.value.title,
-                description: null,
-                assigneeUserId: res.value.assigneeUserId,
-                dueAt: res.value.dueAt,
-                agendaItemId: agendaItemId || null,
-                taskTypeId: null,
-                idempotencyKey: newIdempotencyKey()
-            });
-            if (!result.ok) {
-                window.DitenModal?.error?.({ title: t('errorOccurred'), message: window.MeetingsApi.failureMessage(result) });
-                return;
-            }
-            window.DitenModal?.success?.({ title: t('toastTaskCreated'), timer: 1200 });
-            await reloadMeeting();
+        window.MeetingsTaskFromMeetingDialog.open({
+            meetingId: currentMeeting.id,
+            agendaItemId,
+            t,
+            onCreated: () => reloadMeeting()
         });
     };
 

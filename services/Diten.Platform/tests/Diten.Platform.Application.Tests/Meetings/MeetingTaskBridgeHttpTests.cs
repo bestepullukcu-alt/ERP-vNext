@@ -218,6 +218,7 @@ public sealed class MeetingTaskBridgeHttpTests
                 {
                     CreateTaskFromMeetingCommand cmd => new CreateTaskFromMeetingHandler(
                         host._meetings, host._types, host._agenda,
+                        new FakeMeetingMinutesVersionRepository { Tenant = TaskTestData.Tenant },
                         new RecordLinkService(host._links, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(Actor)),
                         new MeetingIdempotencyKeyResolver(), new FakeCurrentUserContext(Actor), this).Handle(cmd, ct),
                     LinkExistingTaskCommand cmd => new LinkExistingTaskHandler(

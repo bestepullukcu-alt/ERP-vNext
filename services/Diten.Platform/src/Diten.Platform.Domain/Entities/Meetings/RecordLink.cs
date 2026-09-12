@@ -76,6 +76,14 @@ public sealed class RecordLink : TenantScopedEntity
     /// six-value unique index remains the storage-level guarantee for the link itself.</para>
     /// </summary>
     public string? IdempotencyKey { get; set; }
+
+    /// <summary>
+    /// MOD-0357 S6 (pack K4, ADR-003 §5) — true when this link's SOURCE task was created after the meeting's
+    /// minutes had already published. Set once, at creation, by <c>CreateTaskFromMeetingHandler</c>; never
+    /// updated afterward. Lets the UI label the task "added later" without the frozen
+    /// <see cref="MeetingMinutesVersion"/> row ever being touched to record the fact.
+    /// </summary>
+    public bool CreatedAfterMinutesPublished { get; set; }
 }
 
 /// <summary>The module codes this slice actually writes or reads. Not a closed enum — see <see cref="RecordLink.SourceModuleCode"/>.</summary>

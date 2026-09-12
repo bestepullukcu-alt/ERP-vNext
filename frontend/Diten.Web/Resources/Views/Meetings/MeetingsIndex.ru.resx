@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Удалить участника</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Добавить</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Сменить организатора</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Протокол</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>Новый организатор</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Отменить совещание</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Причина отмены</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Эта задача уже связана с этим совещанием.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Для этой задачи уже запланировано совещание по обзору.</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>Ответ должен быть «Принять» или «Отклонить».</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>Опубликованный протокол нельзя редактировать напрямую.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>Нет опубликованной версии для исправления.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Необходимо указать причину исправления.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>Запись изменилась тем временем; обновите страницу и повторите попытку.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>Это решение не найдено.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>

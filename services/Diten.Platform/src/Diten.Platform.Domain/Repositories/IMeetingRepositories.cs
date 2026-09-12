@@ -116,6 +116,12 @@ public interface IMeetingAttendeeRepository
     /// way and there is no other writer of this one field to race against.</summary>
     Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default);
 
+    /// <summary>S6 — the one-way sync <c>PublishMinutesCommand</c>/<c>CorrectPublishedMinutesCommand</c> write
+    /// after a minutes version publishes: tutanak → katılımcı, never the other direction. No
+    /// <c>expectedVersion</c>, same reasoning as <see cref="UpdateInvitationResponseAsync"/> — a re-publish of
+    /// the SAME attendance value is a no-op, and nothing else writes this field.</summary>
+    Task UpdateAttendanceStatusAsync(Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default);
+
     /// <summary>S5c — <c>MeetingWorkItemProvider</c>'s own source query: every invitation still awaiting THIS
     /// user's Accept/Decline, across every meeting in the tenant. Filtered at the query, not in memory — an
     /// actor's own Pending set stays small regardless of how large the tenant's meeting history grows.</summary>
@@ -150,4 +156,37 @@ public interface IMeetingTypeRepository
     Task<bool> UpdateAsync(MeetingType type, int expectedVersion, CancellationToken ct = default);
 
     Task DeleteAsync(Guid id, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Raw storage for <see cref="MeetingMinutesVersion"/> — MOD-0357 S6 (pack K4). APPEND-ONLY by convention of
+/// its own callers, not by anything this interface enforces mechanically: <see cref="UpdateAsync"/> exists
+/// because a DRAFT row is edited in place, and every command handler that calls it first confirms the row it is
+/// about to replace is still <c>MinutesStatus.Draft</c> — this repository trusts the caller on that, the same
+/// way <c>IAgendaItemRepository.UpdateAsync</c> trusts its own callers about which rows are still editable.
+/// </summary>
+public interface IMeetingMinutesVersionRepository
+{
+    /// <summary>
+    /// Null when a concurrent request already created a row for the same (tenant, meeting, version number) —
+    /// the unique index's own guarantee at the storage level (schema manifest), translated here into "no"
+    /// rather than a 500 to the loser of a genuine race. Mirrors <c>IRecordLinkRepository.FindOrCreateAsync</c>'s
+    /// own posture on WHERE a <c>MongoWriteException</c> may be caught (architecture rule: MongoDB Driver types
+    /// stay in Persistence, never surface to a command handler).
+    /// </summary>
+    Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default);
+
+    /// <summary>The single highest <see cref="MeetingMinutesVersion.VersionNumber"/> for this meeting, or null
+    /// if none exists yet — every command handler's own "what is the current state" read.</summary>
+    Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
+
+    /// <summary>Every version for this meeting, <see cref="MeetingMinutesVersion.VersionNumber"/> descending —
+    /// the editor's own history view (<c>GetMeetingMinutesQuery</c>).</summary>
+    Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
+
+    /// <summary>Optimistic-concurrency replace, same shape as every other MOD-0024-adjacent
+    /// <c>UpdateAsync(entity, expectedVersion)</c>. Callers use this ONLY on a row still
+    /// <see cref="MeetingMinutesVersion.Status"/> <c>Draft</c> — publishing and correcting never call it (see
+    /// the type's own doc comment on why a Published row is never replaced).</summary>
+    Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default);
 }

@@ -134,6 +134,38 @@ public static partial class PlatformSchemaManifest
                         .Ascending(x => x.Name)
                         .Ascending(x => x.IsDeleted),
                     new CreateIndexOptions { Name = "ux_meeting_types_tenant_name", Unique = true })
+            }),
+
+        // MOD-0357 S6 — one row per minutes version, append-only (K4). The UNIQUE (tenant, meeting, version
+        // number) index is the storage-level guarantee behind "two v1 rows for one meeting is impossible" —
+        // the command handler's own "does a row already exist" read is a courtesy, this is what actually
+        // stops it, the same reasoning every other tenant-unique index in this manifest already carries.
+        // The (tenant, meeting, status) index is the "what is the current row" lookup every command handler
+        // makes before writing (GetLatestByMeetingIdAsync sorts on VersionNumber instead, but a status-only
+        // read is common enough — e.g. a future "does this meeting have ANY published minutes" check — to be
+        // worth its own covering index rather than a full collection scan under IsDeleted alone).
+        Collection<MeetingMinutesVersion>(
+            SchemaProfile.Meetings,
+            PlatformCollections.MeetingMinutesVersions,
+            () => new CreateIndexModel<MeetingMinutesVersion>[]
+            {
+                new CreateIndexModel<MeetingMinutesVersion>(
+                    Builders<MeetingMinutesVersion>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.MeetingId)
+                        .Ascending(x => x.VersionNumber)
+                        .Ascending(x => x.IsDeleted),
+                    new CreateIndexOptions
+                    {
+                        Name = "ux_meeting_minutes_versions_tenant_meeting_version",
+                        Unique = true
+                    }),
+                new CreateIndexModel<MeetingMinutesVersion>(
+                    Builders<MeetingMinutesVersion>.IndexKeys
+                        .Ascending(x => x.TenantId)
+                        .Ascending(x => x.MeetingId)
+                        .Ascending(x => x.Status),
+                    new CreateIndexOptions { Name = "ix_meeting_minutes_versions_tenant_meeting_status" })
             })
     };
 }

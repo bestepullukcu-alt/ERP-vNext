@@ -25,3 +25,11 @@ public enum AttendanceStatus
     Absent = 1,
     Excused = 2
 }
+
+/// <summary>A minutes version's own state (pack §4 K4). <see cref="Published"/> is a one-way door: the only
+/// path forward from it is a NEW version row (a correction), never a change to this one.</summary>
+public enum MinutesStatus
+{
+    Draft = 0,
+    Published = 1
+}

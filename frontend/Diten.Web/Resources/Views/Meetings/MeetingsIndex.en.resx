@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Remove attendee</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Add</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Reassign Organizer</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Minutes</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>New Organizer</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Cancel Meeting</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Cancellation reason</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>This task is already linked to this meeting.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>A review meeting is already scheduled for this task.</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>The response must be Accept or Decline.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>The published minutes cannot be edited directly.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>There is no published version to correct.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>A correction reason is required.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>The record changed meanwhile; reload and retry.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>This decision could not be found.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>

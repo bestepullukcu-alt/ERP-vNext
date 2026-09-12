@@ -22,7 +22,7 @@ public sealed class RecordLinkService : IRecordLinkService
 
     public Task<RecordLink> AddLinkAsync(
         RecordLinkEndpoint source, RecordLinkEndpoint target, string linkType,
-        string? idempotencyKey = null, CancellationToken ct = default)
+        string? idempotencyKey = null, bool createdAfterMinutesPublished = false, CancellationToken ct = default)
     {
         /*
          * K11 — idempotent: the SAME (source, target, linkType) triple returns the EXISTING row, never a
@@ -39,7 +39,8 @@ public sealed class RecordLinkService : IRecordLinkService
             LinkType = linkType,
             IdempotencyKey = idempotencyKey,
             CreatedByUserId = _currentUser.UserId,
-            CreatedBy = _currentUser.ActorName
+            CreatedBy = _currentUser.ActorName,
+            CreatedAfterMinutesPublished = createdAfterMinutesPublished
         };
 
         return _links.FindOrCreateAsync(link, ct);

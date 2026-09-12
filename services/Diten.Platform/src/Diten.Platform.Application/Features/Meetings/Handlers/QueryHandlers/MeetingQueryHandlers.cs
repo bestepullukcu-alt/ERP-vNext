@@ -209,7 +209,9 @@ public sealed class GetLinkedTasksHandler : IRequestHandler<GetLinkedTasksQuery,
             .Select(x =>
             {
                 var summary = resolved[x.TaskId];
-                return new LinkedTaskDto(x.Link.Id, x.Link.LinkType, x.TaskId.ToString(), summary.Title, summary.Link);
+                return new LinkedTaskDto(
+                    x.Link.Id, x.Link.LinkType, x.TaskId.ToString(), summary.Title, summary.Link,
+                    x.Link.CreatedAfterMinutesPublished);
             })
             .ToList();
 
@@ -260,6 +262,62 @@ public sealed class GetMeetingAttendeeLookupHandler
 
     public Task<Response<AssignablePersonLookupDto>> Handle(GetMeetingAttendeeLookupQuery query, CancellationToken ct)
         => _mediator.Send(new GetTaskAssignmentPersonLookupQuery(query.CorrelationId, TaskPersonLookupPurpose.Decision), ct);
+}
+
+/// <summary>S6 — every minutes version for this meeting, newest first. Same D3 visibility gate every other
+/// meeting-scoped read applies (organizer ∨ attendee ∨ <c>read-all</c>) — a caller with no relationship to the
+/// meeting gets 404, never a metadata leak, exactly like <c>GetLinkedTasksHandler</c>.</summary>
+public sealed class GetMeetingMinutesHandler : IRequestHandler<GetMeetingMinutesQuery, Response<MeetingMinutesDto>>
+{
+    private readonly IMeetingRepository _meetings;
+    private readonly IMeetingAttendeeRepository _attendees;
+    private readonly IMeetingMinutesVersionRepository _minutes;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IActorPermissionContext _permissions;
+    private readonly IUserDisplayNameResolver _displayNames;
+
+    public GetMeetingMinutesHandler(
+        IMeetingRepository meetings,
+        IMeetingAttendeeRepository attendees,
+        IMeetingMinutesVersionRepository minutes,
+        ICurrentUserContext currentUser,
+        IActorPermissionContext permissions,
+        IUserDisplayNameResolver displayNames)
+    {
+        _meetings = meetings;
+        _attendees = attendees;
+        _minutes = minutes;
+        _currentUser = currentUser;
+        _permissions = permissions;
+        _displayNames = displayNames;
+    }
+
+    public async Task<Response<MeetingMinutesDto>> Handle(GetMeetingMinutesQuery query, CancellationToken ct)
+    {
+        var meeting = await _meetings.GetByIdAsync(query.MeetingId, ct);
+        if (meeting is null)
+        {
+            return Response<MeetingMinutesDto>.Fail(
+                "The meeting does not exist.", 404, MeetingReasonCodes.NotFound, query.CorrelationId);
+        }
+
+        var attendeeIds = (await _attendees.ListByMeetingIdAsync(query.MeetingId, ct)).Select(a => a.UserId).ToHashSet();
+        var hasReadAll = _permissions.IsPlatformActor || _permissions.Has(MeetingPermissions.ReadAll);
+        if (!MeetingEligibility.CanView(meeting, _currentUser.UserId, hasReadAll, attendeeIds))
+        {
+            return Response<MeetingMinutesDto>.Fail(
+                "The meeting does not exist.", 404, MeetingReasonCodes.NotFound, query.CorrelationId);
+        }
+
+        var versions = await _minutes.ListByMeetingIdAsync(query.MeetingId, ct);
+        var dtos = new List<MeetingMinutesVersionDto>(versions.Count);
+        foreach (var version in versions)
+        {
+            dtos.Add(await MinutesEligibility.ToDtoAsync(version, _displayNames, ct));
+        }
+
+        return Response<MeetingMinutesDto>.Success(new MeetingMinutesDto(dtos), 200, query.CorrelationId);
+    }
 }
 
 /// <summary>S3 — the type dropdown's own data source (pack §12: the type must resolve and be active).</summary>

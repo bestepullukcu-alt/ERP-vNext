@@ -54,3 +54,17 @@ public sealed record ScheduleReviewMeetingForTaskCommand(
 public sealed record RespondToInvitationCommand(
     Guid MeetingId, RespondToInvitationRequest Request, string CorrelationId)
     : IRequest<Response<NoContent>>;
+
+// ── S6 — minutes ────────────────────────────────────────────────────────────────────────────────────────────
+
+public sealed record SaveMinutesDraftCommand(
+    Guid MeetingId, SaveMinutesDraftRequest Request, string CorrelationId)
+    : IRequest<Response<MeetingMinutesVersionDto>>;
+
+public sealed record PublishMinutesCommand(
+    Guid MeetingId, PublishMinutesRequest Request, string CorrelationId)
+    : IRequest<Response<MeetingMinutesVersionDto>>;
+
+public sealed record CorrectPublishedMinutesCommand(
+    Guid MeetingId, CorrectPublishedMinutesRequest Request, string CorrelationId)
+    : IRequest<Response<MeetingMinutesVersionDto>>;

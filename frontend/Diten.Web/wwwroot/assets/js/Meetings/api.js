@@ -64,7 +64,14 @@
         MEETING_REVIEW_ALREADY_SCHEDULED: 'errorReviewAlreadyScheduled',
 
         // ── S5 — invitation response ─────────────────────────────────────────
-        MEETING_INVITATION_RESPONSE_INVALID: 'errorInvitationResponseInvalid'
+        MEETING_INVITATION_RESPONSE_INVALID: 'errorInvitationResponseInvalid',
+
+        // ── S6 — minutes ───────────────────────────────────────────────────
+        MEETING_MINUTES_PUBLISHED: 'errorMinutesPublished',
+        MEETING_MINUTES_NOT_PUBLISHED: 'errorMinutesNotPublished',
+        MEETING_MINUTES_CORRECTION_REASON_REQUIRED: 'errorMinutesCorrectionReasonRequired',
+        MEETING_MINUTES_CONCURRENCY_CONFLICT: 'errorMinutesConcurrencyConflict',
+        MEETING_DECISION_NOT_FOUND: 'errorDecisionNotFound'
     };
 
     const isConcurrencyConflict = (result) =>
@@ -103,6 +110,12 @@
 
         // S5, K5 — Accept/Decline. `response` is exactly 'Accept' or 'Decline'.
         respond: (id, response) => request('POST', `/${id}/respond`, { response }),
+
+        // ── S6 — minutes ──────────────────────────────────────────────────
+        getMinutes: (id) => request('GET', `/${id}/minutes`),
+        saveMinutesDraft: (id, payload) => request('PUT', `/${id}/minutes/draft`, payload),
+        publishMinutes: (id, payload) => request('POST', `/${id}/minutes/publish`, payload),
+        correctPublishedMinutes: (id, payload) => request('POST', `/${id}/minutes/correct`, payload),
 
         // ── S4 — the meeting↔task bridge ────────────────────────────────────
         createTaskFromMeeting: (id, payload) => request('POST', `/${id}/tasks`, payload),

@@ -6,6 +6,7 @@ using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
@@ -24,6 +25,7 @@ public sealed class CreateTaskFromMeetingHandler
     private readonly IMeetingRepository _meetings;
     private readonly IMeetingTypeRepository _types;
     private readonly IAgendaItemRepository _agendaItems;
+    private readonly IMeetingMinutesVersionRepository _minutes;
     private readonly IRecordLinkService _links;
     private readonly IMeetingIdempotencyKeyResolver _idempotency;
     private readonly ICurrentUserContext _currentUser;
@@ -33,6 +35,7 @@ public sealed class CreateTaskFromMeetingHandler
         IMeetingRepository meetings,
         IMeetingTypeRepository types,
         IAgendaItemRepository agendaItems,
+        IMeetingMinutesVersionRepository minutes,
         IRecordLinkService links,
         IMeetingIdempotencyKeyResolver idempotency,
         ICurrentUserContext currentUser,
@@ -41,6 +44,7 @@ public sealed class CreateTaskFromMeetingHandler
         _meetings = meetings;
         _types = types;
         _agendaItems = agendaItems;
+        _minutes = minutes;
         _links = links;
         _idempotency = idempotency;
         _currentUser = currentUser;
@@ -80,6 +84,33 @@ public sealed class CreateTaskFromMeetingHandler
                     "This agenda item could not be found.", 404, MeetingReasonCodes.AgendaItemNotFound, command.CorrelationId);
             }
         }
+
+        // MOD-0357 S6 — the third bridge moment: a decision inside the meeting's minutes. Validated against
+        // the LATEST version whether it is still Draft or already Published (a read, never a write); which
+        // half of "found but frozen" applies is decided further down, at the one point this handler might
+        // otherwise write into a Published row.
+        MeetingMinutesVersion? latestMinutes = null;
+        MinutesDecision? decision = null;
+        if (request.DecisionCode is { } decisionCode)
+        {
+            latestMinutes = await _minutes.GetLatestByMeetingIdAsync(command.MeetingId, ct);
+            decision = latestMinutes?.Decisions.FirstOrDefault(d => d.Code == decisionCode);
+            if (decision is null)
+            {
+                return Response<CreateTaskFromMeetingResultDto>.Fail(
+                    "This decision could not be found.", 404, MeetingReasonCodes.DecisionNotFound, command.CorrelationId);
+            }
+        }
+        else
+        {
+            latestMinutes = await _minutes.GetLatestByMeetingIdAsync(command.MeetingId, ct);
+        }
+
+        // K4 — "a task opened after minutes publish is flagged distinctly". Read here regardless of
+        // DecisionCode: the preparation/on-the-spot moments can ALSO land after a publish (e.g. minutes
+        // published early, then a further task added from the agenda) and the flag means the same thing either
+        // way — this task was not accounted for in the record as it stood when it was signed off.
+        var createdAfterMinutesPublished = latestMinutes?.Status == MinutesStatus.Published;
 
         // AgendaItemId beyond this point is only ever the ALREADY-VALIDATED agenda item's own id — never the
         // caller's raw input again, so a task created against a since-deleted agenda item cannot happen.
@@ -126,23 +157,37 @@ public sealed class CreateTaskFromMeetingHandler
         var taskId = taskResult.Data;
 
         // The link's own type follows WHEN it was created, per pack §3: before the meeting starts is
-        // preparation work, during (or after) is an action raised from the meeting itself. The third moment
-        // (a decision inside published minutes) is S6's own "bornFromMeeting" write, not this one.
-        var linkType = DateTimeOffset.UtcNow < meeting.StartAt
-            ? RecordLinkTypes.Preparation
-            : RecordLinkTypes.BornFromMeeting;
+        // preparation work, during (or after) is an action raised from the meeting itself. A decision is
+        // always "bornFromMeeting" — by definition a decision only exists once the meeting is happening or
+        // done, so there is no "preparation" reading of it, unlike the time-based check for the other two
+        // moments.
+        var linkType = request.DecisionCode is not null || DateTimeOffset.UtcNow >= meeting.StartAt
+            ? RecordLinkTypes.BornFromMeeting
+            : RecordLinkTypes.Preparation;
 
         var link = await _links.AddLinkAsync(
             new RecordLinkEndpoint(RecordLinkModuleCodes.Meetings, command.MeetingId),
             new RecordLinkEndpoint(RecordLinkModuleCodes.Tasks, taskId),
             linkType,
             idempotencyKey,
+            createdAfterMinutesPublished,
             ct);
 
         if (agendaItem is not null)
         {
             agendaItem.RecordLinkId = link.Id;
             await _agendaItems.UpdateAsync(agendaItem, agendaItem.Version, ct);
+        }
+
+        // K4's source guard: a decision inside an ALREADY-Published version is never written to — this
+        // embeds the link only while the owning version is still Draft. A decision that spawns a task after
+        // its version published stays exactly as published; CreatedAfterMinutesPublished on the link above is
+        // how the UI finds that task instead (see MinutesDecision.RecordLinkId's own doc comment).
+        if (decision is not null && latestMinutes is not null && latestMinutes.Status == MinutesStatus.Draft)
+        {
+            decision.RecordLinkId = link.Id;
+            latestMinutes.ActionReferences = MinutesEligibility.DeriveActionReferences(latestMinutes.Decisions);
+            await _minutes.UpdateAsync(latestMinutes, latestMinutes.Version, ct);
         }
 
         return Response<CreateTaskFromMeetingResultDto>.Success(
@@ -330,7 +375,7 @@ public sealed class ScheduleReviewMeetingForTaskHandler
             new RecordLinkEndpoint(RecordLinkModuleCodes.Tasks, command.TaskId),
             RecordLinkTypes.ReviewMeeting,
             idempotencyKey,
-            ct);
+            ct: ct);
 
         return Response<ScheduleReviewMeetingForTaskResultDto>.Success(
             new ScheduleReviewMeetingForTaskResultDto(meetingId, link.Id),

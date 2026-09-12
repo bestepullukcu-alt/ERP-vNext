@@ -56,6 +56,26 @@ public static class MeetingReasonCodes
     /// <summary>K5 — the request body named something other than "Accept"/"Decline" ("maybe" included; there
     /// is no third state in this slice).</summary>
     public const string InvitationResponseInvalid = "MEETING_INVITATION_RESPONSE_INVALID";
+
+    // ── S6 — minutes ──────────────────────────────────────────────────────────────────────────────────────────
+    /// <summary>K4 — the latest minutes version is Published: a draft save or a second publish against it is
+    /// refused (409). The only path forward from here is <c>CorrectPublishedMinutesCommand</c>.</summary>
+    public const string MinutesPublished = "MEETING_MINUTES_PUBLISHED";
+
+    /// <summary>The inverse of <see cref="MinutesPublished"/> — a correction was requested but the meeting has
+    /// no Published version to correct (nothing exists yet, or the latest row is still a Draft).</summary>
+    public const string MinutesNotPublished = "MEETING_MINUTES_NOT_PUBLISHED";
+
+    /// <summary>K4 — <c>CorrectPublishedMinutesCommand</c> with an empty/whitespace <c>CorrectionReason</c>.</summary>
+    public const string MinutesCorrectionReasonRequired = "MEETING_MINUTES_CORRECTION_REASON_REQUIRED";
+
+    /// <summary>Two edits to the same minutes DRAFT racing — same wording pattern every MOD-0024-adjacent
+    /// handler's own concurrency 409 uses ("the record changed meanwhile; reload and retry").</summary>
+    public const string MinutesConcurrencyConflict = "MEETING_MINUTES_CONCURRENCY_CONFLICT";
+
+    /// <summary>The bridge's own decision-side lookup: <c>DecisionCode</c> does not name a decision on the
+    /// meeting's latest minutes version.</summary>
+    public const string DecisionNotFound = "MEETING_DECISION_NOT_FOUND";
 }
 
 public static class MeetingFieldLimits
@@ -176,7 +196,11 @@ public sealed record AgendaItemDto(Guid Id, string Text, int SortOrder, int Vers
 
 // ── Linked tasks (read-only, via RecordLink — S1's IRecordLinkService) ─────────────────────────────────────────
 
-public sealed record LinkedTaskDto(Guid RecordLinkId, string LinkType, string TaskId, string Title, string Link);
+public sealed record LinkedTaskDto(
+    Guid RecordLinkId, string LinkType, string TaskId, string Title, string Link,
+    /// <summary>MOD-0357 S6 (K4) — mirrors <c>RecordLink.CreatedAfterMinutesPublished</c> so the Minutes editor
+    /// can label a decision's task "added later" without re-reading the link itself.</summary>
+    bool CreatedAfterMinutesPublished = false);
 
 // ── Meeting type ─────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -232,7 +256,11 @@ public sealed record CreateTaskFromMeetingRequest(
     DateTimeOffset? DueAt,
     Guid? AgendaItemId,
     Guid? TaskTypeId,
-    string IdempotencyKey);
+    string IdempotencyKey,
+    /// <summary>MOD-0357 S6 — the decision (in the meeting's LATEST minutes version) this task is "the action
+    /// from". Mutually independent of <see cref="AgendaItemId"/> — a decision is not an agenda line — and
+    /// optional: the two other bridge moments (preparation, on-the-spot) never send it.</summary>
+    string? DecisionCode = null);
 
 /// <summary>The bridge's own minimal result — just enough for the caller to redraw the linked-tasks list and
 /// (when <paramref name="AgendaItemId"/> was supplied) know which agenda row now carries the link.</summary>
@@ -270,3 +298,62 @@ public sealed record ScheduleReviewMeetingForTaskResultDto(Guid MeetingId, Guid 
 /// ordinally, case-sensitively: the wire contract names the two literal values, not a free-text choice.
 /// </summary>
 public sealed record RespondToInvitationRequest(string Response);
+
+// ── S6 — minutes (pack §3/§4 "Minutes as a versioned document", K4) ─────────────────────────────────────────────
+
+/// <summary>One attendee's presence, as the wire carries it — <c>AttendeeUserId</c> must name a real
+/// <c>MeetingAttendee</c> of this meeting (validated by the handler, not here).</summary>
+public sealed record MinutesAttendanceRequest(Guid AttendeeUserId, AttendanceStatus Status);
+
+/// <summary>One decision, as the wire carries it. <c>Code</c> travels only on the READ side
+/// (<see cref="MinutesDecisionDto"/>) — the write side never accepts one from the caller (server-minted, K4).</summary>
+public sealed record MinutesDecisionRequest(string Text, Guid? DecidedByUserId);
+
+/// <summary>
+/// <c>SaveMinutesDraftCommand</c>'s body — the full replacement content of the CURRENT draft row.
+/// <see cref="ExpectedVersion"/> is null only for the very first save of a meeting that has no minutes row yet
+/// (there is nothing to be optimistic about); every subsequent save must carry the row's current
+/// <c>BaseEntity.Version</c>, exactly like every other MOD-0024-adjacent draft edit.
+/// </summary>
+public sealed record SaveMinutesDraftRequest(
+    IReadOnlyList<MinutesAttendanceRequest> Attendance,
+    IReadOnlyList<MinutesDecisionRequest> Decisions,
+    int? ExpectedVersion);
+
+/// <summary><c>PublishMinutesCommand</c>'s body — the draft row's current <c>BaseEntity.Version</c>, the same
+/// optimistic-concurrency token <see cref="SaveMinutesDraftRequest.ExpectedVersion"/> carries.</summary>
+public sealed record PublishMinutesRequest(int ExpectedVersion);
+
+/// <summary>
+/// <c>CorrectPublishedMinutesCommand</c>'s body — K4's "the only path forward from a Published row": a mandatory
+/// <see cref="CorrectionReason"/> plus the corrected content, written directly as a NEW Published version row
+/// (never a second row left sitting in Draft — see the handler's own note on why).
+/// </summary>
+public sealed record CorrectPublishedMinutesRequest(
+    IReadOnlyList<MinutesAttendanceRequest> Attendance,
+    IReadOnlyList<MinutesDecisionRequest> Decisions,
+    string CorrectionReason);
+
+public sealed record MinutesAttendanceDto(Guid AttendeeUserId, string? DisplayName, AttendanceStatus Status);
+
+public sealed record MinutesDecisionDto(string Code, string Text, Guid? DecidedByUserId, string? DecidedByDisplayName, Guid? RecordLinkId);
+
+/// <summary>One version, as read. <see cref="ActionReferences"/> is exposed for completeness (pack §3); the
+/// editor renders linked tasks per-decision, from <see cref="MinutesDecisionDto.RecordLinkId"/>, not from this
+/// flat list.</summary>
+public sealed record MeetingMinutesVersionDto(
+    Guid Id,
+    int VersionNumber,
+    MinutesStatus Status,
+    IReadOnlyList<MinutesAttendanceDto> Attendance,
+    IReadOnlyList<MinutesDecisionDto> Decisions,
+    IReadOnlyList<Guid> ActionReferences,
+    DateTimeOffset? PublishedAtUtc,
+    Guid? PublishedByUserId,
+    string? PublishedByDisplayName,
+    int? CorrectionOfVersionNumber,
+    string? CorrectionReason,
+    int Version);
+
+/// <summary>All versions for a meeting, newest first — the editor's own history/audit view.</summary>
+public sealed record MeetingMinutesDto(IReadOnlyList<MeetingMinutesVersionDto> Versions);

@@ -66,7 +66,14 @@ const KNOWN_RAW = [
   "diten-unauthorized.js",
   "pages/demand-ideas/demandIdeaCapture.js",
   "pages/demand-ideas/demandIdeaRowActions.js",
-  "pages/demand-ideas/demandIdeasList.js"
+  "pages/demand-ideas/demandIdeasList.js",
+  // MOD-0357 S6 — "create task from meeting" needs THREE fields (title, assignee, due date), one more than
+  // showConfirm takes (_GlobalConfirmation.cshtml's own rule); moved here from Meetings/form.js (S4), which
+  // carried this exact raw dialog before this guard's own reach caught it.
+  "Meetings/task-from-meeting-dialog.js",
+  // MOD-0357 S6 K4 — the correction dialog needs a reason TEXTAREA plus its own validation
+  // (Swal.showValidationMessage), the same shape the reason-capture dialogs already listed above take.
+  "Meetings/minutes-editor.js"
 ];
 
 describe("one confirm implementation, product-wide", () => {

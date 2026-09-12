@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Quitar asistente</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Agregar</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Reasignar organizador</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Acta</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>Nuevo organizador</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Cancelar reunión</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Motivo de cancelación</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Esta tarea ya está vinculada a esta reunión.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Ya hay una reunión de revisión programada para esta tarea.</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>La respuesta debe ser Aceptar o Rechazar.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>El acta publicada no se puede editar directamente.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>No hay ninguna versión publicada para corregir.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Se requiere un motivo de corrección.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>El registro cambió mientras tanto; recargue e inténtelo de nuevo.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>No se pudo encontrar esta decisión.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a esta acción.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>El servicio de Reuniones no está disponible en este momento.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Complete todos los campos obligatorios.</value></data>

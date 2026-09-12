@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Retirer le participant</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Ajouter</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Réaffecter l'organisateur</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Procès-verbal</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>Nouvel organisateur</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Annuler la réunion</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Motif d'annulation</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Cette tâche est déjà liée à cette réunion.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Une réunion de revue est déjà planifiée pour cette tâche.</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>La réponse doit être Accepter ou Refuser.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>Le procès-verbal publié ne peut pas être modifié directement.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>Il n'y a pas de version publiée à corriger.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Un motif de correction est requis.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>L'enregistrement a changé entre-temps ; rechargez et réessayez.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>Cette décision est introuvable.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas accès à cette action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service Réunions est actuellement indisponible.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Veuillez remplir tous les champs obligatoires.</value></data>

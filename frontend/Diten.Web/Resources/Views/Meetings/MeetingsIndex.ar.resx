@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>إضافة</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>إعادة تعيين المنظّم</value></data>
+  <data name="Minutes" xml:space="preserve"><value>المحضر</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>المنظّم الجديد</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>إلغاء الاجتماع</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>هذه المهمة مرتبطة بهذا الاجتماع بالفعل.</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>تم جدولة اجتماع مراجعة لهذه المهمة بالفعل.</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>يجب أن يكون الرد قبول أو رفض.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>لا يمكن تعديل محضر الاجتماع المنشور مباشرة.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>لا توجد نسخة منشورة لتصحيحها.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>سبب التصحيح مطلوب.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>تم تغيير السجل في هذه الأثناء؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>تعذر العثور على هذا القرار.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>

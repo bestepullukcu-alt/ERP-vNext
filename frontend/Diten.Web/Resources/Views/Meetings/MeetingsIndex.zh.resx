@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>移除参会人员</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>添加</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>更换组织者</value></data>
+  <data name="Minutes" xml:space="preserve"><value>会议纪要</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>新组织者</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>取消会议</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>取消原因</value></data>
@@ -85,6 +86,11 @@
   <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>此任务已链接到本次会议。</value></data>
   <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>此任务已安排了一次审查会议。</value></data>
   <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>回复必须是接受或拒绝。</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>已发布的会议纪要不能直接编辑。</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>没有可更正的已发布版本。</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>需要填写更正原因。</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>记录已被同时更改；请刷新后重试。</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>未找到该决定。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>

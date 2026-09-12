@@ -443,8 +443,9 @@ public sealed class MeetingTaskBridgeCommandHandlerTests
         var linksRepo = new FakeRecordLinkRepository();
         var linkService = new RecordLinkService(linksRepo, new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(TaskTestData.Me));
         var idempotency = new MeetingIdempotencyKeyResolver();
+        var minutes = new FakeMeetingMinutesVersionRepository { Tenant = TaskTestData.Tenant };
         var handler = new CreateTaskFromMeetingHandler(
-            meetings, types, agendaItems, linkService, idempotency, new FakeCurrentUserContext(TaskTestData.Me), mediator);
+            meetings, types, agendaItems, minutes, linkService, idempotency, new FakeCurrentUserContext(TaskTestData.Me), mediator);
         return (handler, linksRepo, agendaItems, types);
     }
 

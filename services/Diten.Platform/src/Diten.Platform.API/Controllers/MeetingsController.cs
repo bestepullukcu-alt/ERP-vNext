@@ -153,6 +153,43 @@ public sealed class MeetingsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── S6 — minutes (pack §3 "Minutes as a versioned document", K4). GET is Read-gated (a published record is
+    // a record everyone with visibility should be able to read); the three writes are MinutesWrite/MinutesPublish
+    // — never Update, which is about the MEETING's own scheduling fields, not its closure record. ─────────────
+
+    [HttpGet("{id:guid}/minutes")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> GetMinutes(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMeetingMinutesQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("{id:guid}/minutes/draft")]
+    [HasPermission(MeetingPermissions.MinutesWrite)]
+    public async Task<IActionResult> SaveMinutesDraft(Guid id, [FromBody] SaveMinutesDraftRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SaveMinutesDraftCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/minutes/publish")]
+    [HasPermission(MeetingPermissions.MinutesPublish)]
+    public async Task<IActionResult> PublishMinutes(Guid id, [FromBody] PublishMinutesRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new PublishMinutesCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/minutes/correct")]
+    [HasPermission(MeetingPermissions.MinutesPublish)]
+    public async Task<IActionResult> CorrectPublishedMinutes(
+        Guid id, [FromBody] CorrectPublishedMinutesRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CorrectPublishedMinutesCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── S4 — the meeting↔task bridge (pack §3 Commands "bridge", §14 K9). Every action below stacks a
     // Meetings permission with an ORDINARY MOD-0024 permission — AND semantics (HasPermissionAttribute's own
     // doc comment) — so platform.meetings.* alone grants nothing over TaskItem (K9), the same precedent
