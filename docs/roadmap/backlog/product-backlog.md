@@ -4538,7 +4538,7 @@ bu muhafızın kapsamı dışında; ayrı iş. Metin taraması — iki ifadeye b
 
 **Görev detayı: kimliğini bilen herkes açabiliyor — liste süzülüyor, detay süzülmüyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPANDI — PSS dalı `feature/pss/mod-0024-review-meeting-policy` (WP-PSS-MOD0024-TASK-READ-ACCESS-01; CT sabotajla doğruladı, 2026-09-13). Detay, ek listesi ve ek içeriği tek okuma kuralını soruyor; ilişkisiz okuyana var olmayan görevle birebir aynı 404. Canlı doğrulama sabah sahipte (ikinci kullanıcıyla) · SAHİP: PSS · ÖLÇÜLDÜ: 2026-09-10
 
 `GetTaskItemListHandler` yalnız bana atanan + havuzumdaki görevleri döner. `GetTaskItemByIdHandler` ise
 yalnız kiracı filtresi + `platform.tasks.read` ister: görevle hiçbir ilişkisi olmayan kullanıcı, kimliğini
@@ -5197,7 +5197,7 @@ organizatörde olur; Auth kullanıcılarında e-posta zorunlu olduğu için bug�
 
 **Görev tipi güncellemesinde eşzamanlılık koruması yok — son yazan kazanır**
 
-DURUM: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-REVIEW-MEETING-POLICY-01), CT doğruladı · KAYIT: 2026-09-13
+DURUM: KAPANDI — `3a26bef1` (PSS, `feature/pss/mod-0024-attachments-ux`; CT sabotajla doğruladı, 2026-09-13) · BULAN: PSS ajanı (WP-PSS-MOD0024-REVIEW-MEETING-POLICY-01), CT doğruladı · KAYIT: 2026-09-13
 
 `UpdateTaskTypeRequest` / `UpdateTaskTypeHandler` `ExpectedVersion` taşımıyor; güncelleme tam değiştirme. İki yönetici
 aynı tipi aynı anda düzenlerse ikincisi birincinin değişikliğini sessizce ezer. Görev tipi L3 bir yapılandırma
@@ -5430,3 +5430,17 @@ DURUM: AÇIK · BULAN: CT canlı tur (Pozisyon Ataması) · KAYIT: 2026-09-13
 Tarih alanları flatpickr `altInput` + `allowInput` ile gösterim biçiminde (gg.aa.yyyy) yazı kabul ediyor. `2026-09-13` yazıldığında
 kayıt `2026-06-20` oldu, uyarı yok. Takvimden seçim doğru çalışıyor. Geçerlilik tarihleri GxP kaydı olduğu için sessiz kayma riskli:
 tanınmayan girişte alan boşaltılmalı ya da hata göstermeli.
+
+---
+
+### BL-392
+
+**`platform.tasks.work-report.read-tenant-wide` yalnız-açık-yetki listesinde değil — modül yetkilendirmesiyle varsayılan rollere dağılabilir (karar)**
+
+DURUM: AÇIK (sahip kararı) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCESS-01), CT doğruladı · KAYIT: 2026-09-13
+
+`ExplicitGrantOnlyPermissions.Keys` bu WP'den önce yalnız iki anahtar taşıyordu (`ppm.portfolios.assign-owner`,
+`auth.users.account-kind.manage`); BL-349 üçüncüsü olarak `platform.tasks.read-all`'ı ekledi. İş Raporu'nun kiracı geneli okuma anahtarı
+manifest eylemi olarak modül yetkilendirme senkronuna giriyor, yani Görev Motoru yetkilendirilen kiracıda Admin rolüne kendiliğinden
+düşebilir. Listeye eklemek, bu yetkiyi bugün tutan rollerden geri alır — bu yüzden sessizce yapılmadı. Karar: listeye alınsın mı, alınırsa
+mevcut atamalar nasıl ele alınsın.
