@@ -9767,14 +9767,16 @@
      */
     // `bootstrap` joins the list because the subtask quick-edit panel is an offcanvas: without it the row
     // click does nothing at all, which is the same silent failure as a missing TasksApi.
-    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap'];
+    // `MeetingsApi` joins it for the review-meeting scheduler (S10B live pass): a host view that forgot
+    // assets/js/Meetings/api.js left that dialog dead with no message at all.
+    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap', 'MeetingsApi'];
 
     const reportMissingWriteDependencies = () => {
         const missing = WRITE_DEPENDENCIES.filter((name) => !global[name]);
         if (!missing.length) { return; }
         console.error(
             `[WorkCenterNext] Missing required script(s): ${missing.join(', ')}. Every write on this page will `
-            + 'fail silently. The host view must load assets/js/Tasks/api.js and assets/js/Tasks/form.js '
+            + 'fail silently. The host view must load assets/js/Tasks/api.js, assets/js/Tasks/form.js and assets/js/Meetings/api.js '
             + '(see Views/WorkCenterNext/Index.cshtml).');
     };
 
