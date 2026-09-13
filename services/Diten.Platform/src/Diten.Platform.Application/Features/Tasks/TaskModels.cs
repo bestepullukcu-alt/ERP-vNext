@@ -117,6 +117,20 @@ public static class TaskPermissions
     public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
 
     /// <summary>
+    /// BL-349 — who may read ANY task in the tenant, ignoring <see cref="Services.ITaskReadAccessPolicy"/>'s
+    /// ordinary relationship legs (assignee, pool, creator, watcher, parent, scope).
+    ///
+    /// <para><b>Explicit-grant-only, on purpose — the same protection as
+    /// <c>auth.users.account-kind.manage</c>/<c>ppm.portfolios.assign-owner</c> (AuthService
+    /// <c>ExplicitGrantOnlyPermissions</c>, BL-359).</b> A "read every task" key that reached the tenant Admin
+    /// baseline automatically — the way an ordinary module-entitlement key does — would defeat BL-349's own
+    /// rule the moment a tenant activated the module: every Admin, and every Viewer behind the same sync, would
+    /// read tasks they hold no relationship to. Only an authorized person's explicit role-permission assignment
+    /// may grant it.</para>
+    /// </summary>
+    public const string ReadAll = "platform.tasks.read-all";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///

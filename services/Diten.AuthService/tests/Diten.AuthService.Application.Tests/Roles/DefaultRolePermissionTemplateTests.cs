@@ -343,6 +343,26 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("auth.users.lookup", viewerKeys); // not a read action
     }
 
+    // MOD0024-TASK-READ-ACCESS-01 (BL-349, owner decision 2026-09-13) — the third explicit-grant-only key. Proven
+    // the same way UsersAccountKindManage is proven directly above: even under its OWN module ("tasks", where the
+    // Task Engine's other platform.tasks.* keys DO reach Admin's breadth clause were "tasks" listed there), it
+    // reaches no default role — a tenant activating Task Engine must not hand every Admin/Viewer "read every task".
+    [Fact]
+    public void Tasks_read_all_enters_no_default_role_even_under_a_module_ordinary_task_keys_would_reach()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks", "read", "Read Task", null, moduleOverride: "tasks"));
+        catalog.Add(new Permission("platform", "tasks", "read-all", "Read All Tasks", null, moduleOverride: "tasks"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.read-all", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", adminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", viewerKeys);
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

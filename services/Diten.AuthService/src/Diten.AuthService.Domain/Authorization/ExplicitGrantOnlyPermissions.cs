@@ -17,6 +17,20 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string UsersAccountKindManage = "auth.users.account-kind.manage";
 
+    /// <summary>
+    /// MOD0024-TASK-READ-ACCESS-01 (BL-349) — reading every task in a tenant, bypassing
+    /// <c>Diten.Platform</c>'s <c>ITaskReadAccessPolicy</c> relationship legs (assignee, pool, creator, watcher,
+    /// parent, scope) entirely. The policy's whole point is that an ordinary Admin or Viewer sees only tasks they
+    /// hold a relationship to; if this key reached either role through the module-entitlement sync that grants a
+    /// module's other <c>platform.tasks.*</c> keys, every one of them would read every task in the tenant the
+    /// moment Task Engine was entitled, and the policy would have nothing left to enforce (owner decision,
+    /// 2026-09-13).
+    /// </summary>
+    public const string TasksReadAll = "platform.tasks.read-all";
+
     public static readonly IReadOnlySet<string> Keys =
-        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { PortfoliosAssignOwner, UsersAccountKindManage };
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll
+        };
 }

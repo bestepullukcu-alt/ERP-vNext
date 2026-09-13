@@ -80,6 +80,13 @@ public sealed class TaskAttachmentTests : IDisposable
         public required SetChecklistItemStateHandler SetChecklistState { get; init; }
     }
 
+    /// <summary>BL-349 — a resolver that has nothing to say, for a suite about attachment mechanics rather than
+    /// the scope leg (that leg is TaskReadAccessPolicyTests's own territory).</summary>
+    private sealed class NoScopeResolver : ITaskAssignmentScopeResolver
+    {
+        public Task<TaskAssignmentScope> ResolveAsync(CancellationToken ct) => Task.FromResult(TaskAssignmentScope.Empty);
+    }
+
     private Harness Build(TaskItem task, ChecklistRun? run = null, Guid? actor = null)
     {
         var tenant = new TenantContext();
@@ -103,6 +110,13 @@ public sealed class TaskAttachmentTests : IDisposable
         var runs = run is null ? new FakeChecklistRunRepository() : new FakeChecklistRunRepository(run);
         var attachments = new FakeTaskAttachmentRepository();
 
+        // BL-349 — the REAL policy, over fakes with nothing granted beyond the task's own fields: every test in
+        // this file acts as the task's assignee (Holder, the default), which the assignee leg admits on its own.
+        // Non-relationship access is TaskReadAccessPolicyTests's own territory, not re-proven here.
+        var readAccess = new TaskReadAccessPolicy(
+            tasksRepo, new FakeTaskWatcherRepository(), new FakeTaskNotificationService(),
+            new FakeOrganizationUnitRepository(), new NoScopeResolver(), TaskActors.None(), currentUser);
+
         return new Harness
         {
             Tasks = tasksRepo,
@@ -111,8 +125,8 @@ public sealed class TaskAttachmentTests : IDisposable
             DocumentRepository = documentRepository,
             Add = new AddTaskAttachmentHandler(tasksRepo, runs, attachments, documentRepository, tenant, currentUser),
             Remove = new RemoveTaskAttachmentHandler(tasksRepo, attachments, currentUser),
-            List = new ListTaskAttachmentsHandler(tasksRepo, attachments),
-            Open = new OpenTaskAttachmentHandler(tasksRepo, attachments, documentRepository),
+            List = new ListTaskAttachmentsHandler(tasksRepo, attachments, readAccess, currentUser),
+            Open = new OpenTaskAttachmentHandler(tasksRepo, attachments, documentRepository, readAccess, currentUser),
             SetChecklistState = new SetChecklistItemStateHandler(
                 tasksRepo, runs, new TaskChecklistService(), currentUser, attachments)
         };

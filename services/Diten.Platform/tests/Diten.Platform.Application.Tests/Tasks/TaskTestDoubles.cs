@@ -1360,6 +1360,13 @@ internal sealed class FakeTaskNotificationService
     /// <summary>Pool holders this double answers with, so a pooled audience can be arranged.</summary>
     public List<Guid> PoolHolders { get; } = [];
 
+    /// <summary>
+    /// BL-349 — per-task pool holders, for a suite that must tell a task's own pool apart from its PARENT's
+    /// (<c>TaskReadAccessPolicyTests</c>). Checked first; a task id absent here falls back to <see cref="PoolHolders"/>,
+    /// so every existing caller of the single-list form is unaffected.
+    /// </summary>
+    public Dictionary<Guid, List<Guid>> PoolHoldersByTaskId { get; } = [];
+
     /// <summary>Makes NotifyAsync throw, to prove a notification failure never fails the write.</summary>
     public bool Throws { get; set; }
 
@@ -1411,7 +1418,8 @@ internal sealed class FakeTaskNotificationService
     }
 
     public Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<Guid>>(PoolHolders);
+        => Task.FromResult<IReadOnlyList<Guid>>(
+            PoolHoldersByTaskId.TryGetValue(task.Id, out var holders) ? holders : PoolHolders);
 }
 
 /// <summary>
