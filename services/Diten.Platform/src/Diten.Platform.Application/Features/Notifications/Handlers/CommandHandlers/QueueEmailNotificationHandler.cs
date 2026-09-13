@@ -217,6 +217,10 @@ public sealed class QueueEmailNotificationHandler
             Redact(providerResult.ErrorCode) ?? "ProviderRejected",
             Redact(providerResult.ErrorMessage) ?? "Provider rejected the message.",
             DateTimeOffset.UtcNow);
+        // S10B live pass (2026-09-13): the first failure must be DUE for the retry sweep, which only selects rows
+        // with a NextRetryAt. Without this line a mail whose first attempt failed was never tried again, and every
+        // retry-fidelity rule (BL-374) sat behind a retry that could not happen. RetryCount stays 0: no retry has run.
+        dispatch.NextRetryAt = EmailDispatchRetryPolicy.NextRetryAt(dispatch.RetryCount + 1, DateTimeOffset.UtcNow);
         await _dispatchRepository.UpdateAsync(dispatch, ct);
         await _eventBus.PublishAsync(
             new NotificationDispatchFailedV1(

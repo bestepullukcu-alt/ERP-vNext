@@ -13,8 +13,6 @@ namespace Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 
 public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArgs>
 {
-    private static readonly TimeSpan BaseRetryDelay = TimeSpan.FromMinutes(1);
-    private const int MaxRetryDelayMinutes = 60;
 
     private readonly INotificationDispatchRepository _dispatchRepository;
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
@@ -225,12 +223,8 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     private static MessagingProviderAttachment ToProviderAttachment(NotificationDispatchAttachment attachment) =>
         new(attachment.FileName, attachment.ContentType, attachment.Content);
 
-    private static DateTimeOffset ComputeNextRetryAt(int retryCount)
-    {
-        var clampedAttempt = Math.Max(1, retryCount);
-        var exponentialMinutes = Math.Min(MaxRetryDelayMinutes, (int)BaseRetryDelay.TotalMinutes * (1 << Math.Min(clampedAttempt - 1, 6)));
-        return DateTimeOffset.UtcNow.AddMinutes(exponentialMinutes);
-    }
+    private static DateTimeOffset ComputeNextRetryAt(int retryCount) =>
+        EmailDispatchRetryPolicy.NextRetryAt(retryCount, DateTimeOffset.UtcNow);
 
     private static string? Redact(string? value)
     {
