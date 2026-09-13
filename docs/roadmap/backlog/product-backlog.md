@@ -5232,3 +5232,33 @@ maskelendiği için etkilenmiyor.)
 çalışmadığından toplantı davetlerinde neredeyse hiç devreye girmez.
 **Yön (karar değil):** sırrı DEĞERİN şekline göre değil, şablonun değişkeni hassas olarak İŞARETLEMESİNE göre maskelemek (anahtar tabanlı
 liste + şablon meta verisi). Güvenlik kodudur: tek başına gevşetilmez, ayrı WP + sabotaj ister.
+
+---
+
+### BL-378
+
+**Görev Merkezi iş bağlamı kartı sunucunun göndermediği alan adlarını okuyor — evet/hayır ve bağlantı alanları ham çiziliyor**
+
+DURUM: AÇIK (küçük) · BULAN: PSS ajanı (Faz 2a), CT doğruladı · KAYIT: 2026-09-13
+
+`app.js` `renderBusinessContext` (≈4394) değeri `field.kind === 'boolean'` / `field.kind === 'link'` ile biçimliyor; sunucu
+`WorkItemBusinessFieldDto` (`WorkAggregationModels.cs:746`) `kind` değil `valueType` gönderiyor. Sonuç: evet/hayır alanı "true/false"
+olarak, bağlantı alanı düz metin olarak görünüyor. Gizleme (`redacted`) doğru okunuyor — güvenlik etkisi yok. Faz 2a'nın kapanış kartı
+doğru adları (`valueType`) kullandı; iki çizim birleştirilmeli (BL-365 parça yeniden kullanımı).
+
+---
+
+### BL-379
+
+**Görev Merkezi sözleşmeyi geçemeyen iş öğelerini SESSİZCE atıyor — S4'ün toplantı politikası bir çok görevi listeden düşürdü**
+
+DURUM: AÇIK — düzeltme WP'si verildi (WP-WCN-REVIEW-MEETING-CONTRACT-FIX-01) · BULAN: DM ajanı (WP-WCN-DETAIL-ITEM-RESOLVE-01 teşhisi), CT doğruladı · KAYIT: 2026-09-13
+
+**Ölçüm (canlı + kod):** `/WorkCenterNext/api/work-items` 7 öğe döndürüyor, ekranda 4 görünüyor. `work-items-api.js` `validateItems` her öğeyi
+WC-1 sözleşmesiyle doğruluyor ve geçemeyeni `state.items`'a hiç koymuyor; `app.js` `loadWorkItems` bu hataları okumuyor. Detay sayfası öğeyi
+yalnız `state.items`'ta aradığı için "İstenen iş öğesi bulunamadı" diyor.
+**Kök neden:** MOD-0357 S4 `TaskWorkItemProvider` `reviewMeetingPolicy`'yi HER göreve koyuyor ama `scheduleReviewMeeting` eylemini yalnız
+kapanmamış, toplantısı henüz olmayan görevde, sahibine/açanına ekliyor. Sözleşme kuralı `REVIEW_MEETING_ACTION_REQUIRED`
+(`fixture-contract.js:582`): politika `notAllowed` değilse eylem OLMALI. Başkasının görevi, kapanmış görev veya toplantısı planlanmış görev →
+öğe düşüyor. CT'nin S4 kabulü birim testlerle yapıldı; sözleşme doğrulayıcısı gerçek sağlayıcı çıktısına karşı koşulmadı.
+**Ek:** dev-reference öğesi `DISABLED_REASON_REQUIRED` ile düşüyor; kaynağı düzeltme WP'sinde ölçülecek.
