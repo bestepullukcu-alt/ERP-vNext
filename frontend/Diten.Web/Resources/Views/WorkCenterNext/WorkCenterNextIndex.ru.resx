@@ -2286,6 +2286,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Загрузил(а) {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Вложение добавлено.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Вложение удалено.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Добавьте файл результата или доказательства (необязательно)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Тип этой задачи требует файл результата</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Выберите файл перед завершением этой задачи.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Добавить подтверждение</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>Файлов подтверждения: {0}</value></data>
 </root>

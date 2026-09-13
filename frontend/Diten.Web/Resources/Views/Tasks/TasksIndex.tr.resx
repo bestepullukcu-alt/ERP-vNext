@@ -151,6 +151,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Kontrol listesi</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Bu görevin adımları. Maddeler görev açıldıktan sonra işaretlenir; engelleyici bir madde tamamlanmadan görev kapanmaz.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Ekler</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Bu göreve ait dosyalar — açarken gereken talimat, ya da hemen kaydedilecek kanıt ve çıktı. Görev oluşturulduktan sonra yüklenir.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Görev oluşturuldu — bazı dosyalar yüklenemedi</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Görev oluşturuldu, ancak aşağıdaki dosyalar yüklenemedi. Görevin kendi Ekler kartından tekrar ekleyin:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Göreve git</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Madde yaz ve Enter'a bas</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Ekle</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value></data>

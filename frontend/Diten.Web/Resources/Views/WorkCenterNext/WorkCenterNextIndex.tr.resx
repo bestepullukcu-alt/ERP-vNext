@@ -2286,6 +2286,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>{0} tarafından yüklendi · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Ek eklendi.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Ek kaldırıldı.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Bir çıktı ya da kanıt dosyası ekleyin (isteğe bağlı)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Bu görev türü, tamamlanmadan önce bir çıktı dosyası ister</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce bir dosya seçin.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} kanıt dosyası</value></data>
 </root>

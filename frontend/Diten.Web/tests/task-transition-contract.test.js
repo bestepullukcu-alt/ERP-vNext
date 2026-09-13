@@ -171,12 +171,19 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * has no rows to choose from and could not be closed at all.
      *
      * Faz 2a-rest added the SAME promise for closure FIELDS beside closure OUTCOMES — the picker's guard is now
-     * an OR of the two, and a type with neither still falls through to the plain confirm, byte for byte.
+     * an OR of the two. WP-PSS-MOD0024-ATTACHMENTS-UX-01 added a THIRD term, `canAttachOnComplete`, because a
+     * complete on a dispatchable item can now also offer "Çıktı / Kanıt ekle" — a file input `sharedConfirm`
+     * cannot hold — so the dialog is no longer conditional on outcomes/fields alone. The promise this test still
+     * pins is narrower and still true: the OUTCOME picker itself is drawn only when the type has one (see the
+     * `closureOutcomes.length ? … : ''` branch a few lines below the guard), never fabricated for a type that
+     * offers none.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
     expect(source).toContain("const closureOutcomes = closureOutcomesFor(item, action);");
     expect(source, "the picker stopped being conditional")
-      .toContain("if (closureOutcomes.length || closureFields.length) {");
+      .toContain("if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {");
+    expect(source, "the outcome SELECT is still drawn only when the type has outcomes")
+      .toMatch(/const outcomeBlock = closureOutcomes\.length\s*\n\s*\? /);
   });
 });
 

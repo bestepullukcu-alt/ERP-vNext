@@ -236,7 +236,7 @@ public sealed class TaskDependencyEnforcementTests
                 new TaskChecklistService(),
                 new PassingWorkflowGate(),
                 _edges, new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), NullLogger<TransitionTaskItemHandler>.Instance);
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
 
             var correlation = new CorrelationContext();
             correlation.SetCorrelationId("corr");

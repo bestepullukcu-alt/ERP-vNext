@@ -192,7 +192,7 @@ public sealed class TaskActionRoundTripTests
         var handler = new TransitionTaskItemHandler(
             repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
             new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), NullLogger<TransitionTaskItemHandler>.Instance);
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
 
         return handler.Handle(
             new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),

@@ -13,6 +13,7 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Kalite alanı</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Fonksiyon</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Kalite olayı</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Tamamlamak için çıktı dosyası gerektirir</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Kalite olayı</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Kalite olayı değil</value></data>
   <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Karar öncesi gözden geçirme toplantısı</value></data>

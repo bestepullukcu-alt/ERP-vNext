@@ -272,7 +272,8 @@ public sealed class TaskTypesController : Controller
         reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion
     };
 
     /// <summary>
@@ -296,7 +297,8 @@ public sealed class TaskTypesController : Controller
         reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion
     };
 
     /// <summary>

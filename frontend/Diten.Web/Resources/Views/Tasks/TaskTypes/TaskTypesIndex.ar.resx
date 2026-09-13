@@ -13,6 +13,7 @@
   <data name="GqmsDomain" xml:space="preserve"><value>مجال الجودة</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>الوظيفة</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>حدث جودة</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>يتطلب ملف مخرج لإكمالها</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>حدث جودة</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>ليس حدث جودة</value></data>
   <data name="ReviewMeetingRequirement" xml:space="preserve"><value>اجتماع المراجعة قبل القرار</value></data>

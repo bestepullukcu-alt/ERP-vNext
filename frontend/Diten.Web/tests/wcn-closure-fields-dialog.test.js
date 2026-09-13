@@ -158,12 +158,24 @@ describe("the Tamamla window and its closure-stage fields", () => {
     ]);
   });
 
-  it("a type with NO closure field draws the SAME plain confirm as before this slice", async () => {
+  /*
+   * ⚠ WP-PSS-MOD0024-ATTACHMENTS-UX-01 SUPERSEDES THIS TEST'S ORIGINAL CLAIM.
+   *
+   * It used to assert that a type with no closure field draws the plain `sharedConfirm` wrapper — no raw
+   * `Swal.fire` at all — because this slice had nothing to add to that case. The attachments slice does: EVERY
+   * complete on a dispatchable item can now offer "Çıktı / Kanıt ekle" (a file input `sharedConfirm` cannot
+   * hold — BL-146), so the raw-dialog route this file is about is the one that answers for complete from now
+   * on, whether or not a closure field or outcome exists. The plain confirm still exists for OTHER
+   * high-consequence actions (approve, sign-off, …) that offer nothing to attach.
+   */
+  it("a type with NO closure field still opens the raw dialog — for the attachment step, not for a field", async () => {
     await boot(projectionItem(), []);
     app().querySelector('[data-wcn-action="complete"]').click();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
-    expect(swalCalls).toHaveLength(0); // the plain confirm wrapper, not a raw Swal.fire — untouched by this slice
+    expect(swalCalls).toHaveLength(1);
+    expect(swalCalls[0].html).not.toContain('id="wcnClosureFieldsRow"');
+    expect(swalCalls[0].html).toContain('id="wcnCompleteAttachFile"');
   });
 
   it("never fetches the closure catalogue for cancel — the pack's own boundary", async () => {

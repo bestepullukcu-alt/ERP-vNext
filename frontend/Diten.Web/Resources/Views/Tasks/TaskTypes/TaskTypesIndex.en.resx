@@ -13,6 +13,7 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Quality domain</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Function</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Quality event</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Requires a deliverable file to complete</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Quality event</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Not a quality event</value></data>
   <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Review meeting before decision</value></data>

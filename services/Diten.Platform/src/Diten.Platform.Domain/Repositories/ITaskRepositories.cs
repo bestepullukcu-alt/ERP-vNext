@@ -384,6 +384,13 @@ public interface ITaskAttachmentRepository
     Task<int> CountEvidenceForChecklistItemAsync(
         Guid taskId, string checklistItemCode, CancellationToken ct = default);
 
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the <c>TaskType.RequiresDeliverableOnCompletion</c> gate's own question:
+    /// does this task have at least one LIVE Deliverable-kind attachment? A count, not a list, for the same reason
+    /// <see cref="CountEvidenceForChecklistItemAsync"/> is — the gate only ever needs "zero or more".
+    /// </summary>
+    Task<int> CountDeliverablesAsync(Guid taskId, CancellationToken ct = default);
+
     /// <summary>Marks the row deleted. The physical object is untouched — this repository never calls the
     /// storage gateway's delete; that decision belongs to the caller (it does not, per the pack: AD-6).</summary>
     Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default);

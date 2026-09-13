@@ -768,7 +768,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                      * you always did".
                      */
                     ToClosureOutcomes(taskType, TaskClosureDisposition.Completed),
-                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled))
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled),
+                    taskType.RequiresDeliverableOnCompletion)
                 : null,
             Pool: ToPool(task, poolLabels),
             BusinessContext: businessContext,

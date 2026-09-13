@@ -2286,6 +2286,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>رفعه {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>تمت إضافة المرفق.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>تمت إزالة المرفق.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>أضف ملف مخرج أو دليل (اختياري)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>يتطلب نوع هذه المهمة ملف مخرج</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>اختر ملفًا قبل إكمال هذه المهمة.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>إضافة إثبات</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} ملف إثبات</value></data>
 </root>

@@ -373,6 +373,14 @@ public static class TaskReasonCodes
     /// hold, not the moment a (possibly unrelated) file is added.
     /// </summary>
     public const string ChecklistEvidenceRequired = "CHECKLIST_EVIDENCE_REQUIRED";
+
+    /// <summary>
+    /// The task's TYPE has <c>RequiresDeliverableOnCompletion</c> set and no live Deliverable-kind attachment
+    /// exists — thrown by the SAME handler that performs the complete transition (<c>TransitionTaskItemHandler</c>),
+    /// the same placement <see cref="ChecklistEvidenceRequired"/> uses and for the same reason: the gate must hold
+    /// at the moment the task actually closes, not at the moment a file happens to be added.
+    /// </summary>
+    public const string DeliverableRequired = "TASK_DELIVERABLE_REQUIRED";
     public const string DependencyInvalid = "TASK_DEPENDENCY_INVALID";
 
     /// <summary>The other end of the edge does not exist, or belongs to another tenant.</summary>
@@ -1330,7 +1338,9 @@ public sealed record CreateTaskTypeRequest(
     IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
     IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
     /// <summary>Null takes the entity default, <see cref="TaskReviewMeetingRequirement.Optional"/>.</summary>
-    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null);
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null,
+    /// <summary>WP-PSS-MOD0024-ATTACHMENTS-UX-01 — see <see cref="TaskType.RequiresDeliverableOnCompletion"/>.</summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>
 /// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
@@ -1356,7 +1366,13 @@ public sealed record UpdateTaskTypeRequest(
     /// ⚠ NULL MEANS "NOT ASKING" — the same contract as <see cref="ClosureOutcomes"/>, for the same reason: a
     /// client written before this field existed must not reset a Required type to Optional on every save.
     /// </summary>
-    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null);
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null,
+    /// <summary>
+    /// A plain full-replace bool, like <see cref="IsQualityEvent"/> — the editor draws this checkbox from the
+    /// moment the field exists, so (unlike <see cref="ClosureOutcomes"/>) there is no pre-existing screen that
+    /// would silently reset it on save.
+    /// </summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive);
@@ -1375,7 +1391,8 @@ public sealed record TaskTypeDto(
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
     bool IsActive,
     IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
-    TaskReviewMeetingRequirement ReviewMeetingRequirement = TaskReviewMeetingRequirement.Optional);
+    TaskReviewMeetingRequirement ReviewMeetingRequirement = TaskReviewMeetingRequirement.Optional,
+    bool RequiresDeliverableOnCompletion = false);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────

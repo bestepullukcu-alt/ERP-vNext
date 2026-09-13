@@ -2286,6 +2286,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>由 {0} 上传 · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>附件已添加。</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>附件已移除。</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>添加交付物或证据文件（可选）</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>此任务类型要求提供交付物文件</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>请先选择文件，再完成此任务。</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>添加证明文件</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} 个证明文件</value></data>
 </root>

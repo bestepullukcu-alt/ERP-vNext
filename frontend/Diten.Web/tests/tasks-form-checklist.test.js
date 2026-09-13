@@ -486,3 +486,125 @@ describe("the evidence notice is an alert, and every card names itself with a gl
     });
   });
 });
+
+/*
+ * BL-345 — "evidence required" reaches the SERVER from the create form, end to end.
+ *
+ * The row-level mechanics (the paperclip renders, toggles, and `readChecklistItems` reads `data-evidence` back)
+ * were already covered above; what nothing exercised was the full page: type an item, click Add (which is where
+ * form-page.js:226 seeds a NEW row's flag), click the paperclip, submit, and read what actually left the browser.
+ */
+describe("the create page's checklist evidence flag survives to the submit payload", () => {
+  const TASK_ID = "22222222-3333-4444-5555-666666666666";
+  let sent;
+
+  const FORM_HTML = `
+    <button type="submit" form="taskForm" id="taskSubmit">save</button>
+    <form id="taskForm" data-task-mode="create" data-task-id="" data-task-version="">
+      <input id="taskTitle" />
+      <select id="taskAssignmentTarget"><option value="SelfAssigned" selected>self</option></select>
+      <select id="taskAssignee"></select>
+      <select id="taskPoolPosition"></select>
+      <input id="taskDueAt" type="date" />
+      <input type="checkbox" id="taskReviewRequired" />
+      <input type="checkbox" id="taskApprovalRequired" />
+      <input type="checkbox" id="taskEmailNotifications" checked />
+      <input type="checkbox" id="taskDelegationAllowed" />
+      <div class="d-none" id="taskCustomFields"><div id="taskCustomFieldsRow"></div></div>
+      <section id="taskChecklistCard">
+        <ul id="taskChecklistItems"></ul>
+        <div id="taskChecklistAddRow"></div>
+      </section>
+    </form>`;
+
+  const stubFetch = () => {
+    global.fetch = async (url, init) => {
+      const ok = (data, status = 200) => ({ ok: true, status, json: async () => ({ data }) });
+      const body = init?.body ? JSON.parse(init.body) : null;
+      if (url === "/Tasks/api/field-definitions") { return ok([]); }
+      if (url === "/Tasks/api/assignable-positions") { return ok([]); }
+      if (url === "/Tasks/api/assignable-people") { return ok({ people: [], excluded: null }); }
+      if (url === "/Tasks/api/decision-makers") { return ok({ people: [] }); }
+      if (url === "/Tasks/api" && init?.method === "POST") { sent = body; return ok(TASK_ID, 201); }
+      if (url.startsWith("/Tasks/api/assignment-direction")) { return ok({ isUpward: false }); }
+      return ok(null);
+    };
+  };
+
+  const stubJQuery = () => {
+    const jq = (selectorOrNode) => {
+      const nodes = typeof selectorOrNode === "string"
+        ? Array.from(document.querySelectorAll(selectorOrNode)) : [selectorOrNode];
+      const api = {
+        length: nodes.length,
+        each(cb) { nodes.forEach((n, i) => cb.call(n, i, n)); return api; },
+        wrap() { return api; }, parent() { return api; }, hasClass() { return false; }, on() { return api; },
+        select2() { return api; }
+      };
+      return api;
+    };
+    global.$ = jq; global.jQuery = jq;
+  };
+
+  beforeEach(async () => {
+    sent = null;
+    document.body.innerHTML = FORM_HTML;
+    stubJQuery();
+    stubFetch();
+    window.HTMLElement.prototype.scrollIntoView = function scrollIntoView() {};
+    global.TasksL10n = { t: (key) => key };
+    global.DitenModal = { success: async () => {}, error: () => {}, warning: async () => {} };
+    global.showToast = () => {};
+    global.location = { href: "" };
+    delete global.TaskForm;
+    delete global.TasksApi;
+    loadScript("wwwroot/assets/js/backbone-shell.js");
+    loadScript("wwwroot/assets/js/shared/diten-checkitem.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
+    loadScript("wwwroot/assets/js/Tasks/form.js");
+    loadScript("wwwroot/assets/js/Tasks/api.js");
+    loadScript("wwwroot/assets/js/Tasks/form-page.js");
+    for (let i = 0; i < 5; i += 1) { await new Promise((resolve) => setTimeout(resolve, 0)); }
+  });
+
+  const addChecklistItem = (text) => {
+    document.querySelector("[data-diten-check-input]").value = text;
+    document.querySelector("[data-diten-check-add]").click();
+  };
+
+  const save = async () => {
+    document.getElementById("taskTitle").value = "Kalite formu";
+    document.getElementById("taskDueAt").value = "2026-09-20";
+    document.getElementById("taskSubmit").click();
+    for (let i = 0; i < 5; i += 1) { await new Promise((resolve) => setTimeout(resolve, 0)); }
+  };
+
+  it("a freshly added item starts unflagged — the SEEDED default, not a block", () => {
+    addChecklistItem("Formu doldur");
+    const row = document.querySelector("[data-diten-check-row]");
+    expect(row.dataset.evidence).toBe("");
+    expect(row.querySelector("[data-diten-check-evidence]").getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("clicking the paperclip on a NEW row and saving sends evidenceRequired: true", async () => {
+    addChecklistItem("Formu doldur");
+    document.querySelector("[data-diten-check-evidence]").click();
+    await save();
+
+    expect(sent.checklistItems).toEqual([
+      { text: "Formu doldur", requirement: "Optional", evidenceRequired: true }
+    ]);
+  });
+
+  it("an untouched row still saves unflagged — toggling one item never flags another", async () => {
+    addChecklistItem("Formu doldur");
+    addChecklistItem("İkinci madde");
+    document.querySelectorAll("[data-diten-check-evidence]")[0].click();
+    await save();
+
+    expect(sent.checklistItems).toEqual([
+      { text: "Formu doldur", requirement: "Optional", evidenceRequired: true },
+      { text: "İkinci madde", requirement: "Optional", evidenceRequired: false }
+    ]);
+  });
+});

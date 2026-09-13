@@ -650,6 +650,19 @@ public sealed class TaskType : TenantScopedEntity
     public TaskReviewMeetingRequirement ReviewMeetingRequirement { get; set; } = TaskReviewMeetingRequirement.Optional;
 
     /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — whether work of this type may not be marked Done without at least one
+    /// live Deliverable-kind attachment (MOD-0024 Slice ATT-1). Enforced on the SAME complete transition the
+    /// checklist evidence gate already guards (<c>TransitionTaskItemHandler</c>), refusing with
+    /// <c>TASK_DELIVERABLE_REQUIRED</c> when none exists.
+    ///
+    /// <para>Default false, exactly like <see cref="IsQualityEvent"/>: every type written before this field
+    /// existed, and every stored document that predates it, deserialises to false — no migration, no task closed
+    /// under the old rule is re-examined, and turning the flag on changes nothing until an administrator does so
+    /// deliberately.</para>
+    /// </summary>
+    public bool RequiresDeliverableOnCompletion { get; set; }
+
+    /// <summary>
     /// Whether this type may be chosen on a NEW task. Retiring one never removes it: tasks already opened with
     /// it keep reading correctly, which is the same rule folders and documents follow.
     /// </summary>

@@ -151,6 +151,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Шаги этой задачи. Пункты отмечаются после создания задачи; блокирующий пункт не даёт её закрыть.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Вложения</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Файлы для этой задачи — инструкция для её выполнения или доказательство и результат, которые нужно сохранить сразу. Загружаются после создания задачи.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Файл</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Доказательство</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Результат</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Добавить файл</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Удалить</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Задача создана — некоторые файлы не загружены</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Задача создана, но следующие файлы не удалось загрузить. Добавьте их снова на карточке вложений самой задачи:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Перейти к задаче</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Введите пункт и нажмите Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Добавить</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value></data>
