@@ -38,6 +38,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgeConceptRead = "crm.knowledge.concept.read";
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
+    private const string ClaimRead = "crm.claim.read";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -129,6 +130,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Journey", "crm.knowledge.content-engagement-journey.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("PUBLISH", "Publish", "crm.knowledge.content-engagement-journey.publish", "RowAction", 20, false, false, true)
+                ]),
+                // SCMM-12 (CAND-CAP-0011) Claim authoring console. approve is a SEPARATE key from manage (author-vs-
+                // approver SoD); there is no delete surface (closing a claim is Archive).
+                new ModuleManifestPage("CLAIMS", "Claims", "/CRM/Claims", ClaimRead, null, true, "List", 140,
+                [
+                    new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
                 ])
             ]);
 }
