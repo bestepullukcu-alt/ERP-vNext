@@ -233,8 +233,14 @@ public sealed class TaskProviderContractGoldenTests
 
     private static string FixturePath()
     {
+        // The nearest directory holding a ".git" ENTRY is this checkout's root: a directory in the main clone, a FILE
+        // in a linked worktree. Walking up to a folder NAMED "ERP-vNext" instead crossed out of every worktree nested
+        // under .claude/worktrees into the main clone — a regeneration run in one checkout overwrote another
+        // checkout's fixture, and a compare run read the wrong one (CT, 2026-09-13).
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && dir.Name != "ERP-vNext")
+        while (dir is not null
+               && !File.Exists(Path.Combine(dir.FullName, ".git"))
+               && !Directory.Exists(Path.Combine(dir.FullName, ".git")))
         {
             dir = dir.Parent;
         }
