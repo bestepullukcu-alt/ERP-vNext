@@ -5173,7 +5173,7 @@ Testle sabitlenmedi: seri işleyici testleri `RecordingMediator` kullanıyor, ge
 
 **S5b `.ics` ekinin iki sınırı — tekrar denemede ek düşüyor, organizatör e-postası çözülemezse ORGANIZER boş**
 
-DURUM: KAPANDI (kodda; canlı Mailpit kanıtı bekliyor) — WP-MG-MOD0357-BL374-RETRY-FIDELITY-01, 2026-09-13 · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+DURUM: KAPANDI (ikinci kez) — S10B canlı turu ilk düzeltmenin hiç çalışamadığını gösterdi: ilk gönderimde düşen posta NextRetryAt almıyordu ve süpürme onu hiç görmüyordu. `EmailDispatchRetryPolicy` ile ilk tekrar deneme artık zamanlanıyor (CT, 2026-09-13). Canlı yeniden doğrulama bekliyor · BULAN: S5b ajanı (1) + CT (2) + S10B canlı tur (3) · KAYIT: 2026-09-13
 
 **Teslim:** ek (≤ 256 KB) dispatch kaydına yazılıyor ve tekrar deneme onu gönderiyor; kuyruğa alınırken şablonun SemanticVersion'ı damgalanıyor; tekrar denemede gövde yalnız değişkenlerde maskelenmiş değer yoksa ve şablon sürümü değişmemişse yeniden üretiliyor, aksi halde önizleme + sebep kodlu `email.dispatch.retry_degraded` logu; organizatör e-postası çözülemezse `.ics` hiç eklenmiyor. Maskeleme kodu değişmedi. ⚠ Pratik sınır: BL-377 yüzünden toplantı davetlerinde gövde yeniden üretimi neredeyse hiç devreye girmez — takvim eki (asıl kazanç) her durumda gider.
 
@@ -5295,7 +5295,7 @@ yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzelt
 
 **Görev Merkezi'nde "Toplantı planla" gerçek görevde çalışmıyordu — eylem sunucu çıktısında tarayıcı girdisine eşlenmiyordu**
 
-DURUM: KAPANDI — `bea716aa` (CT, 2026-09-13) · BULAN: MOD-0357 S10 canlı tur · KAYIT: 2026-09-13
+DURUM: KAPANDI (iki katman) — `bea716aa` tıklamayı zamanlayıcıya yönlendirdi; S10B canlı turu ikinci katmanı buldu: Görev Merkezi sayfaları `Meetings/api.js`'i yüklemiyordu, pencere sessizce açılmıyordu. İki görünüm artık yüklüyor, `MeetingsApi` yazma bağımlılığı olarak boot'ta denetleniyor (CT, 2026-09-13) · BULAN: MOD-0357 S10 + S10B canlı tur · KAYIT: 2026-09-13
 
 `mock-data.js` sunum eşleyicisi yalnız `plan` için girdi türetiyordu; sunucunun eylem DTO'sunda `input` alanı yok. Gerçek
 `scheduleReviewMeeting` toplantı planlama penceresini açmadan genel eylem ucuna düşüyordu (400 `WORK_ITEM_ACTION_UNKNOWN`).
@@ -5315,3 +5315,30 @@ DURUM: KAPANDI — `87f660ac` + `a36308a2` (CT, 2026-09-13) · BULAN: MOD-0357 S
 (2) Devre dışı kayıt Hangfire'dan silinmiyordu; bir kez açılan iş bayrak kapansa da cron'unda çalışmaya devam ediyordu —
 artık `RemoveIfExists`. (3) `BackgroundJobContractsTests`'in iki kayıt testi yer tutucu dönemden kalma olduğu için uzun süredir
 kırmızıydı; gerçek on iki işin kimlik listesini adlandırıyor.
+
+---
+
+### BL-383
+
+**Depo kökünü klasör ADIYLA ya da ilk `.git` klasörüyle bulan testler iç içe worktree'lerde yanlış checkout'u okuyor/yazıyor**
+
+DURUM: AÇIK (bir örneği düzeltildi) · BULAN: CT (S10B raporundaki "başka oturum değiştirdi" dosyası CT'nin kendi yazımıydı) · KAYIT: 2026-09-13
+
+Worktree'ler ana klonun içinde (`.claude/worktrees/…`) duruyor. `TaskProviderContractGoldenTests` kökü `ERP-vNext` adlı klasöre yürüyerek
+buluyordu; entegrasyon worktree'sinde çalışan yeniden üretim ana kopyanın fixture'ını ezdi, karşılaştırma da yanlış dosyayı okudu —
+testler "yeşil" göründü. Düzeltildi: en yakın `.git` GİRİŞİ (klasör ya da dosya). Aynı kök bulma kalıbını kullanan başka testler var
+(`grep '".git"'`: ManagementGovernance mimari testleri, PPM GateI kanıt testleri, `DocsPathGuardTests`); her biri worktree'de koşunca
+başka checkout'un dosyalarını tarıyor olabilir — tek tek ölçülmeli.
+
+---
+
+### BL-384
+
+**Eski sürüm yeni belgeleri okuyamıyor — Mongo varlıklarında bilinmeyen alan toleransı yok (geri alma riski)**
+
+DURUM: AÇIK (karar/tasarım) · BULAN: CT, 2026-09-13 · KAYIT: 2026-09-13
+
+Görev motoru dalının Platform'u, toplantı dalının yazdığı `RecordLink` belgelerini okurken `FormatException: Element 'IdempotencyKey' does
+not match any field` ile düştü; Görev Merkezi'nin görev kaynağı ve toplantı listesi 500 verdi. Aynı şey canlıda bir sürümü GERİ ALMAK
+gerektiğinde olur: yeni sürümün eklediği her alan eski sürümü çökertir. Seçenekler: varlık başına `[BsonIgnoreExtraElements]`, global
+convention (`IgnoreExtraElementsConvention`), ya da "geri alma yok, yalnız ileri düzeltme" politikası. Karar CT + sahip.
