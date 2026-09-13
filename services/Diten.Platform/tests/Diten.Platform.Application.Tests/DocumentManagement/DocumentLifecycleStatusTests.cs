@@ -336,6 +336,42 @@ public sealed class DocumentLifecycleStatusTests
         Assert.NotEmpty(r.Data!.Warnings); // release-gate + evidence warnings (FU10 pending), non-blocking by default
     }
 
+    /// <summary>
+    /// CT 2026-09-13 — the evidence check is FAIL-CLOSED. Every negative member blocks, and so does a value no member of
+    /// ApprovalEvidenceState names today ("Expired"): a deny-list of the four negative members would let that through.
+    /// </summary>
+    [Theory]
+    [InlineData("Pending")]
+    [InlineData("Rejected")]
+    [InlineData("Blocked")]
+    [InlineData("SegregationFailed")]
+    [InlineData("Expired")]
+    public async Task MarkEffective_is_refused_for_any_evidence_status_other_than_Complete_or_NotRequired(string status)
+    {
+        var f = Fixture();
+        var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000002", code: "GMG-QMS-SOP-0002");
+        e.ApprovalEvidenceStatus = status;
+
+        var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
+
+        Assert.False(r.IsSuccessful);
+        Assert.Equal(409, r.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Complete")]
+    [InlineData("NotRequired")]
+    public async Task MarkEffective_accepts_Complete_and_NotRequired_evidence(string status)
+    {
+        var f = Fixture();
+        var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000003", code: "GMG-QMS-SOP-0003");
+        e.ApprovalEvidenceStatus = status;
+
+        var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
+
+        Assert.True(r.IsSuccessful);
+    }
+
     // ── fixtures ──────────────────────────────────────────────────────────────
 
     private static Harness Fixture()

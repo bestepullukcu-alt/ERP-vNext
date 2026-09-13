@@ -131,19 +131,13 @@ public sealed class DocumentLifecycleService
         var warnings = new List<string>();
 
         // MOD-0029-FU09 seam: when an approval-gate adapter is present it may block InReview → ApprovedPendingEffective
-        // (only when the approval-required policy is switched on; otherwise the adapter allows it).
+        // (only when the approval-required policy is switched on; otherwise the adapter allows it). No adapter means
+        // no approval gating (see IApprovedPendingEffectiveGate's own contract) — backward compatible with FU08-only
+        // tenants where FU09 has not been wired up.
         if (target == ControlledDocumentLifecycleStatus.ApprovedPendingEffective
-            && from == ControlledDocumentLifecycleStatus.InReview)
+            && from == ControlledDocumentLifecycleStatus.InReview
+            && _approvalGate is not null)
         {
-            if (_approvalGate is null)
-            {
-                return Fail(
-                    "Approval gate is unavailable; the document cannot enter Approved-pending-effective.",
-                    409,
-                    LifecycleReasonCodes.ApprovalIncomplete,
-                    correlationId);
-            }
-
             var block = await _approvalGate.EvaluateAsync(entry, ct);
             if (block is not null)
             {
@@ -212,9 +206,22 @@ public sealed class DocumentLifecycleService
             return Fail("The last release-gate evaluation is Blocked; the document cannot become Effective.", 409, LifecycleReasonCodes.ReleaseGateBlocked, correlationId);
         }
 
-        if (!string.Equals(entry.ApprovalEvidenceStatus, "Complete", StringComparison.OrdinalIgnoreCase))
+        // FU09 evidence, FAIL-CLOSED (CT 2026-09-13): only Complete and NotRequired — the two passing members of
+        // ApprovalEvidenceState — let a document become Effective. Every other written value blocks, including one a
+        // future enum member would add; listing the four negative members instead would let that new member through
+        // silently. An unevaluated (null) status is the FU08-only default and gets a warning, not a hard block — the
+        // shape MarkEffective_without_evidence_or_gate_succeeds_with_warnings (0f71a237) was written to, and FU10's
+        // non-waivable release gate 3 still reads the same field when a release-gate evaluation exists.
+        if (!string.IsNullOrWhiteSpace(entry.ApprovalEvidenceStatus)
+            && !string.Equals(entry.ApprovalEvidenceStatus, nameof(ApprovalEvidenceState.Complete), StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(entry.ApprovalEvidenceStatus, nameof(ApprovalEvidenceState.NotRequired), StringComparison.OrdinalIgnoreCase))
         {
             return Fail("Approval evidence must be Complete before the document can become Effective.", 409, LifecycleReasonCodes.ApprovalEvidenceMissing, correlationId);
+        }
+
+        if (string.IsNullOrWhiteSpace(entry.ApprovalEvidenceStatus))
+        {
+            warnings.Add("Approval evidence not yet evaluated (FU09 pending).");
         }
 
         // Single-effective rule (SOP §6.2): no OTHER entry with the same Permanent UID may already be Effective,

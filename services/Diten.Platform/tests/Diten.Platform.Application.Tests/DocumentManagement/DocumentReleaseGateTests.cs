@@ -357,6 +357,12 @@ public sealed class DocumentReleaseGateTests
             DocumentType = DocumentType.Sop,
             Criticality = criticality,
             IsControlledDocument = true,
+            // Gate 1 (DocumentLinkGovernanceGuard) requires a controlled-document relation that has passed scope
+            // compatibility validation whenever IsControlledDocument is set — a governed, properly-linked document
+            // is the default fixture shape here; the two Gate1_blocks_when_* tests below still block for their own
+            // targeted reason (missing uid/code) regardless of this.
+            ControlledDocumentId = Guid.NewGuid(),
+            LinkScopeCompatibilityStatus = DocumentLinkScopeCompatibilityStatus.Compatible,
             PermanentUid = uid,
             DocumentCode = code,
             RegisterStatus = DocumentRegisterStatus.Active,
