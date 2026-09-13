@@ -45,8 +45,8 @@ public sealed class TaskTypeDeliverableRequirementTests
         "DLV", "Deliverable", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
         RequiresDeliverableOnCompletion: requiresDeliverable);
 
-    private static UpdateTaskTypeRequest UpdateRequest(bool requiresDeliverable) => new(
-        "DLV", "Deliverable", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
+    private static UpdateTaskTypeRequest UpdateRequest(bool requiresDeliverable, int expectedVersion = 1) => new(
+        "DLV", "Deliverable", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null, expectedVersion,
         RequiresDeliverableOnCompletion: requiresDeliverable);
 
     private static TaskType Stored(bool requiresDeliverable) => new()

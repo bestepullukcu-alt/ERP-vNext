@@ -198,7 +198,15 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
             type.ClosureOutcomes = outcomes!;
         }
 
-        await _types.UpdateAsync(type, ct);
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — two managers editing the same type at once used to
+        // have the second silently overwrite the first's change with no warning at all.
+        if (!await _types.UpdateAsync(type, request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task type changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
@@ -227,7 +235,16 @@ public sealed class SetTaskTypeActiveHandler : IRequestHandler<SetTaskTypeActive
         }
 
         type.IsActive = command.Request.IsActive;
-        await _types.UpdateAsync(type, ct);
+
+        // Same write path as the full edit, same protection (BL-375): a manager retiring a type must not silently
+        // discard a colleague's edit that landed between this read and this write.
+        if (!await _types.UpdateAsync(type, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task type changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }

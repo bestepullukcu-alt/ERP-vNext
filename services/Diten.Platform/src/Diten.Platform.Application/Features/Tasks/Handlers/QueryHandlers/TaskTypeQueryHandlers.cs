@@ -143,7 +143,8 @@ internal static class TaskTypeMapping
                 outcome.SortOrder))
             .ToList(),
         type.ReviewMeetingRequirement,
-        type.RequiresDeliverableOnCompletion);
+        type.RequiresDeliverableOnCompletion,
+        type.Version);
 }
 
 /// <summary>

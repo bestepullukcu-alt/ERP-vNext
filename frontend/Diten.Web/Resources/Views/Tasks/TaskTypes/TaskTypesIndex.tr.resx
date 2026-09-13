@@ -22,6 +22,7 @@
   <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Zorunlu</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Gözden geçirme toplantısı ayarı İzin verilmez, İsteğe bağlı veya Zorunlu olmalıdır.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Bu görev tipi siz düzenlerken başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Kayıt değil</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operasyonel kayıt</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP kalite kaydı</value></data>
