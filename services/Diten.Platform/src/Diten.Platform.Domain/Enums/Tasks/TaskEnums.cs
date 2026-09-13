@@ -370,7 +370,7 @@ public enum TaskReviewMeetingRequirement
     /// <summary>A meeting may be scheduled; the decision does not wait for one. The default.</summary>
     Optional = 1,
 
-    /// <summary>The decision stays disabled until a meeting has been scheduled.</summary>
+    /// <summary>The decision stays disabled until the linked review meeting's minutes are published (owner, 2026-09-13).</summary>
     Required = 2
 }
 
