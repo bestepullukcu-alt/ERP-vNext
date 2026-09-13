@@ -4489,6 +4489,50 @@
     };
 
 
+    /*
+     * ── THE CLOSURE BLOCK (MOD-0024 Task Closure & Reporting, Faz 2a) ────────────────────────────────────────
+     *
+     * The step-bar caption already prints the outcome's WORDS beside the closing date (`closedAs`, above) — this
+     * card is the REST of the envelope: the closing narrative, the CLOSURE-stage field values, and how many
+     * Deliverable/Evidence attachments this closed task carries. No card at all when none of the three exists,
+     * which is every task before this slice and every task whose type asks nothing at closure — the same
+     * "a capability with no data is not a capability worth announcing" rule every conditional card here follows.
+     *
+     * `closure.fields` arrives in `WorkItemBusinessFieldDto`'s own shape — the SAME one `businessContext` ships
+     * — so the value is read by its REAL wire name, `valueType`/`redacted` (not the `kind`/`restricted` a
+     * neighbouring helper reads; those never match this contract either, a pre-existing mismatch this slice does
+     * not touch).
+     */
+    const renderClosure = (item) => {
+        if (!isTerminal(item) || !item.closure) { return ''; }
+        const closure = item.closure;
+        const fields = closure.fields || [];
+        const deliverables = closure.deliverables || [];
+        if (!closure.note && !fields.length && !deliverables.length) { return ''; }
+
+        const fieldValue = (field) => {
+            if (field.redacted) { return `<span class="text-muted">${esc(t('RedactedValue'))}</span>`; }
+            if (field.valueType === 'boolean') { return esc(t(field.value === 'true' ? 'Yes' : 'No')); }
+            return esc(data.resolveLabel(field.value) || field.value || '—');
+        };
+        const fieldRows = fields.map((field) =>
+            `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${fieldValue(field)}</strong></div>`
+        ).join('');
+
+        // One sentence per KIND present — "3 deliverables", never a duplicate of the attachment card's own rows.
+        const deliverableKey = { Deliverable: 'ClosureDeliverableCount', Evidence: 'ClosureEvidenceCount' };
+        const deliverableRows = deliverables
+            .map((group) => `<li>${esc(tf(deliverableKey[group.kind] || 'ClosureDeliverableCount', group.count))}</li>`)
+            .join('');
+
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-flag-alt', 'ClosureSectionTitle')}
+            ${closure.note ? `<p class="mb-3">${esc(closure.note)}</p>` : ''}
+            ${fieldRows ? `<div class="wcn-facts-grid mb-3">${fieldRows}</div>` : ''}
+            ${deliverableRows ? `<ul class="text-muted small mb-0">${deliverableRows}</ul>` : ''}
+        </section>`;
+    };
+
     const renderBusinessContext = (item) => {
         if (!hasCap(item, 'businessContext')) { return ''; }
         const sections = item.businessContext?.sections || [];
@@ -5144,6 +5188,7 @@
             // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
+            card(renderClosure(item)),
             card(renderBusinessContext(item)),
             card(renderSubtasks(item)),
             card(renderDependencies(item)),

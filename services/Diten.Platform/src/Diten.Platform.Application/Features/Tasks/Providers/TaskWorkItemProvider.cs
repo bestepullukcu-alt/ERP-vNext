@@ -800,7 +800,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * WHAT WAS DECIDED, beside WHEN it ended. Resolved against the type's CURRENT dictionary, so an
              * outcome that has since been retired yields the bare code rather than a blank — see WorkItemClosureDto.
              */
-            Closure: terminal ? ToClosure(task, resolvedType) : null,
+            Closure: terminal ? ToClosure(task, resolvedType, fieldDefinitions, taskAttachments, _permissions) : null,
             /*
              * WHERE THIS CAME FROM — and it travels for a CLOSED task too, deliberately.
              *
@@ -1667,10 +1667,46 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <para>A code with no matching outcome keeps the code and loses only the label — see
     /// <see cref="WorkItemClosureDto"/> for why that beats blanking the record of a retired outcome.</para>
     /// </summary>
-    private static WorkItemClosureDto? ToClosure(TaskItem task, TaskType? type) =>
-        string.IsNullOrWhiteSpace(task.ClosureReasonCode)
-            ? null
-            : new WorkItemClosureDto(task.ClosureReasonCode, ResolveOutcomeLabel(type, task.ClosureReasonCode));
+    private static WorkItemClosureDto? ToClosure(
+        TaskItem task,
+        TaskType? type,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
+        IReadOnlyList<TaskAttachment> attachments,
+        IActorPermissionContext actor)
+    {
+        if (string.IsNullOrWhiteSpace(task.ClosureReasonCode))
+        {
+            return null;
+        }
+
+        var catalogue = definitions ?? new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        // Faz 2a — CLOSURE-stage values only. An entry-stage value under the same FieldValues list stays out of
+        // this block; it already has its own home in businessContext.
+        var fields = task.FieldValues
+            .Select(value => (Value: value, Definition: catalogue.GetValueOrDefault(value.DefinitionCode)))
+            .Where(pair => pair.Definition?.Stage == TaskFieldStage.Closure)
+            .OrderBy(pair => pair.Definition!.SortOrder)
+            .ThenBy(pair => pair.Value.DefinitionCode, StringComparer.OrdinalIgnoreCase)
+            .Select(pair => ToBusinessField(pair.Value, pair.Definition, actor))
+            .ToList();
+
+        // Faz 2a — a count and a reference, never a second copy of the attachment. `attachments.items[]` already
+        // carries the full record; this says how many of each closure-relevant KIND exist and which ones.
+        var deliverables = attachments
+            .Where(a => a.Kind is TaskAttachmentKind.Deliverable or TaskAttachmentKind.Evidence)
+            .GroupBy(a => a.Kind)
+            .Select(group => new WorkItemClosureAttachmentRefDto(
+                group.Key.ToString(), group.Count(), group.Select(a => a.Id.ToString()).ToList()))
+            .ToList();
+
+        return new WorkItemClosureDto(
+            task.ClosureReasonCode,
+            ResolveOutcomeLabel(type, task.ClosureReasonCode),
+            task.ClosureNote,
+            fields.Count == 0 ? null : fields,
+            deliverables.Count == 0 ? null : deliverables);
+    }
 
     /// <summary>The label for a stored code, or null when the type does not (or no longer) offers it.</summary>
     private static WorkItemLabelDto? ResolveOutcomeLabel(TaskType? type, string? reasonCode)

@@ -936,7 +936,34 @@ public sealed record WorkItemReturnedDto(
 public sealed record WorkItemClosureDto(
     string ReasonCode,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemLabelDto? Outcome = null);
+    WorkItemLabelDto? Outcome = null,
+    /// <summary>Faz 2a — the closing narrative, in the actor's own words. Omitted, never empty-string, when none
+    /// was written.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Note = null,
+    /// <summary>
+    /// Faz 2a — the task's CLOSURE-stage field values, in the businessContext field's own shape
+    /// (<see cref="WorkItemBusinessFieldDto"/>) so the browser needs no second renderer for the same kind of
+    /// value. Null — never an empty list — when the type asks no closure field, which is every type before this
+    /// slice and every type nobody has configured since.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemBusinessFieldDto>? Fields = null,
+    /// <summary>
+    /// Faz 2a — a COUNT and a REFERENCE into the attachments this same projection already carries under
+    /// <c>attachments.items[]</c> (pack §4: "no new container"). One entry per attachment KIND actually present
+    /// among the task's Deliverable/Evidence attachments; a kind with none is simply absent.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemClosureAttachmentRefDto>? Deliverables = null);
+
+/// <summary>One attachment KIND's closure-relevant tally — see <see cref="WorkItemClosureDto.Deliverables"/>.</summary>
+public sealed record WorkItemClosureAttachmentRefDto(
+    /// <summary>Deliverable | Evidence — the domain enum's own spelling, same convention
+    /// <see cref="WorkItemAttachmentDto.Kind"/> already uses.</summary>
+    string Kind,
+    int Count,
+    IReadOnlyList<string> AttachmentIds);
 
 public sealed record WorkItemClosureOutcomeDto(
     string Code,

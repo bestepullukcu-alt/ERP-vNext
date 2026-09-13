@@ -111,8 +111,24 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * above already had to correct once. The builder wraps the moment it takes a second parameter, and it now
      * does.
      */
+    /*
+     * Faz 2a (MOD-0024 Task Closure & Reporting) — `closureFieldValues` is TaskTransitionRequest's own TRAILING,
+     * OPTIONAL field for CLOSURE-stage custom field values, asked only by `complete`/`cancel` and null-means-
+     * "none configured" for every other transition (and for any type that defines no closure field). The
+     * generic body correctly omits it: WCN's closure dialog does not collect those values yet (pack §11 names
+     * this as the next, separate slice), so a generic caller sending nothing is the backward-compatible case the
+     * server is built for — the same shape `ClosureOutcomes`/`ReviewMeetingRequirement` already established on
+     * sibling requests.
+     *
+     * Excluded EXPLICITLY rather than silently tolerated: the exclusion is itself part of the regression guard —
+     * remove it and this test starts demanding the generic body send a field the other seven transitions have
+     * no use for, which is exactly the "fix the three, do not change all ten" rule this test exists to keep.
+     */
+    const CLOSURE_ONLY_FIELDS = new Set(["closureFieldValues"]);
     const fields = new Set(clientFields("__default"));
-    expect(fields).toEqual(new Set(serverFields("TaskTransitionRequest")));
+    const genericServerFields = new Set(
+      serverFields("TaskTransitionRequest").filter((field) => !CLOSURE_ONLY_FIELDS.has(field)));
+    expect(fields).toEqual(genericServerFields);
   });
 
   it("sends a real closure outcome instead of the hard-coded null it shipped with", () => {

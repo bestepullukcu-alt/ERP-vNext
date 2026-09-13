@@ -242,6 +242,7 @@ public sealed class TaskWaitingOnPersonTests
                     new FakeChecklistRunRepository(), new TaskChecklistService(),
                     new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(),
                     new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<TransitionTaskItemHandler>.Instance)
                 .Handle(
                     new TransitionTaskItemCommand(

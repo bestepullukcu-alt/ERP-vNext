@@ -2203,6 +2203,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Clôturé en : {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Clôture</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} livrable(s) joint(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} fichier(s) de preuve joint(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Comment ce travail s'est-il terminé ?</value>
   </data>

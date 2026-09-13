@@ -298,6 +298,7 @@ public sealed class TaskLifecycleAuthorityHttpTests
                 new FakeTaskDependencyRepository(),
                 new FakeTaskTypeRepository(),
                 new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 NullLogger<TransitionTaskItemHandler>.Instance);
 
             var submitReviewHandler = new SubmitTaskForReviewHandler(

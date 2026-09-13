@@ -2203,6 +2203,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>أُغلق بالنتيجة: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>الإغلاق</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>تم إرفاق {0} من المخرجات.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>تم إرفاق {0} من ملفات الإثبات.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>كيف انتهى هذا العمل؟</value>
   </data>

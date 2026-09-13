@@ -418,11 +418,25 @@
 
     const customFieldsRow = () => el('taskCustomFieldsRow');
 
-    // Which definitions this surface offers: live, and either module-agnostic or claimed by MOD-0024 itself.
+    /*
+     * Which definitions this surface offers: live, module-agnostic or claimed by MOD-0024 itself, and asked at
+     * CREATE time.
+     *
+     * ⚠ `stage !== 'Closure'` IS LOAD-BEARING, NOT A NICETY. `GET /field-definitions` answers this same catalogue
+     * to the closure window too — there is no second endpoint — so without this filter a Closure-stage field
+     * would render on the create/edit form the pack explicitly says it must not (MOD-0024 Task Closure &
+     * Reporting §4). A definition with no `stage` at all (every one written before Faz 2a) keeps rendering here,
+     * exactly as it always has: absence reads as the same default the server gives it, Entry.
+     */
     const applicableDefinitions = (rows) => (rows || []).filter((definition) =>
         definition
         && definition.isActive !== false
+        && definition.stage !== 'Closure'
         && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    // Testability only — this page has no other export, and this sits ABOVE the page's own boot() call so a
+    // test against an empty document (no #taskForm) still gets it even if boot() throws on the missing form.
+    global.TaskFormPage = { applicableDefinitions };
 
     /*
      * Resolve every option-driven field's list BEFORE rendering, so a field is either offered complete or not

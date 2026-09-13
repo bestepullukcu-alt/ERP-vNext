@@ -372,6 +372,7 @@ public sealed class TaskNotificationDispatchPointsTests
                 new FakeTaskDependencyRepository(),
                 new FakeTaskTypeRepository(),
                 Notifications,
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
                 NullLogger<TransitionTaskItemHandler>.Instance);
     }
 }

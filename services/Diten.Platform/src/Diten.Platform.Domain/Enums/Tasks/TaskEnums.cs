@@ -211,6 +211,24 @@ public enum TaskFieldImportance
     Primary = 1
 }
 
+/// <summary>
+/// WHEN a field is asked — MOD-0024 Task Closure &amp; Reporting, Faz 2a (pack §4).
+///
+/// <para><b><c>Entry</c> is the default, and that is load-bearing.</b> Every definition written before this
+/// field existed is a create-form field — the only kind that existed — and any other default would silently
+/// move existing tenant fields onto a closure form nobody designed for them. Same defaulting argument
+/// <see cref="TaskFieldDefinition.ViewPermission"/> already makes on the same entity.</para>
+///
+/// <para>Stored as its number: append-only, never renumber, same rule every persisted enum in this file
+/// follows.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskFieldStage
+{
+    Entry = 0,
+    Closure = 1
+}
+
 /// <summary>Where a field's option list comes from. FG-004: a hard-coded list is never allowed.</summary>
 // Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
 // reaching a client as a number is a defect this module has already shipped twice.

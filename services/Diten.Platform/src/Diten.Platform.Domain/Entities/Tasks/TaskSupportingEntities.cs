@@ -283,6 +283,20 @@ public sealed class TaskFieldDefinition : TenantScopedEntity
     /// </summary>
     public string? EditPermission { get; set; }
 
+    /// <summary>
+    /// WHEN this definition is asked — MOD-0024 Task Closure &amp; Reporting, Faz 2a.
+    ///
+    /// <para>⚠ <b>THE DEFAULT IS <see cref="TaskFieldStage.Entry"/> AND MUST STAY SO.</b> Every definition
+    /// written before this field existed is a create-form field — the only kind that existed — so Entry is the
+    /// value that changes no existing definition's behaviour, for a new row and for every stored document that
+    /// predates the field and deserialises to this initializer. No migration exists or is needed.</para>
+    ///
+    /// <para>A <see cref="TaskFieldStage.Closure"/> definition is withheld from the create/edit form and the
+    /// general field-value validation path (<c>TaskFieldDefinitionService</c>) and offered only in the closure
+    /// window — see the pack's own reasoning for why the two forms must not share one vocabulary unconditionally.</para>
+    /// </summary>
+    public TaskFieldStage Stage { get; set; } = TaskFieldStage.Entry;
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }

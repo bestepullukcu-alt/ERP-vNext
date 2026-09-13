@@ -482,6 +482,16 @@ public static class TaskReasonCodes
     /// <summary>The chosen outcome carries <c>RequiresReason</c> and no reason was given.</summary>
     public const string ClosureReasonRequired = "CLOSURE_REASON_REQUIRED";
 
+    /// <summary>
+    /// Faz 2a — a <see cref="TaskFieldStage.Closure"/> field marked <c>IsRequired</c> was not supplied at
+    /// closure, and no value already sits on the task from an earlier attempt. Enforced here rather than only in
+    /// the dialog: the dispatch route closes a task without ever drawing the dialog.
+    /// </summary>
+    public const string ClosureFieldRequired = "TASK_CLOSURE_FIELD_REQUIRED";
+
+    /// <summary>Faz 2a — the closing narrative exceeds <see cref="TaskFieldLimits.MaxDescriptionLength"/>.</summary>
+    public const string ClosureNoteTooLong = "TASK_CLOSURE_NOTE_TOO_LONG";
+
     // ── DCP-005 slice 2 — the document reference list ────────────────────
     public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
     public const string DocumentListAlreadyImported = "DOCUMENT_LIST_ALREADY_IMPORTED";
@@ -718,7 +728,17 @@ public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
-public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCode, string? Note);
+/// <param name="ClosureFieldValues">
+/// Faz 2a — values for the task type's CLOSURE-stage fields, asked only by <c>complete</c>/<c>cancel</c> and
+/// ignored by every other transition. Trailing and optional: every caller written before this field existed
+/// keeps closing exactly as it did, and a task whose type has no closure field asks nothing either way.
+///
+/// <para>Additive to <see cref="TaskItemDetailDto.FieldValues"/>, never a replacement for it — a closure value
+/// under a code is merged in by that code; every entry-stage value already on the task is left untouched.</para>
+/// </param>
+public sealed record TaskTransitionRequest(
+    int ExpectedVersion, string? ReasonCode, string? Note,
+    IReadOnlyList<TaskFieldValueDto>? ClosureFieldValues = null);
 
 /// <summary>
 /// Set (or move) a personal plan date. Its OWN request type rather than an optional field bolted onto
@@ -927,7 +947,9 @@ public sealed record TaskItemDetailDto(
     /// </summary>
     IReadOnlyList<TaskDocumentReferenceDto>? DocumentReferences = null,
     /// <summary>The task's TYPE, so an edit form can re-render it and ask that type for its governing documents.</summary>
-    Guid? TaskTypeId = null);
+    Guid? TaskTypeId = null,
+    /// <summary>Faz 2a — the closing narrative, present only once the task is closed.</summary>
+    string? ClosureNote = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 
@@ -1069,7 +1091,12 @@ public sealed record CreateTaskFieldDefinitionRequest(
     /// </summary>
     string? ViewPermission = null,
     /// <summary>BL-024 Phase 2 — the permission required to WRITE it. Null: anyone who can edit the task.</summary>
-    string? EditPermission = null);
+    string? EditPermission = null,
+    /// <summary>
+    /// Faz 2a — WHEN this definition is asked. Trailing and defaulted to <see cref="TaskFieldStage.Entry"/> so
+    /// every caller written before this field existed keeps creating create-form fields, exactly as before.
+    /// </summary>
+    TaskFieldStage Stage = TaskFieldStage.Entry);
 
 /// <summary>
 /// Full replace — except <c>Code</c>, which is absent on purpose. Every <c>TaskFieldValue</c> already stored
@@ -1093,7 +1120,10 @@ public sealed record UpdateTaskFieldDefinitionRequest(
     /// <summary>BL-024 Phase 2 — see the create request. Trailing and optional; an edit that omits them clears
     /// the restriction, which is the same full-replace semantics every other field on this request has.</summary>
     string? ViewPermission = null,
-    string? EditPermission = null);
+    string? EditPermission = null,
+    /// <summary>Faz 2a — see the create request. An edit that omits it resets the definition to Entry, the same
+    /// full-replace semantics every other field on this request already has.</summary>
+    TaskFieldStage Stage = TaskFieldStage.Entry);
 
 /// <summary>
 /// Retire several definitions at once.
@@ -1133,7 +1163,10 @@ public sealed record TaskFieldDefinitionDto(
     string DefaultAccessState,
     bool IsActive,
     int Version,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    /// <summary>Faz 2a — <c>Entry</c> or <c>Closure</c>. As a string, the live convention every enum on this
+    /// DTO already follows.</summary>
+    string Stage = "Entry");
 
 /// <summary>
 /// One choice a configurable field offers. Flattened on purpose: a platform lookup, a published reference value

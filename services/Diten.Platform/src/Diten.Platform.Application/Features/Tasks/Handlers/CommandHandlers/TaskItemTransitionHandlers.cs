@@ -214,6 +214,9 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
     /// <summary>WC-4 — the shared notification path; see ITaskNotificationService for the four rules it holds.</summary>
     private readonly ITaskNotificationService _notifications;
+
+    /// <summary>Faz 2a — gates CLOSURE-stage field values; see <see cref="ITaskFieldDefinitionService.ValidateClosureFieldsAsync"/>.</summary>
+    private readonly ITaskFieldDefinitionService _fieldDefinitions;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
 
     public TransitionTaskItemHandler(
@@ -226,12 +229,14 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskDependencyRepository dependencies,
         ITaskTypeRepository types,
         ITaskNotificationService notifications,
+        ITaskFieldDefinitionService fieldDefinitions,
         ILogger<TransitionTaskItemHandler> logger)
     {
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
         _types = types;
+        _fieldDefinitions = fieldDefinitions;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -524,6 +529,33 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * Faz 2a — THE CLOSING NARRATIVE AND THE CLOSURE-STAGE FIELDS. Both ask only of `complete`/`cancel`;
+         * every other transition leaves `ClosureNote` and `FieldValues` exactly as it found them.
+         */
+        string? closureNote = null;
+        IReadOnlyList<TaskFieldValue>? closureFieldValues = null;
+        if (ClosureDispositionFor(command.Target) is not null)
+        {
+            closureNote = string.IsNullOrWhiteSpace(command.Request.Note) ? null : command.Request.Note.Trim();
+            if (closureNote is { Length: > TaskFieldLimits.MaxDescriptionLength })
+            {
+                return Response<NoContent>.Fail(
+                    $"The closing note exceeds {TaskFieldLimits.MaxDescriptionLength} characters.",
+                    400, TaskReasonCodes.ClosureNoteTooLong, command.CorrelationId);
+            }
+
+            var closureFields = await _fieldDefinitions.ValidateClosureFieldsAsync(
+                command.Request.ClosureFieldValues, task.FieldValues, ct);
+            if (!closureFields.IsValid)
+            {
+                return Response<NoContent>.Fail(
+                    closureFields.Message!, 400, closureFields.ReasonCode!, command.CorrelationId);
+            }
+
+            closureFieldValues = closureFields.Values;
+        }
+
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         /*
@@ -553,18 +585,38 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         task.Declare(
             KindFor(previousLifecycle, command.Target),
             _currentUser.UserId,
-            reason: null,
+            // Faz 2a — THE COPY IN THE TRANSITION LOG. Every other act that carries a reason in the actor's own
+            // words (wait, return, reassign) leaves one on its TaskTransition entry; closing a task never did —
+            // MEASURED: this line read `reason: null` unconditionally, so a closing note reached the task and
+            // stopped there. `closureNote` is null for every transition but complete/cancel, so nothing changes
+            // for plan/start/resume/submit-for-review, which never carried a Note worth keeping anyway.
+            reason: closureNote,
             reasonCode: command.Request.ReasonCode);
+
+        if (closureFieldValues is not null)
+        {
+            // Faz 2a — MERGE, never replace. Entry-stage values (and any closure value from an earlier failed
+            // attempt whose code is not in THIS payload) are left exactly as they were.
+            var closureCodes = closureFieldValues
+                .Select(value => value.DefinitionCode)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            task.FieldValues = task.FieldValues
+                .Where(value => !closureCodes.Contains(value.DefinitionCode))
+                .Concat(closureFieldValues)
+                .ToList();
+        }
 
         switch (command.Target)
         {
             case TaskLifecycle.Done:
                 task.CompletedAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.Cancelled:
                 task.CancelledAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.InProgress when task.StartAt is null:
                 task.StartAt = DateTimeOffset.UtcNow;

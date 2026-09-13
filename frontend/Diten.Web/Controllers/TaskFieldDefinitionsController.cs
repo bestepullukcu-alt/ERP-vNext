@@ -180,7 +180,8 @@ public sealed class TaskFieldDefinitionsController : Controller
         appliesToModuleCode = Nullable(model.AppliesToModuleCode),
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
-        isActive = model.IsActive
+        isActive = model.IsActive,
+        stage = model.Stage
     };
 
     /// <summary>
@@ -202,7 +203,8 @@ public sealed class TaskFieldDefinitionsController : Controller
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
         isActive = model.IsActive,
-        expectedVersion = model.ExpectedVersion
+        expectedVersion = model.ExpectedVersion,
+        stage = model.Stage
     };
 
     private static string? Nullable(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;

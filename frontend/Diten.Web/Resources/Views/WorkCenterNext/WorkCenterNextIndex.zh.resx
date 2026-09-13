@@ -2203,6 +2203,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>结束方式：{0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>已附加 {0} 个交付物。</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>已附加 {0} 个证据文件。</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>这项工作是如何结束的？</value>
   </data>
