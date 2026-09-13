@@ -217,6 +217,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
     /// <summary>Faz 2a — gates CLOSURE-stage field values; see <see cref="ITaskFieldDefinitionService.ValidateClosureFieldsAsync"/>.</summary>
     private readonly ITaskFieldDefinitionService _fieldDefinitions;
+    private readonly ITaskAttachmentRepository _attachments;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
 
     public TransitionTaskItemHandler(
@@ -230,6 +231,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskTypeRepository types,
         ITaskNotificationService notifications,
         ITaskFieldDefinitionService fieldDefinitions,
+        ITaskAttachmentRepository attachments,
         ILogger<TransitionTaskItemHandler> logger)
     {
         _logger = logger;
@@ -237,6 +239,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         _dependencies = dependencies;
         _types = types;
         _fieldDefinitions = fieldDefinitions;
+        _attachments = attachments;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
@@ -317,6 +320,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 return Response<NoContent>.Fail(
                     "A blocking checklist item is still open.",
                     409, TaskReasonCodes.ChecklistIncomplete, command.CorrelationId);
+            }
+
+            /*
+             * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the SAME shape as the checklist evidence gate (ATT-1): a type
+             * flag read once, enforced HERE (not only in the projection, which merely disables the client's
+             * button — pack §12 E1) and checked by a COUNT, not a list. Absent type (no TaskTypeId, or a type
+             * that no longer resolves) never gates — there is nothing configured to ask for.
+             */
+            var taskType = task.TaskTypeId is { } typeId ? await _types.GetByIdAsync(typeId, ct) : null;
+            if (taskType is { RequiresDeliverableOnCompletion: true })
+            {
+                var deliverableCount = await _attachments.CountDeliverablesAsync(task.Id, ct);
+                if (deliverableCount == 0)
+                {
+                    return Response<NoContent>.Fail(
+                        "This task's type requires a deliverable file before it can be completed.",
+                        409, TaskReasonCodes.DeliverableRequired, command.CorrelationId);
+                }
             }
         }
 

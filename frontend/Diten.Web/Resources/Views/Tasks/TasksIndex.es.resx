@@ -153,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observadores</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Lista de control</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Los pasos de esta tarea. Los elementos se marcan después de crear la tarea; un elemento bloqueante impide cerrarla.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Adjuntos</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Archivos de esta tarea: las instrucciones para abrirla, o una evidencia y un entregable para guardar de inmediato. Se suben una vez creada la tarea.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Archivo</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tipo</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Adjunto</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Entregable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Agregar archivo</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Quitar</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Tarea creada: algunos archivos no se subieron</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>La tarea se creó, pero los siguientes archivos no se pudieron subir. Agréguelos de nuevo desde la tarjeta de Adjuntos de la tarea:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Ir a la tarea</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Escriba un elemento y pulse Intro</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Añadir</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Haga clic en la etiqueta para cambiar el nivel. Todavía no hay lista de plantillas.</value></data>

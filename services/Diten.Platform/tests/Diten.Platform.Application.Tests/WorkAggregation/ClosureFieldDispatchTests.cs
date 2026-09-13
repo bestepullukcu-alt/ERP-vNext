@@ -230,7 +230,7 @@ public sealed class ClosureFieldDispatchTests
             tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
             new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(),
             new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-            fieldDefinitions, NullLogger<TransitionTaskItemHandler>.Instance);
+            fieldDefinitions, new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
         // (a) above already proves the other four actions never reach this far with a closure value, so only
         // `TransitionTaskItemCommand` needs a real handler — the shared double every other Tasks test uses.
         return (new TaskWorkItemActionDispatcher(new DirectMediator(handler)), task);

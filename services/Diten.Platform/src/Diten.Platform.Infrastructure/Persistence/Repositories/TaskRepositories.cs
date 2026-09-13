@@ -942,6 +942,15 @@ public sealed class TaskAttachmentRepository : TenantRepository<TaskAttachment>,
         return (int)await Collection.CountDocumentsAsync(filter, cancellationToken: ct);
     }
 
+    public async Task<int> CountDeliverablesAsync(Guid taskId, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskAttachment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskAttachment>.Filter.Eq(x => x.TaskId, taskId),
+            Builders<TaskAttachment>.Filter.Eq(x => x.Kind, TaskAttachmentKind.Deliverable));
+        return (int)await Collection.CountDocumentsAsync(filter, cancellationToken: ct);
+    }
+
     public async Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default)
     {
         var filter = Builders<TaskAttachment>.Filter.And(

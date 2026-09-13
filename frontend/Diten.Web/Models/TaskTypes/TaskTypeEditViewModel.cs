@@ -41,6 +41,14 @@ public sealed class TaskTypeEditViewModel
     public bool IsQualityEvent { get; set; }
 
     /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — a plain full-replace bool, exactly like <see cref="IsQualityEvent"/>:
+    /// the editor draws this checkbox from the moment the field exists, so there is no pre-existing screen for a
+    /// post without it to silently reset (unlike <see cref="ReviewMeetingRequirement"/>, which is nullable for
+    /// that reason).
+    /// </summary>
+    public bool RequiresDeliverableOnCompletion { get; set; }
+
+    /// <summary>
     /// NotAllowed | Optional | Required — a CODE value, never translated.
     ///
     /// <para>⚠ NULL, NOT "Optional", WHEN NOTHING WAS POSTED. The API reads null as "not asking" and keeps the

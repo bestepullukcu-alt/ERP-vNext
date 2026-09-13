@@ -102,6 +102,18 @@
         ChecklistMoveUp = Localizer["ChecklistMoveUp"].Value,
         ChecklistMoveDown = Localizer["ChecklistMoveDown"].Value,
 
+        @* WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the Attachments card's own JS vocabulary. The card's heading and
+           description, and the three add-row labels, stay server-rendered in _Form.cshtml (like the checklist
+           card's own CardChecklistTitle/Description); only what form-page.js builds at runtime — the pending
+           row's kind label and remove button, and the partial-upload-failure dialog — needs to reach it here. *@
+        AttachmentKindAttachment = Localizer["AttachmentKindAttachment"].Value,
+        AttachmentKindEvidence = Localizer["AttachmentKindEvidence"].Value,
+        AttachmentKindDeliverable = Localizer["AttachmentKindDeliverable"].Value,
+        AttachmentRemoveButton = Localizer["AttachmentRemoveButton"].Value,
+        AttachmentUploadPartialTitle = Localizer["AttachmentUploadPartialTitle"].Value,
+        AttachmentUploadPartialBody = Localizer["AttachmentUploadPartialBody"].Value,
+        AttachmentUploadRetryLink = Localizer["AttachmentUploadRetryLink"].Value,
+
         // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
         // are tenant content and come from the definition itself; only the control's own furniture is translated
         // here (a picker's placeholder, and the two words a yes/no field offers).

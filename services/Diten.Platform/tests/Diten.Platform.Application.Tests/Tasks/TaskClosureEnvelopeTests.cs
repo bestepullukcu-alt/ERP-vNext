@@ -184,7 +184,7 @@ public sealed class TaskClosureEnvelopeTests
             tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
             new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(),
             new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
-            fieldDefinitions, NullLogger<TransitionTaskItemHandler>.Instance);
+            fieldDefinitions, new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
 
     [Fact]
     public async Task Completing_without_a_required_closure_field_is_refused_with_the_pack_s_own_code()

@@ -149,6 +149,17 @@
                                 <label asp-for="IsQualityEvent" class="form-check-label">@Localizer["QualityEvent"]</label>
                             </div>
                         </div>
+                        @* WP-PSS-MOD0024-ATTACHMENTS-UX-01 — MOD-0024 Slice ATT-1's own gate: a task of this type
+                           cannot be marked Done without at least one live Deliverable-kind attachment
+                           (TASK_DELIVERABLE_REQUIRED, enforced on the same complete transition the checklist
+                           evidence gate already guards). Default off — turning it on changes nothing for a task
+                           already open under this type until the NEXT time one is completed. *@
+                        <div class="col-12 col-md-6 d-flex align-items-end">
+                            <div class="form-check mb-2">
+                                <input asp-for="RequiresDeliverableOnCompletion" class="form-check-input" type="checkbox" />
+                                <label asp-for="RequiresDeliverableOnCompletion" class="form-check-label">@Localizer["RequiresDeliverableOnCompletion"]</label>
+                            </div>
+                        </div>
                         <div class="col-12 col-md-6">
                             <label asp-for="ReviewMeetingRequirement" class="form-label fw-medium">@Localizer["ReviewMeetingRequirement"]</label>
                             <select asp-for="ReviewMeetingRequirement" class="form-select">

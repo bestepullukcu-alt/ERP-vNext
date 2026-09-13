@@ -91,6 +91,7 @@ public sealed class TaskClosureRoundTripTests
                 types,
                 new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
+                new FakeTaskAttachmentRepository(),
                 NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(

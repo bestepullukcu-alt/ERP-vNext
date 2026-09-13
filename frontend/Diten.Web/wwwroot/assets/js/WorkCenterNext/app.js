@@ -8522,7 +8522,10 @@
 
     const uploadAttachment = async (taskId, payload) => {
         const result = await global.TasksApi.addAttachment(taskId, payload);
-        await afterPhase2Write(result, 'ToastAttachmentAdded');
+        // Returned so a caller that must NOT proceed on failure (the Complete window's own upload-then-transition
+        // sequence, WP-PSS-MOD0024-ATTACHMENTS-UX-01) can tell. Every EARLIER caller ignored the return value, so
+        // this is additive.
+        return afterPhase2Write(result, 'ToastAttachmentAdded');
     };
 
     const removeAttachmentRow = async (taskId, attachmentId) => {
@@ -8859,8 +8862,29 @@
          * type nobody has touched since) falls straight through to the SAME branches below, byte for byte.
          */
         const closureFields = action.code === 'complete' ? await fetchClosureFieldDefinitions() : [];
-        if (closureOutcomes.length || closureFields.length) {
+        /*
+         * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — "Çıktı / Kanıt ekle", in the SAME raw dialog (BL-146 exception:
+         * `sharedConfirm` supports a textarea and nothing else, so a file input needs this route regardless of
+         * whether the type has closure outcomes or fields). NEVER for `cancel` — calling work off asks for
+         * nothing to attach.
+         */
+        const canAttachOnComplete = action.code === 'complete' && isDispatchableItem(item);
+        const existingAttachments = Array.isArray(item.attachments?.items) ? item.attachments.items : [];
+        const deliverableRequired = canAttachOnComplete
+            && !!item.taskType?.requiresDeliverableOnCompletion
+            && !existingAttachments.some((a) => a.kind === 'Deliverable');
+        if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
             if (!global.Swal) { return; }
+
+            /*
+             * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
+             * here because this branch now answers for EVERY complete on a dispatchable item, not only the ones
+             * with a closure outcome or field configured, and this dialog replaces that one for those calls.
+             */
+            const stillOpen = action.code === 'complete' ? openRequiredItems(item) : [];
+            const requiredWarning = stillOpen.length
+                ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
+                : '';
 
             const outcomeOptions = closureOutcomes
                 .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
@@ -8896,6 +8920,24 @@
                 ? `<div class="row g-3 text-start" id="wcnClosureFieldsRow"></div>`
                 : '';
 
+            /*
+             * "Çıktı / Kanıt ekle" — a file plus its kind, Deliverable by default (this is the CLOSING act; a
+             * plain "Attachment" reads as instructions, which is the create form's own affordance, not this
+             * one). The label itself says "required" when the type's flag has nothing to point at yet, so the
+             * requirement is read before it can be missed rather than discovered from a refusal after confirm.
+             */
+            const attachmentBlock = canAttachOnComplete
+                ? `<label class="form-label d-block text-start" for="wcnCompleteAttachFile">`
+                    + `${esc(t(deliverableRequired ? 'CompleteAttachFileRequiredLabel' : 'CompleteAttachFileLabel'))}</label>`
+                    + `<input type="file" id="wcnCompleteAttachFile" class="form-control">`
+                    + `<label class="form-label d-block text-start" for="wcnCompleteAttachKind">`
+                    + `${esc(t('AttachmentKindLabel'))}</label>`
+                    + `<select id="wcnCompleteAttachKind" class="form-select">`
+                    + `<option value="Deliverable" selected>${esc(attachmentKindLabel('Deliverable'))}</option>`
+                    + `<option value="Evidence">${esc(attachmentKindLabel('Evidence'))}</option>`
+                    + `</select>`
+                : '';
+
             // Resolved BEFORE the dialog opens: `renderCustomFields` either offers an option-driven field
             // complete or not at all, and there is no later moment to hand it a list that was still in flight.
             const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
@@ -8904,8 +8946,10 @@
                 title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
                     + '<span>' + esc(actionLabel(action)) + '</span>',
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + requiredWarning
                     + outcomeBlock
-                    + fieldsBlock,
+                    + fieldsBlock
+                    + attachmentBlock,
                 showCancelButton: true,
                 confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 cancelButtonText: t('DialogDismiss'),
@@ -8994,14 +9038,41 @@
                         }));
                     }
 
-                    return { outcomeCode, reason, closureFieldValues };
+                    /*
+                     * The client-side half of the SAME gate `TransitionTaskItemHandler` enforces
+                     * (TASK_DELIVERABLE_REQUIRED): a courtesy, not the rule — the engine refuses the write on its
+                     * own if this dialog is ever bypassed.
+                     */
+                    let attachment = null;
+                    if (canAttachOnComplete) {
+                        const file = document.getElementById('wcnCompleteAttachFile')?.files?.[0] || null;
+                        if (deliverableRequired && !file) {
+                            global.Swal.showValidationMessage(t('CompleteAttachFileRequired'));
+                            return false;
+                        }
+                        if (file) {
+                            attachment = { file, kind: document.getElementById('wcnCompleteAttachKind')?.value || 'Deliverable' };
+                        }
+                    }
+
+                    return { outcomeCode, reason, closureFieldValues, attachment };
                 }
-            }, dialogLook())).then((res) => {
-                if (res.isConfirmed && res.value) {
-                    applyAction(
-                        item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
-                        res.value.closureFieldValues);
+            }, dialogLook())).then(async (res) => {
+                if (!res.isConfirmed || !res.value) { return; }
+                /*
+                 * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
+                 * upload must not complete the task: the reader asked for both, and completing anyway would
+                 * silently drop the half that failed. `uploadAttachment` is the SAME call the paperclip on the
+                 * detail page and its own dialog use (YAPMA: never a second upload path) — it already shows its
+                 * own toast and refreshes the board, so a failure here has already been reported to the reader.
+                 */
+                if (res.value.attachment) {
+                    const uploaded = await uploadAttachment(item.id, res.value.attachment);
+                    if (!uploaded) { return; }
                 }
+                applyAction(
+                    item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
+                    res.value.closureFieldValues);
             });
             return;
         }

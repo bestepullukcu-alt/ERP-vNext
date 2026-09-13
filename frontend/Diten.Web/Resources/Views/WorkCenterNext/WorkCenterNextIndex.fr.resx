@@ -2286,6 +2286,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Ajouté par {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Pièce jointe ajoutée.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Pièce jointe supprimée.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Ajoutez un livrable ou une preuve (facultatif)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Le type de cette tâche exige un fichier de livrable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choisissez un fichier avant de terminer cette tâche.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Ajouter une preuve</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} fichier(s) de preuve</value></data>
 </root>

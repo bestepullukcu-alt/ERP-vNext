@@ -1037,7 +1037,14 @@ public sealed record WorkItemTaskTypeDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<WorkItemClosureOutcomeDto>? CompletionOutcomes = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null);
+    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null,
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — mirrors <c>TaskType.RequiresDeliverableOnCompletion</c>. REPORTED so the
+    /// Complete window can ask for a file client-side before the write; the server enforces the same rule
+    /// independently on the transition itself (pack §12 E1 — a hidden control is presentation, the refusal is the
+    /// rule). False for every type written before this field existed.
+    /// </summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>
 /// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);

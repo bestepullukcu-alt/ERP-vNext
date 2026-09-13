@@ -327,6 +327,7 @@ public sealed class CreateWithChecklistTests
                 new FakeTaskDependencyRepository(),
                 new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
                 new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
+                new FakeTaskAttachmentRepository(),
                 NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(

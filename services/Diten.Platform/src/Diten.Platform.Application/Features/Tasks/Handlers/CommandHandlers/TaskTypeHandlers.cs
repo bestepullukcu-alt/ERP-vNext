@@ -84,6 +84,7 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             ClosureOutcomes = outcomes!,
             // Null takes Optional — the entity's own default, which changes no type's behaviour.
             ReviewMeetingRequirement = request.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional,
+            RequiresDeliverableOnCompletion = request.RequiresDeliverableOnCompletion,
             IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
@@ -172,6 +173,8 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
         {
             type.ReviewMeetingRequirement = reviewMeetingRequirement;
         }
+
+        type.RequiresDeliverableOnCompletion = request.RequiresDeliverableOnCompletion;
 
         /*
          * ⚠ NULL IS "NOT ASKING", AND THIS BRANCH IS THE WHOLE REASON THE FIELD IS NULLABLE.

@@ -153,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Watchers</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Checklist</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>The steps of this task. Items are ticked after the task is created; a blocking item keeps the task from closing.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Attachments</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Files for this task — instructions to open it with, or evidence and output to save right away. Uploaded once the task is created.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>File</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Attachment</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Deliverable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Add file</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Remove</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Task created — some files did not upload</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>The task was created, but the following files could not be uploaded. Add them again from the task's own Attachments card:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Go to the task</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Type an item and press Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Add</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Click the label to change the level. There is no template list yet.</value></data>

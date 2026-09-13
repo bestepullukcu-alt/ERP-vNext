@@ -153,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>关注者</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>检查清单</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>本任务的步骤。条目在任务创建后勾选；存在阻断条目时任务无法关闭。</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>附件</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>此任务的文件——用于打开任务的说明文件，或需要立即保存的证据和交付物。任务创建后上传。</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>文件</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>类型</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>附件</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>证据</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>交付物</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>添加文件</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>移除</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>任务已创建——部分文件未能上传</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>任务已创建，但以下文件未能上传。请从任务自己的附件卡片中重新添加：</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>前往任务</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>输入条目后按 Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>添加</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>点击标签可更改级别。目前还没有模板列表。</value></data>
