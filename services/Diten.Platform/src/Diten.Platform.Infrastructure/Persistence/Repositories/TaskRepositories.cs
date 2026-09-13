@@ -544,13 +544,16 @@ public sealed class TaskTypeRepository : TenantRepository<TaskType>, ITaskTypeRe
     public async Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default)
         => await Collection.Find(ExecutionFilter).SortBy(x => x.Code).ToListAsync(ct);
 
-    public async Task UpdateAsync(TaskType type, CancellationToken ct = default)
+    public async Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default)
     {
+        type.Version = expectedVersion + 1;
         type.UpdatedAt = DateTimeOffset.UtcNow;
         var filter = Builders<TaskType>.Filter.And(
             ExecutionFilter,
-            Builders<TaskType>.Filter.Eq(x => x.Id, type.Id));
-        await Collection.ReplaceOneAsync(filter, type, new ReplaceOptions(), ct);
+            Builders<TaskType>.Filter.Eq(x => x.Id, type.Id),
+            Builders<TaskType>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, type, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 }
 

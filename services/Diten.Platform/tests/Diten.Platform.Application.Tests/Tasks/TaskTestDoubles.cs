@@ -1860,11 +1860,13 @@ internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
         return Task.FromResult<IReadOnlyList<TaskType>>(_types.ToList());
     }
 
-    public Task UpdateAsync(TaskType type, CancellationToken ct = default)
+    public Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default)
     {
         var at = _types.FindIndex(x => x.Id == type.Id);
-        if (at >= 0) { _types[at] = type; }
-        return Task.CompletedTask;
+        if (at < 0 || _types[at].Version != expectedVersion) { return Task.FromResult(false); }
+        type.Version = expectedVersion + 1;
+        _types[at] = type;
+        return Task.FromResult(true);
     }
 }
 
