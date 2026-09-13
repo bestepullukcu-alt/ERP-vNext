@@ -4553,6 +4553,13 @@ yoksa okuma yetkisi olan herkes mi (bugünkü fiilî durum). Cevap BL-057'nin li
 
     grep -n "GetByIdAsync\|_actor" services/Diten.Platform/src/Diten.Platform.Application/Features/Tasks/Handlers/QueryHandlers/GetTaskItemByIdHandler.cs
 
+**Öneri (2026-09-13, WP-PSS-MOD0024-TASK-SCOPE-SECURITY-01 Kısım B — karar sahipte):** detay ucunu okuyan her yer ölçüldü:
+Görev Merkezi alt görev paneli ve alt görev sürüm okuması (üst görevin sahibi, alt görevin sahibi farklı olabilir), alt görev
+eklerken üst görev okuması, `/Tasks/Details` ve `/Tasks/Edit` (bugün kiracıdaki herkes). Önerilen TEK kural: görevin sahibi veya
+havuzu + açan + izleyici + ÜST görevin sahibi veya havuzu + `TaskAssignmentScope` (bir yönetici, iş atayabildiği kişinin görevini okur).
+Kiracı geneli okuma gerçekten gerekiyorsa ayrı bir `platform.tasks.read-all` anahtarı, yalnız o role. Liste kuralıyla aynı yerden
+türetilir; ikinci kural yazılmaz.
+
 ### BL-350
 
 **Tekrarlayan kural formunda kişi listesi hep boş — ekran düz liste bekliyor, sunucu zarf gönderiyor**
@@ -4625,7 +4632,7 @@ Açık kalan: BL-354 — aktif kalan ama atananı uygunsuz kural üretmeye devam
 
 **Şablon kaydında varsayılan havuz kapsamdan geçmiyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPANDI — PSS dalı `22b2e198` (WP-PSS-MOD0024-TASK-SCOPE-SECURITY-01), CT doğruladı 2026-09-13
 
 `TaskTemplateHandlers.cs:98,134` (oluştur) ve `:216,240` (güncelle) `DefaultPoolPositionId`'yi yalnız biçim
 olarak doğruluyor (`TaskTemplateRules.ValidateAssignment`): pozisyon aktif mi, birimi canlı mı, kaydedenin
@@ -4657,7 +4664,7 @@ kimin kapsamıyla sorulacağı (kuralı kaydeden mi?) karar ister. BL-352 ile bi
 
 **Görev oluşturmada istekle gelen `OrganizationUnitId` kapsamdan geçmiyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10 (`01bc0915` öncesi de böyleydi)
+DURUM: KAPANDI — PSS dalı `22b2e198` (WP-PSS-MOD0024-TASK-SCOPE-SECURITY-01), CT doğruladı 2026-09-13
 
 `CreateTaskItemHandler.cs:193` (havuz) ve `:200` (kişi) `request.OrganizationUnitId` verilmişse olduğu gibi
 alıyor; birimin var/aktif olduğu ve çağıranın kapsamında olduğu sorulmuyor. Ekran birim göndermiyor
@@ -5281,3 +5288,30 @@ devre dışı bırakılamayan sürüm kapısı 3 aynı alanı okumaya devam ediy
 girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
 **(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
 yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
+
+---
+
+### BL-381
+
+**Görev Merkezi'nde "Toplantı planla" gerçek görevde çalışmıyordu — eylem sunucu çıktısında tarayıcı girdisine eşlenmiyordu**
+
+DURUM: KAPANDI — `bea716aa` (CT, 2026-09-13) · BULAN: MOD-0357 S10 canlı tur · KAYIT: 2026-09-13
+
+`mock-data.js` sunum eşleyicisi yalnız `plan` için girdi türetiyordu; sunucunun eylem DTO'sunda `input` alanı yok. Gerçek
+`scheduleReviewMeeting` toplantı planlama penceresini açmadan genel eylem ucuna düşüyordu (400 `WORK_ITEM_ACTION_UNKNOWN`).
+CT'nin S4 kabulündeki test kaynak metnini okuyordu, gerçek eylemi hiç eşleyiciden geçirmemişti. Artık görev sağlayıcısının
+golden çıktısı gerçek eşleyiciden geçiriliyor.
+
+---
+
+### BL-382
+
+**Seri süpürme ve tatil çekme işleri DI'da kayıtlı değildi; kapatılan iş Hangfire'da çalışmaya devam ediyordu**
+
+DURUM: KAPANDI — `87f660ac` + `a36308a2` (CT, 2026-09-13) · BULAN: MOD-0357 S10 canlı tur · KAYIT: 2026-09-13
+
+(1) `MeetingSeriesSweepJob` ve `HolidayAutoFetchJob` kayıt listesindeydi ama DI'da yoktu; bayrak açıldığı an her koşu
+"No service for type" ile düşüyordu. `BackgroundJobHandlerRegistrationTests` artık gerçek `AddApplication` kompozisyonunu okuyor.
+(2) Devre dışı kayıt Hangfire'dan silinmiyordu; bir kez açılan iş bayrak kapansa da cron'unda çalışmaya devam ediyordu —
+artık `RemoveIfExists`. (3) `BackgroundJobContractsTests`'in iki kayıt testi yer tutucu dönemden kalma olduğu için uzun süredir
+kırmızıydı; gerçek on iki işin kimlik listesini adlandırıyor.
