@@ -211,6 +211,24 @@ public enum TaskFieldImportance
     Primary = 1
 }
 
+/// <summary>
+/// WHEN a field is asked — MOD-0024 Task Closure &amp; Reporting, Faz 2a (pack §4).
+///
+/// <para><b><c>Entry</c> is the default, and that is load-bearing.</b> Every definition written before this
+/// field existed is a create-form field — the only kind that existed — and any other default would silently
+/// move existing tenant fields onto a closure form nobody designed for them. Same defaulting argument
+/// <see cref="TaskFieldDefinition.ViewPermission"/> already makes on the same entity.</para>
+///
+/// <para>Stored as its number: append-only, never renumber, same rule every persisted enum in this file
+/// follows.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskFieldStage
+{
+    Entry = 0,
+    Closure = 1
+}
+
 /// <summary>Where a field's option list comes from. FG-004: a hard-coded list is never allowed.</summary>
 // Crosses the wire in the Phase 5 field-definition requests, so it serializes as a STRING. An enum
 // reaching a client as a number is a defect this module has already shipped twice.
@@ -351,6 +369,30 @@ public enum TaskGqmsDomain
 }
 
 /// <summary>
+/// Whether work of a given TYPE may, must, or must not go through a review meeting before the reviewer makes the
+/// final decision (MOD-0024 pack, "Review meeting policy").
+///
+/// <para><b>Only the requirement lives here.</b> The per-task projection the pack describes —
+/// <c>{ requirement, meetingId?, scheduledAt? }</c> — is assembled per work item: the meeting reference and its
+/// time are resolved from a related record, never stored on the type.</para>
+///
+/// <para>⚠ The numeric values are pinned. The Mongo driver stores this enum as its number, so renumbering would
+/// silently re-classify every stored type.</para>
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskReviewMeetingRequirement
+{
+    /// <summary>No meeting command is offered for work of this type.</summary>
+    NotAllowed = 0,
+
+    /// <summary>A meeting may be scheduled; the decision does not wait for one. The default.</summary>
+    Optional = 1,
+
+    /// <summary>The decision stays disabled until the linked review meeting's minutes are published (owner, 2026-09-13).</summary>
+    Required = 2
+}
+
+/// <summary>
 /// The business FUNCTION a task type belongs to — DCP-005 §6.7, quoted from the counterparty's own template.
 ///
 /// <para><b>A closed list, and it was NOT one until the values existed.</b> The first build of the task type
@@ -414,4 +456,18 @@ public enum TaskClosureDisposition
 
     /// <summary>Offered when the task is being CANCELLED (<see cref="TaskLifecycle.Cancelled"/>).</summary>
     Cancelled = 1
+}
+
+/// <summary>
+/// MOD-0024 Slice ATT-1 — what a task attachment IS, not what it is FOR. <see cref="Evidence"/> is the one kind
+/// that satisfies a checklist item's <c>EvidenceRequired</c> gate (see <c>SetChecklistItemStateHandler</c>);
+/// <see cref="Deliverable"/> and <see cref="Attachment"/> carry no enforcement — they are the author's own
+/// classification of "the thing I produced" versus "a file I attached for reference".
+/// </summary>
+[System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+public enum TaskAttachmentKind
+{
+    Evidence = 0,
+    Deliverable = 1,
+    Attachment = 2
 }

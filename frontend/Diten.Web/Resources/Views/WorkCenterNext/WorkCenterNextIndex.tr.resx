@@ -1640,9 +1640,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} zorunlu madde işaretlenmedi. Görev yine de kapatılacak.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>İşaretli maddeler için kanıt gerekiyor. Kanıt eklemek için satırdaki ataç simgesini kullanın.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value>
   </data>
@@ -2236,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Kapanış: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Kapanış</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} teslimat eklendi.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} kanıt dosyası eklendi.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Bu iş nasıl sonuçlandı?</value>
   </data>
@@ -2256,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Bu sonuç bir gerekçe ister.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Görev tamamlanmadan önce bu alan doldurulmalıdır.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>İstendiği gibi tamamlandı</value>
@@ -2290,4 +2300,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>{0} kez geri gönderildi, en son: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Henüz ek yok.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Not (opsiyonel)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Bu dosya hakkında kısa bir not</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Yükle</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Ek ekle</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Önce bir dosya seçin.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Bu ek kaldırılsın mı?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Eki kaldır</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>{0} tarafından yüklendi · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Ek eklendi.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Ek kaldırıldı.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Bir çıktı ya da kanıt dosyası ekleyin (isteğe bağlı)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Bu görev türü, tamamlanmadan önce bir çıktı dosyası ister</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce bir dosya seçin.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} kanıt dosyası</value></data>
 </root>

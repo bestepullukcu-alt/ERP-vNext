@@ -115,6 +115,9 @@ public sealed class PlatformAuthController : CustomBaseController
         if (existingUser is null)
         {
             user.ConfirmEmail();
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — a provisioned platform admin is created Unknown; an existing account's
+            // kind is left exactly as it is (this path never rewrites a classification).
+            user.SetAccountKind(Diten.AuthService.Domain.Enums.AccountKind.Unknown);
         }
         else
         {

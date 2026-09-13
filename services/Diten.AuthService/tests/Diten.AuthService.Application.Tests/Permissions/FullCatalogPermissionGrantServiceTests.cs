@@ -55,6 +55,20 @@ public sealed class FullCatalogPermissionGrantServiceTests
         Assert.Empty(grants.Assigned);
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — same gate, second key.
+    [Fact]
+    public async Task Account_kind_manage_is_never_auto_granted_to_full_catalog_role()
+    {
+        var superAdmin = new Role("SuperAdmin", "Super Administrator", null, Guid.NewGuid());
+        var roles = new FakeRoleRepository(superAdmin);
+        var grants = new FakeRolePermissionRepository();
+        var service = new FullCatalogPermissionGrantService(roles, grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
+
+        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), "auth.users.account-kind.manage", CancellationToken.None);
+
+        Assert.Empty(grants.Assigned);
+    }
+
     private sealed class FakeRoleRepository(Role? role) : IRoleRepository
     {
         public Task<Role?> GetByNameAndTenantAsync(string name, Guid tenantId, CancellationToken ct)

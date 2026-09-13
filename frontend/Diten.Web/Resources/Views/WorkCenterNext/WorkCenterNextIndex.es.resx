@@ -1640,9 +1640,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} elemento(s) obligatorio(s) sin marcar. La tarea se cerrará de todos modos.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia para los elementos marcados. Use el clip de la fila para adjuntarla.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value>
   </data>
@@ -2236,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Cerrado como: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Cierre</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} entregable(s) adjunto(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} archivo(s) de evidencia adjunto(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>¿Cómo terminó este trabajo?</value>
   </data>
@@ -2256,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Este resultado exige un motivo.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Este campo es obligatorio para poder completar la tarea.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completado según lo solicitado</value>
@@ -2290,4 +2300,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>Devuelta {0} veces, la última: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Aún no hay archivos adjuntos.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Añadir archivo</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Entregable</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Adjunto</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tipo</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Nota (opcional)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Añada una breve nota sobre este archivo</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Archivo</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Subir</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Añadir adjunto</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Seleccione primero un archivo.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>¿Quitar este adjunto?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Quitar adjunto</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>Subido por {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Adjunto añadido.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Adjunto eliminado.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Agregue un entregable o una evidencia (opcional)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>El tipo de esta tarea requiere un archivo entregable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Elija un archivo antes de completar esta tarea.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Añadir evidencia</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} archivo(s) de evidencia</value></data>
 </root>

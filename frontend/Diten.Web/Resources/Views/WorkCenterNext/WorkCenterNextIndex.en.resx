@@ -1640,9 +1640,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} required item(s) are unticked. The task will be closed anyway.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required for the flagged item(s). Use the paperclip on the row to attach it.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Change the level: Optional → Expected → Blocking</value>
   </data>
@@ -2236,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Closed as: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Closure</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} deliverable(s) attached.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} evidence file(s) attached.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>How did this end?</value>
   </data>
@@ -2256,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>This outcome requires a reason.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>This field is required before the task can be completed.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completed as requested</value>
@@ -2290,4 +2300,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>Returned {0} times, most recently: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>No attachments yet.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Add file</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Deliverable</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Attachment</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Note (optional)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Add a short note about this file</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>File</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Upload</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Add attachment</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Choose a file first.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Remove this attachment?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Remove attachment</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>Uploaded by {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Attachment added.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Attachment removed.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Add a deliverable or evidence file (optional)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>This task's type requires a deliverable file</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choose a file before completing this task.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Add evidence</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} evidence file(s)</value></data>
 </root>

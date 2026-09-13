@@ -3,6 +3,7 @@ using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Domain.Enums;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,8 +47,23 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         _logger = logger;
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the stable code the frontend maps; the message is the English fallback.
+    public const string PermissionDeniedCode = "PERM_DENIED";
+
     public async Task<Response<UserDto>> Handle(CreateUserCommand request, CancellationToken ct)
     {
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — classifying on create is a SEPARATE right from creating. A supplied kind
+        // from a caller without auth.users.account-kind.manage is refused outright (403 PERM_DENIED) — not silently
+        // downgraded to Unknown, which would hide a permission gap behind a success. Checked BEFORE the duplicate
+        // e-mail probe so an unauthorized caller learns nothing about existing addresses from this path.
+        if (!string.IsNullOrWhiteSpace(request.AccountKind) && !request.CallerCanManageAccountKind)
+        {
+            return Response<UserDto>.Fail(
+                "Setting the account kind requires the auth.users.account-kind.manage permission.",
+                [new ResponseError(PermissionDeniedCode)],
+                403);
+        }
+
         var existing = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
         if (existing != null) return Response<UserDto>.Fail("Email is already in use.", 409);
 
@@ -56,19 +72,36 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
             : await CreateSelfServiceAsync(request, ct);
     }
 
+    // The kind the new account gets: the caller's explicit, permitted choice, else Unknown. Parsed from the NAME the
+    // validator vetted — no Human/Service literal here (AccountKindCreationPathsGuardTests keeps it that way).
+    private static AccountKind ResolveInitialKind(CreateUserCommand request)
+    {
+        if (request.CallerCanManageAccountKind
+            && !string.IsNullOrWhiteSpace(request.AccountKind)
+            && Enum.TryParse<AccountKind>(request.AccountKind.Trim(), ignoreCase: true, out var kind)
+            && Enum.IsDefined(kind))
+        {
+            return kind;
+        }
+
+        return AccountKind.Unknown;
+    }
+
     // ── Self-service: admin supplies the password; user is active immediately (unchanged behavior). ──
     private async Task<Response<UserDto>> CreateSelfServiceAsync(CreateUserCommand request, CancellationToken ct)
     {
         await _passwordPolicyService.ValidateTenantPasswordAsync(_tenantContext.TenantId, null, request.Password!, "create_user", ct);
         var hashedPassword = _passwordHasher.Hash(request.Password!);
         var user = new User(request.Email, hashedPassword, request.FirstName, request.LastName, _tenantContext.TenantId);
+        user.SetAccountKind(ResolveInitialKind(request));
 
         var created = await _userRepository.CreateAsync(user, ct);
 
-        _logger.LogInformation("User created (self-service). Id={Id}", created.Id);
+        _logger.LogInformation("User created (self-service). Id={Id} AccountKind={AccountKind}", created.Id, created.AccountKind);
 
         return Response<UserDto>.Success(
-            new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId),
+            new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
+                AccountKind: created.AccountKind.ToString()),
             201);
     }
 
@@ -84,6 +117,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         user.SetPasswordResetToken(_refreshTokenHasher.Hash(setupToken), DateTime.UtcNow.Add(InvitationTokenLifetime));
         user.Deactivate();
         user.RequirePasswordChange(null);
+        user.SetAccountKind(ResolveInitialKind(request));
 
         var created = await _userRepository.CreateAsync(user, ct);
 
@@ -99,7 +133,8 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 
         return Response<UserDto>.Success(
             new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
-                created.LastLoginAt, created.FailedLoginAttempts, created.MustChangePassword, "TenantPolicy", setupDelivery.SetupUrl),
+                created.LastLoginAt, created.FailedLoginAttempts, created.MustChangePassword, "TenantPolicy", setupDelivery.SetupUrl,
+                created.AccountKind.ToString()),
             201);
     }
 

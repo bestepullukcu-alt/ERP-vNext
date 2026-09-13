@@ -13,8 +13,16 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Домен качества</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Функция</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Событие качества</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Требует файл результата для завершения</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Событие качества</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Не событие качества</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Совещание по рассмотрению перед решением</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Определяет, может ли или должно ли проводиться совещание по рассмотрению до того, как проверяющий примет окончательное решение по работе этого типа.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>Не допускается</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Необязательно</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Параметр совещания по рассмотрению должен иметь значение «Не допускается», «Необязательно» или «Обязательно».</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Этот тип задачи был изменён кем-то другим, пока вы его редактировали. Обновите страницу и попробуйте снова.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Не запись</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Операционная запись</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Запись качества GxP</value></data>

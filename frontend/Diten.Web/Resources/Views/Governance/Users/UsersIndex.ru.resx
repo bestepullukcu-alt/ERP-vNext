@@ -41,4 +41,11 @@
   <data name="KpiActiveUsers" xml:space="preserve"><value>Активные</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>Неактивные</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>Без роли</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>Тип учётной записи</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>Не подтверждён</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>Человек</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>Сервисная учётная запись</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>Изменить тип</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>Тип учётной записи обновлён</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>Оставьте пустым, чтобы учётная запись осталась неподтверждённой.</value></data>
 </root>

@@ -86,7 +86,14 @@ public sealed class HttpWorkItemActionDispatcher : IWorkItemActionDispatcher
          * would hand a remote module a user id that has crossed a trust boundary as plain data, and any module
          * that trusted it would let one Platform caller act as anybody.
          */
-        var body = new RemoteWorkItemActionRequest(_row.ProviderCode, request.Payload);
+        /*
+         * Faz 2a-rest — MOD-0024's own field, and MOD-0023 (the only remote provider today) has no concept of
+         * it. Stripped UNCONDITIONALLY rather than only "when null": a caller that mis-routed a task action's
+         * payload to this provider must not leak it onward regardless. `ClosureFieldValues` carries
+         * `JsonIgnoreCondition.WhenWritingNull`, so this also guarantees the body a remote module receives is
+         * byte-identical to the one it received before this field existed.
+         */
+        var body = new RemoteWorkItemActionRequest(_row.ProviderCode, request.Payload with { ClosureFieldValues = null });
 
         // The write path's own budget, from the SAME option the aggregation loop uses for reads. Linked to the
         // caller's token so a reader who navigates away still cancels the call in flight.

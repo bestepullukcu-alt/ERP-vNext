@@ -37,6 +37,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -63,6 +64,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -122,6 +126,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -148,6 +153,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -207,6 +215,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -233,6 +242,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -292,6 +304,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -318,6 +331,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -377,6 +393,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -530,6 +547,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -593,6 +613,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -736,6 +757,9 @@
       "mode": "full",
       "items": []
     },
+    "attachments": {
+      "items": []
+    },
     "gates": {
       "approval": {
         "required": false,
@@ -797,6 +821,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -952,6 +977,9 @@
       "mode": "full",
       "items": []
     },
+    "attachments": {
+      "items": []
+    },
     "gates": {
       "approval": {
         "required": false,
@@ -1011,6 +1039,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -1149,6 +1178,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -1214,6 +1246,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -1319,6 +1352,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -1383,6 +1419,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -1487,6 +1524,9 @@
       "mode": "full",
       "items": []
     },
+    "attachments": {
+      "items": []
+    },
     "gates": {
       "approval": {
         "required": false,
@@ -1549,6 +1589,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -1654,6 +1695,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -1716,6 +1760,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [
@@ -1817,6 +1862,9 @@
       "mode": "full",
       "items": []
     },
+    "attachments": {
+      "items": []
+    },
     "gates": {
       "approval": {
         "required": false,
@@ -1877,6 +1925,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -1903,6 +1952,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -1962,6 +2014,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -1988,6 +2041,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2047,6 +2103,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2073,6 +2130,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2132,6 +2192,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2158,6 +2219,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2217,6 +2281,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2243,6 +2308,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2301,6 +2369,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2327,6 +2396,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2385,6 +2457,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2411,6 +2484,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {
@@ -2469,6 +2545,7 @@
       "execution",
       "checklist",
       "subtasks",
+      "attachments",
       "activity"
     ],
     "actions": [],
@@ -2495,6 +2572,9 @@
     },
     "subtasks": {
       "mode": "full",
+      "items": []
+    },
+    "attachments": {
       "items": []
     },
     "gates": {

@@ -13,8 +13,16 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Kalite alanı</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Fonksiyon</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Kalite olayı</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Tamamlamak için çıktı dosyası gerektirir</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Kalite olayı</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>Kalite olayı değil</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Karar öncesi gözden geçirme toplantısı</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Bu tipteki işte gözden geçiren nihai kararı vermeden önce toplantı yapılabilir mi, yapılmalı mı.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>İzin verilmez</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>İsteğe bağlı</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Gözden geçirme toplantısı ayarı İzin verilmez, İsteğe bağlı veya Zorunlu olmalıdır.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Bu görev tipi siz düzenlerken başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Kayıt değil</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operasyonel kayıt</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP kalite kaydı</value></data>

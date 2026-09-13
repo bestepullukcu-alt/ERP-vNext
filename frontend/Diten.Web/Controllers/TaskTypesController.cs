@@ -269,9 +269,11 @@ public sealed class TaskTypesController : Controller
         gqmsDomain = Nullable(model.GqmsDomain),
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
+        reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion
     };
 
     /// <summary>
@@ -292,9 +294,14 @@ public sealed class TaskTypesController : Controller
         gqmsDomain = Nullable(model.GqmsDomain),
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
+        reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion,
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the version this SAME model was hydrated with on
+        // the GET that drew this form (a hidden field, see TaskTypeEditViewModel.Version).
+        expectedVersion = model.Version
     };
 
     /// <summary>
@@ -386,7 +393,11 @@ public sealed class TaskTypesController : Controller
         ["TASK_TYPE_CODE_IMMUTABLE"] = "ErrorCodeImmutable",
         ["TASK_TYPE_CODE_TAKEN"] = "ErrorCodeTaken",
         ["TASK_TYPE_CLASSIFICATION_INVALID"] = "ErrorClassificationInvalid",
-        ["TASK_TYPE_FUNCTION_CODE_INVALID"] = "ErrorFunctionCodeInvalid"
+        ["TASK_TYPE_FUNCTION_CODE_INVALID"] = "ErrorFunctionCodeInvalid",
+        ["TASK_TYPE_REVIEW_MEETING_REQUIREMENT_INVALID"] = "ErrorReviewMeetingRequirementInvalid",
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the SAME code TaskFieldDefinition's own edit gets
+        // on a stale write (TaskReasonCodes.ConcurrencyConflict is not a new code, per YAPMA).
+        ["TASK_CONCURRENCY_CONFLICT"] = "ErrorConcurrencyConflict"
     };
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

@@ -102,7 +102,16 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         // Gives the field-definition key manifest attribution; its UI lands in Phase 5.
                         new ModuleManifestAction("FIELD_DEFINITIONS", "Manage Task Fields",
                             TaskPermissions.FieldDefinitionsManage,
-                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        // BL-349 — gives ReadAll manifest attribution (Module="tasks", Scope=Tenant) so an
+                        // authorized person CAN grant it to a tenant role; without a manifest home it would be
+                        // stamped Module="platform"/Scope=PlatformAdmin by the A1 reflection worker and could
+                        // never reach a tenant role at all (see the manifest's own class-level note). Declared as
+                        // a Toolbar action the same way WorkReportReadTenantWide's own manifest action is — a
+                        // declared AUTHORITY, not a request-body flag, even though no button calls it yet.
+                        new ModuleManifestAction("READ_ALL", "Read All Tasks (Tenant-Wide)",
+                            TaskPermissions.ReadAll,
+                            "Toolbar", 100, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 new ModuleManifestPage(

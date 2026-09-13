@@ -1,3 +1,5 @@
+using Diten.AuthService.Domain.Enums;
+
 namespace Diten.AuthService.Domain.Entities;
 
 public sealed class User : EntityBase
@@ -14,6 +16,9 @@ public sealed class User : EntityBase
         IsActive = true;
         EmailConfirmed = false;
         FailedLoginAttempts = 0;
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — a new account is unclassified by construction. Documents that predate
+        // the field also read as Unknown (enum default 0) and are never rewritten for it.
+        AccountKind = AccountKind.Unknown;
         CreatedAt = DateTimeOffset.UtcNow;
     }
 
@@ -35,6 +40,22 @@ public sealed class User : EntityBase
     public DateTime? PasswordResetTokenExpiresAt { get; private set; }
     public DateTime? PasswordResetRequestedAt { get; private set; }
     public string? PlatformActorType { get; private set; }
+
+    /// <summary>
+    /// WP-INFRA-AUTH-ACCOUNT-KIND-01 — the account-kind FACT (Unknown/Human/Service). Stored as its number; missing
+    /// on older documents → <see cref="AccountKind.Unknown"/>. Mutated only through <see cref="SetAccountKind"/>.
+    /// </summary>
+    public AccountKind AccountKind { get; private set; }
+
+    /// <summary>
+    /// Classifies the account. The ONLY write path; callers are the explicit-grant-only SetAccountKind handler and a
+    /// permitted explicit kind on create — never an automatic creation path (AccountKindCreationPathsGuardTests).
+    /// </summary>
+    public void SetAccountKind(AccountKind kind)
+    {
+        AccountKind = kind;
+        UpdatedAt = DateTimeOffset.UtcNow;
+    }
 
     public void UpdateProfile(string firstName, string lastName)
     {

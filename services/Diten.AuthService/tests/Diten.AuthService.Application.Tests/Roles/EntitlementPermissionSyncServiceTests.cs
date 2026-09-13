@@ -239,6 +239,24 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.DoesNotContain("ppm.portfolios.assign-owner", adminKeys);
     }
 
+    [Fact]
+    public async Task Grant_excludes_account_kind_manage_even_when_attributed_to_a_grantable_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — hypothetical mis-attribution: the exclusion must still hold.
+            new("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "legal-entity")
+        };
+        var (svc, roles, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleAsync(TenantA, "legal-entity", Actor, CancellationToken.None);
+
+        var adminKeys = rolePerms.KeysFor(roles.IdOf(TenantA, "Admin"), catalog).ToList();
+        Assert.Contains("mdm.legal-entities.read", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
+    }
+
     // ── FIX-2: reconcile against the full entitled set ──
 
     [Fact]

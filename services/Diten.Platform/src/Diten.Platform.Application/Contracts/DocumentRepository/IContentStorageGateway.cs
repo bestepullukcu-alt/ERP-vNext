@@ -65,7 +65,11 @@ public interface IContentStorageGateway
 public enum ContentStorageScope
 {
     Documents = 0,
-    Templates = 1
+    Templates = 1,
+
+    /// <summary>MOD-0024 Slice ATT-1 — task attachments/evidence/deliverables. Additive only, per this enum's own
+    /// doc comment; the value is projected into the object key by name, never by ordinal.</summary>
+    TaskAttachments = 2
 }
 
 /// <summary>

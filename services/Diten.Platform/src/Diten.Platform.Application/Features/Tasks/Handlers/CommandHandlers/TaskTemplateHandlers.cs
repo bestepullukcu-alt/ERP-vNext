@@ -1,6 +1,7 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.Tasks.Commands;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -71,17 +72,20 @@ public sealed class CreateTaskTemplateHandler : IRequestHandler<CreateTaskTempla
     private readonly IChecklistTemplateRepository _checklists;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
 
     public CreateTaskTemplateHandler(
         ITaskTemplateRepository templates,
         IChecklistTemplateRepository checklists,
         ITenantContext tenantContext,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskAssignmentGuard assignmentGuard)
     {
         _templates = templates;
         _checklists = checklists;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _assignmentGuard = assignmentGuard;
     }
 
     public async Task<Response<Guid>> Handle(CreateTaskTemplateCommand command, CancellationToken ct)
@@ -100,6 +104,19 @@ public sealed class CreateTaskTemplateHandler : IRequestHandler<CreateTaskTempla
         {
             return Response<Guid>.Fail(
                 assignmentInvalid.Message, 400, assignmentInvalid.ReasonCode, command.CorrelationId);
+        }
+
+        /*
+         * BL-353 — the SAME question "create from template" already asks (`01bc0915`), asked one step earlier so
+         * the two can never disagree: a template whose default pool cannot be saved from here cannot later fail
+         * only when someone tries to USE it. `ValidateAssignment` above is shape only (not a named person); this
+         * is BL-057's scope test — position active, unit live, inside the SAVER's own scope.
+         */
+        if (Normalized(request.DefaultPoolPositionId) is { } defaultPool
+            && await _assignmentGuard.CheckPoolAsync(defaultPool, ct) is { } poolRefused)
+        {
+            return Response<Guid>.Fail(
+                poolRefused.Message, poolRefused.StatusCode, poolRefused.ReasonCode, command.CorrelationId);
         }
 
         if (TaskTemplateRules.ValidateDueInDays(request.DefaultDueInDays) is { } dueInvalid)
@@ -183,15 +200,18 @@ public sealed class UpdateTaskTemplateHandler : IRequestHandler<UpdateTaskTempla
     private readonly ITaskTemplateRepository _templates;
     private readonly IChecklistTemplateRepository _checklists;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskAssignmentGuard _assignmentGuard;
 
     public UpdateTaskTemplateHandler(
         ITaskTemplateRepository templates,
         IChecklistTemplateRepository checklists,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskAssignmentGuard assignmentGuard)
     {
         _templates = templates;
         _checklists = checklists;
         _currentUser = currentUser;
+        _assignmentGuard = assignmentGuard;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateTaskTemplateCommand command, CancellationToken ct)
@@ -218,6 +238,17 @@ public sealed class UpdateTaskTemplateHandler : IRequestHandler<UpdateTaskTempla
         {
             return Response<NoContent>.Fail(
                 assignmentInvalid.Message, 400, assignmentInvalid.ReasonCode, command.CorrelationId);
+        }
+
+        // BL-353 — see CreateTaskTemplateHandler's own note beside the same call. Asked on EVERY update, not
+        // only when the pool changes: unlike BL-352's recurrence rule (a standing rule whose OWNER keeps
+        // responsibility once set), a template is re-published by this save for anyone to instantiate from, so
+        // the saver's scope has to hold at the moment of THIS save.
+        if (CreateTaskTemplateHandler.Normalized(request.DefaultPoolPositionId) is { } defaultPool
+            && await _assignmentGuard.CheckPoolAsync(defaultPool, ct) is { } poolRefused)
+        {
+            return Response<NoContent>.Fail(
+                poolRefused.Message, poolRefused.StatusCode, poolRefused.ReasonCode, command.CorrelationId);
         }
 
         if (TaskTemplateRules.ValidateDueInDays(request.DefaultDueInDays) is { } dueInvalid)

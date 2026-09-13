@@ -323,6 +323,46 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("ppm.portfolios.assign-owner", viewerKeys);
     }
 
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the second explicit-grant-only key (K1-a: remove it from
+    // ExplicitGrantOnlyPermissions.Keys and this goes red together with its siblings in the other grant paths).
+    [Fact]
+    public void Account_kind_manage_enters_no_default_role_even_under_the_Admin_module_while_lookup_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("auth", "users", "lookup", "Lookup Users", null, moduleOverride: "access-governance"));
+        catalog.Add(new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("auth.users.account-kind.manage", superAdminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", viewerKeys);
+        Assert.Contains("auth.users.lookup", adminKeys);      // ordinary tenant key: Admin breadth clause
+        Assert.DoesNotContain("auth.users.lookup", viewerKeys); // not a read action
+    }
+
+    // MOD0024-TASK-READ-ACCESS-01 (BL-349, owner decision 2026-09-13) — the third explicit-grant-only key. Proven
+    // the same way UsersAccountKindManage is proven directly above: even under its OWN module ("tasks", where the
+    // Task Engine's other platform.tasks.* keys DO reach Admin's breadth clause were "tasks" listed there), it
+    // reaches no default role — a tenant activating Task Engine must not hand every Admin/Viewer "read every task".
+    [Fact]
+    public void Tasks_read_all_enters_no_default_role_even_under_a_module_ordinary_task_keys_would_reach()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks", "read", "Read Task", null, moduleOverride: "tasks"));
+        catalog.Add(new Permission("platform", "tasks", "read-all", "Read All Tasks", null, moduleOverride: "tasks"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.read-all", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", adminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", viewerKeys);
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

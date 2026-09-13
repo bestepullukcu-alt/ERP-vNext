@@ -117,6 +117,20 @@ public static class TaskPermissions
     public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
 
     /// <summary>
+    /// BL-349 — who may read ANY task in the tenant, ignoring <see cref="Services.ITaskReadAccessPolicy"/>'s
+    /// ordinary relationship legs (assignee, pool, creator, watcher, parent, scope).
+    ///
+    /// <para><b>Explicit-grant-only, on purpose — the same protection as
+    /// <c>auth.users.account-kind.manage</c>/<c>ppm.portfolios.assign-owner</c> (AuthService
+    /// <c>ExplicitGrantOnlyPermissions</c>, BL-359).</b> A "read every task" key that reached the tenant Admin
+    /// baseline automatically — the way an ordinary module-entitlement key does — would defeat BL-349's own
+    /// rule the moment a tenant activated the module: every Admin, and every Viewer behind the same sync, would
+    /// read tasks they hold no relationship to. Only an authorized person's explicit role-permission assignment
+    /// may grant it.</para>
+    /// </summary>
+    public const string ReadAll = "platform.tasks.read-all";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///
@@ -146,6 +160,23 @@ public static class TaskReasonCodes
     public const string PositionNotAssignable = "POSITION_NOT_ASSIGNABLE";
     public const string AssigneeInvalid = "ASSIGNEE_INVALID";
     public const string OrganizationUnitUnresolved = "ORGANIZATION_UNIT_UNRESOLVED";
+
+    /// <summary>BL-355 — the named unit does not exist in this tenant at all, including one that belongs to a
+    /// DIFFERENT tenant: the repository is tenant-scoped, so a foreign unit resolves to the same "not found" a
+    /// typo would, and neither answer tells the caller a unit with that id exists anywhere.</summary>
+    public const string OrganizationUnitNotFound = "TASK_ORGANIZATION_UNIT_NOT_FOUND";
+
+    /// <summary>
+    /// BL-355 — the unit exists and is active, but is not the caller's to file into (BL-057's own three-leg
+    /// scope test, <see cref="Services.TaskAssignmentScope.Allows"/>).
+    ///
+    /// <para>Its OWN code, distinct from <see cref="OrganizationUnitNotFound"/> — unlike
+    /// <see cref="AssigneeNotAssignable"/>, which deliberately collapses "not eligible" and "out of scope" into
+    /// one answer so a caller can never learn a reachable-looking person exists elsewhere, this IS allowed to
+    /// say the unit exists: an organization unit is reference data the org chart already names to everyone in
+    /// the tenant, not a fact about a specific person's reachability.</para>
+    /// </summary>
+    public const string OrganizationUnitOutOfScope = "TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE";
     public const string AlreadyClaimed = "TASK_ALREADY_CLAIMED";
     public const string AlreadyAccepted = "TASK_ALREADY_ACCEPTED";
     public const string NotClaimable = "TASK_NOT_CLAIMABLE";
@@ -357,6 +388,30 @@ public static class TaskReasonCodes
 
     /// <summary>The checklist item code does not exist on this task's run.</summary>
     public const string ChecklistItemNotFound = "CHECKLIST_ITEM_NOT_FOUND";
+
+    // ── MOD-0024 Slice ATT-1 — task attachments ─────────────────────────────
+    /// <summary>Neither the current holder nor the requester — attachments are their act, nobody else's.</summary>
+    public const string AttachmentNotAuthorized = "TASK_ATTACHMENT_NOT_AUTHORIZED";
+    /// <summary>A closed task (Done/Cancelled) cannot gain or lose attachments — its record is history.</summary>
+    public const string AttachmentTaskClosed = "TASK_ATTACHMENT_TASK_CLOSED";
+    /// <summary>The attachment id does not resolve for this task/tenant — never distinguished from "not yours".</summary>
+    public const string AttachmentNotFound = "TASK_ATTACHMENT_NOT_FOUND";
+    /// <summary><c>checklistItemCode</c> was given but does not name a real item on this task's run.</summary>
+    public const string AttachmentChecklistItemNotFound = "TASK_ATTACHMENT_CHECKLIST_ITEM_NOT_FOUND";
+    /// <summary>
+    /// The checklist item requires evidence and none is attached — the enforcement AC2 asks for. Thrown by the
+    /// SAME handler that ticks the item, not by the attachment endpoints: completing is the moment the gate must
+    /// hold, not the moment a (possibly unrelated) file is added.
+    /// </summary>
+    public const string ChecklistEvidenceRequired = "CHECKLIST_EVIDENCE_REQUIRED";
+
+    /// <summary>
+    /// The task's TYPE has <c>RequiresDeliverableOnCompletion</c> set and no live Deliverable-kind attachment
+    /// exists — thrown by the SAME handler that performs the complete transition (<c>TransitionTaskItemHandler</c>),
+    /// the same placement <see cref="ChecklistEvidenceRequired"/> uses and for the same reason: the gate must hold
+    /// at the moment the task actually closes, not at the moment a file happens to be added.
+    /// </summary>
+    public const string DeliverableRequired = "TASK_DELIVERABLE_REQUIRED";
     public const string DependencyInvalid = "TASK_DEPENDENCY_INVALID";
 
     /// <summary>The other end of the edge does not exist, or belongs to another tenant.</summary>
@@ -445,6 +500,7 @@ public static class TaskReasonCodes
     public const string TaskTypeCodeTaken = "TASK_TYPE_CODE_TAKEN";
     public const string TaskTypeClassificationInvalid = "TASK_TYPE_CLASSIFICATION_INVALID";
     public const string TaskTypeFunctionCodeInvalid = "TASK_TYPE_FUNCTION_CODE_INVALID";
+    public const string TaskTypeReviewMeetingRequirementInvalid = "TASK_TYPE_REVIEW_MEETING_REQUIREMENT_INVALID";
 
     // ── Closure outcomes ─────────────────────────────────────────────────
     /// <summary>The type's outcome dictionary is malformed — a duplicate code, no label, or two labels.</summary>
@@ -464,6 +520,16 @@ public static class TaskReasonCodes
 
     /// <summary>The chosen outcome carries <c>RequiresReason</c> and no reason was given.</summary>
     public const string ClosureReasonRequired = "CLOSURE_REASON_REQUIRED";
+
+    /// <summary>
+    /// Faz 2a — a <see cref="TaskFieldStage.Closure"/> field marked <c>IsRequired</c> was not supplied at
+    /// closure, and no value already sits on the task from an earlier attempt. Enforced here rather than only in
+    /// the dialog: the dispatch route closes a task without ever drawing the dialog.
+    /// </summary>
+    public const string ClosureFieldRequired = "TASK_CLOSURE_FIELD_REQUIRED";
+
+    /// <summary>Faz 2a — the closing narrative exceeds <see cref="TaskFieldLimits.MaxDescriptionLength"/>.</summary>
+    public const string ClosureNoteTooLong = "TASK_CLOSURE_NOTE_TOO_LONG";
 
     // ── DCP-005 slice 2 — the document reference list ────────────────────
     public const string DocumentListInvalid = "DOCUMENT_LIST_INVALID";
@@ -701,7 +767,17 @@ public sealed record BulkDeleteTaskItemRequest(IReadOnlyList<Guid> Ids);
 
 public sealed record ClaimTaskItemRequest(int ExpectedVersion);
 
-public sealed record TaskTransitionRequest(int ExpectedVersion, string? ReasonCode, string? Note);
+/// <param name="ClosureFieldValues">
+/// Faz 2a — values for the task type's CLOSURE-stage fields, asked only by <c>complete</c>/<c>cancel</c> and
+/// ignored by every other transition. Trailing and optional: every caller written before this field existed
+/// keeps closing exactly as it did, and a task whose type has no closure field asks nothing either way.
+///
+/// <para>Additive to <see cref="TaskItemDetailDto.FieldValues"/>, never a replacement for it — a closure value
+/// under a code is merged in by that code; every entry-stage value already on the task is left untouched.</para>
+/// </param>
+public sealed record TaskTransitionRequest(
+    int ExpectedVersion, string? ReasonCode, string? Note,
+    IReadOnlyList<TaskFieldValueDto>? ClosureFieldValues = null);
 
 /// <summary>
 /// Set (or move) a personal plan date. Its OWN request type rather than an optional field bolted onto
@@ -910,7 +986,9 @@ public sealed record TaskItemDetailDto(
     /// </summary>
     IReadOnlyList<TaskDocumentReferenceDto>? DocumentReferences = null,
     /// <summary>The task's TYPE, so an edit form can re-render it and ask that type for its governing documents.</summary>
-    Guid? TaskTypeId = null);
+    Guid? TaskTypeId = null,
+    /// <summary>Faz 2a — the closing narrative, present only once the task is closed.</summary>
+    string? ClosureNote = null);
 
 public sealed record TaskWatcherDto(Guid Id, Guid UserId, string Role, Guid? PositionId);
 
@@ -1052,7 +1130,12 @@ public sealed record CreateTaskFieldDefinitionRequest(
     /// </summary>
     string? ViewPermission = null,
     /// <summary>BL-024 Phase 2 — the permission required to WRITE it. Null: anyone who can edit the task.</summary>
-    string? EditPermission = null);
+    string? EditPermission = null,
+    /// <summary>
+    /// Faz 2a — WHEN this definition is asked. Trailing and defaulted to <see cref="TaskFieldStage.Entry"/> so
+    /// every caller written before this field existed keeps creating create-form fields, exactly as before.
+    /// </summary>
+    TaskFieldStage Stage = TaskFieldStage.Entry);
 
 /// <summary>
 /// Full replace — except <c>Code</c>, which is absent on purpose. Every <c>TaskFieldValue</c> already stored
@@ -1076,7 +1159,10 @@ public sealed record UpdateTaskFieldDefinitionRequest(
     /// <summary>BL-024 Phase 2 — see the create request. Trailing and optional; an edit that omits them clears
     /// the restriction, which is the same full-replace semantics every other field on this request has.</summary>
     string? ViewPermission = null,
-    string? EditPermission = null);
+    string? EditPermission = null,
+    /// <summary>Faz 2a — see the create request. An edit that omits it resets the definition to Entry, the same
+    /// full-replace semantics every other field on this request already has.</summary>
+    TaskFieldStage Stage = TaskFieldStage.Entry);
 
 /// <summary>
 /// Retire several definitions at once.
@@ -1116,7 +1202,10 @@ public sealed record TaskFieldDefinitionDto(
     string DefaultAccessState,
     bool IsActive,
     int Version,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    /// <summary>Faz 2a — <c>Entry</c> or <c>Closure</c>. As a string, the live convention every enum on this
+    /// DTO already follows.</summary>
+    string Stage = "Entry");
 
 /// <summary>
 /// One choice a configurable field offers. Flattened on purpose: a platform lookup, a published reference value
@@ -1278,7 +1367,11 @@ public sealed record CreateTaskTypeRequest(
     bool IsQualityEvent,
     IReadOnlyList<string>? GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    /// <summary>Null takes the entity default, <see cref="TaskReviewMeetingRequirement.Optional"/>.</summary>
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null,
+    /// <summary>WP-PSS-MOD0024-ATTACHMENTS-UX-01 — see <see cref="TaskType.RequiresDeliverableOnCompletion"/>.</summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>
 /// Update a task type. <c>Code</c> is accepted so the screen can round-trip what it displayed, and REFUSED if it
@@ -1295,14 +1388,38 @@ public sealed record UpdateTaskTypeRequest(
     IReadOnlyList<string>? GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
     /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — see <see cref="UpdateTaskFieldDefinitionRequest.ExpectedVersion"/>,
+    /// the sibling this was modelled on. Required, not trailing: unlike the fields below it, a client written
+    /// before this existed cannot post a value that means "not asking" — the write must be refused, not silently
+    /// unprotected.
+    /// </summary>
+    int ExpectedVersion,
+    /// <summary>
     /// ⚠ NULL MEANS "NOT ASKING", an empty list means "clear it". An update is otherwise a FULL REPLACE, so a
     /// client that does not yet know about the dictionary — the current type editor — would silently delete a
     /// type's outcomes on every save.
     /// </summary>
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    /// <summary>
+    /// ⚠ NULL MEANS "NOT ASKING" — the same contract as <see cref="ClosureOutcomes"/>, for the same reason: a
+    /// client written before this field existed must not reset a Required type to Optional on every save.
+    /// </summary>
+    TaskReviewMeetingRequirement? ReviewMeetingRequirement = null,
+    /// <summary>
+    /// A plain full-replace bool, like <see cref="IsQualityEvent"/> — the editor draws this checkbox from the
+    /// moment the field exists, so (unlike <see cref="ClosureOutcomes"/>) there is no pre-existing screen that
+    /// would silently reset it on save.
+    /// </summary>
+    bool RequiresDeliverableOnCompletion = false);
 
-/// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
-public sealed record SetTaskTypeActiveRequest(bool IsActive);
+/// <summary>
+/// Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.
+///
+/// <para>WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — carries <c>ExpectedVersion</c> too: this and the
+/// full edit share the SAME repository write path (<c>ITaskTypeRepository.UpdateAsync</c>), so both get the
+/// same protection rather than leaving the toggle as the one door still unguarded.</para>
+/// </summary>
+public sealed record SetTaskTypeActiveRequest(bool IsActive, int ExpectedVersion);
 
 /// <summary>One task type as the management screen and the task form read it.</summary>
 public sealed record TaskTypeDto(
@@ -1317,7 +1434,14 @@ public sealed record TaskTypeDto(
     IReadOnlyList<string> GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>> LocalDocuments,
     bool IsActive,
-    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null);
+    IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
+    TaskReviewMeetingRequirement ReviewMeetingRequirement = TaskReviewMeetingRequirement.Optional,
+    bool RequiresDeliverableOnCompletion = false,
+    /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — round-tripped so BOTH the edit form and the
+    /// activate/deactivate toggle can post back the version they read, and be refused if it has moved.
+    /// </summary>
+    int Version = 0);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────

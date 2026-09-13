@@ -360,6 +360,13 @@ public sealed record WorkItemProjectionDto(
     WorkItemChecklistDto? Checklist = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     WorkItemSubtasksDto? Subtasks = null,
+    /// <summary>
+    /// MOD-0024 Slice ATT-1 — files attached to the task (kind Attachment/Deliverable/Evidence), same
+    /// declared-and-empty rule as Checklist/Subtasks: MOD-0024 owns attachments for every task it projects, so
+    /// the container is emitted even with zero items (the shell's "add file" affordance needs it to exist).
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemAttachmentsDto? Attachments = null,
     /// <summary>Set when this item IS a subtask, so the shell can show whose subtask it is.</summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? ParentTaskItemId = null,
@@ -983,7 +990,34 @@ public sealed record WorkItemReturnedDto(
 public sealed record WorkItemClosureDto(
     string ReasonCode,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemLabelDto? Outcome = null);
+    WorkItemLabelDto? Outcome = null,
+    /// <summary>Faz 2a — the closing narrative, in the actor's own words. Omitted, never empty-string, when none
+    /// was written.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Note = null,
+    /// <summary>
+    /// Faz 2a — the task's CLOSURE-stage field values, in the businessContext field's own shape
+    /// (<see cref="WorkItemBusinessFieldDto"/>) so the browser needs no second renderer for the same kind of
+    /// value. Null — never an empty list — when the type asks no closure field, which is every type before this
+    /// slice and every type nobody has configured since.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemBusinessFieldDto>? Fields = null,
+    /// <summary>
+    /// Faz 2a — a COUNT and a REFERENCE into the attachments this same projection already carries under
+    /// <c>attachments.items[]</c> (pack §4: "no new container"). One entry per attachment KIND actually present
+    /// among the task's Deliverable/Evidence attachments; a kind with none is simply absent.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemClosureAttachmentRefDto>? Deliverables = null);
+
+/// <summary>One attachment KIND's closure-relevant tally — see <see cref="WorkItemClosureDto.Deliverables"/>.</summary>
+public sealed record WorkItemClosureAttachmentRefDto(
+    /// <summary>Deliverable | Evidence — the domain enum's own spelling, same convention
+    /// <see cref="WorkItemAttachmentDto.Kind"/> already uses.</summary>
+    string Kind,
+    int Count,
+    IReadOnlyList<string> AttachmentIds);
 
 public sealed record WorkItemClosureOutcomeDto(
     string Code,
@@ -1057,7 +1091,14 @@ public sealed record WorkItemTaskTypeDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<WorkItemClosureOutcomeDto>? CompletionOutcomes = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null);
+    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null,
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — mirrors <c>TaskType.RequiresDeliverableOnCompletion</c>. REPORTED so the
+    /// Complete window can ask for a file client-side before the write; the server enforces the same rule
+    /// independently on the transition itself (pack §12 E1 — a hidden control is presentation, the refusal is the
+    /// rule). False for every type written before this field existed.
+    /// </summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>
 /// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);
@@ -1104,13 +1145,41 @@ public sealed record WorkItemChecklistItemDto(
     /// nothing has to publish who wrote which line to every reader of the list. Defaulted true so that a
     /// provider which has no concept of authorship keeps behaving as it did.</para>
     /// </summary>
-    bool Editable = true);
+    bool Editable = true,
+    /// <summary>MOD-0024 Slice ATT-1 — live count of non-deleted Evidence-kind attachments joined to this item
+    /// by <c>ChecklistRunItemCode</c>. Zero even when <see cref="EvidenceRequired"/> is true and nothing was
+    /// uploaded yet — the shell reads that combination as "show the add-evidence affordance".</summary>
+    int EvidenceCount = 0);
 
 /// <summary>
 /// Subtasks. <c>mode: "full"</c> because MOD-0024 IS their source and may create/complete them here; a consumer
 /// that merely mirrors someone else's subtasks would send "readonly" and deep-link instead.
 /// </summary>
 public sealed record WorkItemSubtasksDto(string Mode, IReadOnlyList<WorkItemSubtaskDto> Items);
+
+/// <summary>MOD-0024 Slice ATT-1 — the task's attachments, newest first.</summary>
+public sealed record WorkItemAttachmentsDto(IReadOnlyList<WorkItemAttachmentDto> Items);
+
+/// <summary>
+/// One attached file. <c>ContentId</c> is the ONLY thing the client needs to download it
+/// (<c>GET {id}/attachments/{attachmentId}/content</c>) — no storage detail is projected here, matching
+/// MOD-0262-FU01's own AD-4/AD-5 (an object key never leaves the repository's boundary).
+/// </summary>
+public sealed record WorkItemAttachmentDto(
+    string Id,
+    string FileName,
+    string MediaType,
+    long ByteSize,
+    /// <summary>Attachment | Deliverable | Evidence, the domain enum's own spelling.</summary>
+    string Kind,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Note,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? UploadedBy,
+    DateTimeOffset UploadedAt,
+    /// <summary>Set when this file was uploaded as evidence for a specific checklist item.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? ChecklistItemId);
 
 public sealed record WorkItemSubtaskDto(
     string Id,
