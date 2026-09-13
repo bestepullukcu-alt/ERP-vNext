@@ -44,13 +44,17 @@ public sealed class AccountKindTests
         Assert.NotEqual(before, user.UpdatedAt);
     }
 
+    // MOD0024-TASK-READ-ACCESS-01 (BL-349, owner decision 2026-09-13) added platform.tasks.read-all as the
+    // set's third owner-decided key — count and membership below updated to match; the two original assertions
+    // are unchanged otherwise.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_two_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_three_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("ppm.portfolios.assign-owner"));
-        Assert.Equal(2, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.read-all"));
+        Assert.Equal(3, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 

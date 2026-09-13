@@ -3,6 +3,7 @@ using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Contracts.DocumentRepository;
 using Diten.Platform.Application.Features.DocumentRepository;
 using Diten.Platform.Application.Features.DocumentRepository.Services;
+using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -182,7 +183,11 @@ public sealed class RemoveTaskAttachmentHandler(
     }
 }
 
-public sealed class ListTaskAttachmentsHandler(ITaskItemRepository tasks, ITaskAttachmentRepository attachments)
+public sealed class ListTaskAttachmentsHandler(
+    ITaskItemRepository tasks,
+    ITaskAttachmentRepository attachments,
+    ITaskReadAccessPolicy readAccess,
+    ICurrentUserContext currentUser)
     : IRequestHandler<ListTaskAttachmentsQuery, Response<IReadOnlyList<TaskAttachmentDto>>>
 {
     public async Task<Response<IReadOnlyList<TaskAttachmentDto>>> Handle(
@@ -190,6 +195,15 @@ public sealed class ListTaskAttachmentsHandler(ITaskItemRepository tasks, ITaskA
     {
         var task = await tasks.GetByIdAsync(request.TaskItemId, ct);
         if (task is null)
+        {
+            return Response<IReadOnlyList<TaskAttachmentDto>>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
+        }
+
+        // BL-349 — a READ question, deliberately not TaskAttachmentAuthorization (holder-or-requester, the
+        // WRITE-side rule). The SAME task-not-found shape as a missing task: a real task the caller has no
+        // relationship to must not be distinguishable from one that does not exist.
+        if (!await readAccess.CanReadAsync(task, currentUser.UserId, ct))
         {
             return Response<IReadOnlyList<TaskAttachmentDto>>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
@@ -205,13 +219,26 @@ public sealed class ListTaskAttachmentsHandler(ITaskItemRepository tasks, ITaskA
 }
 
 public sealed class OpenTaskAttachmentHandler(
-    ITaskItemRepository tasks, ITaskAttachmentRepository attachments, DocumentRepositoryService documentRepository)
+    ITaskItemRepository tasks,
+    ITaskAttachmentRepository attachments,
+    DocumentRepositoryService documentRepository,
+    ITaskReadAccessPolicy readAccess,
+    ICurrentUserContext currentUser)
     : IRequestHandler<OpenTaskAttachmentQuery, Response<TaskAttachmentContentHandle>>
 {
     public async Task<Response<TaskAttachmentContentHandle>> Handle(OpenTaskAttachmentQuery request, CancellationToken ct)
     {
         var task = await tasks.GetByIdAsync(request.TaskItemId, ct);
         if (task is null)
+        {
+            return Response<TaskAttachmentContentHandle>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
+        }
+
+        // BL-349 — checked BEFORE the attachment lookup and with the TASK-not-found shape, never
+        // AttachmentNotFound: an unauthorized reader must be indistinguishable from someone asking about a task
+        // that does not exist at all, not merely told "wrong attachment id".
+        if (!await readAccess.CanReadAsync(task, currentUser.UserId, ct))
         {
             return Response<TaskAttachmentContentHandle>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);

@@ -76,6 +76,10 @@ public static class DependencyInjection
         // accepts exactly who the pickers offer.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentGuard,
             Features.Tasks.Services.TaskAssignmentGuard>();
+        // BL-349 at the READ — who may see one task's detail/attachments, a different question from who it is
+        // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
+        services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
+            Features.Tasks.Services.TaskReadAccessPolicy>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();

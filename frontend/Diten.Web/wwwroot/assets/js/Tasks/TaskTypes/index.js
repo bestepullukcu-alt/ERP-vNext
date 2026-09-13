@@ -453,7 +453,13 @@ const TaskFieldDefinitionList = (function () {
                         method: 'PUT',
                         credentials: 'include',
                         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ isActive: next })
+                        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — this toggle shares the SAME server
+                        // write path as the full edit form, so it carries the SAME expected-version guard: the
+                        // version this row was listed with, read straight off the DataTable's own row object
+                        // (TaskTypeDto now serialises it). A stale toggle answers 409, caught below like any
+                        // other failed response — the list simply is not reloaded, so a manual refresh shows
+                        // the row as it actually stands.
+                        body: JSON.stringify({ isActive: next, expectedVersion: row.version })
                     });
                     if (!res.ok) { throw new Error('Toggle failed.'); }
                     reloadWithSuccessToast(next ? 'RecordActivated' : 'RecordDeactivated');

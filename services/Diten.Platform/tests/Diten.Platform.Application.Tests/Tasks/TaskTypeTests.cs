@@ -153,7 +153,7 @@ public sealed class TaskTypeTests
         var handler = new SetTaskTypeActiveHandler(repo);
 
         var response = await handler.Handle(
-            new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(false), "c1"),
+            new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(false, type.Version), "c1"),
             CancellationToken.None);
 
         Assert.Equal(204, response.StatusCode);

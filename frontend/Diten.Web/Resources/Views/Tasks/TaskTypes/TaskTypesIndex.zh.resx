@@ -22,6 +22,7 @@
   <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>可选</value></data>
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>必需</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>评审会议设置必须为“不允许”、“可选”或“必需”。</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>您编辑此任务类型时，其他人已将其更改。请刷新页面后重试。</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>非记录</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>运营记录</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP 质量记录</value></data>

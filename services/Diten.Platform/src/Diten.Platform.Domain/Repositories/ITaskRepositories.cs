@@ -296,7 +296,13 @@ public interface ITaskTypeRepository
     /// <summary>Every type, retired ones included — the management screen and the uniqueness check.</summary>
     Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default);
 
-    Task UpdateAsync(TaskType type, CancellationToken ct = default);
+    /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — expected-version write, like every other MOD-0024 edit
+    /// (see <see cref="ITaskFieldDefinitionRepository.UpdateAsync"/>, the sibling this was modelled on). Used by
+    /// BOTH the full edit and the activate/deactivate toggle — they share this one write path, so both get the
+    /// same protection.
+    /// </summary>
+    Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default);
 }
 
 /// <summary>

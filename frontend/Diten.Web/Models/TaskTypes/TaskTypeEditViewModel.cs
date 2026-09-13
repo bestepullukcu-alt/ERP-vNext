@@ -12,6 +12,13 @@ public sealed class TaskTypeEditViewModel
     public Guid Id { get; set; }
 
     /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the version this model was hydrated with, carried
+    /// through the form as a hidden field and posted back as <c>ExpectedVersion</c>. Zero for a not-yet-created
+    /// type (the Create screen's own model), which the server never asks for since Create takes no version.
+    /// </summary>
+    public int Version { get; set; }
+
+    /// <summary>
     /// Tenant-unique and IMMUTABLE. The Edit screen renders it read-only; the server refuses a changed one
     /// rather than ignoring it, so the two ends agree instead of one of them being polite.
     /// </summary>

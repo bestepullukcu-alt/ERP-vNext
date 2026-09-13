@@ -43,8 +43,8 @@ public sealed class TaskTypeReviewMeetingRequirementTests
         "REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
         ReviewMeetingRequirement: requirement);
 
-    private static UpdateTaskTypeRequest Update(TaskReviewMeetingRequirement? requirement) => new(
-        "REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
+    private static UpdateTaskTypeRequest Update(TaskReviewMeetingRequirement? requirement, int expectedVersion = 1) => new(
+        "REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null, expectedVersion,
         ReviewMeetingRequirement: requirement);
 
     private static TaskType Stored(TaskReviewMeetingRequirement requirement) => new()
@@ -231,7 +231,7 @@ public sealed class TaskTypeReviewMeetingRequirementMongoTests
         var result = await new UpdateTaskTypeHandler(repository).Handle(
             new UpdateTaskTypeCommand(
                 type.Id,
-                new UpdateTaskTypeRequest("REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
+                new UpdateTaskTypeRequest("REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null, type.Version,
                     ReviewMeetingRequirement: TaskReviewMeetingRequirement.Required),
                 "c"),
             CancellationToken.None);

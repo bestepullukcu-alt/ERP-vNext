@@ -22,6 +22,7 @@
   <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Opcional</value></data>
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Obligatoria</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>La configuración de la reunión de revisión debe ser No permitida, Opcional u Obligatoria.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Este tipo de tarea fue modificado por otra persona mientras usted lo editaba. Actualice la página e inténtelo de nuevo.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>No es un registro</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Registro operativo</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Registro de calidad GxP</value></data>

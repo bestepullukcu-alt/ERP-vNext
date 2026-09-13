@@ -62,6 +62,9 @@
       class="needs-validation" novalidate>
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
+    @* WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the version this page was drawn with, round-tripped
+       so the server can refuse a save that would silently overwrite a colleague's edit. *@
+    <input type="hidden" asp-for="Version" />
 
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 

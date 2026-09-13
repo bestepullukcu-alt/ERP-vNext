@@ -117,6 +117,20 @@ public static class TaskPermissions
     public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
 
     /// <summary>
+    /// BL-349 — who may read ANY task in the tenant, ignoring <see cref="Services.ITaskReadAccessPolicy"/>'s
+    /// ordinary relationship legs (assignee, pool, creator, watcher, parent, scope).
+    ///
+    /// <para><b>Explicit-grant-only, on purpose — the same protection as
+    /// <c>auth.users.account-kind.manage</c>/<c>ppm.portfolios.assign-owner</c> (AuthService
+    /// <c>ExplicitGrantOnlyPermissions</c>, BL-359).</b> A "read every task" key that reached the tenant Admin
+    /// baseline automatically — the way an ordinary module-entitlement key does — would defeat BL-349's own
+    /// rule the moment a tenant activated the module: every Admin, and every Viewer behind the same sync, would
+    /// read tasks they hold no relationship to. Only an authorized person's explicit role-permission assignment
+    /// may grant it.</para>
+    /// </summary>
+    public const string ReadAll = "platform.tasks.read-all";
+
+    /// <summary>
     /// The permissions that gate a <b>personal work surface</b> — a page that shows or acts on the viewer's own
     /// task INSTANCES.
     ///
@@ -1374,6 +1388,13 @@ public sealed record UpdateTaskTypeRequest(
     IReadOnlyList<string>? GroupDocuments,
     IReadOnlyDictionary<string, IReadOnlyList<string>>? LocalDocuments,
     /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — see <see cref="UpdateTaskFieldDefinitionRequest.ExpectedVersion"/>,
+    /// the sibling this was modelled on. Required, not trailing: unlike the fields below it, a client written
+    /// before this existed cannot post a value that means "not asking" — the write must be refused, not silently
+    /// unprotected.
+    /// </summary>
+    int ExpectedVersion,
+    /// <summary>
     /// ⚠ NULL MEANS "NOT ASKING", an empty list means "clear it". An update is otherwise a FULL REPLACE, so a
     /// client that does not yet know about the dictionary — the current type editor — would silently delete a
     /// type's outcomes on every save.
@@ -1391,8 +1412,14 @@ public sealed record UpdateTaskTypeRequest(
     /// </summary>
     bool RequiresDeliverableOnCompletion = false);
 
-/// <summary>Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.</summary>
-public sealed record SetTaskTypeActiveRequest(bool IsActive);
+/// <summary>
+/// Retire or restore a type. There is no delete — see <c>DeactivateTaskTypeHandler</c>.
+///
+/// <para>WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — carries <c>ExpectedVersion</c> too: this and the
+/// full edit share the SAME repository write path (<c>ITaskTypeRepository.UpdateAsync</c>), so both get the
+/// same protection rather than leaving the toggle as the one door still unguarded.</para>
+/// </summary>
+public sealed record SetTaskTypeActiveRequest(bool IsActive, int ExpectedVersion);
 
 /// <summary>One task type as the management screen and the task form read it.</summary>
 public sealed record TaskTypeDto(
@@ -1409,7 +1436,12 @@ public sealed record TaskTypeDto(
     bool IsActive,
     IReadOnlyList<TaskClosureOutcomeDto>? ClosureOutcomes = null,
     TaskReviewMeetingRequirement ReviewMeetingRequirement = TaskReviewMeetingRequirement.Optional,
-    bool RequiresDeliverableOnCompletion = false);
+    bool RequiresDeliverableOnCompletion = false,
+    /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — round-tripped so BOTH the edit form and the
+    /// activate/deactivate toggle can post back the version they read, and be refused if it has moved.
+    /// </summary>
+    int Version = 0);
 
 
 // ── DCP-005 slice 2: the controlled-document reference list ────────────────

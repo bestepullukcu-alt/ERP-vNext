@@ -19,6 +19,10 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
     private readonly ITaskFieldDefinitionRepository _fieldDefinitions;
     private readonly IActorPermissionContext _actor;
 
+    /// <summary>BL-349 — who may read THIS task, not merely who may reach the endpoint.</summary>
+    private readonly ITaskReadAccessPolicy _readAccess;
+    private readonly ICurrentUserContext _currentUser;
+
     public GetTaskItemByIdHandler(
         ITaskItemRepository tasks,
         ITaskWatcherRepository watchers,
@@ -26,7 +30,9 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         ITaskLifecycleService lifecycle,
         ITaskApprovalService approvals,
         ITaskFieldDefinitionRepository fieldDefinitions,
-        IActorPermissionContext actor)
+        IActorPermissionContext actor,
+        ITaskReadAccessPolicy readAccess,
+        ICurrentUserContext currentUser)
     {
         _tasks = tasks;
         _watchers = watchers;
@@ -35,6 +41,8 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         _approvals = approvals;
         _fieldDefinitions = fieldDefinitions;
         _actor = actor;
+        _readAccess = readAccess;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<TaskItemDetailDto>> Handle(GetTaskItemByIdQuery request, CancellationToken ct)
@@ -44,6 +52,15 @@ public sealed class GetTaskItemByIdHandler : IRequestHandler<GetTaskItemByIdQuer
         {
             // Cross-tenant reads land here too: the repository filter hides the row, so the caller learns
             // nothing about its existence (no metadata leak).
+            return Response<TaskItemDetailDto>.Fail(
+                "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
+        }
+
+        if (!await _readAccess.CanReadAsync(task, _currentUser.UserId, ct))
+        {
+            // BL-349 — the SAME 404 a genuinely missing task returns (byte-identical Message/StatusCode/
+            // ReasonCode): a real task the caller has no relationship to must not be distinguishable from one
+            // that does not exist at all.
             return Response<TaskItemDetailDto>.Fail(
                 "Task not found.", 404, TaskReasonCodes.NotFound, request.CorrelationId);
         }
