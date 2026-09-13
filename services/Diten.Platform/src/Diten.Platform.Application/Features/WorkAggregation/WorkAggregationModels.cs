@@ -29,6 +29,12 @@ public static class WorkAggregationReasonCodes
 
     /// <summary>An open subtask. Blocks COMPLETION only — its parent can still be started, and still cancelled.</summary>
     public const string SubtaskBlocked = "SUBTASK_BLOCKED";
+
+    /// <summary>BL-379 — a review meeting is already linked to this task; scheduling a second one is not offered.
+    /// Only reaches the reader at all because they are already this task's owner/requester (see
+    /// <c>TaskWorkItemProvider</c>'s own reviewMeetingPolicy gate) — a closed task or someone else's task never
+    /// publishes the policy or the action in the first place, so no reason code is needed for either case.</summary>
+    public const string ReviewMeetingAlreadyScheduled = "REVIEW_MEETING_ALREADY_SCHEDULED";
 }
 
 // WC-D3 (DCP-004 §2 D3) — WHY a source is missing from the board.

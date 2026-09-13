@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Совместная работа и записи</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Сведения о рабочем элементе</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>Запрошенный рабочий элемент не найден.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Этот рабочий элемент не может быть показан, так как он не прошёл проверку контракта.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Вернуться в рабочий центр</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Ваши полномочия по этому элементу завершены.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Обязательная зависимость не завершена.</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Подзадача ещё открыта</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Совещание по обзору уже запланировано</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Чек-лист обновлён.</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Некоторые источники не ответили — список может быть неполным.</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>Не удалось показать {0} рабочих элементов из-за ошибки контракта.</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Некоторые источники не ответили, поэтому это число может быть неполным.</value>

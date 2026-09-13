@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>İşbirliği ve kayıtlar</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Görev detayı</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>İstenen iş öğesi bulunamadı.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Bu iş öğesi sözleşme doğrulamasını geçemediği için gösterilemedi.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Görev Merkezi’ne dön</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Bu öğe için yetkiniz sona erdi.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Zorunlu bir bağımlılık tamamlanmadı.</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Bir alt görev hâlâ açık</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>İnceleme toplantısı zaten planlandı</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Kontrol listesi güncellendi.</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Bazı kaynaklar yanıt vermedi — liste eksik olabilir.</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} iş öğesi sözleşme hatası nedeniyle gösterilemedi.</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Bazı kaynaklar yanıt vermediği için bu sayı eksik olabilir.</value>

@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>协作与记录</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>工作项详情</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>找不到请求的工作项。</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>该工作项未能显示，因为它未通过契约验证。</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>返回工作中心</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>您对此项目的权限已结束。</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>必需的依赖项尚未完成。</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>仍有子任务未完成</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>已安排审查会议</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>清单已更新。</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>部分数据源未响应——此列表可能不完整。</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>由于契约错误，{0} 个工作项无法显示。</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>部分数据源未响应，因此该计数可能不完整。</value>

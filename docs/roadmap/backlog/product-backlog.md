@@ -5252,7 +5252,10 @@ doğru adları (`valueType`) kullandı; iki çizim birleştirilmeli (BL-365 par�
 
 **Görev Merkezi sözleşmeyi geçemeyen iş öğelerini SESSİZCE atıyor — S4'ün toplantı politikası bir çok görevi listeden düşürdü**
 
-DURUM: AÇIK — düzeltme WP'si verildi (WP-WCN-REVIEW-MEETING-CONTRACT-FIX-01) · BULAN: DM ajanı (WP-WCN-DETAIL-ITEM-RESOLVE-01 teşhisi), CT doğruladı · KAYIT: 2026-09-13
+DURUM: KAPANDI — WP-WCN-REVIEW-MEETING-CONTRACT-FIX-01, canlıda doğrulandı (2026-09-13) · BULAN: DM ajanı (WP-WCN-DETAIL-ITEM-RESOLVE-01 teşhisi), CT doğruladı · KAYIT: 2026-09-13
+
+**Teslim:** toplantı politikası ve "Toplantı planla" eylemi birlikte, yalnız görevin sahibi/açanına ve görev açıkken yayınlanıyor; toplantı zaten bağlıysa eylem pasif (`REVIEW_MEETING_ALREADY_SCHEDULED`). Kapanmış görevde ve başkasının görevinde ikisi de yok — "ölü işte eylem yok" ve "astın görevinde eylem yok" kuralları korundu (ilk tasarım CT'nindi ve bunlarla çakıştı). Gerçek sağlayıcı çıktısı 24 hücrelik bir golden matrisle sabitlendi ve GERÇEK `validateWorkItem`'dan geçiriliyor. Görev Merkezi reddedilen öğeleri artık saklamıyor: konsol uyarısı + görünür not; detay sayfası "sözleşme hatası" diyor. Canlı: 7 ham öğeden 6'sı görünüyor, `0c3b7a4c` açılıyor.
+**Aynı teşhisten çıkan ikinci hata (CT düzeltti):** `HttpWorkItemProvider.GateActions` izni olmayan uzak eylemi pasife çevirirken sebep ETİKETİNİ boş bırakıyordu (`DisabledReason = action.DisabledReason`, etkin eylemde null) → `DISABLED_REASON_REQUIRED` → uzak sağlayıcının (dev-reference, MOD-0023 onayları) o öğesi de sessizce düşüyordu. Artık `WorkAggregation_ActionDisabled_PermissionDenied`.
 
 **Ölçüm (canlı + kod):** `/WorkCenterNext/api/work-items` 7 öğe döndürüyor, ekranda 4 görünüyor. `work-items-api.js` `validateItems` her öğeyi
 WC-1 sözleşmesiyle doğruluyor ve geçemeyeni `state.items`'a hiç koymuyor; `app.js` `loadWorkItems` bu hataları okumuyor. Detay sayfası öğeyi

@@ -1047,6 +1047,22 @@
         </div>`;
     };
 
+    /*
+     * BL-379 — a NON-BLOCKING sibling to buildPartialBoardBanner above: that one says a SOURCE is missing,
+     * this one says some of what a source DID send could not be shown because it failed the WC-1 contract.
+     * Deliberately its own note rather than a synthesized entry in state.unavailableSources — that banner's
+     * shape is "provider + reason", and a contract rejection is neither a provider nor one of its own reasons.
+     */
+    const buildContractRejectedNote = () => {
+        const errors = state.contractRejectedErrors;
+        if (!Array.isArray(errors) || errors.length === 0) { return ''; }
+        const count = new Set(errors.map((error) => error.fixtureId)).size;
+        return `<div class="wcn-partial-board wcn-contract-rejected" role="status" aria-live="polite">
+            <i class="bx bx-error-circle"></i>
+            <span class="wcn-partial-board-text">${esc(tf('WorkItemsContractRejected', count))}</span>
+        </div>`;
+    };
+
     const buildDelegationBanner = () => {
         if (state.scope === 'mine') { return ''; }
         if (state.scope === 'all') {
@@ -6592,12 +6608,20 @@
             if (state.loadState === 'loading') { root.innerHTML = renderLoadingState(); return; }
             if (state.loadState === 'error') { root.innerHTML = renderErrorState(); return; }
 
-            const item = itemById(root.dataset.wcnItemId || '');
+            const requestedId = root.dataset.wcnItemId || '';
+            const item = itemById(requestedId);
             state.selectedId = item ? item.id : null;
             if (item) { markSeen(item); }
+            // BL-379 — the requested item may be missing from state.items because the CONTRACT rejected it
+            // (fixture-contract.js), not because it does not exist. "Bulunamadı" is the wrong sentence for a
+            // row the server sent but the validator refused; a reader chasing a real, existing task deserves the
+            // more specific one.
+            const wasRejectedByContract = !item && Array.isArray(state.contractRejectedErrors)
+                && state.contractRejectedErrors.some((error) => error.fixtureId === requestedId);
+            const notFoundKey = wasRejectedByContract ? 'DetailItemRejectedByContract' : 'DetailItemNotFound';
             root.innerHTML = item
                 ? detailHtml(item)
-                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
+                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t(notFoundKey))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
             setupTimerTick();
             // Which arrow may act is derived from POSITION, after the list exists — the same rule, from the same
             // function, that the create form uses. A first row's ↑ and a last row's ↓ are disabled, and a
@@ -6643,8 +6667,8 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
-        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildDelegationBanner() + buildTabs()
-            + buildFilterRow() + workspace;
+        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildContractRejectedNote() + buildDelegationBanner()
+            + buildTabs() + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
@@ -9701,6 +9725,21 @@
             // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
             // very failure the backend change stopped doing.
             state.unavailableSources = result.unavailableSources || [];
+            /*
+             * BL-379 — a board that silently drops contract-invalid items is the exact defect this closes. The
+             * validator (fixture-contract.js) is never loosened and a rejected item never joins state.items, but
+             * the drop can no longer be silent: every rejection is named on the console (fixtureId + code, so a
+             * specific row can be traced) and counted for a non-blocking on-screen note (buildContractRejectedNote).
+             */
+            if (Array.isArray(result.errors) && result.errors.length > 0) {
+                result.errors.forEach((error) => {
+                    console.warn(
+                        `[WorkCenterNext] work item rejected by contract: fixtureId=${error.fixtureId} code=${error.code}`);
+                });
+                state.contractRejectedErrors = result.errors;
+            } else {
+                state.contractRejectedErrors = [];
+            }
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
@@ -9711,6 +9750,7 @@
             // Nothing arrived at all, so there is no partial board to qualify — the error state speaks for the
             // whole read. A stale banner from the previous load would be describing data that is no longer here.
             state.unavailableSources = [];
+            state.contractRejectedErrors = [];
             state.loadState = 'error';
             state.loadError = result.status; // forbidden | unauthorized | unavailable | error
         }

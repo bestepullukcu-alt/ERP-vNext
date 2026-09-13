@@ -70,6 +70,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledDependencyKey = "WorkAggregation_ActionDisabled_DependencyBlocked";
     /// <summary>An open subtask. Same shape as above: the blocker names which child, this is the button's reason.</summary>
     private const string DisabledSubtaskKey = "WorkAggregation_ActionDisabled_SubtaskBlocked";
+    /// <summary>BL-379 — scheduleReviewMeeting offered (to this task's own owner/requester) when a review
+    /// meeting is already linked.</summary>
+    private const string DisabledReviewMeetingAlreadyScheduledKey = "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled";
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
@@ -651,35 +654,47 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     : action)
                 .ToList();
 
-        // MOD-0357 S4 — the receiving side of scheduleReviewMeeting (pack §7, K3). Present on every task
-        // (Requirement fixed at "optional" this slice — see the DTO's own doc comment for why); the ACTION
-        // itself is offered only while nothing is scheduled yet (reviewMeetingLink is null) and the task is not
-        // terminal, to the holder or the requester only — the same two relationships every holder/requester act
-        // in this method already keys off. Read-gated: the server's own decisive gate is
-        // MeetingPermissions.Create on the receiving endpoint, checked there, never here (this is a hint).
-        var reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
-            Requirement: "optional",
-            MeetingId: reviewMeetingLink?.Link.SourceRecordId.ToString(),
-            ScheduledAt: reviewMeetingLink?.Meeting?.StartAt);
-
-        if (!terminal && reviewMeetingLink is null)
+        /*
+         * MOD-0357 S4, corrected by BL-379 + CT decision 2026-09-13 — the receiving side of
+         * scheduleReviewMeeting (pack §7, K3). The policy and its action are published TOGETHER, and only for
+         * the task's own owner/requester on a task that is not yet closed.
+         *
+         * An earlier reading of fixture-contract.js's REVIEW_MEETING_ACTION_REQUIRED rule ("policy present and
+         * not notAllowed ⇒ action MUST be present") tried to satisfy it by publishing the policy on EVERY task
+         * unconditionally and then deciding separately whether to show the action — which collided head-on with
+         * two deliberate, already-tested product rules: a closed task offers no actions at all, and a task that
+         * is not yours offers none either (TaskWorkItemProviderTests.A_terminal_task_exposes_no_enabled_action,
+         * TaskApprovalProjectionTests's rejected-approval case, TaskTeamScopeTests's Ekibim-scope case,
+         * TaskActionRoundTripTests's cancel case — all four UNCHANGED by this fix, all four green). The contract
+         * rule is satisfied instead by never emitting the POLICY at all outside this gate — the same
+         * declared-and-populated-or-entirely-absent posture every other capability container on this DTO
+         * already takes (see the checklist/subtasks comment above: "a half is not [a state the contract
+         * models]"). Read-gated: the server's own decisive gate is MeetingPermissions.Create on the receiving
+         * endpoint, checked there, never here (this is a hint).
+         *
+         * S9 note: "required" is not implemented this slice. When a review meeting's approval becomes
+         * mandatory rather than optional, and the approving party is not this task's own holder/requester, how
+         * that lock surfaces on THIS provider's projection needs its own look then — not assumed here.
+         */
+        WorkItemReviewMeetingPolicyDto? reviewMeetingPolicy = null;
+        if (!terminal)
         {
             var isRequesterForReview = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
             var isHolderForReview = task.AssigneeUserId == actor.UserId;
             if (isHolderForReview || isRequesterForReview)
             {
-                /*
-                 * CT 2026-09-12 — gated on Update, the TASK-side authority to attach a review meeting to this task.
-                 * It was gated on Read, which this provider declares nowhere (Read gates ENDPOINTS, not projected
-                 * actions — its own rule, pinned by ProviderActionPermissionTests), so the action stayed
-                 * PermissionDenied for everyone holding the declared set: 9 red tests since S4. Update is declared
-                 * and is the key every other act-on-this-task action already uses. The MEETING-side authority
-                 * (MeetingPermissions.Create) is enforced by the receiving endpoint and is deliberately not read
-                 * here — MOD-0024 does not depend on MOD-0357 (ADR-003).
-                 */
-                actions = actions
-                    .Append(Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Update)))
-                    .ToList();
+                reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
+                    Requirement: "optional",
+                    MeetingId: reviewMeetingLink?.Link.SourceRecordId.ToString(),
+                    ScheduledAt: reviewMeetingLink?.Meeting?.StartAt);
+
+                var reviewMeetingAction = reviewMeetingLink is not null
+                    ? Disabled(
+                        "scheduleReviewMeeting", ActionScheduleReviewMeetingKey,
+                        WorkAggregationReasonCodes.ReviewMeetingAlreadyScheduled, DisabledReviewMeetingAlreadyScheduledKey)
+                    : Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Update));
+
+                actions = actions.Append(reviewMeetingAction).ToList();
                 overflowActionCodes = overflowActionCodes.Append("scheduleReviewMeeting").ToList();
             }
         }

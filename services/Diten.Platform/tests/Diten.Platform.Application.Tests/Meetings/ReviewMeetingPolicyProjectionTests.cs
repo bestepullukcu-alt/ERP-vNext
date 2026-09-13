@@ -61,11 +61,20 @@ public sealed class ReviewMeetingPolicyProjectionTests
         var items = await ProjectAll(task, actorId: TaskTestData.Me, links: [], meetings: []);
 
         Assert.DoesNotContain(items.SelectMany(i => i.Actions), a => a.Code == "scheduleReviewMeeting");
+        // WC-1 fixture-contract.js REVIEW_MEETING_ACTION_REQUIRED + BL-379 + CT decision 2026-09-13 — the
+        // policy and its action are published TOGETHER, only to this task's own owner/requester; a third party
+        // gets neither, not a policy with the action withheld. The provider's own scope filtering in fact drops
+        // the row entirely for this actor (the either/or the comment above already accepts) — when it does not,
+        // the row it returns must still carry no policy.
+        Assert.All(items, i => Assert.Null(i.ReviewMeetingPolicy));
     }
 
     [Fact]
-    public async Task Once_scheduled_the_policy_carries_the_meeting_and_the_action_disappears()
+    public async Task Once_scheduled_the_policy_carries_the_meeting_and_the_action_is_disabled_not_absent()
     {
+        // WC-1 fixture-contract.js REVIEW_MEETING_ACTION_REQUIRED + BL-379 + CT decision 2026-09-13 — a policy
+        // that is not "notAllowed" (Requirement stays "optional" here) must always come with an action; a
+        // meeting already being linked disables the button, it does not withhold it.
         var link = ReviewLink();
         var meeting = new Meeting
         {
@@ -85,7 +94,9 @@ public sealed class ReviewMeetingPolicyProjectionTests
 
         Assert.Equal(MeetingId.ToString(), item.ReviewMeetingPolicy!.MeetingId);
         Assert.Equal(StartAt, item.ReviewMeetingPolicy.ScheduledAt);
-        Assert.DoesNotContain(item.Actions, a => a.Code == "scheduleReviewMeeting");
+        var action = Assert.Single(item.Actions, a => a.Code == "scheduleReviewMeeting");
+        Assert.False(action.Enabled);
+        Assert.Equal(WorkAggregationReasonCodes.ReviewMeetingAlreadyScheduled, action.DisabledReasonCode);
     }
 
     [Fact]
@@ -98,6 +109,10 @@ public sealed class ReviewMeetingPolicyProjectionTests
         var item = await ProjectSingle(task, actorId: TaskTestData.Me, links: [], meetings: []);
 
         Assert.DoesNotContain(item.Actions, a => a.Code == "scheduleReviewMeeting");
+        // WC-1 fixture-contract.js REVIEW_MEETING_ACTION_REQUIRED + BL-379 + CT decision 2026-09-13 — a closed
+        // task never publishes the policy at all (not "present but withheld"), so there is nothing for the
+        // contract's own rule to require an action for.
+        Assert.Null(item.ReviewMeetingPolicy);
     }
 
     [Fact]

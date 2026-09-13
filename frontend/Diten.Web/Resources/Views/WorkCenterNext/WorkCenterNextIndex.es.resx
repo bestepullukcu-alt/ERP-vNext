@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Colaboración y registros</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Detalles del elemento de trabajo</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>No se encontró el elemento de trabajo solicitado.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Este elemento de trabajo no se pudo mostrar porque no superó la validación del contrato.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Volver al centro de trabajo</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Su autoridad sobre este elemento ha finalizado.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Una dependencia requerida está incompleta.</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Una subtarea sigue abierta</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Ya hay una reunión de revisión programada</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Lista de verificación actualizada.</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Algunas fuentes no respondieron: esta lista puede estar incompleta.</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} elemento(s) de trabajo no se pudieron mostrar debido a un error de contrato.</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Algunas fuentes no respondieron, por lo que este recuento puede estar incompleto.</value>

@@ -49,11 +49,13 @@ const loadModules = () => {
  * @param {object}  [config.wcn]              Translator override — see the default below.
  * @param {Function} [config.now]             "Today", for surfaces whose wording is measured against it.
  * @param {object[]} [config.unavailableSources] Providers the board is missing — WC-D3's partial-board answer.
+ * @param {object[]} [config.errors]             BL-379 — contract-validation errors the stub answers alongside
+ *                                                a partial board (fixtureId/code pairs), independent of items.
  * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[]}>} What the write stubs recorded.
  */
 const bootSurface = ({
   rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null,
-  unavailableSources = []
+  unavailableSources = [], errors = []
 } = {}) => {
   // A previous boot leaves its modules on `global`; app.js would then read the OLD data module and the new DOM.
   ["WorkCenterNextData", "WorkCenterNextApi", "WorkCenterNextContract", "WorkCenterNextFixtures"]
@@ -107,7 +109,7 @@ const bootSurface = ({
   global.WorkCenterNextApi.fetchWorkItems = neverResolve
     ? () => new Promise(() => { /* a request that never settles — the page must stay in its loading state */ })
     // A partial board is still STATUS.OK with rows; the missing providers ride alongside (work-items-api §WC-D3).
-    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors: [], unavailableSources });
+    : () => Promise.resolve({ status: "ok", httpStatus: 200, items: mapped.items, errors, unavailableSources });
 
   const created = [];
   const posted = [];

@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>التعاون والسجلات</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>تفاصيل عنصر العمل</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>تعذر العثور على عنصر العمل المطلوب.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>تعذر عرض عنصر العمل هذا لأنه لم يجتز التحقق من العقد.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>العودة إلى مركز العمل</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>انتهت صلاحيتك على هذا العنصر.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>لم يكتمل أحد الاعتماديات المطلوبة.</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>ما تزال إحدى المهام الفرعية مفتوحة</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>تمت جدولة اجتماع مراجعة بالفعل</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>تم تحديث قائمة التحقق.</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>لم تستجب بعض المصادر — قد تكون هذه القائمة غير مكتملة.</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>تعذر عرض {0} من عناصر العمل بسبب خطأ في العقد.</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>لم تستجب بعض المصادر، لذا قد يكون هذا العدد غير مكتمل.</value>

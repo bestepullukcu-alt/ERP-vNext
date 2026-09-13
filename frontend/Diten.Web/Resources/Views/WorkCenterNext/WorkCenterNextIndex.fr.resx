@@ -1386,6 +1386,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Collaboration et dossiers</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Détails de l’élément de travail</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>L’élément de travail demandé est introuvable.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Cet élément de travail n’a pas pu être affiché car il n’a pas respecté le contrat de validation.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Retour au centre de travail</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Votre autorité sur cet élément a pris fin.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Une dépendance requise est incomplète.</value></data>
@@ -1921,6 +1922,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Une sous-tâche est encore ouverte</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Une réunion de revue est déjà planifiée</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Liste de contrôle mise à jour.</value>
   </data>
@@ -2183,6 +2187,9 @@
   </data>
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Certaines sources n'ont pas répondu — cette liste peut être incomplète.</value>
+  </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} élément(s) de travail n’a/n’ont pas pu être affiché(s) en raison d’une erreur de contrat.</value>
   </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Certaines sources n'ont pas répondu ; ce nombre peut donc être incomplet.</value>
