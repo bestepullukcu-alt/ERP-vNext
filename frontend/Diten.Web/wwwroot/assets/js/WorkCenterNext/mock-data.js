@@ -278,7 +278,13 @@
          * field at all, so a real `plan` action would otherwise never open the picker; only a raw fixture that
          * happened to set `input: 'date'` would, and none ever did. This is what actually wires the picker up.
          */
-        input: action.input || (action.code === 'plan' ? 'date' : null),
+        input: action.input
+            || (action.code === 'plan' ? 'date' : null)
+            // S10 live pass (2026-09-13): the same gap for the review meeting. The server's action carries no `input`,
+            // so a real `scheduleReviewMeeting` never reached openMeetingScheduler and fell through to the generic
+            // dispatch (400 WORK_ITEM_ACTION_UNKNOWN). The S4 test read the scheduler's source text, never a real
+            // action — wcn-review-meeting-action-input.test.js now feeds the provider's golden output through here.
+            || (action.code === 'scheduleReviewMeeting' ? 'meeting' : null),
         /*
          * Where the action HAPPENS: 'inline' acts here, 'deeplink' sends the reader to the source. Carried
          * through because getActions needs it — a closed item may still offer "open in source" while offering
