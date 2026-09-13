@@ -248,6 +248,7 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
         var filter = ActiveTenantFilter
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Token", token)
                      & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq("ActiveWriterLease.Generation", generation)
+                     & ActiveWriterLeaseUnexpiredAtServerTimeFilter
                      & new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(
                          new BsonDocument("ActiveWriterLease.PreWriteStateHash", BsonNull.Value));
         var result = await _states.UpdateOneAsync(
@@ -791,6 +792,119 @@ public sealed class ProductLegalEntityScopeRolloutStateRepository
     private FilterDefinition<ProductLegalEntityScopeRolloutState> ActiveTenantFilter =>
         TenantIncludingDeletedFilter
         & Builders<ProductLegalEntityScopeRolloutState>.Filter.Eq(state => state.IsDeleted, false);
+
+    internal static FilterDefinition<ProductLegalEntityScopeRolloutState>
+        ActiveWriterLeaseUnexpiredAtServerTimeFilter =>
+        new BsonDocumentFilterDefinition<ProductLegalEntityScopeRolloutState>(
+            new BsonDocument(
+                "$expr",
+                new BsonDocument(
+                    "$cond",
+                    new BsonArray
+                    {
+                        new BsonDocument(
+                            "$eq",
+                            new BsonArray
+                            {
+                                new BsonDocument(
+                                    "$type",
+                                    "$ActiveWriterLease.ExpiresAtUtc"),
+                                "array"
+                            }),
+                        new BsonDocument(
+                            "$cond",
+                            new BsonArray
+                            {
+                                new BsonDocument(
+                                    "$eq",
+                                    new BsonArray
+                                    {
+                                        new BsonDocument(
+                                            "$size",
+                                            "$ActiveWriterLease.ExpiresAtUtc"),
+                                        2
+                                    }),
+                                new BsonDocument(
+                                    "$let",
+                                    new BsonDocument
+                                    {
+                                        {
+                                            "vars",
+                                            new BsonDocument
+                                            {
+                                                {
+                                                    "expiryTicks",
+                                                    new BsonDocument(
+                                                        "$arrayElemAt",
+                                                        new BsonArray
+                                                        {
+                                                            "$ActiveWriterLease.ExpiresAtUtc",
+                                                            0
+                                                        })
+                                                },
+                                                {
+                                                    "offsetMinutes",
+                                                    new BsonDocument(
+                                                        "$arrayElemAt",
+                                                        new BsonArray
+                                                        {
+                                                            "$ActiveWriterLease.ExpiresAtUtc",
+                                                            1
+                                                        })
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "in",
+                                            new BsonDocument(
+                                                "$cond",
+                                                new BsonArray
+                                                {
+                                                    new BsonDocument(
+                                                        "$isNumber",
+                                                        "$$expiryTicks"),
+                                                    new BsonDocument(
+                                                        "$cond",
+                                                        new BsonArray
+                                                        {
+                                                            new BsonDocument(
+                                                                "$eq",
+                                                                new BsonArray
+                                                                {
+                                                                    "$$offsetMinutes",
+                                                                    0
+                                                                }),
+                                                            new BsonDocument(
+                                                                "$gt",
+                                                                new BsonArray
+                                                                {
+                                                                    "$$expiryTicks",
+                                                                    new BsonDocument(
+                                                                        "$add",
+                                                                        new BsonArray
+                                                                        {
+                                                                            DateTimeOffset.UnixEpoch.Ticks,
+                                                                            new BsonDocument(
+                                                                                "$multiply",
+                                                                                new BsonArray
+                                                                                {
+                                                                                    new BsonDocument(
+                                                                                        "$toLong",
+                                                                                        "$$NOW"),
+                                                                                    TimeSpan.TicksPerMillisecond
+                                                                                })
+                                                                        })
+                                                                }),
+                                                            false
+                                                        }),
+                                                    false
+                                                })
+                                        }
+                                    }),
+                                false
+                            }),
+                        false
+                    })));
 
     private static void EnsureIdentity(Guid value, string parameterName)
     {

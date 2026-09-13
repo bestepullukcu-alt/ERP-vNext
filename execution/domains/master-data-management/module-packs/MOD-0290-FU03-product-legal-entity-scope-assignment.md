@@ -1251,3 +1251,202 @@ are not complete.
 - WorkCenter submit/approve/reject/retire only after the foundation is stable.
 - Production migration, observability, retention/runbook and navigation enablement.
 - PV retains a separate group-capable read/intake rule; verbatim case intake must not be blocked by product scope.
+
+## 21. FU03-A0 foreground guarded Replace amendment — exact bounded code-start (2026-09-12)
+
+This additive owner amendment authorizes only `FU03-A0-FOREGROUND-GUARDED-REPLACE-01`. It does not rewrite the
+historical implementation record, change frontmatter status, complete H1b operations, authorize A1/A2 or Finished
+Good admission, or assert runtime evidence before the named tests run. MOD-0290 §21.15 is the consumer planning link.
+
+### 21.1 Frozen authority and behavior
+
+- **D1:** A0 admits only an authenticated canonical foreground human for exact
+  `mdm.product-legal-entity-scopes.replace`. Background/service/recovery authority, local mutation grants and
+  synthesized principals are negative cases.
+- **D2:** takeover is off. Expired, legacy, malformed or ambiguous ownership/outcome remains fail-closed/manual.
+  Existing monotonic generation is preserved; no TTL, blind unlock, legacy conversion or second lease system exists.
+- **D3:** later Finished Good admission uses semantic parent predicates while preserving exact target Finished Good
+  expected-version. A0 changes no parent or lifecycle writer and grants no bulk correction exemption.
+- Replace remains **Preparation-only**. The handler precheck remains, and persistence must revalidate Preparation in
+  the transaction. This must not be changed to Enforced-only. Existing mode, Legal Entity, idempotency, response and
+  audit behavior is preserved. Create and End gain no new authority requirement.
+
+Exact interface signatures, including names and parameter order:
+
+```csharp
+Task<ProductLegalEntityScopeVerifiedWriterAuthority?> ResolveForegroundReplaceAsync(
+    Guid aggregateId,
+    ProductLegalEntityScopeMutationIdentity mutation,
+    CancellationToken cancellationToken = default);
+
+Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(
+    ProductLegalEntityScopeVerifiedWriterAuthority authority,
+    ProductLegalEntityScopeWriterLease lease,
+    ProductLegalEntityScopePolicy requestedPolicy,
+    int expectedVersion,
+    CancellationToken cancellationToken = default);
+```
+
+`ProductLegalEntityScopeVerifiedWriterAuthority` is an immutable server-created fact set: tenant, canonical human
+subject, command, aggregate type `ProductLegalEntityScopePolicy`, the tenant-read policy's technical `Id` as aggregate ID, purpose `foreground-human-replace`,
+operation `ProductLegalEntityScopePolicyReplaced`, exact permission, mutation kind, payload fingerprint and a
+server-derived proof fingerprint over all those fields. The caller cannot select permission/tenant/subject/purpose/
+operation/proof. A typed object from any other producer is not authority.
+
+### 21.2 Exact runtime allow-list
+
+1. `services/Diten.MdmService/src/Diten.MdmService.Application/Contracts/Authorization/IProductLegalEntityScopeWriterAuthorityProvider.cs`
+2. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductLegalEntityScopeWriterAuthorityProvider.cs`
+3. `services/Diten.MdmService/src/Diten.MdmService.Domain/ValueObjects/ProductLegalEntityScopeVerifiedWriterAuthority.cs`
+4. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopeGuardedWriteSession.cs`
+5. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeGuardedWriteSession.cs`
+6. `services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopeWriterLease.cs`
+7. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopeRolloutStateRepository.cs`
+8. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopeRolloutStateRepository.cs`
+9. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeMutationIdentity.cs`
+10. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/ProductLegalEntityScopeWriteFenceCoordinator.cs`
+11. `services/Diten.MdmService/src/Diten.MdmService.Application/Behaviors/ProductLegalEntityScopeWriteFenceBehavior.cs`
+12. `services/Diten.MdmService/src/Diten.MdmService.Domain/Repositories/IProductLegalEntityScopePolicyRepository.cs`
+13. `services/Diten.MdmService/src/Diten.MdmService.Persistence/Repositories/ProductLegalEntityScopePolicyRepository.cs`
+14. `services/Diten.MdmService/src/Diten.MdmService.Application/Features/ProductLegalEntityScopes/Handlers/CommandHandlers/ReplaceProductLegalEntityScopePolicyHandler.cs`
+15. `services/Diten.MdmService/src/Diten.MdmService.Application/DependencyInjection.cs`
+16. `services/Diten.MdmService/src/Diten.MdmService.Infrastructure/DependencyInjection.cs`
+17. `services/Diten.MdmService/src/Diten.MdmService.Persistence/DependencyInjection.cs`
+
+`services/Diten.MdmService/src/Diten.MdmService.Domain/Entities/ProductLegalEntityScopeRolloutState.cs` is not in this
+allow-list. No recovery phase/predecessor/outcome schema is approved. The operational runner and controller are
+reference/regression-only, not writable A0 paths.
+
+### 21.3 Exact test allow-list and evidence gate
+
+Only these files under `services/Diten.MdmService/tests/Diten.MdmService.Application.Tests/` may change:
+
+1. `ProductLegalEntityScopeWriterAuthorityTests.cs`
+2. `ProductLegalEntityScopeWriteAdmissionContractTests.cs`
+3. `ProductLegalEntityScopeWriteAdmissionMongoTests.cs`
+4. `ProductLegalEntityScopeActivationMongoTests.cs`
+5. `ProductLegalEntityScopeAuthorizationTests.cs`
+6. `ProductLegalEntityScopeCommandTests.cs`
+7. `DependencyInjectionSmokeTests.cs`
+
+Required evidence is recorded in §21.6. It separately reports Release build, test discovery and
+passed/failed/skipped without aggregating overlapping runs. The focused evidence covers:
+
+- correct human/exact permission Replace and rejection of wrong/missing permission, tenant, subject, purpose,
+  operation, aggregate and fingerprint with zero business/audit mutation;
+- service/background/recovery proof, fake context, caller-selected permission/actor and direct repository entry all
+  denied;
+- actual client/provider checks complete before lease/transaction, and Preparation is rechecked inside the
+  persistence transaction;
+- a real tenant-qualified rollout-document write and policy expected-version CAS plus immutable audit/outcome occur
+  in the same Mongo transaction; forced abort rolls all of them back;
+- exact replay succeeds without duplicate mutation; payload/actor/aggregate drift, wrong/stale token-generation and
+  two contenders fail closed;
+- commit-response-loss reads exact persisted outcome; release failure does not redo the mutation; absence alone does
+  not authorize release or infer success;
+- complete-document 1 MiB and unknown-field preservation; existing Create, End, activation, FG human-context and DI
+  regressions remain unchanged.
+
+Mongo evidence must use the existing test-owned `AuditIntentTemporalMongoFixture` and
+`ProductLegalEntityScopeMongoCollection`, fixed `diten_mdm_product_scope_itest`, tenant-owned cleanup and the
+repository's current schema/serializer rules. No application `localhost:27017`, per-run database, new harness,
+fixture-external `mongod`, operational migration or service start is allowed.
+
+### 21.4 Transaction, bypass and replay invariants
+
+The handler order is: current read-only Preparation precheck and tenant-filtered policy read needed for the technical
+aggregate ID, without returning policy facts → verified foreground authority before any replay response → exact-replay
+comparison → existing trusted candidate and local Legal Entity validation → exact lease acquire/bind → guarded persistence session. Persistence owns
+the raw Mongo session. Within one transaction it revalidates tenant, active token/generation, command, human subject,
+mutation kind/fingerprint and Preparation; performs a real qualified write on the existing rollout document; performs
+the policy CAS with current immutable audit/outcome; and reads back the exact result. No remote/provider call is
+awaited in that transaction.
+
+The unguarded policy repository update path must reject a Replace-shaped transition so direct repository use cannot
+bypass the guarded session. It remains available only for its existing non-Replace behavior; Create/End semantics are
+unchanged. Coordinator admission or a separate token lookup without the persistence transaction is insufficient.
+
+Commit/read-back and release are separate. Matching committed read-back permits response replay, not a new mutation.
+Contradictory/absent/ambiguous read-back retains the lease and existing reconciliation-required response. Qualified
+release matches the original tenant/token/generation and occurs only after verified commit or verified zero-mutation
+abort. There is no unconditional `finally` release, automatic takeover, process-clock expiry authorization, new
+duration, wildcard grant, bypass/no-op success or whole-document `ReplaceOne`.
+
+### 21.5 Explicit exclusions and status
+
+A1/A2, Slice C, Legal Entity or parent lifecycle, Finished Good admission/reservation/UI/WorkCenter, background
+mutation/recovery/takeover, Auth/Platform/Gateway/frontend, configuration/credentials/data, Production/Staging and
+operational activation remain excluded. No new entity collection/index, audit ordinal, permission grant, form,
+DataTable or navigation is introduced. Golden UI is N/A. The recorded A0 evidence proves only the foreground Replace
+physical fence; it does not prove every writer fenced, Finished Good admission complete, live acceptance or merge
+readiness.
+
+### 21.6 Bounded A0 final evidence — 2026-09-12
+
+All evidence below is retained under
+`.testoutput/fu03-a0-foreground-guarded-replace-01-20260912/`. Runs are reported separately and overlapping runs are
+not summed. The initial guarded Mongo run was `9/3/0` (passed/failed/skipped). The implementation review diagnosed its
+three failures as the raw BSON policy predicate using `Id` while the actual persisted identifier is `_id`. The failure
+symptoms and final `_id` source agree with that diagnosis, but no immutable pre-correction source snapshot/diff was
+retained for independent proof of the cause; the failures were not classified as a topology/environment gate. After
+the bounded correction, final guarded Mongo was `16/0/0`, including:
+
+- commit applied followed by response loss, exact persisted read-back and exact replay with no duplicate policy or
+  audit mutation;
+- missing outcome and drifted outcome both remaining ambiguous, retaining the writer lease and failing closed; and
+- transactional rollback, Preparation race, stale token/generation, contender, 1 MiB and unknown-BSON preservation
+  gates from §21.3.
+
+Separate non-overlapping evidence records are: focused unit/contract/security plus existing Create/End `24/0/0`;
+activation Mongo `3/0/0`; Finished Good human-context regression `17/0/0`; and DI regression `4/0/0`. The final
+discovery log contains `1316` total lines: four header lines and `1312` listed tests; `1316` is not a test count. The
+corrective MDM API Release build completed with `0` errors and `5` existing warnings; the test-project Release build
+completed with `0` errors and `3` existing warnings.
+
+The contract gate scans production source and fixes the sole `IssueForegroundReplace` issuer call site at
+`services/Diten.MdmService/src/Diten.MdmService.Infrastructure/Security/ProductLegalEntityScopeWriterAuthorityProvider.cs`.
+The authority has no public constructor and uses an internal factory; however,
+`InternalsVisibleTo("Diten.MdmService.Infrastructure")` exposes that internal factory to the full friend assembly. The
+sole-production-issuer source gate must therefore remain as defense in depth; it is not compiler-enforced per-class
+issuer isolation.
+
+**Bounded verdict:** the A0 foreground-human guarded Replace evidence passes. No general suite or live acceptance was
+run. Automatic takeover, background/recovery mutation authority, A1/A2 writer enrolment and Finished Good admission
+remain outside this amendment and are neither implemented nor proven by this evidence.
+
+**A0 expired-writer-lease remediation evidence — 2026-09-13.** This is a separate measured run set retained under
+`.testoutput/fu03-a0-expired-lease-remediation-20260913/`; it neither replaces nor aggregates with the preceding A0
+RED/correction/final records, and overlapping runs are not summed. The pre-remediation exact-six real-Mongo run was
+`4/2/0` (passed/failed/skipped). Both an initially expired exact-identity lease and a lease valid at entry but expired
+before the physical Mongo update incorrectly succeeded and mutated persisted policy version `0 -> 1`, scope-period
+count `1 -> 2` and audit-intent count `1 -> 2`. The completed committed exact replay and all three expired identity-
+drift denials remained passing.
+
+The first GREEN exact-six was `6/0/0`. Its first full guarded-Mongo candidate was `18/3/0`: three test-owned
+historical `FixedClock`/lease setup timestamps were correctly treated as expired by the server-time predicate.
+Expectations were unchanged; only those inputs were made current-time-relative, after which the full guarded-Mongo
+run was `21/0/0`. Those results proved the repository-level fence, but were not final: independent audit found that
+an initial or physical lease-qualification miss returned verified-zero and the handler/coordinator could therefore
+release the expired lease.
+
+The narrow end-to-end correction adds `LeaseRetentionRequired` to the guarded write result. It is set only when the
+transaction's initial rollout read or physical rollout-document update misses exact lease qualification, and the
+coordinator refuses release when it is set. Exact committed recovery/read-only replay remains successful and
+releasable after expiry without a new mutation; an ordinary verified-zero result remains releasable. The shared
+persisted-lease predicate remains enforced at baseline bind and through `QualifiedRolloutFilter` at both transaction
+read and physical rollout update. Its existing BSON Array `DateTimeOffset` handling is hardened with nested `$cond`
+guards requiring an array of size `2`, numeric UTC ticks and zero offset before strictly comparing expiry ticks with
+Mongo server `$$NOW` converted to .NET epoch ticks; malformed or missing values evaluate false without an expression
+exception.
+
+Final current-binary records are exact-six `6/0/0`, malformed/retention contract `3/0/0`, full guarded Mongo
+`23/0/0`, focused unit/contract/security plus existing Create/End `25/0/0`, activation Mongo `3/0/0`, Finished Good
+human-context `17/0/0` and DI `4/0/0`; discovery was `1324`. These runs overlap and are reported separately, never
+summed. Evidence inventory digests preserve the prior outside set at `707` files / `bbdb02...` and prior expired
+RED/first-GREEN set at `25` files / `5eb2d2...`; the new retention-GREEN set is `11` files / `259a665...`, and the
+complete expired-remediation set is `36` files / `0c096b...`. The MDM API Release build completed with `0` warnings
+and `0` errors; the test-project Release build completed with `3` existing warnings and `0` errors. No schema or
+time-representation change, migration, lease-duration change, takeover, extension, unlock or background/recovery
+authority was introduced. No general suite or live acceptance was run. This evidence remains bounded to A0
+foreground Replace and grants no A1/A2, Finished Good, background recovery, operational activation or Production
+authority.

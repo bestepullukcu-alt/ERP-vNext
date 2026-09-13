@@ -2,6 +2,8 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes.Commands;
+using Diten.MdmService.Domain.Entities;
 
 namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
@@ -15,6 +17,11 @@ public sealed record ProductLegalEntityScopeMutationIdentity(
         IProductLegalEntityScopeInventoryMutation mutation)
     {
         ArgumentNullException.ThrowIfNull(mutation);
+        if (mutation is ReplaceProductLegalEntityScopePolicyCommand replace)
+        {
+            return CreateForegroundReplace(replace);
+        }
+
         var type = mutation.GetType();
         var payload = JsonSerializer.Serialize(mutation, type, JsonOptions);
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(payload));
@@ -26,6 +33,28 @@ public sealed record ProductLegalEntityScopeMutationIdentity(
             commandId,
             Convert.ToHexString(bytes),
             kind is "ReserveCanonicalCodeCommand" or "CreateGlobalProductDraftCommand");
+    }
+
+    private static ProductLegalEntityScopeMutationIdentity CreateForegroundReplace(
+        ReplaceProductLegalEntityScopePolicyCommand command)
+    {
+        var legalEntityIds = ProductLegalEntityScopePolicy.NormalizeLegalEntityIds(
+            command.Request.Mode,
+            command.Request.LegalEntityIds);
+        var payload = string.Join(
+            '|',
+            "product-legal-entity-scope-replace/v1",
+            command.GlobalProductId.ToString("D"),
+            command.CommandId.ToString("D"),
+            command.Request.ExpectedVersion.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            ((int)command.Request.Mode).ToString(System.Globalization.CultureInfo.InvariantCulture),
+            string.Join(',', legalEntityIds.Select(id => id.ToString("D"))));
+        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
+        return new(
+            nameof(ReplaceProductLegalEntityScopePolicyCommand),
+            command.CommandId,
+            fingerprint,
+            EnforcedGlobalProductCreateProhibited: false);
     }
 
     private static Guid? FindCommandIdentity(object value)

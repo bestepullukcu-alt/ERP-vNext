@@ -3,6 +3,7 @@ using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Persistence.Repositories;
+using Diten.MdmService.Application.Tests.Audit;
 using MongoDB.Driver;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -13,8 +14,19 @@ namespace Diten.MdmService.Application.Tests;
 
 [Collection(ProductLegalEntityScopeMongoCollection.Name)]
 public sealed class ProductLegalEntityScopeActivationMongoTests
+    : IClassFixture<AuditIntentTemporalMongoFixture>, IDisposable
 {
     private static readonly DateTimeOffset Now = new(2026, 8, 28, 12, 0, 0, TimeSpan.Zero);
+    private readonly string? _previousMongoConnection;
+
+    public ProductLegalEntityScopeActivationMongoTests(AuditIntentTemporalMongoFixture fixture)
+    {
+        _previousMongoConnection = Environment.GetEnvironmentVariable("MDM_TEST_MONGO");
+        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", fixture.ReplicaConnectionString);
+    }
+
+    public void Dispose() =>
+        Environment.SetEnvironmentVariable("MDM_TEST_MONGO", _previousMongoConnection);
 
     [Fact]
     public async Task Fence_exact_replay_is_idempotent_drift_denied_and_only_equal_stable_snapshots_quiesce()

@@ -3,7 +3,9 @@ using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using Diten.MdmService.Application.Features.ProductItemSkuMaster.Commands;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes.Commands;
 
 namespace Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 
@@ -34,6 +36,12 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         IProductLegalEntityScopeInventoryMutation mutation,
         CancellationToken cancellationToken)
     {
+        if (mutation is ReplaceProductLegalEntityScopePolicyCommand)
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_REPLACE_REQUIRES_VERIFIED_AUTHORITY");
+        }
+
         var identity = ProductLegalEntityScopeMutationIdentity.Create(mutation);
         var nested = Ambient.Value;
         if (nested is not null)
@@ -83,6 +91,112 @@ public sealed class ProductLegalEntityScopeWriteFenceCoordinator
         lease.PreWriteStateHash ??= baseline;
         var context = new LeaseContext(_tenant.TenantId, lease, mutation);
         return ProductLegalEntityScopeWriteAdmission.Owned(context);
+    }
+
+    public async Task<ProductLegalEntityScopeWriteAdmission> EnterForegroundReplaceAsync(
+        ProductLegalEntityScopeVerifiedWriterAuthority authority,
+        ReplaceProductLegalEntityScopePolicyCommand mutation,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(authority);
+        ArgumentNullException.ThrowIfNull(mutation);
+        var identity = ProductLegalEntityScopeMutationIdentity.Create(mutation);
+        if (Ambient.Value is not null)
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_REPLACE_NESTED_MUTATION_NOT_AUTHORIZED");
+        }
+        if (!_tenant.IsResolved
+            || _tenant.TenantId == Guid.Empty
+            || !authority.MatchesForegroundReplace(
+                _tenant.TenantId,
+                authority.SubjectId,
+                identity.CommandId,
+                authority.AggregateId,
+                identity.Kind,
+                identity.PayloadFingerprint))
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_WRITER_AUTHORITY_MISMATCH");
+        }
+
+        var now = _clock.GetUtcNow();
+        var requested = new ProductLegalEntityScopeWriterLease
+        {
+            Token = Guid.NewGuid(),
+            Generation = 1,
+            CommandId = identity.CommandId,
+            ActorId = authority.SubjectId,
+            MutationKind = identity.Kind,
+            PayloadFingerprint = identity.PayloadFingerprint,
+            Owner = "Diten.MDM:ForegroundProductLegalEntityScopeReplace",
+            AcquiredAtUtc = now,
+            ExpiresAtUtc = now.AddSeconds(ProductLegalEntityScopeWriterLease.DurationSeconds)
+        };
+        var acquired = await _rollouts.AcquireWriterLeaseAsync(requested, cancellationToken);
+        if (!acquired.Acquired || acquired.LegacyBypass || acquired.Lease is null)
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                acquired.FailureCode ?? "PRODUCT_SCOPE_WRITER_LEASE_UNAVAILABLE");
+        }
+
+        var lease = acquired.Lease;
+        if (lease.CommandId != authority.CommandId
+            || lease.ActorId != authority.SubjectId
+            || !string.Equals(lease.MutationKind, authority.MutationKind, StringComparison.Ordinal)
+            || !string.Equals(
+                lease.PayloadFingerprint,
+                authority.PayloadFingerprint,
+                StringComparison.Ordinal))
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_WRITER_LEASE_AUTHORITY_MISMATCH");
+        }
+
+        var baseline = await _readiness.CaptureMutationStateHashAsync(cancellationToken);
+        if (!lease.BaselineBound
+            && !await _rollouts.BindWriterLeaseBaselineAsync(
+                lease.Token,
+                lease.Generation,
+                baseline,
+                cancellationToken))
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_WRITER_LEASE_BASELINE_CONFLICT");
+        }
+        if (lease.BaselineBound
+            && !string.Equals(lease.PreWriteStateHash, baseline, StringComparison.Ordinal))
+        {
+            return ProductLegalEntityScopeWriteAdmission.Denied(
+                "PRODUCT_SCOPE_WRITER_LEASE_PAYLOAD_DRIFT");
+        }
+
+        lease.PreWriteStateHash ??= baseline;
+        return ProductLegalEntityScopeWriteAdmission.Owned(
+            new LeaseContext(_tenant.TenantId, lease, mutation));
+    }
+
+    public async Task CompleteForegroundReplaceAsync(
+        ProductLegalEntityScopeWriteAdmission admission,
+        ProductLegalEntityScopePolicyWriteResult result,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(result);
+        if (!admission.OwnsLease || admission.Context is null)
+        {
+            return;
+        }
+        if (result.LeaseRetentionRequired
+            || result.WriteOutcomeAmbiguous
+            || !result.Succeeded && !result.VerifiedZeroMutation)
+        {
+            return;
+        }
+
+        await _rollouts.ReleaseWriterLeaseAsync(
+            admission.Context.Lease.Token,
+            admission.Context.Lease.Generation,
+            cancellationToken);
     }
 
     public IDisposable Activate(ProductLegalEntityScopeWriteAdmission admission)

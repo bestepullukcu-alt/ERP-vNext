@@ -63,6 +63,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditIntentTemporalMigrationRepository, AuditIntentTemporalMigrationRepository>();
         services.AddScoped<AuditIntentTemporalMigrationRunner>();
         services.AddScoped<IProductLegalEntityScopePolicyRepository, ProductLegalEntityScopePolicyRepository>();
+        services.AddScoped<IProductLegalEntityScopeGuardedWriteSession,
+            ProductLegalEntityScopeGuardedWriteSession>();
         services.AddScoped<IProductLegalEntityScopeRolloutStateRepository, ProductLegalEntityScopeRolloutStateRepository>();
         services.AddScoped<IGlobalProductIdentityWorkflowOperationRepository,
             GlobalProductIdentityWorkflowOperationRepository>();

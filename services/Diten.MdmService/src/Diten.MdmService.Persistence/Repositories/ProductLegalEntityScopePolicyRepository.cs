@@ -2,6 +2,7 @@ using Diten.MdmService.Application.Common;
 using Diten.MdmService.Domain.Entities;
 using Diten.MdmService.Domain.Enums;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Domain.ValueObjects;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -15,6 +16,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         ProductLegalEntityScopePolicy.MaximumSerializedBsonBytes - AuditLifecycleHeadroomBytes;
 
     private readonly IMongoCollection<ProductLegalEntityScopePolicy> _policies;
+    private readonly IProductLegalEntityScopeGuardedWriteSession _guardedWriteSession;
     private readonly Guid _tenantId;
     private readonly Func<Func<Task>, Task> _insertExecutor;
     private readonly Func<
@@ -25,6 +27,20 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         : this(
             database,
             tenantContext,
+            new ProductLegalEntityScopeGuardedWriteSession(database, tenantContext),
+            static operation => operation(),
+            static operation => operation())
+    {
+    }
+
+    public ProductLegalEntityScopePolicyRepository(
+        IMongoDatabase database,
+        ITenantContext tenantContext,
+        IProductLegalEntityScopeGuardedWriteSession guardedWriteSession)
+        : this(
+            database,
+            tenantContext,
+            guardedWriteSession,
             static operation => operation(),
             static operation => operation())
     {
@@ -33,11 +49,13 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
     internal ProductLegalEntityScopePolicyRepository(
         IMongoDatabase database,
         ITenantContext tenantContext,
+        IProductLegalEntityScopeGuardedWriteSession guardedWriteSession,
         Func<Func<Task>, Task> insertExecutor,
         Func<Func<Task<ProductLegalEntityScopePolicy?>>, Task<ProductLegalEntityScopePolicy?>> updateExecutor)
     {
         ArgumentNullException.ThrowIfNull(database);
         ArgumentNullException.ThrowIfNull(tenantContext);
+        ArgumentNullException.ThrowIfNull(guardedWriteSession);
         ArgumentNullException.ThrowIfNull(insertExecutor);
         ArgumentNullException.ThrowIfNull(updateExecutor);
         if (tenantContext.TenantId == Guid.Empty)
@@ -46,6 +64,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         }
 
         _policies = database.GetCollection<ProductLegalEntityScopePolicy>(CollectionName);
+        _guardedWriteSession = guardedWriteSession;
         _tenantId = tenantContext.TenantId;
         _insertExecutor = insertExecutor;
         _updateExecutor = updateExecutor;
@@ -131,7 +150,16 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
             return new(false, null, VersionConflict: true);
         }
 
-        var newAuditIntents = GetNewAuditIntents(persisted, policy);
+        var newAuditIntents = GetNewAuditIntents(persisted, policy, _tenantId);
+        if (newAuditIntents.Single().Operation
+            == ProductAuditOperation.ProductLegalEntityScopePolicyReplaced)
+        {
+            return new(
+                false,
+                persisted,
+                VersionConflict: true,
+                VerifiedZeroMutation: true);
+        }
         EnsureProjectedDocumentWithinBudget(persisted, policy, newAuditIntents);
 
         var filter = ActiveTenantFilter
@@ -188,6 +216,19 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         }
     }
 
+    public Task<ProductLegalEntityScopePolicyWriteResult> ReplaceAsync(
+        ProductLegalEntityScopeVerifiedWriterAuthority authority,
+        ProductLegalEntityScopeWriterLease lease,
+        ProductLegalEntityScopePolicy requestedPolicy,
+        int expectedVersion,
+        CancellationToken cancellationToken = default)
+        => _guardedWriteSession.ReplaceAsync(
+            authority,
+            lease,
+            requestedPolicy,
+            expectedVersion,
+            cancellationToken);
+
     public async Task<IReadOnlyList<Guid>> GetConfiguredGlobalProductIdsAsync(
         IReadOnlyCollection<Guid> globalProductIds,
         CancellationToken cancellationToken = default)
@@ -236,6 +277,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         var period = policy.ScopePeriods.Single();
         ValidateNewAuditIntent(
             policy.AuditIntents[0],
+            _tenantId,
             policy.Id,
             AuditAggregateType.ProductLegalEntityScopePolicy,
             ProductAuditOperation.ProductLegalEntityScopePolicyCreated,
@@ -320,9 +362,10 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
                 & Builders<ProductLegalEntityScopePolicy>.Filter.Eq(item => item.Id, id))
             .FirstOrDefaultAsync(cancellationToken);
 
-    private IReadOnlyList<LocalAuditIntent> GetNewAuditIntents(
+    internal static IReadOnlyList<LocalAuditIntent> GetNewAuditIntents(
         ProductLegalEntityScopePolicy persisted,
-        ProductLegalEntityScopePolicy requested)
+        ProductLegalEntityScopePolicy requested,
+        Guid tenantId)
     {
         if (requested.AuditIntents.Select(intent => intent.IntentId).Distinct().Count()
             != requested.AuditIntents.Count)
@@ -351,6 +394,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         var transition = ResolvePolicyTransition(requested, newIntents[0]);
         ValidateNewAuditIntent(
             newIntents[0],
+            tenantId,
             requested.Id,
             AuditAggregateType.ProductLegalEntityScopePolicy,
             transition.Operation,
@@ -362,7 +406,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         return newIntents;
     }
 
-    private static (ProductAuditOperation Operation, Guid CommandId, Guid ActorId, DateTimeOffset TimestampUtc)
+    internal static (ProductAuditOperation Operation, Guid CommandId, Guid ActorId, DateTimeOffset TimestampUtc)
         ResolvePolicyTransition(
             ProductLegalEntityScopePolicy requested,
             LocalAuditIntent intent)
@@ -403,8 +447,9 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         throw new ArgumentException("Policy update does not describe one approved transition.", nameof(requested));
     }
 
-    private void ValidateNewAuditIntent(
+    private static void ValidateNewAuditIntent(
         LocalAuditIntent intent,
+        Guid tenantId,
         Guid aggregateId,
         AuditAggregateType aggregateType,
         ProductAuditOperation operation,
@@ -415,7 +460,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         DateTimeOffset timestampUtc)
     {
         if (intent.IntentId == Guid.Empty
-            || intent.TenantId != _tenantId
+            || intent.TenantId != tenantId
             || intent.AggregateId != aggregateId
             || intent.AggregateType != aggregateType
             || !string.Equals(intent.SourceService, AuditIntentContract.SourceService, StringComparison.Ordinal)
@@ -505,7 +550,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
                && left.LegalEntityIds.SequenceEqual(right.LegalEntityIds);
     }
 
-    private static bool ExactBusinessState(
+    internal static bool ExactBusinessState(
         ProductLegalEntityScopePolicy persisted,
         ProductLegalEntityScopePolicy requested)
         => persisted.TenantId == requested.TenantId
@@ -524,7 +569,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
            && left.Zip(right).All(pair =>
                pair.First.ToBsonDocument().Equals(pair.Second.ToBsonDocument()));
 
-    private static FilterDefinition<ProductLegalEntityScopePolicy> BuildServerSideBudgetFilter(
+    internal static FilterDefinition<ProductLegalEntityScopePolicy> BuildServerSideBudgetFilter(
         ProductLegalEntityScopePolicy requested,
         IReadOnlyCollection<LocalAuditIntent> newAuditIntents)
     {
@@ -566,7 +611,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         return new BsonDocumentFilterDefinition<ProductLegalEntityScopePolicy>(expression);
     }
 
-    private static void EnsureProjectedDocumentWithinBudget(
+    internal static void EnsureProjectedDocumentWithinBudget(
         ProductLegalEntityScopePolicy persisted,
         ProductLegalEntityScopePolicy requested,
         IReadOnlyCollection<LocalAuditIntent> newAuditIntents)
@@ -587,7 +632,7 @@ public sealed class ProductLegalEntityScopePolicyRepository : IProductLegalEntit
         EnsureCompleteDocumentWithinBudget(projected, reserveAuditLifecycleHeadroom: true);
     }
 
-    private static void EnsureCompleteDocumentWithinBudget(
+    internal static void EnsureCompleteDocumentWithinBudget(
         BsonDocument document,
         bool reserveAuditLifecycleHeadroom)
     {

@@ -1,5 +1,6 @@
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Application.Contracts;
+using Diten.MdmService.Application.Contracts.Authorization;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Repositories;
 using Diten.MdmService.Persistence.Repositories;
@@ -51,6 +52,11 @@ public sealed class DependencyInjectionSmokeTests
         Assert.Contains(nameof(ProductLegalEntityScopeCandidateFacade), infrastructure, StringComparison.Ordinal);
         Assert.Contains(nameof(IProductLegalEntityScopePolicyRepository), persistence, StringComparison.Ordinal);
         Assert.Contains(nameof(IProductLegalEntityScopeRolloutStateRepository), persistence, StringComparison.Ordinal);
+        Assert.Contains(nameof(IProductLegalEntityScopeWriterAuthorityProvider), infrastructure, StringComparison.Ordinal);
+        Assert.Contains(nameof(ProductLegalEntityScopeWriterAuthorityProvider), infrastructure, StringComparison.Ordinal);
+        Assert.Contains(nameof(IProductLegalEntityScopeGuardedWriteSession), persistence, StringComparison.Ordinal);
+        Assert.Contains(nameof(ProductLegalEntityScopeGuardedWriteSession), persistence, StringComparison.Ordinal);
+        Assert.Contains(nameof(ProductLegalEntityScopeWriteFenceCoordinator), application, StringComparison.Ordinal);
         Assert.DoesNotContain("AuditIntentDeliveryWorker", application, StringComparison.Ordinal);
         Assert.DoesNotContain("ProductLegalEntityScopeOperationalRunner", application, StringComparison.Ordinal);
     }

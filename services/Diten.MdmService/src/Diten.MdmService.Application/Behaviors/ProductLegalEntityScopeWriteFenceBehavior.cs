@@ -1,4 +1,5 @@
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
+using Diten.MdmService.Application.Features.ProductLegalEntityScopes.Commands;
 using Diten.Shared.Core;
 using MediatR;
 
@@ -15,6 +16,7 @@ public sealed class ProductLegalEntityScopeWriteFenceBehavior<TRequest, TRespons
         TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         if (request is not IProductLegalEntityScopeInventoryMutation mutation) return await next();
+        if (request is ReplaceProductLegalEntityScopePolicyCommand) return await next();
         if (!typeof(TResponse).IsGenericType
             || typeof(TResponse).GetGenericTypeDefinition() != typeof(Response<>))
             throw new InvalidOperationException("PRODUCT_SCOPE_WRITE_RESPONSE_CONTRACT_UNSUPPORTED");

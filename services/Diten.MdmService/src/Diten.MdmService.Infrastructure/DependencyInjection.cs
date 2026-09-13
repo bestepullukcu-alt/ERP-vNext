@@ -93,6 +93,8 @@ public static class DependencyInjection
                 PlatformTrustedLegalEntityScopeProviderClient.AudienceHeader
             ]);
         services.AddScoped<ProductLegalEntityScopeCandidateFacade>();
+        services.AddScoped<IProductLegalEntityScopeWriterAuthorityProvider,
+            ProductLegalEntityScopeWriterAuthorityProvider>();
         services.Configure<AuthTrustedSourceAuditServiceIdentityProviderOptions>(configuration.GetSection(AuthTrustedSourceAuditServiceIdentityProviderOptions.SectionName));
         services.Configure<TrustedSourceAuditIntentClientOptions>(configuration.GetSection(TrustedSourceAuditIntentClientOptions.SectionName));
         services.AddHttpClient(nameof(AuthTrustedSourceAuditServiceIdentityProvider), client => client.Timeout = Timeout.InfiniteTimeSpan).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false }).RedactLoggedHeaders([AuthTrustedSourceAuditServiceIdentityProvider.ClientIdHeader, AuthTrustedSourceAuditServiceIdentityProvider.ClientSecretHeader]);
