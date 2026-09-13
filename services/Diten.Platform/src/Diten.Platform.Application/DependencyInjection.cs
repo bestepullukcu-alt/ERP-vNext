@@ -305,6 +305,11 @@ public static class DependencyInjection
         // is decided by BackgroundJobs:RegisterStandardJobs + EnabledJobs, both of which default to off.
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskRecurrenceSweepJob>();
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskDueSoonSweepJob>();
+        // S10 live pass (2026-09-13): both handlers below were referenced by PlatformRecurringJobRegistrar but never
+        // registered, so the executor's GetRequiredService threw on every run the moment their flag was switched on.
+        // BackgroundJobHandlerRegistrationTests now fails for any IBackgroundJobHandler<> left out of this list.
+        services.AddScoped<Features.Meetings.BackgroundJobs.MeetingSeriesSweepJob>();
+        services.AddScoped<Features.WorkingCalendarImport.HolidayAutoFetchJob>();
         services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
 
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
