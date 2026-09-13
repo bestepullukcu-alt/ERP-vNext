@@ -5140,7 +5140,9 @@ yerel Mongo çakışması (BL-343 d), S5c'nin işi değil.
 
 **Seri üretimi her örnekte davet postası atıyor — organizatör dahil**
 
-DURUM: AÇIK (karar sahipte) · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
+DURUM: KAPANDI — karar (a) olduğu gibi kalsın (sahip, 2026-09-13) · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
+
+**Karar gerekçesi:** S5b'den beri davet postası `.ics` taşıyor ve Google entegrasyonu olmadığı için toplantının organizatörün kendi takvimine düşmesinin TEK yolu bu posta. Organizatörü dışarıda bırakmak onun takviminden kendi toplantısını silmek olurdu. Posta hacmi, aynı toplantıları elle açmakla aynı.
 
 **Ölçülen davranış:** S11'in süpürmesi bir örnek ürettiğinde `CreateMeetingCommand` normal yolunu kullanıyor; o yol da her YENİ
 toplantı için `IMeetingInviteMailer.SendInviteAsync` çağırıyor (`MeetingCommandHandlers.cs:197-199`). Mailer alıcı listesinden
@@ -5164,7 +5166,9 @@ Testle sabitlenmedi: seri işleyici testleri `RecordingMediator` kullanıyor, ge
 
 **S5b `.ics` ekinin iki sınırı — tekrar denemede ek düşüyor, organizatör e-postası çözülemezse ORGANIZER boş**
 
-DURUM: AÇIK · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+DURUM: AÇIK — canlı öncesi yapılacak (sahip, 2026-09-13) · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+
+**⚠ CT düzeltmesi (aynı gün):** sahibe önce "tam metni kayda yazalım" önerildi. Ölçüm bunu yanlış çıkardı: kayıttaki gövde KASITLI maskeli (`QueueEmailNotificationHandler.MaskSensitiveValues`, değişkenler `SanitizeVariables` ile `[REDACTED]`) — geçici şifre gibi değerler veritabanına yazılmasın diye. Tam gövdeyi saklamak bu korumayı geri alır. Doğru şekil: tekrar denemede gövde şablondan ve temizlenmiş değişkenlerden YENİDEN üretilir; bir değişken maskelenmişse sessizce eksik posta gönderilmez; takvim eki sır içermediği için ayrıca saklanır. WP: WP-MG-MOD0357-BL374-RETRY-FIDELITY-01.
 
 **(1) Tekrar deneme eki taşımıyor.** Davet postası ilk denemede SMTP'de düşerse `EmailDispatchSweepJob` →
 `EmailDispatchJob` postayı kalıcı `NotificationDispatch` satırından yeniden kurar; o satırda ek yok (S5b eki bilerek
