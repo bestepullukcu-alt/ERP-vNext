@@ -2847,6 +2847,24 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/crm/content-composition/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5061
+        }
+      ],
+      "UpstreamPathTemplate": "/api/crm/content-composition/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "OPTIONS"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/mdm/brands",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
