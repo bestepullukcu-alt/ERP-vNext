@@ -71,6 +71,16 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: command/query şekli beklenenden farklıysa (raporla) · ChainTemplates request-DTO deseni uygulanamıyorsa · RBAC seed deseni (SCMM-05-S1) bulunamazsa · kapsam HTTP-adapter+DTO+RBAC dışına (logic/frontend/assembly) taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-13) → **ACCEPTED (E2 + E4 authenticated)** · ⚠ gateway route gap follow
+```text
+Commit: 33fcb4f1 · Agent: PASS · CT: ACCEPTED · Evidence: E2 tam + E4 authenticated (standalone) · Blocker: gateway ocelot route eksik
+```
+- ✅ **Scope:** 4 dosya (ClaimsController +79, ClaimRequests +40, DataSeeder seed +65, ClaimsControllerTests +60). Claim logic/handler/mapper/aggregate + başka controller **dokunulmadı** (salt-ekleme).
+- ✅ **Mantık (CT okudu):** ClaimsController ChainTemplates birebir aynası — 6 endpoint (List/Get Read · Create/Update/Archive Manage · Approve Approve), route `api/crm/content-composition/claims`, [Authorize], DTO→command tam alan map (ToApplicabilityInput dahil), delete yok. CrmService HasPermission = policy-based (`permission` claim).
+- ✅ **CT kendi koşumu (izole worktree):** build 0 hata; ClaimsController testleri **8/8**; tam CrmService.Application.Tests **1660 pass / 5 skip / 0 fail** → regresyon yok.
+- ✅ **E4 authenticated (standalone CrmService 5091 + dev-token, DitenERP_Dev):** unauth→**401** · read-only token create→**403** · full token **create→201** (claim yazıldı) · **list→200** (görünür, applicability şekli) · **approve→200** (ApprovedAt/By set) · **archive→200** (Status=archived, ArchivedAt/By set). Tam yaşam döngüsü + RBAC kanıtlı. (Test claim temizlendi.)
+- ⚠️ **GATEWAY ROUTE GAP (agent flag'i CT-teyitli):** ocelot'ta CRM route'ları per-resource `{everything}` (accounts/contacts/knowledge/campaigns…); **`/api/crm/content-composition/{everything}` YOK** → yeni Claim ucu **gateway'den (5000) 404**. Mevcut SCMM knowledge `/api/crm/knowledge/{everything}` ile geçiyor. **SCMM-12-UI bunu tüketebilmesi için ocelot route eklenmeli** (küçük — knowledge route aynası) → **SCMM-12-API-GW follow (zorunlu).**
+
 ## Kalan (bu WP dışı)
 - **SCMM-12-UI** (frontend): claim authoring console + component picker (KnowledgeConcepts aynası, 7-dil; `KnowledgeContentsController`'dan component listeler) — API kabul edilince.
 - CT E4 (97c5 grant + authenticated CRUD/approve).
