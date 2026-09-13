@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Bu sonuç bir gerekçe ister.</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Görev tamamlanmadan önce bu alan doldurulmalıdır.</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>İstendiği gibi tamamlandı</value>
   </data>

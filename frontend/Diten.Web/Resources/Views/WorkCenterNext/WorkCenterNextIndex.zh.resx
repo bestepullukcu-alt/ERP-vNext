@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>该结果需要填写原因。</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>完成任务前必须填写此字段。</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>已按要求完成</value>
   </data>

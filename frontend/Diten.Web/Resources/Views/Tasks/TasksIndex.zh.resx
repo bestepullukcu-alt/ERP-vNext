@@ -106,6 +106,7 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>所选职位无法接收任务。请选择一个有效职位。</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>其他人已先修改该任务，页面已刷新为最新状态。</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>必填的清单项尚未勾选，无法完成该任务。</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>必填的关闭字段仍为空，任务无法完成。</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>该任务所依赖的任务尚未完成，因此无法推进。</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>仍有子任务未完成，因此该任务暂时无法完成。</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>该任务已关闭，无法再添加评论。</value></data>

@@ -112,23 +112,15 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * does.
      */
     /*
-     * Faz 2a (MOD-0024 Task Closure & Reporting) — `closureFieldValues` is TaskTransitionRequest's own TRAILING,
-     * OPTIONAL field for CLOSURE-stage custom field values, asked only by `complete`/`cancel` and null-means-
-     * "none configured" for every other transition (and for any type that defines no closure field). The
-     * generic body correctly omits it: WCN's closure dialog does not collect those values yet (pack §11 names
-     * this as the next, separate slice), so a generic caller sending nothing is the backward-compatible case the
-     * server is built for — the same shape `ClosureOutcomes`/`ReviewMeetingRequirement` already established on
-     * sibling requests.
-     *
-     * Excluded EXPLICITLY rather than silently tolerated: the exclusion is itself part of the regression guard —
-     * remove it and this test starts demanding the generic body send a field the other seven transitions have
-     * no use for, which is exactly the "fix the three, do not change all ten" rule this test exists to keep.
+     * Faz 2a-rest (MOD-0024 Task Closure & Reporting) — `closureFieldValues` GRADUATED from exempted to
+     * included. It is TaskTransitionRequest's own trailing, optional field for CLOSURE-stage custom values;
+     * Faz 2a shipped the server half with nothing on the wire to send it, and this generic body now carries it
+     * for every transition (`undefined`, never sent, for the nine that never collect one — `complete` is the
+     * only caller that ever supplies it). The exclusion this test once needed is gone because the promise it
+     * stood in for is now actually true: field for field, once more.
      */
-    const CLOSURE_ONLY_FIELDS = new Set(["closureFieldValues"]);
     const fields = new Set(clientFields("__default"));
-    const genericServerFields = new Set(
-      serverFields("TaskTransitionRequest").filter((field) => !CLOSURE_ONLY_FIELDS.has(field)));
-    expect(fields).toEqual(genericServerFields);
+    expect(fields).toEqual(new Set(serverFields("TaskTransitionRequest")));
   });
 
   it("sends a real closure outcome instead of the hard-coded null it shipped with", () => {
@@ -158,13 +150,18 @@ describe("every transition sends exactly what its endpoint declares", () => {
     /*
      * The other half of the same defect: a builder that accepts an outcome is useless if no call site passes
      * one. Each hop is named, because a break in ANY of them restores the empty column silently.
+     *
+     * Faz 2a-rest added a SIXTH argument (`closureFieldValues`) to both `applyAction` and `submitRealTransition`
+     * and wrapped their call sites onto a second line — the outcome's own place in the signature (fourth
+     * parameter of five-then-six) is unchanged, so these patterns match across the line break rather than
+     * anchoring on the closing paren, which moved.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
     expect(source, "the dialog no longer hands the outcome to applyAction")
-      .toMatch(/applyAction\(item, action, res\.value\.reason, undefined, undefined, res\.value\.outcomeCode\)/);
+      .toMatch(/applyAction\(\s*item, action, res\.value\.reason, undefined, undefined, res\.value\.outcomeCode,/);
     expect(source, "applyAction no longer forwards the outcome")
-      .toMatch(/submitRealTransition\(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode\)/);
-    expect(source, "the body builder is no longer given the outcome").toMatch(/outcomeCode \}\)\);/);
+      .toMatch(/submitRealTransition\(\s*item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode,/);
+    expect(source, "the body builder is no longer given the outcome").toMatch(/outcomeCode \|\| null/);
   });
 
   it("only asks for an outcome when the task's TYPE offers one", () => {
@@ -172,10 +169,14 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * BACKWARD COMPATIBILITY, asserted rather than promised. A hundred-odd tasks are open against types with no
      * dictionary; if the picker ever became unconditional, every one of them would meet a required field that
      * has no rows to choose from and could not be closed at all.
+     *
+     * Faz 2a-rest added the SAME promise for closure FIELDS beside closure OUTCOMES — the picker's guard is now
+     * an OR of the two, and a type with neither still falls through to the plain confirm, byte for byte.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
     expect(source).toContain("const closureOutcomes = closureOutcomesFor(item, action);");
-    expect(source, "the picker stopped being conditional").toContain("if (closureOutcomes.length) {");
+    expect(source, "the picker stopped being conditional")
+      .toContain("if (closureOutcomes.length || closureFields.length) {");
   });
 });
 

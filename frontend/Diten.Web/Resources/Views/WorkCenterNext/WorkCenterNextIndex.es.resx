@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Este resultado exige un motivo.</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Este campo es obligatorio para poder completar la tarea.</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completado según lo solicitado</value>
   </data>

@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Этот результат требует указания причины.</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Это поле обязательно для завершения задачи.</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Выполнено как запрошено</value>
   </data>

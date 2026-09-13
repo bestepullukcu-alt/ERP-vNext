@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>تتطلب هذه النتيجة ذكر سبب.</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>يجب تعبئة هذا الحقل قبل إتمام المهمة.</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>أُنجز كما طُلب</value>
   </data>

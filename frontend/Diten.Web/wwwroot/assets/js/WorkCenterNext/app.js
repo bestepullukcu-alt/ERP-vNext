@@ -7096,9 +7096,12 @@
          *
          * This map's own comment names the lesson it then failed: a value that lives in two places and is
          * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         *
+         * Faz 2a-rest — `closureFieldValues` rides beside them, `undefined` (never sent) for the nine actions
+         * that never collect one. `complete` is the only caller that ever supplies it.
          */
-        __default: ({ expectedVersion, reason, outcomeCode }) =>
-            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
+        __default: ({ expectedVersion, reason, outcomeCode, closureFieldValues }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null, closureFieldValues })
     };
 
     /*
@@ -7119,6 +7122,96 @@
         if (!slot) { return []; }
         const offered = item && item.taskType && item.taskType[slot];
         return Array.isArray(offered) ? offered : [];
+    };
+
+    /*
+     * ── CLOSURE-STAGE FIELDS (Faz 2a-rest, MOD-0024 Task Closure & Reporting) ───────────────────────────────
+     *
+     * `GET /field-definitions` answers ONE catalogue to both the create form and this window — there is no
+     * second endpoint — so the applicability rule below is the SAME two clauses Tasks/form-page.js's own
+     * `applicableDefinitions` already enforces (live, active, claimed by no OTHER module), with the stage test
+     * flipped. It is written again HERE rather than shared because this page never loads form-page.js — that
+     * script also boots a create-form page nobody asked for (a `DOMContentLoaded` listener, a task-type fetch,
+     * reads of `#taskForm`) — but the TWO CLAUSES are asserted identical to form-page.js's own, by source, in
+     * `tasks-closure-fields-wcn.test.js`: a change to one without the other fails there, not in review.
+     *
+     * ⚠ MUST MIRROR `TASK_MODULE_CODE` in Tasks/form-page.js. Not imported (same reason), asserted equal by
+     * the same test.
+     */
+    const TASK_MODULE_CODE = 'tasks';
+    const closureFieldDefinitionsFor = (rows) => (rows || []).filter((definition) =>
+        definition
+        && definition.isActive !== false
+        && definition.stage === 'Closure'
+        && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    /**
+     * The full catalogue, asked fresh each time the complete dialog opens — a small, tenant-wide list, and the
+     * same freshness the create form gets on every one of ITS page loads. Never cached: an administrator who
+     * just added a required field should not have the OLD catalogue govern the very next completion.
+     */
+    const fetchClosureFieldDefinitions = async () => {
+        // Defensive, not load-bearing in production: every real host loads Tasks/api.js (app.js already leans
+        // on it elsewhere — attachmentContentUrl, assignablePeople). A minimal double that omits this method
+        // must degrade to "this type asks nothing", not throw.
+        if (typeof global.TasksApi?.fieldDefinitions !== 'function') { return []; }
+        const result = await global.TasksApi.fieldDefinitions();
+        return result.ok && Array.isArray(result.data) ? closureFieldDefinitionsFor(result.data) : [];
+    };
+
+    /*
+     * Resolve every option-driven closure field's list BEFORE rendering — the exact rule
+     * Tasks/form-page.js's `loadCustomFieldOptions` already follows for the create form, repeated here for the
+     * same "this page does not load that script" reason `closureFieldDefinitionsFor` gives.
+     */
+    const loadClosureFieldOptions = async (definitions) => {
+        const byCode = {};
+
+        const personLabels = { nameUnavailable: t('PersonNameUnavailable') };
+        let personOptions = null; // fetched at most once, and only if a Person field is actually present
+
+        await Promise.all(definitions.map(async (definition) => {
+            const kind = global.TaskForm.customFieldControlKind(definition);
+            if (kind === 'person') {
+                if (!personOptions) {
+                    // `data` IS the array — TasksApi.assignablePeople unwraps `{ people, excluded }` internally
+                    // (BL-113); a caller that re-unwraps it is the exact defect that once took the whole page
+                    // down on `people.map is not a function`.
+                    const people = await global.TasksApi.assignablePeople();
+                    personOptions = (people.ok ? people.data : []).map((row) => ({
+                        value: row.userId || row.id,
+                        label: global.TaskForm.formatPersonLabel(row, personLabels.nameUnavailable)
+                    }));
+                }
+                byCode[definition.code] = personOptions;
+                return;
+            }
+            if (kind !== 'select' && kind !== 'record') { return; }
+
+            const result = kind === 'record'
+                ? await global.TasksApi.fieldRecords(definition.code)
+                : await global.TasksApi.fieldOptions(definition.code);
+
+            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            global.console?.warn?.(
+                `[WorkCenterNext] options for closure field "${definition.code}" could not be resolved `
+                + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        }));
+
+        return byCode;
+    };
+
+    /** The server search a record-backed closure field runs — the same call form-page.js's own picker makes. */
+    const searchClosureFieldRecords = async (code, term) => {
+        const result = await global.TasksApi.fieldRecords(code, { term });
+        if (result.ok) { return result.data || []; }
+        global.console?.warn?.(
+            `[WorkCenterNext] searching records for closure field "${code}" failed `
+            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        return [];
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -7146,7 +7239,8 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const submitRealTransition = async (
+        item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -7168,7 +7262,8 @@
             action.code,
             item.source?.providerCode,
             buildTransitionBody(
-                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
+                action.code,
+                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7712,9 +7807,10 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
+            submitRealTransition(
+                item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
             return;
         }
 
@@ -8756,7 +8852,14 @@
          * product declares.
          */
         const closureOutcomes = closureOutcomesFor(item, action);
-        if (closureOutcomes.length) {
+        /*
+         * Faz 2a-rest — fetched ONLY for `complete` (the pack's own boundary: the cancel window never offers
+         * these fields), and only a catalogue read — nothing is asked of the server until the dialog confirms.
+         * An empty result (no closure field configured, the state every type is in before this slice and every
+         * type nobody has touched since) falls straight through to the SAME branches below, byte for byte.
+         */
+        const closureFields = action.code === 'complete' ? await fetchClosureFieldDefinitions() : [];
+        if (closureOutcomes.length || closureFields.length) {
             if (!global.Swal) { return; }
 
             const outcomeOptions = closureOutcomes
@@ -8773,18 +8876,36 @@
                 return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
             };
 
-            global.Swal.fire(Object.assign({
-                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
-                    + '<span>' + esc(actionLabel(action)) + '</span>',
-                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
-                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+            /*
+             * Faz 2a-rest — the outcome select/reason box are drawn ONLY when the type actually has outcomes;
+             * the fields container is drawn ONLY when it has closure fields. A type with just one of the two
+             * gets just that one half, never an empty control for the other.
+             */
+            const outcomeBlock = closureOutcomes.length
+                ? `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
                     + `${esc(t('ClosureOutcomeLabel'))}</label>`
                     + `<select id="wcnClosureOutcome" class="form-select">`
                     + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
                     + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
                     + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
                     + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`
+                : '';
+            // The REAL renderer's own row markup lands inside this row on open — see didOpen below.
+            const fieldsBlock = closureFields.length
+                ? `<div class="row g-3 text-start" id="wcnClosureFieldsRow"></div>`
+                : '';
+
+            // Resolved BEFORE the dialog opens: `renderCustomFields` either offers an option-driven field
+            // complete or not at all, and there is no later moment to hand it a list that was still in flight.
+            const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
+
+            global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + outcomeBlock
+                    + fieldsBlock,
                 showCancelButton: true,
                 confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 cancelButtonText: t('DialogDismiss'),
@@ -8803,10 +8924,34 @@
                             if (label) { label.textContent = labelFor(picker.value); }
                         });
                     }
+
+                    // Faz 2a-rest — the SAME renderer the create form uses, reached through the SAME shared
+                    // script (Tasks/form.js, already loaded by this view). Never a second one (YAPMA).
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    if (fieldsRow && closureFields.length) {
+                        /*
+                         * ⚠ `TasksL10n.t`, NOT this dialog's OWN `t`. These four are the create form's OWN
+                         * vocabulary for the SAME renderer — already loaded here (`Tasks/index.l10n.js`, before
+                         * `Tasks/api.js`, in both Index.cshtml and Details.cshtml) — and duplicating them into
+                         * WorkCenterNextIndex's resx would be a second place for one translation to live.
+                         */
+                        const formT = (key) => global.TasksL10n?.t?.(key) ?? key;
+                        global.TaskForm.renderCustomFields(fieldsRow, closureFields, closureFieldOptions, {
+                            optionPlaceholder: formT('customFieldOptionPlaceholder'),
+                            booleanYes: formT('customFieldBooleanYes'),
+                            booleanNo: formT('customFieldBooleanNo'),
+                            recordSearchPlaceholder: formT('customFieldRecordSearchPlaceholder'),
+                            // Labels a TENANT typed, and labels the type's own closure-outcome dictionary
+                            // already resolves through THIS dialog's `t` — a resource-keyed field label is the
+                            // one case needing a translator, and it is WCN's own strings it would ever name.
+                            translate: t
+                        });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                    }
                 },
                 preConfirm: () => {
                     const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
-                    if (!outcomeCode) {
+                    if (closureOutcomes.length && !outcomeCode) {
                         global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
                         return false;
                     }
@@ -8826,11 +8971,36 @@
                         return false;
                     }
 
-                    return { outcomeCode, reason };
+                    /*
+                     * Faz 2a-rest — the SAME COURTESY for closure fields: the server enforces
+                     * TASK_CLOSURE_FIELD_REQUIRED independently (a client can always reach the dispatch route
+                     * without this dialog), so a client-side miss here costs nothing but a round trip.
+                     */
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    let closureFieldValues;
+                    if (fieldsRow && closureFields.length) {
+                        const values = global.TaskForm.readCustomFieldValues(fieldsRow, closureFields);
+                        const { valid, errors } = global.TaskForm.validateCustomFields(closureFields, values);
+                        if (!valid) {
+                            global.Swal.showValidationMessage(t('ClosureFieldRequired'));
+                            const missing = closureFields.find((definition) => errors.includes(definition.code));
+                            if (missing) {
+                                document.querySelector(`[data-custom-field="${missing.code}"]`)?.focus?.();
+                            }
+                            return false;
+                        }
+                        closureFieldValues = values.map((value) => ({
+                            definitionCode: value.definitionCode, valueType: value.valueType, value: value.value
+                        }));
+                    }
+
+                    return { outcomeCode, reason, closureFieldValues };
                 }
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
+                    applyAction(
+                        item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
+                        res.value.closureFieldValues);
                 }
             });
             return;

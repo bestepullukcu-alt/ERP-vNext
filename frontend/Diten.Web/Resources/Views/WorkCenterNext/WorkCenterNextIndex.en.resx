@@ -2233,6 +2233,9 @@
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>This outcome requires a reason.</value>
   </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>This field is required before the task can be completed.</value>
+  </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completed as requested</value>
   </data>

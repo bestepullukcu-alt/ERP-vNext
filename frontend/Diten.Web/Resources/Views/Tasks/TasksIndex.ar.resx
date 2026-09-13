@@ -106,6 +106,7 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>لا يمكن للوظيفة المحددة استلام المهام. اختر وظيفة نشطة.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>غيّر شخص آخر هذه المهمة قبلك. تم تحديث الشاشة بالحالة الحالية.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>لم يتم تحديد عنصر مطلوب في قائمة التحقق، لذا لا يمكن إكمال المهمة.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>حقل إغلاق مطلوب لا يزال فارغًا، فلا يمكن إتمام المهمة.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>لم تنتهِ بعد مهمة تعتمد عليها هذه المهمة، لذا لا يمكنها المضي قدمًا.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>ما تزال إحدى المهام الفرعية مفتوحة، لذا لا يمكن إكمال هذه المهمة بعد.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>أُغلقت هذه المهمة، لذا لم يعد بالإمكان التعليق عليها.</value></data>

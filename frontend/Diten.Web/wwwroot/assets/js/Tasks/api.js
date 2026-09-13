@@ -84,6 +84,13 @@
          * and "start it first" is exactly that.
          */
         TASK_INVALID_STATE: 'errorTaskInvalidState',
+        /*
+         * Faz 2a-rest — a CLOSURE-stage field marked Required was not supplied. Reached only when the closure
+         * window's own client-side check (ClosureFieldRequired, in WorkCenterNextIndex's own resx) is somehow
+         * skipped — a stale screen, the dispatch route hit directly — so the server's refusal still reads as a
+         * sentence rather than "an error occurred".
+         */
+        TASK_CLOSURE_FIELD_REQUIRED: 'errorClosureFieldRequired',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
