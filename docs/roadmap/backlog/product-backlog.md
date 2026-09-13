@@ -5262,3 +5262,19 @@ kapanmamış, toplantısı henüz olmayan görevde, sahibine/açanına ekliyor. 
 (`fixture-contract.js:582`): politika `notAllowed` değilse eylem OLMALI. Başkasının görevi, kapanmış görev veya toplantısı planlanmış görev →
 öğe düşüyor. CT'nin S4 kabulü birim testlerle yapıldı; sözleşme doğrulayıcısı gerçek sağlayıcı çıktısına karşı koşulmadı.
 **Ek:** dev-reference öğesi `DISABLED_REASON_REQUIRED` ile düşüyor; kaynağı düzeltme WP'sinde ölçülecek.
+
+---
+
+### BL-380
+
+**Belge yürürlüğe alma: onay kanıtı hiç değerlendirilmemişse uyarıyla geçiyor — Kalite teyidi + ekran/davranış tutarsızlığı**
+
+DURUM: AÇIK · BULAN: DM ajanı (WP-DM-DOCMGMT-RED-TESTS-01), CT · KAYIT: 2026-09-13
+
+**(1) Kalite sorusu (Kural 4 ile birlikte sorulabilir):** `DocumentLifecycleService` artık onay kanıtı durumu boş (FU09 onay rotası hiç
+çalışmamış) bir belgeyi Effective'e uyarıyla geçiriyor; `Complete` ve `NotRequired` dışındaki her dolu değer engelliyor (CT, fail-closed).
+Bu, özelliğin kendi testinin (`MarkEffective_without_evidence_or_gate_succeeds_with_warnings`, 0f71a237) yazıldığı davranış; FU10'un
+devre dışı bırakılamayan sürüm kapısı 3 aynı alanı okumaya devam ediyor. Soru: onay rotası çalıştırılmamış bir belgenin uyarıyla yürürlüğe
+girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
+**(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
+yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
