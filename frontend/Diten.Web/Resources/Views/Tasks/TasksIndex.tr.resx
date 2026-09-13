@@ -107,6 +107,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
   <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Zorunlu bir kapanış alanı hâlâ boş, görev tamamlanamaz.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>Belirtilen organizasyon birimi bulunamadı.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>O organizasyon birimi kapsam dışında.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Bu görevin bağlı olduğu bir görev henüz bitmedi, bu yüzden ilerleyemez.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Bir alt görev hâlâ açık, bu yüzden bu görev henüz tamamlanamaz.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Bu görev kapandı, artık yorum yazılamaz.</value></data>

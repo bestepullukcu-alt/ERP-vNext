@@ -72,6 +72,11 @@
         ORGANIZATION_UNIT_UNRESOLVED: 'errorOrganizationUnitUnresolved',
         TASK_ALREADY_CLAIMED: 'errorAlreadyClaimed',
         POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable',
+        // BL-355 — an organization unit named directly in the request: does not exist in this tenant, or exists
+        // but is not the caller's to file into. Reached only by a client posting straight to the API; the create
+        // form never sends this field (pack §12 K6).
+        TASK_ORGANIZATION_UNIT_NOT_FOUND: 'errorOrganizationUnitNotFound',
+        TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE: 'errorOrganizationUnitOutOfScope',
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',

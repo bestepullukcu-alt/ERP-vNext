@@ -146,6 +146,23 @@ public static class TaskReasonCodes
     public const string PositionNotAssignable = "POSITION_NOT_ASSIGNABLE";
     public const string AssigneeInvalid = "ASSIGNEE_INVALID";
     public const string OrganizationUnitUnresolved = "ORGANIZATION_UNIT_UNRESOLVED";
+
+    /// <summary>BL-355 — the named unit does not exist in this tenant at all, including one that belongs to a
+    /// DIFFERENT tenant: the repository is tenant-scoped, so a foreign unit resolves to the same "not found" a
+    /// typo would, and neither answer tells the caller a unit with that id exists anywhere.</summary>
+    public const string OrganizationUnitNotFound = "TASK_ORGANIZATION_UNIT_NOT_FOUND";
+
+    /// <summary>
+    /// BL-355 — the unit exists and is active, but is not the caller's to file into (BL-057's own three-leg
+    /// scope test, <see cref="Services.TaskAssignmentScope.Allows"/>).
+    ///
+    /// <para>Its OWN code, distinct from <see cref="OrganizationUnitNotFound"/> — unlike
+    /// <see cref="AssigneeNotAssignable"/>, which deliberately collapses "not eligible" and "out of scope" into
+    /// one answer so a caller can never learn a reachable-looking person exists elsewhere, this IS allowed to
+    /// say the unit exists: an organization unit is reference data the org chart already names to everyone in
+    /// the tenant, not a fact about a specific person's reachability.</para>
+    /// </summary>
+    public const string OrganizationUnitOutOfScope = "TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE";
     public const string AlreadyClaimed = "TASK_ALREADY_CLAIMED";
     public const string AlreadyAccepted = "TASK_ALREADY_ACCEPTED";
     public const string NotClaimable = "TASK_NOT_CLAIMABLE";

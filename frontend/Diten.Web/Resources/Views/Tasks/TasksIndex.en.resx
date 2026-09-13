@@ -107,6 +107,8 @@
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Someone else changed this task first. The screen now shows the current state.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>A required checklist item is still unticked, so the task cannot be completed.</value></data>
   <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>A required closure field is still empty, so the task cannot be completed.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>The named organization unit was not found.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>That organization unit is out of scope.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>A task this one depends on is not finished yet, so it cannot move forward.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>A subtask is still open, so this task cannot be completed yet.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>This task is closed, so it can no longer be commented on.</value></data>
