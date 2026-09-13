@@ -14,6 +14,8 @@ auth.users.assign-role,0
 auth.users.create,0
 auth.users.delete,0
 auth.users.lookup-validation,0
+auth.users.lookup,0
+auth.users.account-kind.manage,0
 auth.users.read,0
 auth.users.update,0
 crm.account-contact.manage,0

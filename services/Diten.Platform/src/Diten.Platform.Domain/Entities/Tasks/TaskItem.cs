@@ -342,6 +342,19 @@ public sealed class TaskItem : TenantScopedEntity
     public DateTimeOffset? CompletedAt { get; set; }
     public DateTimeOffset? CancelledAt { get; set; }
     public string? ClosureReasonCode { get; set; }
+
+    /// <summary>
+    /// The closing narrative, in the actor's own words — MOD-0024 Task Closure &amp; Reporting §7: "the single
+    /// most-read thing afterwards". Written on <c>complete</c>/<c>cancel</c> from <c>TaskTransitionRequest.Note</c>;
+    /// a copy also lands on the <c>TaskTransition</c> log entry, same as every other act that carries a reason in
+    /// the actor's own words (wait, return, reassign).
+    ///
+    /// <para>Not required by default — only when the chosen outcome's <c>RequiresReason</c> demands one, the rule
+    /// this engine already enforced before this field existed. ≤ 4000 chars, the same ceiling
+    /// <c>TaskFieldLimits.MaxDescriptionLength</c> gives a task's own description.</para>
+    /// </summary>
+    public string? ClosureNote { get; set; }
+
     public DateTimeOffset? DeletedAt { get; set; }
 }
 

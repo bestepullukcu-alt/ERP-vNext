@@ -1640,9 +1640,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>有 {0} 个必填条目未勾选。任务仍将关闭。</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>需要证明文件。文档模块接入后即可关联文档。</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>已标记的条目需要证明文件。使用该行的回形针图标添加证明文件。</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>更改级别：可选 → 应完成 → 阻断</value>
   </data>
@@ -2236,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>结束方式：{0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>已附加 {0} 个交付物。</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>已附加 {0} 个证据文件。</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>这项工作是如何结束的？</value>
   </data>
@@ -2256,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>该结果需要填写原因。</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>完成任务前必须填写此字段。</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>已按要求完成</value>
@@ -2290,4 +2300,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>已退回 {0} 次，最近一次：{1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>暂无附件。</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>添加文件</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>证明文件</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>交付物</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>附件</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>类型</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>备注（可选）</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>为该文件添加简短备注</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>文件</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>上传</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>添加附件</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>请先选择文件。</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>是否移除此附件？</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>移除附件</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>由 {0} 上传 · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>附件已添加。</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>附件已移除。</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>添加交付物或证据文件（可选）</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>此任务类型要求提供交付物文件</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>请先选择文件，再完成此任务。</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>添加证明文件</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} 个证明文件</value></data>
 </root>

@@ -3251,41 +3251,75 @@
          * `.outerHTML` because this file builds strings — the component builds nodes so that the one field
          * carrying typed text is set with `textContent` and cannot become markup.
          */
-        const rows = items.map((c, index) => global.DitenCheckItem.row(
-            {
-                id: `${item.id}:${c.id}`,
-                text: c.text,
-                requirement: c.requirement,
-                evidenceRequired: c.evidenceRequired,
-                done: c.done,
-                // A template item's words belong to every task made from that template; the server refuses to
-                // reword one, and the row says so rather than letting someone find out on reload.
-                templateOwned: !!c.templateOwned,
-                // Somebody else's step — or the process's. Its controls are not drawn; see the component.
-                editable: c.editable !== false
-            },
-            {
-                mode: 'working',
-                // A closed task's checklist is history. The server refuses these writes too — this is the
-                // courtesy, not the guard.
-                readOnly: ro,
-                labels: {
-                    optional: t('ChecklistLevelOptional'),
-                    required: t('ChecklistLevelRequired'),
-                    blocking: t('ChecklistLevelBlocking'),
-                    levelHint: t('ChecklistLevelHint'),
-                    // The two read-only faces of the same two facts. `ChecklistLevelHint` is an instruction
-                    // ("Change the level: …") and would be a lie on a chip nobody here can change; the mark's
-                    // label is a statement rather than the button's verb, for the same reason.
-                    levelStatic: t('ChecklistLevelReadOnly'),
-                    evidenceMark: t('ChecklistEvidenceMark'),
-                    moveUp: t('ChecklistMoveUp'),
-                    moveDown: t('ChecklistMoveDown'),
-                    evidenceToggle: t('ChecklistEvidenceToggle'),
-                    remove: t('ChecklistRemove'),
-                    toggle: t('ChecklistLabel')
+        const rows = items.map((c, index) => {
+            const rowEl = global.DitenCheckItem.row(
+                {
+                    id: `${item.id}:${c.id}`,
+                    text: c.text,
+                    requirement: c.requirement,
+                    evidenceRequired: c.evidenceRequired,
+                    done: c.done,
+                    // A template item's words belong to every task made from that template; the server refuses
+                    // to reword one, and the row says so rather than letting someone find out on reload.
+                    templateOwned: !!c.templateOwned,
+                    // Somebody else's step — or the process's. Its controls are not drawn; see the component.
+                    editable: c.editable !== false
+                },
+                {
+                    mode: 'working',
+                    // A closed task's checklist is history. The server refuses these writes too — this is the
+                    // courtesy, not the guard.
+                    readOnly: ro,
+                    labels: {
+                        optional: t('ChecklistLevelOptional'),
+                        required: t('ChecklistLevelRequired'),
+                        blocking: t('ChecklistLevelBlocking'),
+                        levelHint: t('ChecklistLevelHint'),
+                        // The two read-only faces of the same two facts. `ChecklistLevelHint` is an instruction
+                        // ("Change the level: …") and would be a lie on a chip nobody here can change; the
+                        // mark's label is a statement rather than the button's verb, for the same reason.
+                        levelStatic: t('ChecklistLevelReadOnly'),
+                        evidenceMark: t('ChecklistEvidenceMark'),
+                        moveUp: t('ChecklistMoveUp'),
+                        moveDown: t('ChecklistMoveDown'),
+                        evidenceToggle: t('ChecklistEvidenceToggle'),
+                        remove: t('ChecklistRemove'),
+                        toggle: t('ChecklistLabel')
+                    }
+                });
+            /*
+             * "KANIT EKLE" — Slice ATT-1's one addition to a row `DitenCheckItem` itself knows nothing about.
+             * The component draws the FLAG (does this item want evidence); this appends the ACT (attach one),
+             * as an extra child on the returned NODE rather than a second vocabulary inside the shared
+             * component — the same reason the grip and Sortable are wired here and not there.
+             *
+             * Gated on `!ro` alone, not on `mine`: `mine` answers "may I reword this item", a different
+             * question from "may I attach evidence to this task", which is TASK_ATTACHMENT_NOT_AUTHORIZED's
+             * question (holder or requester) and the server's alone to answer — this button is offered to any
+             * reader of an open task and the 403, if it comes, explains itself.
+             */
+            if (c.evidenceRequired && !ro) {
+                const addEvidence = document.createElement('button');
+                addEvidence.type = 'button';
+                addEvidence.className = 'diten-checkitem-btn wcn-check-evidence-add';
+                addEvidence.setAttribute('data-wcn-check-evidence-add', `${item.id}:${c.id}`);
+                const label = c.evidenceCount > 0 ? tf('ChecklistEvidenceCount', c.evidenceCount) : t('ChecklistAddEvidence');
+                addEvidence.title = label;
+                addEvidence.setAttribute('aria-label', label);
+                const icon = document.createElement('i');
+                icon.className = 'bx bx-paperclip';
+                icon.setAttribute('aria-hidden', 'true');
+                addEvidence.appendChild(icon);
+                if (c.evidenceCount > 0) {
+                    const count = document.createElement('span');
+                    count.className = 'wcn-check-evidence-count';
+                    count.textContent = String(c.evidenceCount);
+                    addEvidence.appendChild(count);
                 }
-            }).outerHTML).join('');
+                rowEl.appendChild(addEvidence);
+            }
+            return rowEl.outerHTML;
+        }).join('');
         // The reason completion is unavailable must be READABLE on the page — a disabled button with only a
         // tooltip leaves a keyboard or touch user with no explanation at all.
         const blocked = items.some((c) => c.blocking && !c.done);
@@ -3997,14 +4031,116 @@
         </div>`;
     };
 
-    // Attachments — readonly references (open in source).
+    // How big a file is, in the units every reader already knows — never localized, the same choice every
+    // product on this desk makes for "KB"/"MB".
+    const formatByteSize = (bytes) => {
+        const n = Number(bytes);
+        if (!Number.isFinite(n) || n < 0) { return ''; }
+        if (n < 1024) { return `${n} B`; }
+        const units = ['KB', 'MB', 'GB'];
+        let value = n / 1024;
+        let unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) { value /= 1024; unitIndex += 1; }
+        return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unitIndex]}`;
+    };
+
+    const ATTACHMENT_KIND_BADGE = { Evidence: 'primary', Deliverable: 'success', Attachment: 'secondary' };
+    // Resolved by literal calls, one per kind — the same rule diten-checkitem.js's own levelLabel follows and
+    // for the same reason: the l10n guard scans callers for literal resource-key calls, and a key assembled
+    // from a variable is invisible to it, so a missing translation would reach a reader instead of failing a
+    // test. Deliberately not a template-literal or string-concatenation lookup for that reason.
+    const attachmentKindLabel = (kind) =>
+        kind === 'Evidence' ? t('AttachmentKindEvidence')
+            : kind === 'Deliverable' ? t('AttachmentKindDeliverable')
+                : t('AttachmentKindAttachment');
+
+    /*
+     * ── ATTACHMENTS — Slice ATT-1, and the ONE CAPABILITY NAME TWO SHAPES ANSWER TO ──────────────────────────
+     *
+     * `attachments` was declared in the fixture contract before this round and already had a LIVE caller:
+     * documentation-fixtures.js / islerim-showcase-fixtures.js (dev-only, `?fixtures=showcase`) send a bare
+     * ARRAY of read-only document REFERENCES — {id, label, version, accessState, deepLink} — a citation into
+     * another module's controlled document, never uploaded here and never removable. That is what the OLD
+     * `renderAttachments` below this comment used to draw, on the wrong field names (`a.name`/`a.size` on an
+     * object shaped `{label, version}` — it rendered blank on every one of those fixtures, silently).
+     *
+     * MOD-0024's OWN attachments are a different thing wearing the same capability: files THIS task holds
+     * itself, addable and removable, wrapped in {items: [...]} — this shell's own wrapper shape for every list
+     * it owns (WorkItemChecklistDto, WorkItemSubtasksDto, and now WorkItemAttachmentsDto). An array is never an
+     * object and an object is never an array, so `Array.isArray` tells the two apart with certainty: no
+     * fixture is rewritten, and no live projection has to pretend to be the other one.
+     */
     const renderAttachments = (item) => {
-        if (!hasCap(item, 'attachments') || !item.attachments || !item.attachments.length) { return ''; }
+        if (!hasCap(item, 'attachments') || !item.attachments) { return ''; }
+        return Array.isArray(item.attachments)
+            ? renderAttachmentReferences(item)
+            : renderTaskAttachments(item);
+    };
+
+    // The PRE-EXISTING shape. Read-only by construction — there was never a write path for a reference into
+    // another module's document, and Slice ATT-1 does not invent one.
+    const renderAttachmentReferences = (item) => {
+        if (!item.attachments.length) { return ''; }
         const rows = item.attachments.map((a) =>
-            `<li class="wcn-attach" data-wcn-attach="${esc(a.name)}"><i class="bx bx-paperclip"></i><span class="wcn-attach-name">${esc(a.name)}</span><span class="wcn-attach-size">${esc(a.size)}</span></li>`).join('');
+            `<li class="wcn-attach" data-wcn-attach="${esc(a.id)}">
+                <i class="bx bx-paperclip" aria-hidden="true"></i>
+                <span class="wcn-attach-name">${esc(data.resolveLabel(a.label) || a.id)}</span>
+                <span class="wcn-attach-size">${a.version ? esc(`v${a.version}`) : ''}</span>
+            </li>`).join('');
         return `<div class="wcn-detail-section">
             ${cardHead('bx-paperclip', 'AttachmentsLabel')}
             <ul class="wcn-attachments">${rows}</ul>
+        </div>`;
+    };
+
+    /*
+     * MOD-0024's OWN attachments (AC1/AC3). The provider ships {items: []} for every dispatchable task — the
+     * same "declared-and-empty" rule the checklist and subtask cards follow — so the add button IS the empty
+     * state, exactly as `renderChecklist` draws it: a sentence above an empty box for putting something there
+     * is noise, and this card is the only place the capability can be discovered at all.
+     *
+     * `canManage` mirrors the checklist's own `canAdd`: a closed task's attachments are history (server refusal
+     * is TASK_ATTACHMENT_TASK_CLOSED, 409) and this is the courtesy, not the guard.
+     */
+    const renderTaskAttachments = (item) => {
+        const attachments = item.attachments.items || [];
+        const canManage = !isTerminal(item);
+        const addButton = canManage
+            ? `<button type="button" class="btn btn-sm btn-label-primary" data-wcn-attach-add="${item.id}">
+                   <i class="bx bx-plus" aria-hidden="true"></i> ${esc(t('AttachmentAddButton'))}</button>`
+            : '';
+        if (!attachments.length) {
+            return `<div class="wcn-detail-section">
+                ${cardHead('bx-paperclip', 'AttachmentsLabel')}
+                ${canManage ? addButton : `<p class="wcn-block-hint">${esc(t('AttachmentsEmpty'))}</p>`}
+            </div>`;
+        }
+        const rows = attachments.map((a) => {
+            const url = global.TasksApi.attachmentContentUrl(item.id, a.id);
+            const uploader = a.uploadedBy?.displayName || t('PersonNameUnavailable');
+            const when = agoLabel(Date.parse(a.uploadedAt), item.provenance);
+            const whenAbsolute = absoluteInstant(a.uploadedAt);
+            const kindBadge = ATTACHMENT_KIND_BADGE[a.kind] || 'secondary';
+            return `<li class="wcn-attach" data-wcn-attach="${esc(a.id)}">
+                <i class="bx bx-paperclip" aria-hidden="true"></i>
+                <div class="wcn-attach-main">
+                    <a class="wcn-attach-name" href="${esc(url)}" download="${esc(a.fileName)}"
+                       title="${esc(a.fileName)}">${esc(a.fileName)}</a>
+                    <span class="wcn-attach-meta"${whenAbsolute ? ` title="${esc(whenAbsolute)}"` : ''}>${
+                        esc(tf('AttachmentUploadedBy', uploader, when))}</span>
+                </div>
+                <span class="wcn-badge wcn-badge-${kindBadge}">${esc(attachmentKindLabel(a.kind))}</span>
+                <span class="wcn-attach-size">${esc(formatByteSize(a.byteSize))}</span>
+                ${canManage ? `<button type="button" class="diten-checkitem-btn diten-checkitem-remove"
+                        data-wcn-attach-remove="${item.id}:${esc(a.id)}"
+                        aria-label="${esc(t('AttachmentRemove'))}" title="${esc(t('AttachmentRemove'))}">
+                    <i class="bx bx-trash" aria-hidden="true"></i></button>` : ''}
+            </li>`;
+        }).join('');
+        return `<div class="wcn-detail-section">
+            ${cardHead('bx-paperclip', 'AttachmentsLabel', `<span class="wcn-count-inline">${attachments.length}</span>`)}
+            <ul class="wcn-attachments">${rows}</ul>
+            ${addButton ? `<div class="mt-2">${addButton}</div>` : ''}
         </div>`;
     };
 
@@ -4406,6 +4542,50 @@
         </section>`;
     };
 
+
+    /*
+     * ── THE CLOSURE BLOCK (MOD-0024 Task Closure & Reporting, Faz 2a) ────────────────────────────────────────
+     *
+     * The step-bar caption already prints the outcome's WORDS beside the closing date (`closedAs`, above) — this
+     * card is the REST of the envelope: the closing narrative, the CLOSURE-stage field values, and how many
+     * Deliverable/Evidence attachments this closed task carries. No card at all when none of the three exists,
+     * which is every task before this slice and every task whose type asks nothing at closure — the same
+     * "a capability with no data is not a capability worth announcing" rule every conditional card here follows.
+     *
+     * `closure.fields` arrives in `WorkItemBusinessFieldDto`'s own shape — the SAME one `businessContext` ships
+     * — so the value is read by its REAL wire name, `valueType`/`redacted` (not the `kind`/`restricted` a
+     * neighbouring helper reads; those never match this contract either, a pre-existing mismatch this slice does
+     * not touch).
+     */
+    const renderClosure = (item) => {
+        if (!isTerminal(item) || !item.closure) { return ''; }
+        const closure = item.closure;
+        const fields = closure.fields || [];
+        const deliverables = closure.deliverables || [];
+        if (!closure.note && !fields.length && !deliverables.length) { return ''; }
+
+        const fieldValue = (field) => {
+            if (field.redacted) { return `<span class="text-muted">${esc(t('RedactedValue'))}</span>`; }
+            if (field.valueType === 'boolean') { return esc(t(field.value === 'true' ? 'Yes' : 'No')); }
+            return esc(data.resolveLabel(field.value) || field.value || '—');
+        };
+        const fieldRows = fields.map((field) =>
+            `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${fieldValue(field)}</strong></div>`
+        ).join('');
+
+        // One sentence per KIND present — "3 deliverables", never a duplicate of the attachment card's own rows.
+        const deliverableKey = { Deliverable: 'ClosureDeliverableCount', Evidence: 'ClosureEvidenceCount' };
+        const deliverableRows = deliverables
+            .map((group) => `<li>${esc(tf(deliverableKey[group.kind] || 'ClosureDeliverableCount', group.count))}</li>`)
+            .join('');
+
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-flag-alt', 'ClosureSectionTitle')}
+            ${closure.note ? `<p class="mb-3">${esc(closure.note)}</p>` : ''}
+            ${fieldRows ? `<div class="wcn-facts-grid mb-3">${fieldRows}</div>` : ''}
+            ${deliverableRows ? `<ul class="text-muted small mb-0">${deliverableRows}</ul>` : ''}
+        </section>`;
+    };
 
     const renderBusinessContext = (item) => {
         if (!hasCap(item, 'businessContext')) { return ''; }
@@ -5062,6 +5242,7 @@
             // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
+            card(renderClosure(item)),
             card(renderBusinessContext(item)),
             card(renderSubtasks(item)),
             card(renderDependencies(item)),
@@ -6970,9 +7151,12 @@
          *
          * This map's own comment names the lesson it then failed: a value that lives in two places and is
          * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         *
+         * Faz 2a-rest — `closureFieldValues` rides beside them, `undefined` (never sent) for the nine actions
+         * that never collect one. `complete` is the only caller that ever supplies it.
          */
-        __default: ({ expectedVersion, reason, outcomeCode }) =>
-            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
+        __default: ({ expectedVersion, reason, outcomeCode, closureFieldValues }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null, closureFieldValues })
     };
 
     /*
@@ -6993,6 +7177,96 @@
         if (!slot) { return []; }
         const offered = item && item.taskType && item.taskType[slot];
         return Array.isArray(offered) ? offered : [];
+    };
+
+    /*
+     * ── CLOSURE-STAGE FIELDS (Faz 2a-rest, MOD-0024 Task Closure & Reporting) ───────────────────────────────
+     *
+     * `GET /field-definitions` answers ONE catalogue to both the create form and this window — there is no
+     * second endpoint — so the applicability rule below is the SAME two clauses Tasks/form-page.js's own
+     * `applicableDefinitions` already enforces (live, active, claimed by no OTHER module), with the stage test
+     * flipped. It is written again HERE rather than shared because this page never loads form-page.js — that
+     * script also boots a create-form page nobody asked for (a `DOMContentLoaded` listener, a task-type fetch,
+     * reads of `#taskForm`) — but the TWO CLAUSES are asserted identical to form-page.js's own, by source, in
+     * `tasks-closure-fields-wcn.test.js`: a change to one without the other fails there, not in review.
+     *
+     * ⚠ MUST MIRROR `TASK_MODULE_CODE` in Tasks/form-page.js. Not imported (same reason), asserted equal by
+     * the same test.
+     */
+    const TASK_MODULE_CODE = 'tasks';
+    const closureFieldDefinitionsFor = (rows) => (rows || []).filter((definition) =>
+        definition
+        && definition.isActive !== false
+        && definition.stage === 'Closure'
+        && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    /**
+     * The full catalogue, asked fresh each time the complete dialog opens — a small, tenant-wide list, and the
+     * same freshness the create form gets on every one of ITS page loads. Never cached: an administrator who
+     * just added a required field should not have the OLD catalogue govern the very next completion.
+     */
+    const fetchClosureFieldDefinitions = async () => {
+        // Defensive, not load-bearing in production: every real host loads Tasks/api.js (app.js already leans
+        // on it elsewhere — attachmentContentUrl, assignablePeople). A minimal double that omits this method
+        // must degrade to "this type asks nothing", not throw.
+        if (typeof global.TasksApi?.fieldDefinitions !== 'function') { return []; }
+        const result = await global.TasksApi.fieldDefinitions();
+        return result.ok && Array.isArray(result.data) ? closureFieldDefinitionsFor(result.data) : [];
+    };
+
+    /*
+     * Resolve every option-driven closure field's list BEFORE rendering — the exact rule
+     * Tasks/form-page.js's `loadCustomFieldOptions` already follows for the create form, repeated here for the
+     * same "this page does not load that script" reason `closureFieldDefinitionsFor` gives.
+     */
+    const loadClosureFieldOptions = async (definitions) => {
+        const byCode = {};
+
+        const personLabels = { nameUnavailable: t('PersonNameUnavailable') };
+        let personOptions = null; // fetched at most once, and only if a Person field is actually present
+
+        await Promise.all(definitions.map(async (definition) => {
+            const kind = global.TaskForm.customFieldControlKind(definition);
+            if (kind === 'person') {
+                if (!personOptions) {
+                    // `data` IS the array — TasksApi.assignablePeople unwraps `{ people, excluded }` internally
+                    // (BL-113); a caller that re-unwraps it is the exact defect that once took the whole page
+                    // down on `people.map is not a function`.
+                    const people = await global.TasksApi.assignablePeople();
+                    personOptions = (people.ok ? people.data : []).map((row) => ({
+                        value: row.userId || row.id,
+                        label: global.TaskForm.formatPersonLabel(row, personLabels.nameUnavailable)
+                    }));
+                }
+                byCode[definition.code] = personOptions;
+                return;
+            }
+            if (kind !== 'select' && kind !== 'record') { return; }
+
+            const result = kind === 'record'
+                ? await global.TasksApi.fieldRecords(definition.code)
+                : await global.TasksApi.fieldOptions(definition.code);
+
+            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            global.console?.warn?.(
+                `[WorkCenterNext] options for closure field "${definition.code}" could not be resolved `
+                + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        }));
+
+        return byCode;
+    };
+
+    /** The server search a record-backed closure field runs — the same call form-page.js's own picker makes. */
+    const searchClosureFieldRecords = async (code, term) => {
+        const result = await global.TasksApi.fieldRecords(code, { term });
+        if (result.ok) { return result.data || []; }
+        global.console?.warn?.(
+            `[WorkCenterNext] searching records for closure field "${code}" failed `
+            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        return [];
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -7020,7 +7294,8 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const submitRealTransition = async (
+        item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -7042,7 +7317,8 @@
             action.code,
             item.source?.providerCode,
             buildTransitionBody(
-                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
+                action.code,
+                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7586,9 +7862,10 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
+            submitRealTransition(
+                item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
             return;
         }
 
@@ -8339,6 +8616,76 @@
         });
     };
 
+    /*
+     * ── MOD-0024 Slice ATT-1 — task attachments ──────────────────────────────────────────────────────────────
+     *
+     * Real files on the Document Binary Store, not a personal overlay: unlike the note/snooze/pin above, there
+     * is NO browser-only fallback here. A fixture or showcase item's own `attachments` is the OTHER shape
+     * entirely (a plain array — see renderAttachmentReferences) and carries no add/remove affordance at all, so
+     * this code is only ever reached from a control the real shape drew, on a real, dispatchable task.
+     */
+    const openAttachmentDialog = (taskId, options) => {
+        const opts = options || {};
+        if (!global.Swal) { return; }
+        const item = itemById(taskId);
+        if (!isDispatchableItem(item)) {
+            console.warn(`[WorkCenterNext] Attachment upload ignored for non-engine item ${taskId} `
+                + `(provider="${item?.source?.providerCode || 'unknown'}") — no backend owns it.`);
+            return;
+        }
+        const lockedKind = opts.lockKind || null;
+        const kindOptions = ['Evidence', 'Deliverable', 'Attachment'].map((kind) =>
+            `<option value="${kind}"${kind === (lockedKind || 'Attachment') ? ' selected' : ''}>`
+            + `${esc(attachmentKindLabel(kind))}</option>`).join('');
+        global.Swal.fire(Object.assign({
+            title: dialogIcon('info', 'bx-paperclip') + '<span>' + esc(t('AttachmentUploadTitle')) + '</span>',
+            html: `<label class="form-label d-block text-start" for="wcnAttachFile">`
+                + `${esc(t('AttachmentFileLabel'))}</label>`
+                + `<input type="file" id="wcnAttachFile" class="form-control">`
+                + `<label class="form-label d-block text-start" for="wcnAttachKind">`
+                + `${esc(t('AttachmentKindLabel'))}</label>`
+                + `<select id="wcnAttachKind" class="form-select"${lockedKind ? ' disabled' : ''}>${kindOptions}</select>`
+                + `<label class="form-label d-block text-start" for="wcnAttachNote">`
+                + `${esc(t('AttachmentNoteLabel'))}</label>`
+                + `<textarea id="wcnAttachNote" class="form-control" rows="2" `
+                + `placeholder="${esc(t('AttachmentNotePlaceholder'))}"></textarea>`,
+            showCancelButton: true,
+            confirmButtonText: t('AttachmentUploadConfirm'),
+            cancelButtonText: t('DialogDismiss'),
+            preConfirm: () => {
+                const file = document.getElementById('wcnAttachFile')?.files?.[0];
+                if (!file) { global.Swal.showValidationMessage(t('AttachmentFileRequired')); return false; }
+                const kind = lockedKind || document.getElementById('wcnAttachKind')?.value || 'Attachment';
+                const note = String(document.getElementById('wcnAttachNote')?.value || '').trim();
+                return { file, kind, note };
+            }
+        }, dialogLook())).then(async (res) => {
+            if (res.isConfirmed && res.value) {
+                await uploadAttachment(taskId, {
+                    file: res.value.file,
+                    kind: res.value.kind,
+                    checklistItemCode: opts.checklistItemCode,
+                    note: res.value.note
+                });
+            }
+        });
+    };
+
+    const uploadAttachment = async (taskId, payload) => {
+        const result = await global.TasksApi.addAttachment(taskId, payload);
+        // Returned so a caller that must NOT proceed on failure (the Complete window's own upload-then-transition
+        // sequence, WP-PSS-MOD0024-ATTACHMENTS-UX-01) can tell. Every EARLIER caller ignored the return value, so
+        // this is additive.
+        return afterPhase2Write(result, 'ToastAttachmentAdded');
+    };
+
+    const removeAttachmentRow = async (taskId, attachmentId) => {
+        // A file is not a private note: it is worth confirming before it goes, unlike the note remove above.
+        if (!(await confirmDestructive(t('AttachmentRemoveConfirm')))) { return; }
+        const result = await global.TasksApi.removeAttachment(taskId, attachmentId);
+        await afterPhase2Write(result, 'ToastAttachmentRemoved');
+    };
+
     // ── "+ Yeni" — WorkCenter owns only self-tasks; module items are created in
     // their source (deep-link). No generic cross-module authoring here (spec v3). ─
     /*
@@ -8659,8 +9006,36 @@
          * product declares.
          */
         const closureOutcomes = closureOutcomesFor(item, action);
-        if (closureOutcomes.length) {
+        /*
+         * Faz 2a-rest — fetched ONLY for `complete` (the pack's own boundary: the cancel window never offers
+         * these fields), and only a catalogue read — nothing is asked of the server until the dialog confirms.
+         * An empty result (no closure field configured, the state every type is in before this slice and every
+         * type nobody has touched since) falls straight through to the SAME branches below, byte for byte.
+         */
+        const closureFields = action.code === 'complete' ? await fetchClosureFieldDefinitions() : [];
+        /*
+         * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — "Çıktı / Kanıt ekle", in the SAME raw dialog (BL-146 exception:
+         * `sharedConfirm` supports a textarea and nothing else, so a file input needs this route regardless of
+         * whether the type has closure outcomes or fields). NEVER for `cancel` — calling work off asks for
+         * nothing to attach.
+         */
+        const canAttachOnComplete = action.code === 'complete' && isDispatchableItem(item);
+        const existingAttachments = Array.isArray(item.attachments?.items) ? item.attachments.items : [];
+        const deliverableRequired = canAttachOnComplete
+            && !!item.taskType?.requiresDeliverableOnCompletion
+            && !existingAttachments.some((a) => a.kind === 'Deliverable');
+        if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
             if (!global.Swal) { return; }
+
+            /*
+             * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
+             * here because this branch now answers for EVERY complete on a dispatchable item, not only the ones
+             * with a closure outcome or field configured, and this dialog replaces that one for those calls.
+             */
+            const stillOpen = action.code === 'complete' ? openRequiredItems(item) : [];
+            const requiredWarning = stillOpen.length
+                ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
+                : '';
 
             const outcomeOptions = closureOutcomes
                 .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
@@ -8676,18 +9051,56 @@
                 return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
             };
 
-            global.Swal.fire(Object.assign({
-                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
-                    + '<span>' + esc(actionLabel(action)) + '</span>',
-                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
-                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+            /*
+             * Faz 2a-rest — the outcome select/reason box are drawn ONLY when the type actually has outcomes;
+             * the fields container is drawn ONLY when it has closure fields. A type with just one of the two
+             * gets just that one half, never an empty control for the other.
+             */
+            const outcomeBlock = closureOutcomes.length
+                ? `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
                     + `${esc(t('ClosureOutcomeLabel'))}</label>`
                     + `<select id="wcnClosureOutcome" class="form-select">`
                     + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
                     + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
                     + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
                     + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`
+                : '';
+            // The REAL renderer's own row markup lands inside this row on open — see didOpen below.
+            const fieldsBlock = closureFields.length
+                ? `<div class="row g-3 text-start" id="wcnClosureFieldsRow"></div>`
+                : '';
+
+            /*
+             * "Çıktı / Kanıt ekle" — a file plus its kind, Deliverable by default (this is the CLOSING act; a
+             * plain "Attachment" reads as instructions, which is the create form's own affordance, not this
+             * one). The label itself says "required" when the type's flag has nothing to point at yet, so the
+             * requirement is read before it can be missed rather than discovered from a refusal after confirm.
+             */
+            const attachmentBlock = canAttachOnComplete
+                ? `<label class="form-label d-block text-start" for="wcnCompleteAttachFile">`
+                    + `${esc(t(deliverableRequired ? 'CompleteAttachFileRequiredLabel' : 'CompleteAttachFileLabel'))}</label>`
+                    + `<input type="file" id="wcnCompleteAttachFile" class="form-control">`
+                    + `<label class="form-label d-block text-start" for="wcnCompleteAttachKind">`
+                    + `${esc(t('AttachmentKindLabel'))}</label>`
+                    + `<select id="wcnCompleteAttachKind" class="form-select">`
+                    + `<option value="Deliverable" selected>${esc(attachmentKindLabel('Deliverable'))}</option>`
+                    + `<option value="Evidence">${esc(attachmentKindLabel('Evidence'))}</option>`
+                    + `</select>`
+                : '';
+
+            // Resolved BEFORE the dialog opens: `renderCustomFields` either offers an option-driven field
+            // complete or not at all, and there is no later moment to hand it a list that was still in flight.
+            const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
+
+            global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + requiredWarning
+                    + outcomeBlock
+                    + fieldsBlock
+                    + attachmentBlock,
                 showCancelButton: true,
                 confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 cancelButtonText: t('DialogDismiss'),
@@ -8706,10 +9119,34 @@
                             if (label) { label.textContent = labelFor(picker.value); }
                         });
                     }
+
+                    // Faz 2a-rest — the SAME renderer the create form uses, reached through the SAME shared
+                    // script (Tasks/form.js, already loaded by this view). Never a second one (YAPMA).
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    if (fieldsRow && closureFields.length) {
+                        /*
+                         * ⚠ `TasksL10n.t`, NOT this dialog's OWN `t`. These four are the create form's OWN
+                         * vocabulary for the SAME renderer — already loaded here (`Tasks/index.l10n.js`, before
+                         * `Tasks/api.js`, in both Index.cshtml and Details.cshtml) — and duplicating them into
+                         * WorkCenterNextIndex's resx would be a second place for one translation to live.
+                         */
+                        const formT = (key) => global.TasksL10n?.t?.(key) ?? key;
+                        global.TaskForm.renderCustomFields(fieldsRow, closureFields, closureFieldOptions, {
+                            optionPlaceholder: formT('customFieldOptionPlaceholder'),
+                            booleanYes: formT('customFieldBooleanYes'),
+                            booleanNo: formT('customFieldBooleanNo'),
+                            recordSearchPlaceholder: formT('customFieldRecordSearchPlaceholder'),
+                            // Labels a TENANT typed, and labels the type's own closure-outcome dictionary
+                            // already resolves through THIS dialog's `t` — a resource-keyed field label is the
+                            // one case needing a translator, and it is WCN's own strings it would ever name.
+                            translate: t
+                        });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                    }
                 },
                 preConfirm: () => {
                     const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
-                    if (!outcomeCode) {
+                    if (closureOutcomes.length && !outcomeCode) {
                         global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
                         return false;
                     }
@@ -8729,12 +9166,64 @@
                         return false;
                     }
 
-                    return { outcomeCode, reason };
+                    /*
+                     * Faz 2a-rest — the SAME COURTESY for closure fields: the server enforces
+                     * TASK_CLOSURE_FIELD_REQUIRED independently (a client can always reach the dispatch route
+                     * without this dialog), so a client-side miss here costs nothing but a round trip.
+                     */
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    let closureFieldValues;
+                    if (fieldsRow && closureFields.length) {
+                        const values = global.TaskForm.readCustomFieldValues(fieldsRow, closureFields);
+                        const { valid, errors } = global.TaskForm.validateCustomFields(closureFields, values);
+                        if (!valid) {
+                            global.Swal.showValidationMessage(t('ClosureFieldRequired'));
+                            const missing = closureFields.find((definition) => errors.includes(definition.code));
+                            if (missing) {
+                                document.querySelector(`[data-custom-field="${missing.code}"]`)?.focus?.();
+                            }
+                            return false;
+                        }
+                        closureFieldValues = values.map((value) => ({
+                            definitionCode: value.definitionCode, valueType: value.valueType, value: value.value
+                        }));
+                    }
+
+                    /*
+                     * The client-side half of the SAME gate `TransitionTaskItemHandler` enforces
+                     * (TASK_DELIVERABLE_REQUIRED): a courtesy, not the rule — the engine refuses the write on its
+                     * own if this dialog is ever bypassed.
+                     */
+                    let attachment = null;
+                    if (canAttachOnComplete) {
+                        const file = document.getElementById('wcnCompleteAttachFile')?.files?.[0] || null;
+                        if (deliverableRequired && !file) {
+                            global.Swal.showValidationMessage(t('CompleteAttachFileRequired'));
+                            return false;
+                        }
+                        if (file) {
+                            attachment = { file, kind: document.getElementById('wcnCompleteAttachKind')?.value || 'Deliverable' };
+                        }
+                    }
+
+                    return { outcomeCode, reason, closureFieldValues, attachment };
                 }
-            }, dialogLook())).then((res) => {
-                if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
+            }, dialogLook())).then(async (res) => {
+                if (!res.isConfirmed || !res.value) { return; }
+                /*
+                 * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
+                 * upload must not complete the task: the reader asked for both, and completing anyway would
+                 * silently drop the half that failed. `uploadAttachment` is the SAME call the paperclip on the
+                 * detail page and its own dialog use (YAPMA: never a second upload path) — it already shows its
+                 * own toast and refreshes the board, so a failure here has already been reported to the reader.
+                 */
+                if (res.value.attachment) {
+                    const uploaded = await uploadAttachment(item.id, res.value.attachment);
+                    if (!uploaded) { return; }
                 }
+                applyAction(
+                    item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
+                    res.value.closureFieldValues);
             });
             return;
         }
@@ -9271,6 +9760,25 @@
             const rowEl = checkMoveEl.closest('[data-diten-check-row]');
             const [taskId, itemCode] = rowEl.getAttribute('data-diten-check-row').split(':');
             await moveChecklistItem(taskId, itemCode, checkMoveEl.getAttribute('data-diten-check-move'));
+            return;
+        }
+        // ── Slice ATT-1: task attachments ───────────────────────────────────
+        const attachAddEl = event.target.closest('[data-wcn-attach-add]');
+        if (attachAddEl) {
+            openAttachmentDialog(attachAddEl.getAttribute('data-wcn-attach-add'), {});
+            return;
+        }
+        const attachRemoveEl = event.target.closest('[data-wcn-attach-remove]');
+        if (attachRemoveEl) {
+            const [taskId, attachmentId] = attachRemoveEl.getAttribute('data-wcn-attach-remove').split(':');
+            await removeAttachmentRow(taskId, attachmentId);
+            return;
+        }
+        // The checklist row's own "kanıt ekle" — the same dialog, pre-locked to Evidence and to this item.
+        const checkEvidenceAddEl = event.target.closest('[data-wcn-check-evidence-add]');
+        if (checkEvidenceAddEl) {
+            const [taskId, itemCode] = checkEvidenceAddEl.getAttribute('data-wcn-check-evidence-add').split(':');
+            openAttachmentDialog(taskId, { lockKind: 'Evidence', checklistItemCode: itemCode });
             return;
         }
         // Opening a subtask's own detail. Checked BEFORE the toggle so the two never compete for the same click;

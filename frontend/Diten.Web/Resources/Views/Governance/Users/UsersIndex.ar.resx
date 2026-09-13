@@ -41,4 +41,11 @@
   <data name="KpiActiveUsers" xml:space="preserve"><value>نشط</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>غير نشط</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>بدون دور</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>نوع الحساب</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>غير مؤكد</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>شخص</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>حساب خدمة</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>تغيير النوع</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>تم تحديث نوع الحساب</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>اتركه فارغًا ليبقى الحساب غير مؤكد.</value></data>
 </root>

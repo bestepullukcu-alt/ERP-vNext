@@ -596,10 +596,16 @@ public sealed class TaskTemplateChainCrudTests
                     new GetChecklistTemplateByIdHandler(checklists).Handle(query, ct),
                 GetChecklistTemplateLookupQuery query => (Task<TResponse>)(object)
                     new GetChecklistTemplateLookupHandler(checklists).Handle(query, ct),
+                // BL-353 — this suite is about the CRUD chain (create → update → delete → list), not about
+                // assignment scope, which is measured separately against the production guard. AdmitAll() is
+                // the standard "not what this suite measures" double TaskAssignmentGuardDoubles.cs already
+                // provides for exactly this situation (see its own doc comment).
                 CreateTaskTemplateCommand command => (Task<TResponse>)(object)
-                    new CreateTaskTemplateHandler(templates, checklists, tenant, user).Handle(command, ct),
+                    new CreateTaskTemplateHandler(templates, checklists, tenant, user, TaskAssignmentGuards.AdmitAll())
+                        .Handle(command, ct),
                 UpdateTaskTemplateCommand command => (Task<TResponse>)(object)
-                    new UpdateTaskTemplateHandler(templates, checklists, user).Handle(command, ct),
+                    new UpdateTaskTemplateHandler(templates, checklists, user, TaskAssignmentGuards.AdmitAll())
+                        .Handle(command, ct),
                 DeleteTaskTemplateCommand command => (Task<TResponse>)(object)
                     new DeleteTaskTemplateHandler(templates, user).Handle(command, ct),
                 GetTaskTemplateListQuery query => (Task<TResponse>)(object)

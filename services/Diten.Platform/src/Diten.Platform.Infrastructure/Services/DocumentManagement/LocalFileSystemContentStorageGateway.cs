@@ -220,7 +220,15 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
 
     private static string BuildObjectKey(ContentStoreRequest request, string safeFileName)
     {
-        var scope = request.Scope == ContentStorageScope.Templates ? "templates" : "documents";
+        // MOD-0024 Slice ATT-1 — TaskAttachments added to the scope enum needed its own folder segment here too;
+        // the two-way ternary silently mapped anything that was not Templates to "documents", which would have
+        // put task attachments in the documents partition with no way to tell them apart on disk.
+        var scope = request.Scope switch
+        {
+            ContentStorageScope.Templates => "templates",
+            ContentStorageScope.TaskAttachments => "task-attachments",
+            _ => "documents"
+        };
         if (!string.IsNullOrWhiteSpace(request.StoragePartition))
         {
             var partition = request.StoragePartition.Trim().Replace('\\', '/').Trim('/');

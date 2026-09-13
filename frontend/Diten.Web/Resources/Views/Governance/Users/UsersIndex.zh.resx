@@ -41,4 +41,11 @@
   <data name="KpiActiveUsers" xml:space="preserve"><value>活跃</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>停用</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>无角色</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>账户类型</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>未确认</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>个人</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>服务账户</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>更改类型</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>账户类型已更新</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>留空则账户保持未确认状态。</value></data>
 </root>

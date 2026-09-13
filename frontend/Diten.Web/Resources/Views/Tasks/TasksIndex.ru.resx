@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Выбранная должность не может получать задачи. Выберите активную должность.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Задачу раньше вас изменил другой сотрудник. Экран обновлён до текущего состояния.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Обязательный пункт чек-листа ещё не отмечен, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Обязательное поле закрытия всё ещё не заполнено, поэтому задачу нельзя завершить.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>Указанное организационное подразделение не найдено.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>Это подразделение находится вне вашей области действия.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Задача, от которой зависит эта, ещё не завершена, поэтому продвинуться нельзя.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Подзадача ещё открыта, поэтому эту задачу пока нельзя завершить.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Задача закрыта, комментировать её больше нельзя.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Наблюдатели</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Контрольный список</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Шаги этой задачи. Пункты отмечаются после создания задачи; блокирующий пункт не даёт её закрыть.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Вложения</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Файлы для этой задачи — инструкция для её выполнения или доказательство и результат, которые нужно сохранить сразу. Загружаются после создания задачи.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Файл</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Доказательство</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Результат</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Добавить файл</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Удалить</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Задача создана — некоторые файлы не загружены</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Задача создана, но следующие файлы не удалось загрузить. Добавьте их снова на карточке вложений самой задачи:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Перейти к задаче</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Введите пункт и нажмите Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Добавить</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Нажмите на метку, чтобы изменить уровень. Списка шаблонов пока нет.</value></data>
@@ -158,7 +173,7 @@
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Блокирующий</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve"><value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Требовать подтверждение</value></data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Для отмеченных пунктов требуется подтверждение. Прикрепите его на странице задачи после её создания.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Удалить пункт</value></data>
   <data name="ChecklistMoveUp" xml:space="preserve"><value>Вверх</value></data>
   <data name="ChecklistMoveDown" xml:space="preserve"><value>Вниз</value></data>
@@ -210,4 +225,11 @@
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>У вас нет прав на выполнение этого действия.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Для этого действия требуется больше сведений, чем было отправлено. Заполните обязательные поля.</value></data>
   <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>Система, которой принадлежит эта запись, не ответила, поэтому неизвестно, было ли действие выполнено. Обновите список, чтобы увидеть текущее состояние, и повторите попытку.</value></data>
+  <data name="ErrorAttachmentNotAuthorized" xml:space="preserve"><value>Управлять вложениями задачи может только её исполнитель или инициатор.</value></data>
+  <data name="ErrorAttachmentTaskClosed" xml:space="preserve"><value>Задача закрыта, изменить её вложения больше нельзя.</value></data>
+  <data name="ErrorAttachmentNotFound" xml:space="preserve"><value>Это вложение не найдено.</value></data>
+  <data name="ErrorAttachmentChecklistItemNotFound" xml:space="preserve"><value>Этот пункт чек-листа не найден.</value></data>
+  <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Этот пункт нельзя завершить без подтверждающего документа.</value></data>
+  <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Не удалось загрузить файл. Проверьте его тип и размер и повторите попытку.</value></data>
+  <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Вложения, включая подтверждающие документы, можно добавить после создания задачи.</value></data>
 </root>

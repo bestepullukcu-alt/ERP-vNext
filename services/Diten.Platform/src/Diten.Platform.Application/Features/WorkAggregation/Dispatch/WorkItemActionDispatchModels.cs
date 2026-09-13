@@ -89,7 +89,36 @@ public sealed record WorkItemActionPayloadDto(
     /// the dispatcher mints one when it does not, because the endpoint requires the field and a request that
     /// cannot be made is worse than one that is merely not idempotent.
     /// </summary>
-    string? IdempotencyKey = null);
+    string? IdempotencyKey = null,
+    /// <summary>
+    /// Faz 2a-rest — MOD-0024 only. Values for the task TYPE's CLOSURE-stage fields, read only by `complete`.
+    ///
+    /// <para>In this envelope's OWN neutral shape (<see cref="WorkItemFieldValueDto"/>), never
+    /// <c>Features.Tasks.TaskFieldValueDto</c> — WorkAggregation must not depend on one provider's type, the
+    /// same reason every other field here is a primitive rather than a module's own DTO.
+    /// <c>TaskWorkItemActionDispatcher</c> does the one translation this needs.</para>
+    ///
+    /// <para>Trailing and defaulted, so every caller written before this field existed keeps working. Ignored on
+    /// the way OUT to a remote module (<c>HttpWorkItemActionDispatcher</c> strips it unconditionally) —
+    /// MOD-0023 has no such field and must never be handed one.</para>
+    ///
+    /// <para><see cref="System.Text.Json.Serialization.JsonIgnoreAttribute"/> with
+    /// <see cref="System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull"/>: a request this field
+    /// does not carry must serialize BYTE-IDENTICAL to one from before this field existed.</para>
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemFieldValueDto>? ClosureFieldValues = null);
+
+/// <summary>
+/// Faz 2a-rest — one configurable field's value, in THIS envelope's own neutral vocabulary.
+///
+/// <para><c>ValueType</c> is a plain string (the engine's <c>TaskFieldValueType</c> spelling, e.g. <c>"Text"</c>)
+/// rather than an enum: this namespace has no reason to know that vocabulary exists, and a provider-specific
+/// enum here would be the exact dependency <see cref="WorkItemActionPayloadDto.ClosureFieldValues"/>'s own note
+/// refuses.</para>
+/// </summary>
+public sealed record WorkItemFieldValueDto(string DefinitionCode, string ValueType, string? Value);
 
 /// <summary>The wire body of the single write endpoint.</summary>
 /// <param name="ProviderCode">

@@ -51,7 +51,8 @@ const loadModules = () => {
  * @param {object[]} [config.unavailableSources] Providers the board is missing — WC-D3's partial-board answer.
  * @param {object[]} [config.errors]             BL-379 — contract-validation errors the stub answers alongside
  *                                                a partial board (fixtureId/code pairs), independent of items.
- * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[]}>} What the write stubs recorded.
+ * @returns {Promise<{created: object[], posted: object[], checklistAdds: object[], attachmentAdds: object[]}>}
+ *   What the write stubs recorded.
  */
 const bootSurface = ({
   rootAttrs = "", items = [], neverResolve = false, withoutTasksScripts = false, wcn = null, now = null,
@@ -116,12 +117,15 @@ const bootSurface = ({
   // Checklist adds, recorded like comments are: the detail page grew this write when the create form grew the
   // card, and "what exactly went on the wire" is the half worth asserting (the expectedVersion in particular).
   const checklistAdds = [];
+  // MOD-0024 Slice ATT-1 — attachment uploads, its own array rather than reusing `posted`: a comment and an
+  // attachment are unrelated writes, and a test asserting on one must not have to filter out the other's shape.
+  const attachmentAdds = [];
 
   if (withoutTasksScripts) {
     delete global.TasksApi;
     delete global.TaskForm;
     loadScript(SCRIPT_ROOT + "app.js");
-    return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds }), 0));
+    return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds }), 0));
   }
 
   global.TasksApi = {
@@ -141,6 +145,13 @@ const bootSurface = ({
     setChecklistItemState: () => Promise.resolve({ ok: true, status: 204 }),
     // Individual tests override this to assert the exact call, or to simulate a refusal.
     plan: () => Promise.resolve({ ok: true, status: 204 }),
+    // MOD-0024 Slice ATT-1 — task attachments. `attachmentContentUrl` is the one synchronous, non-Promise
+    // member of this stub: the real client never fetches it, it only builds the `<a href>` the row renders,
+    // and renderTaskAttachments calls it for every non-empty attachments list at render time.
+    addAttachment: (taskId, payload) => { attachmentAdds.push({ taskId, payload }); return Promise.resolve({ ok: true, status: 201, data: {} }); },
+    removeAttachment: () => Promise.resolve({ ok: true, status: 204 }),
+    listAttachments: () => Promise.resolve({ ok: true, status: 200, data: { items: [] } }),
+    attachmentContentUrl: (taskId, attachmentId) => `/Tasks/api/${taskId}/attachments/${attachmentId}/content`,
     isConcurrencyConflict: () => false,
     isTransitionBlocked: () => false,
     failureMessage: () => "error"
@@ -149,7 +160,7 @@ const bootSurface = ({
 
   loadScript(SCRIPT_ROOT + "app.js");
   // boot() is async (it awaits loadWorkItems); let its microtasks drain before anyone asserts on the DOM.
-  return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds }), 0));
+  return new Promise((resolve) => setTimeout(() => resolve({ created, posted, checklistAdds, attachmentAdds }), 0));
 };
 
 const app = () => document.getElementById("wcnApp");

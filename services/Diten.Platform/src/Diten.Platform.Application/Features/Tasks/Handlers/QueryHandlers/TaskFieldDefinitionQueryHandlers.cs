@@ -449,5 +449,6 @@ public static class TaskFieldDefinitionMapper
         definition.DefaultAccessState.ToString(),
         definition.IsActive,
         definition.Version,
-        definition.CreatedAt);
+        definition.CreatedAt,
+        definition.Stage.ToString());
 }

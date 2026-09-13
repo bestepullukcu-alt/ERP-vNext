@@ -33,6 +33,10 @@
   <data name="Importance" xml:space="preserve"><value>Önem</value></data>
   <data name="ImportanceSecondary" xml:space="preserve"><value>İkincil</value></data>
   <data name="ImportancePrimary" xml:space="preserve"><value>Birincil</value></data>
+  <data name="Stage" xml:space="preserve"><value>Sorulma zamanı</value></data>
+  <data name="StageEntry" xml:space="preserve"><value>Oluşturma</value></data>
+  <data name="StageClosure" xml:space="preserve"><value>Kapanış</value></data>
+  <data name="StageHint" xml:space="preserve"><value>Oluşturma/düzenleme formunda sorulur (Oluşturma), ya da görev tamamlanır veya iptal edilirken yalnız kapanış penceresinde sorulur (Kapanış).</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sıra</value></data>
   <data name="OptionsSourceKind" xml:space="preserve"><value>Seçenek kaynağı</value></data>
   <data name="OptionsSourceNone" xml:space="preserve"><value>Yok</value></data>

@@ -177,6 +177,28 @@ public sealed class CreateTaskItemHandler : IRequestHandler<CreateTaskItemComman
                 refused.Message, refused.StatusCode, refused.ReasonCode, command.CorrelationId);
         }
 
+        /*
+         * BL-355 — may THIS caller file work into THAT organization unit?
+         *
+         * Only when the REQUEST names one — the screen never does (pack §12 K6: the user does not pick a unit),
+         * so today's three-step derivation below (position → assignee's own unit → tenant root) is SYSTEM-chosen
+         * and stays exactly as it was. A client posting straight to the API is the only way this ever fires, and
+         * it is the gap BL-057's own write guard left open: a unit existing and being active said nothing about
+         * whether it is the CALLER's to file into, so a task could be filed into another company's unit and
+         * BL-057's own company reports would count it there.
+         *
+         * Skipped for the recurrence sweep for the SAME reason CheckTargetAsync is, two lines above: the sweep
+         * passes the RULE's own unit (GenerateDueRecurringTasksHandler), has no caller, and the rule was already
+         * scoped to whoever saved it when it was created.
+         */
+        if (!command.IsScheduledGeneration
+            && request.OrganizationUnitId is { } explicitUnitId
+            && await _assignmentGuard.CheckOrganizationUnitAsync(explicitUnitId, ct) is { } unitRefused)
+        {
+            return Response<Guid>.Fail(
+                unitRefused.Message, unitRefused.StatusCode, unitRefused.ReasonCode, command.CorrelationId);
+        }
+
         // ── Pool position must be genuinely assignable ───────────────────────
         if (poolPositionId is { } positionId)
         {

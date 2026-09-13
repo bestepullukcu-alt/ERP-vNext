@@ -21,17 +21,20 @@ public sealed class SetChecklistItemStateHandler
     private readonly IChecklistRunRepository _runs;
     private readonly ITaskChecklistService _checklists;
     private readonly ICurrentUserContext _currentUser;
+    private readonly ITaskAttachmentRepository _attachments;
 
     public SetChecklistItemStateHandler(
         ITaskItemRepository tasks,
         IChecklistRunRepository runs,
         ITaskChecklistService checklists,
-        ICurrentUserContext currentUser)
+        ICurrentUserContext currentUser,
+        ITaskAttachmentRepository attachments)
     {
         _tasks = tasks;
         _runs = runs;
         _checklists = checklists;
         _currentUser = currentUser;
+        _attachments = attachments;
     }
 
     public async Task<Response<NoContent>> Handle(SetChecklistItemStateCommand command, CancellationToken ct)
@@ -63,6 +66,23 @@ public sealed class SetChecklistItemStateHandler
             return Response<NoContent>.Fail(
                 "A closed task's checklist cannot be changed.",
                 409, TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * MOD-0024 Slice ATT-1 — the evidence gate (WP AC2). Checked ONLY on the transition TO completed: an
+         * uncheck is always allowed (removing a claim needs no proof), and an item that does not require evidence
+         * is never asked for it. The count comes from the SAME batched-friendly repository method the provider
+         * uses for `EvidenceCount` — here it is a single-item read because this handler acts on exactly one.
+         */
+        if (command.Request.Completed && item.EvidenceRequired)
+        {
+            var evidenceCount = await _attachments.CountEvidenceForChecklistItemAsync(task.Id, item.Code, ct);
+            if (evidenceCount == 0)
+            {
+                return Response<NoContent>.Fail(
+                    "This item requires evidence before it can be completed.",
+                    409, TaskReasonCodes.ChecklistEvidenceRequired, command.CorrelationId);
+            }
         }
 
         item.Completed = command.Request.Completed;

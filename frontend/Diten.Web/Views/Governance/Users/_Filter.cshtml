@@ -20,6 +20,16 @@
                         <select id="filterRoles" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Roles"]"></select>
                     </div>
 
+                    @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — option values are the AuthService enum NAMES (the DTO carries the
+                       name as a string, never the number); labels are the tenant's own seven-language resx. *@
+                    <div class="filter-chip filter-account-kind">
+                        <select id="filterAccountKind" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["AccountKind"]">
+                            <option value="Unknown">@Localizer["AccountKindUnknown"]</option>
+                            <option value="Human">@Localizer["AccountKindHuman"]</option>
+                            <option value="Service">@Localizer["AccountKindService"]</option>
+                        </select>
+                    </div>
+
                     <div class="ms-auto d-flex gap-3">
                         <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">@SharedLocalizer["Apply"]</button>
                         <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">@SharedLocalizer["Reset"]</button>

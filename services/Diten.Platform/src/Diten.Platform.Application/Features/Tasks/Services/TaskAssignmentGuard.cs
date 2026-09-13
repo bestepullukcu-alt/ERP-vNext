@@ -50,6 +50,21 @@ public interface ITaskAssignmentGuard
     /// </summary>
     Task<TaskAssignmentRefusal?> CheckTargetAsync(
         TaskAssignmentTarget target, Guid? assigneeUserId, Guid? poolPositionId, CancellationToken ct);
+
+    /// <summary>
+    /// BL-355 — filing work into an EXPLICITLY NAMED organization unit: the unit exists in this tenant (404
+    /// <see cref="TaskReasonCodes.OrganizationUnitNotFound"/> otherwise — a foreign tenant's unit answers the
+    /// same 404 a typo would, the repository being tenant-scoped is what makes that true for free), is active
+    /// (reuses <see cref="TaskReasonCodes.OrganizationUnitUnresolved"/> — the code every caller already refuses
+    /// an archived/missing unit with), and is inside the actor's <see cref="TaskAssignmentScope"/> (403
+    /// <see cref="TaskReasonCodes.OrganizationUnitOutOfScope"/>).
+    ///
+    /// <para>A DIFFERENT question from <see cref="CheckPersonAsync"/>/<see cref="CheckPoolAsync"/> — WHICH
+    /// FACILITY, not WHO — asked through <see cref="TaskAssigneeEligibility.AllowsUnit"/>, the unit-only sibling
+    /// of the same scope rule those two call via <see cref="TaskAssigneeEligibility.Judge"/>. One rule, one scope
+    /// computation per request, never two that could disagree.</para>
+    /// </summary>
+    Task<TaskAssignmentRefusal?> CheckOrganizationUnitAsync(Guid organizationUnitId, CancellationToken ct);
 }
 
 /// <inheritdoc cref="ITaskAssignmentGuard"/>
@@ -138,4 +153,30 @@ public sealed class TaskAssignmentGuard : ITaskAssignmentGuard
                 => CheckPoolAsync(pool, ct),
             _ => Task.FromResult<TaskAssignmentRefusal?>(null)
         };
+
+    public async Task<TaskAssignmentRefusal?> CheckOrganizationUnitAsync(Guid organizationUnitId, CancellationToken ct)
+    {
+        // Tenant-scoped repository: a unit belonging to another tenant does not resolve, so it answers the same
+        // 404 a plain typo would — neither tells the caller a unit with that id exists anywhere.
+        var unit = await _organizationUnits.GetByIdAsync(organizationUnitId, ct);
+        if (unit is null)
+        {
+            return new TaskAssignmentRefusal(
+                404, TaskReasonCodes.OrganizationUnitNotFound, "The organization unit was not found.");
+        }
+
+        if (unit.IsArchived)
+        {
+            // The SAME code every caller already refuses a missing-or-archived unit with — this is not a
+            // SECOND meaning for it, it is the one case that code has always covered, asked one step earlier.
+            return new TaskAssignmentRefusal(
+                400, TaskReasonCodes.OrganizationUnitUnresolved, "The organization unit could not be resolved.");
+        }
+
+        var scope = await _scopes.ResolveAsync(ct);
+        return TaskAssigneeEligibility.AllowsUnit(unit.Id, unit.LegalEntityId, scope)
+            ? null
+            : new TaskAssignmentRefusal(
+                403, TaskReasonCodes.OrganizationUnitOutOfScope, "That organization unit is out of scope.");
+    }
 }

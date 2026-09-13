@@ -1640,9 +1640,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} élément(s) obligatoire(s) ne sont pas cochés. La tâche sera clôturée quand même.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Une preuve est requise. Le lien vers un document sera actif une fois le module documentaire raccordé.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Une preuve est requise pour les éléments marqués. Utilisez le trombone de la ligne pour l'ajouter.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Changer le niveau : Facultatif → Attendu → Bloquant</value>
   </data>
@@ -2236,6 +2234,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Clôturé en : {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Clôture</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} livrable(s) joint(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} fichier(s) de preuve joint(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Comment ce travail s'est-il terminé ?</value>
   </data>
@@ -2256,6 +2263,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Ce résultat exige un motif.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Ce champ est obligatoire pour terminer la tâche.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Terminé comme demandé</value>
@@ -2290,4 +2300,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>Renvoyée {0} fois, la dernière : {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Aucune pièce jointe pour l'instant.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Ajouter un fichier</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Preuve</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Livrable</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Pièce jointe</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Note (facultatif)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Ajoutez une brève note sur ce fichier</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Fichier</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Charger</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Ajouter une pièce jointe</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Choisissez d'abord un fichier.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Supprimer cette pièce jointe ?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Supprimer la pièce jointe</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>Ajouté par {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Pièce jointe ajoutée.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Pièce jointe supprimée.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Ajoutez un livrable ou une preuve (facultatif)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Le type de cette tâche exige un fichier de livrable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choisissez un fichier avant de terminer cette tâche.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Ajouter une preuve</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} fichier(s) de preuve</value></data>
 </root>

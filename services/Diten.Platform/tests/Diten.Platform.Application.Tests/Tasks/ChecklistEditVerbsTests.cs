@@ -380,7 +380,7 @@ public sealed class ChecklistEditVerbsTests
 
         var result = await new SetChecklistItemStateHandler(
                 new FakeTaskItemRepository(task), runs, new TaskChecklistService(),
-                new FakeCurrentUserContext(TaskTestData.Me))
+                new FakeCurrentUserContext(TaskTestData.Me), new FakeTaskAttachmentRepository())
             .Handle(new SetChecklistItemStateCommand(
                 task.Id, new SetChecklistItemStateRequest("owned", true, run.Version), "corr"),
                 CancellationToken.None);

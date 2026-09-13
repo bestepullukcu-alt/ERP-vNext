@@ -51,6 +51,22 @@ internal sealed class InMemoryUserRepository : IUserRepository
         return Task.FromResult(users);
     }
 
+    // Mirrors UserRepository.SearchActiveAsync's contract (tenant + not deleted + ACTIVE; name tokens; limit) so the
+    // handler tests exercise the same shape. The Mongo implementation itself is proven by AccountKindEndpointTests.
+    public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+    {
+        var tokens = (term ?? string.Empty).Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        IReadOnlyList<User> users = _users
+            .Where(u => u.TenantId == tenantId && !u.IsDeleted && u.IsActive)
+            .Where(u => tokens.All(t =>
+                u.FirstName.Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                u.LastName.Contains(t, StringComparison.OrdinalIgnoreCase)))
+            .OrderBy(u => u.LastName).ThenBy(u => u.FirstName)
+            .Take(Math.Clamp(limit, 1, 50))
+            .ToList();
+        return Task.FromResult(users);
+    }
+
     public Task<long> GetCountByTenantAsync(Guid tenantId, CancellationToken ct)
     {
         var count = _users.LongCount(u => u.TenantId == tenantId && !u.IsDeleted);

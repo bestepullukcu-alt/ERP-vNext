@@ -395,6 +395,27 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.IsDeleted),
                         new CreateIndexOptions { Name = "ix_checklist_runs_tenant_task" })
             }),
+        // MOD-0024 Slice ATT-1 — task attachments. Two reads only: the task's own list, and the checklist
+        // evidence gate's count for one item. No DateTimeOffset compound index — nothing sorts/ranges on a date.
+        Collection<TaskAttachment>(
+            SchemaProfile.WorkflowWorkCenter,
+            PlatformCollections.TaskAttachments,
+            () => new CreateIndexModel<TaskAttachment>[]
+            {
+                    new CreateIndexModel<TaskAttachment>(
+                        Builders<TaskAttachment>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.TaskId)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_attachments_tenant_task" }),
+                    new CreateIndexModel<TaskAttachment>(
+                        Builders<TaskAttachment>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.TaskId)
+                            .Ascending(x => x.ChecklistRunItemCode)
+                            .Ascending(x => x.IsDeleted),
+                        new CreateIndexOptions { Name = "ix_task_attachments_tenant_task_checklist_item" })
+            }),
         Collection<TaskTemplate>(
             SchemaProfile.WorkflowWorkCenter,
             PlatformCollections.TaskTemplates,

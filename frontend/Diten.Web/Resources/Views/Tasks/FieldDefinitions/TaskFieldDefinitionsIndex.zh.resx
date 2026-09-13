@@ -33,6 +33,10 @@
   <data name="Importance" xml:space="preserve"><value>重要性</value></data>
   <data name="ImportanceSecondary" xml:space="preserve"><value>次要</value></data>
   <data name="ImportancePrimary" xml:space="preserve"><value>主要</value></data>
+  <data name="Stage" xml:space="preserve"><value>询问时机</value></data>
+  <data name="StageEntry" xml:space="preserve"><value>创建</value></data>
+  <data name="StageClosure" xml:space="preserve"><value>关闭</value></data>
+  <data name="StageHint" xml:space="preserve"><value>在创建/编辑表单中询问（创建），或仅在任务完成或取消时的关闭窗口中询问（关闭）。</value></data>
   <data name="SortOrder" xml:space="preserve"><value>排序</value></data>
   <data name="OptionsSourceKind" xml:space="preserve"><value>选项来源</value></data>
   <data name="OptionsSourceNone" xml:space="preserve"><value>无</value></data>

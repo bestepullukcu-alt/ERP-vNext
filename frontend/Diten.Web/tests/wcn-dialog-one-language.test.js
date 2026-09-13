@@ -159,11 +159,17 @@ describe("eight dialogs, four moved and four dressed", () => {
      * category as the survivor above — a shape the shared wrapper cannot express — and it is DRESSED with the
      * declared package rather than inventing an appearance, which is what this test is actually protecting.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(2);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(2);
+    /*
+     * ⚠ THREE (MOD-0024 Slice ATT-1). The third is the ATTACHMENT UPLOAD dialog: a file input, a kind select
+     * and a note textarea. `showConfirm` supports one value (BL-146); this asks for three, so it is the same
+     * category as the other two survivors — a shape the shared wrapper cannot express — and it is DRESSED with
+     * the declared package the same way, not given an appearance of its own.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
     // Each raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(2);
+      "a raw dialog opened without the appearance").toHaveLength(3);
   });
 
   it("reads the package instead of copying it", () => {

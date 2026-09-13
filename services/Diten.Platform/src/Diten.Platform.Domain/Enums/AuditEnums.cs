@@ -17,7 +17,10 @@ public enum AuditCategory
     System = 12,
     DocumentManagement = 13,
     MasterData = 14,
-    PortfolioDelivery = 15
+    PortfolioDelivery = 15,
+
+    /// <summary>MOD-0024 — first use is Slice ATT-1 (task attachments); additive, no prior Tasks category existed.</summary>
+    Tasks = 16
 }
 
 public enum AuditOperation

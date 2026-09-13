@@ -375,7 +375,8 @@ public sealed class TaskReviewGateTests
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                 new FakeChecklistRunRepository(), new TaskChecklistService(), gate,
-                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance)
+                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

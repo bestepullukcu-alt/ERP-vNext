@@ -206,6 +206,9 @@ public sealed class InternalUsersControllerTests
         public Task<User?> GetByPasswordResetTokenHashAsync(string tokenHash, CancellationToken ct)
             => throw new NotSupportedException();
 
+        public Task<IReadOnlyList<User>> SearchActiveAsync(Guid tenantId, string? term, int limit, CancellationToken ct)
+            => throw new NotSupportedException("The display-name endpoint resolves ids, it does not search.");
+
         public Task<User> CreateAsync(User user, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<User> UpdateAsync(User user, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct) => throw new NotSupportedException("read-only endpoint");

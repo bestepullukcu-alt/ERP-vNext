@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>The selected position cannot receive tasks. Choose an active position.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Someone else changed this task first. The screen now shows the current state.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>A required checklist item is still unticked, so the task cannot be completed.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>A required closure field is still empty, so the task cannot be completed.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>The named organization unit was not found.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>That organization unit is out of scope.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>A task this one depends on is not finished yet, so it cannot move forward.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>A subtask is still open, so this task cannot be completed yet.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>This task is closed, so it can no longer be commented on.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Watchers</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Checklist</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>The steps of this task. Items are ticked after the task is created; a blocking item keeps the task from closing.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Attachments</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Files for this task — instructions to open it with, or evidence and output to save right away. Uploaded once the task is created.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>File</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Attachment</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Deliverable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Add file</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Remove</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Task created — some files did not upload</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>The task was created, but the following files could not be uploaded. Add them again from the task's own Attachments card:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Go to the task</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Type an item and press Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Add</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Click the label to change the level. There is no template list yet.</value></data>
@@ -158,7 +173,7 @@
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Blocking</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve"><value>Change the level: Optional → Expected → Blocking</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Require evidence</value></data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required. Attaching a document becomes possible once the document module is connected.</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Evidence is required for the flagged item(s). Attach it from the task's own page after it is created.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Remove item</value></data>
   <data name="ChecklistMoveUp" xml:space="preserve"><value>Move up</value></data>
   <data name="ChecklistMoveDown" xml:space="preserve"><value>Move down</value></data>
@@ -210,4 +225,11 @@
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>You do not have permission to carry out this action.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>This action needs more information than was provided. Please fill in the required fields.</value></data>
   <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>The system that owns this item did not respond, so it is not known whether the action was carried out. Refresh the list to see its current state, then try again.</value></data>
+  <data name="ErrorAttachmentNotAuthorized" xml:space="preserve"><value>Only the task's holder or requester may manage its attachments.</value></data>
+  <data name="ErrorAttachmentTaskClosed" xml:space="preserve"><value>This task is closed, so its attachments can no longer be changed.</value></data>
+  <data name="ErrorAttachmentNotFound" xml:space="preserve"><value>This attachment could not be found.</value></data>
+  <data name="ErrorAttachmentChecklistItemNotFound" xml:space="preserve"><value>That checklist item could not be found.</value></data>
+  <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>This item requires evidence before it can be completed.</value></data>
+  <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>This file could not be uploaded. Check its type and size and try again.</value></data>
+  <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Attachments, including evidence, can be added once the task is created.</value></data>
 </root>

@@ -38,7 +38,9 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
         
         var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
 
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — UpdateUser deliberately carries NO kind field; it only reports the current one.
         return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
-            user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy"));
+            user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
+            AccountKind: user.AccountKind.ToString()));
     }
 }

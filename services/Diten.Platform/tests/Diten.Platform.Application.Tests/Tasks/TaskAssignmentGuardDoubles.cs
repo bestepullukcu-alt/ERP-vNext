@@ -66,6 +66,9 @@ internal static class TaskAssignmentGuards
         public Task<TaskAssignmentRefusal?> CheckTargetAsync(
             TaskAssignmentTarget target, Guid? assigneeUserId, Guid? poolPositionId, CancellationToken ct)
             => throw Asked();
+
+        public Task<TaskAssignmentRefusal?> CheckOrganizationUnitAsync(Guid organizationUnitId, CancellationToken ct)
+            => throw Asked();
     }
 
     private sealed class Admitting : ITaskAssignmentGuard
@@ -78,6 +81,9 @@ internal static class TaskAssignmentGuards
 
         public Task<TaskAssignmentRefusal?> CheckTargetAsync(
             TaskAssignmentTarget target, Guid? assigneeUserId, Guid? poolPositionId, CancellationToken ct)
+            => Task.FromResult<TaskAssignmentRefusal?>(null);
+
+        public Task<TaskAssignmentRefusal?> CheckOrganizationUnitAsync(Guid organizationUnitId, CancellationToken ct)
             => Task.FromResult<TaskAssignmentRefusal?>(null);
     }
 
@@ -105,6 +111,12 @@ internal static class TaskAssignmentGuards
         {
             WasConsulted = true;
             return inner.CheckTargetAsync(target, assigneeUserId, poolPositionId, ct);
+        }
+
+        public Task<TaskAssignmentRefusal?> CheckOrganizationUnitAsync(Guid organizationUnitId, CancellationToken ct)
+        {
+            WasConsulted = true;
+            return inner.CheckOrganizationUnitAsync(organizationUnitId, ct);
         }
     }
 }

@@ -387,6 +387,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        // MOD-0024 Slice ATT-1 — task attachment metadata.
+        services.AddScoped<ITaskAttachmentRepository, TaskAttachmentRepository>();
         services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
         services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
 

@@ -283,6 +283,20 @@ public sealed class TaskFieldDefinition : TenantScopedEntity
     /// </summary>
     public string? EditPermission { get; set; }
 
+    /// <summary>
+    /// WHEN this definition is asked — MOD-0024 Task Closure &amp; Reporting, Faz 2a.
+    ///
+    /// <para>⚠ <b>THE DEFAULT IS <see cref="TaskFieldStage.Entry"/> AND MUST STAY SO.</b> Every definition
+    /// written before this field existed is a create-form field — the only kind that existed — so Entry is the
+    /// value that changes no existing definition's behaviour, for a new row and for every stored document that
+    /// predates the field and deserialises to this initializer. No migration exists or is needed.</para>
+    ///
+    /// <para>A <see cref="TaskFieldStage.Closure"/> definition is withheld from the create/edit form and the
+    /// general field-value validation path (<c>TaskFieldDefinitionService</c>) and offered only in the closure
+    /// window — see the pack's own reasoning for why the two forms must not share one vocabulary unconditionally.</para>
+    /// </summary>
+    public TaskFieldStage Stage { get; set; } = TaskFieldStage.Entry;
+
     public bool IsActive { get; set; } = true;
     public DateTimeOffset? DeletedAt { get; set; }
 }
@@ -620,6 +634,33 @@ public sealed class TaskType : TenantScopedEntity
     /// force one vocabulary onto both and mean nothing in either.</para>
     /// </summary>
     public List<TaskClosureOutcome> ClosureOutcomes { get; set; } = [];
+
+    /// <summary>
+    /// Whether a review meeting may, must or must not precede the reviewer's final decision on work of this type.
+    ///
+    /// <para>⚠ <b>THE DEFAULT IS <see cref="TaskReviewMeetingRequirement.Optional"/> AND MUST STAY SO.</b> Before
+    /// this field existed the task projection emitted a constant <c>optional</c> for every task, so Optional is the
+    /// value that changes NO type's behaviour — for a new type, and for every stored type document that predates
+    /// the field and deserialises to this initializer. No migration exists or is needed.</para>
+    ///
+    /// <para><b>A TYPE setting, and forward-looking.</b> Changing it rewrites no task: nothing is copied onto
+    /// <see cref="TaskItem"/>. The meeting reference and its time are per-task projection data resolved from a
+    /// related record, which is why only the requirement is carried here.</para>
+    /// </summary>
+    public TaskReviewMeetingRequirement ReviewMeetingRequirement { get; set; } = TaskReviewMeetingRequirement.Optional;
+
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — whether work of this type may not be marked Done without at least one
+    /// live Deliverable-kind attachment (MOD-0024 Slice ATT-1). Enforced on the SAME complete transition the
+    /// checklist evidence gate already guards (<c>TransitionTaskItemHandler</c>), refusing with
+    /// <c>TASK_DELIVERABLE_REQUIRED</c> when none exists.
+    ///
+    /// <para>Default false, exactly like <see cref="IsQualityEvent"/>: every type written before this field
+    /// existed, and every stored document that predates it, deserialises to false — no migration, no task closed
+    /// under the old rule is re-examined, and turning the flag on changes nothing until an administrator does so
+    /// deliberately.</para>
+    /// </summary>
+    public bool RequiresDeliverableOnCompletion { get; set; }
 
     /// <summary>
     /// Whether this type may be chosen on a NEW task. Retiring one never removes it: tasks already opened with

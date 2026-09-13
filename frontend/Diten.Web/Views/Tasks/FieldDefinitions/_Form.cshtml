@@ -168,6 +168,18 @@
                             </select>
                         </div>
                         <div class="col-12">
+                            @* MOD-0024 Task Closure & Reporting Faz 2a — WHEN this field is asked. Entry is the
+                               create/edit form; Closure is the "Tamamla"/"İptal" window only — the two never
+                               share a screen, so a field configured here for Closure simply stops appearing on
+                               this form's own sibling instances from the next save. *@
+                            <label asp-for="Stage" class="form-label fw-medium">@Localizer["Stage"]</label>
+                            <select asp-for="Stage" class="select2 form-select">
+                                <option value="Entry">@Localizer["StageEntry"]</option>
+                                <option value="Closure">@Localizer["StageClosure"]</option>
+                            </select>
+                            <div class="form-text">@Localizer["StageHint"]</div>
+                        </div>
+                        <div class="col-12">
                             <label asp-for="SortOrder" class="form-label fw-medium">@Localizer["SortOrder"]</label>
                             <input asp-for="SortOrder" type="number" class="form-control" min="0" max="999" />
                         </div>

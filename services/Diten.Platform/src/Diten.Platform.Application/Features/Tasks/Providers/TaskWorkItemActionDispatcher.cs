@@ -110,9 +110,16 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                     new SubmitTaskForReviewCommand(request.ItemId, transition, request.CorrelationId), ct), request);
 
             case "complete":
+                /*
+                 * Faz 2a-rest — THE ONLY ACTION THAT CARRIES CLOSURE-STAGE FIELD VALUES. `cancel` shares
+                 * `transition` below unchanged and on purpose (pack §11 / YAPMA): the closure window never
+                 * offers these fields on cancel, so nothing this dispatcher does needs to either.
+                 */
                 return Map(await _mediator.Send(
                     new TransitionTaskItemCommand(
-                        request.ItemId, TaskLifecycle.Done, transition, request.CorrelationId), ct), request);
+                        request.ItemId, TaskLifecycle.Done,
+                        transition with { ClosureFieldValues = MapClosureFieldValues(payload.ClosureFieldValues) },
+                        request.CorrelationId), ct), request);
 
             case "inquire":
                 if (string.IsNullOrWhiteSpace(payload.Reason))
@@ -178,4 +185,33 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
 
     private Response<WorkItemActionResultDto> Map<T>(Response<T> inner, WorkItemActionDispatchRequest request)
         => WorkItemActionDispatchResults.From(inner, request, ProviderCode);
+
+    /// <summary>
+    /// Faz 2a-rest — the one translation from the dispatch envelope's NEUTRAL field-value shape
+    /// (<see cref="WorkItemFieldValueDto"/>) to MOD-0024's own (<see cref="TaskFieldValueDto"/>).
+    ///
+    /// <para>A value whose <c>ValueType</c> this engine does not recognise is DROPPED rather than thrown on — a
+    /// malformed or stale client must not turn a 400 ("this closure field is required") into a 500. Dropping it
+    /// is safe: <c>ValidateClosureFieldsAsync</c> then sees the field as simply unsupplied and refuses exactly
+    /// as it would if the client had sent nothing for it.</para>
+    /// </summary>
+    private static IReadOnlyList<TaskFieldValueDto>? MapClosureFieldValues(
+        IReadOnlyList<WorkItemFieldValueDto>? values)
+    {
+        if (values is null)
+        {
+            return null;
+        }
+
+        var mapped = new List<TaskFieldValueDto>(values.Count);
+        foreach (var value in values)
+        {
+            if (Enum.TryParse<TaskFieldValueType>(value.ValueType, ignoreCase: true, out var valueType))
+            {
+                mapped.Add(new TaskFieldValueDto(value.DefinitionCode, valueType, value.Value));
+            }
+        }
+
+        return mapped;
+    }
 }

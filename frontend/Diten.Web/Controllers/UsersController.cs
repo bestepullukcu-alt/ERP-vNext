@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.Governance;
@@ -13,11 +14,21 @@ namespace Diten.Web.Controllers;
 // FE-C 3/3 (MOD-0018-FU9) — tenant Users CRUD page (golden-reference Slim). Gateway-proxy controller:
 // mutations route through here (antiforgery + bearer/tenant forwarding) to AuthService /api/users; the
 // datatable list loads client-side from the gateway. UX-only; backend [HasPermission] is authoritative.
+//
+// WP-INFRA-AUTH-ACCOUNT-KIND-01 — three same-origin proxies under /Users/api/* (lookup, account-assertion,
+// account-kind) in the ProxyAsync shape MeetingsController/TasksController already use: the JWT is read
+// server-side from the auth cookie, the upstream status passes through verbatim, and the browser never
+// addresses a service port. Create additionally forwards an optional AccountKind; AuthService refuses it
+// with 403 unless the caller holds auth.users.account-kind.manage (explicit-grant-only).
 [Authorize]
 [Route("Users")]
 public sealed class UsersController : Controller
 {
+    private const string TenantHeaderName = "X-Tenant-Id";
+    private const string CorrelationHeaderName = "X-Correlation-Id";
+
     private readonly HttpClient _httpClient;
+    private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _gatewayUrl;
     private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
     private readonly ILogger<UsersController> _logger;
@@ -28,11 +39,13 @@ public sealed class UsersController : Controller
 
     public UsersController(
         HttpClient httpClient,
+        IHttpClientFactory httpClientFactory,
         IConfiguration configuration,
         IStringLocalizer<SharedResource> sharedLocalizer,
         ILogger<UsersController> logger)
     {
         _httpClient = httpClient;
+        _httpClientFactory = httpClientFactory;
         _gatewayUrl = configuration["GatewayUrl"]
             ?? throw new InvalidOperationException("GatewayUrl configuration is required.");
         _sharedLocalizer = sharedLocalizer;
@@ -56,7 +69,17 @@ public sealed class UsersController : Controller
 
         try
         {
-            var payload = new UserCreatePayload { Email = model.Email, FirstName = model.FirstName, LastName = model.LastName };
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the optional classification travels as the enum NAME or not at all
+            // (an empty selection means "leave it Unknown", never a guessed kind). Read from the posted form rather
+            // than the view model on purpose: the model's shape belongs to the invitation flow and stays as it is.
+            var accountKind = Request.HasFormContentType ? Request.Form["AccountKind"].ToString().Trim() : string.Empty;
+            var payload = new
+            {
+                email = model.Email,
+                firstName = model.FirstName,
+                lastName = model.LastName,
+                accountKind = string.IsNullOrWhiteSpace(accountKind) ? null : accountKind
+            };
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}/api/users", payload, _jsonOptions);
             // AuthService returns the set-password link in UserDto.setupUrl ONLY in Development;
             // it is null in Production, so nothing leaks to the UI there.
@@ -138,6 +161,108 @@ public sealed class UsersController : Controller
             _logger.LogError(ex, "Users get-by-id failed for {UserId}.", id);
             return Json(new { success = false });
         }
+    }
+
+    // ── WP-INFRA-AUTH-ACCOUNT-KIND-01 — same-origin API proxy (ProxyAsync shape) ──────────────────────
+    // GET  /Users/api/lookup?search=&limit=      → GET  /api/users/lookup            [auth.users.lookup]
+    // GET  /Users/api/{id}/account-assertion     → GET  /api/users/{id}/account-assertion [auth.users.lookup]
+    // POST /Users/api/{id}/account-kind {kind}   → POST /api/users/{id}/account-kind [auth.users.account-kind.manage]
+
+    [HttpGet("api/lookup")]
+    public Task<IActionResult> ApiLookup([FromQuery] string? search, [FromQuery] int? limit)
+    {
+        var query = $"?search={Uri.EscapeDataString(search ?? string.Empty)}&limit={Math.Clamp(limit ?? 20, 1, 50)}";
+        return ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/users/lookup{query}", readBody: false);
+    }
+
+    [HttpGet("api/{id:guid}/account-assertion")]
+    public Task<IActionResult> ApiAccountAssertion(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/users/{id}/account-assertion", readBody: false);
+
+    [HttpPost("api/{id:guid}/account-kind")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> ApiSetAccountKind(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/users/{id}/account-kind", readBody: true);
+
+    private async Task<IActionResult> ProxyAsync(HttpMethod method, string targetUrl, bool readBody)
+    {
+        if (!TryCreateTenantRequest(method, targetUrl, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            {
+                if (readBody)
+                {
+                    using var reader = new StreamReader(Request.Body, Encoding.UTF8);
+                    var relayed = await reader.ReadToEndAsync(HttpContext.RequestAborted);
+                    request.Content = new StringContent(relayed, Encoding.UTF8, "application/json");
+                }
+
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+                var content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted);
+
+                // The upstream status passes through verbatim: a 403 (key not granted), a 404 (not this
+                // tenant's user — deliberately the same body as "does not exist") or a 400 (bad kind) must
+                // reach the browser as itself.
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                    StatusCode = (int)response.StatusCode
+                };
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Users proxy failed for {Method} {TargetUrl}.", method, targetUrl);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Users dependency unavailable." });
+        }
+    }
+
+    private bool TryCreateTenantRequest(HttpMethod method, string targetUrl, out HttpRequestMessage request)
+    {
+        request = new HttpRequestMessage(method, targetUrl);
+        var token = Diten.Web.Services.Auth.AuthTokenCookies.GetAccessToken(Request) ?? string.Empty;
+        var tenantId = string.IsNullOrWhiteSpace(token) ? null : GetTenantId(token);
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(tenantId))
+        {
+            request.Dispose();
+            request = null!;
+            return false;
+        }
+
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Headers.TryAddWithoutValidation(TenantHeaderName, tenantId);
+        request.Headers.TryAddWithoutValidation(CorrelationHeaderName, ResolveCorrelationId());
+        if (Request.Headers.TryGetValue("Accept-Language", out var acceptLanguage))
+        {
+            request.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage.ToString());
+        }
+
+        return true;
+    }
+
+    private string ResolveCorrelationId()
+    {
+        if (Request.Headers.TryGetValue(CorrelationHeaderName, out var correlationId) &&
+            !string.IsNullOrWhiteSpace(correlationId.ToString()))
+        {
+            return correlationId.ToString();
+        }
+
+        return HttpContext.TraceIdentifier;
     }
 
     // ── Admin actions (proxy → AuthService) ────────────────────────────────────

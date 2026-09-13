@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>El puesto seleccionado no puede recibir tareas. Elija un puesto activo.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Otra persona modificó esta tarea antes. La pantalla ya muestra el estado actual.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Falta marcar un elemento obligatorio de la lista de verificación, por lo que la tarea no puede completarse.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Un campo de cierre obligatorio sigue vacío, por lo que la tarea no puede completarse.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>No se encontró la unidad organizativa indicada.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>Esa unidad organizativa está fuera de su alcance.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Una tarea de la que esta depende aún no ha terminado, por lo que no puede avanzar.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Una subtarea sigue abierta, por lo que esta tarea aún no puede completarse.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Esta tarea está cerrada, por lo que ya no admite comentarios.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observadores</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Lista de control</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Los pasos de esta tarea. Los elementos se marcan después de crear la tarea; un elemento bloqueante impide cerrarla.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Adjuntos</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Archivos de esta tarea: las instrucciones para abrirla, o una evidencia y un entregable para guardar de inmediato. Se suben una vez creada la tarea.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Archivo</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tipo</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Adjunto</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Evidencia</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Entregable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Agregar archivo</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Quitar</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Tarea creada: algunos archivos no se subieron</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>La tarea se creó, pero los siguientes archivos no se pudieron subir. Agréguelos de nuevo desde la tarjeta de Adjuntos de la tarea:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Ir a la tarea</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Escriba un elemento y pulse Intro</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Añadir</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Haga clic en la etiqueta para cambiar el nivel. Todavía no hay lista de plantillas.</value></data>
@@ -158,7 +173,7 @@
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Bloqueante</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve"><value>Cambiar el nivel: Opcional → Esperado → Bloqueante</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Exigir evidencia</value></data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia. El enlace a un documento se activará cuando se conecte el módulo documental.</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Se requiere evidencia para los elementos marcados. Adjúntela desde la página de la tarea una vez creada.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Quitar elemento</value></data>
   <data name="ChecklistMoveUp" xml:space="preserve"><value>Subir</value></data>
   <data name="ChecklistMoveDown" xml:space="preserve"><value>Bajar</value></data>
@@ -210,4 +225,11 @@
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>No tiene permiso para realizar esta acción.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Esta acción necesita más información de la que se ha proporcionado. Rellene los campos obligatorios.</value></data>
   <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>El sistema propietario de este elemento no respondió, por lo que se desconoce si la acción se llevó a cabo. Actualice la lista para ver su estado actual y vuelva a intentarlo.</value></data>
+  <data name="ErrorAttachmentNotAuthorized" xml:space="preserve"><value>Solo el responsable o el solicitante de la tarea pueden gestionar sus adjuntos.</value></data>
+  <data name="ErrorAttachmentTaskClosed" xml:space="preserve"><value>Esta tarea está cerrada, por lo que sus adjuntos ya no se pueden modificar.</value></data>
+  <data name="ErrorAttachmentNotFound" xml:space="preserve"><value>No se encontró este adjunto.</value></data>
+  <data name="ErrorAttachmentChecklistItemNotFound" xml:space="preserve"><value>No se encontró ese elemento de la lista de verificación.</value></data>
+  <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Este elemento requiere evidencia antes de poder completarse.</value></data>
+  <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>No se pudo subir este archivo. Compruebe su tipo y tamaño e inténtelo de nuevo.</value></data>
+  <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Los adjuntos, incluida la evidencia, se pueden añadir una vez creada la tarea.</value></data>
 </root>

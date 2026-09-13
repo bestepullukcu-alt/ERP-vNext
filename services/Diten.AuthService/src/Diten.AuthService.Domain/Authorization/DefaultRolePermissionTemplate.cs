@@ -58,7 +58,12 @@ public static class DefaultRolePermissionTemplate
             "platform.tenant-security.manage",
             // FIX-MENU-SETTINGS-ACCESS — tenant-scoped Menu (navigation) Settings write. Backend forces the caller's
             // tenant_id, so this platform.* key is self-service, not escalation: tenant Admin holds it, Viewer does not.
-            "platform.tenant-navigation.manage"
+            "platform.tenant-navigation.manage",
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 (owner, 2026-09-11) — the tenant-scoped user lookup + account assertion a
+            // module (PPM) asks about a user of the caller's OWN tenant. Backend forces the caller's tenant_id, so it is
+            // self-service, not escalation: tenant Admin holds it (startup reconcile backfills tenants provisioned before
+            // the key existed), Viewer does not. auth.users.account-kind.manage is deliberately NOT here (explicit grant only).
+            "auth.users.lookup"
         };
 
     /// <summary>
