@@ -5444,3 +5444,17 @@ DURUM: AÇIK (sahip kararı) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCE
 manifest eylemi olarak modül yetkilendirme senkronuna giriyor, yani Görev Motoru yetkilendirilen kiracıda Admin rolüne kendiliğinden
 düşebilir. Listeye eklemek, bu yetkiyi bugün tutan rollerden geri alır — bu yüzden sessizce yapılmadı. Karar: listeye alınsın mı, alınırsa
 mevcut atamalar nasıl ele alınsın.
+
+---
+
+### BL-393
+
+**Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — eski kiracı testi gateway'in yeni kuralını bilmiyordu**
+
+DURUM: KAPANDI — `657050ac` (CT, `feature/infra/auth-display-label`, 2026-09-13) · BULAN: CT (go-live öncesi yerel kapı koşusu) · KAYIT: 2026-09-13
+
+`cccd541f` gateway'e "jetondaki kiracıyı başlık ya da alt alan adı çelişirse 400 Tenant mismatch" kuralını getirdi ve kendi test
+paketini ekledi; `tests/tenancy/.../UnitTest1.cs` içindeki `JwtTenant_OverridesConflictingHeader` ise hâlâ eski davranışı (başlığın
+üzerine yazılıp isteğin geçmesi) bekliyordu. `run_phase1_gates.sh` ilk hatada durduğu için mimari testleri ve Web testleri de o
+tarihten beri CI'da hiç koşmadı; o arada birleşen PR'lar (ör. #105, #106) kırmızı hatla girdi. Ölçüm: temiz `origin/main`
+(`e5681231`) üzerinde aynı test kırmızı. Test bugünkü sözleşmeye çevrildi; sabotaj: çelişki kontrolü kapatılınca kırmızı.
