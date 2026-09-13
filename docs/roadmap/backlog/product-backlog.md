@@ -5195,3 +5195,21 @@ aynı tipi aynı anda düzenlerse ikincisi birincinin değişikliğini sessizce 
 (kayıt sınıfı, GQMS alanı, yönetici belgeler, kapanış sonuçları ve artık gözden geçirme toplantısı gerekliliği).
 Not: CT'nin prompt'u bu korumanın var olduğunu varsaymıştı; yanlıştı, ajan doğru ölçtü ve kapsamı genişletmedi.
 Çözüm şekli bu depoda hazır: toplantı ve seri güncellemelerinin `ExpectedVersion` + 409 deseni.
+
+---
+
+### BL-376
+
+**Auth'ta ad/soyad uzunluk sınırı yok — PPM'in 200 karakterlik etiket kabulüyle çelişebilir**
+
+DURUM: AÇIK (karar gerekli, acil değil) · BULAN: CT (WP-INFRA-AUTH-DISPLAY-LABEL-01 hazırlığı) · KAYIT: 2026-09-13
+
+**Ölçüm:** `User.FirstName` / `LastName` hiçbir validator'da, istek modelinde veya entity'de uzunlukla sınırlanmıyor
+(RegisterCommandHandler, CreateUserCommandHandler, UpdateUserCommandHandler, InternalEventsController,
+PlatformAuthController — hepsi olduğu gibi yazıyor). Yeni `display-label` ucu etiketi KESMEDEN döndürecek (PPM şartı:
+sessiz kesme yok). PPM ise 200 karakteri aşan etiketi zarf ihlali sayıp 503 veriyor
+(`PortfolioService.cs:147` aday listesi için aynı kural). Sonuç: adı+soyadı 200 karakteri aşan gerçek bir kullanıcı
+portföy sahibi yapılamaz.
+**Seçenekler:** (a) Auth'a ad ve soyad için yazma sınırı (ör. 100 + 100 → etiket ≤ 201; tam 200 için 99 + 100 veya
+birleşik kontrol) — mevcut uzun kayıtlar için okuma tarafı yine kesmez · (b) PPM kendi sınırını yükseltir ·
+(c) kabul edilir, dokümante edilir. Karar Auth (altyapı CT) + PPM ortak.
