@@ -44,8 +44,20 @@ public sealed class MeetingInviteMailerIcsAttachmentTests
                 userIds.Select(id => new TaskNotificationRecipient(id, $"{id}@example.test", "Someone")).ToList());
     }
 
-    private static MeetingInviteMailer Mailer(INotificationEventDispatchAdapter adapter)
-        => new(adapter, new FakeRecipientResolver(), new FakeTenantContext(Tenant), Options.Create(new AuthServiceOptions()), NullLogger<MeetingInviteMailer>.Instance);
+    /// <summary>BL-374 (2) — resolves every OTHER attendee normally but returns nothing for the organizer, so
+    /// <c>MeetingInviteMailer</c> falls onto its own empty-email fallback record for the organizer specifically.</summary>
+    private sealed class UnresolvableOrganizerRecipientResolver : ITaskNotificationRecipientResolver
+    {
+        public Task<IReadOnlyList<TaskNotificationRecipient>> ResolveAsync(
+            IReadOnlyCollection<Guid> userIds, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<TaskNotificationRecipient>>(
+                userIds.Where(id => id != Organizer)
+                    .Select(id => new TaskNotificationRecipient(id, $"{id}@example.test", "Someone"))
+                    .ToList());
+    }
+
+    private static MeetingInviteMailer Mailer(INotificationEventDispatchAdapter adapter, ITaskNotificationRecipientResolver? resolver = null)
+        => new(adapter, resolver ?? new FakeRecipientResolver(), new FakeTenantContext(Tenant), Options.Create(new AuthServiceOptions()), NullLogger<MeetingInviteMailer>.Instance);
 
     private static Meeting MakeMeeting(int version = 1) => new()
     {
@@ -119,5 +131,20 @@ public sealed class MeetingInviteMailerIcsAttachmentTests
         // the same reason that suite's own ORGANIZER/ATTENDEE assertion does.
         var text = System.Text.Encoding.UTF8.GetString(attachment.Content).Replace("\r\n ", string.Empty);
         Assert.Contains($"mailto:{Organizer}@example.test", text);
+    }
+
+    /// <summary>BL-374 (2) — an ORGANIZER-less .ics is worse than none (RFC 5546 needs an ORGANIZER address on
+    /// METHOD:REQUEST); the invite BODY must still go (K12) with no attachment at all in that case.</summary>
+    [Fact]
+    public async Task When_the_organizers_email_cannot_be_resolved_the_ics_is_omitted_but_the_body_still_sends()
+    {
+        var meeting = MakeMeeting();
+        var adapter = new SucceedingDispatchAdapter();
+        var mailer = Mailer(adapter, new UnresolvableOrganizerRecipientResolver());
+
+        var result = await mailer.SendInviteAsync(meeting, "MGMT-REVIEW", [MakeAttendee(meeting.Id, Invitee)], actingUserId: Guid.NewGuid());
+
+        Assert.True(result.Sent);
+        Assert.Null(adapter.LastRequest!.Attachments);
     }
 }

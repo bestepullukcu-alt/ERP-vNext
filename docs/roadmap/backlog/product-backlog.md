@@ -5166,7 +5166,9 @@ Testle sabitlenmedi: seri işleyici testleri `RecordingMediator` kullanıyor, ge
 
 **S5b `.ics` ekinin iki sınırı — tekrar denemede ek düşüyor, organizatör e-postası çözülemezse ORGANIZER boş**
 
-DURUM: AÇIK — canlı öncesi yapılacak (sahip, 2026-09-13) · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+DURUM: KAPANDI (kodda; canlı Mailpit kanıtı bekliyor) — WP-MG-MOD0357-BL374-RETRY-FIDELITY-01, 2026-09-13 · BULAN: S5b ajanı (1) + CT (2) · KAYIT: 2026-09-13
+
+**Teslim:** ek (≤ 256 KB) dispatch kaydına yazılıyor ve tekrar deneme onu gönderiyor; kuyruğa alınırken şablonun SemanticVersion'ı damgalanıyor; tekrar denemede gövde yalnız değişkenlerde maskelenmiş değer yoksa ve şablon sürümü değişmemişse yeniden üretiliyor, aksi halde önizleme + sebep kodlu `email.dispatch.retry_degraded` logu; organizatör e-postası çözülemezse `.ics` hiç eklenmiyor. Maskeleme kodu değişmedi. ⚠ Pratik sınır: BL-377 yüzünden toplantı davetlerinde gövde yeniden üretimi neredeyse hiç devreye girmez — takvim eki (asıl kazanç) her durumda gider.
 
 **⚠ CT düzeltmesi (aynı gün):** sahibe önce "tam metni kayda yazalım" önerildi. Ölçüm bunu yanlış çıkardı: kayıttaki gövde KASITLI maskeli (`QueueEmailNotificationHandler.MaskSensitiveValues`, değişkenler `SanitizeVariables` ile `[REDACTED]`) — geçici şifre gibi değerler veritabanına yazılmasın diye. Tam gövdeyi saklamak bu korumayı geri alır. Doğru şekil: tekrar denemede gövde şablondan ve temizlenmiş değişkenlerden YENİDEN üretilir; bir değişken maskelenmişse sessizce eksik posta gönderilmez; takvim eki sır içermediği için ayrıca saklanır. WP: WP-MG-MOD0357-BL374-RETRY-FIDELITY-01.
 
@@ -5213,3 +5215,20 @@ portföy sahibi yapılamaz.
 **Seçenekler:** (a) Auth'a ad ve soyad için yazma sınırı (ör. 100 + 100 → etiket ≤ 201; tam 200 için 99 + 100 veya
 birleşik kontrol) — mevcut uzun kayıtlar için okuma tarafı yine kesmez · (b) PPM kendi sınırını yükseltir ·
 (c) kabul edilir, dokümante edilir. Karar Auth (altyapı CT) + PPM ortak.
+
+---
+
+### BL-377
+
+**Bildirim değişken temizleyicisi boşluk içeren HER değeri sır sayıyor — denetim kaydı ve tekrar deneme gereksiz yere körleşiyor**
+
+DURUM: AÇIK · BULAN: BL-374 ajanı, CT doğruladı · KAYIT: 2026-09-13
+
+**Ölçüm:** `NotificationParsing.LooksLikeRawSecret` (`NotificationParsing.cs:38-52`) değerde bir boşluk veya `=` görürse `true` dönüyor.
+`QueueEmailNotificationHandler.SanitizeVariables` bu kontrolü anahtar adından bağımsız uyguluyor, yani "Haftalık Kalite Toplantısı",
+"Ayşe Yılmaz" gibi masum değerler `VariablesJson`'a `[REDACTED]` olarak yazılıyor. (Önizleme gövdesi yalnız anahtar adına göre
+maskelendiği için etkilenmiyor.)
+**Sonuç:** (1) gönderim kaydındaki değişkenler denetimde okunamaz; (2) BL-374'ün gövde yeniden üretimi, `[REDACTED]` varken bilerek
+çalışmadığından toplantı davetlerinde neredeyse hiç devreye girmez.
+**Yön (karar değil):** sırrı DEĞERİN şekline göre değil, şablonun değişkeni hassas olarak İŞARETLEMESİNE göre maskelemek (anahtar tabanlı
+liste + şablon meta verisi). Güvenlik kodudur: tek başına gevşetilmez, ayrı WP + sabotaj ister.

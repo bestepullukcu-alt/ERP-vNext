@@ -99,12 +99,20 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                 ?? new TaskNotificationRecipient(meeting.OrganizerUserId, string.Empty, meeting.OrganizerUserId.ToString());
             var organizerName = organizer.DisplayName ?? meeting.OrganizerUserId.ToString();
 
-            // S5b — the calendar attachment. Built from data already resolved above (organizer + attendees),
-            // never a second recipient-resolution path. A malformed/unresolvable organizer email (empty string,
-            // the fallback just above) produces a syntactically odd but harmless "mailto:" line — not a reason
-            // to withhold the invite body itself, and K12's own try/catch around this whole method is the
-            // backstop if building the string throws for any other reason.
-            var icsAttachment = BuildIcsAttachment(icsEventType, meeting, organizer, resolved);
+            // BL-374 (2) — an ORGANIZER-less .ics is worse than none: RFC 5546 requires METHOD:REQUEST to carry
+            // an ORGANIZER address, and a blank "mailto:" (the fallback just above) can make Outlook show the
+            // whole invite as an unsupported calendar message. The invite BODY still goes either way (K12) —
+            // only the calendar attachment is withheld when the organizer's e-mail could not be resolved.
+            var icsAttachment = string.IsNullOrWhiteSpace(organizer.Email)
+                ? null
+                : BuildIcsAttachment(icsEventType, meeting, organizer, resolved);
+
+            if (icsAttachment is null)
+            {
+                _logger.LogWarning(
+                    "meeting.invite.ics_omitted_organizer_email_unresolved EventCode={EventCode} MeetingId={MeetingId} OrganizerUserId={OrganizerUserId}",
+                    eventCode, meeting.Id, meeting.OrganizerUserId);
+            }
 
             var response = await _notifications.DispatchByEventCodeAsync(
                 new NotificationEventDispatchRequest(
@@ -115,7 +123,7 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                     // Same posture as TaskNotificationService: the reader's own language is not known here, so
                     // the adapter resolves the TENANT's configured language rather than guessing at the actor's.
                     Locale: null,
-                    Attachments: [icsAttachment]),
+                    Attachments: icsAttachment is null ? null : [icsAttachment]),
                 ct);
 
             if (!response.IsSuccessful)

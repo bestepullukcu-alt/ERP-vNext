@@ -1,5 +1,7 @@
+using System.Text.Json;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.Commands;
+using Diten.Platform.Application.Features.Notifications.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Notifications.Services;
 using Diten.Platform.Domain.Entities.Notifications;
 using Diten.Platform.Domain.Enums;
@@ -19,19 +21,29 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
     private readonly IMessagingProviderResolver _providerResolver;
     private readonly IMediator _mediator;
     private readonly ILogger<EmailDispatchJob> _logger;
+    // BL-374 — trailing and OPTIONAL: both are already registered in DI (QueueEmailNotificationHandler uses
+    // the same two), so production always gets them injected. A test double built against the old 5-arg
+    // shape (NotificationsBatch2Tests' own BuildJob) still compiles and runs unchanged — it simply never gets
+    // a full-fidelity retry, which is exactly this job's own PRE-BL-374 behaviour.
+    private readonly INotificationTemplateRepository? _templateRepository;
+    private readonly IEmailTemplateRenderer? _renderer;
 
     public EmailDispatchJob(
         INotificationDispatchRepository dispatchRepository,
         ITenantMessagingSettingsResolver settingsResolver,
         IMessagingProviderResolver providerResolver,
         IMediator mediator,
-        ILogger<EmailDispatchJob> logger)
+        ILogger<EmailDispatchJob> logger,
+        INotificationTemplateRepository? templateRepository = null,
+        IEmailTemplateRenderer? renderer = null)
     {
         _dispatchRepository = dispatchRepository;
         _settingsResolver = settingsResolver;
         _providerResolver = providerResolver;
         _mediator = mediator;
         _logger = logger;
+        _templateRepository = templateRepository;
+        _renderer = renderer;
     }
 
     public async Task HandleAsync(EmailDispatchJobArgs args, BackgroundJobContext context, CancellationToken cancellationToken = default)
@@ -125,6 +137,11 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             ? context.EffectiveCorrelationId.ToString("N")
             : dispatch.CorrelationId;
 
+        var (bodyHtml, bodyText) = await ResolveRetryBodyAsync(dispatch, context, cancellationToken);
+        var attachments = dispatch.Attachments.Count == 0
+            ? null
+            : dispatch.Attachments.Select(ToProviderAttachment).ToArray();
+
         return await providerResponse.Data.SendEmailAsync(
             new MessagingProviderEmailRequest(
                 dispatch.Id,
@@ -135,12 +152,78 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
                 dispatch.Cc.Select(ToProviderRecipient).ToArray(),
                 dispatch.Bcc.Select(ToProviderRecipient).ToArray(),
                 dispatch.BodyHtmlPreview,
-                dispatch.BodyTextPreview),
+                dispatch.BodyTextPreview,
+                bodyHtml,
+                bodyText,
+                attachments),
             cancellationToken);
     }
 
+    /// <summary>
+    /// BL-374 — a retry's whole point: try to reproduce the ORIGINAL full body (not the masked preview) from
+    /// TemplateId + the persisted VariablesJson, but only when doing so cannot resurface a value the queue-time
+    /// masking deliberately removed, and only when the template itself has not moved since. Every other
+    /// outcome falls back to today's pre-BL-374 behaviour (the preview alone) and says why — never silently.
+    /// </summary>
+    private async Task<(string? BodyHtml, string? BodyText)> ResolveRetryBodyAsync(
+        NotificationDispatch dispatch, BackgroundJobContext context, CancellationToken ct)
+    {
+        if (_templateRepository is null || _renderer is null)
+        {
+            // No renderer/template repository wired in (older test doubles) — not a BL-374 refusal, just the
+            // feature not being present at all. Behaves exactly as it did before this WP.
+            return (null, null);
+        }
+
+        if (dispatch.VariablesJson.Contains(QueueEmailNotificationHandler.RedactedToken, StringComparison.Ordinal))
+        {
+            LogRetryDegraded(dispatch, context, "VariablesRedacted");
+            return (null, null);
+        }
+
+        if (dispatch.TemplateId is not { } templateId)
+        {
+            LogRetryDegraded(dispatch, context, "TemplateIdMissing");
+            return (null, null);
+        }
+
+        var template = await _templateRepository.GetByIdAsync(templateId, ct);
+        if (template is null)
+        {
+            LogRetryDegraded(dispatch, context, "TemplateNotFound");
+            return (null, null);
+        }
+
+        if (!string.Equals(template.SemanticVersion, dispatch.TemplateSemanticVersion, StringComparison.Ordinal))
+        {
+            LogRetryDegraded(dispatch, context, "TemplateVersionChanged");
+            return (null, null);
+        }
+
+        var variables = JsonSerializer.Deserialize<Dictionary<string, object?>>(dispatch.VariablesJson) ?? [];
+        var rendered = _renderer.Render(template, variables);
+        if (!rendered.IsSuccessful || rendered.Data is null)
+        {
+            LogRetryDegraded(dispatch, context, "RenderFailed");
+            return (null, null);
+        }
+
+        return (rendered.Data.BodyHtml, rendered.Data.BodyText);
+    }
+
+    private void LogRetryDegraded(NotificationDispatch dispatch, BackgroundJobContext context, string reasonCode) =>
+        _logger.LogInformation(
+            "email.dispatch.retry_degraded DispatchId={DispatchId} TenantId={TenantId} ReasonCode={ReasonCode} CorrelationId={CorrelationId}",
+            dispatch.Id,
+            dispatch.TenantId,
+            reasonCode,
+            context.EffectiveCorrelationId);
+
     private static EmailRecipientDto ToProviderRecipient(EmailRecipient recipient) =>
         new(recipient.Email, recipient.DisplayName);
+
+    private static MessagingProviderAttachment ToProviderAttachment(NotificationDispatchAttachment attachment) =>
+        new(attachment.FileName, attachment.ContentType, attachment.Content);
 
     private static DateTimeOffset ComputeNextRetryAt(int retryCount)
     {
