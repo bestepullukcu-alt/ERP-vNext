@@ -1,0 +1,54 @@
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ClaimsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ClaimsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["ApprovalFreezeNote"]</small>
+</div>
+
+@* Compact primary surface (mirrors the ConceptNode Compact page-set): a single claim DataTable with a route-based
+   Create/Edit page-set. No delete surface — closing a claim is Archive; approval is a dedicated row action. *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/CRM/Claims/_Filter.cshtml" />
+<partial name="~/Views/CRM/Claims/_DataTable.cshtml" />
+
+@* Read-only Quick View — the primary row action opens this offcanvas and index.js fills it from the DataTable row
+   (no extra fetch, no populateOffcanvas). Authoring stays on the route-based Create/Edit pages. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasDetailsPreview" aria-labelledby="claimPreviewTitle">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="claimPreviewTitle" class="offcanvas-title mb-0 text-truncate">-</h5>
+            <small id="claimPreviewSubtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <dl class="row mb-0 small">
+            <dt class="col-5 text-muted">@Localizer["Status"]</dt><dd class="col-7" id="pvStatus">-</dd>
+            <dt class="col-5 text-muted">@Localizer["ClaimVersion"]</dt><dd class="col-7" id="pvVersion">-</dd>
+            <dt class="col-5 text-muted">@Localizer["EffectiveFrom"]</dt><dd class="col-7" id="pvEffFrom">-</dd>
+            <dt class="col-5 text-muted">@Localizer["EffectiveTo"]</dt><dd class="col-7" id="pvEffTo">-</dd>
+            <dt class="col-5 text-muted">@Localizer["Approved"]</dt><dd class="col-7" id="pvApproved">-</dd>
+            <dt class="col-12 text-muted mt-3">@Localizer["ClaimText"]</dt><dd class="col-12" id="pvText">-</dd>
+            <dt class="col-12 text-muted mt-2">@Localizer["Qualifiers"]</dt><dd class="col-12" id="pvQualifiers">-</dd>
+            <dt class="col-12 text-muted mt-2">@Localizer["ComponentRefs"]</dt><dd class="col-12" id="pvComponents">-</dd>
+        </dl>
+    </div>
+    <div class="offcanvas-footer border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+        <a href="#" id="claimPreviewEdit" class="btn btn-primary">@Localizer["EditClaim"]</a>
+    </div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/Claims/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/Claims/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/Claims/index.js" asp-append-version="true"></script>
+}
