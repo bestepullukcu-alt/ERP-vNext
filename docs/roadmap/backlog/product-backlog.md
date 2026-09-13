@@ -5342,3 +5342,91 @@ Görev motoru dalının Platform'u, toplantı dalının yazdığı `RecordLink` 
 not match any field` ile düştü; Görev Merkezi'nin görev kaynağı ve toplantı listesi 500 verdi. Aynı şey canlıda bir sürümü GERİ ALMAK
 gerektiğinde olur: yeni sürümün eklediği her alan eski sürümü çökertir. Seçenekler: varlık başına `[BsonIgnoreExtraElements]`, global
 convention (`IgnoreExtraElementsConvention`), ya da "geri alma yok, yalnız ileri düzeltme" politikası. Karar CT + sahip.
+
+---
+
+### BL-385
+
+**Tekrar denemede gönderilen posta "Başarısız" kalıyordu; tarama onu dakikada bir yeniden gönderiyordu**
+
+DURUM: KAPANDI — CT, 2026-09-13 (`NotificationDispatch.TryMarkSent`) · BULAN: go-live test ajanı (`EmailDispatchRetrySweepMongoTests`), CT kodda doğruladı · KAYIT: 2026-09-13
+
+`TryMarkSent` yalnız `Queued` satırı `Sent` yapıyordu. Tekrar deneme ise zaten `Failed` olan satırı gönderiyor: sağlayıcı kabul
+ediyor, işaret 409 ile reddediliyor, `EmailDispatchJob` reddi yok sayıyor; satır `Failed` kalıyor, `RetryCount` artmıyor,
+`NextRetryAt` geçmişte kalıyor → her dakikalık taramada aynı posta yeniden gidiyor, `MaxRetryCount` onu durdurmuyor. İş yolundaki
+tekrar denemelerde main'de de vardı; BL-374 düzeltmesi (ilk gönderim hatasına `NextRetryAt` yazmak) her ilk hatayı bu döngüye soktu.
+Düzeltme: `Failed → Sent` geçişine izin. Sabotaj: eski koşul → kırmızı ("Expected Sent, Actual Failed", sonraki tarama yeniden
+kuyruğa aldı) → geri → yeşil; Meetings|Notifications|WorkAggregation 544/544.
+
+---
+
+### BL-386
+
+**Toplantıdan çıkarılan katılımcıya iptal postası gitmiyor — takviminde toplantı kalıyor**
+
+DURUM: AÇIK · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+
+`RemoveMeetingAttendeeHandler` (`MeetingCommandHandlers.cs`, katılımcı silme) posta göndermiyor; satırı silip 200 dönüyor. Sonraki
+değişiklik/iptal postaları o kişiyi atlıyor, yani daveti kabul etmiş kişinin takviminde toplantı sonsuza kadar kalıyor. Beklenen:
+çıkarılan kişiye `platform.meetings.cancel`, davetle aynı UID, `METHOD:CANCEL`. Test şekli: Alice + Bob ile toplantı, Bob çıkarılır →
+yalnız Bob'a tek bir iptal postası.
+
+---
+
+### BL-387
+
+**Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
+
+DURUM: AÇIK (sahip kararı) · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+
+Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
+"düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
+istenen davranış mı (düzenleyenin takvimine de düşsün) yoksa kural mı uygulanmalı — sahip seçer.
+
+---
+
+### BL-388
+
+**Görev alan tanımı: "Sıra" boş bırakılınca kayıt 400 veriyor, hata ham JSON olarak sayfaya basılıyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13 · main'de de var
+
+Web formu `SortOrder`'ı `int?` taşıyor, API isteği (`CreateTaskFieldDefinitionRequest`) `int` bekliyor → boş alan `null` gider,
+JSON dönüşümü 400 ile düşer. `TaskFieldDefinitionsController.ExtractGatewayErrorsAsync` ProblemDetails'i tanımadığı için ham gövdeyi
+hata metni olarak ekrana yazıyor ("The JSON value could not be converted…"). Düzeltme: yükte `SortOrder ?? 0` (güncelleme dahil) ve
+ProblemDetails `errors` sözlüğünü okuyan hata eşleyici.
+
+---
+
+### BL-389
+
+**"İnceleme toplantısı planla" eyleminin başarı bildirimi "Onay toplantısı planlandı" diyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13
+
+Görev Merkezi'nde eylem ve pencere başlığı "İnceleme toplantısı", bildirim "Onay toplantısı". Metin anahtarı ölçülmedi; düzeltme
+çeviri kapısından geçer (7 dil). Ölçüm: `grep -rn "Onay toplantısı planlandı" frontend/Diten.Web`.
+
+---
+
+### BL-390
+
+**Toplantılar listesi düzenleyeni bulunamayan kayıtta ham GUID gösteriyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13
+
+Dev'de "S5c E4 Canlı Doğrulama Daveti" satırının Düzenleyen hücresi `22222222-2222-2222-2222-222222222222`. Kullanıcısı olmayan (silinmiş
+ya da test) kimlikte etiket yerine GUID'e düşülüyor; ürünün "ekranda GUID yok" kuralına aykırı. Beklenen: "Bilinmeyen kullanıcı"
+benzeri bir etiket.
+
+---
+
+### BL-391
+
+**Tarih alanına yanlış biçimde yazılan tarih hata vermeden başka bir tarihe dönüşüyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur (Pozisyon Ataması) · KAYIT: 2026-09-13
+
+Tarih alanları flatpickr `altInput` + `allowInput` ile gösterim biçiminde (gg.aa.yyyy) yazı kabul ediyor. `2026-09-13` yazıldığında
+kayıt `2026-06-20` oldu, uyarı yok. Takvimden seçim doğru çalışıyor. Geçerlilik tarihleri GxP kaydı olduğu için sessiz kayma riskli:
+tanınmayan girişte alan boşaltılmalı ya da hata göstermeli.

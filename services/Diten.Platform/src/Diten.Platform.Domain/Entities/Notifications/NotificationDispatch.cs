@@ -46,7 +46,9 @@ public sealed class NotificationDispatch : BaseEntity
 
     public bool TryMarkSent(string? providerMessageId, DateTimeOffset now)
     {
-        if (Status != NotificationDispatchStatus.Queued)
+        // A retry sends a row that is already Failed; refusing that transition left an accepted mail Failed and due,
+        // so the sweep sent it again every minute.
+        if (Status is not (NotificationDispatchStatus.Queued or NotificationDispatchStatus.Failed))
         {
             return false;
         }
