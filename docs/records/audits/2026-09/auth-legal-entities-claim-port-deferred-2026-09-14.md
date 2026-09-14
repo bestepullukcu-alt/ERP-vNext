@@ -84,3 +84,20 @@ Source of the original tests: `origin/hr-future`.
 > `feat/hr-recovery-from-hrfuture` branch (now deleted) into two clean, current-`main`-based
 > branches: **`feat/hr-tep-recovery`** (TEP, PR #107) and **`feat/hr-hcm-recovery`** (HCM, PR #108).
 > References above to `feat/hr-recovery-from-hrfuture` should be read as those two branches.
+
+## Frontend recovery follow-ups (owner: Ali, before go-live)
+
+The `hr-future` frontend (`Diten.Web`) module UI for the recovered TEP/HCM services is being
+ported additively onto `main` (branches `feat/hr-hcm-webui` PR #109, `feat/hr-tep-webui`). The
+pages are reachable by URL and functional (they proxy to the recovered gateway routes), but two
+seams remain open:
+
+- **(a) Module Catalog nav + entitlement (module-nav-visibility-chain) — 54 modules.** `main`'s
+  sidebar is data-driven from the Platform Module Catalog (`GET /api/platform/navigation/menu`),
+  not a static frontend file. The ported pages will NOT appear in the sidebar until a navigation
+  entry + entitlement exist in the Module Catalog for each module, and the user holds the required
+  permission. This is a backend/ops wiring task, intentionally NOT part of the additive frontend
+  port. Until then the pages are URL-reachable only.
+- **(b) L10n completeness — 5 missing languages.** The recovered module UI ships with `en` + `tr`
+  resx only (2/7). Tenant-module parity requires `fr`, `es`, `zh`, `ar`, `ru`. Missing cultures
+  fall back to `en` (no crash). Author the 5 missing resx sets before go-live.
