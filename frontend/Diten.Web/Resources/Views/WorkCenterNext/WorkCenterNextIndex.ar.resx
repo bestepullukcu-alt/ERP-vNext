@@ -237,8 +237,8 @@
     <value>اتخاذ إجراء</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>عرض</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>جدولة اجتماع الموافقة</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>تم جدولة اجتماع الموافقة: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>جدولة اجتماع مراجعة</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>تم جدولة اجتماع مراجعة: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>إعداد جدول الاستبعاد بين الشركات</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>استبعاد الأرصدة بين الشركات قبل التوحيد.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>التحقيق في تراجع قاعدة التسعير</value></data>

@@ -241,6 +241,32 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                     UsageType: "SystemEvent",
                     SeverityDefault: "Info",
                     LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                // BL-386 — the removed attendee only, never the rest of the meeting; deliberately LINKLESS
+                // (`LinkPolicy: "None"`, no TargetPageCode): the meeting detail page 404s for someone no longer
+                // on the meeting (D3's own visibility rule), so a link here would point straight at that dead end.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.removed",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.removed",
+                    DisplayNameKey: "NotificationEvent_MeetingRemoved",
+                    FallbackDisplayName: "Removed from meeting",
+                    Description: "Sent to a single attendee when they are removed from a meeting.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: null,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "None",
                     Status: "Active")
             ]);
 }

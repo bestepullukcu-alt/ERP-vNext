@@ -86,6 +86,8 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Bu kişi şu anda davet edilemiyor.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Bu kişi zaten davet edilmiş.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Bu katılımcı toplantıda değil.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>Organizatör toplantıdan çıkarılamaz.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Bu gündem maddesi bulunamadı.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>Gündem yeniden sıralanamadı; lütfen sayfayı yenileyip tekrar deneyin.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Bu toplantı türü bulunamadı.</value></data>

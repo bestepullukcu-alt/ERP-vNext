@@ -42,6 +42,7 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
     private const string InviteEvent = "platform.meetings.invite";
     private const string ChangeEvent = "platform.meetings.change";
     private const string CancelEvent = "platform.meetings.cancel";
+    private const string RemovedEvent = "platform.meetings.removed";
 
     private readonly Guid _organizer = Guid.NewGuid();
     private readonly Guid _alice = Guid.NewGuid();
@@ -199,6 +200,81 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
         Assert.Equal(Property(inviteIcs, "UID"), Property(cancelIcs, "UID"));
         Assert.True(int.Parse(Property(cancelIcs, "SEQUENCE")) > int.Parse(Property(inviteIcs, "SEQUENCE")));
     }
+
+    // ── C — BL-386: the removed attendee's own calendar entry is withdrawn, nobody else's is touched ──────────
+
+    [Fact]
+    public async Task Removing_Bob_sends_ONLY_Bob_a_removed_CANCEL_with_the_invites_own_UID_and_a_higher_SEQUENCE()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+        var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
+
+        var remove = await RemoveAttendeeAsync(_organizer, meeting.Id, _bob);
+
+        Assert.True(remove.IsSuccessful, string.Join(" | ", remove.Errors));
+        var removed = Assert.Single(_dispatches.Requests, r => r.EventCode == RemovedEvent);
+        Assert.Equal([EmailOf(_bob)], RecipientEmails(removed));
+
+        var inviteIcs = IcsOf(invite);
+        var removedIcs = IcsOf(removed);
+        Assert.Equal("CANCEL", Property(removedIcs, "METHOD"));
+        Assert.Equal("CANCELLED", Property(removedIcs, "STATUS"));
+        Assert.Equal(Property(inviteIcs, "UID"), Property(removedIcs, "UID"));
+        Assert.True(int.Parse(Property(removedIcs, "SEQUENCE")) > int.Parse(Property(inviteIcs, "SEQUENCE")));
+
+        var view = await OrganizerViewAsync(meeting.Id);
+        Assert.DoesNotContain(view.Attendees, a => a.UserId == _bob);
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == RemovedEvent && RecipientEmails(r).Contains(EmailOf(_alice)));
+    }
+
+    [Fact]
+    public async Task The_organizers_own_attendee_row_cannot_be_removed()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+
+        var remove = await RemoveAttendeeAsync(_alice, meeting.Id, _organizer);
+
+        Assert.False(remove.IsSuccessful);
+        Assert.Equal(409, remove.StatusCode);
+        Assert.Equal(MeetingReasonCodes.AttendeeIsOrganizer, remove.ReasonCode);
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == RemovedEvent);
+        Assert.Contains((await OrganizerViewAsync(meeting.Id)).Attendees, a => a.UserId == _organizer);
+    }
+
+    [Fact]
+    public async Task Removing_an_attendee_from_a_cancelled_meeting_is_refused_and_sends_no_removed_mail()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+        var cancel = await new CancelMeetingHandler(
+                _meetings, _types, _attendees, new FakeCurrentUserContext(_organizer), Mailer())
+            .Handle(new CancelMeetingCommand(meeting.Id, new CancelMeetingRequest("Not needed", meeting.Version), "corr"),
+                CancellationToken.None);
+        Assert.True(cancel.IsSuccessful);
+        _dispatches.Requests.Clear();
+
+        var remove = await RemoveAttendeeAsync(_organizer, meeting.Id, _bob);
+
+        Assert.False(remove.IsSuccessful);
+        Assert.Equal(409, remove.StatusCode);
+        Assert.Equal(MeetingReasonCodes.Cancelled, remove.ReasonCode);
+        Assert.Empty(_dispatches.Requests);
+    }
+
+    [Fact]
+    public async Task An_attendee_who_removes_themselves_gets_no_removed_mail_about_their_own_action()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+
+        var remove = await RemoveAttendeeAsync(_bob, meeting.Id, _bob);
+
+        Assert.True(remove.IsSuccessful, string.Join(" | ", remove.Errors));
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == RemovedEvent);
+        Assert.DoesNotContain((await OrganizerViewAsync(meeting.Id)).Attendees, a => a.UserId == _bob);
+    }
+
+    private Task<Response<NoContent>> RemoveAttendeeAsync(Guid actingUserId, Guid meetingId, Guid removedUserId)
+        => new RemoveMeetingAttendeeHandler(_meetings, _types, _attendees, new FakeCurrentUserContext(actingUserId), Mailer())
+            .Handle(new RemoveMeetingAttendeeCommand(meetingId, removedUserId, "corr"), CancellationToken.None);
 
     // ── D — the invitation reaches the invitee's Task Center, never the organizer's ───────────────────────────
 

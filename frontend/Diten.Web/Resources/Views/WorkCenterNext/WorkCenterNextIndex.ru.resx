@@ -237,8 +237,8 @@
     <value>Действовать</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Просмотр</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить встречу для согласования</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Встреча для согласования назначена: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить совещание по обзору</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Совещание по обзору назначено: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Подготовить таблицу внутригрупповых исключений</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Исключить внутригрупповые остатки перед консолидацией.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Расследовать регрессию правила ценообразования</value></data>

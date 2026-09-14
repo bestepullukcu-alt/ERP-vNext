@@ -119,7 +119,14 @@ public static class NotificationTemplateSeed
             MeetingCancel("es"),
             MeetingCancel("zh"),
             MeetingCancel("ar"),
-            MeetingCancel("ru")
+            MeetingCancel("ru"),
+            MeetingRemoved("en"),
+            MeetingRemoved("tr"),
+            MeetingRemoved("fr"),
+            MeetingRemoved("es"),
+            MeetingRemoved("zh"),
+            MeetingRemoved("ar"),
+            MeetingRemoved("ru")
         ];
     }
 
@@ -371,6 +378,30 @@ public static class NotificationTemplateSeed
 
         return Create("platform.meetings.cancel", locale, subject, html, text,
             ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "Organizer", "MeetingUrl"]);
+    }
+
+    /// <summary><c>platform.meetings.removed</c> in seven languages (BL-386) — sent to the ONE attendee taken off
+    /// an otherwise-still-scheduled meeting, never the rest of the invitees. Deliberately LINKLESS: no
+    /// <c>{{MeetingUrl}}</c> anywhere in this template (unlike its three siblings above) — the meeting detail page
+    /// 404s for a reader no longer on the meeting (D3's own visibility rule), so a link here would just be a dead
+    /// end. The copy also says the meeting itself was NOT cancelled — <see cref="MeetingCancel"/>'s own wording
+    /// would be actively wrong here.</summary>
+    private static NotificationTemplate MeetingRemoved(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("You were removed from a meeting: {{MeetingTitle}}", "<p>You are no longer an attendee of this meeting. It will be removed from your calendar; the meeting itself has not been cancelled.</p><p><strong>Meeting:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Was scheduled: {{StartAt}} – {{EndAt}}</p><p>Organizer: {{Organizer}}</p><p>Location: {{Location}}</p>", "You are no longer an attendee of this meeting. It will be removed from your calendar; the meeting itself has not been cancelled. Meeting: {{MeetingTitle}} ({{MeetingType}}) — Was scheduled: {{StartAt}} – {{EndAt}} — Organizer: {{Organizer}} — Location: {{Location}}"),
+            "tr" => ("Toplantıdan çıkarıldınız: {{MeetingTitle}}", "<p>Artık bu toplantının katılımcısı değilsiniz. Toplantı takviminizden kaldırılacak; toplantının kendisi iptal edilmedi.</p><p><strong>Toplantı:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Planlanan zaman: {{StartAt}} – {{EndAt}}</p><p>Organizatör: {{Organizer}}</p><p>Konum: {{Location}}</p>", "Artık bu toplantının katılımcısı değilsiniz. Toplantı takviminizden kaldırılacak; toplantının kendisi iptal edilmedi. Toplantı: {{MeetingTitle}} ({{MeetingType}}) — Planlanan zaman: {{StartAt}} – {{EndAt}} — Organizatör: {{Organizer}} — Konum: {{Location}}"),
+            "fr" => ("Vous avez été retiré d'une réunion : {{MeetingTitle}}", "<p>Vous n'êtes plus participant à cette réunion. Elle sera retirée de votre calendrier ; la réunion elle-même n'a pas été annulée.</p><p><strong>Réunion:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Était prévue: {{StartAt}} – {{EndAt}}</p><p>Organisateur: {{Organizer}}</p><p>Lieu: {{Location}}</p>", "Vous n'êtes plus participant à cette réunion. Elle sera retirée de votre calendrier ; la réunion elle-même n'a pas été annulée. Réunion: {{MeetingTitle}} ({{MeetingType}}) — Était prévue: {{StartAt}} – {{EndAt}} — Organisateur: {{Organizer}} — Lieu: {{Location}}"),
+            "es" => ("Se le ha eliminado de una reunión: {{MeetingTitle}}", "<p>Ya no es participante de esta reunión. Se eliminará de su calendario; la reunión en sí no ha sido cancelada.</p><p><strong>Reunión:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Estaba programada: {{StartAt}} – {{EndAt}}</p><p>Organizador: {{Organizer}}</p><p>Lugar: {{Location}}</p>", "Ya no es participante de esta reunión. Se eliminará de su calendario; la reunión en sí no ha sido cancelada. Reunión: {{MeetingTitle}} ({{MeetingType}}) — Estaba programada: {{StartAt}} – {{EndAt}} — Organizador: {{Organizer}} — Lugar: {{Location}}"),
+            "zh" => ("您已被移出会议：{{MeetingTitle}}", "<p>您不再是此会议的参会者。该会议将从您的日历中移除；会议本身并未被取消。</p><p><strong>会议:</strong> {{MeetingTitle}}（{{MeetingType}}）</p><p>原定时间: {{StartAt}} – {{EndAt}}</p><p>组织者: {{Organizer}}</p><p>地点: {{Location}}</p>", "您不再是此会议的参会者。该会议将从您的日历中移除；会议本身并未被取消。 会议: {{MeetingTitle}}（{{MeetingType}}） — 原定时间: {{StartAt}} – {{EndAt}} — 组织者: {{Organizer}} — 地点: {{Location}}"),
+            "ar" => ("تمت إزالتك من اجتماع: {{MeetingTitle}}", "<p>لم تعد مشاركًا في هذا الاجتماع. سيُزال من تقويمك؛ لم يُلغَ الاجتماع نفسه.</p><p><strong>الاجتماع:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>كان مقررًا: {{StartAt}} – {{EndAt}}</p><p>المنظم: {{Organizer}}</p><p>المكان: {{Location}}</p>", "لم تعد مشاركًا في هذا الاجتماع. سيُزال من تقويمك؛ لم يُلغَ الاجتماع نفسه. الاجتماع: {{MeetingTitle}} ({{MeetingType}}) — كان مقررًا: {{StartAt}} – {{EndAt}} — المنظم: {{Organizer}} — المكان: {{Location}}"),
+            "ru" => ("Вас исключили из совещания: {{MeetingTitle}}", "<p>Вы больше не являетесь участником этого совещания. Оно будет удалено из вашего календаря; само совещание не отменено.</p><p><strong>Совещание:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Было запланировано: {{StartAt}} – {{EndAt}}</p><p>Организатор: {{Organizer}}</p><p>Место: {{Location}}</p>", "Вы больше не являетесь участником этого совещания. Оно будет удалено из вашего календаря; само совещание не отменено. Совещание: {{MeetingTitle}} ({{MeetingType}}) — Было запланировано: {{StartAt}} – {{EndAt}} — Организатор: {{Organizer}} — Место: {{Location}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported meeting template locale.")
+        };
+
+        return Create("platform.meetings.removed", locale, subject, html, text,
+            ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "Organizer"]);
     }
 
     private static NotificationTemplate Create(

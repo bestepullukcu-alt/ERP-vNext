@@ -21,6 +21,11 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
     private const string ChangeEventCode = "platform.meetings.change";
     private const string CancelEventCode = "platform.meetings.cancel";
 
+    /// <summary>BL-386 — deliberately its OWN event/template, not a reuse of <see cref="CancelEventCode"/>: the
+    /// existing "meeting cancelled" copy links to the meeting (404 for someone no longer on it) and says the
+    /// WRONG thing (the meeting itself is not cancelled, only this one person's attendance is).</summary>
+    private const string RemovedEventCode = "platform.meetings.removed";
+
     private readonly INotificationEventDispatchAdapter _notifications;
     private readonly ITaskNotificationRecipientResolver _recipients;
     private readonly ITenantContext _tenantContext;
@@ -52,6 +57,16 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
     public Task<MeetingInviteDeliveryResult> SendCancelAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
         => SendAsync(CancelEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, recipients, actingUserId, ct);
+
+    /// <summary>BL-386 — a single-recipient CANCEL: the removed person's own .ics is withdrawn (same UID, a
+    /// higher SEQUENCE — the caller already bumped <see cref="Meeting.Version"/> before calling this), nobody
+    /// else's copy is touched. Reusing <see cref="SendAsync"/> unmodified means the self-removal exclusion
+    /// (<paramref name="actingUserId"/> filtered out of the audience) applies here exactly as it does to invite/
+    /// change/cancel — a person who removes THEMSELVES gets <see cref="MeetingInviteDeliveryResult.NoRecipients"/>,
+    /// not a mail about their own action.</summary>
+    public Task<MeetingInviteDeliveryResult> SendRemovedAsync(
+        Meeting meeting, string meetingTypeName, MeetingAttendee removedAttendee, Guid actingUserId, CancellationToken ct = default)
+        => SendAsync(RemovedEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, [removedAttendee], actingUserId, ct);
 
     /// <summary>
     /// K12 — this method's own try/catch is the whole rule: whatever happens below, the caller (a meeting
