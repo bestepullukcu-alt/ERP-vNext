@@ -333,7 +333,8 @@ public sealed class VisitContentSequenceTests
                 SubjectRefId, null, null, null, null, productId, null, null, "en",
                 null, null, null, null, null, "1.0", Past, null, "manual",
                 Array.Empty<string>(), Array.Empty<KnowledgeExternalReferenceDto>(),
-                Past, null, null, null, null, null, false);
+                Past, null, null, null, null, null, false,
+                Guid.NewGuid(), true, "current");
 
         private static ContentEngagementJourneyDto Journey(Guid id)
             => new(
@@ -421,6 +422,11 @@ public sealed class VisitContentSequenceTests
         public Task<IReadOnlyList<KnowledgeContentDto>> ResolvePublishedContentAsync(
             KnowledgeContentLinkageCriteria criteria, CancellationToken cancellationToken)
             => Task.FromResult<IReadOnlyList<KnowledgeContentDto>>(Items.ToList());
+
+        // SCMM-13 — this fake exercises the published-content seam only; variant resolution is out of its scope.
+        public Task<KnowledgeContentVariantResolution> ResolveVariantAsync(
+            Guid contentSetId, string languageCode, CancellationToken cancellationToken)
+            => Task.FromResult(KnowledgeContentVariantResolution.Unresolved("not-supported-in-fake"));
     }
 
     private sealed class FakeCapacityRepository : ICycleCapacityRepository

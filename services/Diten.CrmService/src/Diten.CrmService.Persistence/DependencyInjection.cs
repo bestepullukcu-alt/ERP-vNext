@@ -527,6 +527,9 @@ public static class DependencyInjection
             map.GetMemberMap(c => c.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(c => c.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(c => c.SegmentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            // SCMM-13 — the variant-set FK follows the string-Guid convention (else a set lookup filters a string
+            // against a stored binary and silently returns nothing: the new-field class-map trap).
+            map.GetMemberMap(c => c.ContentSetId).SetSerializer(stringGuid);
         });
         Map<Subject>(map => map.GetMemberMap(s => s.ParentSubjectId)
             .SetSerializer(new NullableSerializer<Guid>(stringGuid)));
@@ -1441,6 +1444,10 @@ public static class DependencyInjection
                     .Ascending("ExternalReferences.SourceSystem")
                     .Ascending("ExternalReferences.ExternalId"),
                 new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_external_ref" }));
+            // SCMM-13 — variant-set access path (source + its translations of one logical component).
+            knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
+                Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ContentSetId),
+                new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_set" }));
 
             var knowledgeSubjects = database.GetCollection<Subject>(SubjectRepository.CollectionName);
             knowledgeSubjects.Indexes.CreateOne(new CreateIndexModel<Subject>(

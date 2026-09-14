@@ -35,7 +35,11 @@ public sealed record KnowledgeContentDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    // SCMM-13 language-variant linkage (additive tail — see KnowledgeContent §13).
+    Guid ContentSetId,
+    bool IsSourceLanguage,
+    string TranslationStatus);
 
 public sealed record KnowledgeContentListDto(IReadOnlyList<KnowledgeContentDto> Items, int Total);
 
