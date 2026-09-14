@@ -263,11 +263,11 @@
             <div class="mb-3 d-none" id="taxDimensionsSection">
                 <label class="form-label mb-1">@Localizer["Dimensions"]</label>
                 <div class="form-text mb-2">@Localizer["DimensionsNote"]</div>
+                @* Added dimensions (display-only checklist rows: axis + value chips + × delete). *@
                 <ul class="task-checklist" id="taxDimensions"></ul>
                 <div id="taxDimensionsEmpty" class="form-text mb-2">@Localizer["DimensionsEmpty"]</div>
-                <button type="button" id="btnAddDimension" class="btn btn-label-secondary btn-sm w-100">
-                    <i class="bx bx-plus me-1"></i>@Localizer["AddDimension"]
-                </button>
+                @* Fixed compose-row (Axis + Values + Add) — rendered by taxonomy.js; Add pushes a row above and clears. *@
+                <div id="taxDimensionCompose"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="taxStatus">@Localizer["Status"]</label>

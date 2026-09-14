@@ -570,7 +570,10 @@
     };
     const refValueLabel = (setCode, code) => (refValues[setCode] || []).find(o => o.code === code)?.label || code;
 
-    let dimensions = [];       // [{ axis, customCode, values:[] }]
+    // WP-MOD0162-AUD-UI-3: compose-then-add. `dimensions` holds ADDED items (display-only); a value's label is
+    // captured at Add time so nothing re-looks-up async. Item: { axis, axisCode, values:[code], valueLabels:[label] }.
+    let dimensions = [];
+    let composeAxis = 'account-type';   // the axis currently in the fixed bottom compose-row
     let dimReadOnly = false;
 
     // WP-MOD0162-AUD-UI-2: Dimensions apply ONLY to these profile types; Name is derived from the dimension value
@@ -581,11 +584,13 @@
     let suppressProfileAuto = false;   // openForm sets fields itself; the ProfileType change handler must not fight it
     const titleize = code => norm(code).split(/[-_\s]+/).filter(Boolean)
         .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-    // The read-only Name for a dimensioned profile: the selected values' display labels, in row/value order.
+    // The read-only Name for a dimensioned profile: every added value's display label, joined by " / "
+    // ("Doctor / Nephrology"). Labels are captured at Add time (stored on the item as valueLabels), so this is
+    // synchronous and never blanks while a published-values fetch is in flight.
     const dimensionNameLabel = () => {
         const parts = [];
-        dimensions.forEach(d => (d.values || []).forEach(v => parts.push(d.axis === 'custom' ? v : refValueLabel(d.axis, v))));
-        return parts.join(' · ');
+        dimensions.forEach(d => (d.valueLabels || []).forEach(l => { if (norm(l)) parts.push(l); }));
+        return parts.join(' / ');
     };
     const profileTypeValue = () => norm(document.getElementById('taxProfileType')?.value);
     // Dimensions are visible only for a dimensioned profile type on the AudienceProfile form.
@@ -611,110 +616,118 @@
     const onProfileTypeChange = () => {
         if (suppressProfileAuto || currentFormKind !== 'audience-profiles') return;
         profileNameDirty = false;                         // a fresh ProfileType re-seeds the editable Name
-        if (!DIM_TYPES.includes(profileTypeValue())) { dimensions = []; renderDimensions(); }  // clear orphaned dims
+        const dim = DIM_TYPES.includes(profileTypeValue());
+        if (!dim) { dimensions = []; renderDimensions(); }  // clear orphaned dims when leaving a dimensioned type
         updateDimVisibility();
+        // (Re)build the compose-row now the section is visible, so its select2 measures a real width.
+        if (dim) { if (isRefAxis(composeAxis)) loadRefValues(composeAxis).then(renderCompose); else renderCompose(); }
         updateProfileName();
     };
 
-    const dimValuesControl = (d, i) => {
-        const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
-        if (d.axis === 'custom') {
-            return `<input type="text" class="form-control form-control-sm mb-1 js-dim-custom-code" data-i="${i}" value="${esc(d.customCode || '')}" placeholder="${esc(L.CustomAxisPlaceholder || '')}" ${dimReadOnly ? 'disabled' : ''}>
-                <select multiple class="form-select form-select-sm js-dim-values" data-i="${i}" data-placeholder="${esc(L.CustomValuesPlaceholder || '')}" ${dimReadOnly ? 'disabled' : ''}>
-                    ${(d.values || []).map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`).join('')}
-                </select>`;
-        }
-        const opts = refValues[d.axis] || [];
-        const known = opts.map(o => {
-            const sel = (d.values || []).includes(o.code) ? ' selected' : '';
-            return `<option value="${esc(o.code)}"${sel}>${esc(o.label)}${o.isDeprecated ? dep : ''}</option>`;
-        });
-        // A stored code no longer in published-values is kept + flagged (archived-reference-kept pattern).
-        const extra = (d.values || []).filter(v => !opts.some(o => o.code === v))
-            .map(v => `<option value="${esc(v)}" selected>${esc(v)}${dep}</option>`);
-        return `<select multiple class="form-select form-select-sm js-dim-values" data-i="${i}" data-placeholder="${esc(L.SelectValues || L.SelectOption || '')}" ${dimReadOnly ? 'disabled' : ''}>
-                ${known.concat(extra).join('')}
-            </select>`;
-    };
+    // ── Added rows (display-only checklist) ───────────────────────────────────
+    const axisDisplay = d => d.axis === 'custom' ? (d.axisCode || (L.AxisCustom || 'custom')) : AXIS_LABEL[d.axis]();
     const renderDimensions = () => {
         const host = document.getElementById('taxDimensions');
         if (!host) return;
-        // Tasks-checklist look: each dimension is a bordered row (.diten-checkitem, top-aligned) with an × delete —
-        // no grip/drag (dimensions are a set, order carries no meaning).
+        // Display-only rows (no inline edit — change = delete + re-add): axis label + value chips + × delete.
         host.innerHTML = dimensions.map((d, i) => {
-            const axisOpts = REF_AXES.concat('custom')
-                .map(a => `<option value="${esc(a)}"${d.axis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
-            return `<li class="diten-checkitem align-items-start">
-                    <div style="width:12rem" class="flex-shrink-0">
-                        <label class="form-label small mb-0">${esc(L.Axis || 'Axis')}</label>
-                        <select class="form-select form-select-sm js-dim-axis" data-i="${i}" ${dimReadOnly ? 'disabled' : ''}>${axisOpts}</select>
-                    </div>
-                    <div class="flex-grow-1">
-                        <label class="form-label small mb-0">${esc(L.Values || 'Values')}</label>
-                        ${dimValuesControl(d, i)}
-                    </div>
-                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0 mt-4" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}" ${dimReadOnly ? 'disabled' : ''}><i class="bx bx-x"></i></button>
+            const chips = (d.valueLabels || []).map(l => `<span class="badge bg-label-secondary me-1">${esc(l)}</span>`).join('');
+            const rm = dimReadOnly ? '' :
+                `<button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}"><i class="bx bx-x"></i></button>`;
+            return `<li class="diten-checkitem">
+                    <span class="fw-medium flex-shrink-0" style="min-width:9rem">${esc(axisDisplay(d))}</span>
+                    <span class="flex-grow-1">${chips || '<span class="text-muted">—</span>'}</span>
+                    ${rm}
                 </li>`;
         }).join('');
         document.getElementById('taxDimensionsEmpty')?.classList.toggle('d-none', dimensions.length > 0);
-        document.getElementById('btnAddDimension')?.toggleAttribute('disabled', dimReadOnly);
-        initDimSelect2();
-        updateProfileName();   // dimensions drive the derived Name for HCP/pharmacist profiles
+        updateProfileName();   // the added values drive the derived Name for HCP/pharmacist profiles
     };
-    const initDimSelect2 = () => {
+
+    // ── Fixed compose-row (Axis + Values + Add) ───────────────────────────────
+    const composeValuesControl = () => {
+        const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
+        if (composeAxis === 'custom') {
+            return `<input type="text" class="form-control form-control-sm mb-1" id="composeCustomCode" placeholder="${esc(L.CustomAxisPlaceholder || '')}">
+                <select multiple class="form-select form-select-sm" id="composeValues" data-placeholder="${esc(L.CustomValuesPlaceholder || '')}"></select>`;
+        }
+        const opts = (refValues[composeAxis] || []).map(o =>
+            `<option value="${esc(o.code)}">${esc(o.label)}${o.isDeprecated ? dep : ''}</option>`).join('');
+        return `<select multiple class="form-select form-select-sm" id="composeValues" data-placeholder="${esc(L.SelectValues || L.SelectOption || '')}">${opts}</select>`;
+    };
+    const renderCompose = () => {
+        const host = document.getElementById('taxDimensionCompose');
+        if (!host) return;
+        if (dimReadOnly) { host.innerHTML = ''; return; }   // view mode: display rows only, no compose-row
+        const axisOpts = REF_AXES.concat('custom')
+            .map(a => `<option value="${esc(a)}"${composeAxis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
+        host.innerHTML = `<div class="diten-checkitem align-items-end">
+                <div style="width:12rem" class="flex-shrink-0">
+                    <label class="form-label small mb-0">${esc(L.Axis || 'Axis')}</label>
+                    <select class="form-select form-select-sm" id="composeAxis">${axisOpts}</select>
+                </div>
+                <div class="flex-grow-1">
+                    <label class="form-label small mb-0">${esc(L.Values || 'Values')}</label>
+                    ${composeValuesControl()}
+                </div>
+                <button type="button" class="btn btn-sm btn-primary flex-shrink-0" id="btnDimAdd"><i class="bx bx-plus me-1"></i>${esc(L.AddDimension || 'Add')}</button>
+            </div>`;
+        initComposeSelect2();
+    };
+    const initComposeSelect2 = () => {
         const jq = window.jQuery;
         if (!jq?.fn?.select2) return;
-        jq('#taxDimensions select.js-dim-axis').each(function () {
-            const $s = jq(this), el = this;
-            if (!$s.hasClass('select2-hidden-accessible')) $s.select2({ dropdownParent: jq('#taxonomyCanvas'), minimumResultsForSearch: Infinity, width: '100%' });
-            $s.off('change.dim').on('change.dim', async function () {
-                const row = dimensions[Number(el.dataset.i)];
-                if (!row) return;
-                row.axis = jq(this).val();
-                row.values = [];                       // axis changed → its vocabulary changed, reset values
-                if (isRefAxis(row.axis)) await loadRefValues(row.axis);
-                renderDimensions();
+        jq('#composeAxis').select2({ dropdownParent: jq('#taxonomyCanvas'), minimumResultsForSearch: Infinity, width: '100%' })
+            .off('change.dc').on('change.dc', async function () {
+                composeAxis = jq(this).val();
+                if (isRefAxis(composeAxis)) await loadRefValues(composeAxis);
+                renderCompose();   // swap the values control for the new axis' vocabulary
             });
-        });
-        jq('#taxDimensions select.js-dim-values').each(function () {
-            const $s = jq(this), el = this;
-            const custom = dimensions[Number(el.dataset.i)]?.axis === 'custom';
-            const opts = { dropdownParent: jq('#taxonomyCanvas'), width: '100%', placeholder: el.getAttribute('data-placeholder') || '', closeOnSelect: false };
-            if (custom) { opts.tags = true; opts.tokenSeparators = [',']; }
-            if (!$s.hasClass('select2-hidden-accessible')) $s.select2(opts);
-            $s.off('change.dim').on('change.dim', function () {
-                const row = dimensions[Number(el.dataset.i)];
-                if (!row) return;
-                row.values = jq(this).val() || [];
-                maybeCascade(row);
-                updateProfileName();   // a value change re-derives the Name (no full re-render on plain value edits)
-            });
-        });
+        const vopts = { dropdownParent: jq('#taxonomyCanvas'), width: '100%', placeholder: document.getElementById('composeValues')?.getAttribute('data-placeholder') || '', closeOnSelect: false };
+        if (composeAxis === 'custom') { vopts.tags = true; vopts.tokenSeparators = [',']; }
+        jq('#composeValues').select2(vopts);
     };
-    // Soft cascade: a contact-type row that gains a doctor/physician value auto-adds an (empty) medical-specialty axis
-    // so the user is nudged to specialise. If the doctor value can't be recognised, nothing is added — medical-specialty
-    // stays a normal axis the user can add by hand (documented fallback, not a stop).
-    const maybeCascade = row => {
-        if (dimReadOnly || row.axis !== 'contact-type') return;
-        const hasDoctor = (row.values || []).some(code => looksLikeDoctor(code, refValueLabel('contact-type', code)));
-        if (!hasDoctor || dimensions.some(d => d.axis === 'medical-specialty')) return;
-        dimensions.push({ axis: 'medical-specialty', customCode: '', values: [] });
-        loadRefValues('medical-specialty').then(renderDimensions);
+    // Add the composed axis+values as a display row, CAPTURING the value labels now (from the loaded published-values,
+    // so no later async lookup), then reset the compose-row. Stores the stable code; the label is display-only.
+    const addComposed = () => {
+        if (dimReadOnly) return;
+        const jq = window.jQuery;
+        const custom = composeAxis === 'custom';
+        const axisCode = custom ? norm(document.getElementById('composeCustomCode')?.value) : composeAxis;
+        const values = normArr(jq ? jq('#composeValues').val() : []);
+        if (!axisCode || values.length === 0) return;   // backend requires a non-empty axis + ≥1 value
+        const valueLabels = custom ? values.slice() : values.map(v => refValueLabel(composeAxis, v));
+        // Re-adding an axis replaces its earlier row (the backend rejects a duplicate axis).
+        const key = axisCode.toLowerCase();
+        dimensions = dimensions.filter(d => d.axisCode.toLowerCase() !== key);
+        dimensions.unshift({ axis: custom ? 'custom' : composeAxis, axisCode, values, valueLabels });
+        // Cascade: adding contact-type=doctor pre-sets the next compose axis to medical-specialty (documented fallback).
+        composeAxis = maybeCascadeAxis(dimensions[0]) || 'account-type';
+        if (isRefAxis(composeAxis)) { loadRefValues(composeAxis).then(renderCompose); } else { renderCompose(); }
+        renderDimensions();
     };
+    const maybeCascadeAxis = added => {
+        if (added.axis !== 'contact-type') return null;
+        const hasDoctor = added.values.some((code, k) => looksLikeDoctor(code, added.valueLabels[k]));
+        if (!hasDoctor || dimensions.some(d => d.axis === 'medical-specialty')) return null;
+        return 'medical-specialty';
+    };
+
     const loadDimensions = async row => {
         dimensions = (row?.dimensions || []).map(d => {
             const axisCode = norm(d.axisCode);
-            const ref = isRefAxis(axisCode);
-            return { axis: ref ? axisCode : 'custom', customCode: ref ? '' : axisCode, values: normArr(d.values) };
+            return { axis: isRefAxis(axisCode) ? axisCode : 'custom', axisCode, values: normArr(d.values), valueLabels: [] };
         });
         await Promise.all(REF_AXES.filter(a => dimensions.some(d => d.axis === a)).map(loadRefValues));
+        // resolve display labels now that published-values are cached (custom = the raw value is its own label)
+        dimensions.forEach(d => { d.valueLabels = d.axis === 'custom' ? d.values.slice() : d.values.map(v => refValueLabel(d.axis, v)); });
         renderDimensions();
     };
-    // Full-replace list; skips rows with no axis or no values, and drops a duplicate axis (all three would 400).
+    // Full-replace list; each item already carries a non-empty axis + ≥1 value and a unique axis (enforced on Add).
     const collectDimensions = () => {
         const seen = new Set(); const out = [];
         dimensions.forEach(d => {
-            const axisCode = norm(d.axis === 'custom' ? d.customCode : d.axis);
+            const axisCode = norm(d.axisCode);
             const values = normArr(d.values);
             if (!axisCode || values.length === 0) return;
             const key = axisCode.toLowerCase();
@@ -754,6 +767,7 @@
         // dimensioned ProfileType; Name is derived+read-only for those, ProfileType-seeded+editable otherwise.
         dimReadOnly = !!readOnly;
         document.getElementById('taxName').readOnly = false;
+        composeAxis = 'account-type';                      // reset the compose-row for each open
         if (kind === 'audience-profiles') {
             void loadDimensions(row);                     // async: renderDimensions() re-derives the Name once it lands
             const pt = row?.profileType || '';
@@ -769,6 +783,8 @@
             dimensions = []; renderDimensions();
         }
         updateDimVisibility();
+        // Render the compose-row AFTER visibility is set so its select2 measures a real width (a d-none section is 0-wide).
+        if (currentFormKind === 'audience-profiles') { if (isRefAxis(composeAxis)) loadRefValues(composeAxis).then(renderCompose); else renderCompose(); }
         suppressProfileAuto = false;
         // A topic's subject is fixed at creation (the update contract does not carry SubjectId).
         if (!readOnly) document.getElementById('taxSubjectId').disabled = !!row;
@@ -927,24 +943,16 @@
         if (currentFormKind === 'audience-profiles' && !DIM_TYPES.includes(profileTypeValue())) profileNameDirty = true;
     });
 
-    // WP-MOD0162-AUD-UI: dimension-builder controls (the offcanvas markup exists at load, just hidden).
-    document.getElementById('btnAddDimension')?.addEventListener('click', async () => {
-        if (dimReadOnly) return;
-        dimensions.push({ axis: 'account-type', customCode: '', values: [] });
-        await loadRefValues('account-type');
-        renderDimensions();
+    // WP-MOD0162-AUD-UI-3: compose-then-add. Add commits the compose-row as a display row; × removes an added row.
+    // Both containers exist at load (offcanvas markup, hidden), so these delegated listeners bind once.
+    document.getElementById('taxDimensionCompose')?.addEventListener('click', event => {
+        if (event.target.closest('#btnDimAdd')) { event.preventDefault(); addComposed(); }
     });
     document.getElementById('taxDimensions')?.addEventListener('click', event => {
         const rm = event.target.closest('.js-dim-remove');
         if (!rm || dimReadOnly) return;
         dimensions.splice(Number(rm.dataset.i), 1);
         renderDimensions();
-    });
-    document.getElementById('taxDimensions')?.addEventListener('input', event => {
-        const el = event.target;
-        if (!el.classList?.contains('js-dim-custom-code')) return;
-        const row = dimensions[Number(el.dataset.i)];
-        if (row) row.customCode = el.value;
     });
 
     registerTableFilter();
