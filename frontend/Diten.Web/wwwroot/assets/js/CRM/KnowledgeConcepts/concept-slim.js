@@ -80,6 +80,28 @@
     const labelType = id => typeMap[id] || id || '';
     const labelNode = id => nodeMap[id]?.label || id || '';
 
+    // SCMM-09-UI-refine (Not 2): Priority is edited as Low/Medium/High but stored as the backend int. The three
+    // buckets (High=10, Medium=20, Low=30) are the select's option values, so save needs no mapping; on edit an
+    // arbitrary stored number snaps to the nearest bucket, and a new connection defaults to Medium.
+    const PRIORITY_BUCKETS = [10, 20, 30];
+    const nearestPriorityBucket = n => {
+        const x = Number(n);
+        if (!Number.isFinite(x)) return 20;
+        return PRIORITY_BUCKETS.reduce((a, b) => (Math.abs(b - x) < Math.abs(a - x) ? b : a));
+    };
+
+    // SCMM-09-UI-refine (Not 3): the connection name auto-fills to "{from} → {to}" while the user has not typed one.
+    // A manual edit (input event) sets the dirty flag and auto-fill backs off; the field stays editable.
+    let relNameDirty = false;
+    const autoFillRelationshipName = () => {
+        if (relNameDirty) return;
+        const from = norm(document.getElementById('relFromNodeId')?.value);
+        const to = norm(document.getElementById('relToNodeId')?.value);
+        if (!from || !to) return;
+        const el = document.getElementById('relRelationshipName');
+        if (el) el.value = `${labelNode(from)} → ${labelNode(to)}`;
+    };
+
     const loadSubjects = async () => {
         try {
             const data = await envelope(await fetch(`${base}/subjects?includeArchived=true`, { credentials: 'same-origin', headers }));
@@ -648,6 +670,13 @@
         if (current && !list.some(o => String(o.value) === String(current))) list.unshift({ value: current, text: currentLabel || current });
         el.innerHTML = (withEmpty ? '<option value=""></option>' : '') + list.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('');
     };
+    // SCMM-09-UI-refine (Not 4): a per-select description lookup so the RelationshipType / Direction pickers explain
+    // each option. Descriptions are 7-language resx (RelTypeDesc_* / DirectionDesc_*); an option with no description
+    // (e.g. a custom relationship type) renders as its plain label.
+    const OPTION_DESC = {
+        relRelationshipType: v => L['RelTypeDesc_' + v],
+        relDirection: v => L['DirectionDesc_' + v]
+    };
     const initFormSelect2 = canvasId => {
         const jq = window.jQuery;
         if (!jq?.fn?.select2) return;
@@ -656,7 +685,20 @@
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
             // select2 only clears into an empty option, so allowClear is offered exactly when the list carries one.
             const clearable = !this.required && this.options.length > 0 && this.options[0].value === '';
-            $s.select2({ dropdownParent: jq(`#${canvasId}`), placeholder: $s.data('placeholder') || '', width: '100%', allowClear: clearable });
+            const descFn = OPTION_DESC[this.id];
+            const options = { dropdownParent: jq(`#${canvasId}`), placeholder: $s.data('placeholder') || '', width: '100%', allowClear: clearable };
+            if (descFn) {
+                options.templateResult = opt => {
+                    if (!opt.id) return opt.text;
+                    const d = descFn(opt.id);
+                    if (!d) return opt.text;
+                    const $wrap = jq('<span>');
+                    $wrap.append(jq('<span class="fw-medium">').text(opt.text));
+                    $wrap.append(jq('<small class="d-block text-muted">').text(d));
+                    return $wrap;
+                };
+            }
+            $s.select2(options);
         });
     };
     const setDisabled = (id, disabled) => {
@@ -824,6 +866,8 @@
     const openRelationshipForm = row => {
         const form = document.getElementById('conceptRelationshipForm');
         form.reset();
+        // A stored name (edit) is treated as user-owned → never auto-overwritten; a new connection starts clean.
+        relNameDirty = !!(row && row.relationshipName);
         showAlert('conceptRelationshipFormAlert', '');
         fillFormSelect('relSubjectId', liveSubjects(row?.subjectId), true, row?.subjectId, labelSubject(row?.subjectId));
         fillFormSelect('relRelationshipType', vocab('relationshipTypes'), true, row?.relationshipType, row?.relationshipType);
@@ -838,7 +882,7 @@
         setValue('relRelationshipCode', row ? row.relationshipCode : nextCode('concept-relationships', 'relationshipCode'));
         setValue('relRelationshipName', row?.relationshipName || '');
         setValue('relDirection', row?.direction || 'outbound');
-        setValue('relPriority', row?.priority ?? 0);
+        setValue('relPriority', nearestPriorityBucket(row && row.priority != null ? row.priority : 20));
         setValue('relStatus', row?.status || 'active');
         setValue('relEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setValue('relEffectiveTo', toDateInput(row?.effectiveTo));
@@ -1361,6 +1405,10 @@
             if (window.jQuery) window.jQuery(el).on('change', handler);
         };
         bind('relSubjectId', () => { refreshRelationshipNodePickers(null); refreshRelationshipNewNodePickers(); });
+        // SCMM-09-UI-refine (Not 3): From/To drive the auto-filled connection name; a manual edit stops the auto-fill.
+        bind('relFromNodeId', autoFillRelationshipName);
+        bind('relToNodeId', autoFillRelationshipName);
+        document.getElementById('relRelationshipName')?.addEventListener('input', () => { relNameDirty = true; });
         // SCMM-10 (③): changing the subject resets the branch builder (types are subject-scoped).
         bind('tplSubjectId', () => { branches = [{ name: '', steps: [] }]; renderBranches(); });
         // SCMM-09 (①): subject drives the cycle-safe parent-type picker on the ConceptType form.

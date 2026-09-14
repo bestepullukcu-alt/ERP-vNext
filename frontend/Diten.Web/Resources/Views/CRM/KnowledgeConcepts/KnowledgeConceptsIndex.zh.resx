@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>以逗号分隔的引用</value></data>
   <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>分支</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>中</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>低</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>一个概念引出/通向下一个</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>以目标为前提条件</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>针对某一需求或问题</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>为目标提供证据</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>属于/是目标的一部分</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>自定义关系类型</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>有向边（从源到目标）</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>双向/等价连接</value></data>
 </root>

@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>مراجع مفصولة بفواصل</value></data>
   <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>فرع</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>عالية</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>متوسطة</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>منخفضة</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>يقود مفهوم إلى المفهوم التالي</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>يتطلب الهدف كشرط مسبق</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>يعالج حاجة أو مشكلة</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>يقدّم دليلاً للهدف</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>ينتمي إلى/جزء من الهدف</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>نوع علاقة مخصص</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>حافة موجّهة (من المصدر إلى الهدف)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>رابط ثنائي الاتجاه/مكافئ</value></data>
 </root>

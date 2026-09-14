@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>Références séparées par des virgules</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>branche(s)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Élevée</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Moyenne</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Basse</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Un concept mène/conduit au suivant</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Requiert la cible comme prérequis</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Répond à un besoin ou un problème</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Fournit une preuve pour la cible</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Appartient à / fait partie de la cible</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Un type de relation personnalisé</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Arête dirigée (de la source vers la cible)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Lien bidirectionnel / équivalent</value></data>
 </root>

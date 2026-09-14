@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>Comma-separated references</value></data>
   <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>branch(es)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>One concept leads to / opens the next</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Requires the target as a prerequisite</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Addresses a need or problem</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Provides evidence for the target</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Belongs to / is part of the target</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>A custom relationship type</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Directed edge (from source to target)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Two-way / equivalent link</value></data>
 </root>

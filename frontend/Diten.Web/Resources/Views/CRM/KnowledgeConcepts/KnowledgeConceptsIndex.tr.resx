@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>Virgülle ayrılmış referanslar</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Yeni versiyon</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>dal</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Bir kavram diğerine götürür/yol açar</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Ön koşul olarak hedefi gerektirir</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Bir ihtiyacı/sorunu adresler</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Hedefi kanıtlar</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Hedefe aittir / parçasıdır</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Özel bir ilişki türü</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Yönlü kenar (kaynaktan hedefe)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Çift yönlü / eşdeğer bağ</value></data>
 </root>

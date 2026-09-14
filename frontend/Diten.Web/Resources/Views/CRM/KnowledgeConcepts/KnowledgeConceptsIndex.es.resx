@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>Referencias separadas por comas</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>rama(s)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Un concepto lleva/conduce al siguiente</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Requiere el objetivo como requisito previo</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Aborda una necesidad o un problema</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Aporta evidencia para el objetivo</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Pertenece a / forma parte del objetivo</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Un tipo de relación personalizado</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Arista dirigida (de origen a destino)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Enlace bidireccional / equivalente</value></data>
 </root>

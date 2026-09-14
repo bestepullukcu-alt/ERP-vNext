@@ -182,4 +182,15 @@
   <data name="RefsCommaHint" xml:space="preserve"><value>Ссылки через запятую</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>ветв(и)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Одно понятие ведёт к следующему</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Требует цель как предварительное условие</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Отвечает на потребность или проблему</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Служит доказательством для цели</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Принадлежит / является частью цели</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Пользовательский тип связи</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Направленное ребро (от источника к цели)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Двусторонняя / эквивалентная связь</value></data>
 </root>
