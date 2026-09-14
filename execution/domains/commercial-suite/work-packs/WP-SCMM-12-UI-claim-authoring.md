@@ -63,6 +63,15 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: claim API sözleşmesi beklenenden farklıysa (raporla) · KnowledgeConcepts nav mekanizması claim'e uygulanamıyorsa · component picker knowledge/contents'ten beslenemezse · kapsam frontend dışına (backend/API) taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel UI testi
+```text
+Commits: 31b2d51e (console) + eeba3815 (nav) · Agent: PASS · CT: ACCEPTED E2 · E4: login gerektirir → kullanıcı manuel
+```
+- ✅ **Scope:** 20 frontend dosya (Controller/ViewModels/Views/7-dil resx/JS) + nav (CrmManifestProvider +8, SharedResource 7-dil `Nav.Page.CLAIMS`). **Backend/API/ocelot/RBAC/Claim-logic + KnowledgeConcepts console DOKUNULMADI.** Tek Web-dışı dosya CrmManifestProvider.cs (nav mekanizması — meşru, agent flag'ledi).
+- ✅ **CT kendi koşumu (izole worktree):** Diten.Web build 0 hata; **Diten.Web.Tests 137/0**; Platform nav/manifest guard **60/0** (NavManifestL10nGuard CLAIMS 7-dil + CrmManifest + ManifestProvider). 
+- ✅ **Spot-check:** proxy uçları doğru (`/api/crm/content-composition/claims` + component picker `/api/crm/knowledge/contents`); perm crm.claim.read/manage/approve **dev-fallback YOK** (WP'ye uygun, crm.claim.* gerçek+granted); resx **gerçek çeviri** (ClaimText en"Claim Text"/tr"İddia Metni", key-echo yok). Verifier: agent KnowledgeConcepts aynasıyla 9-fail parity (0 yeni) raporladı.
+- ⏳ **E4 = kullanıcı manuel UI testi:** login→/CRM/Claims→create (component picker + applicability/evidence/qualifiers)→approve(gövde donar)→archive. Alttaki API+gateway zaten E4-authenticated kanıtlı (SCMM-12-API + GW); UI ince proxy. Fleet restart gerekir (yeni console + CrmManifestProvider nav yüklenir).
+
 ## Kalan (bu WP dışı)
 - CT E4 (fleet): UI claim yaşam döngüsü + picker + authenticated.
 - SCMM-13 (iki-dil varyant) · SCMM-14 (assembly ④⑤⑥ — component+claim+template tüketir).
