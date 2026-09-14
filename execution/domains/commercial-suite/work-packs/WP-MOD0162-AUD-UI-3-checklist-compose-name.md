@@ -56,5 +56,14 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: compose-row select2 seçili-option text'i alınamıyorsa · Name label yakalanamıyorsa · cascade yeni akışa uyarlanamıyorsa · kapsam AudienceProfile dimensions dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: 08708706 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @08708706
+```
+- ✅ **Scope:** 2 dosya (Taxonomy.cshtml + taxonomy.js); backend/API/RBAC/resx yok; ValueCode-saklama + published-values + ProfileType-koşul + deprecated korundu.
+- ✅ **CT kendi koşumu (izole worktree, Release):** build **0 hata**; **Diten.Web.Tests 137/0**. resx/manifest yok → nav guard etkilenmez (agent 27/0); verifier 77/10 baseline.
+- ✅ **Mantık (blob):** (1) compose-then-add — üstte `task-checklist` display-only satırlar (axis + değer-label chip + ×), altta JS-render sabit compose-row (Axis+Values+Add), Add→üste satır+temizle, `addComposedDimension` axis+≥1 değer doğrular (line 698); (2) **Name `' / '`** — `dimensionNameLabel` valueLabels'ı `' / '` ile birleştirir ("Doctor / Nephrology", line 593); (3) **label add-anında yakalanır** (item `valueLabels`, async lookup yok); (4) **values=code SAKLANIR** (payload {axisCode, values:[code]}, label display-only); (5) cascade `maybeCascadeAxis` (doctor→medical-specialty compose axis); eski inline semboller (dimValuesControl/js-dim-axis/btnAddDimension/customCode) **kaldırıldı**.
+- ⏳ **E4 = kullanıcı manuel:** hcp → contact-type Doctor+Add → satır+Name "Doctor"; medical-specialty Nephrology+Add → "Doctor / Nephrology"; × sil→güncellenir; kaydet→values=ValueCode.
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → sonra **WP-MOD0162-SUBJECT-UI** → ALMIBA retest.
+- CT E2 ✅ → sonra **WP-MOD0162-SUBJECT-UI** (Subject↔Global Product, HEAD 08708706) → ALMIBA retest.
