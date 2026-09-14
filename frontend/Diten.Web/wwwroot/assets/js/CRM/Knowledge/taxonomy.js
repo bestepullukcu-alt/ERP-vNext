@@ -675,16 +675,16 @@
             .map(a => `<option value="${esc(a)}"${composeAxis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
         // Same .diten-checkitem shell as an added row (matching border/bg/padding); Axis + Values sit in the text slot,
         // a plain Tasks-style Add (btn-label-primary, not a solid purple block) sits where remove would.
-        // The text slot wraps (flex-wrap): Axis is fixed-width, Values grows but may drop to its own line on a narrow
-        // canvas; both have min-width:0 so the small select2 fits its cell and its chips wrap inside instead of
-        // overrunning Add, which stays pinned right (flex-shrink-0, a sibling outside the text slot).
-        host.innerHTML = `<div class="diten-checkitem">
-                ${checkitemAffordance()}
-                <span class="diten-checkitem-text d-flex flex-wrap gap-2 align-items-center">
-                    <span class="flex-shrink-0" style="width:11rem"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
-                    <span style="flex:1 1 12rem; min-width:0">${composeValuesControl()}</span>
-                </span>
-                <button type="button" class="btn btn-label-primary btn-sm flex-shrink-0" id="btnDimAdd">${esc(L.AddDimension || 'Add')}</button>
+        // Compose-row is a vertical stack: row 1 = Axis + Values ALWAYS side by side (flex:1 vs flex:2, both
+        // min-width:0 so they stay on one line and shrink rather than wrap, small select2 preserved); row 2 = a
+        // left-aligned Add beneath them. No grip/move affordance here — this is an add-row, not a draggable item, so
+        // its left padding is just the .diten-checkitem shell's own (grip space removed).
+        host.innerHTML = `<div class="diten-checkitem flex-column align-items-stretch gap-2">
+                <div class="d-flex gap-2 align-items-start">
+                    <span style="flex:1 1 0; min-width:0"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
+                    <span style="flex:2 1 0; min-width:0">${composeValuesControl()}</span>
+                </div>
+                <button type="button" class="btn btn-label-primary btn-sm align-self-start" id="btnDimAdd">${esc(L.AddDimension || 'Add')}</button>
             </div>`;
         initComposeSelect2();
     };
