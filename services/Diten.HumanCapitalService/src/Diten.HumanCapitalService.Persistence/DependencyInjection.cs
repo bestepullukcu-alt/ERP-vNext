@@ -64,6 +64,12 @@ public static class DependencyInjection
         services.AddScoped<ITimeAttendanceLeaveReadinessMetadataRepository, MongoTimeAttendanceLeaveReadinessMetadataRepository>();
         services.AddScoped<IWorkforcePlanningReadinessMetadataRepository, MongoWorkforcePlanningReadinessMetadataRepository>();
 
+        // HCM feature repositories (PR-A2 group 4 — seam-entangled cluster; local Mongo,
+        // fail-closed until Ali wires EmployeeProfileProjection <- main HcmService feed).
+        services.AddScoped<IEmployeeProjectionRepository, MongoEmployeeProjectionRepository>();
+        services.AddScoped<IPositionAssignmentOverlayRepository, MongoPositionAssignmentOverlayRepository>();
+        services.AddScoped<IOffboardingCaseRepository, MongoOffboardingCaseRepository>();
+
         return services;
     }
 
