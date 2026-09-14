@@ -598,19 +598,23 @@
         const show = currentFormKind === 'audience-profiles' && DIM_TYPES.includes(profileTypeValue());
         document.getElementById('taxDimensionsSection')?.classList.toggle('d-none', !show);
     };
-    // Name: derived + read-only for a dimensioned profile; ProfileType-seeded + editable otherwise. Only the
-    // AudienceProfile form drives this — Subject/Topic keep a plain editable name.
+    // Name: derived + DISABLED for a dimensioned profile; ProfileType-seeded + editable otherwise. Only the
+    // AudienceProfile form drives this — Subject/Topic keep a plain editable name. The derived value still submits
+    // because the submit handler reads taxName.value in JS (~901), not a native form-serialize that would drop a
+    // disabled field.
     const updateProfileName = () => {
         if (currentFormKind !== 'audience-profiles') return;
         const nameEl = document.getElementById('taxName');
         if (!nameEl) return;
         const pt = profileTypeValue();
-        if (DIM_TYPES.includes(pt)) {
-            nameEl.readOnly = true;                       // readonly (not disabled) so the value still submits
+        const derived = DIM_TYPES.includes(pt);
+        // In view mode setFormReadOnly already disabled everything — don't re-enable it here; only manage the
+        // disabled appearance in create/edit, mirroring the derived state.
+        if (!dimReadOnly) { nameEl.disabled = derived; nameEl.readOnly = derived; }
+        if (derived) {
             setValue('taxName', dimensionNameLabel());    // empty until a dimension value is chosen
-        } else {
-            nameEl.readOnly = false;
-            if (!profileNameDirty) setValue('taxName', pt ? titleize(pt) : '');
+        } else if (!profileNameDirty) {
+            setValue('taxName', pt ? titleize(pt) : '');
         }
     };
     const onProfileTypeChange = () => {
@@ -783,7 +787,11 @@
         // WP-MOD0162-AUD-UI(-2): the dimension builder + Name derivation are profile-only. Dimensions show only for a
         // dimensioned ProfileType; Name is derived+read-only for those, ProfileType-seeded+editable otherwise.
         dimReadOnly = !!readOnly;
-        document.getElementById('taxName').readOnly = false;
+        // Reset the Name control per open: enabled in create/edit, disabled in view (setFormReadOnly already disabled
+        // it). updateProfileName then re-derives the disabled state from the ProfileType for the AudienceProfile form.
+        const taxNameEl = document.getElementById('taxName');
+        taxNameEl.readOnly = false;
+        taxNameEl.disabled = !!readOnly;
         composeAxis = 'account-type';                      // reset the compose-row for each open
         if (kind === 'audience-profiles') {
             void loadDimensions(row);                     // async: renderDimensions() re-derives the Name once it lands
