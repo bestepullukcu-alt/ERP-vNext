@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.ExitReferenceRecords
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ExitReferenceRecordsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ExitReferenceRecordsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.exit-reference-records.evaluate");
+    var canAudit = Perms.Has("tep.exit-reference-records.audit.read");
+    var canManage = Perms.Has("tep.exit-reference-records.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ExitReferenceRecordsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="exit-reference-records-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/ExitReferenceRecords/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ExitReferenceRecords/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ExitReferenceRecords/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/ExitReferenceRecords/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/ExitReferenceRecords/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/ExitReferenceRecords/index.js" asp-append-version="true"></script>
+}

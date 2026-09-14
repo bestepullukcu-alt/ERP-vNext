@@ -1,0 +1,54 @@
+@using Diten.Web.Views.TalentEcosystem.ExitReferenceRecords
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ExitReferenceRecordsIndex> Localizer
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-primary">
+                        <i class="bx bx-file-find"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["RegistryBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["RegistryBoundaryDescription"]</p>
+                        <div class="fw-semibold mt-2" data-summary-field="total">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-info">
+                        <i class="bx bx-share-alt"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["SharingBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["SharingBoundaryDescription"]</p>
+                        <div class="fw-semibold mt-2" data-summary-field="active">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-warning">
+                        <i class="bx bx-lock-alt"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["PreconditionBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["PreconditionBoundaryDescription"]</p>
+                        <div class="fw-semibold mt-2" data-summary-field="deferred">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
