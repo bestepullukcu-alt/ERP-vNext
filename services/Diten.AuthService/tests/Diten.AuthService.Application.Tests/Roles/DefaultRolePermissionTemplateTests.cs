@@ -363,6 +363,31 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("platform.tasks.read-all", viewerKeys);
     }
 
+    // WP-PSS-MOD0024-BL392-WORK-REPORT-READ-EXPLICIT-01 (BL-392, owner decision 2026-09-14) — the fourth
+    // explicit-grant-only key. Placed under a module the Admin breadth clause DOES reach, with its ordinary sibling
+    // report key beside it, so the exclusion is not vacuous: the sibling reaches Admin (and Viewer, being a read),
+    // the tenant-wide key reaches no default role. Remove the key from ExplicitGrantOnlyPermissions.Keys and this
+    // test goes red (measured 2026-09-14: the SuperAdmin full-catalog assertion is the first to fail).
+    [Fact]
+    public void Work_report_read_tenant_wide_enters_no_default_role_even_under_the_Admin_module_while_work_report_read_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks.work-report", "read", "Read Work Report", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+        catalog.Add(new Permission("platform", "tasks.work-report", "read-tenant-wide", "View Work Report Tenant-Wide", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", adminKeys);
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", viewerKeys);
+        Assert.Contains("platform.tasks.work-report.read", adminKeys);  // ordinary key: Admin breadth clause
+        Assert.Contains("platform.tasks.work-report.read", viewerKeys); // ordinary read: Viewer read clause
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {
