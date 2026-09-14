@@ -26,8 +26,8 @@
 
 - Platform veritabanının ve Hangfire deposunun (`BackgroundJobs:StorageDatabaseName`) yedeği alınır.
 - **Geri alma yerine ileri düzeltme.** Eski sürüm, yeni sürümün yazdığı alanları okurken çökebilir (BL-384: 2026-09-13'te
-  dev'de `RecordLink.IdempotencyKey` ile yaşandı). Bilinmeyen alan toleransı bu turda eklenirse yalnız **gelecekteki**
-  geri almaları korur; bugünkü canlı sürüm bu toleransa sahip değildir.
+  dev'de `RecordLink.IdempotencyKey` ile yaşandı). Bu turla gelen bilinmeyen alan toleransı (`4663682c`) yalnız **bu sürümden
+  sonraki** geri almaları korur; bugünkü canlı sürüm bu toleransa sahip değildir, ona geri dönüş yine çöker.
 
 ## 3. Arka plan işleri (Hangfire)
 
@@ -69,7 +69,8 @@ Dashboard canlıda kapalı kalır.
 - Toplantı düzenleyen, katılımcı olan ya da başkasına görev atayan her kullanıcının **aktif bir pozisyonu** olmalı.
   Yoksa: katılımcı seçicisi boş, `MEETING_ORGANIZER_INVALID`, başkasına görev verilemez.
 - Kiracının **aktif bir kök birimi** olmalı; yoksa görev açılamaz (`ORGANIZATION_UNIT_UNRESOLVED`). Yeni kiracı kurulumu bu
-  birimi bugün oluşturmuyor (BL-366).
+  birimi oluşturmuyor ve oluşturamaz: birim bir tüzel kişiliğe bağlı olmak zorunda (BL-366). Sıra: MDM'de tüzel kişilik oluştur ve
+  aktifleştir → Organizasyon ekranından kök birim → pozisyonlar → atamalar.
 
 ## 7. Canlıdan sonra: 20 dakikalık kontrol
 
@@ -88,7 +89,7 @@ Dashboard canlıda kapalı kalır.
 | :-- | :-- |
 | BL-386 | Toplantıdan çıkarılan katılımcıya posta gitmiyor; takviminde toplantı kalır. Var olan iptal şablonu "toplantı iptal edildi" dediği için kullanılamaz — yeni şablon (7 dil) ve SEQUENCE için sürüm artışı gerekiyor; ayrı prompt, bu tura yetişmeyebilir |
 | BL-387 | Seri toplantıda düzenleyen de davet alıyor — sahip kararı |
-| BL-388 | Görev alanı tanımında "Sıra" boşken kayıt düşüyor — 2026-09-14'te yapılıyor |
+| BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); aynı ham hata metni 21 başka ekranda duruyor |
 | BL-389 · BL-390 · BL-391 | Metin tutarsızlığı, silinmiş düzenleyende ham kimlik, yanlış biçimde yazılan tarihin kayması |
 | BL-392 | İş Raporu kiracı geneli okuma izni varsayılan rollere dağılabilir — sahip kararı |
 | BL-347 | İş Raporu indirmesi denetim izi bırakmıyor |
