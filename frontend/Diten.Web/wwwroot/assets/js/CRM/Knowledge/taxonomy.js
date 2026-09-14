@@ -771,57 +771,80 @@
         document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
     };
     const gpRef = row => (row?.externalReferences || []).find(r => norm(r.sourceSystem).toLowerCase() === 'global-product');
+    const setGpDisabled = reason => {
+        subjectGpDisabled = true;
+        const note = document.getElementById('taxGlobalProductDisabledNote');
+        if (note) { note.textContent = L[reason] || L.GlobalProductPickerUnavailable || ''; note.classList.remove('d-none'); }
+    };
+    // WP-MOD0162-SUBJECT-UI-2: ajax server-side search over the MDM selector (177 rows, MDM cap pageSize=100). The
+    // browser types to search; the same-origin proxy attaches the token and clamps pageSize. A { disabled, reason }
+    // body → disabled + reason (never a silent empty list); a stored code stays visible via its preselected <option>.
     const initGpSelect2 = () => {
         const jq = window.jQuery;
         if (!jq?.fn?.select2) return;
-        const $s = jq('#taxGlobalProductId'), el = document.getElementById('taxGlobalProductId');
+        const $s = jq('#taxGlobalProductId');
         if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
-        $s.select2({ dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', width: '100%', placeholder: $s.data('placeholder') || '', allowClear: true });
+        $s.select2({
+            dropdownParent: jq('#taxonomyCanvas'),
+            selectionCssClass: 'form-select form-select-sm',
+            width: '100%',
+            placeholder: $s.data('placeholder') || '',
+            allowClear: true,
+            minimumInputLength: 0,
+            ajax: {
+                url: `${base}/global-product-options`,
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ search: params.term || '', pageNumber: 1, pageSize: 100 }),
+                processResults: body => {
+                    if (body && body.disabled) { setGpDisabled(body.reason); return { results: [] }; }
+                    subjectGpDisabled = false;
+                    document.getElementById('taxGlobalProductDisabledNote')?.classList.add('d-none');
+                    return { results: (body && body.options ? body.options : []).map(o => ({ id: o.value, text: o.label })) };
+                },
+                // Return the jqXHR so select2 can abort an in-flight search when a new keystroke starts (a .then() chain
+                // has no .abort()).
+                transport: (params, success, failure) => {
+                    const request = jq.ajax(params);
+                    request.then(success);
+                    request.fail(xhr => { setGpDisabled('GlobalProductPickerUnavailable'); failure(xhr); });
+                    return request;
+                }
+            }
+        });
         // A user pick prefills the (editable) Name; a programmatic seed (load) is suppressed so it can't clobber a
         // stored/edited Subject name.
         $s.off('change.gp').on('change.gp', function () {
             if (suppressGpAuto) return;
-            const opt = el?.options[el.selectedIndex];
-            const label = opt ? norm(opt.textContent) : '';
-            if (norm(jq(this).val()) && label) setValue('taxName', label);
+            const sel = $s.select2('data');
+            const label = (sel && sel[0]) ? norm(sel[0].text) : '';
+            if (norm($s.val()) && label) setValue('taxName', label);
         });
-    };
-    const fillGpSelect = (options, current, currentLabel) => {
-        const el = document.getElementById('taxGlobalProductId');
-        if (!el) return;
-        const list = (options || []).slice();
-        // A stored id off the selector's first page is kept so the link survives the round-trip.
-        if (current && !list.some(o => String(o.value) === String(current))) list.unshift({ value: current, label: currentLabel || current });
-        el.innerHTML = '<option value=""></option>' + list.map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
     };
     const loadSubjectGlobalProduct = async row => {
         const ref = gpRef(row);
         const currentId = ref ? norm(ref.externalId) : '';
         let currentLabel = ref ? norm(ref.externalName) : '';
-        const note = document.getElementById('taxGlobalProductDisabledNote');
         const el = document.getElementById('taxGlobalProductId');
-        let data = null;
-        try { data = await (await fetch(`${base}/global-product-options`, { credentials: 'same-origin', headers })).json(); }
-        catch { data = { disabled: true, reason: 'GlobalProductPickerUnavailable' }; }
-        subjectGpDisabled = !!data?.disabled;
+        if (!el) return;
+        subjectGpDisabled = false;
+        document.getElementById('taxGlobalProductDisabledNote')?.classList.add('d-none');
         suppressGpAuto = true;
-        if (subjectGpDisabled) {
-            fillGpSelect([], currentId, currentLabel);
-            if (el) el.disabled = true;
-            if (note) { note.textContent = L[data.reason] || L.GlobalProductPickerUnavailable || ''; note.classList.remove('d-none'); }
-        } else {
-            const opts = (data.options || []).map(o => ({ value: o.value, label: o.label }));
-            // resolve a stored-but-off-page label (id→name) when the reference didn't carry one
-            if (currentId && !currentLabel && !opts.some(o => String(o.value) === currentId)) {
-                try { const r = await (await fetch(`${base}/global-product-options/${encodeURIComponent(currentId)}`, { credentials: 'same-origin', headers })).json(); currentLabel = norm(r?.label) || currentId; }
-                catch { currentLabel = currentId; }
-            }
-            fillGpSelect(opts, currentId, currentLabel);
-            if (el) el.disabled = !!dimReadOnly;   // view mode keeps it disabled
-            note?.classList.add('d-none');
+        // Preselect the stored product (resolve id→name when the reference carried none) — an ajax select2 shows a
+        // selected value only if its <option> is present.
+        if (currentId && !currentLabel) {
+            try { const r = await (await fetch(`${base}/global-product-options/${encodeURIComponent(currentId)}`, { credentials: 'same-origin', headers })).json(); currentLabel = norm(r?.label) || currentId; }
+            catch { currentLabel = currentId; }
         }
+        el.innerHTML = currentId ? `<option value="${esc(currentId)}" selected>${esc(currentLabel || currentId)}</option>` : '';
+        // Availability probe (search-less, pageSize=1) so the picker shows disabled + reason immediately, not only
+        // after the dropdown is first opened.
+        let probe = null;
+        try { probe = await (await fetch(`${base}/global-product-options?pageSize=1`, { credentials: 'same-origin', headers })).json(); }
+        catch { probe = { disabled: true, reason: 'GlobalProductPickerUnavailable' }; }
+        if (probe && probe.disabled) { setGpDisabled(probe.reason); el.disabled = true; }
+        else { el.disabled = !!dimReadOnly; }   // view mode keeps it disabled
         initGpSelect2();
-        setValue('taxGlobalProductId', currentId);
         if (window.jQuery) window.jQuery('#taxGlobalProductId').trigger('change.select2');
         setGpMode(currentId ? 'global-product' : 'custom');
         suppressGpAuto = false;
@@ -1061,7 +1084,8 @@
     document.querySelectorAll('input[name="taxSubjectSource"]').forEach(r => r.addEventListener('change', () => {
         const custom = gpMode() !== 'global-product';
         document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
-        if (custom) { setValue('taxGlobalProductId', ''); if (window.jQuery) window.jQuery('#taxGlobalProductId').trigger('change.select2'); }
+        // Choosing custom clears the picked product (an ajax select2 has no blank <option>, so clear via val(null)).
+        if (custom && window.jQuery) window.jQuery('#taxGlobalProductId').val(null).trigger('change');
     }));
 
     // WP-MOD0162-AUD-UI-3: compose-then-add. Add commits the compose-row as a display row; × removes an added row.
