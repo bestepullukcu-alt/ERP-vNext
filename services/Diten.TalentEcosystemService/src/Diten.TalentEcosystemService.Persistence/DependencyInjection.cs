@@ -50,6 +50,14 @@ public static class DependencyInjection
         services.AddScoped<IEarlyWarningSignalsReadinessMetadataRepository, MongoEarlyWarningSignalsReadinessMetadataRepository>();
         services.AddScoped<IHiringRiskIndicatorsReadinessMetadataRepository, MongoHiringRiskIndicatorsReadinessMetadataRepository>();
 
+        // TEP feature repositories (PR-B2 group 3 — industry/mentorship/pay leaves).
+        services.AddScoped<IIndustryKnowledgeNetworkReadinessMetadataRepository, MongoIndustryKnowledgeNetworkReadinessMetadataRepository>();
+        services.AddScoped<IIndustrySkillPassportReadinessMetadataRepository, MongoIndustrySkillPassportReadinessMetadataRepository>();
+        services.AddScoped<IIndustrySuccessionPoolReadinessMetadataRepository, MongoIndustrySuccessionPoolReadinessMetadataRepository>();
+        services.AddScoped<IIndustryTalentPoolReadinessMetadataRepository, MongoIndustryTalentPoolReadinessMetadataRepository>();
+        services.AddScoped<IMentorshipRecommendationNetworkReadinessMetadataRepository, MongoMentorshipRecommendationNetworkReadinessMetadataRepository>();
+        services.AddScoped<IPayBenchmarkingReadinessMetadataRepository, MongoPayBenchmarkingReadinessMetadataRepository>();
+
         return services;
     }
 
