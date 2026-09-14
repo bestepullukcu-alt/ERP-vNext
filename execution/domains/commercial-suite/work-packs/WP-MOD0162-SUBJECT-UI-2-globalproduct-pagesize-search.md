@@ -54,5 +54,16 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: MDM selector search param adı farklıysa (search= kanıtlı) · ajax select2 externalReferences saklamayı bozuyorsa · kapsam frontend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: ea0f5cf5 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @ea0f5cf5
+```
+- ✅ **Scope:** 2 dosya (KnowledgeController + taxonomy.js); backend/MDM/resx yok.
+- ✅ **CT kendi koşumu (izole worktree, Release):** build **0 hata**; **Diten.Web.Tests 137/0**. resx/manifest yok → nav guard etkilenmez (agent 27/0); verifier 77/10 baseline.
+- ✅ **Mantık (blob):** (1) `BuildGlobalProductSelectorQuery` (277) `pageSize = Math.Clamp(ps,1,100)` default 100 → **MDM'e >100 ASLA** (400 kökü kapandı) + search+pageNumber iletir; Subject picker bunu kullanır (257); (2) taxonomy.js Subject GP **ajax select2** `data:{search:term, pageNumber:1, pageSize:100}` (798), processResults disabled/reason onurlu, edit by-id resolve (836), probe pageSize=1 (843); (3) externalReferences full-replace **yalnız global-product satırını** yönetir, diğer ref'ler korunur (1012-1022), gpRef sourceSystem match (773); custom→val(null) (154); (4) content formu 582 `pageSize=100` (599). AUD formu/graceful-degradation/custom-toggle korundu.
+- ⏳ **E4 = kullanıcı manuel:** "From a Global Product" → "ALMIBA" ara → seç → Name + ref; 177 aranabilir; MDM kapalı→disabled+custom.
+
+> **SUBJECT-UI (e3740ffb) durumu:** graceful-degradation DOĞRU çalıştı (400'ü yakalayıp "unavailable" dedi); kusur hardcoded pageSize=200'dü (pre-existing, content-formundan mirror). Bu WP (ea0f5cf5) düzeltti. e3740ffb ayrıca CT-E2 (externalReferences/proxy/toggle doğru).
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → **Subject formu TAMAM** → ALMIBA retest (Subject=Global Product ALMIBA + AudienceProfile Nefrolog → A2..A8).
+- **Subject formu TAMAM** (picker ajax-search, ALMIBA erişilebilir; AUD formu da tamam). → **ALMIBA retest** (Subject=Global Product ALMIBA + AudienceProfile Nefrolog → A1..A8).
