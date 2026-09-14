@@ -675,11 +675,14 @@
             .map(a => `<option value="${esc(a)}"${composeAxis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
         // Same .diten-checkitem shell as an added row (matching border/bg/padding); Axis + Values sit in the text slot,
         // a plain Tasks-style Add (btn-label-primary, not a solid purple block) sits where remove would.
+        // The text slot wraps (flex-wrap): Axis is fixed-width, Values grows but may drop to its own line on a narrow
+        // canvas; both have min-width:0 so the small select2 fits its cell and its chips wrap inside instead of
+        // overrunning Add, which stays pinned right (flex-shrink-0, a sibling outside the text slot).
         host.innerHTML = `<div class="diten-checkitem">
                 ${checkitemAffordance()}
-                <span class="diten-checkitem-text d-flex gap-2 align-items-end">
-                    <span class="flex-shrink-0" style="width:12rem"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
-                    <span class="flex-grow-1">${composeValuesControl()}</span>
+                <span class="diten-checkitem-text d-flex flex-wrap gap-2 align-items-center">
+                    <span class="flex-shrink-0" style="width:11rem"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
+                    <span style="flex:1 1 12rem; min-width:0">${composeValuesControl()}</span>
                 </span>
                 <button type="button" class="btn btn-label-primary btn-sm flex-shrink-0" id="btnDimAdd">${esc(L.AddDimension || 'Add')}</button>
             </div>`;
@@ -688,13 +691,16 @@
     const initComposeSelect2 = () => {
         const jq = window.jQuery;
         if (!jq?.fn?.select2) return;
-        jq('#composeAxis').select2({ dropdownParent: jq('#taxonomyCanvas'), minimumResultsForSearch: Infinity, width: '100%' })
+        // selectionCssClass 'form-select form-select-sm' = the same SMALL rendering the working filter chips use
+        // (initSelect2 ~167); without it select2 renders at its default (large) height and the multi container grows
+        // past its flex cell and overruns Add.
+        jq('#composeAxis').select2({ dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', minimumResultsForSearch: Infinity, width: '100%' })
             .off('change.dc').on('change.dc', async function () {
                 composeAxis = jq(this).val();
                 if (isRefAxis(composeAxis)) await loadRefValues(composeAxis);
                 renderCompose();   // swap the values control for the new axis' vocabulary
             });
-        const vopts = { dropdownParent: jq('#taxonomyCanvas'), width: '100%', placeholder: document.getElementById('composeValues')?.getAttribute('data-placeholder') || '', closeOnSelect: false };
+        const vopts = { dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', width: '100%', placeholder: document.getElementById('composeValues')?.getAttribute('data-placeholder') || '', closeOnSelect: false };
         if (composeAxis === 'custom') { vopts.tags = true; vopts.tokenSeparators = [',']; }
         jq('#composeValues').select2(vopts);
     };
