@@ -52,5 +52,16 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: disabled Name değeri submit'ten düşürüyorsa (~901 JS .value çalışmalı; düşerse raporla) · AUD-UI davranışı bozuluyorsa · kapsam Name dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: 6507bcb4 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @6507bcb4
+```
+- ✅ **Scope:** 1 dosya (taxonomy.js, 24 satır); backend/resx yok.
+- ✅ **CT kendi koşumu (izole worktree, Release):** build **0 hata**; **Diten.Web.Tests 137/0**. resx/manifest yok → nav guard etkilenmez (agent 27/0).
+- ✅ **Mantık (blob):** `updateProfileName` line 613 `if(!dimReadOnly){ nameEl.disabled=derived; nameEl.readOnly=derived }` — create/edit'te HCP/pharmacist→disabled görünüm, diğer→enabled; view modu (setFormReadOnly) bozulmaz; openForm (792-793) Name'i sıfırlar (profil-tipleri arası sızma yok); değer submit'te `taxName.value` JS ile okunuyor (~901) → disabled value düşmez (comment 603 kanıt).
+- ⏳ **E4 = kullanıcı manuel:** HCP→Name disabled görünüm + dimension'dan dolar + kaydedince değer gider; patient→Name enabled/editable.
+
+> **AUD-UI-4 (6cc8641f) durumu:** E2-yeşildi ama kullanıcı görsel E4'ü reddetti → CT **ACCEPTED etmedi**; AUD-UI-5/6/7 ile üstüne düzeltildi (nihai görünüm AUD-UI-6'da kullanıcı onayladı "tamam oldu", AUD-UI-7 Name disabled).
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → **AudienceProfile formu TAMAM** → **WP-MOD0162-SUBJECT-UI** → ALMIBA retest.
+- **AudienceProfile formu TAMAM** (AUD dims + ProfileType-koşul + Name + compose-layout + disabled; hepsi CT-E2, compose görünüm kullanıcı-onaylı). → **WP-MOD0162-SUBJECT-UI** → ALMIBA retest.
