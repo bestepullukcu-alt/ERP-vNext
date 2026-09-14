@@ -59,5 +59,14 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: ProfileType alanı/vocab beklenenden farklıysa · Name'i readonly iken payload'a katamıyorsan · dimension builder (72ad7f24) mantığı bozulmadan görünüm değiştirilemiyorsa · kapsam AudienceProfile formu dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: 046d6115 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @046d6115
+```
+- ✅ **Scope (name-set):** 2 dosya — Taxonomy.cshtml + taxonomy.js. Backend/API/RBAC/resx **yok**; ValueCode-saklama kararı (72ad7f24) korundu.
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0 hata**; **Diten.Web.Tests 137/0**. resx/manifest yok → nav guard yapısal etkilenmez (agent 27/0).
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) ProfileType Name'den ÖNCE (Taxonomy.cshtml: taxCode→**taxProfileType**→taxName, satır 242<245); (2) `DIM_TYPES=['healthcare-professional','pharmacist']`; `#taxDimensionsSection` yalnız bu ikisinde görünür (toggle), dimension-dışı ProfileType'ta gizle+**temizle** (`dimensions=[]`); (3) Name: HCP/pharmacist→dimension label'larından türet + `readOnly=true` (disabled değil → değer payload'a girer); diğer→ProfileType `titleize` prefill + editable + `profileNameDirty` guard; value-change re-derive; (4) Tasks-checklist görünüm: `<ul class="task-checklist">` + `<li class="diten-checkitem">` + × (bx-x), **grip/drag YOK** (yorum: "dimensions are a set"); option value=**code** (ValueCode korunmuş).
+- ⏳ **E4 = kullanıcı manuel:** ProfileType=healthcare-professional→Dimensions açılır, contact-type:doctor+medical-specialty:nephrology→Name otomatik+read-only; ProfileType=patient→Dimensions gizlenir+temizlenir, Name="Patient" düzenlenebilir.
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → sonra **WP-MOD0162-SUBJECT-UI** (Subject↔Global Product, sıralı) → sonra ALMIBA retest.
+- CT E2 ✅ → sonra **WP-MOD0162-SUBJECT-UI** (Subject↔Global Product, sıralı — şimdi dispatch, HEAD 046d6115) → sonra ALMIBA retest.
