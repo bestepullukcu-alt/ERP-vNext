@@ -67,3 +67,20 @@ employee master before go-live** (2nd PENDING seam). Source of truth: `origin/hr
   roll-up derived from the token). During recovery, any such piece that cannot be adapted **without**
   the token change is marked as a dependent gap and NOT ported until this foundation lands. See the
   recovery branch's per-feature notes.
+
+## Test coverage follow-up — TEP (owner: Ali / QA)
+
+**Status:** OPEN (backlog) · **Blocks release:** No
+
+The recovered `TalentEcosystemService` (TEP, `feat/hr-tep-recovery`, port 5064) currently ships
+**without a test project** — the service `.sln` intentionally excludes it (the shell removed the
+tests project so the service compiles standalone, mirroring the shell discipline). All 31 modules
+were ported and verified only by: `dotnet build` 0-error, `GET /health` 200, and static DI-graph
+completeness (every injected repository registered). **Follow-up:** restore/author a TEP test
+project (unit + handler/repository integration) before go-live, or as a fast-follow after merge.
+Source of the original tests: `origin/hr-future`.
+
+> **Note on branch names:** this recovery was later split from the single
+> `feat/hr-recovery-from-hrfuture` branch (now deleted) into two clean, current-`main`-based
+> branches: **`feat/hr-tep-recovery`** (TEP, PR #107) and **`feat/hr-hcm-recovery`** (HCM, PR #108).
+> References above to `feat/hr-recovery-from-hrfuture` should be read as those two branches.
