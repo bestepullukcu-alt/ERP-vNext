@@ -65,5 +65,17 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: published-values ucu beslenemezse · Dimensions payload/DTO şekli beklenenden farklıysa · cascade doctor-değeri güvenilir tespit edilemezse (fallback+belgele, DUR değil) · kapsam frontend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: 72ad7f24 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @72ad7f24
+```
+- ✅ **Scope (name-set):** 11 dosya — KnowledgeController(+proxy) + Taxonomy.cshtml + taxonomy.js + _IndexL10n + 7-dil KnowledgeIndex resx. Tamamı Diten.Web/Knowledge; **backend/API/RBAC/ocelot dokunulmadı** (Dimensions uçtan uca hazırdı).
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0 hata**; **Diten.Web.Tests 137/0**; Platform nav/manifest guard **112/0**.
+- ✅ **KİLİTLİ KARAR doğrulandı — SAKLANAN=ValueCode:** select2 option value = published-value **code** (`v.code||v.valueCode`), `collectDimensions` values = kod'lar (yorum: "BY NAME but STORES stable ValueCode"); DisplayName sadece etiket (label). Version-id/DisplayName saklanmıyor. ✓
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) dimension builder — axis select2 (account-type/contact-type/medical-specialty/custom) + values (ref→published-values adla-seç/kod-sakla; custom→serbest AxisCode+tag); (2) `collectDimensions` boş-axis/boş-değer satırı **drop** + axis dedup (backend 3 kuralına uyumlu: non-empty axis, ≥1 value, no-dup); (3) writePayload `dimensions:[{axisCode,values}]` full-replace (boş=temizle); edit round-trip (axisCode→ref/custom); (4) soft cascade contact-type doctor→otomatik boş medical-specialty ekseni (tespit edilemezse eklemez — belgeli fallback); (5) deprecated/replacement parse → rozet; (6) `KnowledgeController GET api/reference-data/{setCode}/values` → gateway `/api/v1/reference-data/sets/{setCode}/published-values?scope_key={tenant}` (read-only, ContactsController deseni).
+- ✅ **7-dil resx:** 15 anahtar × 7; tr gerçek çeviri (Boyutlar/Eksen ekle/Değerler…), key-echo yok (en/fr'de kelime=anahtar olması meşru).
+- ✅ **Verifier:** yalnız _IndexL10n.cshtml additive dokunuldu → 77/10 bilinen not-applicable baseline, sıfır yeni.
+- ⏳ **E4 = kullanıcı manuel:** Nefrolog = contact-type:[doctor]+medical-specialty:[nephrology] → DB Dimensions doğru + SCMM ForWhom'da seçilebilir (ALMIBA retest).
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → sonra ALMIBA retest'inde AudienceProfile'ı reference-driven gir (contact-type=doctor + medical-specialty=nephrology) → A2..A8 devam.
+- CT E2 ✅ → sonra **WP-MOD0162-SUBJECT-UI** (Subject↔Global Product, sıralı — şimdi dispatch edilebilir, HEAD 72ad7f24) → sonra ALMIBA retest.
