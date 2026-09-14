@@ -47,14 +47,17 @@ public sealed class AccountKindTests
     // MOD0024-TASK-READ-ACCESS-01 (BL-349, owner decision 2026-09-13) added platform.tasks.read-all as the
     // set's third owner-decided key — count and membership below updated to match; the two original assertions
     // are unchanged otherwise.
+    // WP-PSS-MOD0024-BL392-WORK-REPORT-READ-EXPLICIT-01 (BL-392, owner decision 2026-09-14) added
+    // platform.tasks.work-report.read-tenant-wide as the fourth — same treatment.
     [Fact]
-    public void The_explicit_grant_only_set_is_exactly_the_three_owner_decided_keys()
+    public void The_explicit_grant_only_set_is_exactly_the_four_owner_decided_keys()
     {
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.account-kind.manage"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("AUTH.USERS.ACCOUNT-KIND.MANAGE")); // case-insensitive, like the catalog
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("ppm.portfolios.assign-owner"));
         Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.read-all"));
-        Assert.Equal(3, ExplicitGrantOnlyPermissions.Keys.Count);
+        Assert.True(ExplicitGrantOnlyPermissions.Keys.Contains("platform.tasks.work-report.read-tenant-wide"));
+        Assert.Equal(4, ExplicitGrantOnlyPermissions.Keys.Count);
         Assert.False(ExplicitGrantOnlyPermissions.Keys.Contains("auth.users.lookup")); // lookup is an ORDINARY tenant key
     }
 
