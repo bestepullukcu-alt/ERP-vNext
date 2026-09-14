@@ -5407,7 +5407,7 @@ yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sa
 
 **Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
 
-DURUM: KARAR VERİLDİ, UYGULANIYOR (sahip 2026-09-14: düzenleyene davet gitmez — takvim standardı RFC 5546, Outlook/Google aynı) · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KARAR YENİDEN SAHİPTE (2026-09-14) — uygulandı ve doğrulandı (567/567, sabotaj 9 kırmızı) ama COMMIT'LENMEDİ: bizde takvim entegrasyonu yok, düzenleyenin takvimine toplantıyı sokan tek şey davet .ics'i; kural uygulanınca seri örnekleri ve başkası adına kurulan toplantılar düzenleyenin takviminde hiç görünmez. Yama: `.git/BL-387-organizer-exclusion.patch` · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
 "düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
