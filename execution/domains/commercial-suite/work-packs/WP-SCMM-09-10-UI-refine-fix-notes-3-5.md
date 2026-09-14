@@ -48,5 +48,14 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: node→conceptTypeName çözülemiyorsa (raporla) · tracker taşınınca davranış bozuluyorsa · kapsam bu iki not dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: fb8f9b10 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @fb8f9b10
+```
+- ✅ **Scope (name-set):** 3 dosya — concept-slim.js + TemplateCreate.cshtml + TemplateEdit.cshtml. Backend/API/RBAC/ocelot/resx/manifest **dokunulmadı** (→ nav guard yapısal olarak etkilenmez).
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0 hata**; **Diten.Web.Tests 137/0**.
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) [Not 3] `typeNameMap` (name-only) + `nodeTypeName(id)`=typeNameMap[nodeMap[id].conceptTypeId]; nodeMap build'i conceptTypeId taşıyor; `autoFillRelationshipName` = `{fromType} → {toType}` (concept-type ADI, node kodu değil); tip çözülemezse **boş bırakır** (yarım/yanlış ad yok); `relNameDirty` guard korundu (elle/mevcut ad ezilmez); (2) [Not 5] `conceptTemplateRequiredTracker` span'i `<h5>` yanından **sağ aksiyon grubuna** taşındı — `<div class="d-flex align-items-center gap-2">` içinde **Cancel + tracker + Save**, tracker Save'den hemen önce (Organization/Positions/Form kanonik golden-compact); `<h5>` sade `mb-0`; `data-required-tracker-*` mekaniği değişmedi. Create + Edit ikisinde de.
+- ⏳ **E4 = kullanıcı manuel:** connection kur→ad tip-adlı; template create/edit→tracker Save'den önce doğru konumda (ALMIBA yeniden-testinde).
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → **6 not tam TAMAM** → manuel teste devam (A7b apply-eligibility/clone + A8 evaluate) → sonra main sync/push/PR.
+- **6 not + 2 düzeltme TAMAM (CT E2).** Sıradaki: DB temizle (ALFORITA test verisi) → **ALMIBA gerçek ürünüyle yeniden manuel test** (A1→A8) → sonra main sync/push/PR. Blocked/foundation en sonda.
