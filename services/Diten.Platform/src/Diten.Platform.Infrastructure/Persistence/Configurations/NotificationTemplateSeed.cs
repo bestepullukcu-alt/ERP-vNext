@@ -133,7 +133,34 @@ public static class NotificationTemplateSeed
             MeetingRemoved("es"),
             MeetingRemoved("zh"),
             MeetingRemoved("ar"),
-            MeetingRemoved("ru")
+            MeetingRemoved("ru"),
+
+            /*
+             * MOD-0357 BL-387/BL-373 (owner, 2026-09-14) — the ORGANIZER's own variant of invite/change/cancel,
+             * SEVEN languages each, same reason every other tenant-facing set here is: two of seven would show an
+             * English e-mail to five sets of readers who never asked for one.
+             */
+            MeetingOrganizerAdded("en"),
+            MeetingOrganizerAdded("tr"),
+            MeetingOrganizerAdded("fr"),
+            MeetingOrganizerAdded("es"),
+            MeetingOrganizerAdded("zh"),
+            MeetingOrganizerAdded("ar"),
+            MeetingOrganizerAdded("ru"),
+            MeetingOrganizerUpdated("en"),
+            MeetingOrganizerUpdated("tr"),
+            MeetingOrganizerUpdated("fr"),
+            MeetingOrganizerUpdated("es"),
+            MeetingOrganizerUpdated("zh"),
+            MeetingOrganizerUpdated("ar"),
+            MeetingOrganizerUpdated("ru"),
+            MeetingOrganizerCancelled("en"),
+            MeetingOrganizerCancelled("tr"),
+            MeetingOrganizerCancelled("fr"),
+            MeetingOrganizerCancelled("es"),
+            MeetingOrganizerCancelled("zh"),
+            MeetingOrganizerCancelled("ar"),
+            MeetingOrganizerCancelled("ru")
         ];
     }
 
@@ -413,6 +440,72 @@ public static class NotificationTemplateSeed
 
         return Create("platform.meetings.cancel", locale, subject, html, text,
             ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "Organizer", "MeetingUrl"]);
+    }
+
+    /// <summary><c>platform.meetings.organizer-added</c> in seven languages (BL-387/BL-373) — the organizer's own
+    /// reading of <see cref="MeetingInvite"/>: this meeting is on their calendar not because they were invited,
+    /// but because it is theirs to run and someone/something else (a series sweep, a delegate) just scheduled it.
+    /// No <c>{{Organizer}}</c> token — telling the reader they are the organizer of their own meeting is
+    /// redundant, unlike the three sibling events above.</summary>
+    private static NotificationTemplate MeetingOrganizerAdded(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Added to your calendar: {{MeetingTitle}}", "<p>A meeting you organize has been scheduled and added to your calendar.</p><p><strong>Meeting:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>When: {{StartAt}} – {{EndAt}}</p><p>Location: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Open the meeting</a></p>", "A meeting you organize has been scheduled and added to your calendar. Meeting: {{MeetingTitle}} ({{MeetingType}}) — When: {{StartAt}} – {{EndAt}} — Location: {{Location}} — Open it: {{MeetingUrl}}"),
+            "tr" => ("Takviminize eklendi: {{MeetingTitle}}", "<p>Düzenleyeni olduğunuz bir toplantı planlandı ve takviminize eklendi.</p><p><strong>Toplantı:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Zaman: {{StartAt}} – {{EndAt}}</p><p>Konum: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Toplantıyı aç</a></p>", "Düzenleyeni olduğunuz bir toplantı planlandı ve takviminize eklendi. Toplantı: {{MeetingTitle}} ({{MeetingType}}) — Zaman: {{StartAt}} – {{EndAt}} — Konum: {{Location}} — Aç: {{MeetingUrl}}"),
+            "fr" => ("Ajouté à votre calendrier : {{MeetingTitle}}", "<p>Une réunion que vous organisez a été planifiée et ajoutée à votre calendrier.</p><p><strong>Réunion:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Quand: {{StartAt}} – {{EndAt}}</p><p>Lieu: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Ouvrir la réunion</a></p>", "Une réunion que vous organisez a été planifiée et ajoutée à votre calendrier. Réunion: {{MeetingTitle}} ({{MeetingType}}) — Quand: {{StartAt}} – {{EndAt}} — Lieu: {{Location}} — Ouvrir: {{MeetingUrl}}"),
+            "es" => ("Añadido a su calendario: {{MeetingTitle}}", "<p>Se ha programado una reunión que usted organiza y se ha añadido a su calendario.</p><p><strong>Reunión:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Cuándo: {{StartAt}} – {{EndAt}}</p><p>Lugar: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Abrir la reunión</a></p>", "Se ha programado una reunión que usted organiza y se ha añadido a su calendario. Reunión: {{MeetingTitle}} ({{MeetingType}}) — Cuándo: {{StartAt}} – {{EndAt}} — Lugar: {{Location}} — Abrir: {{MeetingUrl}}"),
+            "zh" => ("已添加到您的日历：{{MeetingTitle}}", "<p>您组织的一次会议已安排，并已添加到您的日历。</p><p><strong>会议:</strong> {{MeetingTitle}}（{{MeetingType}}）</p><p>时间: {{StartAt}} – {{EndAt}}</p><p>地点: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">打开会议</a></p>", "您组织的一次会议已安排，并已添加到您的日历。 会议: {{MeetingTitle}}（{{MeetingType}}） — 时间: {{StartAt}} – {{EndAt}} — 地点: {{Location}} — 打开: {{MeetingUrl}}"),
+            "ar" => ("أُضيف إلى تقويمك: {{MeetingTitle}}", "<p>تمت جدولة اجتماع تنظمه وأُضيف إلى تقويمك.</p><p><strong>الاجتماع:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>الوقت: {{StartAt}} – {{EndAt}}</p><p>المكان: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">فتح الاجتماع</a></p>", "تمت جدولة اجتماع تنظمه وأُضيف إلى تقويمك. الاجتماع: {{MeetingTitle}} ({{MeetingType}}) — الوقت: {{StartAt}} – {{EndAt}} — المكان: {{Location}} — فتح: {{MeetingUrl}}"),
+            "ru" => ("Добавлено в ваш календарь: {{MeetingTitle}}", "<p>Совещание, которое вы организуете, запланировано и добавлено в ваш календарь.</p><p><strong>Совещание:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Когда: {{StartAt}} – {{EndAt}}</p><p>Место: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Открыть совещание</a></p>", "Совещание, которое вы организуете, запланировано и добавлено в ваш календарь. Совещание: {{MeetingTitle}} ({{MeetingType}}) — Когда: {{StartAt}} – {{EndAt}} — Место: {{Location}} — Открыть: {{MeetingUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported meeting template locale.")
+        };
+
+        return Create("platform.meetings.organizer-added", locale, subject, html, text,
+            ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "MeetingUrl"]);
+    }
+
+    /// <summary><c>platform.meetings.organizer-updated</c> in seven languages (BL-387) — the organizer's own
+    /// reading of <see cref="MeetingChange"/>, sent only when someone OTHER than the organizer moved the
+    /// meeting (the mailer's own organizer/others split, never a second <c>scheduleChanged</c> gate here).</summary>
+    private static NotificationTemplate MeetingOrganizerUpdated(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your meeting was updated: {{MeetingTitle}}", "<p>A meeting you organize has changed.</p><p><strong>Meeting:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>New time: {{StartAt}} – {{EndAt}}</p><p>Location: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Open the meeting</a></p>", "A meeting you organize has changed. Meeting: {{MeetingTitle}} ({{MeetingType}}) — New time: {{StartAt}} – {{EndAt}} — Location: {{Location}} — Open it: {{MeetingUrl}}"),
+            "tr" => ("Toplantınız güncellendi: {{MeetingTitle}}", "<p>Düzenleyeni olduğunuz bir toplantı değişti.</p><p><strong>Toplantı:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Yeni zaman: {{StartAt}} – {{EndAt}}</p><p>Konum: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Toplantıyı aç</a></p>", "Düzenleyeni olduğunuz bir toplantı değişti. Toplantı: {{MeetingTitle}} ({{MeetingType}}) — Yeni zaman: {{StartAt}} – {{EndAt}} — Konum: {{Location}} — Aç: {{MeetingUrl}}"),
+            "fr" => ("Votre réunion a été modifiée : {{MeetingTitle}}", "<p>Une réunion que vous organisez a changé.</p><p><strong>Réunion:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Nouvel horaire: {{StartAt}} – {{EndAt}}</p><p>Lieu: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Ouvrir la réunion</a></p>", "Une réunion que vous organisez a changé. Réunion: {{MeetingTitle}} ({{MeetingType}}) — Nouvel horaire: {{StartAt}} – {{EndAt}} — Lieu: {{Location}} — Ouvrir: {{MeetingUrl}}"),
+            "es" => ("Su reunión fue actualizada: {{MeetingTitle}}", "<p>Una reunión que usted organiza ha cambiado.</p><p><strong>Reunión:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Nuevo horario: {{StartAt}} – {{EndAt}}</p><p>Lugar: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Abrir la reunión</a></p>", "Una reunión que usted organiza ha cambiado. Reunión: {{MeetingTitle}} ({{MeetingType}}) — Nuevo horario: {{StartAt}} – {{EndAt}} — Lugar: {{Location}} — Abrir: {{MeetingUrl}}"),
+            "zh" => ("您的会议已更新：{{MeetingTitle}}", "<p>您组织的一次会议已更改。</p><p><strong>会议:</strong> {{MeetingTitle}}（{{MeetingType}}）</p><p>新时间: {{StartAt}} – {{EndAt}}</p><p>地点: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">打开会议</a></p>", "您组织的一次会议已更改。 会议: {{MeetingTitle}}（{{MeetingType}}） — 新时间: {{StartAt}} – {{EndAt}} — 地点: {{Location}} — 打开: {{MeetingUrl}}"),
+            "ar" => ("تم تحديث اجتماعك: {{MeetingTitle}}", "<p>تغيّر اجتماع تنظمه.</p><p><strong>الاجتماع:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>الوقت الجديد: {{StartAt}} – {{EndAt}}</p><p>المكان: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">فتح الاجتماع</a></p>", "تغيّر اجتماع تنظمه. الاجتماع: {{MeetingTitle}} ({{MeetingType}}) — الوقت الجديد: {{StartAt}} – {{EndAt}} — المكان: {{Location}} — فتح: {{MeetingUrl}}"),
+            "ru" => ("Ваше совещание обновлено: {{MeetingTitle}}", "<p>Совещание, которое вы организуете, изменилось.</p><p><strong>Совещание:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Новое время: {{StartAt}} – {{EndAt}}</p><p>Место: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Открыть совещание</a></p>", "Совещание, которое вы организуете, изменилось. Совещание: {{MeetingTitle}} ({{MeetingType}}) — Новое время: {{StartAt}} – {{EndAt}} — Место: {{Location}} — Открыть: {{MeetingUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported meeting template locale.")
+        };
+
+        return Create("platform.meetings.organizer-updated", locale, subject, html, text,
+            ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "MeetingUrl"]);
+    }
+
+    /// <summary><c>platform.meetings.organizer-cancelled</c> in seven languages (BL-387) — the organizer's own
+    /// reading of <see cref="MeetingCancel"/>, sent only when someone OTHER than the organizer cancelled the
+    /// meeting. Keeps the link (unlike <see cref="MeetingRemoved"/>): D3's own visibility rule lets the
+    /// organizer view a cancelled meeting they organized, so the link is not a dead end here.</summary>
+    private static NotificationTemplate MeetingOrganizerCancelled(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your meeting was cancelled: {{MeetingTitle}}", "<p>A meeting you organize has been cancelled.</p><p><strong>Meeting:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Was scheduled: {{StartAt}} – {{EndAt}}</p><p>Location: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">View the meeting</a></p>", "A meeting you organize has been cancelled. Meeting: {{MeetingTitle}} ({{MeetingType}}) — Was scheduled: {{StartAt}} – {{EndAt}} — Location: {{Location}} — View it: {{MeetingUrl}}"),
+            "tr" => ("Toplantınız iptal edildi: {{MeetingTitle}}", "<p>Düzenleyeni olduğunuz bir toplantı iptal edildi.</p><p><strong>Toplantı:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Planlanan zaman: {{StartAt}} – {{EndAt}}</p><p>Konum: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Toplantıyı görüntüle</a></p>", "Düzenleyeni olduğunuz bir toplantı iptal edildi. Toplantı: {{MeetingTitle}} ({{MeetingType}}) — Planlanan zaman: {{StartAt}} – {{EndAt}} — Konum: {{Location}} — Görüntüle: {{MeetingUrl}}"),
+            "fr" => ("Votre réunion a été annulée : {{MeetingTitle}}", "<p>Une réunion que vous organisez a été annulée.</p><p><strong>Réunion:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Était prévue: {{StartAt}} – {{EndAt}}</p><p>Lieu: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Voir la réunion</a></p>", "Une réunion que vous organisez a été annulée. Réunion: {{MeetingTitle}} ({{MeetingType}}) — Était prévue: {{StartAt}} – {{EndAt}} — Lieu: {{Location}} — Voir: {{MeetingUrl}}"),
+            "es" => ("Su reunión fue cancelada: {{MeetingTitle}}", "<p>Se ha cancelado una reunión que usted organiza.</p><p><strong>Reunión:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Estaba programada: {{StartAt}} – {{EndAt}}</p><p>Lugar: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Ver la reunión</a></p>", "Se ha cancelado una reunión que usted organiza. Reunión: {{MeetingTitle}} ({{MeetingType}}) — Estaba programada: {{StartAt}} – {{EndAt}} — Lugar: {{Location}} — Ver: {{MeetingUrl}}"),
+            "zh" => ("您的会议已取消：{{MeetingTitle}}", "<p>您组织的一次会议已被取消。</p><p><strong>会议:</strong> {{MeetingTitle}}（{{MeetingType}}）</p><p>原定时间: {{StartAt}} – {{EndAt}}</p><p>地点: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">查看会议</a></p>", "您组织的一次会议已被取消。 会议: {{MeetingTitle}}（{{MeetingType}}） — 原定时间: {{StartAt}} – {{EndAt}} — 地点: {{Location}} — 查看: {{MeetingUrl}}"),
+            "ar" => ("تم إلغاء اجتماعك: {{MeetingTitle}}", "<p>أُلغي اجتماع تنظمه.</p><p><strong>الاجتماع:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>كان مقررًا: {{StartAt}} – {{EndAt}}</p><p>المكان: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">عرض الاجتماع</a></p>", "أُلغي اجتماع تنظمه. الاجتماع: {{MeetingTitle}} ({{MeetingType}}) — كان مقررًا: {{StartAt}} – {{EndAt}} — المكان: {{Location}} — عرض: {{MeetingUrl}}"),
+            "ru" => ("Ваше совещание отменено: {{MeetingTitle}}", "<p>Совещание, которое вы организуете, отменено.</p><p><strong>Совещание:</strong> {{MeetingTitle}} ({{MeetingType}})</p><p>Было запланировано: {{StartAt}} – {{EndAt}}</p><p>Место: {{Location}}</p><p><a href=\"{{MeetingUrl}}\">Посмотреть совещание</a></p>", "Совещание, которое вы организуете, отменено. Совещание: {{MeetingTitle}} ({{MeetingType}}) — Было запланировано: {{StartAt}} – {{EndAt}} — Место: {{Location}} — Посмотреть: {{MeetingUrl}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported meeting template locale.")
+        };
+
+        return Create("platform.meetings.organizer-cancelled", locale, subject, html, text,
+            ["MeetingTitle", "MeetingType", "StartAt", "EndAt", "MeetingUrl"]);
     }
 
     /// <summary><c>platform.meetings.removed</c> in seven languages (BL-386) — sent to the ONE attendee taken off

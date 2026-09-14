@@ -26,6 +26,22 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
     /// WRONG thing (the meeting itself is not cancelled, only this one person's attendance is).</summary>
     private const string RemovedEventCode = "platform.meetings.removed";
 
+    /// <summary>
+    /// BL-387/BL-373 (owner, 2026-09-14) — the ORGANIZER's own variant of invite/change/cancel, used whenever the
+    /// organizer did not perform the action themselves (a series sweep with no actor, a delegate creating/editing
+    /// on their behalf, or a reassignment). The .ics is IDENTICAL to what every other recipient gets — same UID,
+    /// same METHOD, same SEQUENCE — only the wording differs ("added to your calendar", not "you're invited"):
+    /// the .ics is the organizer's only path onto their own calendar (no Google/Outlook integration exists), so
+    /// leaving them out entirely (the rejected BL-387 patch, <c>.git/BL-387-organizer-exclusion.patch</c>) would
+    /// silently drop their own meeting off it. Three keys, not one key + a conditional variable: confirmed against
+    /// <c>EmailTemplateRenderer</c> that the template engine is plain <c>{{token}}</c> substitution with no
+    /// conditional syntax, so a single shared key would need the localized sentence chosen in C# — exactly the
+    /// hardcoded-text failure mode the seed's own per-locale <c>Create(...)</c> calls exist to avoid.
+    /// </summary>
+    private const string OrganizerAddedEventCode = "platform.meetings.organizer-added";
+    private const string OrganizerChangedEventCode = "platform.meetings.organizer-updated";
+    private const string OrganizerCancelledEventCode = "platform.meetings.organizer-cancelled";
+
     private readonly INotificationEventDispatchAdapter _notifications;
     private readonly ITaskNotificationRecipientResolver _recipients;
     private readonly ITenantContext _tenantContext;
@@ -48,34 +64,61 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
 
     public Task<MeetingInviteDeliveryResult> SendInviteAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(InviteEventCode, MeetingIcsEventType.Invite, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(InviteEventCode, OrganizerAddedEventCode, MeetingIcsEventType.Invite, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     public Task<MeetingInviteDeliveryResult> SendChangeAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(ChangeEventCode, MeetingIcsEventType.Change, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(ChangeEventCode, OrganizerChangedEventCode, MeetingIcsEventType.Change, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     public Task<MeetingInviteDeliveryResult> SendCancelAsync(
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(CancelEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, recipients, actingUserId, ct);
+        => SendAsync(CancelEventCode, OrganizerCancelledEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, recipients, actingUserId, ct);
 
     /// <summary>BL-386 — a single-recipient CANCEL: the removed person's own .ics is withdrawn (same UID, a
     /// higher SEQUENCE — the caller already bumped <see cref="Meeting.Version"/> before calling this), nobody
     /// else's copy is touched. Reusing <see cref="SendAsync"/> unmodified means the self-removal exclusion
     /// (<paramref name="actingUserId"/> filtered out of the audience) applies here exactly as it does to invite/
     /// change/cancel — a person who removes THEMSELVES gets <see cref="MeetingInviteDeliveryResult.NoRecipients"/>,
-    /// not a mail about their own action.</summary>
+    /// not a mail about their own action. The organizer-variant event code passed here is unreachable in practice
+    /// (BL-386's own guard means the organizer's row can never be the one being removed) — <see cref="CancelEventCode"/>
+    /// stands in rather than <see cref="RemovedEventCode"/> having no organizer sibling of its own to name.</summary>
     public Task<MeetingInviteDeliveryResult> SendRemovedAsync(
         Meeting meeting, string meetingTypeName, MeetingAttendee removedAttendee, Guid actingUserId, CancellationToken ct = default)
-        => SendAsync(RemovedEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, [removedAttendee], actingUserId, ct);
+        => SendAsync(RemovedEventCode, CancelEventCode, MeetingIcsEventType.Cancel, meeting, meetingTypeName, [removedAttendee], actingUserId, ct);
 
     /// <summary>
-    /// K12 — this method's own try/catch is the whole rule: whatever happens below, the caller (a meeting
-    /// create/update/cancel handler already past its own write) gets a RESULT, never an exception. S5b — the
-    /// same posture extends to .ics generation: a malformed attendee address or any other failure building the
-    /// attachment is caught by this SAME try/catch, never a reason the meeting write itself is threatened.
+    /// BL-387 — the ONLY moment a reassignment mails anyone: the new organizer, and only when they did not just
+    /// reassign themselves. Deliberately its own entry point rather than a third parameter threaded through
+    /// <see cref="SendInviteAsync"/>'s callers: <c>ReassignMeetingOrganizerHandler</c> never touches a persisted
+    /// attendee row (YAPMA — attendee rows are this WP's own read-only ground), so the recipient handed to
+    /// <see cref="SendAsync"/> is a TRANSIENT <see cref="MeetingAttendee"/> built by the caller, never inserted
+    /// anywhere. Reusing the invite pathway with a single-row, organizer-only recipient list means the existing
+    /// organizer/other split inside <see cref="SendAsync"/> does the actual work unmodified: the new organizer's
+    /// row IS <c>meeting.OrganizerUserId</c> by the time this runs, so it always lands in the organizer group,
+    /// never the plain "you're invited" one, with no branch written here to make that true.</summary>
+    public Task<MeetingInviteDeliveryResult> SendOrganizerReassignedAsync(
+        Meeting meeting, string meetingTypeName, Guid newOrganizerUserId, Guid actingUserId, CancellationToken ct = default)
+        => SendAsync(
+            InviteEventCode, OrganizerAddedEventCode, MeetingIcsEventType.Invite, meeting, meetingTypeName,
+            [new MeetingAttendee { TenantId = meeting.TenantId, MeetingId = meeting.Id, UserId = newOrganizerUserId }],
+            actingUserId, ct);
+
+    /// <summary>
+    /// K12 — no path through here may throw past this method: setup (recipient/organizer resolution, .ics
+    /// build) is guarded by ITS OWN try/catch below, and each of the (up to) two dispatch calls this method can
+    /// make is guarded by <see cref="DispatchGroupAsync"/>'s own try/catch — one group's exception must not cost
+    /// the OTHER group its mail.
+    ///
+    /// <para><b>BL-387 — the organizer/others split.</b> <paramref name="recipients"/> is resolved once, then
+    /// partitioned: whichever resolved row's <c>UserId</c> equals <c>meeting.OrganizerUserId</c> (if any — most
+    /// often there is none, because the organizer IS the actor and was already excluded above) is dispatched
+    /// ALONE under <paramref name="organizerEventCode"/>; everyone else goes out together under
+    /// <paramref name="eventCode"/>, unchanged from before this WP. Both groups, when both are non-empty, get the
+    /// SAME <c>.ics</c> bytes — same UID, METHOD and SEQUENCE — only the template differs.</para>
     /// </summary>
     private async Task<MeetingInviteDeliveryResult> SendAsync(
         string eventCode,
+        string organizerEventCode,
         MeetingIcsEventType icsEventType,
         Meeting meeting,
         string meetingTypeName,
@@ -129,27 +172,24 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                     eventCode, meeting.Id, meeting.OrganizerUserId);
             }
 
-            var response = await _notifications.DispatchByEventCodeAsync(
-                new NotificationEventDispatchRequest(
-                    TenantId: _tenantContext.TenantId,
-                    EventCode: eventCode,
-                    To: resolved.Select(r => new EmailRecipientDto(r.Email, r.DisplayName)).ToList(),
-                    Variables: BuildVariables(meeting, meetingTypeName, organizerName),
-                    // Same posture as TaskNotificationService: the reader's own language is not known here, so
-                    // the adapter resolves the TENANT's configured language rather than guessing at the actor's.
-                    Locale: null,
-                    Attachments: icsAttachment is null ? null : [icsAttachment]),
-                ct);
+            // BL-387 — split BEFORE dispatch, never after: the organizer reads a different first sentence than
+            // everyone else, and the template engine (EmailTemplateRenderer) has no conditional syntax to pick
+            // one sentence over another inside a single rendered body.
+            var organizerRow = resolved.FirstOrDefault(r => r.UserId == meeting.OrganizerUserId);
+            var otherRows = organizerRow is null
+                ? resolved
+                : resolved.Where(r => r.UserId != meeting.OrganizerUserId).ToList();
 
-            if (!response.IsSuccessful)
-            {
-                _logger.LogWarning(
-                    "meeting.invite.not_dispatched EventCode={EventCode} MeetingId={MeetingId} ReasonCode={ReasonCode} Reason={Reason}",
-                    eventCode, meeting.Id, response.ReasonCode ?? "<none>", string.Join(" | ", response.Errors));
-                return new MeetingInviteDeliveryResult(Sent: false, Failed: true, Reason: response.ReasonCode ?? "DISPATCH_FAILED");
-            }
+            var variables = BuildVariables(meeting, meetingTypeName, organizerName);
 
-            return new MeetingInviteDeliveryResult(Sent: true, Failed: false, Reason: null);
+            var othersResult = otherRows.Count > 0
+                ? await DispatchGroupAsync(eventCode, meeting.Id, otherRows, variables, icsAttachment, ct)
+                : null;
+            var organizerResult = organizerRow is not null
+                ? await DispatchGroupAsync(organizerEventCode, meeting.Id, [organizerRow], variables, icsAttachment, ct)
+                : null;
+
+            return Combine(othersResult, organizerResult);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -161,6 +201,67 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
             _logger.LogWarning(ex, "meeting.invite.threw EventCode={EventCode} MeetingId={MeetingId}", eventCode, meeting.Id);
             return new MeetingInviteDeliveryResult(Sent: false, Failed: true, Reason: "THREW");
         }
+    }
+
+    /// <summary>One recipient GROUP, one dispatch call, its own try/catch — so the organizer's mail and everyone
+    /// else's mail never share a single point of failure. Same posture as <see cref="SendAsync"/>'s own outer
+    /// try/catch, one level down.</summary>
+    private async Task<MeetingInviteDeliveryResult> DispatchGroupAsync(
+        string eventCode,
+        Guid meetingId,
+        IReadOnlyList<TaskNotificationRecipient> group,
+        IReadOnlyDictionary<string, object?> variables,
+        MessagingProviderAttachment? icsAttachment,
+        CancellationToken ct)
+    {
+        try
+        {
+            var response = await _notifications.DispatchByEventCodeAsync(
+                new NotificationEventDispatchRequest(
+                    TenantId: _tenantContext.TenantId,
+                    EventCode: eventCode,
+                    To: group.Select(r => new EmailRecipientDto(r.Email, r.DisplayName)).ToList(),
+                    Variables: variables,
+                    // Same posture as TaskNotificationService: the reader's own language is not known here, so
+                    // the adapter resolves the TENANT's configured language rather than guessing at the actor's.
+                    Locale: null,
+                    Attachments: icsAttachment is null ? null : [icsAttachment]),
+                ct);
+
+            if (!response.IsSuccessful)
+            {
+                _logger.LogWarning(
+                    "meeting.invite.not_dispatched EventCode={EventCode} MeetingId={MeetingId} ReasonCode={ReasonCode} Reason={Reason}",
+                    eventCode, meetingId, response.ReasonCode ?? "<none>", string.Join(" | ", response.Errors));
+                return new MeetingInviteDeliveryResult(Sent: false, Failed: true, Reason: response.ReasonCode ?? "DISPATCH_FAILED");
+            }
+
+            return new MeetingInviteDeliveryResult(Sent: true, Failed: false, Reason: null);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "meeting.invite.threw EventCode={EventCode} MeetingId={MeetingId}", eventCode, meetingId);
+            return new MeetingInviteDeliveryResult(Sent: false, Failed: true, Reason: "THREW");
+        }
+    }
+
+    private static MeetingInviteDeliveryResult Combine(MeetingInviteDeliveryResult? a, MeetingInviteDeliveryResult? b)
+    {
+        if (a is null)
+        {
+            return b ?? MeetingInviteDeliveryResult.NoRecipients;
+        }
+
+        if (b is null)
+        {
+            return a;
+        }
+
+        return new MeetingInviteDeliveryResult(Sent: a.Sent || b.Sent, Failed: a.Failed || b.Failed, Reason: a.Reason ?? b.Reason);
     }
 
     /// <summary>"Toplantıyı aç" — an ABSOLUTE url, deliberately: this reaches a reader OUTSIDE the app (their

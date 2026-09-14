@@ -377,6 +377,13 @@ internal sealed class FakeMeetingInviteMailer : IMeetingInviteMailer
         Meeting meeting, string meetingTypeName, MeetingAttendee removedAttendee, Guid actingUserId, CancellationToken ct = default)
         => Record("removed", meeting, [removedAttendee], actingUserId);
 
+    public Task<MeetingInviteDeliveryResult> SendOrganizerReassignedAsync(
+        Meeting meeting, string meetingTypeName, Guid newOrganizerUserId, Guid actingUserId, CancellationToken ct = default)
+    {
+        Calls.Add(new Call("organizer-reassigned", meeting.Id, [newOrganizerUserId], actingUserId));
+        return Task.FromResult(NextResult);
+    }
+
     private Task<MeetingInviteDeliveryResult> Record(
         string kind, Meeting meeting, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId)
     {

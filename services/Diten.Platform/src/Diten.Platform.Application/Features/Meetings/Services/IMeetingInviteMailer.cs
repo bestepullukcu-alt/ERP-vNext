@@ -54,6 +54,18 @@ public interface IMeetingInviteMailer
         MeetingAttendee removedAttendee,
         Guid actingUserId,
         CancellationToken ct = default);
+
+    /// <summary>BL-387 — <paramref name="newOrganizerUserId"/> just became this meeting's organizer
+    /// (<c>meeting.OrganizerUserId</c> is already the new value by the time this is called) and gets told the
+    /// SAME "added to your calendar" mail a freshly-created meeting's own organizer gets, unless they reassigned
+    /// the meeting to themselves. Nobody else on the meeting is mailed by a reassignment on its own — the same
+    /// posture <c>ReassignMeetingOrganizerHandler</c> already takes toward every OTHER attendee row.</summary>
+    Task<MeetingInviteDeliveryResult> SendOrganizerReassignedAsync(
+        Meeting meeting,
+        string meetingTypeName,
+        Guid newOrganizerUserId,
+        Guid actingUserId,
+        CancellationToken ct = default);
 }
 
 /// <summary>K12's own shape — <see cref="Sent"/> and <see cref="Failed"/> are deliberately not each other's
