@@ -64,6 +64,15 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: command/query şekli beklenenden farklıysa · ResolveEligibilityQuery context şekli uymuyorsa · RBAC seed deseni bulunamazsa · kapsam HTTP-adapter dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = son manuel teste katlandı
+```text
+Commit: cb876c77 (tek) · Agent: PASS · CT: ACCEPTED E2 · Beklenen HEAD 10ac6735 idi; commit b96c7ef2 (WP doc) üzerine bindi
+```
+- ✅ **Scope (name-set):** 4 dosya — EligibilityPoliciesController + Models/CRM/EligibilityRequests + AuthService DataSeeder + controller test. 412 satır ekleme, **0 silme**. Hiçbir CQRS/handler/port/aggregate dosyası ve başka controller diff'te YOK → gerçekten thin HTTP adapter.
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) verb/route/perm = GET/GET[Read] · POST/PUT/POST-archive[Manage] · POST `eligibility:evaluate`[Evaluate], **delete/patch YOK** (kapatma=Archive); (2) evaluate'te dispatch-öncesi **4 açık 400 kapısı** (null/boş PolicyId · null/boş Context · boş dimension-adı/değer) — `Response.Fail(…,400)` ile, **silent default YOK**; boş değerler temizlenir, pinnedSelections+At taşınır; (3) `ResolveEligibilityQuery`'e generic dimension map; (4) RBAC = 3 katalog `crm.eligibility.read/manage/evaluate` (module `crm-content-composition` → tenant scope) + idempotent 97c5 Admin grant, `SeedAsync`'e bağlı.
+- ✅ **Regresyon (SoR):** `CrmService.Application.Tests` 1724/0/5 (SCMM-14 sonrası 1710 + 14 yeni); PII flake patlamadı; sıfır yeni fail.
+- ⏳ **E4 = son manuel teste katlandı** (fleet authenticated: 97c5 grant + policy create→list→evaluate(disjoint)→archive; yetkisiz→403). SCMM-14-UI deseni gibi — bizim SCMM tarafı bitince tek manuel pass'te. Gateway route (`content-composition/{everything}`) + RBAC seed hazır; fleet restart gerekir.
+
 ## Kalan (bu WP dışı)
-- **SCMM-11-UI** (eligibility policy authoring console + evaluate/preview — Claims/KnowledgeConcepts aynası, select2, 7-dil, nav).
-- CT E4 → sonra **bizim SCMM tarafı TAMAM** → manuel test → sync/push/PR.
+- **SCMM-11-UI** (eligibility policy authoring console + evaluate/preview — Claims/KnowledgeConcepts aynası, select2, 7-dil, nav) — **bizim SCMM tarafının SON parçası**.
+- Sonra **bizim SCMM tarafı TAMAM** → manuel test (SCMM-11-follow E4 dahil, hepsi birlikte) → sync/push/PR.
