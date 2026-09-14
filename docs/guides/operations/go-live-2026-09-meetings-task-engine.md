@@ -9,8 +9,8 @@
 | PR (sırayla) | Dal | İçerik |
 | :-- | :-- | :-- |
 | 1 | `feature/infra/auth-display-label` | Kullanıcı kimliğinden görünen ad okuma ucu; CI kapısını 2026-08-30'dan beri kırmızı tutan iki eski testin düzeltmesi (BL-393) |
-| 2 | `feature/pss/mod-0024-review-meeting-policy` | Görev motoru: kapanış alanları, dosya ekleri, çıktı dosyası zorunlu tür, atama kapsamı güvenliği, görev detayını yalnız ilgili kişinin açması (BL-349), görev türü eşzamanlılığı (BL-375), inceleme toplantısı politikası |
-| 3 | `feature/mg/mod-0357-management-review-cadence` | Toplantılar (MOD-0357): kayıt, ekranlar, görev köprüsü, davet + kabul/ret, `.ics`, tutanak, devam toplantısı, türler, seri toplantı; Görev Merkezi davet kartı; e-posta tekrar denemesi düzeltmeleri (BL-374, BL-385) |
+| 2 | `feature/pss/mod-0024-review-meeting-policy` | Görev motoru: kapanış alanları, dosya ekleri, çıktı dosyası zorunlu tür, atama kapsamı güvenliği, görev detayını yalnız ilgili kişinin açması (BL-349), görev türü eşzamanlılığı (BL-375), inceleme toplantısı politikası, görev yorumlarında @ ile etiketleme |
+| 3 | `feature/mg/mod-0357-management-review-cadence` | Toplantılar (MOD-0357): kayıt, ekranlar, görev köprüsü, davet + kabul/ret, `.ics`, tutanak, devam toplantısı, türler, seri toplantı; Görev Merkezi davet kartı; e-posta tekrar denemesi düzeltmeleri (BL-374, BL-385); çıkarılan katılımcıya posta (BL-386), terim, bilinmeyen kullanıcı ve tarih alanı düzeltmeleri |
 
 ## 1. Birleştirme
 
@@ -81,16 +81,18 @@ Dashboard canlıda kapalı kalır.
 5. İkinci kullanıcı Görev Merkezi'nde daveti kabul eder → düzenleyen cevabı görür.
 6. Toplantı saatini değiştir → güncelleme postası (aynı UID, daha yüksek SEQUENCE); iptal et → iptal postası.
 7. Görevle ilgisi olmayan bir kullanıcı görevin adresini açar → "bulunamadı".
-8. `/health`: dev'de `business_reference_data_provider` bu turdan önce de kırmızıydı; canlıdaki değeri ayrıca okunur.
+8. Görev yorumunda @ ile görevi gören birini etiketle → uygulama içi bildirim + e-posta; görevi görmeyen biri listede çıkmaz.
+9. Toplantıdan bir katılımcıyı çıkar → yalnız ona "toplantıdan çıkarıldınız" postası; takviminden etkinlik kalkar.
+10. `/health`: dev'de `business_reference_data_provider` bu turdan önce de kırmızıydı; canlıdaki değeri ayrıca okunur.
 
 ## 8. Bilinen açıklar (bu turu engellemez)
 
 | Kayıt | Konu |
 | :-- | :-- |
-| BL-386 · BL-389 · BL-390 · BL-391 | Düzeltildi, `feature/mg/mod-0357-ui-polish` (`d9dfec87`) dalında; bu tura katılıp katılmayacağı sahip kararı. Katılmazsa canlıda çıkarılan katılımcının takviminde toplantı kalır |
 | BL-387 | Seri toplantıda düzenleyen de davet alıyor — sahip kararı |
 | BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); aynı ham hata metni 21 başka ekranda duruyor |
-| @ ile etiketleme | `feature/pss/mod-0024-task-mentions` (`b9476a4e`) dalında hazır; bu tura katılıp katılmayacağı sahip kararı |
+| BL-391 kalanı | Doğrudan tarih seçici kullanan 14 ekranda yanlış biçimde yazılan tarih hâlâ sessizce kayabilir |
+| @ ile etiketleme kalanı | Var olan yorumu düzenlerken etiket ekleme ekranı yok; eski /Tasks/Details ekranında etiketleme yok |
 | BL-395 | Aynı makinede eşzamanlı Platform test koşuları paylaşılan test veritabanını silebilir; kırmızı tekrar koşuda kayboluyorsa kod hatası değildir |
 | BL-392 | İş Raporu kiracı geneli okuma izni varsayılan rollere dağılabilir — sahip kararı |
 | BL-347 | İş Raporu indirmesi denetim izi bırakmıyor |
