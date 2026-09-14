@@ -4934,6 +4934,7 @@ kiracı oluşturma olayını dinleyen yok. Görev oluşturmanın kök birim aram
 (yeni MDM olayı + Platform tüketicisi) · (2) kiracı yöneticisine ilk kurulum adımı: tüzel kişilik oluştur + aktifleştir, sonra var olan birim
 oluşturma (yeni arka uç yok) · (3) tüzel kişiliksiz birime izin (MOD-0288 sözleşmesi değişir) · (4) kurulum MDM'de tüzel kişiliği servisler
 arası oluştursun (yeni iç uç + yeni zorunlu kurulum alanı). CT önerisi: (2) hemen (belge/kılavuz), (1) sonra.
+**Sahip kararı (2026-09-14):** şimdi (2) — kontrol listesi §6'da; sonra (1) — MDM olayı + Platform tüketicisi, ayrı prompt (SAP/Oracle/Workday: önce tüzel kişilik, sonra birim).
 
 **Ölçüm komutu:**
 
@@ -5302,6 +5303,7 @@ devre dışı bırakılamayan sürüm kapısı 3 aynı alanı okumaya devam ediy
 girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
 **(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
 yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
+**2026-09-14:** CT önerisi engellemek (onaya tabi olmayan tür açıkça "onay gerekmez"; Veeva/MasterControl ve 21 CFR Part 11 ile uyumlu). Sahip soruyu Kural 4 ile birlikte Kalite'ye iletiyor.
 
 ---
 
@@ -5405,7 +5407,7 @@ yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sa
 
 **Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
 
-DURUM: AÇIK (sahip kararı) · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KARAR VERİLDİ, UYGULANIYOR (sahip 2026-09-14: düzenleyene davet gitmez — takvim standardı RFC 5546, Outlook/Google aynı) · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
 "düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
@@ -5465,7 +5467,7 @@ tanınmayan girişte alan boşaltılmalı ya da hata göstermeli.
 
 **`platform.tasks.work-report.read-tenant-wide` yalnız-açık-yetki listesinde değil — modül yetkilendirmesiyle varsayılan rollere dağılabilir (karar)**
 
-DURUM: AÇIK (sahip kararı) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCESS-01), CT doğruladı · KAYIT: 2026-09-13
+DURUM: KARAR VERİLDİ, UYGULANIYOR (sahip 2026-09-14: yalnız açıkça verilir; geçişte bugünkü sahipler listelenip açıkça yeniden verilir — SAP/Oracle geniş görüntüleme yetkisi de açık atamayla) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCESS-01), CT doğruladı · KAYIT: 2026-09-13
 
 `ExplicitGrantOnlyPermissions.Keys` bu WP'den önce yalnız iki anahtar taşıyordu (`ppm.portfolios.assign-owner`,
 `auth.users.account-kind.manage`); BL-349 üçüncüsü olarak `platform.tasks.read-all`'ı ekledi. İş Raporu'nun kiracı geneli okuma anahtarı
@@ -5486,6 +5488,19 @@ DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 g
 koşunca biri diğerinin veritabanını silebiliyor → testler rastgele kırmızı. Tekrar koşuda kaybolan kırmızı kod hatası sanılmamalı.
 Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıcı çözüm: koşu başına benzersiz önek ya da sahiplik işareti
 (İş Referans Verisi temizleyicisinin işaret deseni) — sweeper yalnız kendi koşusunun izini düşürsün.
+
+---
+
+### BL-396
+
+**Toplantı raporu / aksiyon kaydı yok — toplantılar arası izleme ve dışa aktarma**
+
+DURUM: KARAR VERİLDİ, PAKET DİLİMİ BEKLİYOR · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
+
+Bütün dallarda ölçüldü: toplantılar için rapor ekranı ya da dışa aktarma ucu yok; toplantı başına kayıt tutanak. **Karar:** içerik = dönem/tür/
+düzenleyen filtreli toplantı listesi, katılım oranı, kararlar, toplantılardan doğan açık ve geciken aksiyonlar (Blueprint "Follow-up Register";
+ISO 9001 §9.3.3; QMS araçlarının aksiyon kaydı) · görünürlük = toplantı kuralı (düzenleyen + katılımcı + read-all) · dışa aktarmada denetim izi
+ŞART → BL-347 ile aynı kiracı tarafı denetim yazıcısı kararına bağlı. Sıra: MOD-0357 paket dilimi (module-pack-author) → sahip onayı → uygulama.
 
 ---
 
