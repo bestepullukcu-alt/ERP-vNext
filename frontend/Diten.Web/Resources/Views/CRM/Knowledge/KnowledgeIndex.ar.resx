@@ -126,4 +126,19 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>الأبعاد</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>إضافة محور</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>استهدف هذا الجمهور بمحاور البيانات المرجعية (أو محور مخصص).</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>لا محاور بعد — يستهدف هذا الملف الجميع.</value></data>
+  <data name="Axis" xml:space="preserve"><value>المحور</value></data>
+  <data name="Values" xml:space="preserve"><value>القيم</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>إزالة المحور</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>مهمَل</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>نوع الحساب</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>نوع جهة الاتصال</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>التخصص الطبي</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>اختر القيم</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>رمز المحور (مثل المنطقة)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>اكتب قيمة واضغط Enter</value></data>
 </root>

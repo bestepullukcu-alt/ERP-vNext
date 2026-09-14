@@ -253,6 +253,20 @@
                 <label class="form-label" for="taxProfileType">@Localizer["ProfileType"]</label>
                 <select id="taxProfileType" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
             </div>
+            @* WP-MOD0162-AUD-UI: reference-data-driven dimension builder (rendered by taxonomy.js). Each row = an axis
+               (account-type / contact-type / medical-specialty / custom) + its values. Reference axes select values by
+               name from MOD-0048 published-values but store the stable ValueCode; custom axes take free AxisCode + tags. *@
+            <div class="mb-3 tax-only-profile d-none">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label class="form-label mb-0">@Localizer["Dimensions"]</label>
+                    <button type="button" id="btnAddDimension" class="btn btn-sm btn-label-primary">
+                        <i class="bx bx-plus me-1"></i>@Localizer["AddDimension"]
+                    </button>
+                </div>
+                <div class="form-text mb-2">@Localizer["DimensionsNote"]</div>
+                <div id="taxDimensions" class="d-flex flex-column gap-2"></div>
+                <div id="taxDimensionsEmpty" class="form-text">@Localizer["DimensionsEmpty"]</div>
+            </div>
             <div class="mb-3">
                 <label class="form-label" for="taxStatus">@Localizer["Status"]</label>
                 <select id="taxStatus" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>

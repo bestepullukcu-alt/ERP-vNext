@@ -126,4 +126,19 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>Dimensiones</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>Añadir eje</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>Segmente esta audiencia por ejes de datos de referencia (o un eje personalizado).</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>Aún no hay ejes: este perfil se dirige a todos.</value></data>
+  <data name="Axis" xml:space="preserve"><value>Eje</value></data>
+  <data name="Values" xml:space="preserve"><value>Valores</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>Quitar eje</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>obsoleto</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>Tipo de cuenta</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>Tipo de contacto</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>Especialidad médica</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>Personalizado</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>Seleccionar valores</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Código de eje (p. ej. región)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Escriba un valor y pulse Intro</value></data>
 </root>

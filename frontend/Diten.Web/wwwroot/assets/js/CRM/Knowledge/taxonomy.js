@@ -61,7 +61,8 @@
             updatedAt: item.updatedAt || item.createdAt, isArchived: item.isArchived
         };
         if (kind === 'topics') return Object.assign({ id:item.topicId, code:item.topicCode, name:item.topicName, subjectId:item.subjectId, parentTopicId:item.parentTopicId }, common);
-        if (kind === 'audience-profiles') return Object.assign({ id:item.audienceProfileId, code:item.profileCode, name:item.profileName, profileType:item.profileType }, common);
+        // WP-MOD0162-AUD-UI: dimensions ride through so an edit round-trips them (writes are full replaces).
+        if (kind === 'audience-profiles') return Object.assign({ id:item.audienceProfileId, code:item.profileCode, name:item.profileName, profileType:item.profileType, dimensions:item.dimensions || [] }, common);
         return Object.assign({ id:item.subjectId, code:item.subjectCode, name:item.subjectName, parentSubjectId:item.parentSubjectId }, common);
     };
 
@@ -531,6 +532,153 @@
         document.getElementById('taxonomySubmit')?.classList.toggle('d-none', readOnly);
     };
 
+    // ─── WP-MOD0162-AUD-UI: AudienceProfile dimension builder ─────────────────
+    // Each row = an axis + its values. A reference axis (account-type / contact-type / medical-specialty) picks values
+    // BY NAME from MOD-0048 published-values but STORES the stable ValueCode; a custom axis takes a free AxisCode + free
+    // tag values. Dimensions are optional (0+ rows). Writes are full replaces — collectDimensions() is the whole list.
+    const REF_AXES = ['account-type', 'contact-type', 'medical-specialty'];
+    const AXIS_LABEL = {
+        'account-type': () => L.AxisAccountType || 'account-type',
+        'contact-type': () => L.AxisContactType || 'contact-type',
+        'medical-specialty': () => L.AxisMedicalSpecialty || 'medical-specialty',
+        'custom': () => L.AxisCustom || 'custom'
+    };
+    const isRefAxis = axis => REF_AXES.includes(axis);
+    // Soft-cascade doctor detection — by code or (multilingual) label; best-effort, never a hard data binding.
+    const DOCTOR_CODES = ['doctor', 'physician', 'md', 'doktor', 'hekim'];
+    const looksLikeDoctor = (code, label) => DOCTOR_CODES.includes(norm(code).toLowerCase())
+        || /doctor|physician|hekim|doktor|m[eé]decin|arzt|врач|医生|طبيب/i.test(norm(label));
+
+    // published-values cache: setCode → [{code, label, isDeprecated, replacement}]
+    const refValues = {};
+    const loadRefValues = async setCode => {
+        if (refValues[setCode]) return refValues[setCode];
+        try {
+            const data = await envelope(await fetch(`${base}/reference-data/${encodeURIComponent(setCode)}/values`, { credentials: 'same-origin', headers }));
+            refValues[setCode] = (data?.items || []).map(v => {
+                const code = norm(v.code || v.valueCode || v.value);
+                return {
+                    code,
+                    label: norm(v.label || v.displayName || v.text) || code,
+                    isDeprecated: v.isDeprecated === true || v.isActive === false,
+                    replacement: norm(v.replacementValueCode || v.replacementCode),
+                    sortOrder: Number(v.sortOrder || 0)
+                };
+            }).filter(o => o.code).sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label));
+        } catch { refValues[setCode] = []; }
+        return refValues[setCode];
+    };
+    const refValueLabel = (setCode, code) => (refValues[setCode] || []).find(o => o.code === code)?.label || code;
+
+    let dimensions = [];       // [{ axis, customCode, values:[] }]
+    let dimReadOnly = false;
+
+    const dimValuesControl = (d, i) => {
+        const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
+        if (d.axis === 'custom') {
+            return `<input type="text" class="form-control form-control-sm mb-1 js-dim-custom-code" data-i="${i}" value="${esc(d.customCode || '')}" placeholder="${esc(L.CustomAxisPlaceholder || '')}" ${dimReadOnly ? 'disabled' : ''}>
+                <select multiple class="form-select form-select-sm js-dim-values" data-i="${i}" data-placeholder="${esc(L.CustomValuesPlaceholder || '')}" ${dimReadOnly ? 'disabled' : ''}>
+                    ${(d.values || []).map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`).join('')}
+                </select>`;
+        }
+        const opts = refValues[d.axis] || [];
+        const known = opts.map(o => {
+            const sel = (d.values || []).includes(o.code) ? ' selected' : '';
+            return `<option value="${esc(o.code)}"${sel}>${esc(o.label)}${o.isDeprecated ? dep : ''}</option>`;
+        });
+        // A stored code no longer in published-values is kept + flagged (archived-reference-kept pattern).
+        const extra = (d.values || []).filter(v => !opts.some(o => o.code === v))
+            .map(v => `<option value="${esc(v)}" selected>${esc(v)}${dep}</option>`);
+        return `<select multiple class="form-select form-select-sm js-dim-values" data-i="${i}" data-placeholder="${esc(L.SelectValues || L.SelectOption || '')}" ${dimReadOnly ? 'disabled' : ''}>
+                ${known.concat(extra).join('')}
+            </select>`;
+    };
+    const renderDimensions = () => {
+        const host = document.getElementById('taxDimensions');
+        if (!host) return;
+        host.innerHTML = dimensions.map((d, i) => {
+            const axisOpts = REF_AXES.concat('custom')
+                .map(a => `<option value="${esc(a)}"${d.axis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
+            return `<div class="card border shadow-none"><div class="card-body p-2">
+                <div class="d-flex gap-2 align-items-start">
+                    <div style="width:12rem" class="flex-shrink-0">
+                        <label class="form-label small mb-0">${esc(L.Axis || 'Axis')}</label>
+                        <select class="form-select form-select-sm js-dim-axis" data-i="${i}" ${dimReadOnly ? 'disabled' : ''}>${axisOpts}</select>
+                    </div>
+                    <div class="flex-grow-1">
+                        <label class="form-label small mb-0">${esc(L.Values || 'Values')}</label>
+                        ${dimValuesControl(d, i)}
+                    </div>
+                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0 mt-4" data-i="${i}" title="${esc(L.RemoveDimension || '')}" ${dimReadOnly ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
+                </div></div></div>`;
+        }).join('');
+        document.getElementById('taxDimensionsEmpty')?.classList.toggle('d-none', dimensions.length > 0);
+        document.getElementById('btnAddDimension')?.toggleAttribute('disabled', dimReadOnly);
+        initDimSelect2();
+    };
+    const initDimSelect2 = () => {
+        const jq = window.jQuery;
+        if (!jq?.fn?.select2) return;
+        jq('#taxDimensions select.js-dim-axis').each(function () {
+            const $s = jq(this), el = this;
+            if (!$s.hasClass('select2-hidden-accessible')) $s.select2({ dropdownParent: jq('#taxonomyCanvas'), minimumResultsForSearch: Infinity, width: '100%' });
+            $s.off('change.dim').on('change.dim', async function () {
+                const row = dimensions[Number(el.dataset.i)];
+                if (!row) return;
+                row.axis = jq(this).val();
+                row.values = [];                       // axis changed → its vocabulary changed, reset values
+                if (isRefAxis(row.axis)) await loadRefValues(row.axis);
+                renderDimensions();
+            });
+        });
+        jq('#taxDimensions select.js-dim-values').each(function () {
+            const $s = jq(this), el = this;
+            const custom = dimensions[Number(el.dataset.i)]?.axis === 'custom';
+            const opts = { dropdownParent: jq('#taxonomyCanvas'), width: '100%', placeholder: el.getAttribute('data-placeholder') || '', closeOnSelect: false };
+            if (custom) { opts.tags = true; opts.tokenSeparators = [',']; }
+            if (!$s.hasClass('select2-hidden-accessible')) $s.select2(opts);
+            $s.off('change.dim').on('change.dim', function () {
+                const row = dimensions[Number(el.dataset.i)];
+                if (!row) return;
+                row.values = jq(this).val() || [];
+                maybeCascade(row);
+            });
+        });
+    };
+    // Soft cascade: a contact-type row that gains a doctor/physician value auto-adds an (empty) medical-specialty axis
+    // so the user is nudged to specialise. If the doctor value can't be recognised, nothing is added — medical-specialty
+    // stays a normal axis the user can add by hand (documented fallback, not a stop).
+    const maybeCascade = row => {
+        if (dimReadOnly || row.axis !== 'contact-type') return;
+        const hasDoctor = (row.values || []).some(code => looksLikeDoctor(code, refValueLabel('contact-type', code)));
+        if (!hasDoctor || dimensions.some(d => d.axis === 'medical-specialty')) return;
+        dimensions.push({ axis: 'medical-specialty', customCode: '', values: [] });
+        loadRefValues('medical-specialty').then(renderDimensions);
+    };
+    const loadDimensions = async row => {
+        dimensions = (row?.dimensions || []).map(d => {
+            const axisCode = norm(d.axisCode);
+            const ref = isRefAxis(axisCode);
+            return { axis: ref ? axisCode : 'custom', customCode: ref ? '' : axisCode, values: normArr(d.values) };
+        });
+        await Promise.all(REF_AXES.filter(a => dimensions.some(d => d.axis === a)).map(loadRefValues));
+        renderDimensions();
+    };
+    // Full-replace list; skips rows with no axis or no values, and drops a duplicate axis (all three would 400).
+    const collectDimensions = () => {
+        const seen = new Set(); const out = [];
+        dimensions.forEach(d => {
+            const axisCode = norm(d.axis === 'custom' ? d.customCode : d.axis);
+            const values = normArr(d.values);
+            if (!axisCode || values.length === 0) return;
+            const key = axisCode.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push({ axisCode, values });
+        });
+        return out;
+    };
+
     const openForm = (kind, row, readOnly) => {
         const spec = SPECS[kind];
         const form = document.getElementById('taxonomyForm');
@@ -554,6 +702,10 @@
         document.querySelectorAll('.tax-only-topic').forEach(x => x.classList.toggle('d-none', kind !== 'topics'));
         document.querySelectorAll('.tax-only-profile').forEach(x => x.classList.toggle('d-none', kind !== 'audience-profiles'));
         setFormReadOnly(!!readOnly);
+        // WP-MOD0162-AUD-UI: the dimension builder is profile-only; load stored dimensions on edit/view, clear otherwise.
+        dimReadOnly = !!readOnly;
+        if (kind === 'audience-profiles') { void loadDimensions(row); }
+        else { dimensions = []; renderDimensions(); }
         // A topic's subject is fixed at creation (the update contract does not carry SubjectId).
         if (!readOnly) document.getElementById('taxSubjectId').disabled = !!row;
         document.getElementById('taxonomyCanvasTitle').textContent = readOnly
@@ -579,7 +731,8 @@
             return isUpdate ? payload : Object.assign({ topicCode: src.code, subjectId: src.subjectId }, payload);
         }
         if (kind === 'audience-profiles') {
-            const payload = Object.assign({ profileName: src.name, profileType: norm(src.profileType) || null }, common);
+            // WP-MOD0162-AUD-UI: dimensions is a full replace (empty array clears); values are stable ValueCodes.
+            const payload = Object.assign({ profileName: src.name, profileType: norm(src.profileType) || null, dimensions: src.dimensions || [] }, common);
             return isUpdate ? payload : Object.assign({ profileCode: src.code }, payload);
         }
         // ParentSubjectId is re-assignable, so it rides both create and update.
@@ -655,7 +808,8 @@
             subjectId: document.getElementById('taxSubjectId').value || existing.subjectId,
             parentSubjectId: document.getElementById('taxParentSubjectId').value,
             parentTopicId: document.getElementById('taxParentTopicId').value,
-            profileType: document.getElementById('taxProfileType').value
+            profileType: document.getElementById('taxProfileType').value,
+            dimensions: kind === 'audience-profiles' ? collectDimensions() : undefined
         });
         try {
             await save(kind, id, src);
@@ -697,6 +851,26 @@
             const kind = paneKind[event.target.getAttribute('data-bs-target')];
             try { state[kind]?.table?.columns.adjust().responsive.recalc(); } catch { /* responsive not ready yet */ }
         });
+    });
+
+    // WP-MOD0162-AUD-UI: dimension-builder controls (the offcanvas markup exists at load, just hidden).
+    document.getElementById('btnAddDimension')?.addEventListener('click', async () => {
+        if (dimReadOnly) return;
+        dimensions.push({ axis: 'account-type', customCode: '', values: [] });
+        await loadRefValues('account-type');
+        renderDimensions();
+    });
+    document.getElementById('taxDimensions')?.addEventListener('click', event => {
+        const rm = event.target.closest('.js-dim-remove');
+        if (!rm || dimReadOnly) return;
+        dimensions.splice(Number(rm.dataset.i), 1);
+        renderDimensions();
+    });
+    document.getElementById('taxDimensions')?.addEventListener('input', event => {
+        const el = event.target;
+        if (!el.classList?.contains('js-dim-custom-code')) return;
+        const row = dimensions[Number(el.dataset.i)];
+        if (row) row.customCode = el.value;
     });
 
     registerTableFilter();

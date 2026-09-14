@@ -126,4 +126,19 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>维度</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>添加维度</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>通过参考数据维度（或自定义维度）定位该受众。</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>尚无维度 — 该画像面向所有人。</value></data>
+  <data name="Axis" xml:space="preserve"><value>维度</value></data>
+  <data name="Values" xml:space="preserve"><value>值</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>移除维度</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>已弃用</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>客户类型</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>联系人类型</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>医学专业</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>选择值</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>维度代码（如区域）</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>输入值并按回车</value></data>
 </root>

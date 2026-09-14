@@ -313,6 +313,18 @@ public sealed class KnowledgeController : Controller
     public Task<IActionResult> UnarchiveProfile(Guid profileId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/audience-profiles/{profileId}/unarchive", null, SubjectManagePermission, ct, ManagePermission, ManageFallback);
 
+    // WP-MOD0162-AUD-UI: read-only MOD-0048 published values for the AudienceProfile dimension builder (axis =
+    // reference-set code → its published ValueCodes; the browser stores the stable ValueCode and resolves the display
+    // name live). scope_key is the JWT tenant (never taken from the client). Same gate as the profile list so any user
+    // who can open the profile form can populate its reference axes.
+    [HttpGet("api/reference-data/{setCode}/values")]
+    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    {
+        var tenantId = GetTenantId() ?? string.Empty;
+        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
+        return ProxyGetAsync(path, SubjectReadPermission, ct, ReadPermission, ReadFallback);
+    }
+
     // ---------------- helpers ----------------
 
     private async Task PopulateContractOptionsAsync(KnowledgeContentEditViewModel model, CancellationToken ct)

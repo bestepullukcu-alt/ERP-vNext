@@ -126,4 +126,19 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Kavram Tipi</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>Dugum listesi yukarida secilen Konu ve Kavram Tipi'ne gore daralir.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>Kavram dugumu listesi yuklenemedi; mevcut deger oldugu gibi korunuyor.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>Boyutlar</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>Eksen ekle</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>Bu kitleyi referans-veri eksenleriyle (veya özel eksenle) hedefleyin.</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>Henüz eksen yok — bu profil herkesi hedefler.</value></data>
+  <data name="Axis" xml:space="preserve"><value>Eksen</value></data>
+  <data name="Values" xml:space="preserve"><value>Değerler</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>Ekseni kaldır</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>kullanımdan kaldırıldı</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>Hesap türü</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>Kişi türü</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>Tıbbi uzmanlık</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>Özel</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>Değer seçin</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Eksen kodu (ör. bölge)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Değer yazıp Enter'a basın</value></data>
 </root>
