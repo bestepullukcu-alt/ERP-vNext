@@ -1,3 +1,5 @@
+using Diten.TalentEcosystemService.Domain.Repositories;
+using Diten.TalentEcosystemService.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
@@ -31,6 +33,14 @@ public static class DependencyInjection
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => database);
+
+        // TEP feature repositories (PR-B2 group 1 — coupled cluster).
+        services.AddScoped<ITepConsentVisibilityPolicyRepository, MongoTepConsentVisibilityPolicyRepository>();
+        services.AddScoped<ITepAssociationMembershipRegistryRepository, MongoTepAssociationMembershipRegistryRepository>();
+        services.AddScoped<ITepVerifiedParticipantAccessRepository, MongoTepVerifiedParticipantAccessRepository>();
+        services.AddScoped<ITepReviewBoardCaseMetadataRepository, MongoTepReviewBoardCaseMetadataRepository>();
+        services.AddScoped<ITepTrustLevelPolicyMetadataRepository, MongoTepTrustLevelPolicyMetadataRepository>();
+        services.AddScoped<ITepCandidateProfileMetadataRepository, MongoTepCandidateProfileMetadataRepository>();
 
         return services;
     }
