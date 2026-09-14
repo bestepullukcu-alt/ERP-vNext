@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!--
-      :core:auth ships no components. The token store is backed by DataStore and
-      the AndroidKeyStore; neither requires a manifest declaration. This empty
-      manifest exists so the library merges cleanly into the app.
-    -->
-</manifest>
