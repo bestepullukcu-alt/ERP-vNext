@@ -75,10 +75,16 @@
     // ─── Reference labels (subjects / types / nodes) ─────────────────────────
     // Subjects and nodes are read-only references here: FU02 owns Subject, and ConceptNode is the Compact surface.
     const subjectMap = {}, typeMap = {}, nodeMap = {};
+    // SCMM-09-UI-refine-fix (Not 3): the concept-type NAME alone (no "code — " prefix), kept beside typeMap so the
+    // auto-filled connection name reads as prose ("Hasta Profili → Fayda"), not a code label.
+    const typeNameMap = {};
     const subjectOptions = [], nodeRows = [];
     const labelSubject = id => subjectMap[id] || id || '';
     const labelType = id => typeMap[id] || id || '';
     const labelNode = id => nodeMap[id]?.label || id || '';
+    // A node's concept-type display name, or '' when it cannot be resolved (never fall back to the node label — a
+    // wrong auto-name is worse than none).
+    const nodeTypeName = nodeId => typeNameMap[nodeMap[nodeId]?.conceptTypeId] || '';
 
     // SCMM-09-UI-refine (Not 2): Priority is edited as Low/Medium/High but stored as the backend int. The three
     // buckets (High=10, Medium=20, Low=30) are the select's option values, so save needs no mapping; on edit an
@@ -98,8 +104,13 @@
         const from = norm(document.getElementById('relFromNodeId')?.value);
         const to = norm(document.getElementById('relToNodeId')?.value);
         if (!from || !to) return;
+        // SCMM-09-UI-refine-fix (Not 3): compose from the endpoints' concept-type NAMES ("Hasta Profili → Fayda"),
+        // not the node code labels. If either type is unresolved, leave the name empty rather than write a half/wrong one.
+        const fromType = nodeTypeName(from);
+        const toType = nodeTypeName(to);
+        if (!fromType || !toType) return;
         const el = document.getElementById('relRelationshipName');
-        if (el) el.value = `${labelNode(from)} → ${labelNode(to)}`;
+        if (el) el.value = `${fromType} → ${toType}`;
     };
 
     const loadSubjects = async () => {
@@ -120,6 +131,8 @@
             (data?.items || []).forEach(n => {
                 nodeMap[n.conceptNodeId] = {
                     label: `${n.conceptNodeCode} — ${n.conceptNodeName}`,
+                    // SCMM-09-UI-refine-fix (Not 3): carry conceptTypeId so the auto-name can resolve the type's name.
+                    conceptTypeId: n.conceptTypeId,
                     subjectId: n.subjectId, isArchived: !!n.isArchived
                 };
                 nodeRows.push(n);
@@ -628,7 +641,10 @@
             const data = await envelope(await fetch(`${base}/${kind}?includeArchived=true`, { credentials: 'same-origin', headers }));
             state[kind].rows = data?.items || [];
             if (kind === 'concept-types') {
-                state[kind].rows.forEach(t => { typeMap[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`; });
+                state[kind].rows.forEach(t => {
+                    typeMap[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`;
+                    typeNameMap[t.conceptTypeId] = t.conceptTypeName;   // name-only, for the Not-3 auto-name
+                });
             }
             if (state[kind].table) {
                 state[kind].table.clear();

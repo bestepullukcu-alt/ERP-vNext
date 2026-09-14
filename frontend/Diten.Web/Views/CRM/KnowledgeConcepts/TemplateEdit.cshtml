@@ -9,10 +9,7 @@
 
 <div class="d-flex align-items-center justify-content-between mb-3" data-template-id="@templateId" id="templateEditHeader">
     <div>
-        <h5 class="mb-0 d-flex align-items-center gap-2">
-            @Localizer["EditTemplate"]
-            <span id="conceptTemplateRequiredTracker" class="d-flex align-items-center"></span>
-        </h5>
+        <h5 class="mb-0">@Localizer["EditTemplate"]</h5>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
                 <li class="breadcrumb-item"><a href="/CRM/KnowledgeConcepts">@Localizer["ConceptsTitle"]</a></li>
@@ -20,12 +17,15 @@
             </ol>
         </nav>
     </div>
+    @* SCMM-09-UI-refine-fix (Not 5): the required-fields tracker sits in the right action group (Golden Compact
+       layout, Organization/Positions/Form), immediately before Save — not beside the title. *@
     <div class="d-flex align-items-center gap-2">
         <a href="/CRM/KnowledgeConcepts" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
         @* SCMM-10 (③): a published (frozen) template is read-only; "New version" clones it into a fresh draft. *@
         <button type="button" id="btnTplNewVersion" class="btn btn-label-primary d-none">
             <i class="bx bx-git-branch me-1"></i>@Localizer["NewVersion"]
         </button>
+        <span id="conceptTemplateRequiredTracker" class="d-flex align-items-center"></span>
         <button type="submit" form="conceptTemplateForm" id="btnSaveConceptTemplate" class="btn btn-primary">@Localizer["Save"]</button>
     </div>
 </div>
