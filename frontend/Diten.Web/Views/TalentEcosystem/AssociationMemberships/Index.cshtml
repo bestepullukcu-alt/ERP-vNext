@@ -1,0 +1,33 @@
+@using Diten.Web.Views.TalentEcosystem.AssociationMemberships
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AssociationMembershipsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["AssociationMembershipsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.association-memberships.evaluate");
+    var canManage = Perms.Has("tep.association-memberships.manage");
+    var canArchive = Perms.Has("tep.association-memberships.archive");
+    var canMemberCompanyManage = Perms.Has("tep.association-memberships.member-company.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["AssociationMembershipsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="association-memberships-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-member-company-manage="@canMemberCompanyManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/AssociationMemberships/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/AssociationMemberships/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/AssociationMemberships/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/AssociationMemberships/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/AssociationMemberships/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/AssociationMemberships/index.js" asp-append-version="true"></script>
+}

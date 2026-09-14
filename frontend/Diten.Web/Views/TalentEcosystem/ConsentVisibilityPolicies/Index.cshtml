@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.ConsentVisibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentVisibilityPoliciesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ConsentVisibilityPoliciesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.consent-visibility-policies.evaluate");
+    var canAudit = Perms.Has("tep.consent-visibility-policies.audit.read");
+    var canManage = Perms.Has("tep.consent-visibility-policies.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ConsentVisibilityPoliciesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="consent-visibility-policies-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/ConsentVisibilityPolicies/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ConsentVisibilityPolicies/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ConsentVisibilityPolicies/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/ConsentVisibilityPolicies/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/ConsentVisibilityPolicies/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/ConsentVisibilityPolicies/index.js" asp-append-version="true"></script>
+}

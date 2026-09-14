@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateProfilesIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-candidate-profiles" data-dt-standard="v2" class="datatables-candidate-profiles table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th>@Localizer["DisplayName"]</th>
+                    <th>@Localizer["CandidateIdentityState"]</th>
+                    <th>@Localizer["ProfileState"]</th>
+                    <th>@Localizer["ProfileCompletenessState"]</th>
+                    <th>@Localizer["VisibilityClassification"]</th>
+                    <th>@Localizer["CandidateVersion"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
