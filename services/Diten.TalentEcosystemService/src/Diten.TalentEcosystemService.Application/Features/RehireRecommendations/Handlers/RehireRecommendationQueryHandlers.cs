@@ -11,13 +11,16 @@ public sealed class GetRehireRecommendationReadinessListHandler
 {
     private readonly ITepRehireRecommendationReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetRehireRecommendationReadinessListHandler(
         ITepRehireRecommendationReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<RehireRecommendationReadinessListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetRehireRecommendationReadinessListHandler
             return Response<IReadOnlyList<RehireRecommendationReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<RehireRecommendationReadinessListItemDto>>.Success(
             items.Select(RehireRecommendationMapper.ToListItemDto).ToList());
     }
@@ -41,13 +45,16 @@ public sealed class GetRehireRecommendationReadinessByIdHandler
 {
     private readonly ITepRehireRecommendationReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetRehireRecommendationReadinessByIdHandler(
         ITepRehireRecommendationReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<RehireRecommendationReadinessDto>> Handle(GetRehireRecommendationReadinessByIdQuery request, CancellationToken ct)
@@ -58,7 +65,8 @@ public sealed class GetRehireRecommendationReadinessByIdHandler
             return Response<RehireRecommendationReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<RehireRecommendationReadinessDto>.Fail("Rehire recommendation readiness record was not found.", 404)
             : Response<RehireRecommendationReadinessDto>.Success(RehireRecommendationMapper.ToDto(item));
@@ -70,13 +78,16 @@ public sealed class GetRehireRecommendationAuditMetadataHandler
 {
     private readonly ITepRehireRecommendationReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetRehireRecommendationAuditMetadataHandler(
         ITepRehireRecommendationReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<RehireRecommendationAuditMetadataDto>> Handle(GetRehireRecommendationAuditMetadataQuery request, CancellationToken ct)
@@ -87,7 +98,8 @@ public sealed class GetRehireRecommendationAuditMetadataHandler
             return Response<RehireRecommendationAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<RehireRecommendationAuditMetadataDto>.Fail("Rehire recommendation readiness record was not found.", 404)
             : Response<RehireRecommendationAuditMetadataDto>.Success(new RehireRecommendationAuditMetadataDto(

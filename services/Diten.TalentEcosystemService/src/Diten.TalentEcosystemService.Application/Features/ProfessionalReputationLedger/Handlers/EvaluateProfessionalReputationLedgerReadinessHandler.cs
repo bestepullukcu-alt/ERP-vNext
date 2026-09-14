@@ -10,11 +10,13 @@ public sealed class EvaluateProfessionalReputationLedgerReadinessHandler : IRequ
 {
     private readonly IProfessionalReputationLedgerReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateProfessionalReputationLedgerReadinessHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateProfessionalReputationLedgerReadinessHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ProfessionalReputationLedgerReadinessDto>> Handle(EvaluateProfessionalReputationLedgerReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateProfessionalReputationLedgerReadinessHandler : IRequ
             return Response<ProfessionalReputationLedgerReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<ProfessionalReputationLedgerReadinessDto>.Fail("ProfessionalReputationLedger readiness record was not found.", 404);

@@ -10,11 +10,13 @@ public sealed class EvaluateSectorTalentTrendsReadinessHandler : IRequestHandler
 {
     private readonly ISectorTalentTrendsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateSectorTalentTrendsReadinessHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateSectorTalentTrendsReadinessHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorTalentTrendsReadinessDto>> Handle(EvaluateSectorTalentTrendsReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateSectorTalentTrendsReadinessHandler : IRequestHandler
             return Response<SectorTalentTrendsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<SectorTalentTrendsReadinessDto>.Fail("SectorTalentTrends readiness record was not found.", 404);

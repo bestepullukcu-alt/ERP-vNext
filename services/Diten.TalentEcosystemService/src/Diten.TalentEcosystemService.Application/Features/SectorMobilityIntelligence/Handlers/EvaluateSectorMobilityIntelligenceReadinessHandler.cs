@@ -10,11 +10,13 @@ public sealed class EvaluateSectorMobilityIntelligenceReadinessHandler : IReques
 {
     private readonly ISectorMobilityIntelligenceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateSectorMobilityIntelligenceReadinessHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateSectorMobilityIntelligenceReadinessHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorMobilityIntelligenceReadinessDto>> Handle(EvaluateSectorMobilityIntelligenceReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateSectorMobilityIntelligenceReadinessHandler : IReques
             return Response<SectorMobilityIntelligenceReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<SectorMobilityIntelligenceReadinessDto>.Fail("SectorMobilityIntelligence readiness record was not found.", 404);

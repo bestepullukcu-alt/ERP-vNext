@@ -11,11 +11,13 @@ public sealed class GetProfessionalReputationLedgerReadinessListHandler
 {
     private readonly IProfessionalReputationLedgerReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetProfessionalReputationLedgerReadinessListHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetProfessionalReputationLedgerReadinessListHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ProfessionalReputationLedgerReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetProfessionalReputationLedgerReadinessListHandler
             return Response<IReadOnlyList<ProfessionalReputationLedgerReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ProfessionalReputationLedgerReadinessListItemDto>>.Success(rows.Select(ProfessionalReputationLedgerMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetProfessionalReputationLedgerReadinessByIdHandler
 {
     private readonly IProfessionalReputationLedgerReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetProfessionalReputationLedgerReadinessByIdHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetProfessionalReputationLedgerReadinessByIdHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ProfessionalReputationLedgerReadinessDto>> Handle(GetProfessionalReputationLedgerReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetProfessionalReputationLedgerReadinessByIdHandler
             return Response<ProfessionalReputationLedgerReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ProfessionalReputationLedgerReadinessDto>.Fail("ProfessionalReputationLedger readiness record was not found.", 404)
             : Response<ProfessionalReputationLedgerReadinessDto>.Success(ProfessionalReputationLedgerMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetProfessionalReputationLedgerAuditMetadataHandler
 {
     private readonly IProfessionalReputationLedgerReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetProfessionalReputationLedgerAuditMetadataHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetProfessionalReputationLedgerAuditMetadataHandler(IProfessionalReputationLedgerReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ProfessionalReputationLedgerAuditMetadataDto>> Handle(GetProfessionalReputationLedgerAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetProfessionalReputationLedgerAuditMetadataHandler
             return Response<ProfessionalReputationLedgerAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ProfessionalReputationLedgerAuditMetadataDto>.Fail("ProfessionalReputationLedger readiness record was not found.", 404)
             : Response<ProfessionalReputationLedgerAuditMetadataDto>.Success(ProfessionalReputationLedgerMapper.ToAuditMetadata(entity));

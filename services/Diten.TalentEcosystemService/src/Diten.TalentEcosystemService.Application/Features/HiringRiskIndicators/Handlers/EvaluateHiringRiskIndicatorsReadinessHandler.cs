@@ -10,11 +10,13 @@ public sealed class EvaluateHiringRiskIndicatorsReadinessHandler : IRequestHandl
 {
     private readonly IHiringRiskIndicatorsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateHiringRiskIndicatorsReadinessHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateHiringRiskIndicatorsReadinessHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HiringRiskIndicatorsReadinessDto>> Handle(EvaluateHiringRiskIndicatorsReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateHiringRiskIndicatorsReadinessHandler : IRequestHandl
             return Response<HiringRiskIndicatorsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<HiringRiskIndicatorsReadinessDto>.Fail("HiringRiskIndicators readiness record was not found.", 404);

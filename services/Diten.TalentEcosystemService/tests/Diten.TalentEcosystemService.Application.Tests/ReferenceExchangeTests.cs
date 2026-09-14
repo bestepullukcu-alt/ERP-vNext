@@ -20,6 +20,13 @@ public sealed class ReferenceExchangeTests
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     [Fact]
     public async Task Create_list_and_get_preserve_metadata_contract()
     {
@@ -28,9 +35,9 @@ public sealed class ReferenceExchangeTests
         var request = ValidRequest("REF-EX-001");
 
         var created = await handler.Handle(new CreateReferenceExchangeReadinessCommand(request), CancellationToken.None);
-        var list = await new GetReferenceExchangeReadinessListHandler(repository, new FixedTenantContext(TenantA))
+        var list = await new GetReferenceExchangeReadinessListHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new(), CancellationToken.None);
-        var detail = await new GetReferenceExchangeReadinessByIdHandler(repository, new FixedTenantContext(TenantA))
+        var detail = await new GetReferenceExchangeReadinessByIdHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new(created.Data), CancellationToken.None);
 
         Assert.True(created.IsSuccessful);
@@ -48,7 +55,7 @@ public sealed class ReferenceExchangeTests
         var repository = new MemoryReferenceExchangeRepository();
         var created = await CreateHandler(repository, TenantA)
             .Handle(new CreateReferenceExchangeReadinessCommand(ValidRequest("REF-TENANT")), CancellationToken.None);
-        var query = new GetReferenceExchangeReadinessByIdHandler(repository, new FixedTenantContext(TenantB));
+        var query = new GetReferenceExchangeReadinessByIdHandler(repository, new FixedTenantContext(TenantB), PilotLegalEntityContext());
 
         var result = await query.Handle(new(created.Data), CancellationToken.None);
 
@@ -77,11 +84,11 @@ public sealed class ReferenceExchangeTests
         var repository = new MemoryReferenceExchangeRepository();
         var created = await CreateHandler(repository, TenantA)
             .Handle(new CreateReferenceExchangeReadinessCommand(ValidRequest("REF-ARCH")), CancellationToken.None);
-        var archive = new ArchiveReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA));
+        var archive = new ArchiveReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = repository.Items.Single();
-        var list = await repository.ListAsync(TenantA, CancellationToken.None);
+        var list = await repository.ListAsync(TenantA, new[] { Holding }, CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
         Assert.True(stored.IsDeleted);
@@ -114,7 +121,7 @@ public sealed class ReferenceExchangeTests
             {
                 ExchangeReadinessState = TepReferenceExchangeReadinessState.Deferred
             }), CancellationToken.None);
-        var evaluate = new EvaluateReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA));
+        var evaluate = new EvaluateReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await evaluate.Handle(new(created.Data, new(true)), CancellationToken.None);
 
@@ -130,7 +137,7 @@ public sealed class ReferenceExchangeTests
         var repository = new MemoryReferenceExchangeRepository();
         var created = await CreateHandler(repository, TenantA)
             .Handle(new CreateReferenceExchangeReadinessCommand(ValidRequest("REF-DEFER")), CancellationToken.None);
-        var evaluate = new EvaluateReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA));
+        var evaluate = new EvaluateReferenceExchangeReadinessHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await evaluate.Handle(new(created.Data, new(false)), CancellationToken.None);
 
@@ -224,8 +231,39 @@ public sealed class ReferenceExchangeTests
         }
     }
 
+    [Fact]
+    public async Task LegalEntity_create_stamps_the_selected_legal_entity()
+    {
+        var repository = new MemoryReferenceExchangeRepository();
+        var handler = CreateHandler(repository, TenantA, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateReferenceExchangeReadinessCommand(ValidRequest("REF-EX-LE")), CancellationToken.None);
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, repository.Items.Single().LegalEntityId);
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_without_a_permitted_selection_is_forbidden()
+    {
+        var repository = new MemoryReferenceExchangeRepository();
+        var handler = CreateHandler(repository, TenantA, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateReferenceExchangeReadinessCommand(ValidRequest("REF-EX-403")), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(repository.Items);
+    }
+
     private static CreateReferenceExchangeReadinessHandler CreateHandler(MemoryReferenceExchangeRepository repository, Guid tenantId) =>
-        new(repository, new FixedTenantContext(tenantId));
+        new(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
+
+    private static CreateReferenceExchangeReadinessHandler CreateHandler(
+        MemoryReferenceExchangeRepository repository,
+        Guid tenantId,
+        ILegalEntityContext legalEntityContext) =>
+        new(repository, new FixedTenantContext(tenantId), legalEntityContext);
 
     private static ReferenceExchangeReadinessRequest ValidRequest(string code) =>
         new(
@@ -316,20 +354,44 @@ public sealed class ReferenceExchangeTests
         public Guid? TenantId { get; }
     }
 
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class MemoryReferenceExchangeRepository : ITepReferenceExchangeMarketplaceReadinessMetadataRepository
     {
         public List<TepReferenceExchangeMarketplaceReadinessMetadata> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepReferenceExchangeMarketplaceReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepReferenceExchangeMarketplaceReadinessMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepReferenceExchangeMarketplaceReadinessMetadata>>(
-                Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).OrderBy(x => x.Code).ToList());
+                Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).OrderBy(x => x.Code).ToList());
 
-        public Task<TepReferenceExchangeMarketplaceReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<TepReferenceExchangeMarketplaceReadinessMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(x =>
                 x.TenantId == tenantId
+                && x.LegalEntityId == legalEntityId
                 && !x.IsDeleted
                 && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase)
                 && x.Id != excludingId));

@@ -11,11 +11,13 @@ public sealed class GetIndustrySuccessionPoolReadinessListHandler
 {
     private readonly IIndustrySuccessionPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySuccessionPoolReadinessListHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySuccessionPoolReadinessListHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<IndustrySuccessionPoolReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetIndustrySuccessionPoolReadinessListHandler
             return Response<IReadOnlyList<IndustrySuccessionPoolReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<IndustrySuccessionPoolReadinessListItemDto>>.Success(rows.Select(IndustrySuccessionPoolMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetIndustrySuccessionPoolReadinessByIdHandler
 {
     private readonly IIndustrySuccessionPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySuccessionPoolReadinessByIdHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySuccessionPoolReadinessByIdHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustrySuccessionPoolReadinessDto>> Handle(GetIndustrySuccessionPoolReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetIndustrySuccessionPoolReadinessByIdHandler
             return Response<IndustrySuccessionPoolReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustrySuccessionPoolReadinessDto>.Fail("IndustrySuccessionPool readiness record was not found.", 404)
             : Response<IndustrySuccessionPoolReadinessDto>.Success(IndustrySuccessionPoolMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetIndustrySuccessionPoolAuditMetadataHandler
 {
     private readonly IIndustrySuccessionPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySuccessionPoolAuditMetadataHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySuccessionPoolAuditMetadataHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustrySuccessionPoolAuditMetadataDto>> Handle(GetIndustrySuccessionPoolAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetIndustrySuccessionPoolAuditMetadataHandler
             return Response<IndustrySuccessionPoolAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustrySuccessionPoolAuditMetadataDto>.Fail("IndustrySuccessionPool readiness record was not found.", 404)
             : Response<IndustrySuccessionPoolAuditMetadataDto>.Success(IndustrySuccessionPoolMapper.ToAuditMetadata(entity));

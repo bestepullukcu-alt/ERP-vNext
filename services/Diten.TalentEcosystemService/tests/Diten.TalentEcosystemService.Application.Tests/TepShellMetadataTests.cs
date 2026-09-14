@@ -28,11 +28,18 @@ public sealed class TepShellMetadataTests
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     [Fact]
     public async Task Create_rejects_duplicate_active_code_in_tenant_scope()
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("TEP-SHELL");
 
         var first = await handler.Handle(new CreateTepShellMetadataCommand(request), CancellationToken.None);
@@ -47,10 +54,10 @@ public sealed class TepShellMetadataTests
     public async Task Get_by_id_is_tenant_scoped_and_returns_404_for_cross_tenant()
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var create = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var create = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateTepShellMetadataCommand(ValidRequest("TEP-A")), CancellationToken.None);
 
-        var crossTenant = new GetTepShellMetadataByIdHandler(repository, new FixedTenantContext(TenantB));
+        var crossTenant = new GetTepShellMetadataByIdHandler(repository, new FixedTenantContext(TenantB), PilotLegalEntityContext());
         var result = await crossTenant.Handle(new(created.Data), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
@@ -61,9 +68,9 @@ public sealed class TepShellMetadataTests
     public async Task Archive_sets_soft_delete_and_deleted_at()
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var create = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var create = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateTepShellMetadataCommand(ValidRequest("TEP-ARCH")), CancellationToken.None);
-        var archive = new ArchiveTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var archive = new ArchiveTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = repository.Items.Single();
@@ -78,7 +85,7 @@ public sealed class TepShellMetadataTests
     public async Task Active_state_requires_available_dependency_boundaries()
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("TEP-ACTIVE") with
         {
             ShellState = TepShellState.Active,
@@ -95,7 +102,7 @@ public sealed class TepShellMetadataTests
     public async Task Deferred_dependency_state_is_allowed_for_non_active_shell()
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("TEP-DEFERRED") with
         {
             ShellState = TepShellState.Deferred,
@@ -115,7 +122,7 @@ public sealed class TepShellMetadataTests
     public async Task Forbidden_runtime_markers_are_rejected(string marker)
     {
         var repository = new InMemoryTepShellMetadataRepository();
-        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA));
+        var handler = new CreateTepShellMetadataHandler(repository, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("TEP-FORBIDDEN") with { DisplayName = marker };
 
         var result = await handler.Handle(new CreateTepShellMetadataCommand(request), CancellationToken.None);
@@ -202,6 +209,33 @@ public sealed class TepShellMetadataTests
         Assert.Equal("ix_tep_shell_metadata_tenant_state", MongoTepShellMetadataRepository.TenantStateIndexName);
     }
 
+    [Fact]
+    public async Task LegalEntity_create_stamps_the_selected_legal_entity()
+    {
+        var repository = new InMemoryTepShellMetadataRepository();
+        var handler = new CreateTepShellMetadataHandler(
+            repository, new FixedTenantContext(TenantA), new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateTepShellMetadataCommand(ValidRequest("TEP-LE")), CancellationToken.None);
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, repository.Items.Single().LegalEntityId);
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_without_a_permitted_selection_is_forbidden()
+    {
+        var repository = new InMemoryTepShellMetadataRepository();
+        var handler = new CreateTepShellMetadataHandler(
+            repository, new FixedTenantContext(TenantA), new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateTepShellMetadataCommand(ValidRequest("TEP-403")), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(repository.Items);
+    }
+
     private static TepShellMetadataRequest ValidRequest(string code) =>
         new(
             code,
@@ -246,22 +280,46 @@ public sealed class TepShellMetadataTests
         public Guid? TenantId { get; }
     }
 
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class InMemoryTepShellMetadataRepository : ITepShellMetadataRepository
     {
         public List<TepShellMetadata> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepShellMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepShellMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepShellMetadata>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepShellMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepShellMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));

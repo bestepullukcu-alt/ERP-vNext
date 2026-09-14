@@ -13,15 +13,18 @@ public sealed class UpdateAssociationMembershipHandler
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateAssociationMembershipHandler(
         ITepAssociationMembershipRegistryRepository repository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<AssociationMembershipRegistryDto>> Handle(UpdateAssociationMembershipCommand request, CancellationToken ct)
@@ -32,8 +35,9 @@ public sealed class UpdateAssociationMembershipHandler
             return Response<AssociationMembershipRegistryDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<AssociationMembershipRegistryDto>.Fail("Association membership registry record was not found.", 404);
@@ -54,12 +58,12 @@ public sealed class UpdateAssociationMembershipHandler
         if (AssociationMembershipGuard.IsActivationRequested(
                 request.Request.AssociationMembershipState,
                 request.Request.AssociationActivationState)
-            && !await PolicyAllowsActivationAsync(tenantId, request.Request.ConsentVisibilityPolicyId, ct))
+            && !await PolicyAllowsActivationAsync(tenantId, scope, request.Request.ConsentVisibilityPolicyId, ct))
         {
             return Response<AssociationMembershipRegistryDto>.Fail("Association activation requires an active same-tenant consent/visibility policy precondition.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<AssociationMembershipRegistryDto>.Fail("An active association membership registry record with the same Code already exists for this tenant.", 409);
         }
@@ -84,14 +88,14 @@ public sealed class UpdateAssociationMembershipHandler
         return Response<AssociationMembershipRegistryDto>.Success(AssociationMembershipMapper.ToDto(entity));
     }
 
-    private async Task<bool> PolicyAllowsActivationAsync(Guid tenantId, Guid? policyId, CancellationToken ct)
+    private async Task<bool> PolicyAllowsActivationAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid? policyId, CancellationToken ct)
     {
         if (policyId is null)
         {
             return false;
         }
 
-        var policy = await _policyRepository.GetByIdAsync(tenantId, policyId.Value, ct);
+        var policy = await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId.Value, ct);
         return policy is not null
             && policy.PolicyState is TepPolicyState.Active
             && policy.ConsentRequirementState is TepConsentRequirementState.Approved

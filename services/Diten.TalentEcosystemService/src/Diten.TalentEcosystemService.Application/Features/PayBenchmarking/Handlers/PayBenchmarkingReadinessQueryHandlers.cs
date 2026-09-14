@@ -11,11 +11,13 @@ public sealed class GetPayBenchmarkingReadinessListHandler
 {
     private readonly IPayBenchmarkingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPayBenchmarkingReadinessListHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPayBenchmarkingReadinessListHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<PayBenchmarkingReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetPayBenchmarkingReadinessListHandler
             return Response<IReadOnlyList<PayBenchmarkingReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<PayBenchmarkingReadinessListItemDto>>.Success(rows.Select(PayBenchmarkingMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetPayBenchmarkingReadinessByIdHandler
 {
     private readonly IPayBenchmarkingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPayBenchmarkingReadinessByIdHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPayBenchmarkingReadinessByIdHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PayBenchmarkingReadinessDto>> Handle(GetPayBenchmarkingReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetPayBenchmarkingReadinessByIdHandler
             return Response<PayBenchmarkingReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<PayBenchmarkingReadinessDto>.Fail("PayBenchmarking readiness record was not found.", 404)
             : Response<PayBenchmarkingReadinessDto>.Success(PayBenchmarkingMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetPayBenchmarkingAuditMetadataHandler
 {
     private readonly IPayBenchmarkingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetPayBenchmarkingAuditMetadataHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetPayBenchmarkingAuditMetadataHandler(IPayBenchmarkingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<PayBenchmarkingAuditMetadataDto>> Handle(GetPayBenchmarkingAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetPayBenchmarkingAuditMetadataHandler
             return Response<PayBenchmarkingAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<PayBenchmarkingAuditMetadataDto>.Fail("PayBenchmarking readiness record was not found.", 404)
             : Response<PayBenchmarkingAuditMetadataDto>.Success(PayBenchmarkingMapper.ToAuditMetadata(entity));

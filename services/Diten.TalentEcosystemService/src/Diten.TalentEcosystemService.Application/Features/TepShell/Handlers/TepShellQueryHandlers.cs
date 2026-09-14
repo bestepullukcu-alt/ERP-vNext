@@ -11,11 +11,13 @@ public sealed class GetTepShellMetadataListHandler
 {
     private readonly ITepShellMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTepShellMetadataListHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext)
+    public GetTepShellMetadataListHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<TepShellMetadataListItemDto>>> Handle(GetTepShellMetadataListQuery request, CancellationToken ct)
@@ -26,8 +28,9 @@ public sealed class GetTepShellMetadataListHandler
             return Response<IReadOnlyList<TepShellMetadataListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var items = await _repository.ListAsync(tenantId, ct);
+        var items = await _repository.ListAsync(tenantId, scope, ct);
         return Response<IReadOnlyList<TepShellMetadataListItemDto>>.Success(items.Select(TepShellMapper.ToListItemDto).ToList());
     }
 }
@@ -37,11 +40,13 @@ public sealed class GetTepShellMetadataByIdHandler
 {
     private readonly ITepShellMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTepShellMetadataByIdHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext)
+    public GetTepShellMetadataByIdHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TepShellMetadataDto>> Handle(GetTepShellMetadataByIdQuery request, CancellationToken ct)
@@ -52,8 +57,9 @@ public sealed class GetTepShellMetadataByIdHandler
             return Response<TepShellMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var item = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var item = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         return item is null
             ? Response<TepShellMetadataDto>.Fail("TEP shell metadata was not found.", 404)
             : Response<TepShellMetadataDto>.Success(TepShellMapper.ToDto(item));

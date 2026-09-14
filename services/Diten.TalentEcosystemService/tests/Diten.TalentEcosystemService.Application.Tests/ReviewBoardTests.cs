@@ -40,7 +40,7 @@ public sealed class ReviewBoardTests
         var reviewCases = new InMemoryReviewBoardCaseMetadataRepository();
         var created = await CreateHandler(reviewCases, TenantA)
             .Handle(new CreateReviewBoardCaseCommand(ValidRequest("REV-TENANT")), CancellationToken.None);
-        var query = new GetReviewBoardCaseByIdHandler(reviewCases, new FixedTenantContext(TenantB));
+        var query = new GetReviewBoardCaseByIdHandler(reviewCases, new FixedTenantContext(TenantB), PilotLegalEntityContext());
 
         var result = await query.Handle(new(created.Data), CancellationToken.None);
 
@@ -54,7 +54,7 @@ public sealed class ReviewBoardTests
         var reviewCases = new InMemoryReviewBoardCaseMetadataRepository();
         var created = await CreateHandler(reviewCases, TenantA)
             .Handle(new CreateReviewBoardCaseCommand(ValidRequest("REV-ARCH")), CancellationToken.None);
-        var archive = new ArchiveReviewBoardCaseHandler(reviewCases, new FixedTenantContext(TenantA));
+        var archive = new ArchiveReviewBoardCaseHandler(reviewCases, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = reviewCases.Items.Single();
@@ -91,7 +91,7 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateReviewBoardCaseCommand(DecisionRequest("REV-CROSS-ASSOC", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
 
@@ -112,7 +112,7 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateReviewBoardCaseCommand(DecisionRequest("REV-CROSS-POLICY", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
 
@@ -133,7 +133,7 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateReviewBoardCaseCommand(DecisionRequest("REV-CROSS-VER", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
 
@@ -154,7 +154,7 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var handler = new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateReviewBoardCaseCommand(DecisionRequest("REV-OK", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
 
@@ -172,7 +172,8 @@ public sealed class ReviewBoardTests
             new InMemoryAssociationMembershipRegistryRepository(),
             new InMemoryConsentVisibilityPolicyRepository(),
             new InMemoryVerifiedParticipantAccessRepository(),
-            new FixedTenantContext(TenantA));
+            new FixedTenantContext(TenantA),
+            PilotLegalEntityContext());
 
         var result = await evaluate.Handle(new(created.Data, new(false)), CancellationToken.None);
 
@@ -197,9 +198,9 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var created = await new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA))
+        var created = await new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new CreateReviewBoardCaseCommand(ReadyDeferredRequest("REV-ELIG", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
-        var review = new ReviewReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var review = new ReviewReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await review.Handle(new(created.Data, new(TepReviewDecisionState.Approved)), CancellationToken.None);
 
@@ -220,9 +221,9 @@ public sealed class ReviewBoardTests
         await policies.CreateAsync(policy, CancellationToken.None);
         await associations.CreateAsync(association, CancellationToken.None);
         await verified.CreateAsync(verifiedAccess, CancellationToken.None);
-        var created = await new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA))
+        var created = await new CreateReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new CreateReviewBoardCaseCommand(DecisionReadyRequest("REV-REVIEW", association.Id, policy.Id, verifiedAccess.Id)), CancellationToken.None);
-        var review = new ReviewReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA));
+        var review = new ReviewReviewBoardCaseHandler(reviewCases, associations, policies, verified, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await review.Handle(new(created.Data, new(TepReviewDecisionState.Approved)), CancellationToken.None);
 
@@ -237,7 +238,7 @@ public sealed class ReviewBoardTests
         var reviewCases = new InMemoryReviewBoardCaseMetadataRepository();
         var created = await CreateHandler(reviewCases, TenantA)
             .Handle(new CreateReviewBoardCaseCommand(ValidRequest("REV-AUDIT")), CancellationToken.None);
-        var audit = new GetReviewBoardCaseAuditMetadataHandler(reviewCases, new FixedTenantContext(TenantA));
+        var audit = new GetReviewBoardCaseAuditMetadataHandler(reviewCases, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await audit.Handle(new(created.Data), CancellationToken.None);
 
@@ -286,13 +287,40 @@ public sealed class ReviewBoardTests
         Assert.Equal("ix_tep_review_board_cases_tenant_state", MongoTepReviewBoardCaseMetadataRepository.TenantStateIndexName);
     }
 
-    private static CreateReviewBoardCaseHandler CreateHandler(InMemoryReviewBoardCaseMetadataRepository repository, Guid tenantId) =>
+    [Fact]
+    public async Task Create_stamps_the_selected_legal_entity()
+    {
+        var reviewCases = new InMemoryReviewBoardCaseMetadataRepository();
+        var handler = CreateHandler(reviewCases, TenantA, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateReviewBoardCaseCommand(ValidRequest("REV-LE")), CancellationToken.None);
+        var stored = reviewCases.Items.Single();
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task Create_without_a_permitted_legal_entity_is_forbidden()
+    {
+        var reviewCases = new InMemoryReviewBoardCaseMetadataRepository();
+        var handler = CreateHandler(reviewCases, TenantA, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var result = await handler.Handle(new CreateReviewBoardCaseCommand(ValidRequest("REV-403")), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Empty(reviewCases.Items);
+    }
+
+    private static CreateReviewBoardCaseHandler CreateHandler(InMemoryReviewBoardCaseMetadataRepository repository, Guid tenantId, ILegalEntityContext? legalEntityContext = null) =>
         new(
             repository,
             new InMemoryAssociationMembershipRegistryRepository(),
             new InMemoryConsentVisibilityPolicyRepository(),
             new InMemoryVerifiedParticipantAccessRepository(),
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            legalEntityContext ?? PilotLegalEntityContext());
 
     private static ReviewBoardCaseRequest ValidRequest(string code) =>
         new(
@@ -347,6 +375,7 @@ public sealed class ReviewBoardTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"ASSOC-{tenantId.ToString()[..8]}",
             DisplayName = "Association membership",
             AssociationMembershipState = TepAssociationMembershipState.Active,
@@ -365,6 +394,7 @@ public sealed class ReviewBoardTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"POLICY-{tenantId.ToString()[..8]}",
             DisplayName = "Consent visibility policy",
             PolicyState = TepPolicyState.Active,
@@ -383,6 +413,7 @@ public sealed class ReviewBoardTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"VER-{tenantId.ToString()[..8]}",
             DisplayName = "Verified participant",
             AssociationMembershipId = associationId,
@@ -412,28 +443,61 @@ public sealed class ReviewBoardTests
         Assert.Equal(expected, field.GetValue(attribute));
     }
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
         public Guid? TenantId { get; }
     }
 
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class InMemoryReviewBoardCaseMetadataRepository : ITepReviewBoardCaseMetadataRepository
     {
         public List<TepReviewBoardCaseMetadata> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepReviewBoardCaseMetadata>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));
@@ -451,18 +515,19 @@ public sealed class ReviewBoardTests
     {
         public List<TepAssociationMembershipRegistry> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));
@@ -480,18 +545,19 @@ public sealed class ReviewBoardTests
     {
         public List<TepConsentVisibilityPolicy> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));
@@ -509,18 +575,19 @@ public sealed class ReviewBoardTests
     {
         public List<TepVerifiedParticipantAccess> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepVerifiedParticipantAccess>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));

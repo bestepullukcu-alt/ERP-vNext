@@ -12,11 +12,13 @@ public sealed class CreateSectorMobilityIntelligenceReadinessHandler : IRequestH
 {
     private readonly ISectorMobilityIntelligenceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public CreateSectorMobilityIntelligenceReadinessHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public CreateSectorMobilityIntelligenceReadinessHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateSectorMobilityIntelligenceReadinessCommand request, CancellationToken ct)
@@ -27,6 +29,13 @@ public sealed class CreateSectorMobilityIntelligenceReadinessHandler : IRequestH
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
         var errors = SectorMobilityIntelligenceGuard.Validate(request.Request);
         if (errors.Count > 0)
         {
@@ -34,8 +43,9 @@ public sealed class CreateSectorMobilityIntelligenceReadinessHandler : IRequestH
         }
 
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
         var code = SectorMobilityIntelligenceGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, code, null, ct))
         {
             return Response<Guid>.Fail("An active sector-mobility-intelligence readiness record with the same Code already exists for this tenant.", 409);
         }
@@ -45,6 +55,7 @@ public sealed class CreateSectorMobilityIntelligenceReadinessHandler : IRequestH
         var entity = new SectorMobilityIntelligenceReadinessMetadata
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = code,
             DisplayName = request.Request.DisplayName.Trim(),
             SectorMobilityIntelligenceReadinessState = readinessState,

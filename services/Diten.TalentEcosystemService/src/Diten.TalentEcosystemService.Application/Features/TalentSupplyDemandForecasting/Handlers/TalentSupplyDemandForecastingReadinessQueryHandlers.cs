@@ -11,11 +11,13 @@ public sealed class GetTalentSupplyDemandForecastingReadinessListHandler
 {
     private readonly ITalentSupplyDemandForecastingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentSupplyDemandForecastingReadinessListHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentSupplyDemandForecastingReadinessListHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<TalentSupplyDemandForecastingReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetTalentSupplyDemandForecastingReadinessListHandler
             return Response<IReadOnlyList<TalentSupplyDemandForecastingReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<TalentSupplyDemandForecastingReadinessListItemDto>>.Success(rows.Select(TalentSupplyDemandForecastingMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetTalentSupplyDemandForecastingReadinessByIdHandler
 {
     private readonly ITalentSupplyDemandForecastingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentSupplyDemandForecastingReadinessByIdHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentSupplyDemandForecastingReadinessByIdHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TalentSupplyDemandForecastingReadinessDto>> Handle(GetTalentSupplyDemandForecastingReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetTalentSupplyDemandForecastingReadinessByIdHandler
             return Response<TalentSupplyDemandForecastingReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TalentSupplyDemandForecastingReadinessDto>.Fail("TalentSupplyDemandForecasting readiness record was not found.", 404)
             : Response<TalentSupplyDemandForecastingReadinessDto>.Success(TalentSupplyDemandForecastingMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetTalentSupplyDemandForecastingAuditMetadataHandler
 {
     private readonly ITalentSupplyDemandForecastingReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentSupplyDemandForecastingAuditMetadataHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentSupplyDemandForecastingAuditMetadataHandler(ITalentSupplyDemandForecastingReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TalentSupplyDemandForecastingAuditMetadataDto>> Handle(GetTalentSupplyDemandForecastingAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetTalentSupplyDemandForecastingAuditMetadataHandler
             return Response<TalentSupplyDemandForecastingAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TalentSupplyDemandForecastingAuditMetadataDto>.Fail("TalentSupplyDemandForecasting readiness record was not found.", 404)
             : Response<TalentSupplyDemandForecastingAuditMetadataDto>.Success(TalentSupplyDemandForecastingMapper.ToAuditMetadata(entity));

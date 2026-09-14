@@ -15,6 +15,7 @@ public sealed class CreateTrustLevelPolicyHandler : IRequestHandler<CreateTrustL
     private readonly ITepVerifiedParticipantAccessRepository _verifiedAccessRepository;
     private readonly ITepReviewBoardCaseMetadataRepository _reviewBoardRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateTrustLevelPolicyHandler(
         ITepTrustLevelPolicyMetadataRepository repository,
@@ -22,7 +23,8 @@ public sealed class CreateTrustLevelPolicyHandler : IRequestHandler<CreateTrustL
         ITepConsentVisibilityPolicyRepository policyRepository,
         ITepVerifiedParticipantAccessRepository verifiedAccessRepository,
         ITepReviewBoardCaseMetadataRepository reviewBoardRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -30,6 +32,7 @@ public sealed class CreateTrustLevelPolicyHandler : IRequestHandler<CreateTrustL
         _verifiedAccessRepository = verifiedAccessRepository;
         _reviewBoardRepository = reviewBoardRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateTrustLevelPolicyCommand request, CancellationToken ct)
@@ -41,6 +44,16 @@ public sealed class CreateTrustLevelPolicyHandler : IRequestHandler<CreateTrustL
         }
         var tenantId = tenant.Data;
 
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+
         var validation = TrustLevelGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
         {
@@ -48,35 +61,36 @@ public sealed class CreateTrustLevelPolicyHandler : IRequestHandler<CreateTrustL
         }
 
         if (TrustLevelGuard.IsActivating(request.Request)
-            && !await DependenciesAllowTrustAsync(tenantId, request.Request, ct))
+            && !await DependenciesAllowTrustAsync(tenantId, scope, request.Request, ct))
         {
             return Response<Guid>.Fail("Trust activation requires same-tenant Association, Consent/Visibility, Verified Access, and Review Board preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active trust-level policy with the same Code already exists for this tenant.", 409);
         }
 
         var entity = ToEntity(request.Request, tenantId);
+        entity.LegalEntityId = legalEntityId;
         await _repository.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> DependenciesAllowTrustAsync(Guid tenantId, TrustLevelPolicyRequest request, CancellationToken ct)
+    private async Task<bool> DependenciesAllowTrustAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, TrustLevelPolicyRequest request, CancellationToken ct)
     {
         var metadata = ToEntity(request, tenantId);
         var association = request.AssociationMembershipRegistryId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, legalEntityIds, associationId, ct)
             : null;
         var policy = request.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId, ct)
             : null;
         var verifiedAccess = request.VerifiedParticipantAccessId is { } verifiedAccessId
-            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, verifiedAccessId, ct)
+            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, legalEntityIds, verifiedAccessId, ct)
             : null;
         var reviewBoard = request.ReviewBoardCaseId is { } reviewBoardId
-            ? await _reviewBoardRepository.GetByIdAsync(tenantId, reviewBoardId, ct)
+            ? await _reviewBoardRepository.GetByIdAsync(tenantId, legalEntityIds, reviewBoardId, ct)
             : null;
 
         return TrustLevelGuard.AssociationAllowsTrust(metadata, association)

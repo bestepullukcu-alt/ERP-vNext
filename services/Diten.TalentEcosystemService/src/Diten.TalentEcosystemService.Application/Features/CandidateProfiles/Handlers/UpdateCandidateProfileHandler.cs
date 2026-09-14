@@ -16,6 +16,7 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
     private readonly ITepReviewBoardCaseMetadataRepository _reviewRepository;
     private readonly ITepTrustLevelPolicyMetadataRepository _trustRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateCandidateProfileHandler(
         ITepCandidateProfileMetadataRepository repository,
@@ -24,7 +25,8 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
         ITepVerifiedParticipantAccessRepository verifiedRepository,
         ITepReviewBoardCaseMetadataRepository reviewRepository,
         ITepTrustLevelPolicyMetadataRepository trustRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -33,6 +35,7 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
         _reviewRepository = reviewRepository;
         _trustRepository = trustRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateCandidateProfileCommand request, CancellationToken ct)
@@ -43,8 +46,9 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
             return Response<NoContent>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<NoContent>.Fail("Candidate profile record was not found.", 404);
@@ -63,12 +67,12 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
         }
 
         if (CandidateProfileGuard.IsActivationRequested(request.Request.CandidateIdentityState, request.Request.TalentProfileState)
-            && !await DependenciesAllowActivationAsync(tenantId, BuildCandidateProfileMetadata(request.Id, tenantId, request.Request), ct))
+            && !await DependenciesAllowActivationAsync(tenantId, scope, BuildCandidateProfileMetadata(request.Id, tenantId, request.Request), ct))
         {
             return Response<NoContent>.Fail("Candidate profile activation requires same-tenant dependency preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<NoContent>.Fail("An active candidate profile record with the same Code already exists for this tenant.", 409);
         }
@@ -113,22 +117,22 @@ public sealed class UpdateCandidateProfileHandler : IRequestHandler<UpdateCandid
         return Response<NoContent>.Success(204);
     }
 
-    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, TepCandidateProfileMetadata entity, CancellationToken ct)
+    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, IReadOnlyCollection<Guid> scope, TepCandidateProfileMetadata entity, CancellationToken ct)
     {
         var association = entity.AssociationMembershipId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, scope, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, scope, policyId, ct)
             : null;
         var verified = entity.VerifiedParticipantId is { } verifiedId
-            ? await _verifiedRepository.GetByIdAsync(tenantId, verifiedId, ct)
+            ? await _verifiedRepository.GetByIdAsync(tenantId, scope, verifiedId, ct)
             : null;
         var review = entity.ReviewBoardCaseId is { } reviewId
-            ? await _reviewRepository.GetByIdAsync(tenantId, reviewId, ct)
+            ? await _reviewRepository.GetByIdAsync(tenantId, scope, reviewId, ct)
             : null;
         var trust = entity.TrustLevelPolicyId is { } trustId
-            ? await _trustRepository.GetByIdAsync(tenantId, trustId, ct)
+            ? await _trustRepository.GetByIdAsync(tenantId, scope, trustId, ct)
             : null;
 
         return CandidateProfileGuard.AssociationAllowsCandidate(entity, association)

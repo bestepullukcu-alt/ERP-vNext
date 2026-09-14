@@ -11,11 +11,13 @@ public sealed class GetRestrictedIntegrityRegistryReadinessListHandler
 {
     private readonly IRestrictedIntegrityRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetRestrictedIntegrityRegistryReadinessListHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetRestrictedIntegrityRegistryReadinessListHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<RestrictedIntegrityRegistryReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetRestrictedIntegrityRegistryReadinessListHandler
             return Response<IReadOnlyList<RestrictedIntegrityRegistryReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<RestrictedIntegrityRegistryReadinessListItemDto>>.Success(rows.Select(RestrictedIntegrityRegistryMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetRestrictedIntegrityRegistryReadinessByIdHandler
 {
     private readonly IRestrictedIntegrityRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetRestrictedIntegrityRegistryReadinessByIdHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetRestrictedIntegrityRegistryReadinessByIdHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<RestrictedIntegrityRegistryReadinessDto>> Handle(GetRestrictedIntegrityRegistryReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetRestrictedIntegrityRegistryReadinessByIdHandler
             return Response<RestrictedIntegrityRegistryReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<RestrictedIntegrityRegistryReadinessDto>.Fail("RestrictedIntegrityRegistry readiness record was not found.", 404)
             : Response<RestrictedIntegrityRegistryReadinessDto>.Success(RestrictedIntegrityRegistryMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetRestrictedIntegrityRegistryAuditMetadataHandler
 {
     private readonly IRestrictedIntegrityRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetRestrictedIntegrityRegistryAuditMetadataHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetRestrictedIntegrityRegistryAuditMetadataHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<RestrictedIntegrityRegistryAuditMetadataDto>> Handle(GetRestrictedIntegrityRegistryAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetRestrictedIntegrityRegistryAuditMetadataHandler
             return Response<RestrictedIntegrityRegistryAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<RestrictedIntegrityRegistryAuditMetadataDto>.Fail("RestrictedIntegrityRegistry readiness record was not found.", 404)
             : Response<RestrictedIntegrityRegistryAuditMetadataDto>.Success(RestrictedIntegrityRegistryMapper.ToAuditMetadata(entity));

@@ -11,11 +11,13 @@ public sealed class GetTrustLevelPolicyListHandler
 {
     private readonly ITepTrustLevelPolicyMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTrustLevelPolicyListHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext)
+    public GetTrustLevelPolicyListHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<TrustLevelPolicyListItemDto>>> Handle(GetTrustLevelPolicyListQuery request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class GetTrustLevelPolicyListHandler
             return Response<IReadOnlyList<TrustLevelPolicyListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<TrustLevelPolicyListItemDto>>.Success(items.Select(TrustLevelMapper.ToListItemDto).ToList());
     }
 }
@@ -36,11 +39,13 @@ public sealed class GetTrustLevelPolicyByIdHandler
 {
     private readonly ITepTrustLevelPolicyMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTrustLevelPolicyByIdHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext)
+    public GetTrustLevelPolicyByIdHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TrustLevelPolicyDto>> Handle(GetTrustLevelPolicyByIdQuery request, CancellationToken ct)
@@ -51,7 +56,8 @@ public sealed class GetTrustLevelPolicyByIdHandler
             return Response<TrustLevelPolicyDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TrustLevelPolicyDto>.Fail("Trust-level policy was not found.", 404)
             : Response<TrustLevelPolicyDto>.Success(TrustLevelMapper.ToDto(entity));
@@ -63,11 +69,13 @@ public sealed class GetTrustLevelPolicyAuditMetadataHandler
 {
     private readonly ITepTrustLevelPolicyMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTrustLevelPolicyAuditMetadataHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext)
+    public GetTrustLevelPolicyAuditMetadataHandler(ITepTrustLevelPolicyMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TrustLevelAuditMetadataDto>> Handle(GetTrustLevelPolicyAuditMetadataQuery request, CancellationToken ct)
@@ -78,7 +86,8 @@ public sealed class GetTrustLevelPolicyAuditMetadataHandler
             return Response<TrustLevelAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TrustLevelAuditMetadataDto>.Fail("Trust-level policy was not found.", 404)
             : Response<TrustLevelAuditMetadataDto>.Success(new TrustLevelAuditMetadataDto(

@@ -10,13 +10,16 @@ public sealed class UpdateCandidateDisputeReadinessHandler : IRequestHandler<Upd
 {
     private readonly ITepCandidateDisputeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateCandidateDisputeReadinessHandler(
         ITepCandidateDisputeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<NoContent>> Handle(UpdateCandidateDisputeReadinessCommand request, CancellationToken ct)
@@ -27,7 +30,8 @@ public sealed class UpdateCandidateDisputeReadinessHandler : IRequestHandler<Upd
             return Response<NoContent>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<NoContent>.Fail("Candidate dispute readiness record was not found.", 404);
@@ -45,7 +49,7 @@ public sealed class UpdateCandidateDisputeReadinessHandler : IRequestHandler<Upd
             return Response<NoContent>.Fail(readiness.Errors, readiness.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenant.Data, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenant.Data, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<NoContent>.Fail("An active candidate dispute readiness record with the same Code already exists for this tenant.", 409);
         }

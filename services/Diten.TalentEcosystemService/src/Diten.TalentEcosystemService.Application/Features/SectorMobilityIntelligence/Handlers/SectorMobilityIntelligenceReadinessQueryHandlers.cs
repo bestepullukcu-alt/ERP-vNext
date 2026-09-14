@@ -11,11 +11,13 @@ public sealed class GetSectorMobilityIntelligenceReadinessListHandler
 {
     private readonly ISectorMobilityIntelligenceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorMobilityIntelligenceReadinessListHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorMobilityIntelligenceReadinessListHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<SectorMobilityIntelligenceReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetSectorMobilityIntelligenceReadinessListHandler
             return Response<IReadOnlyList<SectorMobilityIntelligenceReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<SectorMobilityIntelligenceReadinessListItemDto>>.Success(rows.Select(SectorMobilityIntelligenceMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetSectorMobilityIntelligenceReadinessByIdHandler
 {
     private readonly ISectorMobilityIntelligenceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorMobilityIntelligenceReadinessByIdHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorMobilityIntelligenceReadinessByIdHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorMobilityIntelligenceReadinessDto>> Handle(GetSectorMobilityIntelligenceReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetSectorMobilityIntelligenceReadinessByIdHandler
             return Response<SectorMobilityIntelligenceReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SectorMobilityIntelligenceReadinessDto>.Fail("SectorMobilityIntelligence readiness record was not found.", 404)
             : Response<SectorMobilityIntelligenceReadinessDto>.Success(SectorMobilityIntelligenceMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetSectorMobilityIntelligenceAuditMetadataHandler
 {
     private readonly ISectorMobilityIntelligenceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorMobilityIntelligenceAuditMetadataHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorMobilityIntelligenceAuditMetadataHandler(ISectorMobilityIntelligenceReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorMobilityIntelligenceAuditMetadataDto>> Handle(GetSectorMobilityIntelligenceAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetSectorMobilityIntelligenceAuditMetadataHandler
             return Response<SectorMobilityIntelligenceAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SectorMobilityIntelligenceAuditMetadataDto>.Fail("SectorMobilityIntelligence readiness record was not found.", 404)
             : Response<SectorMobilityIntelligenceAuditMetadataDto>.Success(SectorMobilityIntelligenceMapper.ToAuditMetadata(entity));

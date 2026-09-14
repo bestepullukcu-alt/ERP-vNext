@@ -10,13 +10,16 @@ public sealed class CreateCandidateDisputeReadinessHandler : IRequestHandler<Cre
 {
     private readonly ITepCandidateDisputeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateCandidateDisputeReadinessHandler(
         ITepCandidateDisputeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateCandidateDisputeReadinessCommand request, CancellationToken ct)
@@ -26,6 +29,14 @@ public sealed class CreateCandidateDisputeReadinessHandler : IRequestHandler<Cre
         {
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
 
         var validation = CandidateDisputeGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -39,12 +50,12 @@ public sealed class CreateCandidateDisputeReadinessHandler : IRequestHandler<Cre
             return Response<Guid>.Fail(readiness.Errors, readiness.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenant.Data, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenant.Data, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active candidate dispute readiness record with the same Code already exists for this tenant.", 409);
         }
 
-        var entity = CandidateDisputeHandlerMapper.ToEntity(tenant.Data, request.Request);
+        var entity = CandidateDisputeHandlerMapper.ToEntity(tenant.Data, legalEntityId, request.Request);
         await _repository.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);
     }

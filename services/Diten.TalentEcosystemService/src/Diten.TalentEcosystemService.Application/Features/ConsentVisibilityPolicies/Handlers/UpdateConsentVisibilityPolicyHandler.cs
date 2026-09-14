@@ -11,11 +11,13 @@ public sealed class UpdateConsentVisibilityPolicyHandler
 {
     private readonly ITepConsentVisibilityPolicyRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public UpdateConsentVisibilityPolicyHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext)
+    public UpdateConsentVisibilityPolicyHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ConsentVisibilityPolicyDto>> Handle(UpdateConsentVisibilityPolicyCommand request, CancellationToken ct)
@@ -26,8 +28,9 @@ public sealed class UpdateConsentVisibilityPolicyHandler
             return Response<ConsentVisibilityPolicyDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<ConsentVisibilityPolicyDto>.Fail("Consent/visibility policy was not found.", 404);
@@ -45,7 +48,7 @@ public sealed class UpdateConsentVisibilityPolicyHandler
             return Response<ConsentVisibilityPolicyDto>.Fail(activation.Errors, activation.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<ConsentVisibilityPolicyDto>.Fail("An active consent/visibility policy with the same Code already exists for this tenant.", 409);
         }

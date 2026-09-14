@@ -11,11 +11,13 @@ public sealed class GetIndustrySkillPassportReadinessListHandler
 {
     private readonly IIndustrySkillPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySkillPassportReadinessListHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySkillPassportReadinessListHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<IndustrySkillPassportReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetIndustrySkillPassportReadinessListHandler
             return Response<IReadOnlyList<IndustrySkillPassportReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<IndustrySkillPassportReadinessListItemDto>>.Success(rows.Select(IndustrySkillPassportMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetIndustrySkillPassportReadinessByIdHandler
 {
     private readonly IIndustrySkillPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySkillPassportReadinessByIdHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySkillPassportReadinessByIdHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustrySkillPassportReadinessDto>> Handle(GetIndustrySkillPassportReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetIndustrySkillPassportReadinessByIdHandler
             return Response<IndustrySkillPassportReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustrySkillPassportReadinessDto>.Fail("IndustrySkillPassport readiness record was not found.", 404)
             : Response<IndustrySkillPassportReadinessDto>.Success(IndustrySkillPassportMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetIndustrySkillPassportAuditMetadataHandler
 {
     private readonly IIndustrySkillPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustrySkillPassportAuditMetadataHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustrySkillPassportAuditMetadataHandler(IIndustrySkillPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustrySkillPassportAuditMetadataDto>> Handle(GetIndustrySkillPassportAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetIndustrySkillPassportAuditMetadataHandler
             return Response<IndustrySkillPassportAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustrySkillPassportAuditMetadataDto>.Fail("IndustrySkillPassport readiness record was not found.", 404)
             : Response<IndustrySkillPassportAuditMetadataDto>.Success(IndustrySkillPassportMapper.ToAuditMetadata(entity));

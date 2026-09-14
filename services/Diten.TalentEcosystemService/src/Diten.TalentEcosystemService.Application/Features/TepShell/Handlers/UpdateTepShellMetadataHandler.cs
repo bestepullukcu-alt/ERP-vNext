@@ -11,11 +11,13 @@ public sealed class UpdateTepShellMetadataHandler
 {
     private readonly ITepShellMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public UpdateTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext)
+    public UpdateTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TepShellMetadataDto>> Handle(UpdateTepShellMetadataCommand request, CancellationToken ct)
@@ -26,8 +28,9 @@ public sealed class UpdateTepShellMetadataHandler
             return Response<TepShellMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<TepShellMetadataDto>.Fail("TEP shell metadata was not found.", 404);
@@ -45,7 +48,7 @@ public sealed class UpdateTepShellMetadataHandler
             return Response<TepShellMetadataDto>.Fail(dependency.Errors, dependency.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<TepShellMetadataDto>.Fail("An active TEP shell metadata record with the same Code already exists for this tenant.", 409);
         }

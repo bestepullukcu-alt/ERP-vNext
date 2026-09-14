@@ -18,6 +18,7 @@ public sealed class EvaluateExitReferenceRecordHandler
     private readonly ITepTrustLevelPolicyMetadataRepository _trustRepository;
     private readonly ITepCandidateProfileMetadataRepository _candidateRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateExitReferenceRecordHandler(
         ITepExitReferenceRecordMetadataRepository repository,
@@ -27,7 +28,8 @@ public sealed class EvaluateExitReferenceRecordHandler
         ITepReviewBoardCaseMetadataRepository reviewRepository,
         ITepTrustLevelPolicyMetadataRepository trustRepository,
         ITepCandidateProfileMetadataRepository candidateRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -37,6 +39,7 @@ public sealed class EvaluateExitReferenceRecordHandler
         _trustRepository = trustRepository;
         _candidateRepository = candidateRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ExitReferenceEvaluationDto>> Handle(EvaluateExitReferenceRecordCommand request, CancellationToken ct)
@@ -47,8 +50,9 @@ public sealed class EvaluateExitReferenceRecordHandler
             return Response<ExitReferenceEvaluationDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<ExitReferenceEvaluationDto>.Fail("Exit reference record was not found.", 404);
@@ -56,6 +60,7 @@ public sealed class EvaluateExitReferenceRecordHandler
 
         var dependencies = await ExitReferenceRecordDependencyReader.ReadAsync(
             tenantId,
+            scope,
             entity,
             _associationRepository,
             _policyRepository,

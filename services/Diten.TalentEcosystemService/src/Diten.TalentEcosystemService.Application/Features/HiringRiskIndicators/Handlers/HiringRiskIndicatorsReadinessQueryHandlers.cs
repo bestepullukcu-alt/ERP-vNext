@@ -11,11 +11,13 @@ public sealed class GetHiringRiskIndicatorsReadinessListHandler
 {
     private readonly IHiringRiskIndicatorsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHiringRiskIndicatorsReadinessListHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHiringRiskIndicatorsReadinessListHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<HiringRiskIndicatorsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetHiringRiskIndicatorsReadinessListHandler
             return Response<IReadOnlyList<HiringRiskIndicatorsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<HiringRiskIndicatorsReadinessListItemDto>>.Success(rows.Select(HiringRiskIndicatorsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetHiringRiskIndicatorsReadinessByIdHandler
 {
     private readonly IHiringRiskIndicatorsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHiringRiskIndicatorsReadinessByIdHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHiringRiskIndicatorsReadinessByIdHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HiringRiskIndicatorsReadinessDto>> Handle(GetHiringRiskIndicatorsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetHiringRiskIndicatorsReadinessByIdHandler
             return Response<HiringRiskIndicatorsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HiringRiskIndicatorsReadinessDto>.Fail("HiringRiskIndicators readiness record was not found.", 404)
             : Response<HiringRiskIndicatorsReadinessDto>.Success(HiringRiskIndicatorsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetHiringRiskIndicatorsAuditMetadataHandler
 {
     private readonly IHiringRiskIndicatorsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetHiringRiskIndicatorsAuditMetadataHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetHiringRiskIndicatorsAuditMetadataHandler(IHiringRiskIndicatorsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<HiringRiskIndicatorsAuditMetadataDto>> Handle(GetHiringRiskIndicatorsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetHiringRiskIndicatorsAuditMetadataHandler
             return Response<HiringRiskIndicatorsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<HiringRiskIndicatorsAuditMetadataDto>.Fail("HiringRiskIndicators readiness record was not found.", 404)
             : Response<HiringRiskIndicatorsAuditMetadataDto>.Success(HiringRiskIndicatorsMapper.ToAuditMetadata(entity));

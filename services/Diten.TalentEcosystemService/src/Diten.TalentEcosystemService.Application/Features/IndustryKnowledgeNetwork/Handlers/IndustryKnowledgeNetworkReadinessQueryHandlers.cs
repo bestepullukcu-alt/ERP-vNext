@@ -11,11 +11,13 @@ public sealed class GetIndustryKnowledgeNetworkReadinessListHandler
 {
     private readonly IIndustryKnowledgeNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryKnowledgeNetworkReadinessListHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryKnowledgeNetworkReadinessListHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<IndustryKnowledgeNetworkReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetIndustryKnowledgeNetworkReadinessListHandler
             return Response<IReadOnlyList<IndustryKnowledgeNetworkReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<IndustryKnowledgeNetworkReadinessListItemDto>>.Success(rows.Select(IndustryKnowledgeNetworkMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetIndustryKnowledgeNetworkReadinessByIdHandler
 {
     private readonly IIndustryKnowledgeNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryKnowledgeNetworkReadinessByIdHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryKnowledgeNetworkReadinessByIdHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustryKnowledgeNetworkReadinessDto>> Handle(GetIndustryKnowledgeNetworkReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetIndustryKnowledgeNetworkReadinessByIdHandler
             return Response<IndustryKnowledgeNetworkReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustryKnowledgeNetworkReadinessDto>.Fail("IndustryKnowledgeNetwork readiness record was not found.", 404)
             : Response<IndustryKnowledgeNetworkReadinessDto>.Success(IndustryKnowledgeNetworkMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetIndustryKnowledgeNetworkAuditMetadataHandler
 {
     private readonly IIndustryKnowledgeNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryKnowledgeNetworkAuditMetadataHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryKnowledgeNetworkAuditMetadataHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustryKnowledgeNetworkAuditMetadataDto>> Handle(GetIndustryKnowledgeNetworkAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetIndustryKnowledgeNetworkAuditMetadataHandler
             return Response<IndustryKnowledgeNetworkAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustryKnowledgeNetworkAuditMetadataDto>.Fail("IndustryKnowledgeNetwork readiness record was not found.", 404)
             : Response<IndustryKnowledgeNetworkAuditMetadataDto>.Success(IndustryKnowledgeNetworkMapper.ToAuditMetadata(entity));

@@ -18,29 +18,30 @@ public sealed class MongoAssociationOperationsReadinessMetadataRepository : IAss
         _collection = database.GetCollection<AssociationOperationsReadinessMetadata>(CollectionName);
     }
 
-    public async Task<IReadOnlyList<AssociationOperationsReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct)
+    public async Task<IReadOnlyList<AssociationOperationsReadinessMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         return await _collection
-            .Find(ActiveTenantFilter(tenantId))
+            .Find(ActiveScopeFilter(tenantId, legalEntityIds))
             .SortBy(x => x.Code)
             .ToListAsync(ct);
     }
 
-    public async Task<AssociationOperationsReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
+    public async Task<AssociationOperationsReadinessMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<AssociationOperationsReadinessMetadata>.Filter.And(
-            ActiveTenantFilter(tenantId),
+            ActiveScopeFilter(tenantId, legalEntityIds),
             Builders<AssociationOperationsReadinessMetadata>.Filter.Eq(x => x.Id, id));
         return await _collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct)
+    public async Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct)
     {
         await EnsureIndexesAsync(ct);
         var filter = Builders<AssociationOperationsReadinessMetadata>.Filter.And(
             ActiveTenantFilter(tenantId),
+            Builders<AssociationOperationsReadinessMetadata>.Filter.Eq(x => x.LegalEntityId, legalEntityId),
             Builders<AssociationOperationsReadinessMetadata>.Filter.Eq(x => x.Code, code));
 
         if (excludingId is { } id)
@@ -78,6 +79,7 @@ public sealed class MongoAssociationOperationsReadinessMetadataRepository : IAss
             new CreateIndexModel<AssociationOperationsReadinessMetadata>(
                 Builders<AssociationOperationsReadinessMetadata>.IndexKeys
                     .Ascending(x => x.TenantId)
+                    .Ascending(x => x.LegalEntityId)
                     .Ascending(x => x.Code),
                 new CreateIndexOptions<AssociationOperationsReadinessMetadata>
                 {
@@ -96,6 +98,15 @@ public sealed class MongoAssociationOperationsReadinessMetadataRepository : IAss
 
         _indexesEnsured = true;
     }
+
+    // Tenant scoping stays authoritative; legal-entity scoping narrows to the effective
+    // roll-up set. An empty set matches nothing (In []), so a caller with no scope sees none.
+    private static FilterDefinition<AssociationOperationsReadinessMetadata> ActiveScopeFilter(
+        Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds) =>
+        Builders<AssociationOperationsReadinessMetadata>.Filter.And(
+            ActiveTenantFilter(tenantId),
+            Builders<AssociationOperationsReadinessMetadata>.Filter.In(x => x.LegalEntityId, legalEntityIds));
 
     private static FilterDefinition<AssociationOperationsReadinessMetadata> ActiveTenantFilter(Guid tenantId) =>
         Builders<AssociationOperationsReadinessMetadata>.Filter.And(

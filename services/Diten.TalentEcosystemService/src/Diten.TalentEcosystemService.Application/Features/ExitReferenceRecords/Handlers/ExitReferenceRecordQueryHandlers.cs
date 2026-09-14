@@ -11,11 +11,13 @@ public sealed class GetExitReferenceRecordListHandler
 {
     private readonly ITepExitReferenceRecordMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetExitReferenceRecordListHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext)
+    public GetExitReferenceRecordListHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ExitReferenceRecordListItemDto>>> Handle(GetExitReferenceRecordListQuery request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class GetExitReferenceRecordListHandler
             return Response<IReadOnlyList<ExitReferenceRecordListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ExitReferenceRecordListItemDto>>.Success(items.Select(ExitReferenceRecordMapper.ToListItemDto).ToList());
     }
 }
@@ -36,11 +39,13 @@ public sealed class GetExitReferenceRecordByIdHandler
 {
     private readonly ITepExitReferenceRecordMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetExitReferenceRecordByIdHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext)
+    public GetExitReferenceRecordByIdHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ExitReferenceRecordDto>> Handle(GetExitReferenceRecordByIdQuery request, CancellationToken ct)
@@ -51,7 +56,8 @@ public sealed class GetExitReferenceRecordByIdHandler
             return Response<ExitReferenceRecordDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ExitReferenceRecordDto>.Fail("Exit reference record was not found.", 404)
             : Response<ExitReferenceRecordDto>.Success(ExitReferenceRecordMapper.ToDto(entity));
@@ -63,11 +69,13 @@ public sealed class GetExitReferenceRecordAuditMetadataHandler
 {
     private readonly ITepExitReferenceRecordMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetExitReferenceRecordAuditMetadataHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext)
+    public GetExitReferenceRecordAuditMetadataHandler(ITepExitReferenceRecordMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ExitReferenceAuditMetadataDto>> Handle(GetExitReferenceRecordAuditMetadataQuery request, CancellationToken ct)
@@ -78,7 +86,8 @@ public sealed class GetExitReferenceRecordAuditMetadataHandler
             return Response<ExitReferenceAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ExitReferenceAuditMetadataDto>.Fail("Exit reference record was not found.", 404)
             : Response<ExitReferenceAuditMetadataDto>.Success(new ExitReferenceAuditMetadataDto(

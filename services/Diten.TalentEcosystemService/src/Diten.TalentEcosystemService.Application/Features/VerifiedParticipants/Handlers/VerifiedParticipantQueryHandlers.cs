@@ -11,11 +11,13 @@ public sealed class GetVerifiedParticipantAccessListHandler
 {
     private readonly ITepVerifiedParticipantAccessRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedParticipantAccessListHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext)
+    public GetVerifiedParticipantAccessListHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<VerifiedParticipantAccessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetVerifiedParticipantAccessListHandler
             return Response<IReadOnlyList<VerifiedParticipantAccessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<VerifiedParticipantAccessListItemDto>>.Success(items.Select(VerifiedParticipantMapper.ToListItemDto).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetVerifiedParticipantAccessByIdHandler
 {
     private readonly ITepVerifiedParticipantAccessRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedParticipantAccessByIdHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext)
+    public GetVerifiedParticipantAccessByIdHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedParticipantAccessDto>> Handle(GetVerifiedParticipantAccessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetVerifiedParticipantAccessByIdHandler
             return Response<VerifiedParticipantAccessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<VerifiedParticipantAccessDto>.Fail("Verified participant access record was not found.", 404)
             : Response<VerifiedParticipantAccessDto>.Success(VerifiedParticipantMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetVerifiedParticipantAccessAuditMetadataHandler
 {
     private readonly ITepVerifiedParticipantAccessRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedParticipantAccessAuditMetadataHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext)
+    public GetVerifiedParticipantAccessAuditMetadataHandler(ITepVerifiedParticipantAccessRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedParticipantAuditMetadataDto>> Handle(GetVerifiedParticipantAccessAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetVerifiedParticipantAccessAuditMetadataHandler
             return Response<VerifiedParticipantAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<VerifiedParticipantAuditMetadataDto>.Fail("Verified participant access record was not found.", 404)
             : Response<VerifiedParticipantAuditMetadataDto>.Success(new VerifiedParticipantAuditMetadataDto(

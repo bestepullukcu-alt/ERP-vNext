@@ -11,11 +11,13 @@ public sealed class GetMentorshipRecommendationNetworkReadinessListHandler
 {
     private readonly IMentorshipRecommendationNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetMentorshipRecommendationNetworkReadinessListHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetMentorshipRecommendationNetworkReadinessListHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<MentorshipRecommendationNetworkReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetMentorshipRecommendationNetworkReadinessListHandler
             return Response<IReadOnlyList<MentorshipRecommendationNetworkReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<MentorshipRecommendationNetworkReadinessListItemDto>>.Success(rows.Select(MentorshipRecommendationNetworkMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetMentorshipRecommendationNetworkReadinessByIdHandler
 {
     private readonly IMentorshipRecommendationNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetMentorshipRecommendationNetworkReadinessByIdHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetMentorshipRecommendationNetworkReadinessByIdHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<MentorshipRecommendationNetworkReadinessDto>> Handle(GetMentorshipRecommendationNetworkReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetMentorshipRecommendationNetworkReadinessByIdHandler
             return Response<MentorshipRecommendationNetworkReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<MentorshipRecommendationNetworkReadinessDto>.Fail("MentorshipRecommendationNetwork readiness record was not found.", 404)
             : Response<MentorshipRecommendationNetworkReadinessDto>.Success(MentorshipRecommendationNetworkMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetMentorshipRecommendationNetworkAuditMetadataHandler
 {
     private readonly IMentorshipRecommendationNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetMentorshipRecommendationNetworkAuditMetadataHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetMentorshipRecommendationNetworkAuditMetadataHandler(IMentorshipRecommendationNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<MentorshipRecommendationNetworkAuditMetadataDto>> Handle(GetMentorshipRecommendationNetworkAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetMentorshipRecommendationNetworkAuditMetadataHandler
             return Response<MentorshipRecommendationNetworkAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<MentorshipRecommendationNetworkAuditMetadataDto>.Fail("MentorshipRecommendationNetwork readiness record was not found.", 404)
             : Response<MentorshipRecommendationNetworkAuditMetadataDto>.Success(MentorshipRecommendationNetworkMapper.ToAuditMetadata(entity));

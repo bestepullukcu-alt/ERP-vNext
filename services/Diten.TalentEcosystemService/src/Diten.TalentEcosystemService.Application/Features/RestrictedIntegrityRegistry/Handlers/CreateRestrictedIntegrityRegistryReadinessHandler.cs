@@ -12,11 +12,13 @@ public sealed class CreateRestrictedIntegrityRegistryReadinessHandler : IRequest
 {
     private readonly IRestrictedIntegrityRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public CreateRestrictedIntegrityRegistryReadinessHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public CreateRestrictedIntegrityRegistryReadinessHandler(IRestrictedIntegrityRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateRestrictedIntegrityRegistryReadinessCommand request, CancellationToken ct)
@@ -27,6 +29,13 @@ public sealed class CreateRestrictedIntegrityRegistryReadinessHandler : IRequest
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
         var errors = RestrictedIntegrityRegistryGuard.Validate(request.Request);
         if (errors.Count > 0)
         {
@@ -34,8 +43,9 @@ public sealed class CreateRestrictedIntegrityRegistryReadinessHandler : IRequest
         }
 
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
         var code = RestrictedIntegrityRegistryGuard.NormalizeCode(request.Request.Code);
-        if (await _repository.ExistsActiveCodeAsync(tenantId, code, null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, code, null, ct))
         {
             return Response<Guid>.Fail("An active restricted-integrity-registry readiness record with the same Code already exists for this tenant.", 409);
         }
@@ -45,6 +55,7 @@ public sealed class CreateRestrictedIntegrityRegistryReadinessHandler : IRequest
         var entity = new RestrictedIntegrityRegistryReadinessMetadata
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = code,
             DisplayName = request.Request.DisplayName.Trim(),
             RestrictedIntegrityRegistryReadinessState = readinessState,

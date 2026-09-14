@@ -14,17 +14,20 @@ public sealed class UpdateVerifiedParticipantAccessHandler
     private readonly ITepAssociationMembershipRegistryRepository _associationRepository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateVerifiedParticipantAccessHandler(
         ITepVerifiedParticipantAccessRepository repository,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedParticipantAccessDto>> Handle(UpdateVerifiedParticipantAccessCommand request, CancellationToken ct)
@@ -35,8 +38,9 @@ public sealed class UpdateVerifiedParticipantAccessHandler
             return Response<VerifiedParticipantAccessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<VerifiedParticipantAccessDto>.Fail("Verified participant access record was not found.", 404);
@@ -55,12 +59,12 @@ public sealed class UpdateVerifiedParticipantAccessHandler
         }
 
         if (VerifiedParticipantGuard.IsVerificationRequested(request.Request.VerificationState, request.Request.AccessState)
-            && !await DependenciesAllowAccessAsync(tenantId, request.Request, ct))
+            && !await DependenciesAllowAccessAsync(tenantId, scope, request.Request, ct))
         {
             return Response<VerifiedParticipantAccessDto>.Fail("Verified participant access requires same-tenant Association and Consent/Visibility preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), request.Id, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, entity.LegalEntityId, request.Request.Code.Trim(), request.Id, ct))
         {
             return Response<VerifiedParticipantAccessDto>.Fail("An active verified participant access record with the same Code already exists for this tenant.", 409);
         }
@@ -91,13 +95,13 @@ public sealed class UpdateVerifiedParticipantAccessHandler
         return Response<VerifiedParticipantAccessDto>.Success(VerifiedParticipantMapper.ToDto(entity));
     }
 
-    private async Task<bool> DependenciesAllowAccessAsync(Guid tenantId, VerifiedParticipantAccessRequest request, CancellationToken ct)
+    private async Task<bool> DependenciesAllowAccessAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, VerifiedParticipantAccessRequest request, CancellationToken ct)
     {
         var association = request.AssociationMembershipId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, legalEntityIds, associationId, ct)
             : null;
         var policy = request.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId, ct)
             : null;
 
         return VerifiedParticipantGuard.AssociationAllowsAccess(new TepVerifiedParticipantAccess

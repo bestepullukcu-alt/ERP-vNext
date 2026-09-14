@@ -4,10 +4,11 @@ namespace Diten.TalentEcosystemService.Application.Features.CandidateDisputes.Ha
 
 internal static class CandidateDisputeHandlerMapper
 {
-    public static TepCandidateDisputeReadinessMetadata ToEntity(Guid tenantId, CandidateDisputeReadinessRequest request) =>
+    public static TepCandidateDisputeReadinessMetadata ToEntity(Guid tenantId, Guid legalEntityId, CandidateDisputeReadinessRequest request) =>
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Code.Trim(),
             DisplayName = request.DisplayName.Trim(),
             DisputeReadinessState = request.DisputeReadinessState,

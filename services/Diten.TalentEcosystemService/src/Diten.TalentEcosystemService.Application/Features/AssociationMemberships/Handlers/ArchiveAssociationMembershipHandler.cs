@@ -12,11 +12,13 @@ public sealed class ArchiveAssociationMembershipHandler
 {
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public ArchiveAssociationMembershipHandler(ITepAssociationMembershipRegistryRepository repository, ITenantContext tenantContext)
+    public ArchiveAssociationMembershipHandler(ITepAssociationMembershipRegistryRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<NoContent>> Handle(ArchiveAssociationMembershipCommand request, CancellationToken ct)
@@ -27,7 +29,8 @@ public sealed class ArchiveAssociationMembershipHandler
             return Response<NoContent>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<NoContent>.Fail("Association membership registry record was not found.", 404);

@@ -12,11 +12,13 @@ public sealed class CreateTepShellMetadataHandler
 {
     private readonly ITepShellMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public CreateTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext)
+    public CreateTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateTepShellMetadataCommand request, CancellationToken ct)
@@ -26,7 +28,15 @@ public sealed class CreateTepShellMetadataHandler
         {
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
 
         var validation = TepShellGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -40,7 +50,7 @@ public sealed class CreateTepShellMetadataHandler
             return Response<Guid>.Fail(dependency.Errors, dependency.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active TEP shell metadata record with the same Code already exists for this tenant.", 409);
         }
@@ -48,6 +58,7 @@ public sealed class CreateTepShellMetadataHandler
         var entity = new TepShellMetadata
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Request.Code.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             ShellState = request.Request.ShellState,

@@ -11,13 +11,16 @@ public sealed class GetAssociationMembershipListHandler
 {
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetAssociationMembershipListHandler(
         ITepAssociationMembershipRegistryRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<AssociationMembershipRegistryListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetAssociationMembershipListHandler
             return Response<IReadOnlyList<AssociationMembershipRegistryListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var records = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var records = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<AssociationMembershipRegistryListItemDto>>.Success(
             records.Select(AssociationMembershipMapper.ToListItemDto).ToList());
     }
@@ -41,13 +45,16 @@ public sealed class GetAssociationMembershipByIdHandler
 {
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetAssociationMembershipByIdHandler(
         ITepAssociationMembershipRegistryRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<AssociationMembershipRegistryDto>> Handle(GetAssociationMembershipByIdQuery request, CancellationToken ct)
@@ -58,7 +65,8 @@ public sealed class GetAssociationMembershipByIdHandler
             return Response<AssociationMembershipRegistryDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<AssociationMembershipRegistryDto>.Fail("Association membership registry record was not found.", 404)
             : Response<AssociationMembershipRegistryDto>.Success(AssociationMembershipMapper.ToDto(entity));

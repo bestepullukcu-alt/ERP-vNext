@@ -24,9 +24,9 @@ public sealed class IndustrySuccessionPoolTests
         var create = CreateHandler(repository, tenantId);
 
         var created = await create.Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest()), CancellationToken.None);
-        var list = await new GetIndustrySuccessionPoolReadinessListHandler(repository, new FixedTenantContext(tenantId))
+        var list = await new GetIndustrySuccessionPoolReadinessListHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetIndustrySuccessionPoolReadinessListQuery(), CancellationToken.None);
-        var get = await new GetIndustrySuccessionPoolReadinessByIdHandler(repository, new FixedTenantContext(tenantId))
+        var get = await new GetIndustrySuccessionPoolReadinessByIdHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetIndustrySuccessionPoolReadinessByIdQuery(created.Data), CancellationToken.None);
 
         Assert.True(created.IsSuccessful);
@@ -56,7 +56,7 @@ public sealed class IndustrySuccessionPoolTests
         var metadata = Metadata(tenantA);
         var handler = new GetIndustrySuccessionPoolReadinessByIdHandler(
             new InMemoryIndustrySuccessionPoolReadinessMetadataRepository(metadata),
-            new FixedTenantContext(tenantB));
+            new FixedTenantContext(tenantB), PilotLegalEntityContext());
 
         var response = await handler.Handle(new GetIndustrySuccessionPoolReadinessByIdQuery(metadata.Id), CancellationToken.None);
 
@@ -96,10 +96,10 @@ public sealed class IndustrySuccessionPoolTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId);
         var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository(metadata);
-        var handler = new DeleteIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new DeleteIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new DeleteIndustrySuccessionPoolReadinessCommand(metadata.Id), CancellationToken.None);
-        var hidden = await repository.GetByIdAsync(tenantId, metadata.Id, CancellationToken.None);
+        var hidden = await repository.GetByIdAsync(tenantId, new[] { Holding }, metadata.Id, CancellationToken.None);
         var stored = RepositoryItems(repository)[metadata.Id];
 
         Assert.True(response.IsSuccessful);
@@ -138,7 +138,7 @@ public sealed class IndustrySuccessionPoolTests
             retentionPolicyState: IndustrySuccessionPoolReadinessState.Ready,
             publicationPolicyState: IndustrySuccessionPoolReadinessState.Ready);
         var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository(metadata);
-        var handler = new EvaluateIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new EvaluateIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new EvaluateIndustrySuccessionPoolReadinessCommand(metadata.Id), CancellationToken.None);
 
@@ -153,7 +153,7 @@ public sealed class IndustrySuccessionPoolTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId, consentPreconditionState: IndustrySuccessionPoolReadinessState.Deferred);
         var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository(metadata);
-        var handler = new EvaluateIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId));
+        var handler = new EvaluateIndustrySuccessionPoolReadinessHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
         var response = await handler.Handle(new EvaluateIndustrySuccessionPoolReadinessCommand(metadata.Id), CancellationToken.None);
 
@@ -193,7 +193,7 @@ public sealed class IndustrySuccessionPoolTests
         var tenantId = Guid.NewGuid();
         var metadata = Metadata(tenantId);
         var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository(metadata);
-        var response = await new GetIndustrySuccessionPoolAuditMetadataHandler(repository, new FixedTenantContext(tenantId))
+        var response = await new GetIndustrySuccessionPoolAuditMetadataHandler(repository, new FixedTenantContext(tenantId), PilotLegalEntityContext())
             .Handle(new GetIndustrySuccessionPoolAuditMetadataQuery(metadata.Id), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
@@ -357,7 +357,13 @@ public sealed class IndustrySuccessionPoolTests
     private static CreateIndustrySuccessionPoolReadinessHandler CreateHandler(
         IIndustrySuccessionPoolReadinessMetadataRepository repository,
         Guid tenantId) =>
-        new(repository, new FixedTenantContext(tenantId == Guid.Empty ? null : tenantId));
+        new(repository, new FixedTenantContext(tenantId == Guid.Empty ? null : tenantId), PilotLegalEntityContext());
+
+    private static CreateIndustrySuccessionPoolReadinessHandler CreateHandler(
+        IIndustrySuccessionPoolReadinessMetadataRepository repository,
+        Guid tenantId,
+        ILegalEntityContext legalEntityContext) =>
+        new(repository, new FixedTenantContext(tenantId), legalEntityContext);
 
     private static IndustrySuccessionPoolReadinessCreateRequest ValidRequest(
         string code = "SUCC-001",
@@ -409,6 +415,7 @@ public sealed class IndustrySuccessionPoolTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = code,
             DisplayName = "IndustrySuccessionPool readiness",
             IndustrySuccessionPoolReadinessState = IndustrySuccessionPoolReadinessState.Draft,
@@ -450,6 +457,49 @@ public sealed class IndustrySuccessionPoolTests
         return (string)field.GetValue(attribute)!;
     }
 
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
+    private static async Task<IReadOnlyList<IndustrySuccessionPoolReadinessListItemDto>> ListWith(
+        IIndustrySuccessionPoolReadinessMetadataRepository repository,
+        Guid tenantId,
+        IReadOnlyCollection<Guid> effective)
+    {
+        var handler = new GetIndustrySuccessionPoolReadinessListHandler(
+            repository,
+            new FixedTenantContext(tenantId),
+            new FixedLegalEntityContext(effective.First(), effective));
+        var response = await handler.Handle(new GetIndustrySuccessionPoolReadinessListQuery(), CancellationToken.None);
+        return response.Data!;
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
@@ -464,15 +514,15 @@ public sealed class IndustrySuccessionPoolTests
         public InMemoryIndustrySuccessionPoolReadinessMetadataRepository(params IndustrySuccessionPoolReadinessMetadata[] items) =>
             _items = items.ToDictionary(x => x.Id);
 
-        public Task<IReadOnlyList<IndustrySuccessionPoolReadinessMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<IndustrySuccessionPoolReadinessMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<IndustrySuccessionPoolReadinessMetadata>>(
-                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted).OrderBy(x => x.Code).ToList());
+                _items.Values.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).OrderBy(x => x.Code).ToList());
 
-        public Task<IndustrySuccessionPoolReadinessMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
+        public Task<IndustrySuccessionPoolReadinessMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(_items.Values.FirstOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
-            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
+            Task.FromResult(_items.Values.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && x.Code == code && !x.IsDeleted && x.Id != excludingId));
 
         public Task CreateAsync(IndustrySuccessionPoolReadinessMetadata metadata, CancellationToken ct)
         {
@@ -485,5 +535,73 @@ public sealed class IndustrySuccessionPoolTests
             _items[metadata.Id] = metadata;
             return Task.CompletedTask;
         }
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_stamps_the_selected_legal_entity()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository();
+        var handler = CreateHandler(repository, tenantId, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest()), CancellationToken.None);
+        var stored = RepositoryItems(repository)[created.Data];
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_without_a_permitted_selection_is_forbidden()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository();
+        var handler = CreateHandler(repository, tenantId, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest()), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(RepositoryItems(repository));
+    }
+
+    [Fact]
+    public async Task LegalEntity_list_rolls_up_holding_and_isolates_siblings()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository();
+
+        await CreateHandler(repository, tenantId, new FixedLegalEntityContext(Medikal, new[] { Medikal }))
+            .Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest(code: "MED-01")), CancellationToken.None);
+        await CreateHandler(repository, tenantId, new FixedLegalEntityContext(Teknoloji, new[] { Teknoloji }))
+            .Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest(code: "TEK-01")), CancellationToken.None);
+
+        var medikalOnly = await ListWith(repository, tenantId, new[] { Medikal });
+        var teknolojiOnly = await ListWith(repository, tenantId, new[] { Teknoloji });
+        var holdingRollup = await ListWith(repository, tenantId, new[] { Holding, Medikal, Teknoloji });
+
+        Assert.Equal(new[] { "MED-01" }, medikalOnly.Select(x => x.Code).ToArray());
+        Assert.Equal(new[] { "TEK-01" }, teknolojiOnly.Select(x => x.Code).ToArray());
+        Assert.Equal(new[] { "MED-01", "TEK-01" }, holdingRollup.Select(x => x.Code).OrderBy(x => x).ToArray());
+    }
+
+    [Fact]
+    public async Task LegalEntity_same_code_is_unique_per_legal_entity_not_per_tenant()
+    {
+        var tenantId = Guid.NewGuid();
+        var repository = new InMemoryIndustrySuccessionPoolReadinessMetadataRepository();
+        var medikal = new FixedLegalEntityContext(Medikal, new[] { Medikal });
+        var teknoloji = new FixedLegalEntityContext(Teknoloji, new[] { Teknoloji });
+
+        var first = await CreateHandler(repository, tenantId, medikal)
+            .Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+        var duplicateSameEntity = await CreateHandler(repository, tenantId, medikal)
+            .Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+        var sameCodeOtherEntity = await CreateHandler(repository, tenantId, teknoloji)
+            .Handle(new CreateIndustrySuccessionPoolReadinessCommand(ValidRequest(code: "SHARED-01")), CancellationToken.None);
+
+        Assert.True(first.IsSuccessful);
+        Assert.Equal(409, duplicateSameEntity.StatusCode);
+        Assert.True(sameCodeOtherEntity.IsSuccessful);
     }
 }

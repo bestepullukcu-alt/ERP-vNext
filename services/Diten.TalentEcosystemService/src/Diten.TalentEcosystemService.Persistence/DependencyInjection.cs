@@ -65,6 +65,10 @@ public static class DependencyInjection
         services.AddScoped<IAssociationOperationsReadinessMetadataRepository, MongoAssociationOperationsReadinessMetadataRepository>();
         services.AddScoped<IIndustryKnowledgeNetworkReadinessMetadataRepository, MongoIndustryKnowledgeNetworkReadinessMetadataRepository>();
 
+        // Legal-entity scoping rollout: one-shot startup backfill + unique-index reconciliation across
+        // every scoped TEP collection.
+        services.AddHostedService<Migrations.TepLegalEntityBackfillService>();
+
         return services;
     }
 

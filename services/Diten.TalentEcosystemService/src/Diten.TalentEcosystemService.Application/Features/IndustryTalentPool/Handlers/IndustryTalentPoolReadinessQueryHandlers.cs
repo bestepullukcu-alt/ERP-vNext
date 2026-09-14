@@ -11,11 +11,13 @@ public sealed class GetIndustryTalentPoolReadinessListHandler
 {
     private readonly IIndustryTalentPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryTalentPoolReadinessListHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryTalentPoolReadinessListHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<IndustryTalentPoolReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetIndustryTalentPoolReadinessListHandler
             return Response<IReadOnlyList<IndustryTalentPoolReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<IndustryTalentPoolReadinessListItemDto>>.Success(rows.Select(IndustryTalentPoolMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetIndustryTalentPoolReadinessByIdHandler
 {
     private readonly IIndustryTalentPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryTalentPoolReadinessByIdHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryTalentPoolReadinessByIdHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustryTalentPoolReadinessDto>> Handle(GetIndustryTalentPoolReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetIndustryTalentPoolReadinessByIdHandler
             return Response<IndustryTalentPoolReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustryTalentPoolReadinessDto>.Fail("IndustryTalentPool readiness record was not found.", 404)
             : Response<IndustryTalentPoolReadinessDto>.Success(IndustryTalentPoolMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetIndustryTalentPoolAuditMetadataHandler
 {
     private readonly IIndustryTalentPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetIndustryTalentPoolAuditMetadataHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetIndustryTalentPoolAuditMetadataHandler(IIndustryTalentPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustryTalentPoolAuditMetadataDto>> Handle(GetIndustryTalentPoolAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetIndustryTalentPoolAuditMetadataHandler
             return Response<IndustryTalentPoolAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<IndustryTalentPoolAuditMetadataDto>.Fail("IndustryTalentPool readiness record was not found.", 404)
             : Response<IndustryTalentPoolAuditMetadataDto>.Success(IndustryTalentPoolMapper.ToAuditMetadata(entity));

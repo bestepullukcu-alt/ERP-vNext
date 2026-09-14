@@ -10,11 +10,13 @@ public sealed class EvaluateTalentDevelopmentNetworkReadinessHandler : IRequestH
 {
     private readonly ITalentDevelopmentNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateTalentDevelopmentNetworkReadinessHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateTalentDevelopmentNetworkReadinessHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TalentDevelopmentNetworkReadinessDto>> Handle(EvaluateTalentDevelopmentNetworkReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateTalentDevelopmentNetworkReadinessHandler : IRequestH
             return Response<TalentDevelopmentNetworkReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<TalentDevelopmentNetworkReadinessDto>.Fail("TalentDevelopmentNetwork readiness record was not found.", 404);

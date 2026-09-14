@@ -11,11 +11,13 @@ public sealed class GetEarlyWarningSignalsReadinessListHandler
 {
     private readonly IEarlyWarningSignalsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEarlyWarningSignalsReadinessListHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEarlyWarningSignalsReadinessListHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<EarlyWarningSignalsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetEarlyWarningSignalsReadinessListHandler
             return Response<IReadOnlyList<EarlyWarningSignalsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<EarlyWarningSignalsReadinessListItemDto>>.Success(rows.Select(EarlyWarningSignalsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetEarlyWarningSignalsReadinessByIdHandler
 {
     private readonly IEarlyWarningSignalsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEarlyWarningSignalsReadinessByIdHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEarlyWarningSignalsReadinessByIdHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EarlyWarningSignalsReadinessDto>> Handle(GetEarlyWarningSignalsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetEarlyWarningSignalsReadinessByIdHandler
             return Response<EarlyWarningSignalsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EarlyWarningSignalsReadinessDto>.Fail("EarlyWarningSignals readiness record was not found.", 404)
             : Response<EarlyWarningSignalsReadinessDto>.Success(EarlyWarningSignalsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetEarlyWarningSignalsAuditMetadataHandler
 {
     private readonly IEarlyWarningSignalsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetEarlyWarningSignalsAuditMetadataHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetEarlyWarningSignalsAuditMetadataHandler(IEarlyWarningSignalsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<EarlyWarningSignalsAuditMetadataDto>> Handle(GetEarlyWarningSignalsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetEarlyWarningSignalsAuditMetadataHandler
             return Response<EarlyWarningSignalsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<EarlyWarningSignalsAuditMetadataDto>.Fail("EarlyWarningSignals readiness record was not found.", 404)
             : Response<EarlyWarningSignalsAuditMetadataDto>.Success(EarlyWarningSignalsMapper.ToAuditMetadata(entity));

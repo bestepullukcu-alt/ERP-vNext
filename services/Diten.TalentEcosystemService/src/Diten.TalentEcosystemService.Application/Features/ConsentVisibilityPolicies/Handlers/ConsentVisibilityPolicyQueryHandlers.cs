@@ -11,11 +11,13 @@ public sealed class GetConsentVisibilityPolicyListHandler
 {
     private readonly ITepConsentVisibilityPolicyRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetConsentVisibilityPolicyListHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext)
+    public GetConsentVisibilityPolicyListHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ConsentVisibilityPolicyListItemDto>>> Handle(GetConsentVisibilityPolicyListQuery request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class GetConsentVisibilityPolicyListHandler
             return Response<IReadOnlyList<ConsentVisibilityPolicyListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ConsentVisibilityPolicyListItemDto>>.Success(items.Select(ConsentVisibilityPolicyMapper.ToListItemDto).ToList());
     }
 }
@@ -36,11 +39,13 @@ public sealed class GetConsentVisibilityPolicyByIdHandler
 {
     private readonly ITepConsentVisibilityPolicyRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetConsentVisibilityPolicyByIdHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext)
+    public GetConsentVisibilityPolicyByIdHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ConsentVisibilityPolicyDto>> Handle(GetConsentVisibilityPolicyByIdQuery request, CancellationToken ct)
@@ -51,7 +56,8 @@ public sealed class GetConsentVisibilityPolicyByIdHandler
             return Response<ConsentVisibilityPolicyDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<ConsentVisibilityPolicyDto>.Fail("Consent/visibility policy was not found.", 404)
             : Response<ConsentVisibilityPolicyDto>.Success(ConsentVisibilityPolicyMapper.ToDto(item));
@@ -63,11 +69,13 @@ public sealed class GetConsentVisibilityPolicyAuditMetadataHandler
 {
     private readonly ITepConsentVisibilityPolicyRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetConsentVisibilityPolicyAuditMetadataHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext)
+    public GetConsentVisibilityPolicyAuditMetadataHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ConsentVisibilityPolicyAuditMetadataDto>> Handle(GetConsentVisibilityPolicyAuditMetadataQuery request, CancellationToken ct)
@@ -78,7 +86,8 @@ public sealed class GetConsentVisibilityPolicyAuditMetadataHandler
             return Response<ConsentVisibilityPolicyAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<ConsentVisibilityPolicyAuditMetadataDto>.Fail("Consent/visibility policy was not found.", 404)
             : Response<ConsentVisibilityPolicyAuditMetadataDto>.Success(new ConsentVisibilityPolicyAuditMetadataDto(

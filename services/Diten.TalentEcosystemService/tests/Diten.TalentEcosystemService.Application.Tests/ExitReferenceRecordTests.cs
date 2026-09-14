@@ -28,9 +28,9 @@ public sealed class ExitReferenceRecordTests
         var request = ValidRequest("EXIT-REF-001");
 
         var created = await handler.Handle(new CreateExitReferenceRecordCommand(request), CancellationToken.None);
-        var list = await new GetExitReferenceRecordListHandler(repos.ExitReferences, new FixedTenantContext(TenantA))
+        var list = await new GetExitReferenceRecordListHandler(repos.ExitReferences, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new(), CancellationToken.None);
-        var detail = await new GetExitReferenceRecordByIdHandler(repos.ExitReferences, new FixedTenantContext(TenantA))
+        var detail = await new GetExitReferenceRecordByIdHandler(repos.ExitReferences, new FixedTenantContext(TenantA), PilotLegalEntityContext())
             .Handle(new(created.Data), CancellationToken.None);
 
         Assert.True(created.IsSuccessful);
@@ -48,7 +48,7 @@ public sealed class ExitReferenceRecordTests
         var repos = new Repositories();
         var created = await CreateHandler(repos, TenantA)
             .Handle(new CreateExitReferenceRecordCommand(ValidRequest("EXIT-TENANT")), CancellationToken.None);
-        var query = new GetExitReferenceRecordByIdHandler(repos.ExitReferences, new FixedTenantContext(TenantB));
+        var query = new GetExitReferenceRecordByIdHandler(repos.ExitReferences, new FixedTenantContext(TenantB), PilotLegalEntityContext());
 
         var result = await query.Handle(new(created.Data), CancellationToken.None);
 
@@ -77,11 +77,11 @@ public sealed class ExitReferenceRecordTests
         var repos = new Repositories();
         var created = await CreateHandler(repos, TenantA)
             .Handle(new CreateExitReferenceRecordCommand(ValidRequest("EXIT-ARCH")), CancellationToken.None);
-        var archive = new ArchiveExitReferenceRecordHandler(repos.ExitReferences, new FixedTenantContext(TenantA));
+        var archive = new ArchiveExitReferenceRecordHandler(repos.ExitReferences, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = repos.ExitReferences.Items.Single();
-        var list = await repos.ExitReferences.ListAsync(TenantA, CancellationToken.None);
+        var list = await repos.ExitReferences.ListAsync(TenantA, new[] { Holding }, CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
         Assert.True(stored.IsDeleted);
@@ -238,7 +238,33 @@ public sealed class ExitReferenceRecordTests
         }
     }
 
-    private static CreateExitReferenceRecordHandler CreateHandler(Repositories repos, Guid tenantId) =>
+    [Fact]
+    public async Task Create_stamps_the_selected_legal_entity()
+    {
+        var repos = new Repositories();
+        var handler = CreateHandler(repos, TenantA, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateExitReferenceRecordCommand(ValidRequest("EXIT-LE")), CancellationToken.None);
+        var stored = repos.ExitReferences.Items.Single();
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task Create_without_a_permitted_legal_entity_is_forbidden()
+    {
+        var repos = new Repositories();
+        var handler = CreateHandler(repos, TenantA, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var result = await handler.Handle(new CreateExitReferenceRecordCommand(ValidRequest("EXIT-403")), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Empty(repos.ExitReferences.Items);
+    }
+
+    private static CreateExitReferenceRecordHandler CreateHandler(Repositories repos, Guid tenantId, ILegalEntityContext? legalEntityContext = null) =>
         new(
             repos.ExitReferences,
             repos.Associations,
@@ -247,7 +273,8 @@ public sealed class ExitReferenceRecordTests
             repos.Reviews,
             repos.Trust,
             repos.Candidates,
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            legalEntityContext ?? PilotLegalEntityContext());
 
     private static EvaluateExitReferenceRecordHandler EvaluateHandler(Repositories repos, Guid tenantId) =>
         new(
@@ -258,7 +285,8 @@ public sealed class ExitReferenceRecordTests
             repos.Reviews,
             repos.Trust,
             repos.Candidates,
-            new FixedTenantContext(tenantId));
+            new FixedTenantContext(tenantId),
+            PilotLegalEntityContext());
 
     private static ExitReferenceRecordRequest ValidRequest(string code) =>
         new(
@@ -326,6 +354,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"POLICY-{tenantId.ToString()[..8]}",
             DisplayName = "Consent visibility policy",
             PolicyState = TepPolicyState.Active,
@@ -344,6 +373,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"ASSOC-{tenantId.ToString()[..8]}",
             DisplayName = "Association membership",
             AssociationMembershipState = TepAssociationMembershipState.Active,
@@ -362,6 +392,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"VER-{tenantId.ToString()[..8]}",
             DisplayName = "Verified participant",
             AssociationMembershipId = associationId,
@@ -382,6 +413,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"REV-{tenantId.ToString()[..8]}",
             DisplayName = "Review case",
             ReviewBoardCaseState = TepReviewBoardCaseState.DecisionRecorded,
@@ -403,6 +435,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"TRUST-{tenantId.ToString()[..8]}",
             DisplayName = "Trust level policy",
             TrustLevelPolicyState = TepTrustLevelPolicyState.Active,
@@ -431,6 +464,7 @@ public sealed class ExitReferenceRecordTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"PROF-{tenantId.ToString()[..8]}",
             DisplayName = "Candidate profile",
             CandidateReference = "candidate-ref",
@@ -482,10 +516,42 @@ public sealed class ExitReferenceRecordTests
 
     private sealed record DependencyIds(Guid AssociationId, Guid PolicyId, Guid VerifiedId, Guid ReviewId, Guid TrustId, Guid CandidateId);
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
         public Guid? TenantId { get; }
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
     }
 
     private sealed class Repositories
@@ -502,9 +568,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryExitReferenceRecordMetadataRepository : ITepExitReferenceRecordMetadataRepository
     {
         public List<TepExitReferenceRecordMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepExitReferenceRecordMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepExitReferenceRecordMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).OrderBy(x => x.Code).ToList());
-        public Task<TepExitReferenceRecordMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase) && x.Id != excludingId));
+        public Task<IReadOnlyList<TepExitReferenceRecordMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepExitReferenceRecordMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).OrderBy(x => x.Code).ToList());
+        public Task<TepExitReferenceRecordMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && string.Equals(x.Code, code, StringComparison.OrdinalIgnoreCase) && x.Id != excludingId));
         public Task CreateAsync(TepExitReferenceRecordMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepExitReferenceRecordMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }
@@ -512,9 +578,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryAssociationMembershipRegistryRepository : ITepAssociationMembershipRegistryRepository
     {
         public List<TepAssociationMembershipRegistry> Items { get; } = [];
-        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepAssociationMembershipRegistry registry, CancellationToken ct) { Items.Add(registry); return Task.CompletedTask; }
         public Task UpdateAsync(TepAssociationMembershipRegistry registry, CancellationToken ct) => Task.CompletedTask;
     }
@@ -522,9 +588,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryConsentVisibilityPolicyRepository : ITepConsentVisibilityPolicyRepository
     {
         public List<TepConsentVisibilityPolicy> Items { get; } = [];
-        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepConsentVisibilityPolicy policy, CancellationToken ct) { Items.Add(policy); return Task.CompletedTask; }
         public Task UpdateAsync(TepConsentVisibilityPolicy policy, CancellationToken ct) => Task.CompletedTask;
     }
@@ -532,9 +598,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryVerifiedParticipantAccessRepository : ITepVerifiedParticipantAccessRepository
     {
         public List<TepVerifiedParticipantAccess> Items { get; } = [];
-        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepVerifiedParticipantAccess>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepVerifiedParticipantAccess>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepVerifiedParticipantAccess access, CancellationToken ct) { Items.Add(access); return Task.CompletedTask; }
         public Task UpdateAsync(TepVerifiedParticipantAccess access, CancellationToken ct) => Task.CompletedTask;
     }
@@ -542,9 +608,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryReviewBoardCaseMetadataRepository : ITepReviewBoardCaseMetadataRepository
     {
         public List<TepReviewBoardCaseMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepReviewBoardCaseMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepReviewBoardCaseMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepReviewBoardCaseMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepReviewBoardCaseMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }
@@ -552,9 +618,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryTrustLevelPolicyMetadataRepository : ITepTrustLevelPolicyMetadataRepository
     {
         public List<TepTrustLevelPolicyMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepTrustLevelPolicyMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepTrustLevelPolicyMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepTrustLevelPolicyMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepTrustLevelPolicyMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepTrustLevelPolicyMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepTrustLevelPolicyMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepTrustLevelPolicyMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepTrustLevelPolicyMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }
@@ -562,9 +628,9 @@ public sealed class ExitReferenceRecordTests
     private sealed class InMemoryCandidateProfileMetadataRepository : ITepCandidateProfileMetadataRepository
     {
         public List<TepCandidateProfileMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepCandidateProfileMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepCandidateProfileMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepCandidateProfileMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepCandidateProfileMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepCandidateProfileMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepCandidateProfileMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepCandidateProfileMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepCandidateProfileMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }

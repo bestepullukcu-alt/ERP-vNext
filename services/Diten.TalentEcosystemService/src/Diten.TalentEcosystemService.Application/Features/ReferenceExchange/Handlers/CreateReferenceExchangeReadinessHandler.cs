@@ -10,13 +10,16 @@ public sealed class CreateReferenceExchangeReadinessHandler : IRequestHandler<Cr
 {
     private readonly ITepReferenceExchangeMarketplaceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateReferenceExchangeReadinessHandler(
         ITepReferenceExchangeMarketplaceReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateReferenceExchangeReadinessCommand request, CancellationToken ct)
@@ -26,6 +29,15 @@ public sealed class CreateReferenceExchangeReadinessHandler : IRequestHandler<Cr
         {
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
 
         var validation = ReferenceExchangeGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -40,7 +52,8 @@ public sealed class CreateReferenceExchangeReadinessHandler : IRequestHandler<Cr
         }
 
         var entity = ReferenceExchangeHandlerMapper.ToEntity(tenant.Data, request.Request);
-        if (await _repository.ExistsActiveCodeAsync(tenant.Data, request.Request.Code.Trim(), null, ct))
+        entity.LegalEntityId = legalEntityId;
+        if (await _repository.ExistsActiveCodeAsync(tenant.Data, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active reference exchange readiness record with the same Code already exists for this tenant.", 409);
         }

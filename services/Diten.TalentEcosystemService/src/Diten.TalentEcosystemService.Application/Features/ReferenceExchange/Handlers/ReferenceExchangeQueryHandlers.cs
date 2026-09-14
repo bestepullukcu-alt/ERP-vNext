@@ -11,13 +11,16 @@ public sealed class GetReferenceExchangeReadinessListHandler
 {
     private readonly ITepReferenceExchangeMarketplaceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetReferenceExchangeReadinessListHandler(
         ITepReferenceExchangeMarketplaceReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ReferenceExchangeReadinessListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetReferenceExchangeReadinessListHandler
             return Response<IReadOnlyList<ReferenceExchangeReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ReferenceExchangeReadinessListItemDto>>.Success(items.Select(ReferenceExchangeMapper.ToListItemDto).ToList());
     }
 }
@@ -40,13 +44,16 @@ public sealed class GetReferenceExchangeReadinessByIdHandler
 {
     private readonly ITepReferenceExchangeMarketplaceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetReferenceExchangeReadinessByIdHandler(
         ITepReferenceExchangeMarketplaceReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ReferenceExchangeReadinessDto>> Handle(GetReferenceExchangeReadinessByIdQuery request, CancellationToken ct)
@@ -57,7 +64,8 @@ public sealed class GetReferenceExchangeReadinessByIdHandler
             return Response<ReferenceExchangeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<ReferenceExchangeReadinessDto>.Fail("Reference exchange readiness record was not found.", 404)
             : Response<ReferenceExchangeReadinessDto>.Success(ReferenceExchangeMapper.ToDto(item));
@@ -69,13 +77,16 @@ public sealed class GetReferenceExchangeAuditMetadataHandler
 {
     private readonly ITepReferenceExchangeMarketplaceReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetReferenceExchangeAuditMetadataHandler(
         ITepReferenceExchangeMarketplaceReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ReferenceExchangeAuditMetadataDto>> Handle(GetReferenceExchangeAuditMetadataQuery request, CancellationToken ct)
@@ -86,7 +97,8 @@ public sealed class GetReferenceExchangeAuditMetadataHandler
             return Response<ReferenceExchangeAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<ReferenceExchangeAuditMetadataDto>.Fail("Reference exchange readiness record was not found.", 404)
             : Response<ReferenceExchangeAuditMetadataDto>.Success(new ReferenceExchangeAuditMetadataDto(

@@ -26,12 +26,19 @@ public sealed class AssociationMembershipTests
     private static readonly Guid TenantA = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid TenantB = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
 
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     [Fact]
     public async Task Create_rejects_duplicate_active_code_in_tenant_scope()
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("ASSOC-A");
 
         var first = await handler.Handle(new CreateAssociationMembershipCommand(request), CancellationToken.None);
@@ -47,10 +54,10 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-TENANT")), CancellationToken.None);
 
-        var crossTenant = new GetAssociationMembershipByIdHandler(registry, new FixedTenantContext(TenantB));
+        var crossTenant = new GetAssociationMembershipByIdHandler(registry, new FixedTenantContext(TenantB), PilotLegalEntityContext());
         var result = await crossTenant.Handle(new(created.Data), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
@@ -62,9 +69,9 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-ARCH")), CancellationToken.None);
-        var archive = new ArchiveAssociationMembershipHandler(registry, new FixedTenantContext(TenantA));
+        var archive = new ArchiveAssociationMembershipHandler(registry, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = registry.Items.Single();
@@ -80,7 +87,7 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("ASSOC-BLOCKED") with
         {
             AssociationMembershipState = TepAssociationMembershipState.Active,
@@ -101,7 +108,7 @@ public sealed class AssociationMembershipTests
         var policy = new InMemoryConsentVisibilityPolicyRepository();
         var otherTenantPolicy = ApprovedPolicy(TenantB);
         await policy.CreateAsync(otherTenantPolicy, CancellationToken.None);
-        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateAssociationMembershipCommand(ActivationRequest("ASSOC-CROSS", otherTenantPolicy.Id)), CancellationToken.None);
 
@@ -116,7 +123,7 @@ public sealed class AssociationMembershipTests
         var policy = new InMemoryConsentVisibilityPolicyRepository();
         var sameTenantPolicy = ApprovedPolicy(TenantA);
         await policy.CreateAsync(sameTenantPolicy, CancellationToken.None);
-        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new CreateAssociationMembershipCommand(ActivationRequest("ASSOC-ACTIVE", sameTenantPolicy.Id)), CancellationToken.None);
 
@@ -128,9 +135,9 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-DEFER")), CancellationToken.None);
-        var evaluate = new EvaluateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var evaluate = new EvaluateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await evaluate.Handle(new(created.Data, new(false)), CancellationToken.None);
 
@@ -145,9 +152,9 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-EVAL-BLOCK")), CancellationToken.None);
-        var evaluate = new EvaluateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var evaluate = new EvaluateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await evaluate.Handle(new(created.Data, new(true)), CancellationToken.None);
 
@@ -160,12 +167,12 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var create = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var created = await create.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-MEMBER")), CancellationToken.None);
         var entity = registry.Items.Single();
         var originalCode = entity.Code;
         var originalActivation = entity.AssociationActivationState;
-        var handler = new UpdateAssociationMemberCompanyHandler(registry, new FixedTenantContext(TenantA));
+        var handler = new UpdateAssociationMemberCompanyHandler(registry, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await handler.Handle(new(created.Data, new(TepMemberCompanyState.Verified, "member-company-updated", "v2")), CancellationToken.None);
 
@@ -186,7 +193,7 @@ public sealed class AssociationMembershipTests
     {
         var registry = new InMemoryAssociationMembershipRegistryRepository();
         var policy = new InMemoryConsentVisibilityPolicyRepository();
-        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA));
+        var handler = new CreateAssociationMembershipHandler(registry, policy, new FixedTenantContext(TenantA), PilotLegalEntityContext());
         var request = ValidRequest("ASSOC-FORBIDDEN") with { DisplayName = marker };
 
         var result = await handler.Handle(new CreateAssociationMembershipCommand(request), CancellationToken.None);
@@ -227,6 +234,35 @@ public sealed class AssociationMembershipTests
         Assert.Equal("ix_tep_association_memberships_tenant_state", MongoTepAssociationMembershipRegistryRepository.TenantStateIndexName);
     }
 
+    [Fact]
+    public async Task LegalEntity_create_stamps_the_selected_legal_entity()
+    {
+        var registry = new InMemoryAssociationMembershipRegistryRepository();
+        var policy = new InMemoryConsentVisibilityPolicyRepository();
+        var handler = new CreateAssociationMembershipHandler(
+            registry, policy, new FixedTenantContext(TenantA), new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-LE")), CancellationToken.None);
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, registry.Items.Single().LegalEntityId);
+    }
+
+    [Fact]
+    public async Task LegalEntity_create_without_a_permitted_selection_is_forbidden()
+    {
+        var registry = new InMemoryAssociationMembershipRegistryRepository();
+        var policy = new InMemoryConsentVisibilityPolicyRepository();
+        var handler = new CreateAssociationMembershipHandler(
+            registry, policy, new FixedTenantContext(TenantA), new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var response = await handler.Handle(new CreateAssociationMembershipCommand(ValidRequest("ASSOC-403")), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(403, response.StatusCode);
+        Assert.Empty(registry.Items);
+    }
+
     private static AssociationMembershipRegistryRequest ValidRequest(string code) =>
         new(
             code,
@@ -259,6 +295,7 @@ public sealed class AssociationMembershipTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"POLICY-{tenantId.ToString()[..8]}",
             DisplayName = "Consent visibility policy",
             PolicyState = TepPolicyState.Active,
@@ -301,22 +338,46 @@ public sealed class AssociationMembershipTests
         public Guid? TenantId { get; }
     }
 
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
+    }
+
     private sealed class InMemoryAssociationMembershipRegistryRepository : ITepAssociationMembershipRegistryRepository
     {
         public List<TepAssociationMembershipRegistry> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));
@@ -334,18 +395,19 @@ public sealed class AssociationMembershipTests
     {
         public List<TepConsentVisibilityPolicy> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));

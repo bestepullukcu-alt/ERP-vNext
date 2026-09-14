@@ -10,11 +10,13 @@ public sealed class EvaluateIndustryKnowledgeNetworkReadinessHandler : IRequestH
 {
     private readonly IIndustryKnowledgeNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateIndustryKnowledgeNetworkReadinessHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateIndustryKnowledgeNetworkReadinessHandler(IIndustryKnowledgeNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustryKnowledgeNetworkReadinessDto>> Handle(EvaluateIndustryKnowledgeNetworkReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateIndustryKnowledgeNetworkReadinessHandler : IRequestH
             return Response<IndustryKnowledgeNetworkReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<IndustryKnowledgeNetworkReadinessDto>.Fail("IndustryKnowledgeNetwork readiness record was not found.", 404);

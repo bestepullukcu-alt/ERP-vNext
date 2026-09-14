@@ -15,6 +15,7 @@ internal static class ExitReferenceRecordDependencyReader
 {
     public static async Task<ExitReferenceRecordDependencies> ReadAsync(
         Guid tenantId,
+        IReadOnlyCollection<Guid> legalEntityIds,
         TepExitReferenceRecordMetadata entity,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
@@ -25,22 +26,22 @@ internal static class ExitReferenceRecordDependencyReader
         CancellationToken ct)
     {
         var association = entity.AssociationMembershipReference is { } associationId
-            ? await associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await associationRepository.GetByIdAsync(tenantId, legalEntityIds, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyReference is { } policyId
-            ? await policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId, ct)
             : null;
         var verified = entity.VerifiedParticipantReference is { } verifiedId
-            ? await verifiedRepository.GetByIdAsync(tenantId, verifiedId, ct)
+            ? await verifiedRepository.GetByIdAsync(tenantId, legalEntityIds, verifiedId, ct)
             : null;
         var review = entity.ReviewBoardCaseReference is { } reviewId
-            ? await reviewRepository.GetByIdAsync(tenantId, reviewId, ct)
+            ? await reviewRepository.GetByIdAsync(tenantId, legalEntityIds, reviewId, ct)
             : null;
         var trust = entity.TrustLevelPolicyReference is { } trustId
-            ? await trustRepository.GetByIdAsync(tenantId, trustId, ct)
+            ? await trustRepository.GetByIdAsync(tenantId, legalEntityIds, trustId, ct)
             : null;
         var candidate = entity.CandidateProfileReference is { } candidateId
-            ? await candidateRepository.GetByIdAsync(tenantId, candidateId, ct)
+            ? await candidateRepository.GetByIdAsync(tenantId, legalEntityIds, candidateId, ct)
             : null;
 
         return new ExitReferenceRecordDependencies(association, policy, verified, review, trust, candidate);

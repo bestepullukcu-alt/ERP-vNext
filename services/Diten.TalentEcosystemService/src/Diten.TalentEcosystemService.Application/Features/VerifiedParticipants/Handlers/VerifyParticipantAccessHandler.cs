@@ -14,17 +14,20 @@ public sealed class VerifyParticipantAccessHandler
     private readonly ITepAssociationMembershipRegistryRepository _associationRepository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public VerifyParticipantAccessHandler(
         ITepVerifiedParticipantAccessRepository repository,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedParticipantAccessDto>> Handle(VerifyParticipantAccessCommand request, CancellationToken ct)
@@ -35,18 +38,19 @@ public sealed class VerifyParticipantAccessHandler
             return Response<VerifiedParticipantAccessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<VerifiedParticipantAccessDto>.Fail("Verified participant access record was not found.", 404);
         }
 
         var association = entity.AssociationMembershipId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, scope, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, scope, policyId, ct)
             : null;
         var evaluation = VerifiedParticipantGuard.Evaluate(entity, association, policy, request.Request.VerificationRequested);
 

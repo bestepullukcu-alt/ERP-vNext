@@ -11,11 +11,13 @@ public sealed class GetReviewBoardCaseListHandler
 {
     private readonly ITepReviewBoardCaseMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetReviewBoardCaseListHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext)
+    public GetReviewBoardCaseListHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<ReviewBoardCaseListItemDto>>> Handle(GetReviewBoardCaseListQuery request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class GetReviewBoardCaseListHandler
             return Response<IReadOnlyList<ReviewBoardCaseListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<ReviewBoardCaseListItemDto>>.Success(items.Select(ReviewBoardMapper.ToListItemDto).ToList());
     }
 }
@@ -36,11 +39,13 @@ public sealed class GetReviewBoardCaseByIdHandler
 {
     private readonly ITepReviewBoardCaseMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetReviewBoardCaseByIdHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext)
+    public GetReviewBoardCaseByIdHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ReviewBoardCaseDto>> Handle(GetReviewBoardCaseByIdQuery request, CancellationToken ct)
@@ -51,7 +56,8 @@ public sealed class GetReviewBoardCaseByIdHandler
             return Response<ReviewBoardCaseDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ReviewBoardCaseDto>.Fail("Review-board case was not found.", 404)
             : Response<ReviewBoardCaseDto>.Success(ReviewBoardMapper.ToDto(entity));
@@ -63,11 +69,13 @@ public sealed class GetReviewBoardCaseAuditMetadataHandler
 {
     private readonly ITepReviewBoardCaseMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetReviewBoardCaseAuditMetadataHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext)
+    public GetReviewBoardCaseAuditMetadataHandler(ITepReviewBoardCaseMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ReviewBoardAuditMetadataDto>> Handle(GetReviewBoardCaseAuditMetadataQuery request, CancellationToken ct)
@@ -78,7 +86,8 @@ public sealed class GetReviewBoardCaseAuditMetadataHandler
             return Response<ReviewBoardAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<ReviewBoardAuditMetadataDto>.Fail("Review-board case was not found.", 404)
             : Response<ReviewBoardAuditMetadataDto>.Success(new ReviewBoardAuditMetadataDto(

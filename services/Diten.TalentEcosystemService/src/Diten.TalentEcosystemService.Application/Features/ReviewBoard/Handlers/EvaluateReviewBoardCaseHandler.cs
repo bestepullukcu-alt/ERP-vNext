@@ -14,19 +14,22 @@ public sealed class EvaluateReviewBoardCaseHandler : IRequestHandler<EvaluateRev
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITepVerifiedParticipantAccessRepository _verifiedAccessRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateReviewBoardCaseHandler(
         ITepReviewBoardCaseMetadataRepository repository,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
         ITepVerifiedParticipantAccessRepository verifiedAccessRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
         _policyRepository = policyRepository;
         _verifiedAccessRepository = verifiedAccessRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<ReviewBoardEvaluationDto>> Handle(EvaluateReviewBoardCaseCommand request, CancellationToken ct)
@@ -37,21 +40,22 @@ public sealed class EvaluateReviewBoardCaseHandler : IRequestHandler<EvaluateRev
             return Response<ReviewBoardEvaluationDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<ReviewBoardEvaluationDto>.Fail("Review-board case was not found.", 404);
         }
 
         var association = entity.AssociationMembershipRegistryId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, scope, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, scope, policyId, ct)
             : null;
         var verifiedAccess = entity.VerifiedParticipantAccessId is { } verifiedAccessId
-            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, verifiedAccessId, ct)
+            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, scope, verifiedAccessId, ct)
             : null;
 
         var evaluation = ReviewBoardGuard.Evaluate(entity, association, policy, verifiedAccess, request.Request.ReviewRequested);

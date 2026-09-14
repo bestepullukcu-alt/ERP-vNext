@@ -12,11 +12,13 @@ public sealed class CreateConsentVisibilityPolicyHandler
 {
     private readonly ITepConsentVisibilityPolicyRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public CreateConsentVisibilityPolicyHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext)
+    public CreateConsentVisibilityPolicyHandler(ITepConsentVisibilityPolicyRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateConsentVisibilityPolicyCommand request, CancellationToken ct)
@@ -27,6 +29,15 @@ public sealed class CreateConsentVisibilityPolicyHandler
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
 
         var validation = ConsentVisibilityPolicyGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -40,7 +51,7 @@ public sealed class CreateConsentVisibilityPolicyHandler
             return Response<Guid>.Fail(activation.Errors, activation.StatusCode);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active consent/visibility policy with the same Code already exists for this tenant.", 409);
         }
@@ -48,6 +59,7 @@ public sealed class CreateConsentVisibilityPolicyHandler
         var entity = new TepConsentVisibilityPolicy
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Request.Code.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             PolicyState = request.Request.PolicyState,

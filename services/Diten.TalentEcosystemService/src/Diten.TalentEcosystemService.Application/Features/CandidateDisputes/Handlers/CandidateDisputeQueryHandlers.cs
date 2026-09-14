@@ -11,13 +11,16 @@ public sealed class GetCandidateDisputeReadinessListHandler
 {
     private readonly ITepCandidateDisputeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidateDisputeReadinessListHandler(
         ITepCandidateDisputeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<CandidateDisputeReadinessListItemDto>>> Handle(
@@ -30,7 +33,8 @@ public sealed class GetCandidateDisputeReadinessListHandler
             return Response<IReadOnlyList<CandidateDisputeReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var items = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var items = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<CandidateDisputeReadinessListItemDto>>.Success(
             items.Select(CandidateDisputeMapper.ToListItemDto).ToList());
     }
@@ -41,13 +45,16 @@ public sealed class GetCandidateDisputeReadinessByIdHandler
 {
     private readonly ITepCandidateDisputeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidateDisputeReadinessByIdHandler(
         ITepCandidateDisputeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidateDisputeReadinessDto>> Handle(GetCandidateDisputeReadinessByIdQuery request, CancellationToken ct)
@@ -58,7 +65,8 @@ public sealed class GetCandidateDisputeReadinessByIdHandler
             return Response<CandidateDisputeReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<CandidateDisputeReadinessDto>.Fail("Candidate dispute readiness record was not found.", 404)
             : Response<CandidateDisputeReadinessDto>.Success(CandidateDisputeMapper.ToDto(item));
@@ -70,13 +78,16 @@ public sealed class GetCandidateDisputeAuditMetadataHandler
 {
     private readonly ITepCandidateDisputeReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public GetCandidateDisputeAuditMetadataHandler(
         ITepCandidateDisputeReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidateDisputeAuditMetadataDto>> Handle(GetCandidateDisputeAuditMetadataQuery request, CancellationToken ct)
@@ -87,7 +98,8 @@ public sealed class GetCandidateDisputeAuditMetadataHandler
             return Response<CandidateDisputeAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var item = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var item = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return item is null
             ? Response<CandidateDisputeAuditMetadataDto>.Fail("Candidate dispute readiness record was not found.", 404)
             : Response<CandidateDisputeAuditMetadataDto>.Success(new CandidateDisputeAuditMetadataDto(

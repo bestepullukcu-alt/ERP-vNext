@@ -11,11 +11,13 @@ public sealed class GetSkillsGapHeatmapReadinessListHandler
 {
     private readonly ISkillsGapHeatmapReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSkillsGapHeatmapReadinessListHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSkillsGapHeatmapReadinessListHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<SkillsGapHeatmapReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetSkillsGapHeatmapReadinessListHandler
             return Response<IReadOnlyList<SkillsGapHeatmapReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<SkillsGapHeatmapReadinessListItemDto>>.Success(rows.Select(SkillsGapHeatmapMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetSkillsGapHeatmapReadinessByIdHandler
 {
     private readonly ISkillsGapHeatmapReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSkillsGapHeatmapReadinessByIdHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSkillsGapHeatmapReadinessByIdHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SkillsGapHeatmapReadinessDto>> Handle(GetSkillsGapHeatmapReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetSkillsGapHeatmapReadinessByIdHandler
             return Response<SkillsGapHeatmapReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SkillsGapHeatmapReadinessDto>.Fail("SkillsGapHeatmap readiness record was not found.", 404)
             : Response<SkillsGapHeatmapReadinessDto>.Success(SkillsGapHeatmapMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetSkillsGapHeatmapAuditMetadataHandler
 {
     private readonly ISkillsGapHeatmapReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSkillsGapHeatmapAuditMetadataHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSkillsGapHeatmapAuditMetadataHandler(ISkillsGapHeatmapReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SkillsGapHeatmapAuditMetadataDto>> Handle(GetSkillsGapHeatmapAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetSkillsGapHeatmapAuditMetadataHandler
             return Response<SkillsGapHeatmapAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SkillsGapHeatmapAuditMetadataDto>.Fail("SkillsGapHeatmap readiness record was not found.", 404)
             : Response<SkillsGapHeatmapAuditMetadataDto>.Success(SkillsGapHeatmapMapper.ToAuditMetadata(entity));

@@ -12,13 +12,16 @@ public sealed class EvaluateRehireRecommendationReadinessHandler
 {
     private readonly ITepRehireRecommendationReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateRehireRecommendationReadinessHandler(
         ITepRehireRecommendationReadinessMetadataRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<RehireRecommendationEvaluationDto>> Handle(EvaluateRehireRecommendationReadinessCommand request, CancellationToken ct)
@@ -29,7 +32,8 @@ public sealed class EvaluateRehireRecommendationReadinessHandler
             return Response<RehireRecommendationEvaluationDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<RehireRecommendationEvaluationDto>.Fail("Rehire recommendation readiness record was not found.", 404);

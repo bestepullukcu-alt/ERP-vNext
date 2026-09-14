@@ -13,15 +13,18 @@ public sealed class EvaluateAssociationMembershipHandler
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateAssociationMembershipHandler(
         ITepAssociationMembershipRegistryRepository repository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<AssociationMembershipEvaluationDto>> Handle(EvaluateAssociationMembershipCommand request, CancellationToken ct)
@@ -32,14 +35,15 @@ public sealed class EvaluateAssociationMembershipHandler
             return Response<AssociationMembershipEvaluationDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<AssociationMembershipEvaluationDto>.Fail("Association membership registry record was not found.", 404);
         }
 
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenant.Data, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenant.Data, scope, policyId, ct)
             : null;
         var evaluation = AssociationMembershipGuard.Evaluate(entity, policy, request.Request.ActivationRequested);
 

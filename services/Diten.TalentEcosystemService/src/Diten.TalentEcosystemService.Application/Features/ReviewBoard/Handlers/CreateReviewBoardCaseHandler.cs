@@ -14,19 +14,22 @@ public sealed class CreateReviewBoardCaseHandler : IRequestHandler<CreateReviewB
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITepVerifiedParticipantAccessRepository _verifiedAccessRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateReviewBoardCaseHandler(
         ITepReviewBoardCaseMetadataRepository repository,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
         ITepVerifiedParticipantAccessRepository verifiedAccessRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
         _policyRepository = policyRepository;
         _verifiedAccessRepository = verifiedAccessRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateReviewBoardCaseCommand request, CancellationToken ct)
@@ -37,6 +40,16 @@ public sealed class CreateReviewBoardCaseHandler : IRequestHandler<CreateReviewB
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
         var validation = ReviewBoardGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -51,12 +64,12 @@ public sealed class CreateReviewBoardCaseHandler : IRequestHandler<CreateReviewB
         }
 
         if (ReviewBoardGuard.IsDecisionRequested(request.Request.ReviewBoardCaseState, request.Request.ReviewDecisionState)
-            && !await DependenciesAllowReviewAsync(tenantId, request.Request, ct))
+            && !await DependenciesAllowReviewAsync(tenantId, scope, request.Request, ct))
         {
             return Response<Guid>.Fail("Review-board decision requires same-tenant Association, Consent/Visibility, and Verified Access preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active review-board case with the same Code already exists for this tenant.", 409);
         }
@@ -64,6 +77,7 @@ public sealed class CreateReviewBoardCaseHandler : IRequestHandler<CreateReviewB
         var entity = new TepReviewBoardCaseMetadata
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Request.Code.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             ReviewBoardCaseState = request.Request.ReviewBoardCaseState,
@@ -88,16 +102,16 @@ public sealed class CreateReviewBoardCaseHandler : IRequestHandler<CreateReviewB
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> DependenciesAllowReviewAsync(Guid tenantId, ReviewBoardCaseRequest request, CancellationToken ct)
+    private async Task<bool> DependenciesAllowReviewAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, ReviewBoardCaseRequest request, CancellationToken ct)
     {
         var association = request.AssociationMembershipRegistryId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, legalEntityIds, associationId, ct)
             : null;
         var policy = request.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId, ct)
             : null;
         var verifiedAccess = request.VerifiedParticipantAccessId is { } verifiedAccessId
-            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, verifiedAccessId, ct)
+            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, legalEntityIds, verifiedAccessId, ct)
             : null;
 
         return ReviewBoardGuard.AssociationAllowsReview(new TepReviewBoardCaseMetadata

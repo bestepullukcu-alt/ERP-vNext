@@ -11,11 +11,13 @@ public sealed class DeleteVerifiedCertificationRegistryReadinessHandler : IReque
 {
     private readonly IVerifiedCertificationRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public DeleteVerifiedCertificationRegistryReadinessHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public DeleteVerifiedCertificationRegistryReadinessHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<bool>> Handle(DeleteVerifiedCertificationRegistryReadinessCommand request, CancellationToken ct)
@@ -26,7 +28,8 @@ public sealed class DeleteVerifiedCertificationRegistryReadinessHandler : IReque
             return Response<bool>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<bool>.Fail("VerifiedCertificationRegistry readiness record was not found.", 404);

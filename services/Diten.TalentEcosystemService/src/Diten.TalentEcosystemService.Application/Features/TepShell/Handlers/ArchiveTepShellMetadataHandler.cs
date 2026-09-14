@@ -12,11 +12,13 @@ public sealed class ArchiveTepShellMetadataHandler
 {
     private readonly ITepShellMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public ArchiveTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext)
+    public ArchiveTepShellMetadataHandler(ITepShellMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<NoContent>> Handle(ArchiveTepShellMetadataCommand request, CancellationToken ct)
@@ -27,8 +29,9 @@ public sealed class ArchiveTepShellMetadataHandler
             return Response<NoContent>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<NoContent>.Fail("TEP shell metadata was not found.", 404);

@@ -10,11 +10,13 @@ public sealed class EvaluateIndustrySuccessionPoolReadinessHandler : IRequestHan
 {
     private readonly IIndustrySuccessionPoolReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateIndustrySuccessionPoolReadinessHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateIndustrySuccessionPoolReadinessHandler(IIndustrySuccessionPoolReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IndustrySuccessionPoolReadinessDto>> Handle(EvaluateIndustrySuccessionPoolReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateIndustrySuccessionPoolReadinessHandler : IRequestHan
             return Response<IndustrySuccessionPoolReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<IndustrySuccessionPoolReadinessDto>.Fail("IndustrySuccessionPool readiness record was not found.", 404);

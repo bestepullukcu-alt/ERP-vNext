@@ -11,11 +11,13 @@ public sealed class GetCandidateCareerPassportReadinessListHandler
 {
     private readonly ICandidateCareerPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCandidateCareerPassportReadinessListHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCandidateCareerPassportReadinessListHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<CandidateCareerPassportReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetCandidateCareerPassportReadinessListHandler
             return Response<IReadOnlyList<CandidateCareerPassportReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<CandidateCareerPassportReadinessListItemDto>>.Success(rows.Select(CandidateCareerPassportMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetCandidateCareerPassportReadinessByIdHandler
 {
     private readonly ICandidateCareerPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCandidateCareerPassportReadinessByIdHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCandidateCareerPassportReadinessByIdHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidateCareerPassportReadinessDto>> Handle(GetCandidateCareerPassportReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetCandidateCareerPassportReadinessByIdHandler
             return Response<CandidateCareerPassportReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CandidateCareerPassportReadinessDto>.Fail("CandidateCareerPassport readiness record was not found.", 404)
             : Response<CandidateCareerPassportReadinessDto>.Success(CandidateCareerPassportMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetCandidateCareerPassportAuditMetadataHandler
 {
     private readonly ICandidateCareerPassportReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetCandidateCareerPassportAuditMetadataHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetCandidateCareerPassportAuditMetadataHandler(ICandidateCareerPassportReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<CandidateCareerPassportAuditMetadataDto>> Handle(GetCandidateCareerPassportAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetCandidateCareerPassportAuditMetadataHandler
             return Response<CandidateCareerPassportAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<CandidateCareerPassportAuditMetadataDto>.Fail("CandidateCareerPassport readiness record was not found.", 404)
             : Response<CandidateCareerPassportAuditMetadataDto>.Success(CandidateCareerPassportMapper.ToAuditMetadata(entity));

@@ -11,11 +11,13 @@ public sealed class GetVerifiedCertificationRegistryReadinessListHandler
 {
     private readonly IVerifiedCertificationRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedCertificationRegistryReadinessListHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetVerifiedCertificationRegistryReadinessListHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<VerifiedCertificationRegistryReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetVerifiedCertificationRegistryReadinessListHandler
             return Response<IReadOnlyList<VerifiedCertificationRegistryReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<VerifiedCertificationRegistryReadinessListItemDto>>.Success(rows.Select(VerifiedCertificationRegistryMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetVerifiedCertificationRegistryReadinessByIdHandler
 {
     private readonly IVerifiedCertificationRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedCertificationRegistryReadinessByIdHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetVerifiedCertificationRegistryReadinessByIdHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedCertificationRegistryReadinessDto>> Handle(GetVerifiedCertificationRegistryReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetVerifiedCertificationRegistryReadinessByIdHandler
             return Response<VerifiedCertificationRegistryReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<VerifiedCertificationRegistryReadinessDto>.Fail("VerifiedCertificationRegistry readiness record was not found.", 404)
             : Response<VerifiedCertificationRegistryReadinessDto>.Success(VerifiedCertificationRegistryMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetVerifiedCertificationRegistryAuditMetadataHandler
 {
     private readonly IVerifiedCertificationRegistryReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetVerifiedCertificationRegistryAuditMetadataHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetVerifiedCertificationRegistryAuditMetadataHandler(IVerifiedCertificationRegistryReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<VerifiedCertificationRegistryAuditMetadataDto>> Handle(GetVerifiedCertificationRegistryAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetVerifiedCertificationRegistryAuditMetadataHandler
             return Response<VerifiedCertificationRegistryAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<VerifiedCertificationRegistryAuditMetadataDto>.Fail("VerifiedCertificationRegistry readiness record was not found.", 404)
             : Response<VerifiedCertificationRegistryAuditMetadataDto>.Success(VerifiedCertificationRegistryMapper.ToAuditMetadata(entity));

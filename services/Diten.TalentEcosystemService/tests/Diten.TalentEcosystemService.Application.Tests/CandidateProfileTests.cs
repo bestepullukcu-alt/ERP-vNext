@@ -41,7 +41,7 @@ public sealed class CandidateProfileTests
         var repos = new Repositories();
         var created = await CreateHandler(repos, TenantA)
             .Handle(new CreateCandidateProfileCommand(ValidRequest("CAND-TENANT")), CancellationToken.None);
-        var query = new GetCandidateProfileByIdHandler(repos.Candidates, new FixedTenantContext(TenantB));
+        var query = new GetCandidateProfileByIdHandler(repos.Candidates, new FixedTenantContext(TenantB), PilotLegalEntityContext());
 
         var result = await query.Handle(new(created.Data), CancellationToken.None);
 
@@ -55,7 +55,7 @@ public sealed class CandidateProfileTests
         var repos = new Repositories();
         var created = await CreateHandler(repos, TenantA)
             .Handle(new CreateCandidateProfileCommand(ValidRequest("CAND-ARCH")), CancellationToken.None);
-        var archive = new ArchiveCandidateProfileHandler(repos.Candidates, new FixedTenantContext(TenantA));
+        var archive = new ArchiveCandidateProfileHandler(repos.Candidates, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await archive.Handle(new(created.Data), CancellationToken.None);
         var stored = repos.Candidates.Items.Single();
@@ -99,7 +99,8 @@ public sealed class CandidateProfileTests
             repos.Verified,
             repos.Reviews,
             repos.Trust,
-            new FixedTenantContext(TenantA));
+            new FixedTenantContext(TenantA),
+            PilotLegalEntityContext());
 
         var result = await update.Handle(new(created.Data, ActiveRequest("CAND-UPD", deps) with
         {
@@ -176,7 +177,7 @@ public sealed class CandidateProfileTests
         var repos = new Repositories();
         var created = await CreateHandler(repos, TenantA)
             .Handle(new CreateCandidateProfileCommand(ValidRequest("CAND-AUDIT")), CancellationToken.None);
-        var audit = new GetCandidateProfileAuditMetadataHandler(repos.Candidates, new FixedTenantContext(TenantA));
+        var audit = new GetCandidateProfileAuditMetadataHandler(repos.Candidates, new FixedTenantContext(TenantA), PilotLegalEntityContext());
 
         var result = await audit.Handle(new(created.Data), CancellationToken.None);
 
@@ -235,11 +236,37 @@ public sealed class CandidateProfileTests
         Assert.Equal("ix_tep_candidate_profiles_tenant_state", MongoTepCandidateProfileMetadataRepository.TenantStateIndexName);
     }
 
-    private static CreateCandidateProfileHandler CreateHandler(Repositories repos, Guid tenantId) =>
-        new(repos.Candidates, repos.Associations, repos.Policies, repos.Verified, repos.Reviews, repos.Trust, new FixedTenantContext(tenantId));
+    [Fact]
+    public async Task Create_stamps_the_selected_legal_entity()
+    {
+        var repos = new Repositories();
+        var handler = CreateHandler(repos, TenantA, new FixedLegalEntityContext(Medikal, new[] { Medikal }));
+
+        var created = await handler.Handle(new CreateCandidateProfileCommand(ValidRequest("CAND-LE")), CancellationToken.None);
+        var stored = repos.Candidates.Items.Single();
+
+        Assert.True(created.IsSuccessful);
+        Assert.Equal(Medikal, stored.LegalEntityId);
+    }
+
+    [Fact]
+    public async Task Create_without_a_permitted_legal_entity_is_forbidden()
+    {
+        var repos = new Repositories();
+        var handler = CreateHandler(repos, TenantA, new FixedLegalEntityContext(Teknoloji, selectionAllowed: false));
+
+        var result = await handler.Handle(new CreateCandidateProfileCommand(ValidRequest("CAND-403")), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Empty(repos.Candidates.Items);
+    }
+
+    private static CreateCandidateProfileHandler CreateHandler(Repositories repos, Guid tenantId, ILegalEntityContext? legalEntityContext = null) =>
+        new(repos.Candidates, repos.Associations, repos.Policies, repos.Verified, repos.Reviews, repos.Trust, new FixedTenantContext(tenantId), legalEntityContext ?? PilotLegalEntityContext());
 
     private static EvaluateCandidateProfileHandler EvaluateHandler(Repositories repos, Guid tenantId) =>
-        new(repos.Candidates, repos.Associations, repos.Policies, repos.Verified, repos.Reviews, repos.Trust, new FixedTenantContext(tenantId));
+        new(repos.Candidates, repos.Associations, repos.Policies, repos.Verified, repos.Reviews, repos.Trust, new FixedTenantContext(tenantId), PilotLegalEntityContext());
 
     private static CandidateProfileRequest ValidRequest(string code) =>
         new(
@@ -324,6 +351,7 @@ public sealed class CandidateProfileTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"POLICY-{tenantId.ToString()[..8]}",
             DisplayName = "Consent visibility policy",
             PolicyState = TepPolicyState.Active,
@@ -342,6 +370,7 @@ public sealed class CandidateProfileTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"ASSOC-{tenantId.ToString()[..8]}",
             DisplayName = "Association membership",
             AssociationMembershipState = TepAssociationMembershipState.Active,
@@ -360,6 +389,7 @@ public sealed class CandidateProfileTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"VER-{tenantId.ToString()[..8]}",
             DisplayName = "Verified participant",
             AssociationMembershipId = associationId,
@@ -382,6 +412,7 @@ public sealed class CandidateProfileTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"REV-{tenantId.ToString()[..8]}",
             DisplayName = "Review case",
             ReviewBoardCaseState = TepReviewBoardCaseState.DecisionRecorded,
@@ -403,6 +434,7 @@ public sealed class CandidateProfileTests
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = Holding,
             Code = $"TRUST-{tenantId.ToString()[..8]}",
             DisplayName = "Trust level policy",
             TrustLevelPolicyState = TepTrustLevelPolicyState.Active,
@@ -438,10 +470,42 @@ public sealed class CandidateProfileTests
 
     private sealed record DependencyIds(Guid AssociationId, Guid PolicyId, Guid VerifiedId, Guid ReviewId, Guid TrustId);
 
+    // Fixed legal-entity ids mirroring the MDM demo hierarchy: HOLDING(root) → { MEDIKAL, TEKNOLOJI }.
+    private static readonly Guid Holding = Guid.Parse("1e9a1000-0000-0000-0000-000000000001");
+    private static readonly Guid Medikal = Guid.Parse("1e9a1000-0000-0000-0000-000000000002");
+    private static readonly Guid Teknoloji = Guid.Parse("1e9a1000-0000-0000-0000-000000000003");
+
+    // Default pilot context: HOLDING selected, rolls up over the whole demo hierarchy.
+    private static FixedLegalEntityContext PilotLegalEntityContext() =>
+        new(Holding, new[] { Holding, Medikal, Teknoloji });
+
     private sealed class FixedTenantContext : ITenantContext
     {
         public FixedTenantContext(Guid? tenantId) => TenantId = tenantId;
         public Guid? TenantId { get; }
+    }
+
+    private sealed class FixedLegalEntityContext : ILegalEntityContext
+    {
+        private readonly IReadOnlyCollection<Guid> _effective;
+        private readonly bool _selectionAllowed;
+
+        public FixedLegalEntityContext(
+            Guid? selected,
+            IReadOnlyCollection<Guid>? effective = null,
+            bool? selectionAllowed = null)
+        {
+            SelectedLegalEntityId = selected;
+            _effective = effective ?? (selected is { } s ? new[] { s } : Array.Empty<Guid>());
+            _selectionAllowed = selectionAllowed ?? selected.HasValue;
+        }
+
+        public Guid? SelectedLegalEntityId { get; }
+
+        public Task<bool> IsSelectionAllowedAsync(CancellationToken ct) => Task.FromResult(_selectionAllowed);
+
+        public Task<IReadOnlyCollection<Guid>> GetEffectiveLegalEntityIdsAsync(CancellationToken ct) =>
+            Task.FromResult(_effective);
     }
 
     private sealed class Repositories
@@ -458,18 +522,19 @@ public sealed class CandidateProfileTests
     {
         public List<TepCandidateProfileMetadata> Items { get; } = [];
 
-        public Task<IReadOnlyList<TepCandidateProfileMetadata>> ListAsync(Guid tenantId, CancellationToken ct) =>
+        public Task<IReadOnlyList<TepCandidateProfileMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<TepCandidateProfileMetadata>>(Items
-                .Where(item => item.TenantId == tenantId && !item.IsDeleted)
+                .Where(item => item.TenantId == tenantId && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId))
                 .OrderBy(item => item.Code)
                 .ToList());
 
-        public Task<TepCandidateProfileMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
-            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted));
+        public Task<TepCandidateProfileMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) =>
+            Task.FromResult(Items.SingleOrDefault(item => item.TenantId == tenantId && item.Id == id && !item.IsDeleted && legalEntityIds.Contains(item.LegalEntityId)));
 
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) =>
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) =>
             Task.FromResult(Items.Any(item =>
                 item.TenantId == tenantId
+                && item.LegalEntityId == legalEntityId
                 && !item.IsDeleted
                 && string.Equals(item.Code, code, StringComparison.OrdinalIgnoreCase)
                 && item.Id != excludingId));
@@ -486,9 +551,9 @@ public sealed class CandidateProfileTests
     private sealed class InMemoryAssociationMembershipRegistryRepository : ITepAssociationMembershipRegistryRepository
     {
         public List<TepAssociationMembershipRegistry> Items { get; } = [];
-        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepAssociationMembershipRegistry>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepAssociationMembershipRegistry>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepAssociationMembershipRegistry?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepAssociationMembershipRegistry registry, CancellationToken ct) { Items.Add(registry); return Task.CompletedTask; }
         public Task UpdateAsync(TepAssociationMembershipRegistry registry, CancellationToken ct) => Task.CompletedTask;
     }
@@ -496,9 +561,9 @@ public sealed class CandidateProfileTests
     private sealed class InMemoryConsentVisibilityPolicyRepository : ITepConsentVisibilityPolicyRepository
     {
         public List<TepConsentVisibilityPolicy> Items { get; } = [];
-        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepConsentVisibilityPolicy>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepConsentVisibilityPolicy>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepConsentVisibilityPolicy?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepConsentVisibilityPolicy policy, CancellationToken ct) { Items.Add(policy); return Task.CompletedTask; }
         public Task UpdateAsync(TepConsentVisibilityPolicy policy, CancellationToken ct) => Task.CompletedTask;
     }
@@ -506,9 +571,9 @@ public sealed class CandidateProfileTests
     private sealed class InMemoryVerifiedParticipantAccessRepository : ITepVerifiedParticipantAccessRepository
     {
         public List<TepVerifiedParticipantAccess> Items { get; } = [];
-        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepVerifiedParticipantAccess>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepVerifiedParticipantAccess>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepVerifiedParticipantAccess>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepVerifiedParticipantAccess?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepVerifiedParticipantAccess access, CancellationToken ct) { Items.Add(access); return Task.CompletedTask; }
         public Task UpdateAsync(TepVerifiedParticipantAccess access, CancellationToken ct) => Task.CompletedTask;
     }
@@ -516,9 +581,9 @@ public sealed class CandidateProfileTests
     private sealed class InMemoryReviewBoardCaseMetadataRepository : ITepReviewBoardCaseMetadataRepository
     {
         public List<TepReviewBoardCaseMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepReviewBoardCaseMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepReviewBoardCaseMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepReviewBoardCaseMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepReviewBoardCaseMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepReviewBoardCaseMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepReviewBoardCaseMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }
@@ -526,9 +591,9 @@ public sealed class CandidateProfileTests
     private sealed class InMemoryTrustLevelPolicyMetadataRepository : ITepTrustLevelPolicyMetadataRepository
     {
         public List<TepTrustLevelPolicyMetadata> Items { get; } = [];
-        public Task<IReadOnlyList<TepTrustLevelPolicyMetadata>> ListAsync(Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepTrustLevelPolicyMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted).ToList());
-        public Task<TepTrustLevelPolicyMetadata?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted));
-        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
+        public Task<IReadOnlyList<TepTrustLevelPolicyMetadata>> ListAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, CancellationToken ct) => Task.FromResult<IReadOnlyList<TepTrustLevelPolicyMetadata>>(Items.Where(x => x.TenantId == tenantId && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)).ToList());
+        public Task<TepTrustLevelPolicyMetadata?> GetByIdAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid id, CancellationToken ct) => Task.FromResult(Items.SingleOrDefault(x => x.TenantId == tenantId && x.Id == id && !x.IsDeleted && legalEntityIds.Contains(x.LegalEntityId)));
+        public Task<bool> ExistsActiveCodeAsync(Guid tenantId, Guid legalEntityId, string code, Guid? excludingId, CancellationToken ct) => Task.FromResult(Items.Any(x => x.TenantId == tenantId && x.LegalEntityId == legalEntityId && !x.IsDeleted && x.Code == code && x.Id != excludingId));
         public Task CreateAsync(TepTrustLevelPolicyMetadata metadata, CancellationToken ct) { Items.Add(metadata); return Task.CompletedTask; }
         public Task UpdateAsync(TepTrustLevelPolicyMetadata metadata, CancellationToken ct) => Task.CompletedTask;
     }

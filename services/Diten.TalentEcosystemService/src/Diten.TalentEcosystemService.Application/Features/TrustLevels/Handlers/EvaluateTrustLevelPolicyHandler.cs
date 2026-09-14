@@ -15,6 +15,7 @@ public sealed class EvaluateTrustLevelPolicyHandler : IRequestHandler<EvaluateTr
     private readonly ITepVerifiedParticipantAccessRepository _verifiedAccessRepository;
     private readonly ITepReviewBoardCaseMetadataRepository _reviewBoardRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public EvaluateTrustLevelPolicyHandler(
         ITepTrustLevelPolicyMetadataRepository repository,
@@ -22,7 +23,8 @@ public sealed class EvaluateTrustLevelPolicyHandler : IRequestHandler<EvaluateTr
         ITepConsentVisibilityPolicyRepository policyRepository,
         ITepVerifiedParticipantAccessRepository verifiedAccessRepository,
         ITepReviewBoardCaseMetadataRepository reviewBoardRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -30,6 +32,7 @@ public sealed class EvaluateTrustLevelPolicyHandler : IRequestHandler<EvaluateTr
         _verifiedAccessRepository = verifiedAccessRepository;
         _reviewBoardRepository = reviewBoardRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TrustLevelEvaluationDto>> Handle(EvaluateTrustLevelPolicyCommand request, CancellationToken ct)
@@ -40,24 +43,25 @@ public sealed class EvaluateTrustLevelPolicyHandler : IRequestHandler<EvaluateTr
             return Response<TrustLevelEvaluationDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
-        var entity = await _repository.GetByIdAsync(tenantId, request.Id, ct);
+        var entity = await _repository.GetByIdAsync(tenantId, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<TrustLevelEvaluationDto>.Fail("Trust-level policy was not found.", 404);
         }
 
         var association = entity.AssociationMembershipRegistryId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, scope, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, scope, policyId, ct)
             : null;
         var verifiedAccess = entity.VerifiedParticipantAccessId is { } verifiedAccessId
-            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, verifiedAccessId, ct)
+            ? await _verifiedAccessRepository.GetByIdAsync(tenantId, scope, verifiedAccessId, ct)
             : null;
         var reviewBoard = entity.ReviewBoardCaseId is { } reviewBoardId
-            ? await _reviewBoardRepository.GetByIdAsync(tenantId, reviewBoardId, ct)
+            ? await _reviewBoardRepository.GetByIdAsync(tenantId, scope, reviewBoardId, ct)
             : null;
 
         var evaluation = TrustLevelGuard.Evaluate(entity, association, policy, verifiedAccess, reviewBoard, request.Request.TrustElevationRequested);

@@ -11,13 +11,16 @@ public sealed class UpdateAssociationMemberCompanyHandler
 {
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public UpdateAssociationMemberCompanyHandler(
         ITepAssociationMembershipRegistryRepository repository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<AssociationMembershipRegistryDto>> Handle(UpdateAssociationMemberCompanyCommand request, CancellationToken ct)
@@ -28,7 +31,8 @@ public sealed class UpdateAssociationMemberCompanyHandler
             return Response<AssociationMembershipRegistryDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<AssociationMembershipRegistryDto>.Fail("Association membership registry record was not found.", 404);

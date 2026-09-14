@@ -14,17 +14,20 @@ public sealed class CreateVerifiedParticipantAccessHandler
     private readonly ITepAssociationMembershipRegistryRepository _associationRepository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateVerifiedParticipantAccessHandler(
         ITepVerifiedParticipantAccessRepository repository,
         ITepAssociationMembershipRegistryRepository associationRepository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateVerifiedParticipantAccessCommand request, CancellationToken ct)
@@ -35,6 +38,16 @@ public sealed class CreateVerifiedParticipantAccessHandler
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
         var validation = VerifiedParticipantGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -49,12 +62,12 @@ public sealed class CreateVerifiedParticipantAccessHandler
         }
 
         if (VerifiedParticipantGuard.IsVerificationRequested(request.Request.VerificationState, request.Request.AccessState)
-            && !await DependenciesAllowAccessAsync(tenantId, request.Request, ct))
+            && !await DependenciesAllowAccessAsync(tenantId, scope, request.Request, ct))
         {
             return Response<Guid>.Fail("Verified participant access requires same-tenant Association and Consent/Visibility preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active verified participant access record with the same Code already exists for this tenant.", 409);
         }
@@ -62,6 +75,7 @@ public sealed class CreateVerifiedParticipantAccessHandler
         var entity = new TepVerifiedParticipantAccess
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Request.Code.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             AssociationMembershipId = request.Request.AssociationMembershipId,
@@ -88,13 +102,13 @@ public sealed class CreateVerifiedParticipantAccessHandler
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> DependenciesAllowAccessAsync(Guid tenantId, VerifiedParticipantAccessRequest request, CancellationToken ct)
+    private async Task<bool> DependenciesAllowAccessAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, VerifiedParticipantAccessRequest request, CancellationToken ct)
     {
         var association = request.AssociationMembershipId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, legalEntityIds, associationId, ct)
             : null;
         var policy = request.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId, ct)
             : null;
 
         return VerifiedParticipantGuard.AssociationAllowsAccess(new TepVerifiedParticipantAccess

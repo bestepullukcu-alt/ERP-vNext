@@ -17,6 +17,7 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
     private readonly ITepTrustLevelPolicyMetadataRepository _trustRepository;
     private readonly ITepCandidateProfileMetadataRepository _candidateRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateExitReferenceRecordHandler(
         ITepExitReferenceRecordMetadataRepository repository,
@@ -26,7 +27,8 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
         ITepReviewBoardCaseMetadataRepository reviewRepository,
         ITepTrustLevelPolicyMetadataRepository trustRepository,
         ITepCandidateProfileMetadataRepository candidateRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -36,6 +38,7 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
         _trustRepository = trustRepository;
         _candidateRepository = candidateRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateExitReferenceRecordCommand request, CancellationToken ct)
@@ -46,6 +49,16 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
         var validation = ExitReferenceRecordGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -60,13 +73,14 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
         }
 
         var entity = ExitReferenceRecordHandlerMapper.ToEntity(tenantId, request.Request);
+        entity.LegalEntityId = legalEntityId;
         if (ExitReferenceRecordGuard.IsActivationRequested(request.Request.ReferenceRecordState)
-            && !await DependenciesAllowActivationAsync(tenantId, entity, ct))
+            && !await DependenciesAllowActivationAsync(tenantId, scope, entity, ct))
         {
             return Response<Guid>.Fail("Exit reference record activation requires same-tenant dependency preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active exit reference record with the same Code already exists for this tenant.", 409);
         }
@@ -75,10 +89,11 @@ public sealed class CreateExitReferenceRecordHandler : IRequestHandler<CreateExi
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, TepExitReferenceRecordMetadata entity, CancellationToken ct)
+    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, TepExitReferenceRecordMetadata entity, CancellationToken ct)
     {
         var dependencies = await ExitReferenceRecordDependencyReader.ReadAsync(
             tenantId,
+            legalEntityIds,
             entity,
             _associationRepository,
             _policyRepository,

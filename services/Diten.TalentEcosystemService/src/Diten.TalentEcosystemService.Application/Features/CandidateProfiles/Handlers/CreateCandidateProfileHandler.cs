@@ -16,6 +16,7 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
     private readonly ITepReviewBoardCaseMetadataRepository _reviewRepository;
     private readonly ITepTrustLevelPolicyMetadataRepository _trustRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateCandidateProfileHandler(
         ITepCandidateProfileMetadataRepository repository,
@@ -24,7 +25,8 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
         ITepVerifiedParticipantAccessRepository verifiedRepository,
         ITepReviewBoardCaseMetadataRepository reviewRepository,
         ITepTrustLevelPolicyMetadataRepository trustRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _associationRepository = associationRepository;
@@ -33,6 +35,7 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
         _reviewRepository = reviewRepository;
         _trustRepository = trustRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateCandidateProfileCommand request, CancellationToken ct)
@@ -42,7 +45,16 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
         {
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
         var tenantId = tenant.Data;
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
         var validation = CandidateProfileGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -57,37 +69,37 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
         }
 
         if (CandidateProfileGuard.IsActivationRequested(request.Request.CandidateIdentityState, request.Request.TalentProfileState)
-            && !await DependenciesAllowActivationAsync(tenantId, ToEntity(tenantId, request.Request), ct))
+            && !await DependenciesAllowActivationAsync(tenantId, scope, ToEntity(tenantId, legalEntityId, request.Request), ct))
         {
             return Response<Guid>.Fail("Candidate profile activation requires same-tenant dependency preconditions.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active candidate profile record with the same Code already exists for this tenant.", 409);
         }
 
-        var entity = ToEntity(tenantId, request.Request);
+        var entity = ToEntity(tenantId, legalEntityId, request.Request);
         await _repository.CreateAsync(entity, ct);
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, TepCandidateProfileMetadata entity, CancellationToken ct)
+    private async Task<bool> DependenciesAllowActivationAsync(Guid tenantId, IReadOnlyCollection<Guid> scope, TepCandidateProfileMetadata entity, CancellationToken ct)
     {
         var association = entity.AssociationMembershipId is { } associationId
-            ? await _associationRepository.GetByIdAsync(tenantId, associationId, ct)
+            ? await _associationRepository.GetByIdAsync(tenantId, scope, associationId, ct)
             : null;
         var policy = entity.ConsentVisibilityPolicyId is { } policyId
-            ? await _policyRepository.GetByIdAsync(tenantId, policyId, ct)
+            ? await _policyRepository.GetByIdAsync(tenantId, scope, policyId, ct)
             : null;
         var verified = entity.VerifiedParticipantId is { } verifiedId
-            ? await _verifiedRepository.GetByIdAsync(tenantId, verifiedId, ct)
+            ? await _verifiedRepository.GetByIdAsync(tenantId, scope, verifiedId, ct)
             : null;
         var review = entity.ReviewBoardCaseId is { } reviewId
-            ? await _reviewRepository.GetByIdAsync(tenantId, reviewId, ct)
+            ? await _reviewRepository.GetByIdAsync(tenantId, scope, reviewId, ct)
             : null;
         var trust = entity.TrustLevelPolicyId is { } trustId
-            ? await _trustRepository.GetByIdAsync(tenantId, trustId, ct)
+            ? await _trustRepository.GetByIdAsync(tenantId, scope, trustId, ct)
             : null;
 
         return CandidateProfileGuard.AssociationAllowsCandidate(entity, association)
@@ -97,10 +109,11 @@ public sealed class CreateCandidateProfileHandler : IRequestHandler<CreateCandid
             && CandidateProfileGuard.TrustLevelAllowsCandidate(entity, trust);
     }
 
-    private static TepCandidateProfileMetadata ToEntity(Guid tenantId, CandidateProfileRequest request) =>
+    private static TepCandidateProfileMetadata ToEntity(Guid tenantId, Guid legalEntityId, CandidateProfileRequest request) =>
         new()
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Code.Trim(),
             DisplayName = request.DisplayName.Trim(),
             CandidateReference = request.CandidateReference.Trim(),

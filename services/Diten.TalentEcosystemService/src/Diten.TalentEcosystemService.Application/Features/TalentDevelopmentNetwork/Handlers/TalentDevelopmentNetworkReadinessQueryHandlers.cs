@@ -11,11 +11,13 @@ public sealed class GetTalentDevelopmentNetworkReadinessListHandler
 {
     private readonly ITalentDevelopmentNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentDevelopmentNetworkReadinessListHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentDevelopmentNetworkReadinessListHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<TalentDevelopmentNetworkReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetTalentDevelopmentNetworkReadinessListHandler
             return Response<IReadOnlyList<TalentDevelopmentNetworkReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<TalentDevelopmentNetworkReadinessListItemDto>>.Success(rows.Select(TalentDevelopmentNetworkMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetTalentDevelopmentNetworkReadinessByIdHandler
 {
     private readonly ITalentDevelopmentNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentDevelopmentNetworkReadinessByIdHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentDevelopmentNetworkReadinessByIdHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TalentDevelopmentNetworkReadinessDto>> Handle(GetTalentDevelopmentNetworkReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetTalentDevelopmentNetworkReadinessByIdHandler
             return Response<TalentDevelopmentNetworkReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TalentDevelopmentNetworkReadinessDto>.Fail("TalentDevelopmentNetwork readiness record was not found.", 404)
             : Response<TalentDevelopmentNetworkReadinessDto>.Success(TalentDevelopmentNetworkMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetTalentDevelopmentNetworkAuditMetadataHandler
 {
     private readonly ITalentDevelopmentNetworkReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetTalentDevelopmentNetworkAuditMetadataHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetTalentDevelopmentNetworkAuditMetadataHandler(ITalentDevelopmentNetworkReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<TalentDevelopmentNetworkAuditMetadataDto>> Handle(GetTalentDevelopmentNetworkAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetTalentDevelopmentNetworkAuditMetadataHandler
             return Response<TalentDevelopmentNetworkAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<TalentDevelopmentNetworkAuditMetadataDto>.Fail("TalentDevelopmentNetwork readiness record was not found.", 404)
             : Response<TalentDevelopmentNetworkAuditMetadataDto>.Success(TalentDevelopmentNetworkMapper.ToAuditMetadata(entity));

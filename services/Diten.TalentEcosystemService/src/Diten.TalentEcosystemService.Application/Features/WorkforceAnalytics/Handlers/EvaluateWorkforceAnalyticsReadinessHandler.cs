@@ -10,11 +10,13 @@ public sealed class EvaluateWorkforceAnalyticsReadinessHandler : IRequestHandler
 {
     private readonly IWorkforceAnalyticsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public EvaluateWorkforceAnalyticsReadinessHandler(IWorkforceAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public EvaluateWorkforceAnalyticsReadinessHandler(IWorkforceAnalyticsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<WorkforceAnalyticsReadinessDto>> Handle(EvaluateWorkforceAnalyticsReadinessCommand request, CancellationToken ct)
@@ -25,7 +27,8 @@ public sealed class EvaluateWorkforceAnalyticsReadinessHandler : IRequestHandler
             return Response<WorkforceAnalyticsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         if (entity is null)
         {
             return Response<WorkforceAnalyticsReadinessDto>.Fail("WorkforceAnalytics readiness record was not found.", 404);

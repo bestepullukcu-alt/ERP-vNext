@@ -14,15 +14,18 @@ public sealed class CreateAssociationMembershipHandler
     private readonly ITepAssociationMembershipRegistryRepository _repository;
     private readonly ITepConsentVisibilityPolicyRepository _policyRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
     public CreateAssociationMembershipHandler(
         ITepAssociationMembershipRegistryRepository repository,
         ITepConsentVisibilityPolicyRepository policyRepository,
-        ITenantContext tenantContext)
+        ITenantContext tenantContext,
+        ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _policyRepository = policyRepository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<Guid>> Handle(CreateAssociationMembershipCommand request, CancellationToken ct)
@@ -33,6 +36,16 @@ public sealed class CreateAssociationMembershipHandler
             return Response<Guid>.Fail(tenant.Errors, tenant.StatusCode);
         }
         var tenantId = tenant.Data;
+
+        if (!await _legalEntityContext.IsSelectionAllowedAsync(ct))
+        {
+            return Response<Guid>.Fail(
+                "A permitted legal entity must be selected (X-Legal-Entity-Id) to create this record.",
+                403);
+        }
+
+        var legalEntityId = _legalEntityContext.SelectedLegalEntityId!.Value;
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
 
         var validation = AssociationMembershipGuard.ValidateRequest(request.Request);
         if (validation.Count > 0)
@@ -49,12 +62,12 @@ public sealed class CreateAssociationMembershipHandler
         if (AssociationMembershipGuard.IsActivationRequested(
                 request.Request.AssociationMembershipState,
                 request.Request.AssociationActivationState)
-            && !await PolicyAllowsActivationAsync(tenantId, request.Request.ConsentVisibilityPolicyId, ct))
+            && !await PolicyAllowsActivationAsync(tenantId, scope, request.Request.ConsentVisibilityPolicyId, ct))
         {
             return Response<Guid>.Fail("Association activation requires an active same-tenant consent/visibility policy precondition.", 404);
         }
 
-        if (await _repository.ExistsActiveCodeAsync(tenantId, request.Request.Code.Trim(), null, ct))
+        if (await _repository.ExistsActiveCodeAsync(tenantId, legalEntityId, request.Request.Code.Trim(), null, ct))
         {
             return Response<Guid>.Fail("An active association membership registry record with the same Code already exists for this tenant.", 409);
         }
@@ -62,6 +75,7 @@ public sealed class CreateAssociationMembershipHandler
         var entity = new TepAssociationMembershipRegistry
         {
             TenantId = tenantId,
+            LegalEntityId = legalEntityId,
             Code = request.Request.Code.Trim(),
             DisplayName = request.Request.DisplayName.Trim(),
             AssociationMembershipState = request.Request.AssociationMembershipState,
@@ -82,14 +96,14 @@ public sealed class CreateAssociationMembershipHandler
         return Response<Guid>.Success(entity.Id, 201);
     }
 
-    private async Task<bool> PolicyAllowsActivationAsync(Guid tenantId, Guid? policyId, CancellationToken ct)
+    private async Task<bool> PolicyAllowsActivationAsync(Guid tenantId, IReadOnlyCollection<Guid> legalEntityIds, Guid? policyId, CancellationToken ct)
     {
         if (policyId is null)
         {
             return false;
         }
 
-        var policy = await _policyRepository.GetByIdAsync(tenantId, policyId.Value, ct);
+        var policy = await _policyRepository.GetByIdAsync(tenantId, legalEntityIds, policyId.Value, ct);
         return policy is not null
             && AssociationMembershipGuard.Evaluate(new TepAssociationMembershipRegistry
             {

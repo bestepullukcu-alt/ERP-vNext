@@ -11,11 +11,13 @@ public sealed class GetSectorTalentTrendsReadinessListHandler
 {
     private readonly ISectorTalentTrendsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorTalentTrendsReadinessListHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorTalentTrendsReadinessListHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<IReadOnlyList<SectorTalentTrendsReadinessListItemDto>>> Handle(
@@ -28,7 +30,8 @@ public sealed class GetSectorTalentTrendsReadinessListHandler
             return Response<IReadOnlyList<SectorTalentTrendsReadinessListItemDto>>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var rows = await _repository.ListAsync(tenant.Data, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var rows = await _repository.ListAsync(tenant.Data, scope, ct);
         return Response<IReadOnlyList<SectorTalentTrendsReadinessListItemDto>>.Success(rows.Select(SectorTalentTrendsMapper.ToListItem).ToList());
     }
 }
@@ -38,11 +41,13 @@ public sealed class GetSectorTalentTrendsReadinessByIdHandler
 {
     private readonly ISectorTalentTrendsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorTalentTrendsReadinessByIdHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorTalentTrendsReadinessByIdHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorTalentTrendsReadinessDto>> Handle(GetSectorTalentTrendsReadinessByIdQuery request, CancellationToken ct)
@@ -53,7 +58,8 @@ public sealed class GetSectorTalentTrendsReadinessByIdHandler
             return Response<SectorTalentTrendsReadinessDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SectorTalentTrendsReadinessDto>.Fail("SectorTalentTrends readiness record was not found.", 404)
             : Response<SectorTalentTrendsReadinessDto>.Success(SectorTalentTrendsMapper.ToDto(entity));
@@ -65,11 +71,13 @@ public sealed class GetSectorTalentTrendsAuditMetadataHandler
 {
     private readonly ISectorTalentTrendsReadinessMetadataRepository _repository;
     private readonly ITenantContext _tenantContext;
+    private readonly ILegalEntityContext _legalEntityContext;
 
-    public GetSectorTalentTrendsAuditMetadataHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext)
+    public GetSectorTalentTrendsAuditMetadataHandler(ISectorTalentTrendsReadinessMetadataRepository repository, ITenantContext tenantContext, ILegalEntityContext legalEntityContext)
     {
         _repository = repository;
         _tenantContext = tenantContext;
+        _legalEntityContext = legalEntityContext;
     }
 
     public async Task<Response<SectorTalentTrendsAuditMetadataDto>> Handle(GetSectorTalentTrendsAuditMetadataQuery request, CancellationToken ct)
@@ -80,7 +88,8 @@ public sealed class GetSectorTalentTrendsAuditMetadataHandler
             return Response<SectorTalentTrendsAuditMetadataDto>.Fail(tenant.Errors, tenant.StatusCode);
         }
 
-        var entity = await _repository.GetByIdAsync(tenant.Data, request.Id, ct);
+        var scope = await _legalEntityContext.GetEffectiveLegalEntityIdsAsync(ct);
+        var entity = await _repository.GetByIdAsync(tenant.Data, scope, request.Id, ct);
         return entity is null
             ? Response<SectorTalentTrendsAuditMetadataDto>.Fail("SectorTalentTrends readiness record was not found.", 404)
             : Response<SectorTalentTrendsAuditMetadataDto>.Success(SectorTalentTrendsMapper.ToAuditMetadata(entity));
