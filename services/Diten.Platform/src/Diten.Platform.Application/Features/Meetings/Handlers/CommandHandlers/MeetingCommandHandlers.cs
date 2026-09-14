@@ -358,12 +358,23 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
 public sealed class ReassignMeetingOrganizerHandler : IRequestHandler<ReassignMeetingOrganizerCommand, Response<NoContent>>
 {
     private readonly IMeetingRepository _meetings;
+    private readonly IMeetingTypeRepository _types;
+    private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
-    public ReassignMeetingOrganizerHandler(IMeetingRepository meetings, IMediator mediator)
+    public ReassignMeetingOrganizerHandler(
+        IMeetingRepository meetings,
+        IMeetingTypeRepository types,
+        ICurrentUserContext currentUser,
+        IMediator mediator,
+        IMeetingInviteMailer inviteMailer)
     {
         _meetings = meetings;
+        _types = types;
+        _currentUser = currentUser;
         _mediator = mediator;
+        _inviteMailer = inviteMailer;
     }
 
     public async Task<Response<NoContent>> Handle(ReassignMeetingOrganizerCommand command, CancellationToken ct)
@@ -400,6 +411,15 @@ public sealed class ReassignMeetingOrganizerHandler : IRequestHandler<ReassignMe
             return Response<NoContent>.Fail(
                 "The meeting changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
+
+        // BL-387 — the new organizer's only path onto their own calendar: the same "added to your calendar"
+        // mail SendInviteAsync gives a freshly-created meeting's own organizer, sent when they did not just
+        // reassign the meeting to themselves. Nobody else is mailed by a reassignment on its own (NE — other
+        // attendee rows are untouched by this WP); the old organizer's fate is ordinary from here on — the next
+        // change or cancel mails them like any other attendee, because the mailer reads OrganizerUserId fresh.
+        var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
+        await _inviteMailer.SendOrganizerReassignedAsync(
+            meeting, type?.Name ?? string.Empty, meeting.OrganizerUserId, _currentUser.UserId, ct);
 
         return Response<NoContent>.Success(200, command.CorrelationId);
     }

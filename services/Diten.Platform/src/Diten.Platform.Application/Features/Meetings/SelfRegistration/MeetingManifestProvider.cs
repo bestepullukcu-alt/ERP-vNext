@@ -243,6 +243,82 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                     LinkPolicy: "TargetPage",
                     Status: "Active"),
 
+                // BL-387/BL-373 (owner, 2026-09-14) — the ORGANIZER's own variant of invite/change/cancel, used
+                // whenever the organizer did not perform the action themselves (series sweep, a delegate acting
+                // on their behalf, or a reassignment). No "Organizer" variable: the reader IS the organizer, so
+                // naming them back to themselves would be redundant, unlike the three sibling events above.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-added",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-added",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerAdded",
+                    FallbackDisplayName: "Meeting added to your calendar",
+                    Description: "Sent to the organizer when a meeting they did not personally create is scheduled on their behalf.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-updated",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-updated",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerUpdated",
+                    FallbackDisplayName: "Your meeting was updated",
+                    Description: "Sent to the organizer when a meeting they organize changes and they did not make the change themselves.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-cancelled",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-cancelled",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerCancelled",
+                    FallbackDisplayName: "Your meeting was cancelled",
+                    Description: "Sent to the organizer when a meeting they organize is cancelled and they did not cancel it themselves.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
                 // BL-386 — the removed attendee only, never the rest of the meeting; deliberately LINKLESS
                 // (`LinkPolicy: "None"`, no TargetPageCode): the meeting detail page 404s for someone no longer
                 // on the meeting (D3's own visibility rule), so a link here would point straight at that dead end.

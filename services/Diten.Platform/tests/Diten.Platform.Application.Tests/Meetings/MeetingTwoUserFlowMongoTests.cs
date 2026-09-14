@@ -43,6 +43,9 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
     private const string ChangeEvent = "platform.meetings.change";
     private const string CancelEvent = "platform.meetings.cancel";
     private const string RemovedEvent = "platform.meetings.removed";
+    private const string OrganizerAddedEvent = "platform.meetings.organizer-added";
+    private const string OrganizerUpdatedEvent = "platform.meetings.organizer-updated";
+    private const string OrganizerCancelledEvent = "platform.meetings.organizer-cancelled";
 
     private readonly Guid _organizer = Guid.NewGuid();
     private readonly Guid _alice = Guid.NewGuid();
@@ -296,6 +299,125 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
         Assert.Equal(_organizer.ToString(), item.Requester!.Id);
         Assert.Empty(organizerItems);
     }
+
+    // ── E — BL-387 (owner, 2026-09-14): the organizer's own "your meeting" mail, never the plain invite copy,
+    // whenever someone else performed the action — and the ONLY moment a reassignment mails anyone at all ────────
+
+    [Fact]
+    public async Task A_time_change_made_by_someone_other_than_the_organizer_mails_the_organizer_the_organizer_variant_and_the_attendee_the_normal_one()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+        var newStart = meeting.StartAt.AddHours(2);
+
+        // Bob — an ordinary attendee, not the organizer — moves the meeting.
+        var update = await new UpdateMeetingHandler(
+                _meetings, _types, _attendees, new FakeCurrentUserContext(_bob), Mailer())
+            .Handle(
+                new UpdateMeetingCommand(
+                    meeting.Id,
+                    new UpdateMeetingRequest(meeting.Title, meeting.MeetingTypeId, newStart, newStart.AddHours(1),
+                        meeting.Location, meeting.Description, meeting.Version),
+                    "corr"),
+                CancellationToken.None);
+
+        Assert.True(update.IsSuccessful, string.Join(" | ", update.Errors));
+        // Bob is the actor, excluded from both groups; Alice gets the ordinary change mail.
+        var change = Assert.Single(_dispatches.Requests, r => r.EventCode == ChangeEvent);
+        Assert.Equal([EmailOf(_alice)], RecipientEmails(change));
+        // The organizer did not make this change, so they get their OWN wording, not the attendee copy.
+        var organizerUpdated = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerUpdatedEvent);
+        Assert.Equal([EmailOf(_organizer)], RecipientEmails(organizerUpdated));
+        // Same meeting, same .ics identity — only the template differs.
+        Assert.Equal(Property(IcsOf(change), "UID"), Property(IcsOf(organizerUpdated), "UID"));
+        Assert.Equal(Property(IcsOf(change), "SEQUENCE"), Property(IcsOf(organizerUpdated), "SEQUENCE"));
+    }
+
+    [Fact]
+    public async Task A_cancellation_made_by_someone_other_than_the_organizer_mails_the_organizer_the_organizer_variant()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+
+        var cancel = await new CancelMeetingHandler(
+                _meetings, _types, _attendees, new FakeCurrentUserContext(_bob), Mailer())
+            .Handle(new CancelMeetingCommand(meeting.Id, new CancelMeetingRequest("Not needed", meeting.Version), "corr"),
+                CancellationToken.None);
+
+        Assert.True(cancel.IsSuccessful, string.Join(" | ", cancel.Errors));
+        var cancellation = Assert.Single(_dispatches.Requests, r => r.EventCode == CancelEvent);
+        Assert.Equal([EmailOf(_alice)], RecipientEmails(cancellation));
+        var organizerCancelled = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerCancelledEvent);
+        Assert.Equal([EmailOf(_organizer)], RecipientEmails(organizerCancelled));
+    }
+
+    [Fact]
+    public async Task Reassigning_the_organizer_to_someone_other_than_the_actor_mails_only_the_new_organizer_an_added_to_calendar_mail()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+
+        // Bob reassigns the meeting to Alice.
+        var reassign = await ReassignAsync(_bob, meeting.Id, _alice, meeting.Version);
+
+        Assert.True(reassign.IsSuccessful, string.Join(" | ", reassign.Errors));
+        // Nobody else is mailed by a reassignment on its own — not the previous organizer, not Bob, not a
+        // change/cancel event of any kind.
+        var organizerAdded = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerAddedEvent);
+        Assert.Equal([EmailOf(_alice)], RecipientEmails(organizerAdded));
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode is ChangeEvent or CancelEvent or OrganizerUpdatedEvent or OrganizerCancelledEvent);
+        var ics = IcsOf(organizerAdded);
+        Assert.Equal($"{meeting.Id}@diten", Property(ics, "UID"));
+        Assert.Equal("REQUEST", Property(ics, "METHOD"));
+    }
+
+    [Fact]
+    public async Task Reassigning_the_organizer_to_the_actors_own_user_id_sends_no_mail()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+
+        // Bob reassigns the meeting to HIMSELF.
+        var reassign = await ReassignAsync(_bob, meeting.Id, _bob, meeting.Version);
+
+        Assert.True(reassign.IsSuccessful, string.Join(" | ", reassign.Errors));
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode is OrganizerAddedEvent or ChangeEvent or CancelEvent);
+    }
+
+    /// <summary>The rule reads the CURRENT organizer, not whoever created the meeting: after a reassignment a
+    /// later change mails the NEW organizer their own variant and the PREVIOUS one the ordinary attendee copy —
+    /// the previous organizer's own attendee row was never touched (YAPMA), only what the mailer reads changed.</summary>
+    [Fact]
+    public async Task After_the_organizer_is_reassigned_a_time_change_mails_the_new_organizer_the_organizer_variant_and_the_previous_one_the_normal_one()
+    {
+        var meeting = await OrganizerCreatesMeetingAsync();
+        var reassign = await ReassignAsync(_organizer, meeting.Id, _alice, meeting.Version);
+        Assert.True(reassign.IsSuccessful, string.Join(" | ", reassign.Errors));
+        _dispatches.Requests.Clear();
+
+        // Bob (still an ordinary attendee) moves the meeting.
+        var current = (await _meetings.GetByIdAsync(meeting.Id, CancellationToken.None))!;
+        var newStart = current.StartAt.AddHours(2);
+        var update = await new UpdateMeetingHandler(
+                _meetings, _types, _attendees, new FakeCurrentUserContext(_bob), Mailer())
+            .Handle(
+                new UpdateMeetingCommand(
+                    meeting.Id,
+                    new UpdateMeetingRequest(current.Title, current.MeetingTypeId, newStart, newStart.AddHours(1),
+                        current.Location, current.Description, current.Version),
+                    "corr"),
+                CancellationToken.None);
+
+        Assert.True(update.IsSuccessful, string.Join(" | ", update.Errors));
+        // Alice (the NEW organizer) gets her own variant — she did not make this change.
+        var organizerUpdated = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerUpdatedEvent);
+        Assert.Equal([EmailOf(_alice)], RecipientEmails(organizerUpdated));
+        // The PREVIOUS organizer is an ordinary attendee now — the normal change mail, alongside anyone else.
+        var change = Assert.Single(_dispatches.Requests, r => r.EventCode == ChangeEvent);
+        Assert.Equal([EmailOf(_organizer)], RecipientEmails(change));
+    }
+
+    private Task<Response<NoContent>> ReassignAsync(Guid actingUserId, Guid meetingId, Guid newOrganizerUserId, int expectedVersion)
+        => new ReassignMeetingOrganizerHandler(_meetings, _types, new FakeCurrentUserContext(actingUserId), _eligibility, Mailer())
+            .Handle(
+                new ReassignMeetingOrganizerCommand(meetingId, new ReassignMeetingOrganizerRequest(newOrganizerUserId, expectedVersion), "corr"),
+                CancellationToken.None);
 
     // ── harness ───────────────────────────────────────────────────────────────────────────────────────────────
 
