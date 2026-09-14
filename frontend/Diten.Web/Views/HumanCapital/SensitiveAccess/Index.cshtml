@@ -1,0 +1,31 @@
+@using Diten.Web.Views.HumanCapital.SensitiveAccess
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SensitiveAccessIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SensitiveAccessTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canAudit = Perms.Has("hcm.sensitive-access.audit.read");
+    var canReview = Perms.Has("hcm.sensitive-access.review");
+    var canManage = Perms.Has("hcm.sensitive-access.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SensitiveAccessTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="sensitive-access-shell"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-review="@canReview.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/HumanCapital/SensitiveAccess/_Summary.cshtml" />
+    <partial name="~/Views/HumanCapital/SensitiveAccess/_EvaluationPanel.cshtml" />
+    <partial name="~/Views/HumanCapital/SensitiveAccess/_DecisionTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/SensitiveAccess/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/SensitiveAccess/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/SensitiveAccess/index.js" asp-append-version="true"></script>
+}

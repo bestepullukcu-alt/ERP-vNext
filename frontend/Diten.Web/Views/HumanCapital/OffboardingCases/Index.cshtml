@@ -1,0 +1,33 @@
+@using Diten.Web.Views.HumanCapital.OffboardingCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OffboardingCasesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["OffboardingCasesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canReview = Perms.Has("hcm.offboarding.review");
+    var canManage = Perms.Has("hcm.offboarding.manage");
+    var canArchive = Perms.Has("hcm.offboarding.archive");
+    var canHandoff = Perms.Has("hcm.offboarding.handoff.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["OffboardingCasesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="offboarding-cases-shell"
+     data-can-review="@canReview.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-archive="@canArchive.ToString().ToLowerInvariant()"
+     data-can-handoff="@canHandoff.ToString().ToLowerInvariant()">
+    <partial name="~/Views/HumanCapital/OffboardingCases/_Summary.cshtml" />
+    <partial name="~/Views/HumanCapital/OffboardingCases/_DataTable.cshtml" />
+    <partial name="~/Views/HumanCapital/OffboardingCases/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/OffboardingCases/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/OffboardingCases/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/OffboardingCases/index.js" asp-append-version="true"></script>
+}

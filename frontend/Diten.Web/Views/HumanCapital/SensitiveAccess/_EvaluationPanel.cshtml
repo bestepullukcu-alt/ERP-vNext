@@ -1,0 +1,59 @@
+@using Diten.Web.Views.HumanCapital.SensitiveAccess
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SensitiveAccessIndex> Localizer
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-xl-5 col-md-6">
+                <label for="employeeProjectionId" class="form-label">@Localizer["EmployeeProjectionId"]</label>
+                <input id="employeeProjectionId" type="text" class="form-control" autocomplete="off" inputmode="text" />
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <label for="requestedAction" class="form-label">@Localizer["RequestedAction"]</label>
+                <select id="requestedAction" class="form-select">
+                    <option value="0">@Localizer["ActionRead"]</option>
+                    <option value="1">@Localizer["ActionManage"]</option>
+                    <option value="2">@Localizer["ActionReview"]</option>
+                </select>
+            </div>
+            <div class="col-xl-2 col-md-6">
+                <label for="sourcePolicyVersion" class="form-label">@Localizer["SourcePolicyVersion"]</label>
+                <input id="sourcePolicyVersion" type="text" class="form-control" value="v1" autocomplete="off" />
+            </div>
+            <div class="col-xl-2 col-md-6">
+                <button id="evaluateSensitiveAccess" type="button" class="btn btn-label-secondary w-100" disabled>
+                    <i class="bx bx-shield-quarter me-1"></i>@Localizer["Evaluate"]
+                </button>
+            </div>
+        </div>
+        <div id="sensitiveAccessResult" class="border rounded p-3 mt-3 d-none">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <h6 class="mb-0">@Localizer["DecisionResult"]</h6>
+                <span class="badge bg-label-secondary" data-result-field="decision"></span>
+            </div>
+            <dl class="row g-3 mb-0">
+                <dt class="col-md-4">@Localizer["VisibilityClassification"]</dt>
+                <dd class="col-md-8" data-result-field="visibilityClassification"></dd>
+                <dt class="col-md-4">@Localizer["RequestedAction"]</dt>
+                <dd class="col-md-8" data-result-field="requestedAction"></dd>
+                <dt class="col-md-4">@Localizer["ReasonCode"]</dt>
+                <dd class="col-md-8" data-result-field="reasonCode"></dd>
+                <dt class="col-md-4">@Localizer["DataScopeReasonCode"]</dt>
+                <dd class="col-md-8" data-result-field="dataScopeReasonCode"></dd>
+                <dt class="col-md-4">@Localizer["AuditMode"]</dt>
+                <dd class="col-md-8" data-result-field="auditMode"></dd>
+                <dt class="col-md-4">@Localizer["RuntimeOwnerKey"]</dt>
+                <dd class="col-md-8" data-result-field="runtimeOwnerKey"></dd>
+            </dl>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <button type="button" class="btn btn-label-secondary" data-sensitive-action="review" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["ReviewDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-sensitive-action="manage" disabled>
+                <i class="bx bx-cog me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>
