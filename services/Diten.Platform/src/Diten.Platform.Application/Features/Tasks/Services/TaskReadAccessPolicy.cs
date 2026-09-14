@@ -30,6 +30,16 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 public interface ITaskReadAccessPolicy
 {
     Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct);
+
+    /// <summary>
+    /// The DATA legs alone, ENUMERATED rather than asked about one actor: assignee, pool holders, creator,
+    /// watchers, and the parent task's assignee/pool holders. This is exactly the "future consumer" the class doc
+    /// above anticipated — an @mention candidate list needs "who", not "can this one person" — and it is written
+    /// as a refactor of <see cref="CanReadAsync"/>'s own legs rather than a second copy of them, so the two
+    /// cannot drift apart. Deliberately excludes the scope and read-all legs; both only answer for the CURRENT
+    /// caller (see the class doc), so they contribute nothing to an arbitrary candidate's membership.
+    /// </summary>
+    Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct);
 }
 
 /// <inheritdoc cref="ITaskReadAccessPolicy"/>
@@ -65,22 +75,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     {
         ArgumentNullException.ThrowIfNull(task);
 
-        if (task.AssigneeUserId == actorUserId || task.CreatedByUserId == actorUserId)
-        {
-            return true;
-        }
-
-        if ((await _notifications.ResolvePoolHoldersAsync(task, ct)).Contains(actorUserId))
-        {
-            return true;
-        }
-
-        if ((await _watchers.ListByTaskIdAsync(task.Id, ct)).Any(watcher => watcher.UserId == actorUserId))
-        {
-            return true;
-        }
-
-        if (task.ParentTaskItemId is { } parentId && await CanReadAsParentAsync(parentId, actorUserId, ct))
+        if ((await ResolveDataLegCandidatesAsync(task, ct)).Contains(actorUserId))
         {
             return true;
         }
@@ -96,16 +91,55 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         return actorUserId == _currentUser.UserId && _permissions.Has(TaskPermissions.ReadAll);
     }
 
-    private async Task<bool> CanReadAsParentAsync(Guid parentTaskItemId, Guid actorUserId, CancellationToken ct)
+    public async Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct)
     {
-        var parent = await _tasks.GetByIdAsync(parentTaskItemId, ct);
-        if (parent is null)
+        ArgumentNullException.ThrowIfNull(task);
+
+        var candidates = new HashSet<Guid>();
+
+        if (task.AssigneeUserId is { } assignee && assignee != Guid.Empty)
         {
-            return false;
+            candidates.Add(assignee);
         }
 
-        return parent.AssigneeUserId == actorUserId
-            || (await _notifications.ResolvePoolHoldersAsync(parent, ct)).Contains(actorUserId);
+        if (task.CreatedByUserId is { } creator && creator != Guid.Empty)
+        {
+            candidates.Add(creator);
+        }
+
+        foreach (var holder in await _notifications.ResolvePoolHoldersAsync(task, ct))
+        {
+            candidates.Add(holder);
+        }
+
+        foreach (var watcher in await _watchers.ListByTaskIdAsync(task.Id, ct))
+        {
+            if (watcher.UserId != Guid.Empty)
+            {
+                candidates.Add(watcher.UserId);
+            }
+        }
+
+        // The parent leg is narrower than the direct leg on purpose (class doc): only the parent's assignee and
+        // pool holders, not its creator or watchers.
+        if (task.ParentTaskItemId is { } parentId)
+        {
+            var parent = await _tasks.GetByIdAsync(parentId, ct);
+            if (parent is not null)
+            {
+                if (parent.AssigneeUserId is { } parentAssignee && parentAssignee != Guid.Empty)
+                {
+                    candidates.Add(parentAssignee);
+                }
+
+                foreach (var holder in await _notifications.ResolvePoolHoldersAsync(parent, ct))
+                {
+                    candidates.Add(holder);
+                }
+            }
+        }
+
+        return candidates;
     }
 
     private async Task<bool> ActorScopeCoversUnitAsync(Guid organizationUnitId, Guid actorUserId, CancellationToken ct)

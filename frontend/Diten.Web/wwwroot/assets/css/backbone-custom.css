@@ -7731,6 +7731,21 @@ tags.diten-tags .tagify__input {
 /* The button matches the input's height rather than Bootstrap's default, so the two read as one row. `btn-sm`
    was what made them 30px; the size now comes from the field beside it. */
 .wcn-composer-post { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .375rem; }
+/* WP-PSS-MOD0024-TASK-MENTIONS-01 — the @ trigger sits beside the field, same height as the post button. */
+.wcn-composer-mention { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; }
+/* The draft @mention tray. A genuine token/removable-selection chip — unlike `.wcn-watcher-role` above, this one
+   IS the kind of chip this page reserves the word for: it names something the write is about to act on. Wraps
+   onto its own row below the input/buttons rather than fighting them for width. */
+.wcn-mention-chips { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: .375rem; margin-block-start: .375rem; }
+.wcn-mention-chip {
+    display: inline-flex; align-items: center; gap: .25rem; padding: .1875rem .5rem;
+    border-radius: 999px; background-color: var(--bs-secondary-bg); font-size: .8125rem;
+}
+.wcn-mention-chip-remove {
+    display: inline-flex; align-items: center; padding: 0; border: 0; background: transparent;
+    color: var(--bs-secondary-color); line-height: 1;
+}
+.wcn-mention-chip-remove:hover { color: var(--bs-danger); }
 
 /* Table — real DataTables v2 + shared Sneat/Golden Reference defaults. */
 .wcn-main:has(.wcn-datatable-card) { padding: 0; border: 0; background: transparent; }

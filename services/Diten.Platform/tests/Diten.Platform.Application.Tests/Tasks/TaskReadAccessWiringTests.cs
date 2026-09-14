@@ -32,6 +32,11 @@ public sealed class TaskReadAccessWiringTests
         private readonly HashSet<Guid> _admitted = [.. admittedTaskIds];
         public Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct)
             => Task.FromResult(_admitted.Contains(task.Id));
+
+        // Not exercised by this wiring suite (that is TaskMentionCandidatesTests's territory) — present only so
+        // the double keeps compiling against the interface.
+        public Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct)
+            => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
     }
 
     private static TaskItem NewTask() => new()

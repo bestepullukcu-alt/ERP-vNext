@@ -915,3 +915,87 @@ The schema is laid down correctly **in Phase 1** (pool fields, `Classification`/
    `WorkflowCandidateResolver`.
 8. ~~**Backlog hygiene** — `BL-016` is used twice.~~ **DONE (2026-07-25):** the Meeting-invite/Calendar item was
    renumbered to **BL-026**; `BL-016` now unambiguously means "Başlattıklarım / Outbox".
+
+## 21. Task Comment @Mentions — WP-PSS-MOD0024-TASK-MENTIONS-01 (owner-approved 2026-09-14)
+
+> **Built on top of BL-034 item 7** (comments, §20's predecessor list did not carry a comment section because
+> comments postdated this pack's Phase 1 write-up) **and BL-349** (`ITaskReadAccessPolicy`, commit `7a63bb66`).
+> The comment type's own doc used to say "no mentions are parsed, because there is no notification channel to
+> deliver one (WC-4)" — superseded here: `ITaskNotificationService` (WC-4) already dispatches in-app + email,
+> so a mention now has somewhere to go.
+
+**K1 — Who may tag: no new permission.** Identical authority to commenting itself
+(`TaskCommentAuthority`/the `platform.tasks.read`-gated endpoint) — mentioning is part of writing a comment, not
+a separate act.
+
+**K2 — Who may be tagged: `ITaskReadAccessPolicy.CanReadAsync(task, candidateId, ct)` must answer true.**
+The candidate-LIST endpoint (`GET {id}/mention-candidates`) enumerates only the policy's DATA legs — assignee,
+pool holders, creator, watchers, the parent task's assignee/pool holders
+(`ITaskReadAccessPolicy.ResolveDataLegCandidatesAsync`, a refactor of `CanReadAsync`'s own legs, not a second
+copy) — because the scope and `ReadAll` legs answer only for the CURRENT caller (documented on the interface
+before this slice existed) and would otherwise vary the candidate list by who is composing the comment. The
+WRITE path validates every submitted id against the full `CanReadAsync` (so the scope/`ReadAll` legs still
+protect the caller's own edge cases). An unreadable candidate refuses the WHOLE write with
+`TASK_MENTION_NOT_VISIBLE` (400) — never a silent drop — naming what to do next ("add them as a watcher first").
+
+**K3 — Notification.** New event `platform.tasks.mentioned`, in-app + email via the existing WC-4 dispatcher
+(`ITaskNotificationService`), 7 languages. Self-mention sends nothing (the service's own actor exclusion, not
+re-implemented at the call site). A mentioned person is excluded from the general `platform.tasks.commented`
+audience for that same comment — one write, one email per reader, never two. Editing a comment replaces its
+mention set wholesale; only NEWLY added ids are notified (a diff against what the comment already stored), and
+a refused edit (K2/K4) leaves both the text and the stored mentions untouched. A withdrawn/edited comment's
+mention notification is never retracted (matches the existing "editing sends nothing" rule for the base
+comment event).
+
+**K4 — Data.** `TaskComment.MentionedUserIds : IReadOnlyList<Guid>` (structured, never parsed from display
+text), capped at 10 per comment (`TaskCommentLimits.MaxMentionsPerComment`), enforced server-side
+(`TASK_MENTION_LIMIT_EXCEEDED`, 400) before any visibility check runs.
+
+### Repo scope (additive to §5)
+- `Domain/Entities/Tasks/TaskSupportingEntities.cs` — `TaskComment.MentionedUserIds`.
+- `Application/Features/Tasks/Services/TaskReadAccessPolicy.cs` — `ResolveDataLegCandidatesAsync` (interface +
+  impl; `CanReadAsync` refactored to call it, not duplicated).
+- `Application/Features/Tasks/{TaskModels.cs, Queries/TaskItemQueries.cs}` — DTOs, reason codes, event code,
+  `GetTaskMentionCandidatesQuery`.
+- `Application/Features/Tasks/Handlers/QueryHandlers/GetTaskMentionCandidatesHandler.cs` — new.
+- `Application/Features/Tasks/Handlers/CommandHandlers/TaskCommentHandlers.cs` — mention validation +
+  notification wiring in `AddTaskCommentHandler`/`UpdateTaskCommentHandler`; new `TaskMentionValidation` helper.
+- `Application/Features/Tasks/SelfRegistration/TaskManifestProvider.cs` — `platform.tasks.mentioned` event.
+- `Infrastructure/Persistence/Configurations/NotificationTemplateSeed.cs` — 7-language template.
+- `API/Controllers/TasksController.cs` — `GET {id}/mention-candidates`.
+- Frontend: `Tasks/api.js` (client + reason codes), `Controllers/TasksController.cs` proxy route,
+  `WorkCenterNext/app.js` (chip tray + picker, reusing `sharedConfirm`/`bindDialogSelect2` — **no new raw
+  dialog**), `backbone-custom.css` (`.wcn-mention-*`, FG-003), `TasksIndex.*.resx` (error strings) +
+  `WorkCenterNextIndex.*.resx` (UI strings), both 7 languages.
+
+### Acceptance criteria
+- [x] Tagging a visible watcher succeeds; sends exactly one `platform.tasks.mentioned` notification and excludes
+  that person from the same comment's `platform.tasks.commented` audience.
+- [x] Tagging someone `CanReadAsync` refuses is rejected 400 `TASK_MENTION_NOT_VISIBLE`; nothing is persisted,
+  nothing is sent.
+- [x] Self-mention is accepted (stored) and sends zero notifications.
+- [x] 11 mentions refused 400 `TASK_MENTION_LIMIT_EXCEEDED` before any visibility check; exactly 10 is accepted.
+- [x] Editing to add a new mention notifies only the newly-added id(s); editing without changing mentions sends
+  nothing; a refused edit leaves the stored text and mentions unchanged.
+- [x] `GET {id}/mention-candidates` 404s identically to a missing task for a caller `CanReadAsync` refuses
+  (BL-349 parity); an id whose name cannot be resolved is omitted, never a raw GUID; `q` filters case-insensitively.
+- [x] `platform.tasks.mentioned` seeded in all 7 languages, wired into the existing template-parity guard
+  (`TaskNotificationTemplateTests`).
+- [x] No new permission key exists anywhere in the diff.
+- [ ] **Frontend `/Tasks/Details` (legacy single-item view) does not get mention UI this round** — the mock/legacy
+  screen `/WorkCenter` stays frozen (§4/§6) and the plain `/Tasks/Details` page was out of scope per the WP;
+  only WorkCenterNext's comment composer was wired. Flagged, not silently dropped — a follow-up if that screen is
+  ever un-deprecated.
+- [ ] **Editing a comment to add a mention has no dedicated UI affordance yet** — the backend fully supports it
+  (`UpdateTaskCommentRequest.MentionedUserIds`, tested against real handlers), but WCN's edit dialog
+  (`sharedConfirm`'s textarea seam) was not extended to expose the mention picker during an edit — only during
+  the initial post. A real, additive gap, not a silent one.
+
+### Test gate
+Real handler + real Mongo (`TaskMentionTests.cs`, `TaskReadAccessPolicyTests.cs`, `TaskCommentOrderMongoTests.cs`
+round-trip + backward-compat $unset test), plus the existing `TaskNotificationTemplateTests` 7-language guard
+extended to `platform.tasks.mentioned`. Frontend: `wcn-dialog-*` mutation guards updated (bindDialogSelect2 call
+count 4→5, documented) rather than bypassed with a new raw dialog. `Diten.Platform.Application.Tests` Tasks
+suite: 1373/1373 green (was ~1370 per §17's stated baseline) — no existing test touched except the two
+constructor-signature call sites (`TaskCommentTests`, `TaskCommentTrailTests`, `TaskReadAccessWiringTests`) that
+had to learn the new constructor parameter.

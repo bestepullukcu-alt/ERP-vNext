@@ -414,6 +414,19 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Who the comment box's @ picker may offer for THIS task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). READ-guarded
+    /// like the comment endpoints themselves — the relationship check that actually decides candidacy is
+    /// per-candidate, inside the handler, via <c>ITaskReadAccessPolicy</c>.
+    /// </summary>
+    [HttpGet("{id:guid}/mention-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetMentionCandidates(Guid id, [FromQuery] string? q, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskMentionCandidatesQuery(id, q, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── The personal overlay (WC-1) ──────────────────────────────────────────
     //
     // All three are guarded by READ, not Update, and the reason is the same for each: a private note or a snooze

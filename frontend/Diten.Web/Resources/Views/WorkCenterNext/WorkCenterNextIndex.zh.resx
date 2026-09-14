@@ -1027,6 +1027,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>发送</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>提及某人</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>移除提及</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>提及人员</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>请至少选择一人。</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>此任务目前还没有可提及的人。</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>所有可提及的人都已添加。</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>一条评论最多可提及 {0} 人。</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>发布前请输入内容</value>
   </data>

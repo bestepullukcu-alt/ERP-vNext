@@ -1027,6 +1027,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Упомянуть кого-то</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Убрать упоминание</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Упомянуть людей</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Выберите хотя бы одного человека.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>В этой задаче пока нет никого, кого можно упомянуть.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Все, кого можно упомянуть, уже добавлены.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>В комментарии можно упомянуть не более {0} человек.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Напишите что-нибудь перед отправкой</value>
   </data>

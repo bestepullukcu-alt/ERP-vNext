@@ -1027,6 +1027,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mencionar a alguien</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Quitar mención</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mencionar personas</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Elija al menos una persona.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Todavía no hay nadie a quien mencionar en esta tarea.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Ya se agregaron todas las personas que se pueden mencionar.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un comentario puede mencionar como máximo a {0} personas.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Escribe algo antes de publicar</value>
   </data>
