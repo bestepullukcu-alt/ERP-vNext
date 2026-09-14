@@ -685,6 +685,12 @@
   <data name="Nav.Page.CLAIMS" xml:space="preserve">
     <value>Allégations</value>
   </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>Portées de contenu</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>Ensembles de contenu</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Parcours de connaissances</value>
   </data>

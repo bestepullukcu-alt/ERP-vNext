@@ -39,6 +39,8 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string KnowledgePathRead = "crm.knowledge.path.read";
     private const string ContentEngagementJourneyRead = "crm.knowledge.content-engagement-journey.read";
     private const string ClaimRead = "crm.claim.read";
+    private const string ContentScopeRead = "crm.content-scope.read";
+    private const string ContentSetRead = "crm.content-set.read";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -137,6 +139,15 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Claim", "crm.claim.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("APPROVE", "Approve", "crm.claim.approve", "RowAction", 20, false, false, true)
+                ]),
+                // SCMM-14 (CAND-CAP-0011) Content Studio — reusable ContentScope + ContentSet (assembly draft) consoles.
+                new ModuleManifestPage("CONTENT_SCOPES", "Content Scopes", "/CRM/ContentScopes", ContentScopeRead, null, true, "List", 150,
+                [
+                    new ModuleManifestAction("MANAGE", "New Scope", "crm.content-scope.manage", "Toolbar", 10, false, true, false)
+                ]),
+                new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
+                [
+                    new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
                 ])
             ]);
 }
