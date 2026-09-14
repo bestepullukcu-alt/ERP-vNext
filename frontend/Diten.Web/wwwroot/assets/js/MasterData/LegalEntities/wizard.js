@@ -18,6 +18,7 @@
     const TOTAL_STEPS = 6; // Identity, Statutory, Structure, Finance, Addresses, Overview
     let currentStep = 1;
     let maxReachedStep = 1; // gates forward navigation — a step can't be entered until every step before it validates
+    let expectedVersion = null;
 
     // İŞ1 — required fields grouped by the wizard step they live on (step 3's Parent field is conditional,
     // handled separately by isParentRequired/applyParentRequirement).
@@ -242,36 +243,40 @@
         return any ? JSON.stringify(obj) : null;
     };
 
-    const collectPayload = () => ({
-        code: trim(byId('leCode')?.value),
-        legalName: trim(byId('leLegalName')?.value),
-        displayName: valueOrNull('leDisplayName'),
-        legalFormCode: valueOrNull('leLegalFormCode'),
-        registrationNumber: valueOrNull('leRegistrationNumber'),
-        taxId: valueOrNull('leTaxId'),
-        vatNumber: valueOrNull('leVatNumber'),
-        placeOfIncorporation: valueOrNull('lePlaceOfIncorporation'),
-        incorporationDate: dateOrNull('leIncorporationDate'),
-        dissolutionDate: dateOrNull('leDissolutionDate'),
-        countryCode: valueOrNull('leCountryCode'),
-        statutoryStatus: byId('leStatutoryStatus')?.value || 'Registered',
-        baseCurrencyCode: valueOrNull('leBaseCurrencyCode'),
-        // İŞ3 Structure (all optional); İŞA organizationRoleCode (blank → backend defaults LEGALENTITY)
-        organizationRoleCode: valueOrNull('leOrganizationRoleCode'),
-        parentLegalEntityId: valueOrNull('leParentLegalEntityId'),
-        ownershipPercent: numberOrNull('leOwnershipPercent'),
-        controlTypeCode: valueOrNull('leControlTypeCode'),
-        // İŞ3 Finance (all optional)
-        fiscalYearVariant: valueOrNull('leFiscalYearVariant'),
-        accountingStandardCode: valueOrNull('leAccountingStandardCode'),
-        taxRegimeCode: valueOrNull('leTaxRegimeCode'),
-        // İŞ3 Addresses & Contacts (all optional)
-        registeredAddressJson: buildAddressJson('registered'),
-        correspondenceAddressJson: buildAddressJson('correspondence'),
-        officialEmail: valueOrNull('leOfficialEmail'),
-        officialPhone: valueOrNull('leOfficialPhone'),
-        website: valueOrNull('leWebsite')
-    });
+    const collectPayload = () => {
+        const payload = {
+            code: trim(byId('leCode')?.value),
+            legalName: trim(byId('leLegalName')?.value),
+            displayName: valueOrNull('leDisplayName'),
+            legalFormCode: valueOrNull('leLegalFormCode'),
+            registrationNumber: valueOrNull('leRegistrationNumber'),
+            taxId: valueOrNull('leTaxId'),
+            vatNumber: valueOrNull('leVatNumber'),
+            placeOfIncorporation: valueOrNull('lePlaceOfIncorporation'),
+            incorporationDate: dateOrNull('leIncorporationDate'),
+            dissolutionDate: dateOrNull('leDissolutionDate'),
+            countryCode: valueOrNull('leCountryCode'),
+            statutoryStatus: byId('leStatutoryStatus')?.value || 'Registered',
+            baseCurrencyCode: valueOrNull('leBaseCurrencyCode'),
+            // İŞ3 Structure (all optional); İŞA organizationRoleCode (blank → backend defaults LEGALENTITY)
+            organizationRoleCode: valueOrNull('leOrganizationRoleCode'),
+            parentLegalEntityId: valueOrNull('leParentLegalEntityId'),
+            ownershipPercent: numberOrNull('leOwnershipPercent'),
+            controlTypeCode: valueOrNull('leControlTypeCode'),
+            // İŞ3 Finance (all optional)
+            fiscalYearVariant: valueOrNull('leFiscalYearVariant'),
+            accountingStandardCode: valueOrNull('leAccountingStandardCode'),
+            taxRegimeCode: valueOrNull('leTaxRegimeCode'),
+            // İŞ3 Addresses & Contacts (all optional)
+            registeredAddressJson: buildAddressJson('registered'),
+            correspondenceAddressJson: buildAddressJson('correspondence'),
+            officialEmail: valueOrNull('leOfficialEmail'),
+            officialPhone: valueOrNull('leOfficialPhone'),
+            website: valueOrNull('leWebsite')
+        };
+        if (isEdit) payload.expectedVersion = expectedVersion;
+        return payload;
+    };
 
     // ─── Save (POST create / PUT edit) ───────────────────────────────────────
     const save = async () => {
@@ -281,6 +286,10 @@
             return;
         }
         showAlert(null);
+        if (isEdit && (!Number.isInteger(expectedVersion) || expectedVersion < 0)) {
+            showAlert([L.ErrorOccurred || 'An error occurred.'], 'danger');
+            return;
+        }
         const payload = collectPayload();
         const url = isEdit ? `${endpoint}/${encodeURIComponent(entityId)}` : endpoint;
         const method = isEdit ? 'PUT' : 'POST';
@@ -327,6 +336,10 @@
     };
 
     const populate = (d) => {
+        expectedVersion = d.version ?? d.Version;
+        if (!Number.isInteger(expectedVersion) || expectedVersion < 0) {
+            throw new Error('invalid edit version');
+        }
         setVal('leCode', d.code);
         setVal('leLegalName', d.legalName);
         setVal('leDisplayName', d.displayName);

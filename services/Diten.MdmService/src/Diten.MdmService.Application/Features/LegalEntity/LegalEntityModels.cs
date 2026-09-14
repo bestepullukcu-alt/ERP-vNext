@@ -49,7 +49,9 @@ public sealed record LegalEntityWriteRequest(
     string? SourceSystem,
     string? LegacyCode,
     // Evidence
-    string? EvidenceStatus);
+    string? EvidenceStatus,
+    // Concurrency (Update only). Create rejects a supplied version.
+    int? ExpectedVersion = null);
 
 public sealed record LegalEntityDetailDto(
     Guid LegalEntityId,
@@ -139,18 +141,31 @@ public static class LegalEntityRules
 
 public static class LegalEntityMappings
 {
-    // Applies a write request onto an entity (create or update). Trims strings, parses enum strings, recomputes
-    // CompletenessScore. Does NOT touch OperationalStatus (lifecycle-owned) or identity/audit fields.
+    // Applies the full create payload. OperationalStatus and technical identity/deletion/audit fields remain
+    // server-owned; the five owner-governance fields retain their existing create semantics.
     public static void Apply(Domain.Entities.LegalEntity entity, LegalEntityWriteRequest r)
+    {
+        ApplyEditableFields(entity, r);
+
+        entity.ApprovalStatus = ParseEnum(r.ApprovalStatus, LegalEntityApprovalStatus.Draft);
+        entity.ReviewDueUtc = r.ReviewDueUtc;
+        entity.SourceSystem = Clean(r.SourceSystem);
+        entity.LegacyCode = Clean(r.LegacyCode);
+
+        entity.EvidenceStatus = ParseEnum(r.EvidenceStatus, LegalEntityEvidenceStatus.NotStarted);
+    }
+
+    // Applies only the owner-approved editable set. Governance, lifecycle, identity, deletion and provenance state
+    // remain persistence-owned and are deliberately absent from this mapping.
+    public static void ApplyEditableFields(Domain.Entities.LegalEntity entity, LegalEntityWriteRequest r)
     {
         entity.Code = r.Code.Trim();
         entity.LegalName = r.LegalName.Trim();
         entity.DisplayName = Clean(r.DisplayName);
         entity.LegalFormCode = r.LegalFormCode.Trim();
-        // MOD-0220 finish — OrganizationRole (Structure) is deferred from the UI; default the base role when the
-        // caller omits it so the entity stays coherent (LEGALENTITY never triggers the parent-required rule) and
-        // downstream selects still get a role. An explicit role (future Organization phase) is honored.
-        entity.OrganizationRoleCode = string.IsNullOrWhiteSpace(r.OrganizationRoleCode) ? "LEGALENTITY" : r.OrganizationRoleCode.Trim();
+        entity.OrganizationRoleCode = string.IsNullOrWhiteSpace(r.OrganizationRoleCode)
+            ? "LEGALENTITY"
+            : r.OrganizationRoleCode.Trim();
 
         entity.RegistrationNumber = Clean(r.RegistrationNumber);
         entity.TaxId = Clean(r.TaxId);
@@ -175,13 +190,6 @@ public static class LegalEntityMappings
         entity.OfficialEmail = Clean(r.OfficialEmail);
         entity.OfficialPhone = Clean(r.OfficialPhone);
         entity.Website = Clean(r.Website);
-
-        entity.ApprovalStatus = ParseEnum(r.ApprovalStatus, LegalEntityApprovalStatus.Draft);
-        entity.ReviewDueUtc = r.ReviewDueUtc;
-        entity.SourceSystem = Clean(r.SourceSystem);
-        entity.LegacyCode = Clean(r.LegacyCode);
-
-        entity.EvidenceStatus = ParseEnum(r.EvidenceStatus, LegalEntityEvidenceStatus.NotStarted);
 
         entity.CompletenessScore = LegalEntityRules.ComputeCompleteness(entity);
     }

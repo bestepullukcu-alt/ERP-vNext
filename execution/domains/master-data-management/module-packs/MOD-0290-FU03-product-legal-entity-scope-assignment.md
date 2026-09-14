@@ -1450,3 +1450,41 @@ time-representation change, migration, lease-duration change, takeover, extensio
 authority was introduced. No general suite or live acceptance was run. This evidence remains bounded to A0
 foreground Replace and grants no A1/A2, Finished Good, background recovery, operational activation or Production
 authority.
+
+## 22. FG-A1-OWNER-AMENDMENT-01 v1 — A0 reuse boundary
+
+This cross-link does not alter §21, its completed A0 implementation/evidence, frontmatter or status. Its A1a
+paragraph records the completed bounded slice; its A1b paragraphs remain planning-only.
+The Legal Entity owner amendment is canonical in
+[MOD-0220 §21](MOD-0220-legal-entity-foundation.md#21-fg-a1-owner-amendment-01-v1--bounded-legal-entity-writer-hardening-planning-only)
+and is mirrored at the Finished Good integration boundary in
+[MOD-0290 §21.15.7](MOD-0290-product-item-sku-master.md#21157-fg-a1-owner-amendment-01-v1--legal-entity-owner-decision-link).
+
+A1a completion cross-link (2026-09-13): the user-approved Legal Entity editable CAS implementation/evidence is
+recorded in
+[MOD-0220 A1a completion](MOD-0220-legal-entity-foundation.md#a1a-completed-implementation-and-evidence--2026-09-13),
+including RED `.NET 34/10/0` plus frontend `1/2/0`, corrected focused `42/0/0`, tenant-safe exact real-Mongo
+`8/0/0`, frontend `3/0/0`, build results and the security `PASS`. Its first correction run's `7/1/0`
+`FormatException` was a typed test-harness read of deliberately unknown raw BSON; tenant+id-scoped raw filtering
+corrected the harness. These A1a runs do not alter or aggregate with §21 A0 evidence. The parent-referenceability
+race and still-generic A1b-target writers remain explicit limitations; this cross-link grants no A1b or broader
+authority.
+
+For that proposed A1b only, the proven A0 low-level technical patterns for Mongo-server-time expiry, lease
+retention/no takeover and transaction-qualified physical writes may be reused. Existing
+`ProductLegalEntityScope*` authority types and methods remain named and bounded to foreground `Replace`; they must
+not be renamed, generalized or expanded for Legal Entity Suspend/Archive/Delete.
+
+The existing singleton tenant rollout-state writer lease —
+`IProductLegalEntityScopeRolloutStateRepository`, `ProductLegalEntityScopeWriterLease` and the existing
+`ProductLegalEntityScopeRolloutState` document/repository — is an A1b ordering/serialization dependency only. It is
+not Legal Entity authority and grants no permission. A separately named Legal Entity typed authority plus guarded
+transaction must validate the existing token/generation. No second Legal Entity lease/state/document/collection,
+index or schema is allowed. These dependency paths are read-only/reused; any required interface/model/repository
+change needs a later exact owner/code-start amendment.
+
+A1b requires separately named typed authority/provider/mutation/coordinator/guarded-session/outcome contracts and
+remains `BLOCKED` pending the owner decisions recorded in MOD-0220 §21.5, including the unresolved bodyless
+producer/transport contract. This link grants no Update/Create/Activate enrollment, A2/Finished Good,
+background/recovery, schema/index/collection, migration, code-start, `ready-for-dev`, Production or live-acceptance
+authority.

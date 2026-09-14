@@ -9,6 +9,10 @@ public sealed class CreateLegalEntityCommandValidator : AbstractValidator<Create
     public CreateLegalEntityCommandValidator()
     {
         RuleFor(x => x.Request).NotNull().SetValidator(new LegalEntityWriteRequestValidator());
+        RuleFor(x => x.Request.ExpectedVersion)
+            .Null()
+            .When(x => x.Request is not null)
+            .WithMessage("ExpectedVersion is not accepted when creating a Legal Entity.");
     }
 }
 
@@ -18,5 +22,10 @@ public sealed class UpdateLegalEntityCommandValidator : AbstractValidator<Update
     {
         RuleFor(x => x.LegalEntityId).NotEmpty();
         RuleFor(x => x.Request).NotNull().SetValidator(new LegalEntityWriteRequestValidator());
+        RuleFor(x => x.Request.ExpectedVersion)
+            .NotNull()
+            .GreaterThanOrEqualTo(0)
+            .When(x => x.Request is not null)
+            .WithMessage("ExpectedVersion must be a non-negative integer when updating a Legal Entity.");
     }
 }

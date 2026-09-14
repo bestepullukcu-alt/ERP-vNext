@@ -5609,3 +5609,42 @@ build/test, Mongo/service operation or Git stage/commit/push. A later, separatel
 `FU03-A0-FOREGROUND-GUARDED-REPLACE-01` turn produced the bounded A0 evidence recorded above; it did not authorize
 A1/A2/Slice C. Previous §21 sections and P0A/P1A evidence remain unchanged; `.testoutput/**` remains untracked evidence
 outside this amendment.
+
+### 21.15.7 FG-A1-OWNER-AMENDMENT-01 v1 — Legal Entity owner-decision link
+
+The canonical Legal Entity A1a/A1b proposal, exact allow-lists, planned assertion counts, real blockers and
+module-pack-author verdict are recorded in
+[MOD-0220 §21](MOD-0220-legal-entity-foundation.md#21-fg-a1-owner-amendment-01-v1--bounded-legal-entity-writer-hardening-planning-only).
+The completed FU03 A0 evidence is unchanged; its reuse/non-expansion rule is recorded in
+[MOD-0290-FU03 §22](MOD-0290-FU03-product-legal-entity-scope-assignment.md#22-fg-a1-owner-amendment-01-v1--a0-reuse-boundary).
+
+The user-approved A1a slice is now implemented and evidenced in MOD-0220 §21.3 without changing this pack's A1b
+plan or any completed A0/history: RED .NET `34/10/0` and frontend `1/2/0`; corrected focused `42/0/0`; first
+real-Mongo correction `7/1/0` from a raw-unknown-BSON test-harness `FormatException`, followed by the tenant+id-safe
+exact rerun `8/0/0`; frontend `3/0/0` plus JavaScript syntax PASS; MDM/frontend builds with `0` errors; and security
+verdict `PASS`. A0 regressions remain separate and unaggregated. The pre-CAS parent-referenceability race and the
+still-generic A1b-target Suspend/Archive/Delete writers remain explicit limitations, so A1a proves no all-writer
+fence and grants no A1b/Production/live-acceptance authority.
+
+This is an integration-boundary link, not an A1b code-start gate. A1a implements only Legal Entity editable-field/
+version CAS hardening and explicitly leaves Update outside A1b. A1b proposes only Legal Entity Suspend/Archive/Delete
+foreground contraction authority: Suspend/Archive require `mdm.legal-entities.update`; Delete requires
+`mdm.legal-entities.delete`; Create/Activate remain nonreferenceable expansion/regression-only. No A0
+`ProductLegalEntityScope*` authority type or method is renamed or widened.
+
+The existing FU03 singleton tenant rollout-state writer lease is reused only for ordering/serialization; it is not
+Legal Entity authority or permission. A1b must use separately named Legal Entity typed authority and validate the
+existing lease token/generation in the guarded transaction. No second Legal Entity lease/state/document/collection,
+index or schema is proposed, and any required modification to the current FU03 interface/model/repository remains a
+separate exact owner/code-start amendment.
+
+The A1a exact 25-field approval/evidence prerequisite is satisfied. Actual A1b missing work remains explicit: a
+durable same-transaction immutable exact-outcome/audit model; an exact body/version/CommandId producer and
+bodyless-caller compatibility contract; and a retire/default-disable-or-enroll decision for the startup
+`LegalEntityOperationalStatusMigration.cs` writer. Until those A1b decisions and its planned evidence are complete,
+A1b is `BLOCKED` and no all-writer-fence claim is valid. Out of scope remain A2/Finished Good, background/recovery,
+new credential/audience, schema/index/collection/migration authority, central-audit mapping without a separate
+Platform MOD-0021-FU01 amendment, `ready-for-dev`, Production and live acceptance.
+
+**module-pack-author verdict:** `A1a PASS; A1b CONDITIONAL / BLOCKED — PLANNING ONLY`; no A1b code-start is authorized
+by this link.

@@ -153,13 +153,47 @@ public sealed class LegalEntityCommandTests
         var handler = new UpdateLegalEntityHandler(repository);
 
         var response = await handler.Handle(
-            new UpdateLegalEntityCommand(entity.Id, LegalEntityTestData.ValidRequest(code: entity.Code, legalName: "Renamed")),
+            new UpdateLegalEntityCommand(
+                entity.Id,
+                WithExpectedVersion(
+                    LegalEntityTestData.ValidRequest(code: entity.Code, legalName: "Renamed"),
+                    entity.Version)),
             CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
         Assert.Equal(204, response.StatusCode);
         Assert.Equal("Renamed", entity.LegalName);
         Assert.Equal(LegalEntityOperationalStatus.Active, entity.OperationalStatus); // lifecycle-owned, untouched
+    }
+
+    [Fact]
+    public async Task Update_WhenLifecycleChangesAfterRead_ReturnsConflictAndDoesNotResurrect()
+    {
+        // Arrange: the edit captures Active/version 0, then Archive commits before the edit reaches persistence.
+        var tenantId = Guid.NewGuid();
+        var entity = CreateEntity(tenantId, LegalEntityOperationalStatus.Active);
+        var repository = new InMemoryLegalEntityRepository(tenantId, [entity]) { CloneReads = true };
+        repository.BeforeNextWrite = current =>
+        {
+            current.OperationalStatus = LegalEntityOperationalStatus.Archived;
+            current.Version++;
+        };
+        var request = WithExpectedVersion(
+            LegalEntityTestData.ValidRequest(code: entity.Code, legalName: "Stale edit"),
+            entity.Version);
+        var handler = new UpdateLegalEntityHandler(repository);
+
+        // Act
+        var response = await handler.Handle(
+            new UpdateLegalEntityCommand(entity.Id, request),
+            CancellationToken.None);
+
+        // Assert: the stale editable write must lose and may not restore Active.
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(409, response.StatusCode);
+        Assert.Equal(LegalEntityOperationalStatus.Archived, entity.OperationalStatus);
+        Assert.Equal(1, entity.Version);
+        Assert.NotEqual("Stale edit", entity.LegalName);
     }
 
     [Fact]
@@ -288,4 +322,14 @@ public sealed class LegalEntityCommandTests
             RegisteredAddressJson = LegalEntityTestData.ValidAddressJson,
             OperationalStatus = operationalStatus
         };
+
+    private static Features.LegalEntity.LegalEntityWriteRequest WithExpectedVersion(
+        Features.LegalEntity.LegalEntityWriteRequest request,
+        int expectedVersion)
+    {
+        typeof(Features.LegalEntity.LegalEntityWriteRequest)
+            .GetProperty("ExpectedVersion")?
+            .SetValue(request, expectedVersion);
+        return request;
+    }
 }
