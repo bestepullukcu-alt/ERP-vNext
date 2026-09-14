@@ -1,0 +1,79 @@
+@using Diten.Web.Views.CRM.EligibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EligibilityPoliciesIndex> Localizer
+@{
+    // Read-only preview: pick a policy, build a context, POST evaluate, show the disjoint result. No save.
+    string[] dims = ["audience", "product", "market", "channel", "language", "period"];
+}
+
+<div class="row g-4">
+    <div class="col-12 col-lg-5">
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EvaluateInputSection"]</h6>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="evalPolicyPicker">@Localizer["Policy"] <span class="text-danger">*</span></label>
+                    <select id="evalPolicyPicker" class="form-select" data-url="/CRM/EligibilityPolicies/api/eligibility-policies"
+                            data-placeholder="@Localizer["PolicyPickerPlaceholder"]"></select>
+                </div>
+
+                <label class="form-label fw-medium">@Localizer["Context"] <span class="text-danger">*</span></label>
+                <div id="evalContextRows">
+                    <div class="eval-ctx-row d-flex gap-2 mb-2">
+                        <select class="form-select form-select-sm eval-ctx-dim" style="max-width:40%"
+                                data-placeholder="@Localizer["Dimension"]">
+                            <option value=""></option>
+                            @foreach (var d in dims)
+                            {
+                                <option value="@d">@Localizer["Dim_" + d]</option>
+                            }
+                        </select>
+                        <select class="form-select form-select-sm eval-ctx-values" multiple data-placeholder="@Localizer["Values"]"></select>
+                        <button type="button" class="btn btn-icon btn-label-danger btn-sm eval-ctx-remove" title="@Localizer["Remove"]"><i class="bx bx-x"></i></button>
+                    </div>
+                </div>
+                <button type="button" id="evalAddContext" class="btn btn-label-secondary btn-sm mb-3"><i class="bx bx-plus me-1"></i>@Localizer["AddContext"]</button>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="evalPinned">@Localizer["PinnedSelections"]</label>
+                    <select id="evalPinned" class="form-select eval-tags" multiple data-placeholder="@Localizer["PinnedPlaceholder"]"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="evalAt">@Localizer["EvaluateAt"]</label>
+                    <input id="evalAt" type="text" class="form-control flatpickr-date" placeholder="yyyy-MM-dd" />
+                </div>
+
+                <button type="button" id="btnEvaluate" class="btn btn-primary"><i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateAction"]</button>
+                <small class="d-block text-muted mt-2">@Localizer["EvaluateReadOnlyNote"]</small>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EvaluateResultSection"]</h6>
+                <div id="evalResultEmpty" class="text-muted">@Localizer["EvaluateResultEmpty"]</div>
+                <div id="evalResult" class="d-none">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span id="evalStateBadge" class="badge">-</span>
+                        <span id="evalBlockingLevel" class="text-muted small"></span>
+                    </div>
+                    <p id="evalReason" class="mb-3"></p>
+                    <div class="table-responsive">
+                        <table class="table table-sm border-top">
+                            <thead><tr>
+                                <th>@Localizer["Dimension"]</th>
+                                <th>@Localizer["Match"]</th>
+                                <th>@Localizer["State"]</th>
+                                <th>@Localizer["Reason"]</th>
+                            </tr></thead>
+                            <tbody id="evalConditions"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

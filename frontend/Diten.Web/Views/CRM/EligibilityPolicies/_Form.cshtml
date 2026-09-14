@@ -1,0 +1,200 @@
+@model Diten.Web.Models.CRM.EligibilityPolicyEditViewModel
+@using Diten.Web.Views.CRM.EligibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EligibilityPoliciesIndex> Localizer
+@{
+    var isEdit = Model.EligibilityPolicyId != Guid.Empty;
+    var ro = Model.IsReadOnly;   // published / archived → view-only
+}
+
+@functions {
+    async Task ConditionRow(int index, Diten.Web.Models.CRM.EligibilityConditionRowViewModel row, bool readOnly)
+    {
+        <div class="condition-row border rounded p-3 mb-2">
+            <input type="hidden" name="Conditions.Index" value="@index" />
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small text-muted mb-1">@Localizer["Dimension"]</label>
+                    <select name="Conditions[@index].Dimension" class="form-select form-select-sm cond-dim" @(readOnly ? "disabled" : "")>
+                        <option value="">@Localizer["SelectOption"]</option>
+                        @foreach (var d in Model.Dimensions)
+                        {
+                            <option value="@d" selected="@(d == row.Dimension)">@Localizer["Dim_" + d]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label small text-muted mb-1">@Localizer["Match"]</label>
+                    <select name="Conditions[@index].Match" class="form-select form-select-sm cond-match" @(readOnly ? "disabled" : "")>
+                        @foreach (var mk in Model.Matches)
+                        {
+                            <option value="@mk" selected="@(mk == row.Match)">@Localizer["Match_" + mk]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small text-muted mb-1">@Localizer["Values"]</label>
+                    <select name="Conditions[@index].Values" class="form-select form-select-sm cond-values" multiple @(readOnly ? "disabled" : "")>
+                        @foreach (var v in row.Values) { <option value="@v" selected>@v</option> }
+                    </select>
+                </div>
+                <div class="col-8 col-md-1 d-flex align-items-center pt-3">
+                    <div class="form-check">
+                        <input type="hidden" name="Conditions[@index].Required" value="false" />
+                        <input class="form-check-input" type="checkbox" name="Conditions[@index].Required" value="true"
+                               id="cond_req_@index" checked="@row.Required" disabled="@readOnly" />
+                        <label class="form-check-label small" for="cond_req_@index">@Localizer["Required"]</label>
+                    </div>
+                </div>
+                <div class="col-4 col-md-1 text-end pt-3">
+                    @if (!readOnly)
+                    {
+                        <button type="button" class="btn btn-icon btn-label-danger btn-sm cond-remove" title="@Localizer["Remove"]"><i class="bx bx-x"></i></button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<input type="hidden" asp-for="EligibilityPolicyId" />
+<input type="hidden" asp-for="IsPublished" />
+<input type="hidden" asp-for="IsArchived" />
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="PolicyCode" class="form-label fw-medium">@Localizer["PolicyCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="PolicyCode" class="form-control" readonly="@isEdit" maxlength="120" required />
+                        <span asp-validation-for="PolicyCode" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["PolicyCodeNote"]</small>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="PolicyName" class="form-label fw-medium">@Localizer["PolicyName"] <span class="text-danger">*</span></label>
+                        <input asp-for="PolicyName" class="form-control" readonly="@ro" maxlength="240" required />
+                        <span asp-validation-for="PolicyName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="PolicyVersion" class="form-label fw-medium">@Localizer["PolicyVersion"]</label>
+                        <input asp-for="PolicyVersion" class="form-control" readonly="@ro" maxlength="60" />
+                    </div>
+                    @if (!ro)
+                    {
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Status" class="form-label fw-medium">@Localizer["Status"]</label>
+                            <select asp-for="Status" class="select2 form-select">
+                                @foreach (var s in Model.Statuses)
+                                {
+                                    <option value="@s" selected="@(s == Model.Status)">@Localizer["Status_" + s]</option>
+                                }
+                            </select>
+                            <small class="text-muted">@Localizer["StatusEditableNote"]</small>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2" maxlength="2000" readonly="@ro"></textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ConditionsSection"]</h6>
+                    @if (!ro)
+                    {
+                        <button type="button" id="btnAddCondition" class="btn btn-label-primary btn-sm"><i class="bx bx-plus me-1"></i>@Localizer["AddCondition"]</button>
+                    }
+                </div>
+                <small class="text-muted d-block mb-3"><i class="bx bx-info-circle me-1"></i>@Localizer["ConditionsNote"]</small>
+
+                <div id="conditionRows">
+                    @{
+                        var idx = 0;
+                        foreach (var row in Model.Conditions)
+                        {
+                            await ConditionRow(idx, row, ro);
+                            idx++;
+                        }
+                        if (Model.Conditions.Count == 0)
+                        {
+                            <div class="text-muted small" id="conditionsEmpty">@Localizer["ConditionsEmpty"]</div>
+                        }
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EffectiveSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@Model.EffectiveFrom.ToString("yyyy-MM-dd")" required readonly="@ro" />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" readonly="@ro" />
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@* Row template for the JS condition builder (cloned with a fresh index; __I__ placeholder). *@
+@if (!ro)
+{
+    <template id="conditionRowTemplate">
+        <div class="condition-row border rounded p-3 mb-2">
+            <input type="hidden" name="Conditions.Index" value="__I__" />
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small text-muted mb-1">@Localizer["Dimension"]</label>
+                    <select name="Conditions[__I__].Dimension" class="form-select form-select-sm cond-dim">
+                        <option value="">@Localizer["SelectOption"]</option>
+                        @foreach (var d in Model.Dimensions)
+                        {
+                            <option value="@d">@Localizer["Dim_" + d]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label class="form-label small text-muted mb-1">@Localizer["Match"]</label>
+                    <select name="Conditions[__I__].Match" class="form-select form-select-sm cond-match">
+                        @foreach (var mk in Model.Matches)
+                        {
+                            <option value="@mk">@Localizer["Match_" + mk]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label small text-muted mb-1">@Localizer["Values"]</label>
+                    <select name="Conditions[__I__].Values" class="form-select form-select-sm cond-values" multiple></select>
+                </div>
+                <div class="col-8 col-md-1 d-flex align-items-center pt-3">
+                    <div class="form-check">
+                        <input type="hidden" name="Conditions[__I__].Required" value="false" />
+                        <input class="form-check-input" type="checkbox" name="Conditions[__I__].Required" value="true" />
+                        <label class="form-check-label small">@Localizer["Required"]</label>
+                    </div>
+                </div>
+                <div class="col-4 col-md-1 text-end pt-3">
+                    <button type="button" class="btn btn-icon btn-label-danger btn-sm cond-remove" title="@Localizer["Remove"]"><i class="bx bx-x"></i></button>
+                </div>
+            </div>
+        </div>
+    </template>
+}
