@@ -5407,7 +5407,7 @@ yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sa
 
 **Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
 
-DURUM: KARAR YENİDEN SAHİPTE (2026-09-14) — uygulandı ve doğrulandı (567/567, sabotaj 9 kırmızı) ama COMMIT'LENMEDİ: bizde takvim entegrasyonu yok, düzenleyenin takvimine toplantıyı sokan tek şey davet .ics'i; kural uygulanınca seri örnekleri ve başkası adına kurulan toplantılar düzenleyenin takviminde hiç görünmez. Yama: `.git/BL-387-organizer-exclusion.patch` · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KARAR VERİLDİ (sahip 2026-09-14, ikinci tur): düzenleyen işlemi kendisi yapmadıysa kendine özel posta + .ics alır ("takviminize eklendi / toplantınız güncellendi / iptal edildi"); kendisi yaptıysa posta yok. Prompt: WP-MG-MOD0357-BL387-ORGANIZER-CALENDAR-MAIL-01 (DM sohbeti, `feature/mg/mod-0357-organizer-calendar-mail`). "Hiç posta almasın" yaması (`.git/BL-387-organizer-exclusion.patch`) kullanılmayacak; alıcı testleri referans · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
 "düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
@@ -5467,7 +5467,7 @@ tanınmayan girişte alan boşaltılmalı ya da hata göstermeli.
 
 **`platform.tasks.work-report.read-tenant-wide` yalnız-açık-yetki listesinde değil — modül yetkilendirmesiyle varsayılan rollere dağılabilir (karar)**
 
-DURUM: KARAR VERİLDİ, UYGULANIYOR (sahip 2026-09-14: yalnız açıkça verilir; geçişte bugünkü sahipler listelenip açıkça yeniden verilir — SAP/Oracle geniş görüntüleme yetkisi de açık atamayla) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCESS-01), CT doğruladı · KAYIT: 2026-09-13
+DURUM: KAPANDI (yeni otomatik atamalar) — `aa96b147` (`feature/pss/mod-0024-review-meeting-policy`; CT sabotajla doğruladı, 2026-09-14). AÇIK KALAN — SAHİP KARARI: bugün bu izni otomatik tutan rolleri "açıkça verilmiş" hale çevirmek API ile mümkün değil (System/Module satırı geri alınamıyor, elle atama tekil indekse takılıyor) → veri adımı: tutulacak satırlarda GrantSource=Manual, kalanları sil + kiracı rol-atama sürümünü artır + sahiplerin refresh token'larını iptal et. Sahipler için salt okunur sorgu kontrol listesinde (§5) · BULAN: PSS ajanı · KAYIT: 2026-09-13
 
 `ExplicitGrantOnlyPermissions.Keys` bu WP'den önce yalnız iki anahtar taşıyordu (`ppm.portfolios.assign-owner`,
 `auth.users.account-kind.manage`); BL-349 üçüncüsü olarak `platform.tasks.read-all`'ı ekledi. İş Raporu'nun kiracı geneli okuma anahtarı
@@ -5611,6 +5611,16 @@ DURUM: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT:
 DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAYIT: 2026-09-14
 
 `WorkCenterNextIndex.*.resx` içindeki `ActReviewMeeting` app.js'te hiç referanslı değil (eylem etiketi `WorkAggregation_Action_ScheduleReviewMeeting`'den geliyor). BL-389'da yalnız metni düzeltildi. 7 dilde silinmesi çeviri kapısından geçer.
+
+---
+
+### BL-408
+
+**CI kapısının "veritabanları arası erişim" adımı `rg` yoksa hiçbir şey denetlemeden "passed" diyor**
+
+DURUM: AÇIK · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
+
+`scripts/check_cross_db_enforcement.sh:7` aramayı `rg` ile yapıyor ve hatayı `|| true` ile yutuyor. `rg` kurulu olmayan makinede (yerel dev makinesi ölçüldü: `rg: command not found`) adım hiçbir dosyayı taramadan geçiyor. Ajan aynı denetimi grep ile koştu: 0 ihlal. GitHub `ubuntu-latest` imajında `rg` olup olmadığı ölçülmedi. Öneri: araç yoksa adım başarısız olsun ya da grep'e düşsün; `|| true` yalnız "eşleşme yok" çıkış kodunu yutsun.
 
 ---
 

@@ -63,6 +63,75 @@ Dashboard canlıda kapalı kalır.
   otomatik gitmez. Vermediğiniz sürece herkes yalnız ilişkili olduğu görevleri açar.
 - Rollerin toplantı ve görev izinleri canlıda gözden geçirilir. Dev'de "Task-Manager" rolünün **hiç izni yoktu**; canlıdaki
   rollerin durumu ölçülmedi.
+- `platform.tasks.work-report.read-tenant-wide` da artık **yalnız açıkça verilir** (BL-392, `aa96b147`). Bugün bu izni otomatik tutan roller
+  kendiliğinden kaybetmez ama "açıkça verilmiş" hale çevrilmeleri bir veri adımı ister (sahip kararı). Canlıdan önce sahipleri
+  listelemek için salt okunur sorgu (yazma yok; `AUTH_DB` canlı Auth veritabanı adına ayarlanır):
+
+```js
+// BL-392 pre-deploy holder listing — READ-ONLY (findOne/aggregate only; no writes).
+// Run against the AuthService database. appsettings.json default name is diten_auth_v3 — use the DEPLOYED name.
+// Lists, per tenant, every role that currently holds platform.tasks.work-report.read-tenant-wide and the grant
+// source (stored int: 0=System, 1=Module, 2=Manual; a row without the field is legacy and reads as System).
+const AUTH_DB = "diten_auth_v3";
+const KEY = "platform.tasks.work-report.read-tenant-wide";
+const authDb = db.getSiblingDB(AUTH_DB);
+
+const perm = authDb.permissions.findOne(
+  { Key: KEY },
+  { _id: 1, Key: 1, Module: 1, Scope: 1, IsSystem: 1, IsDeleted: 1 });
+
+if (!perm) {
+  print(`Not in the catalog: ${KEY} — no role holds it.`);
+} else {
+  printjson({ permission: perm });
+  const rows = authDb.rolePermissions.aggregate([
+    { $match: { PermissionId: perm._id, IsDeleted: { $ne: true } } },
+    { $lookup: { from: "roles", localField: "RoleId", foreignField: "_id", as: "role" } },
+    { $unwind: { path: "$role", preserveNullAndEmptyArrays: true } },
+    { $lookup: {
+        from: "userRoles",
+        let: { rid: "$RoleId", tid: "$TenantId" },
+        pipeline: [
+          { $match: { $expr: { $and: [ { $eq: ["$RoleId", "$$rid"] }, { $eq: ["$TenantId", "$$tid"] } ] },
+                      IsDeleted: { $ne: true } } },
+          { $lookup: { from: "users", localField: "UserId", foreignField: "_id", as: "user" } },
+          { $match: { "user.0": { $exists: true }, "user.IsDeleted": { $ne: true } } },
+          { $count: "n" }
+        ],
+        as: "activeHolders" } },
+    { $project: {
+        _id: 0,
+        TenantId: 1,
+        RoleId: 1,
+        RoleName: { $ifNull: ["$role.Name", "(role missing)"] },
+        RoleIsSystem: "$role.IsSystem",
+        RoleIsDeleted: "$role.IsDeleted",
+        GrantSource: { $switch: {
+          branches: [
+            { case: { $eq: ["$GrantSource", 1] }, then: "Module" },
+            { case: { $eq: ["$GrantSource", 2] }, then: "Manual" }
+          ],
+          default: "System" } },
+        SourceModuleCode: 1,
+        AssignedBy: 1,
+        AssignedAt: 1,
+        ActiveUsersHoldingRole: { $ifNull: [ { $arrayElemAt: ["$activeHolders.n", 0] }, 0 ] }
+    } },
+    { $sort: { TenantId: 1, RoleName: 1 } }
+  ]).toArray();
+
+  print(`${rows.length} role grant(s) of ${KEY}:`);
+  rows.forEach(r => printjson(r));
+
+  const byTenant = {};
+  rows.forEach(r => {
+    const t = String(r.TenantId);
+    (byTenant[t] = byTenant[t] || []).push(
+      `${r.RoleName} [${r.GrantSource}${r.SourceModuleCode ? ":" + r.SourceModuleCode : ""}] activeUsers=${r.ActiveUsersHoldingRole}`);
+  });
+  printjson(byTenant);
+}
+```
 
 ## 6. Organizasyon verisi
 
