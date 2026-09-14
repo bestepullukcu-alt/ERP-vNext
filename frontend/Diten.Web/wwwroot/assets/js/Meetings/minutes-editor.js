@@ -48,7 +48,10 @@
         [ATTENDANCE_STATUS.EXCUSED]: t('attendanceExcused')
     }[status] ?? '-');
 
-    const personName = (userId) => eligiblePeopleById[userId] || userId;
+    // BL-390 — the same "ekranda GUID yok" fix as Meetings/index.js and Meetings/form.js: a participant whose
+    // account no longer resolves through the eligible-people lookup renders the shared unknown-user label, never
+    // their raw id.
+    const personName = (userId) => eligiblePeopleById[userId] || tShared('unknownUser');
 
     const newLocalStateFromVersion = (version) => {
         localAttendance = {};
@@ -192,8 +195,10 @@
             const correction = v.correctionOfVersionNumber
                 ? `<div class="text-muted small">${esc(t('historyCorrectionOfPrefix'))}${v.correctionOfVersionNumber}${v.correctionReason ? ' — ' + esc(v.correctionReason) : ''}</div>`
                 : '';
+            // BL-390 — the same fix as personName(): a publisher whose display name did not come back with the
+            // version never falls back to their raw id.
             const publishedBy = v.publishedAtUtc
-                ? `<div class="text-muted small">${esc(v.publishedByDisplayName || v.publishedByUserId || '')} · ${new Date(v.publishedAtUtc).toLocaleString(window.CurrentLanguage || undefined)}</div>`
+                ? `<div class="text-muted small">${esc(v.publishedByDisplayName || tShared('unknownUser'))} · ${new Date(v.publishedAtUtc).toLocaleString(window.CurrentLanguage || undefined)}</div>`
                 : '';
             return `<li class="list-group-item">
                 <div class="fw-semibold">${esc(label)}</div>
@@ -255,7 +260,9 @@
 
         currentMeeting = meetingResult.data;
         eligiblePeopleById = {};
-        (peopleResult.ok ? peopleResult.data?.people || [] : []).forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || p.userId; });
+        // BL-390 — same posture as Meetings/form.js: an eligible-people entry missing its own displayName does
+        // not get backfilled with the raw id (personName()/publishedBy above are what read this dictionary).
+        (peopleResult.ok ? peopleResult.data?.people || [] : []).forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || tShared('unknownUser'); });
         versions = minutesResult.data?.versions || [];
 
         await loadLinkedTasks();

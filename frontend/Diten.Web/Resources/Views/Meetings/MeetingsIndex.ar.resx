@@ -86,6 +86,8 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>لا يمكن دعوة هذا الشخص حاليًا.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>هذا الشخص مدعو بالفعل.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>هذا الحاضر ليس ضمن الاجتماع.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>لا يمكن إزالة المنظم من الاجتماع.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>تعذر العثور على بند جدول الأعمال هذا.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>تعذرت إعادة ترتيب جدول الأعمال؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>تعذر العثور على نوع الاجتماع هذا.</value></data>

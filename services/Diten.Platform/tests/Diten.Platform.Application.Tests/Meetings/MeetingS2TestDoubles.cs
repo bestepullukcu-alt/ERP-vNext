@@ -373,6 +373,10 @@ internal sealed class FakeMeetingInviteMailer : IMeetingInviteMailer
         Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
         => Record("cancel", meeting, recipients, actingUserId);
 
+    public Task<MeetingInviteDeliveryResult> SendRemovedAsync(
+        Meeting meeting, string meetingTypeName, MeetingAttendee removedAttendee, Guid actingUserId, CancellationToken ct = default)
+        => Record("removed", meeting, [removedAttendee], actingUserId);
+
     private Task<MeetingInviteDeliveryResult> Record(
         string kind, Meeting meeting, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId)
     {

@@ -226,7 +226,9 @@
         document.getElementById('dStartAt').textContent = new Date(meeting.startAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dEndAt').textContent = new Date(meeting.endAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dLocation').textContent = meeting.location || '-';
-        document.getElementById('dOrganizer').textContent = eligiblePeopleById[meeting.organizerUserId] || meeting.organizerUserId;
+        // BL-390 — an organizer id the eligible-people lookup does not resolve (deleted/test identity) must
+        // never render as the raw GUID on screen.
+        document.getElementById('dOrganizer').textContent = eligiblePeopleById[meeting.organizerUserId] || t('unknownUser');
         document.getElementById('dDescription').textContent = meeting.description || '-';
         document.getElementById('dStatus').innerHTML =
             `<span class="badge ${meeting.lifecycle === MEETING_LIFECYCLE.CANCELLED ? 'bg-label-secondary' : meeting.lifecycle === MEETING_LIFECYCLE.COMPLETED ? 'bg-label-success' : 'bg-label-info'}">${statusLabelFor(meeting.lifecycle)}</span>`;
@@ -276,7 +278,7 @@
         (meeting.attendees || []).forEach((a) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || a.userId} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span></span>`;
+            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || t('unknownUser')} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span></span>`;
             if (editable) {
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -415,7 +417,10 @@
         const attendeesResult = await window.MeetingsApi.lookupAttendees();
         const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
         eligiblePeopleById = {};
-        people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || p.userId; });
+        // BL-390 — the eligible-people lookup only carries ACTIVE tenant users; an organizer/attendee whose
+        // account was deactivated or removed since the meeting was created falls out of it. A `displayName`
+        // this sparse (missing) never gets backfilled with the raw id here — see dOrganizer/attendeesList above.
+        people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || t('unknownUser'); });
         // Same shared picker as the Create form's attendee select (E2) — avatar+name(+unit) rows, and its own
         // disabled/explained state when nobody is eligible, in place of the plain list this select used to get.
         // The reassign-organizer picker no longer lives on the page at all — M2 opens it through the shared

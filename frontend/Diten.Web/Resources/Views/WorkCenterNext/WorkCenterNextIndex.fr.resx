@@ -237,8 +237,8 @@
     <value>Agir</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Afficher</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Planifier une réunion de validation</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Réunion de validation planifiée : {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Planifier une réunion de revue</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Réunion de revue planifiée : {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Préparer le tableau d'élimination intersociétés</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Éliminer les soldes intersociétés avant la consolidation.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Enquêter sur la régression de la règle de tarification</value></data>

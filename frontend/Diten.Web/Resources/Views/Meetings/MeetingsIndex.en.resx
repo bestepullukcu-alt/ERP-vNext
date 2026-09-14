@@ -86,6 +86,8 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>This person cannot be invited right now.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>This person is already invited.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>This attendee is not on the meeting.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>The organizer cannot be removed from the meeting.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>This agenda item could not be found.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>The agenda could not be reordered; please reload and try again.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>This meeting type could not be found.</value></data>

@@ -44,6 +44,16 @@ public interface IMeetingInviteMailer
         IReadOnlyList<MeetingAttendee> recipients,
         Guid actingUserId,
         CancellationToken ct = default);
+
+    /// <summary>BL-386 — <paramref name="removedAttendee"/> was taken off an otherwise-still-scheduled meeting;
+    /// the same actor-exclusion rule every other Send*Async takes means a self-removal (the removed person is
+    /// also the actor) sends nothing, for free, with no extra branch here.</summary>
+    Task<MeetingInviteDeliveryResult> SendRemovedAsync(
+        Meeting meeting,
+        string meetingTypeName,
+        MeetingAttendee removedAttendee,
+        Guid actingUserId,
+        CancellationToken ct = default);
 }
 
 /// <summary>K12's own shape — <see cref="Sent"/> and <see cref="Failed"/> are deliberately not each other's

@@ -237,8 +237,8 @@
     <value>Actuar</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Ver</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de revisión</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de revisión programada: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
