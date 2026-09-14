@@ -86,6 +86,16 @@ Ayrı commit(ler): ContentScope · ContentSet · controller+RBAC. §22 raporu T�
 Durma koşulları: ConceptChainStep branch/cardinality şekli beklenenden farklıysa (raporla) · eligibility port ResolveEligibilityQuery şekli uymuyorsa · arrangement template'e map edilemiyorsa · kapsam ContentScope+ContentSet dışına (freeze/render/release/frontend) taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2 + E4-lite)**
+```text
+Commits: 0e713b3c (backend: 2 aggregate+CQRS+persistence+test) + a80b95f1 (HTTP+RBAC+test) · Agent: PASS · CT: ACCEPTED
+```
+- ✅ **Scope:** ~31 dosya, hepsi ContentScope/Set + persistence/DI + controller + RBAC + test. Tüketilen aggregate (Template/Claim/KnowledgeContent/Eligibility) + freeze/render/release + frontend **dokunulmadı**. Audit = mevcut `IContentCompositionAuditPublisher` (CAND-CAP-0011 seam, +2 entity etiketi — uydurma değil).
+- ✅ **Mantık (CT okudu):** clone-to-draft **no-inherited-approval** (SelectionId=NewGuid, Status=Draft, **EligibilitySnapshot=null**, pinned version taşınır); apply-eligibility **non-blocking + fail-closed** (`EvaluateAsync` try/catch'siz→propagate; no-policy→Unresolved asla atlanmaz; non-success=decision→Unresolved); version-pin seçim anında (D14-d).
+- ✅ **CT kendi koşumu (izole worktree):** build 0 hata; SCMM-14 testleri **37/37**; tam CrmService.Application.Tests **1710 pass / 0 fail** (PII flake dahil 0) → regresyon yok.
+- ✅ **E4-lite (standalone CrmService 5093 + dev-token):** content-scope unauth→401 · read-only→403 · create→201 (AKKORA/TR/Cardio) · list→200 · content-set endpoint→200 = yeni HTTP+RBAC+persistence **canlı**. (Tam assembly akışı create-from-template = unit-proven 37 test; canlı seed verisi wipe'lı olduğundan SCMM-14-UI manuel testinde tam akış görülecek.)
+- ✅ **3 belgelenmiş karar makul:** arrangement TemplateStepId=ConceptTypeId/BranchId=BranchCode (ConceptChainStep sentetik id yok); eligibility anchor=per-claim EligibilityPolicyId; audit=CAND-CAP-0011 (WP "MOD-0162"sinden daha doğru).
+
 ## Kalan (bu WP dışı)
 - **SCMM-14-UI** (Content Studio workspace — assembly authoring, dropdown/select2, no raw Id — D14-e).
 - SCMM-15 (freeze+Revision+review, MOD-0023 bloklu) · SCMM-16 (render/PDF, MOD-0026) · SCMM-17 (release).
