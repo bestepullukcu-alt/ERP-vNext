@@ -624,19 +624,31 @@
         updateProfileName();
     };
 
+    // ── Canonical DitenCheckItem shell (exact classes) ────────────────────────
+    // DitenCheckItem.row/.addRow are purpose-built for task text-items (fixed grip/level/evidence/remove + a text
+    // string) with no slot for Axis+Values select2 — so, per the WP, we reuse the exact CSS classes verbatim rather
+    // than the factory. The grip + move affordances are present but WITHDRAWN (visibility:hidden), so a dimension row
+    // keeps the same rhythm/height as a Tasks checklist row without offering a reorder that is meaningless for a set.
+    const checkitemAffordance = () =>
+        `<span class="diten-checkitem-grip diten-checkitem-withdrawn" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>`
+        + `<span class="diten-checkitem-move diten-checkitem-withdrawn" aria-hidden="true">`
+        + `<button type="button" class="diten-checkitem-btn" tabindex="-1"><i class="bx bx-chevron-up"></i></button>`
+        + `<button type="button" class="diten-checkitem-btn" tabindex="-1"><i class="bx bx-chevron-down"></i></button></span>`;
+
     // ── Added rows (display-only checklist) ───────────────────────────────────
     const axisDisplay = d => d.axis === 'custom' ? (d.axisCode || (L.AxisCustom || 'custom')) : AXIS_LABEL[d.axis]();
     const renderDimensions = () => {
         const host = document.getElementById('taxDimensions');
         if (!host) return;
-        // Display-only rows (no inline edit — change = delete + re-add): axis label + value chips + × delete.
+        // Display-only rows (no inline edit — change = delete + re-add): axis label + value-label chips + the quiet
+        // canonical × (diten-checkitem-remove, transparent → red on hover), never a heavy btn-label-danger block.
         host.innerHTML = dimensions.map((d, i) => {
             const chips = (d.valueLabels || []).map(l => `<span class="badge bg-label-secondary me-1">${esc(l)}</span>`).join('');
             const rm = dimReadOnly ? '' :
-                `<button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}"><i class="bx bx-x"></i></button>`;
+                `<button type="button" class="diten-checkitem-btn diten-checkitem-remove js-dim-remove" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}"><i class="bx bx-x"></i></button>`;
             return `<li class="diten-checkitem">
-                    <span class="fw-medium flex-shrink-0" style="min-width:9rem">${esc(axisDisplay(d))}</span>
-                    <span class="flex-grow-1">${chips || '<span class="text-muted">—</span>'}</span>
+                    ${checkitemAffordance()}
+                    <span class="diten-checkitem-text"><span class="fw-medium me-2">${esc(axisDisplay(d))}</span>${chips || '<span class="text-muted">—</span>'}</span>
                     ${rm}
                 </li>`;
         }).join('');
@@ -644,7 +656,7 @@
         updateProfileName();   // the added values drive the derived Name for HCP/pharmacist profiles
     };
 
-    // ── Fixed compose-row (Axis + Values + Add) ───────────────────────────────
+    // ── Fixed compose-row: a plain .diten-checkitem shell (NOT a separate card) ──
     const composeValuesControl = () => {
         const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
         if (composeAxis === 'custom') {
@@ -661,16 +673,15 @@
         if (dimReadOnly) { host.innerHTML = ''; return; }   // view mode: display rows only, no compose-row
         const axisOpts = REF_AXES.concat('custom')
             .map(a => `<option value="${esc(a)}"${composeAxis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
-        host.innerHTML = `<div class="diten-checkitem align-items-end">
-                <div style="width:12rem" class="flex-shrink-0">
-                    <label class="form-label small mb-0">${esc(L.Axis || 'Axis')}</label>
-                    <select class="form-select form-select-sm" id="composeAxis">${axisOpts}</select>
-                </div>
-                <div class="flex-grow-1">
-                    <label class="form-label small mb-0">${esc(L.Values || 'Values')}</label>
-                    ${composeValuesControl()}
-                </div>
-                <button type="button" class="btn btn-sm btn-primary flex-shrink-0" id="btnDimAdd"><i class="bx bx-plus me-1"></i>${esc(L.AddDimension || 'Add')}</button>
+        // Same .diten-checkitem shell as an added row (matching border/bg/padding); Axis + Values sit in the text slot,
+        // a plain Tasks-style Add (btn-label-primary, not a solid purple block) sits where remove would.
+        host.innerHTML = `<div class="diten-checkitem">
+                ${checkitemAffordance()}
+                <span class="diten-checkitem-text d-flex gap-2 align-items-end">
+                    <span class="flex-shrink-0" style="width:12rem"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
+                    <span class="flex-grow-1">${composeValuesControl()}</span>
+                </span>
+                <button type="button" class="btn btn-label-primary btn-sm flex-shrink-0" id="btnDimAdd">${esc(L.AddDimension || 'Add')}</button>
             </div>`;
         initComposeSelect2();
     };

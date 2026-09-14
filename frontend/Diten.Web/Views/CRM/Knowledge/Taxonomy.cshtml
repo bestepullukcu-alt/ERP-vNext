@@ -266,8 +266,9 @@
                 @* Added dimensions (display-only checklist rows: axis + value chips + × delete). *@
                 <ul class="task-checklist" id="taxDimensions"></ul>
                 <div id="taxDimensionsEmpty" class="form-text mb-2">@Localizer["DimensionsEmpty"]</div>
-                @* Fixed compose-row (Axis + Values + Add) — rendered by taxonomy.js; Add pushes a row above and clears. *@
-                <div id="taxDimensionCompose"></div>
+                @* Fixed compose-row (Axis + Values + Add) — a canonical .diten-checkitem shell rendered by taxonomy.js;
+                   Add pushes a row above and clears. Spaced from the list to match the Tasks checklist rhythm. *@
+                <div id="taxDimensionCompose" class="mt-2"></div>
             </div>
             <div class="mb-3">
                 <label class="form-label" for="taxStatus">@Localizer["Status"]</label>
