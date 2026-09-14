@@ -1,0 +1,93 @@
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@{
+    // SCMM-10-UI-refine (Not 5): the Chain Template create/edit body, Golden Compact vertical layout (Claims/Node
+    // pattern). The branch/step builder + Subject/Status pickers are driven by template-form.js; field ids match the
+    // former Slim offcanvas so the ported builder logic is unchanged. Moderator = select2 tags, ForWhom = audience
+    // multi-select2 (Not 6).
+}
+
+<div id="conceptTemplateFormAlert" class="alert alert-danger d-none" role="alert"></div>
+<div id="conceptTemplateFrozenNote" class="alert alert-warning d-none" role="status">@Localizer["PublishedSequenceFrozen"]</div>
+
+<form id="conceptTemplateForm" class="needs-validation" novalidate
+      data-required-tracker-target="#conceptTemplateRequiredTracker"
+      data-required-tracker-wrapper-class="d-flex align-items-center"
+      data-required-tracker-badge-class="badge bg-label-danger d-flex align-items-center">
+    <input type="hidden" id="templateFormId" />
+    <input type="hidden" id="tplOrderedConceptTypes" />
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="tplSubjectId" class="form-label fw-medium">@Localizer["SubjectId"] <span class="text-danger">*</span></label>
+                            <select id="tplSubjectId" class="form-select tpl-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
+                            <div class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="tplChainCode" class="form-label fw-medium">@Localizer["ChainCode"] <span class="text-danger">*</span></label>
+                            <input type="text" id="tplChainCode" class="form-control" maxlength="120" required />
+                            <div class="form-text" id="tplChainCodeHint">@Localizer["ImmutableAfterCreate"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="tplChainName" class="form-label fw-medium">@Localizer["ChainName"] <span class="text-danger">*</span></label>
+                            <input type="text" id="tplChainName" class="form-control" maxlength="240" required />
+                        </div>
+                        <div class="col-12">
+                            <label for="tplDescription" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea id="tplDescription" class="form-control" rows="3" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            @* SCMM-10 (③) branched builder — each branch is an ordered step list; the OrderedConceptTypes spine
+               (min 2 distinct types) is derived from all branches. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["Branches"] <span class="text-danger">*</span></h6>
+                        <button type="button" id="btnTplAddBranch" class="btn btn-sm btn-label-primary">
+                            <i class="bx bx-plus me-1"></i>@Localizer["AddBranch"]
+                        </button>
+                    </div>
+                    <div class="form-text mb-2">@Localizer["BranchesNote"]</div>
+                    <div id="tplBranches" class="d-flex flex-column gap-3"></div>
+                    <div id="tplBranchesEmpty" class="form-text">@Localizer["BranchesEmpty"]</div>
+                    <div id="tplSequenceError" class="text-danger small mt-1 d-none"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferenceSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="tplChainVersion" class="form-label fw-medium">@Localizer["ChainVersion"]</label>
+                            <input type="text" id="tplChainVersion" class="form-control" maxlength="40" placeholder="v1" />
+                        </div>
+                        <div class="col-12">
+                            <label for="tplStatus" class="form-label fw-medium">@Localizer["Status"]</label>
+                            <select id="tplStatus" class="form-select tpl-select2" data-placeholder="@Localizer["SelectOption"]"></select>
+                        </div>
+                        <div class="col-12">
+                            <label for="tplEffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                            <input type="date" id="tplEffectiveFrom" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label for="tplEffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                            <input type="date" id="tplEffectiveTo" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

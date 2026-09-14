@@ -180,6 +180,8 @@
   <data name="Moderator" xml:space="preserve"><value>Moderator roles</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Audience</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Comma-separated references</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Type a role reference and press Enter</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>Select audience profiles</value></data>
   <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>branch(es)</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>

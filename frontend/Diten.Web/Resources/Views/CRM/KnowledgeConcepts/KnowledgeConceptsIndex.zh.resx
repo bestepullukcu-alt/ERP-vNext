@@ -180,6 +180,8 @@
   <data name="Moderator" xml:space="preserve"><value>版主角色</value></data>
   <data name="ForWhom" xml:space="preserve"><value>受众</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>以逗号分隔的引用</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>输入角色引用并按回车键</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>选择受众画像</value></data>
   <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>分支</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>高</value></data>

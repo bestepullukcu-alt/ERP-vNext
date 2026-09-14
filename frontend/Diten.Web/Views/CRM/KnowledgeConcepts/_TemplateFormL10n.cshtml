@@ -1,0 +1,15 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.KnowledgeConcepts
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<KnowledgeConceptsIndex> Localizer
+@{
+    var keys = new[] {
+        "CreateTemplate", "EditTemplate", "Edit", "ChainCode", "ChainName", "ChainVersion", "Description", "Status",
+        "EffectiveFrom", "EffectiveTo", "SubjectId", "Branches", "AddBranch", "BranchesNote", "BranchesEmpty",
+        "BranchStepsEmpty", "BranchNamePlaceholder", "RemoveBranch", "RemoveStep", "MoveUp", "MoveDown",
+        "MinSelection", "MaxSelection", "Moderator", "ForWhom", "ModeratorPlaceholder", "ForWhomPlaceholder",
+        "SequenceMinTwo", "PublishedSequenceFrozen", "NewVersion", "SelectOption", "ImmutableAfterCreate",
+        "RecordCreated", "RecordUpdated", "ErrorState", "AddToSequence" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+}
+<script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

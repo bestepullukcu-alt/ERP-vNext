@@ -157,6 +157,22 @@ public sealed class KnowledgeConceptsController : Controller
         return View($"{ViewRoot}/Details.cshtml", model);
     }
 
+    // ---------------- Chain Template Compact create/edit (SCMM-10-UI-refine Not 5) ----------------
+    // Golden Compact full-page (Claims/Node pattern) replacing the Slim offcanvas. The branch/step builder is
+    // JS-driven (template-form.js) and submits through the same-origin concept-chain-templates proxy above.
+
+    [HttpGet("Templates/Create")]
+    public IActionResult TemplateCreate() =>
+        RequirePage(TemplateManagePermission, ManagePermission, ManageFallback) ?? View($"{ViewRoot}/TemplateCreate.cshtml");
+
+    [HttpGet("Templates/Edit/{id:guid}")]
+    public IActionResult TemplateEdit(Guid id)
+    {
+        if (RequirePage(TemplateManagePermission, ManagePermission, ManageFallback) is { } denied) return denied;
+        ViewData["TemplateId"] = id;
+        return View($"{ViewRoot}/TemplateEdit.cshtml");
+    }
+
     // ---------------- Same-origin browser proxy (FU03 allowlist only) ----------------
 
     [HttpGet("api/contract")]
@@ -218,10 +234,21 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> ArchiveRelationship(Guid relationshipId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/concept-relationships/{relationshipId}/archive", null, ManagePermission, ct, ManageFallback);
 
-    // Concept chain templates (Slim tab).
+    // Concept chain templates (Slim LIST tab; create/edit are the Compact full-page below — SCMM-10-UI-refine Not 5).
     [HttpGet("api/concept-chain-templates")]
     public Task<IActionResult> TemplateList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
+    // Single template read — the Compact edit page loads the row fresh (the list stays a separate tab).
+    [HttpGet("api/concept-chain-templates/{templateId:guid}")]
+    public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates/{templateId}", ReadPermission, ct, ReadFallback);
+
+    // ForWhom / audience picker source for the Chain Template step builder (SCMM-10-UI-refine Not 6) — read-only FU02
+    // reference, same allowlist pattern as subjects / concept-types.
+    [HttpGet("api/audience-profiles")]
+    public Task<IActionResult> AudienceProfileList(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/audience-profiles{Request.QueryString}", ReadPermission, ct, ReadFallback);
 
     [HttpPost("api/concept-chain-templates")]
     public Task<IActionResult> CreateTemplate([FromBody] JsonElement body, CancellationToken ct) =>
