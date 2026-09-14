@@ -751,6 +751,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Content Sets</value>
   </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Eligibility Policies</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Knowledge Paths</value>
   </data>

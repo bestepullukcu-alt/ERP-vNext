@@ -41,6 +41,7 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string ClaimRead = "crm.claim.read";
     private const string ContentScopeRead = "crm.content-scope.read";
     private const string ContentSetRead = "crm.content-set.read";
+    private const string EligibilityRead = "crm.eligibility.read";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -148,6 +149,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage("CONTENT_SETS", "Content Sets", "/CRM/ContentSets", ContentSetRead, null, true, "List", 160,
                 [
                     new ModuleManifestAction("MANAGE", "New Content Set", "crm.content-set.manage", "Toolbar", 10, false, true, false)
+                ]),
+                // SCMM-11-UI (CAND-CAP-0011) eligibility policy authoring + evaluate. evaluate is a SEPARATE key from
+                // manage (author-vs-evaluator SoD); no delete surface (Archive).
+                new ModuleManifestPage("ELIGIBILITY_POLICIES", "Eligibility Policies", "/CRM/EligibilityPolicies", EligibilityRead, null, true, "List", 170,
+                [
+                    new ModuleManifestAction("MANAGE", "New Policy", "crm.eligibility.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("EVALUATE", "Evaluate", "crm.eligibility.evaluate", "Toolbar", 20, false, true, false)
                 ])
             ]);
 }

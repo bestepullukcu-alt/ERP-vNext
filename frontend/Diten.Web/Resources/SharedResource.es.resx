@@ -691,6 +691,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Conjuntos de contenido</value>
   </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Políticas de elegibilidad</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Rutas de conocimiento</value>
   </data>

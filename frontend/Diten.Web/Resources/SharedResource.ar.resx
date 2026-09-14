@@ -690,6 +690,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>مجموعات المحتوى</value>
   </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>سياسات الأهلية</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>مسارات المعرفة</value>
   </data>

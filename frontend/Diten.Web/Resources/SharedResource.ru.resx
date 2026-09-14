@@ -690,6 +690,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Наборы контента</value>
   </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Политики допустимости</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Пути знаний</value>
   </data>

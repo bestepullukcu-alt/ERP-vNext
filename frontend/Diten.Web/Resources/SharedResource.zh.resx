@@ -690,6 +690,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>内容集</value>
   </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>资格策略</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>知识路径</value>
   </data>
