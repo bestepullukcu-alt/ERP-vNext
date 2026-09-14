@@ -573,6 +573,49 @@
     let dimensions = [];       // [{ axis, customCode, values:[] }]
     let dimReadOnly = false;
 
+    // WP-MOD0162-AUD-UI-2: Dimensions apply ONLY to these profile types; Name is derived from the dimension value
+    // labels for them, and pre-filled from the ProfileType label (editable) for every other type.
+    const DIM_TYPES = ['healthcare-professional', 'pharmacist'];
+    let currentFormKind = null;
+    let profileNameDirty = false;      // the editable-Name case: a user edit is preserved until ProfileType changes
+    let suppressProfileAuto = false;   // openForm sets fields itself; the ProfileType change handler must not fight it
+    const titleize = code => norm(code).split(/[-_\s]+/).filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    // The read-only Name for a dimensioned profile: the selected values' display labels, in row/value order.
+    const dimensionNameLabel = () => {
+        const parts = [];
+        dimensions.forEach(d => (d.values || []).forEach(v => parts.push(d.axis === 'custom' ? v : refValueLabel(d.axis, v))));
+        return parts.join(' · ');
+    };
+    const profileTypeValue = () => norm(document.getElementById('taxProfileType')?.value);
+    // Dimensions are visible only for a dimensioned profile type on the AudienceProfile form.
+    const updateDimVisibility = () => {
+        const show = currentFormKind === 'audience-profiles' && DIM_TYPES.includes(profileTypeValue());
+        document.getElementById('taxDimensionsSection')?.classList.toggle('d-none', !show);
+    };
+    // Name: derived + read-only for a dimensioned profile; ProfileType-seeded + editable otherwise. Only the
+    // AudienceProfile form drives this — Subject/Topic keep a plain editable name.
+    const updateProfileName = () => {
+        if (currentFormKind !== 'audience-profiles') return;
+        const nameEl = document.getElementById('taxName');
+        if (!nameEl) return;
+        const pt = profileTypeValue();
+        if (DIM_TYPES.includes(pt)) {
+            nameEl.readOnly = true;                       // readonly (not disabled) so the value still submits
+            setValue('taxName', dimensionNameLabel());    // empty until a dimension value is chosen
+        } else {
+            nameEl.readOnly = false;
+            if (!profileNameDirty) setValue('taxName', pt ? titleize(pt) : '');
+        }
+    };
+    const onProfileTypeChange = () => {
+        if (suppressProfileAuto || currentFormKind !== 'audience-profiles') return;
+        profileNameDirty = false;                         // a fresh ProfileType re-seeds the editable Name
+        if (!DIM_TYPES.includes(profileTypeValue())) { dimensions = []; renderDimensions(); }  // clear orphaned dims
+        updateDimVisibility();
+        updateProfileName();
+    };
+
     const dimValuesControl = (d, i) => {
         const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
         if (d.axis === 'custom') {
@@ -596,11 +639,12 @@
     const renderDimensions = () => {
         const host = document.getElementById('taxDimensions');
         if (!host) return;
+        // Tasks-checklist look: each dimension is a bordered row (.diten-checkitem, top-aligned) with an × delete —
+        // no grip/drag (dimensions are a set, order carries no meaning).
         host.innerHTML = dimensions.map((d, i) => {
             const axisOpts = REF_AXES.concat('custom')
                 .map(a => `<option value="${esc(a)}"${d.axis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
-            return `<div class="card border shadow-none"><div class="card-body p-2">
-                <div class="d-flex gap-2 align-items-start">
+            return `<li class="diten-checkitem align-items-start">
                     <div style="width:12rem" class="flex-shrink-0">
                         <label class="form-label small mb-0">${esc(L.Axis || 'Axis')}</label>
                         <select class="form-select form-select-sm js-dim-axis" data-i="${i}" ${dimReadOnly ? 'disabled' : ''}>${axisOpts}</select>
@@ -609,12 +653,13 @@
                         <label class="form-label small mb-0">${esc(L.Values || 'Values')}</label>
                         ${dimValuesControl(d, i)}
                     </div>
-                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0 mt-4" data-i="${i}" title="${esc(L.RemoveDimension || '')}" ${dimReadOnly ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
-                </div></div></div>`;
+                    <button type="button" class="btn btn-icon btn-sm btn-label-danger js-dim-remove flex-shrink-0 mt-4" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}" ${dimReadOnly ? 'disabled' : ''}><i class="bx bx-x"></i></button>
+                </li>`;
         }).join('');
         document.getElementById('taxDimensionsEmpty')?.classList.toggle('d-none', dimensions.length > 0);
         document.getElementById('btnAddDimension')?.toggleAttribute('disabled', dimReadOnly);
         initDimSelect2();
+        updateProfileName();   // dimensions drive the derived Name for HCP/pharmacist profiles
     };
     const initDimSelect2 = () => {
         const jq = window.jQuery;
@@ -642,6 +687,7 @@
                 if (!row) return;
                 row.values = jq(this).val() || [];
                 maybeCascade(row);
+                updateProfileName();   // a value change re-derives the Name (no full re-render on plain value edits)
             });
         });
     };
@@ -683,6 +729,8 @@
         const spec = SPECS[kind];
         const form = document.getElementById('taxonomyForm');
         form.reset();
+        currentFormKind = kind;
+        suppressProfileAuto = true;   // openForm seeds ProfileType / Name / dimensions itself; don't let the change handler fight it
         populateFormOptions(kind, row);
         document.getElementById('taxKind').value = kind;
         document.getElementById('taxId').value = row?.id || '';
@@ -702,10 +750,26 @@
         document.querySelectorAll('.tax-only-topic').forEach(x => x.classList.toggle('d-none', kind !== 'topics'));
         document.querySelectorAll('.tax-only-profile').forEach(x => x.classList.toggle('d-none', kind !== 'audience-profiles'));
         setFormReadOnly(!!readOnly);
-        // WP-MOD0162-AUD-UI: the dimension builder is profile-only; load stored dimensions on edit/view, clear otherwise.
+        // WP-MOD0162-AUD-UI(-2): the dimension builder + Name derivation are profile-only. Dimensions show only for a
+        // dimensioned ProfileType; Name is derived+read-only for those, ProfileType-seeded+editable otherwise.
         dimReadOnly = !!readOnly;
-        if (kind === 'audience-profiles') { void loadDimensions(row); }
-        else { dimensions = []; renderDimensions(); }
+        document.getElementById('taxName').readOnly = false;
+        if (kind === 'audience-profiles') {
+            void loadDimensions(row);                     // async: renderDimensions() re-derives the Name once it lands
+            const pt = row?.profileType || '';
+            if (DIM_TYPES.includes(pt)) {
+                profileNameDirty = false;
+                document.getElementById('taxName').readOnly = true;
+                updateProfileName();
+            } else {
+                profileNameDirty = !!(row && row.name);   // an existing custom name is preserved (not re-seeded)
+                if (!profileNameDirty) setValue('taxName', pt ? titleize(pt) : '');
+            }
+        } else {
+            dimensions = []; renderDimensions();
+        }
+        updateDimVisibility();
+        suppressProfileAuto = false;
         // A topic's subject is fixed at creation (the update contract does not carry SubjectId).
         if (!readOnly) document.getElementById('taxSubjectId').disabled = !!row;
         document.getElementById('taxonomyCanvasTitle').textContent = readOnly
@@ -851,6 +915,16 @@
             const kind = paneKind[event.target.getAttribute('data-bs-target')];
             try { state[kind]?.table?.columns.adjust().responsive.recalc(); } catch { /* responsive not ready yet */ }
         });
+    });
+
+    // WP-MOD0162-AUD-UI-2: ProfileType drives Dimensions visibility + Name; a real user edit of the (editable) Name
+    // marks it dirty so the ProfileType prefill stops overwriting it until ProfileType changes again. The <select>
+    // element persists across openForm (select2 only re-wraps it), so these bind once. Bind both native + jQuery
+    // because select2 raises the change as a jQuery event while setValue() dispatches a native one.
+    document.getElementById('taxProfileType')?.addEventListener('change', onProfileTypeChange);
+    window.jQuery && window.jQuery('#taxProfileType').on('change', onProfileTypeChange);
+    document.getElementById('taxName')?.addEventListener('input', () => {
+        if (currentFormKind === 'audience-profiles' && !DIM_TYPES.includes(profileTypeValue())) profileNameDirty = true;
     });
 
     // WP-MOD0162-AUD-UI: dimension-builder controls (the offcanvas markup exists at load, just hidden).
