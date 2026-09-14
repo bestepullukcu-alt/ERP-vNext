@@ -87,10 +87,11 @@ Dashboard canlıda kapalı kalır.
 
 | Kayıt | Konu |
 | :-- | :-- |
-| BL-386 | Toplantıdan çıkarılan katılımcıya posta gitmiyor; takviminde toplantı kalır. Var olan iptal şablonu "toplantı iptal edildi" dediği için kullanılamaz — yeni şablon (7 dil) ve SEQUENCE için sürüm artışı gerekiyor; ayrı prompt, bu tura yetişmeyebilir |
+| BL-386 · BL-389 · BL-390 · BL-391 | Düzeltildi, `feature/mg/mod-0357-ui-polish` (`d9dfec87`) dalında; bu tura katılıp katılmayacağı sahip kararı. Katılmazsa canlıda çıkarılan katılımcının takviminde toplantı kalır |
 | BL-387 | Seri toplantıda düzenleyen de davet alıyor — sahip kararı |
 | BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); aynı ham hata metni 21 başka ekranda duruyor |
-| BL-389 · BL-390 · BL-391 | Metin tutarsızlığı, silinmiş düzenleyende ham kimlik, yanlış biçimde yazılan tarihin kayması |
+| @ ile etiketleme | `feature/pss/mod-0024-task-mentions` (`b9476a4e`) dalında hazır; bu tura katılıp katılmayacağı sahip kararı |
+| BL-395 | Aynı makinede eşzamanlı Platform test koşuları paylaşılan test veritabanını silebilir; kırmızı tekrar koşuda kayboluyorsa kod hatası değildir |
 | BL-392 | İş Raporu kiracı geneli okuma izni varsayılan rollere dağılabilir — sahip kararı |
 | BL-347 | İş Raporu indirmesi denetim izi bırakmıyor |
 | BL-393 notu | Tam Platform/Auth test paketleri ve ön yüz testleri CI'da koşmuyor; main'de önceden kırmızı olanlar: Doküman Yönetimi 15, İş Referans Verisi 53, Auth 3, ön yüz 25 |
