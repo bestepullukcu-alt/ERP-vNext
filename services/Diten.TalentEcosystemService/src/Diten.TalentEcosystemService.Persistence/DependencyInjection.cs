@@ -42,6 +42,14 @@ public static class DependencyInjection
         services.AddScoped<ITepTrustLevelPolicyMetadataRepository, MongoTepTrustLevelPolicyMetadataRepository>();
         services.AddScoped<ITepCandidateProfileMetadataRepository, MongoTepCandidateProfileMetadataRepository>();
 
+        // TEP feature repositories (PR-B2 group 2 — ExitReferenceRecords + leaves).
+        services.AddScoped<ITepExitReferenceRecordMetadataRepository, MongoTepExitReferenceRecordMetadataRepository>();
+        services.AddScoped<IAssociationOperationsReadinessMetadataRepository, MongoAssociationOperationsReadinessMetadataRepository>();
+        services.AddScoped<ICandidateCareerPassportReadinessMetadataRepository, MongoCandidateCareerPassportReadinessMetadataRepository>();
+        services.AddScoped<ITepCandidateDisputeReadinessMetadataRepository, MongoTepCandidateDisputeReadinessMetadataRepository>();
+        services.AddScoped<IEarlyWarningSignalsReadinessMetadataRepository, MongoEarlyWarningSignalsReadinessMetadataRepository>();
+        services.AddScoped<IHiringRiskIndicatorsReadinessMetadataRepository, MongoHiringRiskIndicatorsReadinessMetadataRepository>();
+
         return services;
     }
 
