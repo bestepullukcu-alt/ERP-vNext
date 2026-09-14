@@ -5376,6 +5376,15 @@ değişiklik/iptal postaları o kişiyi atlıyor, yani daveti kabul etmiş kişi
 çıkarılan kişiye `platform.meetings.cancel`, davetle aynı UID, `METHOD:CANCEL`. Test şekli: Alice + Bob ile toplantı, Bob çıkarılır →
 yalnız Bob'a tek bir iptal postası.
 
+**Ölçüldü (2026-09-14, WP-MG-MOD0357-BL386-REMOVED-ATTENDEE-CANCEL-01 — ajan şablon kapısında doğru durdu, kod yazılmadı):**
+(1) `platform.meetings.cancel` şablonu 7 dilde "davetli olduğunuz toplantı iptal edildi" diyor ve toplantı linki veriyor; çıkarılan
+kişi toplantının herkes için iptal edildiğini sanar, link ona 404 verir (`MeetingEligibility.CanView`). → yeni şablon anahtarı
+(`platform.meetings.removed`, linksiz, 7 dil, manifest olayı); seed yalnız EKSİK şablonu eklediği için var olanı yeniden yazmak
+kurulu veritabanına ulaşmaz. (2) `.ics` SEQUENCE = `meeting.Version`, çıkarma toplantı satırını yazmıyor → aynı SEQUENCE; öneri:
+çıkarmada beklenen-sürümlü yazımla sürüm artışı (SEQUENCE hiç düşmez). (3) Davetin gönderildiğini kaydeden alan yok; yaklaşık kural:
+toplantı Planlandı + kişi düzenleyen değil + kişi işlemi yapan değil. (4) Düzenleyenin katılımcı satırı bugün silinebiliyor (koruma
+yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sahip teyidi.
+
 ---
 
 ### BL-387
