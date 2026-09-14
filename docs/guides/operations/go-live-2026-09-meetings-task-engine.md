@@ -152,7 +152,8 @@ if (!perm) {
 7. Görevle ilgisi olmayan bir kullanıcı görevin adresini açar → "bulunamadı".
 8. Görev yorumunda @ ile görevi gören birini etiketle → uygulama içi bildirim + e-posta; görevi görmeyen biri listede çıkmaz.
 9. Toplantıdan bir katılımcıyı çıkar → yalnız ona "toplantıdan çıkarıldınız" postası; takviminden etkinlik kalkar.
-10. `/health`: dev'de `business_reference_data_provider` bu turdan önce de kırmızıydı; canlıdaki değeri ayrıca okunur.
+10. Başka bir kullanıcı adına toplantı oluştur ve düzenleyeni değiştir → düzenleyen "takviminize eklendi" postasını alır (düz davet değil); düzenleyen kendi toplantısını değiştirince ona posta gitmez.
+11. `/health`: dev'de `business_reference_data_provider` bu turdan önce de kırmızıydı; canlıdaki değeri ayrıca okunur.
 
 ## 8. Bilinen açıklar (bu turu engellemez)
 

@@ -5162,7 +5162,7 @@ yerel Mongo çakışması (BL-343 d), S5c'nin işi değil.
 
 **Seri üretimi her örnekte davet postası atıyor — organizatör dahil**
 
-DURUM: KAPANDI — karar (a) olduğu gibi kalsın (sahip, 2026-09-13) · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
+DURUM: YERİNE GEÇİLDİ — BL-387 (`1da09a16`, sahip kararı 2026-09-14): düzenleyen artık düz davet değil kendi "takviminize eklendi" postasını alır; 2026-09-13'teki "olduğu gibi kalsın" kararı geçersiz · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
 
 **Karar gerekçesi:** S5b'den beri davet postası `.ics` taşıyor ve Google entegrasyonu olmadığı için toplantının organizatörün kendi takvimine düşmesinin TEK yolu bu posta. Organizatörü dışarıda bırakmak onun takviminden kendi toplantısını silmek olurdu. Posta hacmi, aynı toplantıları elle açmakla aynı.
 
@@ -5407,7 +5407,7 @@ yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sa
 
 **Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
 
-DURUM: KARAR VERİLDİ (sahip 2026-09-14, ikinci tur): düzenleyen işlemi kendisi yapmadıysa kendine özel posta + .ics alır ("takviminize eklendi / toplantınız güncellendi / iptal edildi"); kendisi yaptıysa posta yok. Prompt: WP-MG-MOD0357-BL387-ORGANIZER-CALENDAR-MAIL-01 (DM sohbeti, `feature/mg/mod-0357-organizer-calendar-mail`). "Hiç posta almasın" yaması (`.git/BL-387-organizer-exclusion.patch`) kullanılmayacak; alıcı testleri referans · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KAPANDI — `1da09a16` (`feature/mg/mod-0357-organizer-calendar-mail`, WP-MG-MOD0357-BL387-ORGANIZER-CALENDAR-MAIL-01; CT sabotajla doğruladı, 2026-09-15; canlıda denenmedi): düzenleyen işlemi kendisi yapmadıysa `platform.meetings.organizer-added / -updated / -cancelled` (7 dil) + aynı .ics; kendisi yaptıysa posta yok; yeni düzenleyen atanınca "eklendi" postası · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
 "düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
