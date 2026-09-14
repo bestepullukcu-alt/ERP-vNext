@@ -76,7 +76,17 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: eligibility DTO/uç sözleşmesi beklenenden farklıysa · EligibilityResult şekli rozet/tabloya map edilemiyorsa · nav ModuleManifestPage deseni uygulanamıyorsa · kapsam frontend+nav dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = son manuel test (fleet authenticated)
+```text
+Commits: 295eee1c (konsol+evaluate, 22 dosya) + 0e282c88 (nav, 8 dosya) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @0e282c88
+```
+- ✅ **Scope (name-set):** 295eee1c = 22 dosya, **tamamı `frontend/Diten.Web`** (EligibilityPoliciesController + Models/CRM/EligibilityViewModels + Views/CRM/EligibilityPolicies/* + Resources 7-dil + wwwroot js). 0e282c88 = SharedResource 7-dil + `CrmManifestProvider.cs` (Platform, Web-dışı tek nav dosyası). Backend/API/ocelot/RBAC + mirror konsollar (ContentSets/Scopes/Claims/KnowledgeConcepts) **dokunulmadı**.
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0/0**; Platform.Application build **0/0**; **Diten.Web.Tests 137/0**; Platform nav/manifest guard **112/0** (NavManifestL10nGuard ELIGIBILITYPOLICIES 7-dil dahil, key-echo yok).
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) controller `[Authorize]`, **delete verb YOK** (kapatma=archive HttpPost); RequirePage = list→Read, Create/Edit/archive→Manage, evaluate→**Evaluate** (ayrı SoD anahtarı); proxy uçları `eligibility-policies` + `eligibility:evaluate` doğru; (2) evaluate action context'i resolver'a **forward eder, UI'da karar tekrarlamaz**; (3) evaluate.js **disjoint rozet** (eligible→success/yeşil · blocked→danger/kırmızı · unresolved→warning/amber) + BlockingLevel + Reason + per-condition tablo → non-Eligible **asla sessiz değil**; (4) select2 form.js 8× / evaluate.js 9× → **ham entity-Id yok** (policy picker/Dimension/Match select2); (5) nav `ELIGIBILITY_POLICIES` route `/CRM/EligibilityPolicies` readPerm `crm.eligibility.read` order 170 + MANAGE/EVALUATE aksiyonları.
+- ✅ **Verifier:** Claims aynasıyla birebir aynı 9 "uygulanamaz" FAIL → sıfır yeni (agent raporu ile tutarlı).
+- ⏳ **E4 = son toplu manuel test** (fleet authenticated: login→policy oluştur[condition'larla]→list→evaluate[disjoint rozet]→archive · yetkisiz→403). RBAC seed+97c5 grant hazır; fleet restart gerekir. SCMM-11-follow E4 ile birlikte.
+
 ## Kalan (bu WP dışı)
-- CT/kullanıcı **E4** (fleet authenticated — policy oluştur→list→evaluate→archive · yetkisiz→403; SCMM-11-follow E4 ile birlikte son toplu manuel testte).
-- Sonra **bizim SCMM tarafı TAMAM** → manuel test → main sync + push + PR.
+- CT/kullanıcı **E4** (fleet authenticated; SCMM-11-follow E4 ile birlikte son toplu manuel testte).
+- → **BİZİM SCMM TARAFI TAMAM** (SCMM 09/10 + 11-core/AUD/follow-API + 12/13/14 backend+API + 12-UI/14-UI/11-UI) → manuel test → main sync + push + PR.
 - (en sonda) foundation/blocked program: SCMM-05 kalan · 06/07/08 · 15/16/17/… · R2/R3 (video=SCMM-27).
