@@ -216,6 +216,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Bu yorum zaten kaldırılmış.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Bahsettiğiniz kişilerden biri bu görevi göremiyor. Önce onu izleyici olarak ekleyin.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>Bir yorumda en fazla 10 kişi etiketlenebilir.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Bu kişi burada belirtilemez.</value>
   </data>

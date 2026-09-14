@@ -449,6 +449,17 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiWithdrawComment(Guid id, Guid commentId)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}/comments/{commentId}", readBody: false);
 
+    /// <summary>
+    /// Who the comment box's @ picker may offer for THIS task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). Its own
+    /// route for the same reason the comment routes above are listed explicitly — an unproxied route is a 404
+    /// that never leaves the web tier.
+    /// </summary>
+    [HttpGet("api/{id:guid}/mention-candidates")]
+    public Task<IActionResult> ApiMentionCandidates(Guid id)
+        => ProxyAsync(
+            HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/{id}/mention-candidates{Request.QueryString.Value}",
+            readBody: false);
+
     // ── The personal overlay (WC-1) ──────────────────────────────────────────
     //
     // Their own resource under a task, so they are NOT transition codes and not in TaskTransitionRoutes. Listed

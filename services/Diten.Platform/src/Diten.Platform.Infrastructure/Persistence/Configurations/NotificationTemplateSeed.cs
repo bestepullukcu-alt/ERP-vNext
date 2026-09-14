@@ -86,6 +86,13 @@ public static class NotificationTemplateSeed
             TaskCommented("zh"),
             TaskCommented("ar"),
             TaskCommented("ru"),
+            TaskMentioned("en"),
+            TaskMentioned("tr"),
+            TaskMentioned("fr"),
+            TaskMentioned("es"),
+            TaskMentioned("zh"),
+            TaskMentioned("ar"),
+            TaskMentioned("ru"),
             TaskApprovalRequested("en"),
             TaskApprovalRequested("tr"),
             TaskApprovalRequested("fr"),
@@ -259,6 +266,34 @@ public static class NotificationTemplateSeed
         };
 
         return Create("platform.tasks.commented", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.mentioned</c> in seven languages (WP-PSS-MOD0024-TASK-MENTIONS-01).
+    ///
+    /// <para>Distinct from <c>platform.tasks.commented</c>: a direct @mention, not "you're involved in this
+    /// conversation". <c>AddTaskCommentHandler</c> excludes the mentioned person from the Commented audience so
+    /// the two never both fire for the same comment.</para>
+    ///
+    /// <para>Same reason as its siblings for NOT carrying the comment text: a comment can be withdrawn and an
+    /// email cannot be recalled, so quoting a retractable sentence into an unrecallable one is precisely the
+    /// thing this event must not do.</para>
+    /// </summary>
+    private static NotificationTemplate TaskMentioned(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("You were mentioned on a task: {{TaskTitle}}", "<p>Somebody mentioned you in a comment on a task.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "Somebody mentioned you in a comment on a task. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("Bir görevde sizden bahsedildi: {{TaskTitle}}", "<p>Bir göreve yazılan yorumda sizden bahsedildi.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Bir göreve yazılan yorumda sizden bahsedildi. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Vous avez été mentionné sur une tâche : {{TaskTitle}}", "<p>Quelqu'un vous a mentionné dans un commentaire sur une tâche.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Quelqu'un vous a mentionné dans un commentaire sur une tâche. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Le mencionaron en una tarea: {{TaskTitle}}", "<p>Alguien le mencionó en un comentario de una tarea.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Alguien le mencionó en un comentario de una tarea. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("有人在任务中提到了您：{{TaskTitle}}", "<p>有人在任务的评论中提到了您。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "有人在任务的评论中提到了您。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("تمت الإشارة إليك في مهمة: {{TaskTitle}}", "<p>أشار أحدهم إليك في تعليق على مهمة.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "أشار أحدهم إليك في تعليق على مهمة. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Вас упомянули в задаче: {{TaskTitle}}", "<p>Кто-то упомянул вас в комментарии к задаче.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Кто-то упомянул вас в комментарии к задаче. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.mentioned", locale, subject, html, text, ["TaskTitle", "TaskId"]);
     }
 
     /// <summary>

@@ -50,6 +50,20 @@ internal sealed class FakeCurrentUserContext(Guid userId) : ICurrentUserContext
 }
 
 /// <summary>
+/// A permissive <see cref="ITaskReadAccessPolicy"/> double for suites that do not exercise BL-349/@mention
+/// visibility at all (comment trail, notification audience) — the rule itself is
+/// <c>TaskReadAccessPolicyTests</c>'s territory, and a per-candidate accept/deny double is
+/// <c>TaskMentionValidationTests</c>'s.
+/// </summary>
+internal sealed class AlwaysAdmitReadAccessPolicy : ITaskReadAccessPolicy
+{
+    public Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct) => Task.FromResult(true);
+
+    public Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct)
+        => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+}
+
+/// <summary>
 /// Stands in for MOD-0018-FU15's <c>OrgDataScopeResolver</c> (BL-057).
 ///
 /// <para>The scopes are handed in rather than derived, so a test states the org reality it wants in one line and

@@ -1015,6 +1015,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Gönder</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Birini etiketle</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Etiketi kaldır</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Kişi etiketle</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>En az bir kişi seçin.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Bu görevde henüz etiketlenebilecek kimse yok.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Etiketlenebilecek herkes zaten eklendi.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Bir yorumda en fazla {0} kişi etiketlenebilir.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Göndermeden önce bir şey yazın</value>
   </data>

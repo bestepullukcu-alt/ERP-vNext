@@ -45,6 +45,16 @@
     // Mirrors TaskCommentLimits.MaxTextLength. Checked here so an over-long comment is refused before a round
     // trip; the server refuses it too, because a client-side check is a courtesy and not a rule.
     const COMMENT_MAX_LENGTH = 2000;
+    // Mirrors TaskCommentLimits.MaxMentionsPerComment (WP-PSS-MOD0024-TASK-MENTIONS-01 K4) — a courtesy check,
+    // same reasoning as the length limit above; the server enforces it regardless.
+    const COMMENT_MAX_MENTIONS = 10;
+    /*
+     * Per-task, not per-comment: one composer per task in this list, and its draft @mentions live outside the
+     * text the same way a select2 multi-value does — a separate set the composer renders as chips, cleared
+     * only when the comment is actually posted (or the composer is abandoned). Keyed by task id so `render()`
+     * re-drawing the whole list does not lose an in-progress draft's mentions.
+     */
+    const commentMentionState = new Map();
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
     const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
@@ -4307,14 +4317,36 @@
          * Still an <input>, deliberately. Making it a textarea would change what Enter does — a behaviour
          * change wearing a styling change's clothes.
          */
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — @mention chips.
+         *
+         * MentionedUserIds is structured data the server validates (K2/K4); the chip tray is the composer's
+         * OWN reflection of that draft state, not something parsed back out of the text box. Typing "@" is a
+         * shortcut into the SAME reusable person picker (`bindDialogSelect2`) every other picker dialog in this
+         * screen already uses — no new picker widget, per the module pack's explicit instruction.
+         */
+        const mentions = commentMentionState.get(item.id) || [];
+        const chips = mentions.length
+            ? `<div class="wcn-mention-chips">${mentions.map((m) => `<span class="wcn-mention-chip">`
+                + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                + `<button type="button" class="wcn-mention-chip-remove" data-wcn-mention-remove="${esc(m.id)}" `
+                + `data-wcn-mention-task="${item.id}" aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('')}</div>`
+            : '';
+
         return `<div class="wcn-composer">
             <div class="diten-field wcn-composer-field">
                 <i class="bx bx-message-rounded diten-field-icon" aria-hidden="true"></i>
                 <input type="text" class="form-control" data-wcn-comment-input placeholder="${esc(t('CommentPlaceholder'))}">
             </div>
+            <button type="button" class="btn btn-outline-secondary wcn-composer-mention" data-wcn-mention-add="${item.id}"
+                    aria-label="${esc(t('MentionAdd'))}" title="${esc(t('MentionAdd'))}">
+                <i class="bx bx-at" aria-hidden="true"></i>
+            </button>
             <button type="button" class="btn btn-primary wcn-composer-post" data-wcn-comment-post="${item.id}">
                 <i class="bx bx-send" aria-hidden="true"></i><span>${esc(t('CommentPost'))}</span>
             </button>
+            ${chips}
         </div>`;
     };
 
@@ -7707,6 +7739,7 @@
         if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
 
         const item = itemById(taskId);
+        const mentionedUserIds = (commentMentionState.get(taskId) || []).map((m) => m.id);
         if (!isDispatchableItem(item)) {
             /*
              * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
@@ -7717,19 +7750,90 @@
                 item.activity.unshift({
                     actor: data.currentUser.name, kind: 'comment', text: value, atMs: data.referenceDate(item.provenance)
                 });
+                commentMentionState.delete(taskId);
                 render();
                 toast(t('ToastCommentPosted'));
             }
             return;
         }
 
-        const result = await global.TasksApi.addComment(taskId, { text: value });
+        const result = await global.TasksApi.addComment(
+            taskId, mentionedUserIds.length ? { text: value, mentionedUserIds } : { text: value });
         // A DIFFERENT key from the fixture branch above: this comment really was posted to the engine, and
         // 'ToastCommentPosted' says "(mock)" in all seven languages — correct for the local-only path, a lie
         // here.
         if (await afterPhase2Write(result, 'ToastCommentPostedReal')) {
             consumeEntryBox('data-wcn-comment-input');
+            // Cleared only on SUCCESS: a refused mention (K2/K4) must leave the draft chips exactly where the
+            // author left them, or the correction they need to make (drop one name, add a watcher first) is
+            // undone by the very refusal that asked for it.
+            commentMentionState.delete(taskId);
         }
+    };
+
+    /*
+     * WP-PSS-MOD0024-TASK-MENTIONS-01 — the @mention picker.
+     *
+     * Goes through `sharedConfirm`, NOT a raw `Swal.fire` — this screen already guards the exact count of raw
+     * dialogs it allows (`wcn-dialog-*` test files), because each one it does not is a chance to re-diverge in
+     * appearance from the rest of the product. One person per confirm; the trigger (button or "@") can be used
+     * again to add another, up to the cap — a repeatable single-select stays inside the shared component's
+     * existing `input: { type: 'select' }` shape rather than asking it to grow a multi-select nobody else needs.
+     */
+    const openMentionPicker = async (taskId) => {
+        const item = itemById(taskId);
+        if (!item || !isDispatchableItem(item)) { return; }
+
+        // The "@" that triggered this (if any) already did its job by opening the picker; it does not belong
+        // in the text too — the chip tray is where a mention lives on screen from here on.
+        const inp = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (inp && inp.value.endsWith('@')) { inp.value = inp.value.slice(0, -1); }
+
+        const existing = commentMentionState.get(taskId) || [];
+        if (existing.length >= COMMENT_MAX_MENTIONS) {
+            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+            return;
+        }
+
+        const res = await global.TasksApi.mentionCandidates(taskId, '');
+        const candidates = res.ok ? (res.data || []) : [];
+        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return; }
+
+        const already = new Set(existing.map((m) => String(m.id)));
+        const offered = candidates.filter((c) => !already.has(String(c.id)));
+        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return; }
+
+        const options = {};
+        offered.forEach((c) => { options[c.id] = c.displayName; });
+
+        sharedConfirm({
+            title: t('MentionPickerTitle'),
+            confirmText: t('MentionAddConfirm'),
+            input: {
+                type: 'select',
+                options,
+                label: t('MentionPickerTitle'),
+                placeholder: t('MentionNoneChosen'),
+                validate: (value) => (value ? null : t('MentionNoneChosen')),
+                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
+            },
+            onConfirm: (value) => {
+                const chosen = offered.find((c) => String(c.id) === String(value));
+                if (!chosen) { return; }
+                commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
+                render();
+                const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
+                if (refocus) { refocus.focus(); }
+            }
+        });
+    };
+
+    /// Drops one draft mention chip. Never touches the server — the mention is not yet part of any posted
+    /// comment, so there is nothing for the engine to be told.
+    const removeMention = (taskId, userId) => {
+        const existing = commentMentionState.get(taskId) || [];
+        commentMentionState.set(taskId, existing.filter((m) => String(m.id) !== String(userId)));
+        render();
     };
 
     const addSubtask = async (parentId, title) => {
@@ -9273,6 +9377,21 @@
             if (post) { await postComment(post.getAttribute('data-wcn-comment-post'), event.target.value); }
             return;
         }
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — typing "@" is a SHORTCUT into the same picker the toolbar button
+         * opens, not an inline-text autocomplete. The character is removed from the box the moment the picker
+         * opens: the chip tray is where a mention lives on screen, and a bare "@" left sitting in the text would
+         * be a leftover from a control that already did its job.
+         */
+        if (event.key === '@' && event.target.matches && event.target.matches('[data-wcn-comment-input]')) {
+            const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
+            const taskId = post && post.getAttribute('data-wcn-comment-post');
+            if (taskId) {
+                event.preventDefault();
+                await openMentionPicker(taskId);
+            }
+            return;
+        }
         if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-diten-check-input]')) {
             event.preventDefault();
             const taskId = event.target.getAttribute('data-diten-check-input');
@@ -9805,6 +9924,18 @@
             await withdrawComment(
                 commentWithdrawEl.getAttribute('data-wcn-comment-task'),
                 commentWithdrawEl.getAttribute('data-wcn-comment-withdraw'));
+            return;
+        }
+        const mentionAddEl = event.target.closest('[data-wcn-mention-add]');
+        if (mentionAddEl) {
+            await openMentionPicker(mentionAddEl.getAttribute('data-wcn-mention-add'));
+            return;
+        }
+        const mentionRemoveEl = event.target.closest('[data-wcn-mention-remove]');
+        if (mentionRemoveEl) {
+            removeMention(
+                mentionRemoveEl.getAttribute('data-wcn-mention-task'),
+                mentionRemoveEl.getAttribute('data-wcn-mention-remove'));
             return;
         }
         const commentEl = event.target.closest('[data-wcn-comment-post]');
