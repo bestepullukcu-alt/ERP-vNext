@@ -61,5 +61,15 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: audience-profiles proxy KnowledgeConcepts'ten beslenemezse · Compact'e taşırken branch/step builder state bozulursa · step şekli backend'le uyuşmazsa · kapsam frontend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: af351987 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @af351987
+```
+- ✅ **Scope (name-set):** 17 dosya — KnowledgeConceptsController (+proxy/page route) + 7-dil resx + Index.cshtml + TemplateCreate/TemplateEdit/_TemplateForm/_TemplateFormL10n (yeni) + _TemplateCreateEditOffcanvas (**silindi**) + concept-slim.js (-298 excision) + template-form.js (+346) + diten-field-icons.test.js (-1 stale). Tamamı Diten.Web/KnowledgeConcepts; **backend/API/RBAC/ocelot dokunulmadı**; Types/Connections/Nodes yüzeyleri + diğer Slim tab'lar değişmedi.
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0 hata**; **Diten.Web.Tests 137/0**. Yeni manifest page YOK (yalnız mevcut controller'a route) → nav guard etkilenmez.
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) [Not 5] Chain Template create/edit Slim offcanvas'tan **Golden Compact full-page**'e taşındı (Templates/Create + Templates/Edit route; _TemplateForm+_TemplateFormL10n; branch/step builder template-form.js'e port; published-frozen + required-tracker korundu); Slim liste satırı sayfaya yönlendiriyor; (2) [Not 6] step **Moderator = select2 `tags:true`** (allowedRoleRefs, serbest), **ForWhom = multi-select2 audience-profiles** (audienceDimensionRefs); payload load/save **simetrik** → backend step şekli DEĞİŞMEDİ; (3) **excision temiz** — concept-slim.js'de sarkan builder referansı YOK (grep boş; `typeOptionsFor` + liste + salt-okunur quick view korundu); (4) controller proxy'leri (audience-profiles + concept-chain-templates/{id} GET/PUT/archive) Diten.Web proxy deseni; (5) silinen offcanvas → diten-field-icons KNOWN_NO_ICONS stale satırı çıkarıldı (census "yalnız küçülür" kuralı; yeni Compact form adında "Offcanvas" yok → census dışı, yeni ihlal yok).
+- ✅ **Verifier baseline:** DataTable verifier'ın incelediği dosyalardan yalnız Index.cshtml dokunuldu; değişiklik = offcanvas partial-include kaldırma (4 kontrol — table/script/onclick/populateOffcanvas — etkilenmez) → **sıfır yeni fail** (agent 78/9 = bilinen not-applicable baseline). Node v16 → vitest 2.x koşmuyor (önceden var olan ortam limiti; field-icons assertion'ları yapısal doğrulandı).
+- ⏳ **E4 = kullanıcı manuel:** Chain Template'i Compact sayfada oluştur/düzenle; step Moderator (tags) + ForWhom (audience-profiles) seç; kaydet→backend dizileri doğru (A8 sonrası toplu manuel testte).
+
 ## Kalan (bu WP dışı)
-- CT E2 + kullanıcı E4 → manuel teste devam (A7b apply-eligibility/clone + A8 evaluate).
+- CT E2 ✅ + kullanıcı E4 → **6 not TAMAM** → manuel teste devam (A7b apply-eligibility/clone + A8 evaluate) → sonra main sync/push/PR.
