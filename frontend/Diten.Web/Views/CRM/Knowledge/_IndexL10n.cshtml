@@ -17,7 +17,9 @@
         // WP-MOD0162-AUD-UI: AudienceProfile dimension builder (JS-rendered rows).
         "Dimensions", "AddDimension", "DimensionsNote", "DimensionsEmpty", "Axis", "Values", "RemoveDimension",
         "Deprecated", "AxisAccountType", "AxisContactType", "AxisMedicalSpecialty", "AxisCustom", "SelectValues",
-        "CustomAxisPlaceholder", "CustomValuesPlaceholder" };
+        "CustomAxisPlaceholder", "CustomValuesPlaceholder",
+        // WP-MOD0162-SUBJECT-UI: Global Product picker graceful-degradation reasons (JS reads L[reason]).
+        "GlobalProductPickerUnavailable", "GlobalProductEndpointMissing", "GlobalProductPermissionMissing" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     values["Active"] = Localizer["Active"].Value;
     values["Passive"] = Localizer["Passive"].Value;

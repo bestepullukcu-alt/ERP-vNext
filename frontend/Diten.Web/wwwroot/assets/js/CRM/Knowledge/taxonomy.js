@@ -575,6 +575,9 @@
     let dimensions = [];
     let composeAxis = 'account-type';   // the axis currently in the fixed bottom compose-row
     let dimReadOnly = false;
+    // WP-MOD0162-SUBJECT-UI: Subject↔Global Product picker state.
+    let subjectGpDisabled = false;      // MDM selector unreachable/forbidden → picker disabled, custom still works
+    let suppressGpAuto = false;         // load seeds the picker; its change handler must not prefill the Name then
 
     // WP-MOD0162-AUD-UI-2: Dimensions apply ONLY to these profile types; Name is derived from the dimension value
     // labels for them, and pre-filled from the ProfileType label (editable) for every other type.
@@ -759,6 +762,71 @@
         return out;
     };
 
+    // ── WP-MOD0162-SUBJECT-UI: Subject ↔ MDM Global Product picker ────────────
+    const gpMode = () => document.querySelector('input[name="taxSubjectSource"]:checked')?.value || 'custom';
+    const setGpMode = mode => {
+        const custom = mode !== 'global-product';
+        const r = document.getElementById(custom ? 'taxSubjectSourceCustom' : 'taxSubjectSourceProduct');
+        if (r) r.checked = true;
+        document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
+    };
+    const gpRef = row => (row?.externalReferences || []).find(r => norm(r.sourceSystem).toLowerCase() === 'global-product');
+    const initGpSelect2 = () => {
+        const jq = window.jQuery;
+        if (!jq?.fn?.select2) return;
+        const $s = jq('#taxGlobalProductId'), el = document.getElementById('taxGlobalProductId');
+        if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
+        $s.select2({ dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', width: '100%', placeholder: $s.data('placeholder') || '', allowClear: true });
+        // A user pick prefills the (editable) Name; a programmatic seed (load) is suppressed so it can't clobber a
+        // stored/edited Subject name.
+        $s.off('change.gp').on('change.gp', function () {
+            if (suppressGpAuto) return;
+            const opt = el?.options[el.selectedIndex];
+            const label = opt ? norm(opt.textContent) : '';
+            if (norm(jq(this).val()) && label) setValue('taxName', label);
+        });
+    };
+    const fillGpSelect = (options, current, currentLabel) => {
+        const el = document.getElementById('taxGlobalProductId');
+        if (!el) return;
+        const list = (options || []).slice();
+        // A stored id off the selector's first page is kept so the link survives the round-trip.
+        if (current && !list.some(o => String(o.value) === String(current))) list.unshift({ value: current, label: currentLabel || current });
+        el.innerHTML = '<option value=""></option>' + list.map(o => `<option value="${esc(o.value)}">${esc(o.label)}</option>`).join('');
+    };
+    const loadSubjectGlobalProduct = async row => {
+        const ref = gpRef(row);
+        const currentId = ref ? norm(ref.externalId) : '';
+        let currentLabel = ref ? norm(ref.externalName) : '';
+        const note = document.getElementById('taxGlobalProductDisabledNote');
+        const el = document.getElementById('taxGlobalProductId');
+        let data = null;
+        try { data = await (await fetch(`${base}/global-product-options`, { credentials: 'same-origin', headers })).json(); }
+        catch { data = { disabled: true, reason: 'GlobalProductPickerUnavailable' }; }
+        subjectGpDisabled = !!data?.disabled;
+        suppressGpAuto = true;
+        if (subjectGpDisabled) {
+            fillGpSelect([], currentId, currentLabel);
+            if (el) el.disabled = true;
+            if (note) { note.textContent = L[data.reason] || L.GlobalProductPickerUnavailable || ''; note.classList.remove('d-none'); }
+        } else {
+            const opts = (data.options || []).map(o => ({ value: o.value, label: o.label }));
+            // resolve a stored-but-off-page label (id→name) when the reference didn't carry one
+            if (currentId && !currentLabel && !opts.some(o => String(o.value) === currentId)) {
+                try { const r = await (await fetch(`${base}/global-product-options/${encodeURIComponent(currentId)}`, { credentials: 'same-origin', headers })).json(); currentLabel = norm(r?.label) || currentId; }
+                catch { currentLabel = currentId; }
+            }
+            fillGpSelect(opts, currentId, currentLabel);
+            if (el) el.disabled = !!dimReadOnly;   // view mode keeps it disabled
+            note?.classList.add('d-none');
+        }
+        initGpSelect2();
+        setValue('taxGlobalProductId', currentId);
+        if (window.jQuery) window.jQuery('#taxGlobalProductId').trigger('change.select2');
+        setGpMode(currentId ? 'global-product' : 'custom');
+        suppressGpAuto = false;
+    };
+
     const openForm = (kind, row, readOnly) => {
         const spec = SPECS[kind];
         const form = document.getElementById('taxonomyForm');
@@ -810,6 +878,8 @@
         updateDimVisibility();
         // Render the compose-row AFTER visibility is set so its select2 measures a real width (a d-none section is 0-wide).
         if (currentFormKind === 'audience-profiles') { if (isRefAxis(composeAxis)) loadRefValues(composeAxis).then(renderCompose); else renderCompose(); }
+        // WP-MOD0162-SUBJECT-UI: load the Subject↔Global Product picker (id→name + mode) for subjects.
+        if (kind === 'subjects') { void loadSubjectGlobalProduct(row); }
         suppressProfileAuto = false;
         // A topic's subject is fixed at creation (the update contract does not carry SubjectId).
         if (!readOnly) document.getElementById('taxSubjectId').disabled = !!row;
@@ -916,6 +986,24 @@
             profileType: document.getElementById('taxProfileType').value,
             dimensions: kind === 'audience-profiles' ? collectDimensions() : undefined
         });
+        // WP-MOD0162-SUBJECT-UI: full-replace externalReferences, managing only the global-product line and preserving
+        // any other reference types. When MDM is disabled the stored refs pass through untouched (never lose the link).
+        if (kind === 'subjects') {
+            const existingRefs = existing.externalReferences || [];
+            if (subjectGpDisabled) {
+                src.externalReferences = existingRefs;
+            } else {
+                const others = existingRefs.filter(r => norm(r.sourceSystem).toLowerCase() !== 'global-product');
+                const gpId = gpMode() === 'global-product' ? norm(document.getElementById('taxGlobalProductId')?.value) : '';
+                if (gpId) {
+                    const el = document.getElementById('taxGlobalProductId');
+                    const opt = el?.options[el.selectedIndex];
+                    const label = opt ? norm(opt.textContent) : '';
+                    others.push({ sourceSystem: 'global-product', externalId: gpId, externalName: label || null, isPrimary: true });
+                }
+                src.externalReferences = others;
+            }
+        }
         try {
             await save(kind, id, src);
             window.showToast?.(id ? L.RecordUpdated : L.RecordCreated, 'success');
@@ -967,6 +1055,14 @@
     document.getElementById('taxName')?.addEventListener('input', () => {
         if (currentFormKind === 'audience-profiles' && !DIM_TYPES.includes(profileTypeValue())) profileNameDirty = true;
     });
+
+    // WP-MOD0162-SUBJECT-UI: the Subject source toggle shows/hides the Global Product picker; choosing custom clears
+    // the picked product so the save carries no global-product reference.
+    document.querySelectorAll('input[name="taxSubjectSource"]').forEach(r => r.addEventListener('change', () => {
+        const custom = gpMode() !== 'global-product';
+        document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
+        if (custom) { setValue('taxGlobalProductId', ''); if (window.jQuery) window.jQuery('#taxGlobalProductId').trigger('change.select2'); }
+    }));
 
     // WP-MOD0162-AUD-UI-3: compose-then-add. Add commits the compose-row as a display row; × removes an added row.
     // Both containers exist at load (offcanvas markup, hidden), so these delegated listeners bind once.

@@ -141,4 +141,12 @@
   <data name="SelectValues" xml:space="preserve"><value>Sélectionner des valeurs</value></data>
   <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Code d'axe (ex. région)</value></data>
   <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Saisissez une valeur, appuyez sur Entrée</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>Source du sujet</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>Depuis un Global Product</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>Personnalisé</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>Sélectionner un Global Product</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Lie le sujet à sa fiche maître MDM et pré-remplit le nom (modifiable).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>La liste des Global Products est indisponible ; saisissez un sujet personnalisé.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Le service Global Product n'est pas disponible ; saisissez un sujet personnalisé.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>Vous n'avez pas l'autorisation de parcourir les Global Products ; saisissez un sujet personnalisé.</value></data>
 </root>

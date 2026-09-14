@@ -141,4 +141,12 @@
   <data name="SelectValues" xml:space="preserve"><value>اختر القيم</value></data>
   <data name="CustomAxisPlaceholder" xml:space="preserve"><value>رمز المحور (مثل المنطقة)</value></data>
   <data name="CustomValuesPlaceholder" xml:space="preserve"><value>اكتب قيمة واضغط Enter</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>مصدر Subject</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>من Global Product</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>مخصص</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>اختر Global Product</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>يربط الموضوع بسجله الرئيسي في MDM ويملأ الاسم مسبقًا (قابل للتعديل).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>قائمة Global Product غير متاحة؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>خدمة Global Product غير متوفرة؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>ليس لديك إذن لتصفح Global Products؛ أدخل موضوعًا مخصصًا.</value></data>
 </root>

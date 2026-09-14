@@ -141,4 +141,12 @@
   <data name="SelectValues" xml:space="preserve"><value>Değer seçin</value></data>
   <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Eksen kodu (ör. bölge)</value></data>
   <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Değer yazıp Enter'a basın</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>Subject kaynağı</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>Global Product'tan</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>Özel</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>Global Product seçin</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Subject'i MDM ana kaydına bağlar ve adı öndoldurur (düzenlenebilir).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Global Product listesi kullanılamıyor; özel bir subject girin.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Global Product servisi mevcut değil; özel bir subject girin.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>Global Product görüntüleme izniniz yok; özel bir subject girin.</value></data>
 </root>

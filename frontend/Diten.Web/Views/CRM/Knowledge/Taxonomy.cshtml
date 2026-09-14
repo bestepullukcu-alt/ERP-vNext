@@ -243,6 +243,28 @@
                 <select id="taxProfileType" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
             </div>
             <div class="mb-3"><label class="form-label" for="taxName">@Localizer["Name"] <span class="text-danger">*</span></label><input id="taxName" class="form-control" required /></div>
+            @* WP-MOD0162-SUBJECT-UI: a Subject can be linked to an MDM Global Product (provenance) OR entered custom.
+               Pick stores externalReferences=[{sourceSystem:'global-product', externalId:<GlobalProductId>}] and prefills
+               the (editable) Name; custom stores no such reference. Graceful degradation: MDM down → picker disabled,
+               custom still works. Rendered/driven by taxonomy.js (#taxGlobalProductId is inited after its options load). *@
+            <div class="mb-3 tax-only-subject d-none">
+                <label class="form-label d-block">@Localizer["SubjectSource"]</label>
+                <div class="d-flex flex-wrap gap-3 mb-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="taxSubjectSource" id="taxSubjectSourceCustom" value="custom" checked />
+                        <label class="form-check-label" for="taxSubjectSourceCustom">@Localizer["CustomSubject"]</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="taxSubjectSource" id="taxSubjectSourceProduct" value="global-product" />
+                        <label class="form-check-label" for="taxSubjectSourceProduct">@Localizer["FromGlobalProduct"]</label>
+                    </div>
+                </div>
+                <div id="taxGlobalProductWrap" class="d-none">
+                    <select id="taxGlobalProductId" class="form-select" data-placeholder="@Localizer["SelectGlobalProduct"]"></select>
+                    <div class="form-text">@Localizer["GlobalProductSubjectHint"]</div>
+                    <div class="form-text text-warning d-none" id="taxGlobalProductDisabledNote"></div>
+                </div>
+            </div>
             <div class="mb-3 tax-only-subject d-none">
                 <label class="form-label" for="taxParentSubjectId">@Localizer["ParentSubjectId"]</label>
                 <select id="taxParentSubjectId" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
