@@ -1,0 +1,89 @@
+@model Diten.Web.Models.CRM.ContentSetCreateViewModel
+@using Diten.Web.Views.CRM.ContentSets
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentSetsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["CreateSet"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["CreateSet"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/ContentSets">@Localizer["SetsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Localizer["CreateSet"]</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/ContentSets" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="submit" form="setForm" class="btn btn-primary">@Localizer["Save"]</button>
+    </div>
+</div>
+
+<form asp-action="Create" method="post" id="setForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SetCode" class="form-label fw-medium">@Localizer["SetCode"] <span class="text-danger">*</span></label>
+                            <input asp-for="SetCode" class="form-control" maxlength="120" required />
+                            <span asp-validation-for="SetCode" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="SetName" class="form-label fw-medium">@Localizer["SetName"] <span class="text-danger">*</span></label>
+                            <input asp-for="SetName" class="form-control" maxlength="240" required />
+                            <span asp-validation-for="SetName" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="2" maxlength="2000"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["CompositionSection"]</h6>
+                    <div class="row g-3">
+                        @* Template picker — searchable select2 (no raw id entry). Pinned at create. *@
+                        <div class="col-12">
+                            <label asp-for="ConceptChainTemplateId" class="form-label fw-medium">@Localizer["Template"] <span class="text-danger">*</span></label>
+                            <select asp-for="ConceptChainTemplateId" id="setTemplatePicker" class="form-select"
+                                    data-url="/CRM/ContentSets/api/templates"
+                                    data-placeholder="@Localizer["TemplatePickerPlaceholder"]" required>
+                            </select>
+                            <span asp-validation-for="ConceptChainTemplateId" class="text-danger small mt-1"></span>
+                            <small class="text-muted">@Localizer["TemplatePinNote"]</small>
+                        </div>
+                        @* Scope picker — optional, searchable select2. *@
+                        <div class="col-12">
+                            <label asp-for="ContentScopeId" class="form-label fw-medium">@Localizer["Scope"]</label>
+                            <select asp-for="ContentScopeId" id="setScopePicker" class="form-select"
+                                    data-url="/CRM/ContentSets/api/scopes"
+                                    data-placeholder="@Localizer["ScopePickerPlaceholder"]">
+                            </select>
+                            <small class="text-muted">@Localizer["ScopeOptionalNote"]</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/ContentSets/create.js" asp-append-version="true"></script>
+}

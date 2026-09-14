@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد سجلات بعد.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث..</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Passive" xml:space="preserve"><value>سلبي</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Template" xml:space="preserve"><value>القالب</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Components" xml:space="preserve"><value>المكونات</value></data>
+  <data name="Claims" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>مراجع المنتج</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>مراجع السوق</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>مراجع الجمهور</value></data>
+  <data name="Channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>اللغة</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>اكتب قيمة واضغط Enter لإضافة كل مرجع.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>نطاقات المحتوى</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>سياق/نطاق قابل لإعادة الاستخدام لتجميع المحتوى: مراجع المنتج والسوق والجمهور مع قناة ولغة وفترة اختيارية.</value></data>
+  <data name="ReusableNote" xml:space="preserve"><value>عرِّف النطاق مرة واحدة وأشر إليه من عدة مجموعات محتوى (مثبَّت بالإصدار).</value></data>
+  <data name="ScopeCode" xml:space="preserve"><value>رمز النطاق</value></data>
+  <data name="ScopeCodeNote" xml:space="preserve"><value>مفتاح عمل ثابت مشترك بين إصدارات النطاق.</value></data>
+  <data name="ScopeName" xml:space="preserve"><value>اسم النطاق</value></data>
+  <data name="ScopeVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="CreateScope" xml:space="preserve"><value>إنشاء نطاق</value></data>
+  <data name="EditScope" xml:space="preserve"><value>تعديل النطاق</value></data>
+  <data name="ArchiveScope" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveScopeConfirm" xml:space="preserve"><value>هل تؤرشف هذا النطاق؟ إجراء دورة حياة مرن؛ يظل قابلاً للقراءة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السجل.</value></data>
+  <data name="ArchivedScopeReadOnly" xml:space="preserve"><value>هذا النطاق مؤرشف وللقراءة فقط.</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>المراجع</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>القناة واللغة والفترة</value></data>
+  <data name="PeriodFrom" xml:space="preserve"><value>الفترة من</value></data>
+  <data name="PeriodTo" xml:space="preserve"><value>الفترة إلى</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+</root>

@@ -1,0 +1,63 @@
+@model Diten.Web.Models.CRM.ContentScopeEditViewModel
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.ContentScopes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentScopesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditScope"].Value;
+    Layout = "_LayoutTenantShell";
+    var canArchiveNow = PermissionClaims.HasPermission(User, "crm.content-scope.manage") && !Model.IsArchived;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @Localizer["EditScope"]
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-label-secondary">@Localizer["StatusArchived"]</span>
+            }
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/ContentScopes">@Localizer["ScopesTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Model.ScopeCode</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/ContentScopes" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        @if (canArchiveNow)
+        {
+            <button type="button" id="btnArchiveScope" class="btn btn-label-warning"
+                    data-id="@Model.ContentScopeId" data-confirm="@Localizer["ArchiveScopeConfirm"]"
+                    data-ok="@Localizer["RecordArchived"]" data-fail="@Localizer["ErrorState"]">
+                <i class="bx bx-archive-in me-1"></i>@Localizer["ArchiveScope"]
+            </button>
+        }
+        @if (!Model.IsArchived)
+        {
+            <button type="submit" form="scopeForm" class="btn btn-primary">@Localizer["Save"]</button>
+        }
+    </div>
+</div>
+
+@if (Model.IsArchived)
+{
+    <div class="alert alert-secondary" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedScopeReadOnly"]</div>
+}
+
+<form asp-action="Edit" asp-route-id="@Model.ContentScopeId" method="post" id="scopeForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/ContentScopes/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/ContentScopes/form.js" asp-append-version="true"></script>
+}

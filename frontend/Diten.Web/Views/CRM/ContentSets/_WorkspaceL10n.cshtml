@@ -1,0 +1,17 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.ContentSets
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentSetsIndex> Localizer
+@{
+    var keys = new[] {
+        "SetsTitle", "ContentStudioTitle", "Template", "Scope", "NoScope", "Components", "Claims",
+        "AddComponent", "AddClaim", "Remove", "Position", "UpdatePosition", "Branch", "Step", "Min", "Max",
+        "EmptyArrangement", "ErrorState", "Loading", "Cancel", "Yes", "No",
+        "CloneSet", "CloneSetCodePrompt", "CloneSetNamePrompt", "RecordCloned", "ApplyEligibility",
+        "EligibilityApplied", "ArchiveSet", "ArchiveSetConfirm", "RecordArchived",
+        "Eligible", "Blocked", "Unresolved", "NotEvaluated", "EligibilitySummary",
+        "ComponentPickerPlaceholder", "ClaimPickerPlaceholder", "NeedsAssessmentWarn",
+        "StatusDraft", "StatusInactive", "StatusArchived", "NoComponents", "NoClaims", "AddedOn" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+}
+<script id="workspace-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>
