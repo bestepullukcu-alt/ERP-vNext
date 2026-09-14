@@ -66,6 +66,15 @@ public static class DependencyInjection
         services.AddScoped<ISectorMobilityIntelligenceReadinessMetadataRepository, MongoSectorMobilityIntelligenceReadinessMetadataRepository>();
         services.AddScoped<ISectorTalentTrendsReadinessMetadataRepository, MongoSectorTalentTrendsReadinessMetadataRepository>();
 
+        // TEP feature repositories (PR-B2 group 5 — skills/talent/certification leaves + TepShell).
+        services.AddScoped<ISkillsGapHeatmapReadinessMetadataRepository, MongoSkillsGapHeatmapReadinessMetadataRepository>();
+        services.AddScoped<ITalentDataFoundationReadinessMetadataRepository, MongoTalentDataFoundationReadinessMetadataRepository>();
+        services.AddScoped<ITalentDevelopmentNetworkReadinessMetadataRepository, MongoTalentDevelopmentNetworkReadinessMetadataRepository>();
+        services.AddScoped<ITalentSupplyDemandForecastingReadinessMetadataRepository, MongoTalentSupplyDemandForecastingReadinessMetadataRepository>();
+        services.AddScoped<IVerifiedCertificationRegistryReadinessMetadataRepository, MongoVerifiedCertificationRegistryReadinessMetadataRepository>();
+        services.AddScoped<IWorkforceAnalyticsReadinessMetadataRepository, MongoWorkforceAnalyticsReadinessMetadataRepository>();
+        services.AddScoped<ITepShellMetadataRepository, MongoTepShellMetadataRepository>();
+
         return services;
     }
 
