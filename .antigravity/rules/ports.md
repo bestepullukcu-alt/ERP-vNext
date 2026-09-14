@@ -11,7 +11,7 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 ## Port Bandları
 - **5000**: Gateway (Ocelot) — dev
 - **5001**: Frontend (Diten.Web) — dev
-- **5011–5060**: Microservice bandı (Backend servis portları)
+- **5011–5064**: Microservice bandı (Backend servis portları) — band 5060'tan 5064'e genişletildi (CT kararı 2026-09-14; HCM=5063, TEP=5064 kurtarma servisleri için).
 - **7000+**: Dev tools / özel (mümkünse kullanılmaz; bazı tool’lar kapabilir)
 
 ## Aktif Kullanımlar (Şu an)
@@ -23,7 +23,8 @@ Yeni servis açarken “rastgele port” seçilmez. Diten ERP vNext vizyonuna sa
 | **Diten.Platform.API** | `5057` | Platform shared services ve personalization. |
 | **Diten.DevEnablementService.Api** | `5058` | Golden reference ve developer enablement modülleri. |
 | **Diten.MdmService.Api** | `5059` | Master data: tüzel kişilik, ürün, marka. |
-| **Diten.HcmService.Api** | `5060` | Core HR / employment records. ⚠ Bandın **son portu**. |
+| **Diten.HcmService.Api** | `5060` | Core HR / employment records. |
+| **Diten.TalentEcosystemService.Api** | `5064` | TEP — talent ecosystem / association & career readiness. ⚠ Bandın **son portu** (band 5064'e genişletildi — CT kararı 2026-09-14). |
 
 > **Kural:** Frontend (5001) hiçbir zaman doğrudan servis portlarına istek atamaz. Frontend'in yapacağı tüm API çağrıları Gateway (5000) üzerinden geçmek ZORUNDADIR.
 
