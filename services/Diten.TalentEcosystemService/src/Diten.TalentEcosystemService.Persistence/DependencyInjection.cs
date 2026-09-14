@@ -58,6 +58,14 @@ public static class DependencyInjection
         services.AddScoped<IMentorshipRecommendationNetworkReadinessMetadataRepository, MongoMentorshipRecommendationNetworkReadinessMetadataRepository>();
         services.AddScoped<IPayBenchmarkingReadinessMetadataRepository, MongoPayBenchmarkingReadinessMetadataRepository>();
 
+        // TEP feature repositories (PR-B2 group 4 — reputation / reference / rehire / sector leaves).
+        services.AddScoped<IProfessionalReputationLedgerReadinessMetadataRepository, MongoProfessionalReputationLedgerReadinessMetadataRepository>();
+        services.AddScoped<ITepReferenceExchangeMarketplaceReadinessMetadataRepository, MongoTepReferenceExchangeMarketplaceReadinessMetadataRepository>();
+        services.AddScoped<ITepRehireRecommendationReadinessMetadataRepository, MongoTepRehireRecommendationReadinessMetadataRepository>();
+        services.AddScoped<IRestrictedIntegrityRegistryReadinessMetadataRepository, MongoRestrictedIntegrityRegistryReadinessMetadataRepository>();
+        services.AddScoped<ISectorMobilityIntelligenceReadinessMetadataRepository, MongoSectorMobilityIntelligenceReadinessMetadataRepository>();
+        services.AddScoped<ISectorTalentTrendsReadinessMetadataRepository, MongoSectorTalentTrendsReadinessMetadataRepository>();
+
         return services;
     }
 
