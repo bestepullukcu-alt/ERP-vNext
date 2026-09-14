@@ -5504,6 +5504,116 @@ ISO 9001 §9.3.3; QMS araçlarının aksiyon kaydı) · görünürlük = toplant
 
 ---
 
+### BL-397
+
+**14 ekranda doğrudan tarih seçici: yanlış biçimde yazılan tarih hâlâ sessizce başka tarihe dönüşebilir**
+
+DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı (BL-391 kalanı) · KAYIT: 2026-09-14
+
+BL-391 yalnız paylaşılan `diten-datefield.js` ve Pozisyon Ataması formunu düzeltti. `allowInput` ile doğrudan flatpickr kuran ekranlar dokunulmadı: CRM/ContentEngagementJourneys, CRM/Knowledge, CRM/KnowledgeConcepts, CRM/KnowledgePaths, CRM/Segments, MasterData/LegalEntities (index + wizard), Organization/OrganizationUnits/form.js, Organization/Positions/form.js, Platform/Tenants/details.js, demand-ideas (capture + list), enterprise-strategy (esbp-horizon-dates, project-ppm-form-init). Öneri: bu ekranları paylaşılan alana taşımak ya da aynı `guardAgainstSilentMisparse` korumasını bağlamak; her ekran sahibinin kulvarında.
+
+---
+
+### BL-398
+
+**21 ekran sunucu doğrulama hatasında ham ProblemDetails JSON'unu sayfaya basıyor**
+
+DURUM: AÇIK · BULAN: PSS ajanı (BL-388 kalanı) · KAYIT: 2026-09-14
+
+BL-388 yalnız `TaskFieldDefinitionsController`'ı düzeltti. Aynı ham gövde düşüşü: TaskTypes, TaskChecklistTemplates, TaskRecurrenceRules, TaskTemplates, OrganizationFieldDefinitions, GoldenReferenceCompact, GoldenReferenceSlim, Roles, Platform/ModuleCatalog, Platform/SubscriptionPlans ve 11 CRM controller'ı. Ortak yardımcı yok; `UsersController`'ın kendi ayrıştırıcısı var. Ek not: alan mesajları sunucunun İngilizce teknik metniyle geliyor (ör. JSON dönüşüm hatası); yerelleştirmek çeviri kapısından geçer. Öneri: tek paylaşılan hata çıkarıcı + kardeşleri ona bağlamak.
+
+---
+
+### BL-399
+
+**Görev okuma kuralı her çağrıda bütün ilişki bacaklarını hesaplıyor — etiketlemede kişi başına tekrar**
+
+DURUM: AÇIK (verimlilik, engel değil) · BULAN: CT (@ ile etiketleme doğrulaması) · KAYIT: 2026-09-14
+
+`TaskReadAccessPolicy.CanReadAsync` artık `ResolveDataLegCandidatesAsync` ile havuz sahiplerini, izleyicileri ve üst görevi her seferinde çözüyor (önceden ilk eşleşmede duruyordu). Görev detayında birkaç ek sorgu; @ etiketleme doğrulaması bunu etiketlenen her kişi için (en çok 10) tekrarlıyor → ~30 sorgu. Öneri: adaylar görev başına bir kez hesaplanıp kişiler o kümede aranır; kapsam/read-all bacakları yalnız çağıran için ayrıca.
+
+---
+
+### BL-400
+
+**@ ile etiketleme: var olan yorumu düzenlerken etiket ekleme ekranı yok, eski /Tasks/Details'te etiketleme yok**
+
+DURUM: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-MENTIONS-01) · KAYIT: 2026-09-14
+
+Arka uç her ikisini destekliyor (`UpdateTaskCommentRequest.MentionedUserIds`, yalnız yeni eklenene bildirim). Görev Merkezi'nin yorum düzenleme penceresi seçiciyle genişletilmedi; eski /Tasks/Details ekranı dilime alınmadı. MOD-0024 paketi §21'de işaretli.
+
+---
+
+### BL-401
+
+**Kiracının ilk tüzel kişiliği aktifleşince kök organizasyon birimi otomatik oluşsun**
+
+DURUM: AÇIK (sahip kararı: sonra) · BULAN: CT (BL-366 seçenek 1) · KAYIT: 2026-09-14
+
+BL-366 kararı: şimdi kurulumda elle adım, sonra otomatik. İhtiyaç: MDM'de tüzel kişilik aktifleşme olayı (bugün MDM `TenantCreatedV1` dinlemiyor, tüzel kişilik Taslak açılıp elle aktifleşiyor) + Platform'da tüketici; kiracı kapsamında kök birim, tüketilen-olay deposu ve (TenantId, Code) tekil indeksiyle idempotent. Çok servisli iş (MDM + Platform); ayrı paket/prompt.
+
+---
+
+### BL-402
+
+**Bilinmeyen alan toleransı yalnız Platform'da — Auth, MDM, HCM ve PPM'de durum farklı**
+
+DURUM: AÇIK · BULAN: altyapı ajanı (BL-384 takibi) · KAYIT: 2026-09-14
+
+BL-384 Platform'a süreç genelinde `IgnoreExtraElementsConvention` ekledi (`4663682c`). Ölçülen: Auth aynı convention'ı zaten kaydediyor (`Diten.AuthService.Persistence/DependencyInjection.cs:37-41`, testi ölçülmedi) · MDM yalnız BrandProduct class map'lerinde (`BrandProductClassMaps.cs:36,47,57`) · HCM'de yok · PPM bilerek katı (`PpmBsonConfiguration.cs:30-32`). Her servisin geri alma riski ayrı değerlendirilmeli; PPM'nin katılığı bilinçli karar mı teyit edilmeli.
+
+---
+
+### BL-403
+
+**Dev kiracısında görev rolleri: Task-Manager'ın hiç izni yok, Task-User'ın izinleri görevle ilgisiz**
+
+DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
+
+Ölçüm (`diten_auth_v3`): Task-Manager rolüne bağlı izin satırı 0; Task-User'da yalnız `ppm.benefit-commitments.change-lifecycle`, `mdm.brands.create`, `auth.roles.create`. Canlı tur için CT Task-Manager'a toplantı okuma + görev izinlerini elle verdi. Soru: bu roller hangi tohum/şablondan geliyor, canlı kiracılarda aynı boşluk var mı? Varsa rol şablonu düzeltilmeli.
+
+---
+
+### BL-404
+
+**Dev'de /health Unhealthy — `business_reference_data_provider` kontrolü**
+
+DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
+
+`/health` 503; tek kırmızı kontrol `business_reference_data_provider` ("configuration or state is invalid"). Diğerleri (mongodb, rabbitmq, hangfire_storage, masstransit-bus) sağlıklı. Toplantı/görev turundan önce de böyleydi. Canlıda aynı kontrolün değeri okunmalı; yük dengeleyici sağlık kontrolü bu uca bakıyorsa servis dışı sayılabilir.
+
+---
+
+### BL-405
+
+**CI'da koşmayan eski kırmızı testler — İş Referans Verisi 53, Doküman Yönetimi 15, Auth 3, ön yüz 25**
+
+DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
+
+`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
+
+---
+
+### BL-406
+
+**Tekrar denemeleri biten e-posta kalıcı başarısız kalıyor — kimseye söylenmiyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT: 2026-09-14
+
+`EmailDispatchSweepJob` `MaxRetryCount` (5) dolunca satırı bir daha seçmiyor; satır `Failed` kalıyor. Düzenleyen davetin hiç ulaşmadığını bilmiyor, ekranda iz yok. Öneri: son denemede düzenleyene uygulama içi bildirim ya da toplantı detayında "davet iletilemedi" durumu; ops için kalıcı başarısız dispatch sayısı metriği.
+
+---
+
+### BL-407
+
+**Görev Merkezi'nde kullanılmayan `ActReviewMeeting` metin anahtarı**
+
+DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAYIT: 2026-09-14
+
+`WorkCenterNextIndex.*.resx` içindeki `ActReviewMeeting` app.js'te hiç referanslı değil (eylem etiketi `WorkAggregation_Action_ScheduleReviewMeeting`'den geliyor). BL-389'da yalnız metni düzeltildi. 7 dilde silinmesi çeviri kapısından geçer.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
