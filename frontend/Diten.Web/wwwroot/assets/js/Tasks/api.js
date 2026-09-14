@@ -104,6 +104,10 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — mapped the moment the codes were written, not after somebody reads
+        // "İşlem sırasında bir hata oluştu" for a limit or a visibility rule they can actually act on.
+        TASK_MENTION_NOT_VISIBLE: 'errorMentionNotVisible',
+        TASK_MENTION_LIMIT_EXCEEDED: 'errorMentionLimitExceeded',
         /*
          * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
          * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
@@ -420,17 +424,25 @@
         // and two people reordering at once interleave into an order neither of them chose.
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
+        // `payload` may carry `mentionedUserIds` (WP-PSS-MOD0024-TASK-MENTIONS-01 K1-K4) alongside `text`.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         /*
          * ⚠ THIS LINE USED TO SAY: "Comments are POST-only, deliberately: they are immutable, so there is no
          * update or delete to call." That decision is not gone, it is COMPLETED — the compromise it was waiting
          * for is the trail. An edit stamps `editedAt` and the feed shows it; a withdrawal is a TOMBSTONE that
          * clears the words and keeps the row. Only the author may call either; the server decides that.
+         *
+         * `payload.mentionedUserIds` is the FULL replacement set for this comment, not a delta — the server
+         * diffs it against what is already stored and only notifies whoever is newly named.
          */
         updateComment: (taskId, commentId, payload) =>
             request('PUT', `/${taskId}/comments/${encodeURIComponent(commentId)}`, payload),
         withdrawComment: (taskId, commentId) =>
             request('DELETE', `/${taskId}/comments/${encodeURIComponent(commentId)}`),
+        // Who the @ picker may offer for THIS task (K2) — assignee, pool, creator, watchers, parent holder.
+        // Never the whole tenant directory: an id this endpoint does not offer is refused server-side too.
+        mentionCandidates: (taskId, query) =>
+            request('GET', `/${taskId}/mention-candidates?q=${encodeURIComponent(query || '')}`),
 
         // ── The personal overlay (WC-1) ──────────────────────────────────────
         //

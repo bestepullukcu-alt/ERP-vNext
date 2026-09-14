@@ -216,6 +216,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>سُحب هذا التعليق بالفعل.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>أحد الأشخاص الذين أشرت إليهم لا يمكنه رؤية هذه المهمة. أضفه أولاً كمراقب.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>يمكن أن يشير التعليق إلى 10 أشخاص كحد أقصى.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>لا يمكن ذكر هذا الشخص هنا.</value>
   </data>

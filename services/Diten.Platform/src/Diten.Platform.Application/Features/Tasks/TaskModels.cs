@@ -466,6 +466,17 @@ public static class TaskReasonCodes
     public const string CommentWithdrawn = "TASK_COMMENT_WITHDRAWN";
 
     /// <summary>
+    /// A mentioned id failed <see cref="Services.ITaskReadAccessPolicy.CanReadAsync"/> — the caller tried to
+    /// @mention somebody who cannot see this task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). The message tells the
+    /// caller what to do about it: add the person as a watcher first, rather than mention them into a task they
+    /// are not otherwise allowed to open.
+    /// </summary>
+    public const string MentionNotVisible = "TASK_MENTION_NOT_VISIBLE";
+
+    /// <summary>More than <see cref="TaskCommentLimits.MaxMentionsPerComment"/> people named in one comment.</summary>
+    public const string MentionLimitExceeded = "TASK_MENTION_LIMIT_EXCEEDED";
+
+    /// <summary>
     /// No planned date was supplied — including a JSON body that omits the field, which deserializes
     /// <see cref="PlanTaskItemRequest.PlannedDate"/> to its zero value rather than throwing. Deliberately the
     /// ONLY thing this endpoint refuses: a date in the past, or one after the source due date, is a real personal
@@ -576,6 +587,9 @@ public static class TaskCommentLimits
     /// enough for a real explanation, short enough that one paste cannot bloat every read of the task.
     /// </summary>
     public const int MaxTextLength = 2000;
+
+    /// <summary>WP-PSS-MOD0024-TASK-MENTIONS-01 K4 — a hard bound, not a UI suggestion; enforced server-side.</summary>
+    public const int MaxMentionsPerComment = 10;
 }
 
 public static class TaskNotificationEvents
@@ -599,6 +613,15 @@ public static class TaskNotificationEvents
     /// takes back.</para>
     /// </summary>
     public const string Commented = "platform.tasks.commented";
+
+    /// <summary>
+    /// Somebody @mentioned you in a comment (WP-PSS-MOD0024-TASK-MENTIONS-01). Distinct from
+    /// <see cref="Commented"/>: a mention is a direct address, so it goes out even to somebody who is not on the
+    /// task's own <see cref="Commented"/> audience today (nothing stops a mention from naming a person who has
+    /// never touched the task before) — see <c>AddTaskCommentHandler</c> for how the two audiences combine
+    /// without double-sending.
+    /// </summary>
+    public const string Mentioned = "platform.tasks.mentioned";
 }
 
 /// <summary>Contract limits, mirrored from fixture-contract.js LIMITS. The contract is the authority.</summary>
@@ -864,16 +887,29 @@ public sealed record ReorderChecklistRequest(IReadOnlyList<string> ItemCodes, in
 public sealed record AddTaskDependencyRequest(Guid DependsOnTaskItemId, TaskDependencyType DependencyType);
 
 /// <summary>
-/// Post a comment. Text only: no mentions are parsed, because there is no notification channel to deliver one
-/// (WC-4) and a mention nobody is told about is a promise the system does not keep.
+/// Post a comment. <paramref name="MentionedUserIds"/> is structured — never parsed out of
+/// <paramref name="Text"/> — and each id must independently pass
+/// <see cref="Services.ITaskReadAccessPolicy.CanReadAsync"/> (WP-PSS-MOD0024-TASK-MENTIONS-01 K2); the handler
+/// refuses the whole write rather than silently drop an unreadable name. A mention now HAS a notification
+/// channel (<see cref="TaskNotificationEvents.Mentioned"/>) — the earlier "no mentions, no channel to deliver
+/// one" note this type carried is superseded.
 /// </summary>
-public sealed record AddTaskCommentRequest(string Text);
+public sealed record AddTaskCommentRequest(string Text, IReadOnlyList<Guid>? MentionedUserIds = null);
 
 /// <summary>
-/// Rewrite one's OWN comment. Text only: the author, the task and the original instant are all facts about what
-/// happened and none of them is being edited — what changes is the sentence, and the fact that it changed.
+/// Rewrite one's OWN comment. <paramref name="MentionedUserIds"/> is the FULL replacement set for this comment,
+/// not a delta — the handler diffs it against what was already stored to notify only the people newly added
+/// (K3); the author, the task and the original instant are all facts about what happened and none of them is
+/// being edited by this request.
 /// </summary>
-public sealed record UpdateTaskCommentRequest(string Text);
+public sealed record UpdateTaskCommentRequest(string Text, IReadOnlyList<Guid>? MentionedUserIds = null);
+
+/// <summary>
+/// One @mention candidate — a person the mention-candidates endpoint has already proven can read this task
+/// (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). No email/role/status: this is a picker row, not a directory entry, and
+/// an id whose name cannot be resolved is omitted rather than shown as a raw GUID.
+/// </summary>
+public sealed record TaskMentionCandidateDto(Guid Id, string DisplayName);
 
 // ── The personal overlay (WC-1) ──────────────────────────────────────────────
 

@@ -1015,6 +1015,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Publier</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mentionner quelqu'un</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Retirer la mention</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mentionner des personnes</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Choisissez au moins une personne.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Il n'y a encore personne à mentionner sur cette tâche.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Toutes les personnes pouvant être mentionnées sont déjà ajoutées.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un commentaire peut mentionner au plus {0} personnes.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Écrivez quelque chose avant de publier</value>
   </data>
