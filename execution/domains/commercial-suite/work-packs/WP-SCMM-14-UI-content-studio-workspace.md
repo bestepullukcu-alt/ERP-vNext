@@ -65,5 +65,14 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: ContentSet API sözleşmesi beklenenden farklıysa · arrangement template adımlarına map edilemiyorsa · picker uçları beslenemezse · nav mekanizması uygulanamıyorsa · kapsam frontend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commits: dab4ad5d (2 konsol frontend) + 00f5848a (nav) · Agent: PASS · CT: ACCEPTED E2
+```
+- ✅ **Scope:** 49 dosya, yalnız Diten.Web + CrmManifestProvider(nav) + SharedResource. Backend/API/ocelot/RBAC + mirror console **dokunulmadı**.
+- ✅ **CT kendi koşumu:** Diten.Web build 0 hata; **Diten.Web.Tests 137/0**; Platform nav/manifest guard **60/0** (NavManifestL10nGuard CONTENTSCOPES/CONTENTSETS 7-dil dahil).
+- ✅ **Spot-check:** proxy uçları doğru (content-sets/scopes/claims + picker'lar knowledge/concept-chain-templates/contents/concept-types); perm crm.content-set/scope.* **dev-fallback YOK**; resx gerçek çeviri (Template=Şablon, ApplyEligibility=Uygunluğu değerlendir, 14 dosya); verifier Claims aynasıyla parity (0 yeni).
+- ⏳ **E4 = kullanıcı manuel** (login→Content Studio→scope→set→component/claim ekle+arrange→apply-eligibility→clone) — fleet restart + seed verisi (template/content/claim) gerekir; alttaki API E4-lite proven.
+
 ## Kalan (bu WP dışı)
 - CT/kullanıcı E4 (fleet authenticated — seed verisiyle tam akış) · SCMM-11-follow (eligibility HTTP/UI) · sonra bizim SCMM tarafı TAMAM → sync/push/PR.
