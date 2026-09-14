@@ -135,6 +135,9 @@ public static class DependencyInjection
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
         // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
+        // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
+        services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
+        services.AddScoped<IContentSetRepository, ContentSetRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -571,6 +574,39 @@ public static class DependencyInjection
                 map.GetMemberMap(a => a.EligibilityPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+
+        // SCMM-14 (CAND-CAP-0011) — ContentScope has no Guid FK (only Id/TenantId on the base map); registered so the
+        // driver maps it explicitly rather than as an anonymous document.
+        Map<ContentScope>(_ => { });
+
+        // SCMM-14 (CAND-CAP-0011) — ContentSet. Its Guid FKs live in embedded value objects; each takes the string-Guid
+        // convention (the new-aggregate class-map trap) so a stored ref round-trips as a string subtype and any future
+        // by-ref filter compares string vs string, not string vs binary.
+        Map<ContentSet>(_ => { });
+        Map<ContentSetTemplateRef>(map =>
+            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
+        Map<ContentSetScopeRef>(map =>
+            map.GetMemberMap(x => x.ContentScopeId).SetSerializer(stringGuid));
+        Map<ContentArrangement>(map =>
+            map.GetMemberMap(x => x.TemplateStepId).SetSerializer(stringGuid));
+        Map<ContentSetComponent>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);
+        });
+        Map<ContentSetClaim>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
+        });
+        Map<ContentSetEligibilitySnapshot>(_ => { });
+        Map<ContentSetEligibilityItem>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ItemId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+
         Map<KnowledgeExternalReference>(_ => { });
 
         // MOD-0162 FU03 — Concept graph. Every Guid FK takes the string-Guid convention like every other CRM aggregate:
@@ -1481,6 +1517,18 @@ public static class DependencyInjection
             claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
                 Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
                 new CreateIndexOptions { Name = "ix_claims_tenant_code" }));
+
+            // SCMM-14 (CAND-CAP-0011) — content-scope + content-set indexes (tenant scoped). Codes are shared across
+            // versions / not unique ⇒ non-unique; uniqueness of the ACTIVE code is guarded in the create handlers.
+            var contentScopes = database.GetCollection<ContentScope>(ContentScopeRepository.CollectionName);
+            contentScopes.Indexes.CreateOne(new CreateIndexModel<ContentScope>(
+                Builders<ContentScope>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.ScopeCode),
+                new CreateIndexOptions { Name = "ix_content_scopes_tenant_code" }));
+
+            var contentSets = database.GetCollection<ContentSet>(ContentSetRepository.CollectionName);
+            contentSets.Indexes.CreateOne(new CreateIndexModel<ContentSet>(
+                Builders<ContentSet>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.SetCode),
+                new CreateIndexOptions { Name = "ix_content_sets_tenant_code" }));
 
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code
