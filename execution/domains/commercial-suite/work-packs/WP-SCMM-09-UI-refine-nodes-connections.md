@@ -55,6 +55,15 @@ Ayrı commit(ler). §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13)
 Durma koşulları: concept-types DTO'da color yoksa (raporla) · labelNode/relRelationshipName beklenenden farklıysa · Priority'yi UI-map ile çözemiyorsan · kapsam frontend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = kullanıcı manuel
+```text
+Commit: e6907e98 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree @e6907e98
+```
+- ✅ **Scope (name-set):** 11 dosya — index.js + concept-slim.js + _RelationshipCreateEditOffcanvas + _IndexL10n + KnowledgeConceptsIndex 7-dil resx. Tamamı Diten.Web/KnowledgeConcepts; backend/API/RBAC/ocelot **dokunulmadı**; ConceptType/Nodes tab render'ı bozulmadı.
+- ✅ **CT kendi koşumu (izole worktree, Release):** Diten.Web build **0 hata**; **Diten.Web.Tests 137/0**; Platform manifest/nav guard **112/0** (NavManifestL10nGuard dahil — yeni resx anahtarları key-echo değil).
+- ✅ **Mantık (CT commit blob'undan okudu):** (1) [Not 1] `fetchList` opsiyonel colorKey → typeMap id→{name,color}, `typeBadge`+`contrastText` (luminance ile okunur metin), renk yoksa nötr fallback; `fetchList` **options array döndürüyor** → filter select kırılmıyor; (2) [Not 2] `PRIORITY_BUCKETS [10,20,30]`, kaydet=int (değişmez), edit=`nearestPriorityBucket` snap, yeni=Medium(20); (3) [Not 3] `autoFillRelationshipName` = `{labelNode(from)} → {labelNode(to)}`, `relNameDirty` guard (mevcut ad + manuel input ezilmez); (4) [Not 4] `OPTION_DESC`→select2 `templateResult` (RelTypeDesc_*/DirectionDesc_*), açıklamasız seçenek düz etiket; 7-dil resx.
+- ⏳ **E4 = kullanıcı manuel:** node listesinde renkli tip badge · connection'da priority seç + name otomatik + açıklamalı seçim · kaydet→doğru priority sayısı (A8 sonrası toplu manuel testte).
+
 ## Kalan (bu WP dışı)
-- WP-SCMM-10-UI-refine (Chain Template Golden Compact + Moderator/Audience select2 — Not 5,6).
+- WP-SCMM-10-UI-refine (Chain Template Golden Compact + Moderator/Audience select2 — Not 5,6) — **şimdi dispatch (HEAD e6907e98)**.
 - CT E2 + kullanıcı E4 → manuel teste devam (A7b apply-eligibility/clone + A8 evaluate).
