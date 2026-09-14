@@ -1,0 +1,3 @@
+namespace Diten.Web.Views.TalentEcosystem.VerifiedCertificationRegistry;
+
+public sealed class VerifiedCertificationRegistryIndex;

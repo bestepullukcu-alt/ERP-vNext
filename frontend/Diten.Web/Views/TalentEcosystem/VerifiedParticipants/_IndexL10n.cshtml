@@ -1,0 +1,29 @@
+@using Diten.Web.Views.TalentEcosystem.VerifiedParticipants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VerifiedParticipantsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="verified-participants-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AuditMetadata = Localizer["AuditMetadata"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        EvaluateDisabled = Localizer["EvaluateDisabled"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        VerifyDisabled = Localizer["VerifyDisabled"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        VerificationState = Localizer["VerificationState"].Value,
+        AccessState = Localizer["AccessState"].Value,
+        PolicyEvaluationState = Localizer["PolicyEvaluationState"].Value,
+        VisibilityApprovalState = Localizer["VisibilityApprovalState"].Value,
+        VerifiedCompanyAccessState = Localizer["VerifiedCompanyAccessState"].Value,
+        VerificationVersion = Localizer["VerificationVersion"].Value
+    })
+</script>

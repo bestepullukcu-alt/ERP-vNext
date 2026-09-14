@@ -1,0 +1,51 @@
+@using Diten.Web.Views.TalentEcosystem.TrustLevels
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TrustLevelsIndex> Localizer
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-primary">
+                        <i class="bx bx-shield-quarter"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["TrustBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["TrustBoundaryDescription"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-warning">
+                        <i class="bx bx-pen"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["MultiSignatureBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["MultiSignatureBoundaryDescription"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="avatar avatar-md rounded bg-label-info">
+                        <i class="bx bx-layer"></i>
+                    </span>
+                    <div>
+                        <h6 class="mb-1">@Localizer["SubstrateBoundary"]</h6>
+                        <p class="mb-0 text-muted small">@Localizer["SubstrateBoundaryDescription"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
