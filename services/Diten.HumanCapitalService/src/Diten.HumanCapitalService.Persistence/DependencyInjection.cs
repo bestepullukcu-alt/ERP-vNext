@@ -55,6 +55,15 @@ public static class DependencyInjection
         services.AddScoped<IHrDocumentationReadinessMetadataRepository, MongoHrDocumentationReadinessMetadataRepository>();
         services.AddScoped<IHrKpiAnalyticsReadinessMetadataRepository, MongoHrKpiAnalyticsReadinessMetadataRepository>();
 
+        // HCM feature repositories (PR-A2 group 3 — learning/offer/perf/self-service/succession/time/workforce leaves).
+        services.AddScoped<ILearningTrainingReadinessMetadataRepository, MongoLearningTrainingReadinessMetadataRepository>();
+        services.AddScoped<IOfferReadinessMetadataRepository, MongoOfferReadinessMetadataRepository>();
+        services.AddScoped<IPerformanceReviewReadinessMetadataRepository, MongoPerformanceReviewReadinessMetadataRepository>();
+        services.AddScoped<ISelfServiceReadinessMetadataRepository, MongoSelfServiceReadinessMetadataRepository>();
+        services.AddScoped<ISuccessionReadinessMetadataRepository, MongoSuccessionReadinessMetadataRepository>();
+        services.AddScoped<ITimeAttendanceLeaveReadinessMetadataRepository, MongoTimeAttendanceLeaveReadinessMetadataRepository>();
+        services.AddScoped<IWorkforcePlanningReadinessMetadataRepository, MongoWorkforcePlanningReadinessMetadataRepository>();
+
         return services;
     }
 
