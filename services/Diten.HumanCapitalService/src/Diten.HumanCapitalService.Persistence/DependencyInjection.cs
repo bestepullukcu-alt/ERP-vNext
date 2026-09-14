@@ -1,3 +1,5 @@
+using Diten.HumanCapitalService.Domain.Repositories;
+using Diten.HumanCapitalService.Persistence.Repositories;
 using Diten.HumanCapitalService.Persistence.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +38,14 @@ public static class DependencyInjection
         services.AddSingleton(mongoSettings);
         services.AddSingleton<IMongoClient>(mongoClient);
         services.AddScoped<IMongoDatabase>(_ => database);
+
+        // HCM feature repositories (PR-A2 group 1 — readiness leaves).
+        services.AddScoped<IApplicantIntakeReadinessMetadataRepository, MongoApplicantIntakeReadinessMetadataRepository>();
+        services.AddScoped<ICandidatePipelineReadinessMetadataRepository, MongoCandidatePipelineReadinessMetadataRepository>();
+        services.AddScoped<ICompensationBenefitsReadinessMetadataRepository, MongoCompensationBenefitsReadinessMetadataRepository>();
+        services.AddScoped<ICompetencySkillsReadinessMetadataRepository, MongoCompetencySkillsReadinessMetadataRepository>();
+        services.AddScoped<IDevelopmentPlanReadinessMetadataRepository, MongoDevelopmentPlanReadinessMetadataRepository>();
+        services.AddScoped<IEmployeeOnboardingReadinessMetadataRepository, MongoEmployeeOnboardingReadinessMetadataRepository>();
 
         return services;
     }
