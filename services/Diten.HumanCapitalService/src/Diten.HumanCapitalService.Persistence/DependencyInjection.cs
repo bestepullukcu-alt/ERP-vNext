@@ -47,6 +47,14 @@ public static class DependencyInjection
         services.AddScoped<IDevelopmentPlanReadinessMetadataRepository, MongoDevelopmentPlanReadinessMetadataRepository>();
         services.AddScoped<IEmployeeOnboardingReadinessMetadataRepository, MongoEmployeeOnboardingReadinessMetadataRepository>();
 
+        // HCM feature repositories (PR-A2 group 2 — employment / HR ops leaves).
+        services.AddScoped<IEmploymentChangeReadinessMetadataRepository, MongoEmploymentChangeReadinessMetadataRepository>();
+        services.AddScoped<IHeadcountBudgetReadinessMetadataRepository, MongoHeadcountBudgetReadinessMetadataRepository>();
+        services.AddScoped<IHrCaseManagementReadinessMetadataRepository, MongoHrCaseManagementReadinessMetadataRepository>();
+        services.AddScoped<IHrComplianceReadinessMetadataRepository, MongoHrComplianceReadinessMetadataRepository>();
+        services.AddScoped<IHrDocumentationReadinessMetadataRepository, MongoHrDocumentationReadinessMetadataRepository>();
+        services.AddScoped<IHrKpiAnalyticsReadinessMetadataRepository, MongoHrKpiAnalyticsReadinessMetadataRepository>();
+
         return services;
     }
 
