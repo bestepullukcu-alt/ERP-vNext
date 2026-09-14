@@ -58,6 +58,15 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13).
 Durma koşulları: KnowledgeContent'te zaten variant/set alanı varsa (raporla) · "içerik-etkileyen edit" sınırı belirsizse (kararı belgele, DUR değil) · no-fallback mevcut query deseniyle çelişiyorsa · kapsam KnowledgeContent variant-linkage dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-14) → **ACCEPTED (E2)** · E4 = N/A (HTTP uç yok bu slice)
+```text
+Commit: b4aab69c · Agent: PASS · CT: ACCEPTED · Evidence: E2 (E4 N/A — backend CQRS, SCMM-14 tüketir)
+```
+- ✅ **Scope:** 13 dosya, hepsi Knowledge/Content + Persistence + test. Yeni aggregate YOK (KnowledgeContent extend); Claim/eligibility/concept/HTTP/başka-modül **dokunulmadı**.
+- ✅ **Mantık (CT okudu):** (1) no-fallback `ResolveVariantAsync` disjoint Resolved/Unresolved (null content, başka dile düşmez, fail-closed); (2) read-time migration `EnsureVariantDefaults` (ContentSetId==Empty→self-source); (3) source-edit trigger `IsSourceLanguage && bodyChanged`→non-archived target'lar `needs_assessment`, 5 içerik-alanı (Summary/BodyRef/AssetRef/FileRef/Url) tetikler, metadata-only (title/tags/classification/validity/status/version) tetiklemez.
+- ✅ **CT kendi koşumu (izole worktree):** build 0 hata; KnowledgeContentVariant testleri **13/13**; tam CrmService.Application.Tests 0 gerçek regresyon (ilk koşuda 1 fail=ContactLocationPii flake, trx rerun'da 0 fail).
+- **E4 = N/A bu slice:** SCMM-13 HTTP uç açmıyor (backend CQRS; variant komutları in-process MediatR). Canlı authenticated tüketim SCMM-14 (Content Studio) / follow HTTP ile.
+
 ## Kalan (bu WP dışı)
 - **SCMM-14** (Content Studio ④⑤⑥ assembly — component+claim+template+variant tüketir; clone-to-draft, provenance, no-inherited-approval).
 - HTTP uç + UI (variant yönetimi SCMM-14 içinde / follow) · SCMM-11-follow (eligibility HTTP/UI).
