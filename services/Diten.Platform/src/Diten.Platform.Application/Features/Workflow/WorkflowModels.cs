@@ -64,6 +64,9 @@ public static class WorkflowReasonCodes
     public const string WorkflowEscalationIdempotent = "WORKFLOW_ESCALATION_IDEMPOTENT";
     public const string WorkflowTimeoutProcessed = "WORKFLOW_TIMEOUT_PROCESSED";
     public const string WorkflowNoOverdueTasks = "WORKFLOW_NO_OVERDUE_TASKS";
+
+    /// <summary>BL-422 — an escalation run carried NowUtc; runs are evaluated against the server clock only.</summary>
+    public const string WorkflowEscalationClockNotAccepted = "WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED";
 }
 
 public enum WorkflowTransitionGateDecision
@@ -290,6 +293,12 @@ public sealed record SlaEscalationRuleDto(
     string RuleVersion,
     DateTimeOffset CreatedAt);
 
+/// <summary>
+/// MOD-0023 manual escalation run. <c>NowUtc</c> is NOT an input (BL-422): a run is always evaluated against the server
+/// clock, and a request that carries a value is refused 400 with
+/// <see cref="WorkflowReasonCodes.WorkflowEscalationClockNotAccepted"/>. The member stays on the contract so a client
+/// still sending it is told, instead of being silently ignored; the recurring sweep passes <c>null</c>.
+/// </summary>
 public sealed record RunWorkflowEscalationsRequest(
     DateTimeOffset? NowUtc,
     int? MaxItems,
