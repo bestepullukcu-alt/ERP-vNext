@@ -5611,7 +5611,7 @@ DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırmas�
 
 **Tekrar denemeleri biten e-posta kalıcı başarısız kalıyor — kimseye söylenmiyor**
 
-DURUM: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT: 2026-09-14
+DURUM: KAPANDI (kod; canlı kontrol bekliyor) — `a9c40ee0` (S9 ile aynı commit), toplantı zincirine `c2126222` (2026-09-15). Son denemede kalıcı başarısız olan toplantı postası düzenleyene tek uygulama içi bildirim + katılımcı satırında "posta iletilemedi" (7 dil); toplantı postaları artık alıcı başına ayrı gönderiliyor. **Test boşluğu (CT sabotajı):** bildirimi her başarısız denemede gönderen değişiklik 58 testin hiçbirini kırmızıya çevirmedi — son deneme şartını sabitleyen test yazdırılıyor (WP-MG-MOD0357-BL406-FINAL-ATTEMPT-TEST-01) · önceki: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT: 2026-09-14
 
 `EmailDispatchSweepJob` `MaxRetryCount` (5) dolunca satırı bir daha seçmiyor; satır `Failed` kalıyor. Düzenleyen davetin hiç ulaşmadığını bilmiyor, ekranda iz yok. Öneri: son denemede düzenleyene uygulama içi bildirim ya da toplantı detayında "davet iletilemedi" durumu; ops için kalıcı başarısız dispatch sayısı metriği.
 

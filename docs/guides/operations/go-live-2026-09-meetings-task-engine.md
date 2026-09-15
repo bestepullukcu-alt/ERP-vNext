@@ -167,6 +167,8 @@ yöntemle (liste → kiracı yöneticisi onayı) belirlenir.
 8. Görev yorumunda @ ile görevi gören birini etiketle → uygulama içi bildirim + e-posta; görevi görmeyen biri listede çıkmaz.
 9. Toplantıdan bir katılımcıyı çıkar → yalnız ona "toplantıdan çıkarıldınız" postası; takviminden etkinlik kalkar.
 10. Başka bir kullanıcı adına toplantı oluştur ve düzenleyeni değiştir → düzenleyen "takviminize eklendi" postasını alır (düz davet değil); düzenleyen kendi toplantısını değiştirince ona posta gitmez.
+13. İnceleme toplantısı zorunlu bir görev türüyle görev aç → "Başlat" çalışır; "Tamamla" / "İncelemeye gönder" devre dışı ve gerekçe görünür → toplantı planla, tutanağı yayınla → iki eylem açılır.
+14. Bir katılımcının e-posta adresini geçersiz yap (test kiracısında) → son tekrar denemeden sonra düzenleyene tek "posta iletilemedi" bildirimi, toplantı detayında o katılımcıda rozet.
 12. Toplantı raporu: `/Meetings/Report` → dönem seç → toplantılar, kararlar ve aksiyonlar dolar; bir indirme `audit_events`'te tek bir TenantUser DataExport satırı bırakır.
 11. **Sağlık uçları — canlıdan ÖNCE teyit (BL-404).** `/health` ve `/health/ready` İş Referans Verisi sağlayıcı kontrolünü içerir;
     `BusinessReferenceData:Provider:ReferenceTenantId` ayarlanmamışsa ikisi de 503 döner (dev'de ölçüldü, kodda "pilot yoksa sağlıklı"
