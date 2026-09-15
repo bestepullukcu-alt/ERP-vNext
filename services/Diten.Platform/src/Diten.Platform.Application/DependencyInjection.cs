@@ -448,6 +448,11 @@ public static class DependencyInjection
         // MOD-0357 S2 — Meetings. See MeetingManifestProvider's own doc comment for a reported, unresolved
         // conflict this registration creates with NavManifestL10nGuardTests (frontend/**, protected this WP).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Meetings.SelfRegistration.MeetingManifestProvider>();
+        // HR nav wiring (gap #4) — Human Capital (23 DitenHumanCapitalService pages) + the distinct MOD-0251 Employee
+        // Master (DitenHcmService). Two ModuleCodes → two providers (one manifest document per provider). Entitlement +
+        // RBAC grant (WP-C) and the seven-language Nav.Page.* labels (WP-D) land separately.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.HumanCapital.SelfRegistration.HumanCapitalManifestProvider>();
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.HumanCapital.SelfRegistration.HcmEmployeeMasterManifestProvider>();
 
         return services;
     }
