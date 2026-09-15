@@ -5589,6 +5589,8 @@ DURUM: KAPANDI (ölçüldü; kod hatası değil, dev test verisi) — canlıyı 
 
 DURUM: AÇIK — sebep ölçüldü (2026-09-15); kod düzeltmesi İş Referans Verisi kulvarında (MOD-0048-FU01 paket revizyonu gerekir), ops adımı canlı kontrol listesi §7/11'de · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
 
+**2026-09-15 kıyas (WP-CT-DECISION-BENCHMARK-01; Microsoft ASP.NET Core health checks, Kubernetes probes, OCI load balancer, SAP Cloud ALM):** trafik yönlendirme HAZIRLIK ucuna, yeniden başlatma CANLILIK ucuna bakar. Bu yüzden hedef: İş Referans Verisi kontrolü "yapılandırılmamış" durumda **Degraded (200)** döner (paketin kendisi `:1080-1084` hostun diğer her şeyi sunmaya devam ettiğini söylüyor; sağlayıcı uçları yine 503), ardından dengeleyici `/health/ready`'ye bakar; `/health/live` yalnız yeniden başlatma yoklaması. Dengeleyiciyi `/health/live`'a bağlamak ancak belgelenmiş GEÇİCİ adım olabilir (Mongo düşmüş örneğe trafik gitmeye devam eder). Önkoşul: MOD-0048-FU01 paket revizyonu (İş Referans Verisi kulvarı).
+
 `/health` 503; tek kırmızı kontrol `business_reference_data_provider` ("configuration or state is invalid"). Diğerleri (mongodb, rabbitmq, hangfire_storage, masstransit-bus) sağlıklı. Toplantı/görev turundan önce de böyleydi. Canlıda aynı kontrolün değeri okunmalı; yük dengeleyici sağlık kontrolü bu uca bakıyorsa servis dışı sayılabilir.
 
 **2026-09-15 ölçümü (CT alt ajanı, CT satırları doğruladı).** `BusinessReferenceDataProviderReadinessHealthCheck` önce `GetRequiredReferenceTenantId()` çağırıyor; `BusinessReferenceData:Provider:ReferenceTenantId` dev'de hiçbir yerde yok (hiçbir dalda hiç ayarlanmamış) → `REFERENCE_PROVIDER_CONFIGURATION_INVALID` → Unhealthy. `0f71a237`'nin eklediği "pilot yapılandırılmamışsa sağlıklı" erken dönüşü bu çağrıdan SONRA; eksik ayarda hiç çalışmıyor. Birim testi çözümleyiciyi taklit edip GUID döndürdüğü için dev'deki durumu hiç sınamıyor — sabotaj kanıtı olmayan koruma. Paket (MOD-0048-FU01 `:1335`) eksik ayarda Unhealthy'yi tasarım olarak istiyor ve `CatalogLoad:TenantId`'ye düşmeyi yasaklıyor; "yalnız ready etiketi" isteği de `/health` filtresiz eşlendiği için korumuyor. Depoda dağıtım yapılandırması yok; belgeler dengeleyici için `/health/live` diyor, gerçek canlı ayarı bilinmiyor. Öneri: (A) dev'de ayarı açıkça ver; (B) canlı ortama ekle ya da dengeleyicinin `/health/live` kullandığını teyit et (kontrol listesi §7/11); (C) İş Referans Verisi kulvarı: yapılandırılmamış sağlayıcıda Degraded (200) ya da readiness dışı etiket + gerçek çözümleyiciyle test — paket revizyonu ister.
@@ -5653,6 +5655,8 @@ DURUM: KAPANDI — `94985da5`, toplantı zincirine `cf2f03cf` (2026-09-15). CT s
 
 DURUM: AÇIK — sahip kararı bekliyor · BULAN: CT alt ajanı (BL-403 incelemesi), CT doğruladı · KAYIT: 2026-09-15
 
+**2026-09-15 kıyas (WP-CT-DECISION-BENCHMARK-01):** Blueprint MOD-0024/MOD-0023 "Platform Workflow Service / Platform Backbone"; DCP-004 `:80` ve `:270-272` Görev Merkezi'ni SAP Task Center ve Oracle Worklist örneğinde her kişinin tek iş yüzeyi olarak tanımlıyor. SAP Task Center `TaskCenterEveryone` rol koleksiyonu, Oracle "Employee" soyut rolü + global başlıktaki bildirim listesi: gelen kutusu HER kullanıcıda; görev oluşturan/yapılandıran yetenekler lisanslı uygulamayla gelir. **CT önerisi güncellendi:** bu tur canlı kiracıya dört modülün açık yetkilendirmesi (değişmedi); kalıcı çözüm "yalnız Viewer istisnası" değil, Görev Merkezi gelen kutusu `view` anahtarının her kiracı kullanıcısına verilen adlandırılmış bir temel izin kümesi (Tenant Settings gibi baseline). Gelen kutusunun kendi yazma eylemi yok; bir koruma testi bunu sabitlemeli. DCP-004 `:191`'deki EA kararını (erişim yetkilendirmeyle) tersine çevirdiği için sahip/EA kararı gerekir.
+
 Ölçüldü (dev): yeni kiracıya yalnız Admin ve Viewer kuruluyor (`RoleProvisioningService.cs:11-15`). Admin'in hazır listesinde (`DefaultRolePermissionTemplate.AdminModules`) `platform.tasks.*`/`platform.meetings.*` yok; dev Admin 29 görev/toplantı anahtarının hiçbirini tutmuyor. TASKS, MEETINGS, WORK-AGGREGATION ve WORK-REPORT `IsTenantAssignable=true`, `IsBaseline=false` ve beş planın hiçbirinde yok; plan hiç vermez, kiracı başına açık yetkilendirme gerekir. Viewer yalnız `read` eylemli anahtarları alıyor; `platform.work-aggregation.inbox.view` `view` eylemli olduğu için Viewer (ve eşitleme yoluyla da) Görev Merkezi gelen kutusunu açamıyor. Dev varsayılan kiracıda WORK-AGGREGATION yetkilendirmesi açık olduğu hâlde Admin/Viewer'da `inbox.view` yok — incelenmedi. Sahip kararları: (1) modüller planlara mı girer, yoksa canlı kiracıya açık yetkilendirme mi (öneri: bu turda açık yetkilendirme, kontrol listesi §5; plan kararı sonra); (2) `inbox.view` Viewer'a nasıl gider (öneri: Görev Merkezi anahtarı için eşitleme ve şablonda dar istisna; tüm `view` eylemlerini Viewer'a açmak geniş etkili, önce liste ölçülür). `AdminModules`'e eklemek sahibin "liste küratörlü kalsın" kararına ters.
 
 ---
@@ -5662,6 +5666,8 @@ DURUM: AÇIK — sahip kararı bekliyor · BULAN: CT alt ajanı (BL-403 inceleme
 **İki görev şablonu izni Auth kataloğunda "yalnız platform" kapsamında — kiracı rolüne atanamıyor**
 
 DURUM: AÇIK — canlı katalog ölçümü + sahip kararı bekliyor · BULAN: CT alt ajanı, CT dev veritabanında doğruladı · KAYIT: 2026-09-15
+
+**2026-09-15 kıyas:** Blueprint MOD-0024 sistem kaydı "Task templates, checklist templates"; varlıklar `TenantScopedEntity`; yollar kiracı yolu (kural §2c); SAP flexible workflow şablonları anahtar kullanıcılar tarafından, Oracle Fusion "Checklist Templates" müşterinin kurulum görevi. Öneri doğrulandı: kapsam 1 → 0 dar veri adımı. Önce ölçülecek: sonraki başlangıç eşitlemesinin kapsamı yeniden 1'e çevirip çevirmediği ve bu anahtarları hâlihazırda tutan roller.
 
 `diten_auth_v3.permissions`: `platform.tasks.checklist-templates.manage` ve `platform.tasks.templates.manage` → `Scope: 1` (PlatformAdmin); diğer görev anahtarları `Scope: 0`. Sayfaları kiracı yollarında (`TaskManifestProvider.cs:292`, `:314`). Kapsamı platform olan anahtar hiçbir kiracı rolüne verilemez, elle atama 403 → kontrol listesi şablonları ve görev şablonları ekranları kiracıda kullanılamaz. Olası sebep (çıkarım): başlangıç işçisi anahtarları manifest kapsamı gelmeden kaydetti (`TaskManifestProvider.cs:9-13` tam bu uyarıyı taşıyor); Auth'ta kapsam düşürme yolu yok. Öneri: canlı kataloğu salt okunur ölç (kontrol listesi §5); aynıysa yalnız bu iki anahtar için Auth veri adımı (kapsam 1 → 0), yükseltme sınırına dokunduğu için dar tutulur ve sahip onayıyla. Altyapı CT kulvarı.
 
@@ -5694,6 +5700,16 @@ BL-409 sonrası oturum açmış ama `actor_type` taşımayan kimlik Bilinmiyor'a
 DURUM: AÇIK — S9 düzeltmesi birleşince yapılacak (aynı sağlayıcı dosyası) · BULAN: PSS ajanı (WP-PSS-MOD0024-FOLLOWUPS-02), CT doğruladı · KAYIT: 2026-09-15
 
 `TaskNotificationService.TaskDeepLink` → `/Tasks/{taskId}` (etiketleme dahil tüm görev bildirimleri, uygulama içi ve e-posta); ayrıca `TaskWorkItemProvider.cs:757` DeepLink ve toplantıların ilişkili kayıt satırı (`TaskRelatedRecordResolver.cs:38`) aynı adresi veriyor. Eski `Views/Tasks/Details.cshtml` sayfasında yorum akışı ve yorum kutusu yok: "sizi bir yorumda etiketledi" bildirimine tıklayan kişi o yorumu göremiyor. Canlı yüzey Görev Merkezi detayı: `/WorkCenterNext/Details/{id}` (görev kimliğini doğrudan alıyor, app.js aynı adresi kullanıyor). Öneri: üç bağlantı Görev Merkezi detayına çevrilir; eski sayfa silinmez. Çeviri işi yok, alt ajan.
+
+---
+
+### BL-415
+
+**Aktif bir görev türüne bağlı belge sonradan yürürlükten kalkarsa hiçbir şey olmuyor**
+
+DURUM: AÇIK · BULAN: WP-CT-DECISION-BENCHMARK-01 · KAYIT: 2026-09-15
+
+Kural 4 (DCP-005 Adım 3) yalnız aktifleştirme anında denetliyor; sözleşme (`dcp-005-effectiveness-contract-v2.md:135-140`) aktifleşme sonrası belge durum değişikliğini açıkça kapsam dışı bırakıyor. Örnek: "Kalibrasyon kontrolü" türü SOP-0042 v2 yürürlükteyken aktif edildi; SOP-0042 v2 emekliye ayrılıp v3 yürürlüğe girdiğinde tür eski sürüme bağlı ve aktif kalıyor, çalışanlar eski prosedürle görev açabiliyor. Kıyas: Veeva'da eğitim atamaları belge durumuna bağlı eylemle yeniden tetikleniyor; Oracle Agile'da değişiklik emri bağlı nesneleri etkiler listesine alıyor. Öneri: belge yaşam döngüsü olayında (Effective'ten çıkış) bağlı aktif türleri listeleyen bir kontrol (bildirim ya da "gözden geçirme gerekli" işareti); otomatik pasife alma sahip kararı. Kalite ile birlikte değerlendirilecek.
 
 ---
 

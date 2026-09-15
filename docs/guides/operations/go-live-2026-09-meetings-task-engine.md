@@ -172,7 +172,7 @@ yöntemle (liste → kiracı yöneticisi onayı) belirlenir.
     `BusinessReferenceData:Provider:ReferenceTenantId` ayarlanmamışsa ikisi de 503 döner (dev'de ölçüldü, kodda "pilot yoksa sağlıklı"
     kontrolünden önce bu ayar isteniyor). Bu uçları yoklayan bir yük dengeleyici bütün Platform'u servis dışı sayar; `/health/live`
     etkilenmez. Ya ortama `BusinessReferenceData__Provider__ReferenceTenantId` verilir (değer İş Referans Verisi sahibinden) ya da
-    dengeleyicinin `/health/live` kullandığı teyit edilir. Canlıdan sonra üç ucun cevabı okunur.
+    dengeleyici GEÇİCİ olarak `/health/live`'a bağlanır (belgelenmiş geçici adım: Mongo'su düşen örneğe trafik gitmeye devam eder). Kalıcı hedef (Microsoft/Kubernetes/OCI uygulaması): kontrol "yapılandırılmamış" durumda Degraded döndüğünde dengeleyici `/health/ready`'ye, yeniden başlatma yoklaması `/health/live`'a bakar (MOD-0048-FU01 revizyonu). Canlıdan sonra üç ucun cevabı okunur.
 
 ## 8. Bilinen açıklar (bu turu engellemez)
 
