@@ -79,7 +79,11 @@
         MEETING_SERIES_NAME_DUPLICATE: 'errorSeriesNameDuplicate',
         MEETING_SERIES_INVALID_WINDOW: 'errorSeriesInvalidWindow',
         MEETING_SERIES_INTERVAL_INVALID: 'errorSeriesIntervalInvalid',
-        MEETING_SERIES_ORGANIZER_REQUIRED: 'errorSeriesOrganizerRequired'
+        MEETING_SERIES_ORGANIZER_REQUIRED: 'errorSeriesOrganizerRequired',
+
+        // ── S12 — meeting report & action register ───────────────────────────
+        MEETING_REPORT_INVALID_PERIOD: 'errorReportInvalidPeriod',
+        MEETING_REPORT_EXPORT_TOO_LARGE: 'errorReportExportTooLarge'
     };
 
     const isConcurrencyConflict = (result) =>

@@ -376,6 +376,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(watcher => watcher.TaskItemId)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskWatcher>)group.ToList());
 
+        // One read for the whole page's conversation, like every other container here — read BEFORE the display
+        // names for the same reason transitions/watchers are: a comment's @MENTIONS join the SAME batch, so
+        // resolving them afterwards would be a second directory round-trip per page (WP-PSS-MOD0024-FOLLOWUPS-02).
+        var commentsByTask = (await _comments.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(comment => comment.TaskItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
+
         // ONE batched resolve for the whole page — never one call per task, and cached between requests. It runs
         // after the children are known so subtask holders ride the SAME batch; resolving them per row would be an
         // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
@@ -391,6 +398,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Whoever a parked task is waiting on. In the SAME batch for the same reason: a wait that says
             // "waiting on somebody" without saying who answers half the question it was asked.
             .Concat(tasks.Select(t => t.WaitingOnUserId))
+            // Whoever a comment @mentions — the edit dialog's "already tagged" chips need a name, not a GUID.
+            .Concat(commentsByTask.SelectMany(pair => pair.Value)
+                .SelectMany(comment => comment.MentionedUserIds).Select(id => (Guid?)id))
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -421,10 +431,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * An edge whose far end cannot be read (another tenant's task, a deleted one) is dropped rather than
          * rendered as an unnamed blocker.
          */
-        // One read for the whole page's conversation, like every other container here.
-        var commentsByTask = (await _comments.ListByTaskIdsAsync(taskIds, ct))
-            .GroupBy(comment => comment.TaskItemId)
-            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
+        // commentsByTask now read earlier (above, before the display-name batch) so its @mentions can ride the
+        // SAME resolve — see that comment for why.
 
         /*
          * Pool queue names, resolved in TWO reads for the whole page rather than one per task — the same batching
@@ -1830,6 +1838,26 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         return match is null ? null : OutcomeLabel(match);
     }
 
+    /// <summary>
+    /// WP-PSS-MOD0024-FOLLOWUPS-02 — a comment's @mentions, as named people. Absent (not empty) when the comment
+    /// names nobody, matching every other optional list on this contract. An id whose name never resolved is
+    /// omitted rather than shown as a raw GUID — the same rule the mention-candidates endpoint follows.
+    /// </summary>
+    private static IReadOnlyList<WorkItemPersonDto>? ToMentioned(
+        IReadOnlyList<Guid> mentionedUserIds, IReadOnlyDictionary<Guid, string> displayNames)
+    {
+        if (mentionedUserIds.Count == 0)
+        {
+            return null;
+        }
+
+        var people = mentionedUserIds
+            .Where(displayNames.ContainsKey)
+            .Select(id => new WorkItemPersonDto(id.ToString(), displayNames[id]))
+            .ToList();
+        return people.Count == 0 ? null : people;
+    }
+
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
@@ -1856,7 +1884,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // The AUTHORITY, decided here and only here. The client has the author's NAME and nothing else,
                 // so two people sharing a name would otherwise be handed each other's controls — and the handler
                 // would then refuse a button the screen had offered.
-                Editable: comment.AuthorUserId == actorUserId && comment.WithdrawnAt is null))
+                Editable: comment.AuthorUserId == actorUserId && comment.WithdrawnAt is null,
+                Mentioned: ToMentioned(comment.MentionedUserIds, displayNames)))
             .Concat(transitions.Select(transition => new WorkItemActivityEntryDto(
                 Id: transition.Id.ToString(),
                 Kind: "event",

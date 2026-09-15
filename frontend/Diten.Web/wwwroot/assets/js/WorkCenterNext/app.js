@@ -7434,6 +7434,19 @@
             return;
         }
 
+        /*
+         * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — existing @mentions arrive PRE-FILLED, and a newly added one is
+         * sent alongside the text. Backend rule (already built and tested): the update carries the FULL
+         * replacement set, and the server notifies only whoever is NEW in it.
+         *
+         * The tray and its "@" trigger are built here, inside the shared confirm's own popup (`input.onOpen`),
+         * reusing `pickMentionAsync` — the SAME picker the compose box uses — rather than a second copy (the
+         * WP's own instruction). Local state, not `commentMentionState`: that map is the COMPOSE box's draft,
+         * and a task can have a comment being edited while an unrelated new comment is half-typed above it.
+         */
+        let mentions = (entry.mentioned || []).map((m) => ({ id: m.id, displayName: m.displayName }));
+        const originalMentionIds = mentions.map((m) => m.id).slice().sort();
+
         // The shared confirm's TEXTAREA, seeded with what the comment says now — an edit box that starts empty
         // asks the author to retype a sentence they only wanted to fix.
         sharedConfirm({
@@ -7443,13 +7456,60 @@
                 label: t('CommentEditLabel'),
                 placeholder: entry.text || '',
                 value: entry.text || '',
-                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid'))
+                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid')),
+                onOpen: (box, popup) => {
+                    if (!box || !popup) { return; }
+
+                    const tray = document.createElement('div');
+                    tray.className = 'wcn-mention-chips';
+                    box.insertAdjacentElement('afterend', tray);
+
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-outline-secondary wcn-composer-mention mt-2';
+                    addBtn.setAttribute('aria-label', t('MentionAdd'));
+                    addBtn.title = t('MentionAdd');
+                    addBtn.innerHTML = '<i class="bx bx-at" aria-hidden="true"></i>';
+                    tray.insertAdjacentElement('afterend', addBtn);
+
+                    const renderTray = () => {
+                        tray.innerHTML = mentions.map((m) => `<span class="wcn-mention-chip">`
+                            + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                            + `<button type="button" class="wcn-mention-chip-remove" data-wcn-edit-mention-remove="${esc(m.id)}" `
+                            + `aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                            + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('');
+                    };
+                    renderTray();
+
+                    tray.addEventListener('click', (event) => {
+                        const removeEl = event.target.closest('[data-wcn-edit-mention-remove]');
+                        if (!removeEl) { return; }
+                        const id = removeEl.getAttribute('data-wcn-edit-mention-remove');
+                        mentions = mentions.filter((m) => String(m.id) !== String(id));
+                        renderTray();
+                    });
+
+                    addBtn.addEventListener('click', async () => {
+                        if (mentions.length >= COMMENT_MAX_MENTIONS) {
+                            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+                            return;
+                        }
+                        const chosen = await pickMentionAsync(taskId, mentions.map((m) => m.id));
+                        if (!chosen) { return; }
+                        mentions = [...mentions, { id: chosen.id, displayName: chosen.displayName }];
+                        renderTray();
+                    });
+                }
             },
             onConfirm: async (value) => {
                 const text = String(value || '').trim();
-                if (!text || text === entry.text) { return; }
+                const mentionedUserIds = mentions.map((m) => m.id);
+                const mentionsChanged = JSON.stringify(mentionedUserIds.slice().sort())
+                    !== JSON.stringify(originalMentionIds);
+                if (!text || (text === entry.text && !mentionsChanged)) { return; }
                 await afterPhase2Write(
-                    await global.TasksApi.updateComment(taskId, commentId, { text }), 'ToastCommentEdited');
+                    await global.TasksApi.updateComment(taskId, commentId, { text, mentionedUserIds }),
+                    'ToastCommentEdited');
             }
         });
     };
@@ -7827,14 +7887,52 @@
     };
 
     /*
-     * WP-PSS-MOD0024-TASK-MENTIONS-01 — the @mention picker.
+     * WP-PSS-MOD0024-TASK-MENTIONS-01/FOLLOWUPS-02 — the @mention picker, ONE implementation for both the new
+     * comment composer and the edit dialog (BL-400 — do not write a second picker copy).
      *
      * Goes through `sharedConfirm`, NOT a raw `Swal.fire` — this screen already guards the exact count of raw
      * dialogs it allows (`wcn-dialog-*` test files), because each one it does not is a chance to re-diverge in
      * appearance from the rest of the product. One person per confirm; the trigger (button or "@") can be used
      * again to add another, up to the cap — a repeatable single-select stays inside the shared component's
      * existing `input: { type: 'select' }` shape rather than asking it to grow a multi-select nobody else needs.
+     *
+     * Returns the CHOSEN candidate (`{id, displayName}`) or `null` on cancel/nothing-to-offer — the caller (the
+     * composer or the edit dialog) decides what to do with it; this function knows nothing about either.
      */
+    const pickMentionAsync = async (taskId, alreadyMentionedIds) => {
+        const res = await global.TasksApi.mentionCandidates(taskId, '');
+        const candidates = res.ok ? (res.data || []) : [];
+        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return null; }
+
+        const already = new Set((alreadyMentionedIds || []).map(String));
+        const offered = candidates.filter((c) => !already.has(String(c.id)));
+        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return null; }
+
+        const options = {};
+        offered.forEach((c) => { options[c.id] = c.displayName; });
+
+        return new Promise((resolve) => {
+            sharedConfirm({
+                title: t('MentionPickerTitle'),
+                confirmText: t('MentionAddConfirm'),
+                input: {
+                    type: 'select',
+                    options,
+                    label: t('MentionPickerTitle'),
+                    placeholder: t('MentionNoneChosen'),
+                    validate: (value) => (value ? null : t('MentionNoneChosen')),
+                    onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
+                },
+                onConfirm: (value) => {
+                    const chosen = offered.find((c) => String(c.id) === String(value));
+                    resolve(chosen || null);
+                },
+                onCancel: () => resolve(null)
+            });
+        });
+    };
+
+    /** The compose-box trigger: adds to the DRAFT tray beside the "+ Yeni" composer. */
     const openMentionPicker = async (taskId) => {
         const item = itemById(taskId);
         if (!item || !isDispatchableItem(item)) { return; }
@@ -7850,37 +7948,13 @@
             return;
         }
 
-        const res = await global.TasksApi.mentionCandidates(taskId, '');
-        const candidates = res.ok ? (res.data || []) : [];
-        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return; }
+        const chosen = await pickMentionAsync(taskId, existing.map((m) => m.id));
+        if (!chosen) { return; }
 
-        const already = new Set(existing.map((m) => String(m.id)));
-        const offered = candidates.filter((c) => !already.has(String(c.id)));
-        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return; }
-
-        const options = {};
-        offered.forEach((c) => { options[c.id] = c.displayName; });
-
-        sharedConfirm({
-            title: t('MentionPickerTitle'),
-            confirmText: t('MentionAddConfirm'),
-            input: {
-                type: 'select',
-                options,
-                label: t('MentionPickerTitle'),
-                placeholder: t('MentionNoneChosen'),
-                validate: (value) => (value ? null : t('MentionNoneChosen')),
-                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
-            },
-            onConfirm: (value) => {
-                const chosen = offered.find((c) => String(c.id) === String(value));
-                if (!chosen) { return; }
-                commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
-                render();
-                const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
-                if (refocus) { refocus.focus(); }
-            }
-        });
+        commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
+        render();
+        const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (refocus) { refocus.focus(); }
     };
 
     /// Drops one draft mention chip. Never touches the server — the mention is not yet part of any posted
@@ -8178,6 +8252,14 @@
             return;
         }
         confirm(options.title, options.onConfirm, {
+            /*
+             * WP-PSS-MOD0024-FOLLOWUPS-02 — passed straight through. `window.showConfirm` already supports a
+             * dismiss callback (`_GlobalConfirmation.cshtml`'s `Swal.fire(...).then`), but this wrapper never
+             * forwarded it, so no caller here could tell a cancel apart from doing nothing. A caller that needs
+             * to know (the @mention picker, reused for both compose and edit) can now ask for it without a
+             * second dialog implementation.
+             */
+            onCancel: options.onCancel,
             /*
              * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
              * and the wrapper renders `subtext` as HTML for exactly this.

@@ -167,6 +167,7 @@ yöntemle (liste → kiracı yöneticisi onayı) belirlenir.
 8. Görev yorumunda @ ile görevi gören birini etiketle → uygulama içi bildirim + e-posta; görevi görmeyen biri listede çıkmaz.
 9. Toplantıdan bir katılımcıyı çıkar → yalnız ona "toplantıdan çıkarıldınız" postası; takviminden etkinlik kalkar.
 10. Başka bir kullanıcı adına toplantı oluştur ve düzenleyeni değiştir → düzenleyen "takviminize eklendi" postasını alır (düz davet değil); düzenleyen kendi toplantısını değiştirince ona posta gitmez.
+12. Toplantı raporu: `/Meetings/Report` → dönem seç → toplantılar, kararlar ve aksiyonlar dolar; bir indirme `audit_events`'te tek bir TenantUser DataExport satırı bırakır.
 11. **Sağlık uçları — canlıdan ÖNCE teyit (BL-404).** `/health` ve `/health/ready` İş Referans Verisi sağlayıcı kontrolünü içerir;
     `BusinessReferenceData:Provider:ReferenceTenantId` ayarlanmamışsa ikisi de 503 döner (dev'de ölçüldü, kodda "pilot yoksa sağlıklı"
     kontrolünden önce bu ayar isteniyor). Bu uçları yoklayan bir yük dengeleyici bütün Platform'u servis dışı sayar; `/health/live`
@@ -177,9 +178,9 @@ yöntemle (liste → kiracı yöneticisi onayı) belirlenir.
 
 | Kayıt | Konu |
 | :-- | :-- |
-| BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); aynı ham hata metni 21 başka ekranda duruyor |
+| BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); görev ayar ekranları `fddc01a6` ile düzeldi; aynı ham hata metni 17 ekranda (CRM, Roles, Platform) duruyor (BL-398) |
 | BL-391 kalanı | Doğrudan tarih seçici kullanan 14 ekranda yanlış biçimde yazılan tarih hâlâ sessizce kayabilir |
-| @ ile etiketleme kalanı | Var olan yorumu düzenlerken etiket ekleme ekranı yok; eski /Tasks/Details ekranında etiketleme yok |
+| BL-414 | Görev bildirimleri (etiketleme dahil) eski /Tasks/{id} sayfasına götürüyor; o sayfada yorumlar yok — düzeltme sırada |
 | BL-392 | İş Raporu kiracı geneli okuma izni artık yalnız açıkça verilir; bugün tutan roller §5'teki sorguyla listelenip kiracı yöneticisine onaylatılır (sahip kararı b) |
 | BL-409 | Genel komut denetim hattı aktör türünü "Sistem" yazıyor; kullanıcı kimliği kayıtta var, türü yanlış — düzeltme yapılıyor |
 | BL-411 | Kontrol listesi şablonları ve görev şablonları izinleri "yalnız platform" kapsamında olabilir (§5'teki ölçüm) |

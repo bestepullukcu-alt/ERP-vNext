@@ -194,6 +194,17 @@ public interface IMeetingMinutesVersionRepository
     /// the editor's own history view (<c>GetMeetingMinutesQuery</c>).</summary>
     Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
 
+    /// <summary>
+    /// S12 — every PUBLISHED version across a SET of meetings, batched — one query for the whole report, never
+    /// one per meeting. A meeting may carry more than one published version (a correction after publish adds a
+    /// new one, K4); the caller reduces to the highest <see cref="MeetingMinutesVersion.VersionNumber"/> per
+    /// meeting, the same "group in memory over an already-narrow, already-indexed read" style
+    /// <c>GetMeetingListHandler</c> already uses for attendees and linked tasks — a Meetings-scale read, not a
+    /// hundred-thousand-row aggregation MOD-0024's own report needed.
+    /// </summary>
+    Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default);
+
     /// <summary>Optimistic-concurrency replace, same shape as every other MOD-0024-adjacent
     /// <c>UpdateAsync(entity, expectedVersion)</c>. Callers use this ONLY on a row still
     /// <see cref="MeetingMinutesVersion.Status"/> <c>Draft</c> — publishing and correcting never call it (see

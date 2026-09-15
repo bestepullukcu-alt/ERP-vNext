@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>This report covers more tasks than one export can carry. Narrow the period or the filters and try again.</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>You are not permitted to export this report.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>The export could not be prepared.</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>The export could not be recorded in the audit trail, so the file was not delivered. Please try again shortly.</value></data>
 </root>

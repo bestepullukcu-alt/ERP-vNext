@@ -615,6 +615,12 @@ internal sealed class FakeTaskWatcherRepository : ITaskWatcherRepository
 
     public IReadOnlyList<TaskWatcher> Watchers => _watchers;
 
+    /// <summary>
+    /// WP-PSS-MOD0024-FOLLOWUPS-02 (BL-399) — how many times a single-task read was asked for, so a test can
+    /// pin "resolved once per WRITE, not once per mentioned person" without reaching into production internals.
+    /// </summary>
+    public int ListByTaskIdCalls { get; private set; }
+
     public Task<TaskWatcher> CreateAsync(TaskWatcher watcher, CancellationToken ct = default)
     {
         _watchers.Add(watcher);
@@ -622,8 +628,11 @@ internal sealed class FakeTaskWatcherRepository : ITaskWatcherRepository
     }
 
     public Task<IReadOnlyList<TaskWatcher>> ListByTaskIdAsync(Guid taskItemId, CancellationToken ct = default)
-        => Task.FromResult<IReadOnlyList<TaskWatcher>>(
+    {
+        ListByTaskIdCalls++;
+        return Task.FromResult<IReadOnlyList<TaskWatcher>>(
             _watchers.Where(x => x.TaskItemId == taskItemId).ToList());
+    }
 
     public Task<IReadOnlyList<TaskWatcher>> ListByUserIdAsync(Guid userId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<TaskWatcher>>(_watchers.Where(x => x.UserId == userId).ToList());
