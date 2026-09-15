@@ -42,6 +42,10 @@ public sealed class MinutesCommandHandlerTests
         public Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
             => inner.ListByMeetingIdAsync(meetingId, ct);
 
+        public Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+            IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+            => inner.ListPublishedByMeetingIdsAsync(meetingIds, ct);
+
         public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
         {
             UpdateAttemptsAgainstStoredStatus.Add(inner.StoredStatusOf(version.Id));

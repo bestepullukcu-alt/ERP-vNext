@@ -56,17 +56,17 @@ public sealed class MeetingManifestProviderTests
         }
     }
 
-    /// <summary>S3/S8/S11 — the top-level list, the meeting-type setting screen AND the meeting-series setting
-    /// screen are the module's nav entries; the three work-surface routes (Create/Detail/Edit) stay nav-hidden,
-    /// reached only from the list, the same shape TaskManifestProvider's own TASK_CREATE/TASK_DETAIL/TASK_EDIT
-    /// pages take (its own TASK_TYPES page is nav-visible too, under TASKS — MEETING_TYPES/MEETING_SERIES
-    /// mirror it under MEETINGS).</summary>
+    /// <summary>S3/S8/S11/S12 — the top-level list, the meeting-type setting screen, the meeting-series setting
+    /// screen AND the report screen are the module's nav entries; the three work-surface routes
+    /// (Create/Detail/Edit) stay nav-hidden, reached only from the list, the same shape TaskManifestProvider's
+    /// own TASK_CREATE/TASK_DETAIL/TASK_EDIT pages take (its own TASK_TYPES page is nav-visible too, under
+    /// TASKS — MEETING_TYPES/MEETING_SERIES/MEETING_REPORT mirror it under MEETINGS).</summary>
     [Fact]
-    public void Only_the_list_and_the_two_setting_screens_are_navigation_visible()
+    public void Only_the_list_the_two_setting_screens_and_the_report_are_navigation_visible()
     {
         var visible = Manifest.Pages.Where(p => p.IsNavigationVisible).Select(p => p.PageCode).ToList();
         Assert.Equal(
-            ["MEETINGS", "MEETING_SERIES", "MEETING_TYPES"],
+            ["MEETINGS", "MEETING_REPORT", "MEETING_SERIES", "MEETING_TYPES"],
             visible.OrderBy(c => c, StringComparer.Ordinal));
     }
 

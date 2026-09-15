@@ -49,6 +49,18 @@ public static class MeetingReasonCodes
     /// (<c>ReassignMeetingOrganizerCommand</c>).</summary>
     public const string AttendeeIsOrganizer = "MEETING_ATTENDEE_IS_ORGANIZER";
 
+    // ── S12 — meeting report & action register ──────────────────────────────────────────────────────────────
+
+    /// <summary>The report's own required-period rule (pack §23.3, §23.9) — <c>To</c> must be after
+    /// <c>From</c>, the same 400 <c>GetMeetingListQuery</c>/create/update already answer for an inverted or
+    /// missing window, never a silently unbounded read.</summary>
+    public const string ReportInvalidPeriod = "MEETING_REPORT_INVALID_PERIOD";
+
+    /// <summary>The export's own row cap (pack §23.7, §23.9, 50 000 — the audit export's own limit, copied
+    /// rather than invented). REFUSED, never trimmed — a cut file looks complete and disagrees with the
+    /// screen with nothing to say why.</summary>
+    public const string ReportExportTooLarge = "MEETING_REPORT_EXPORT_TOO_LARGE";
+
     public const string AgendaItemNotFound = "MEETING_AGENDA_ITEM_NOT_FOUND";
     public const string AgendaReorderMismatch = "MEETING_AGENDA_REORDER_MISMATCH";
 

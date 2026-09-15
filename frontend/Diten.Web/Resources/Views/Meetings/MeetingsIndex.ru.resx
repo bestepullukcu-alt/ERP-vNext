@@ -106,6 +106,8 @@
   <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Проверьте начало, окончание и срок подготовки серии — расписание недействительно.</value></data>
   <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>Интервал должен быть не менее 1.</value></data>
   <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Требуется указать организатора.</value></data>
+  <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>Период отчёта должен заканчиваться позже, чем начинается.</value></data>
+  <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>В этом отчёте слишком много строк для экспорта. Сузьте период или фильтры.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
