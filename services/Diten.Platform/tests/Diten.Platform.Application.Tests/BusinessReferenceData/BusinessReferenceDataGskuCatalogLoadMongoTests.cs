@@ -351,6 +351,8 @@ internal sealed class BusinessReferenceDataTestHarness : IAsyncDisposable
 
     public static async Task<BusinessReferenceDataTestHarness> CreateAsync(bool configureProvider = true)
     {
+        await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync(); // BL-395
+
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         var client = new MongoClient(settings);
