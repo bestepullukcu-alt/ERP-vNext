@@ -5,6 +5,7 @@ using Diten.Platform.Application.Features.Quotas.Commands;
 using Diten.Platform.Application.Features.SubscriptionFeatures.Commands;
 using Diten.Platform.Application.Features.SubscriptionPlans.Commands;
 using Diten.Platform.Application.Features.TenantOrganization.Commands;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -125,6 +126,7 @@ public sealed class Faz1AuditCoverageTests
         var auditService = new CapturingAuditService();
         var behavior = new AuditBehavior<UpdatePositionCommand, Response<NoContent>>(
             auditService,
+            new AnonymousTenantAuthorizationContext(),
             new AuditBehaviorOptions(),
             NullLogger<AuditBehavior<UpdatePositionCommand, Response<NoContent>>>.Instance);
 
