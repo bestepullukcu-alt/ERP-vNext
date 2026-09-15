@@ -26,7 +26,11 @@ const resx = (lang) =>
   fs.readFileSync(web("Resources", "Views", "Tasks", "WorkReport", `WorkReportIndex.${lang}.resx`), "utf8");
 
 const VIEW_KEYS = ["ExportButton", "ExportCsv", "ExportJson"];
-const SCRIPT_KEYS = ["ExportFilePrefix", "ExportDownloaded", "ExportTooManyRows", "ExportForbidden", "ExportFailed"];
+const SCRIPT_KEYS = [
+  "ExportFilePrefix", "ExportDownloaded", "ExportTooManyRows", "ExportForbidden", "ExportFailed",
+  // BL-347 follow-up (WP-PSS-MOD0024-FOLLOWUPS-02) — its own sentence, same gate as its four siblings.
+  "ExportAuditNotRecorded"
+];
 
 const LABELS = {
   exportFilePrefix: "is-raporu",
@@ -34,6 +38,7 @@ const LABELS = {
   exportTooManyRows: "Filtreleri daraltın.",
   exportForbidden: "Yetkiniz yok.",
   exportFailed: "Hazırlanamadı.",
+  exportAuditNotRecorded: "Denetim kaydına yazılamadı.",
   loadFailed: "The report could not be loaded.",
   periodInvalid: "The end of the period must come after its start."
 };
@@ -232,6 +237,37 @@ describe("Dilim 1e — the download itself (the audit log's pattern)", () => {
 
     expect(toasts).toEqual([{ message: LABELS.exportFailed, type: "error" }]);
     expect(created).toEqual([]);
+  });
+
+  /*
+   * BL-347 follow-up (WP-PSS-MOD0024-FOLLOWUPS-02). Before this, a 503 DATA_EXPORT_AUDIT_NOT_RECORDED reached
+   * the reader as the same generic "could not be prepared" the test above pins for an UNIDENTIFIED 503 — which
+   * is wrong here: the export worked, the audit trail did not, and the reader is told to retry rather than
+   * suspect their filters or the export itself.
+   */
+  test("a 503 whose reason is the audit trail failing to record gets its OWN sentence, not the plain failure one", async () => {
+    const screen = boot();
+    screen.setLastQuery(LOADED);
+    nextResponse = () => response({
+      status: 503, body: { reason_code: "DATA_EXPORT_AUDIT_NOT_RECORDED", errors: ["…"] }
+    });
+
+    await screen.downloadExport("csv");
+
+    expect(toasts).toEqual([{ message: LABELS.exportAuditNotRecorded, type: "error" }]);
+    expect(created).toEqual([]);
+  });
+
+  // ⚠ SABOTAGE GUARD — a 503 with a DIFFERENT (or absent) reason must still fall through to the plain failure
+  // sentence; only the specific code above earns its own message.
+  test("a 503 with a different or absent reason still gets the plain failure sentence", async () => {
+    const screen = boot();
+    screen.setLastQuery(LOADED);
+    nextResponse = () => response({ status: 503, body: { reason_code: "SOMETHING_ELSE" } });
+
+    await screen.downloadExport("csv");
+
+    expect(toasts).toEqual([{ message: LABELS.exportFailed, type: "error" }]);
   });
 
   test("a server name that does not carry the stable prefix is left exactly as sent", () => {

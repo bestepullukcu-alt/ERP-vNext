@@ -4,8 +4,10 @@ using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
+using Diten.Platform.Application.Features.Tasks.Providers;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Services;
+using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
@@ -145,6 +147,40 @@ public sealed class TaskMentionTests
             CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
+    }
+
+    /*
+     * BL-399 (WP-PSS-MOD0024-FOLLOWUPS-02) — the data legs (pool holders, watchers, parent task) used to be
+     * resolved ONCE PER MENTIONED PERSON (CanReadAsync asked fresh for each of up to 10 candidates). They are
+     * now resolved once for the whole write; TaskMentionValidation checks candidate-set MEMBERSHIP against that
+     * one resolution and only falls through to a full CanReadAsync for a candidate the data legs do not cover
+     * (the scope/ReadAll legs, which stay per-candidate on purpose — K2's own narrowing).
+     */
+    [Fact]
+    public async Task Ten_mentions_resolve_the_read_access_data_legs_ONCE_not_once_per_mentioned_person()
+    {
+        var h = new Harness();
+        var task = h.NewTask(assignee: Other, createdBy: Other);
+        h.Tasks.CreateAsync(task, CancellationToken.None).GetAwaiter().GetResult();
+        var ten = Enumerable.Range(0, 10).Select(_ => Guid.NewGuid()).ToList();
+        foreach (var id in ten)
+        {
+            h.Watchers.CreateAsync(
+                new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, UserId = id },
+                CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        await h.AddHandler().Handle(
+            new AddTaskCommentCommand(task.Id, new AddTaskCommentRequest("on kişi", ten), "corr"),
+            CancellationToken.None);
+
+        /*
+         * TWO reads of this task's watcher list — one from the mention check's SINGLE data-leg resolution, one
+         * from the pre-existing "who hears about a new comment" audience calculation (unrelated to this WP,
+         * unchanged). A per-candidate resolution would push this to eleven (ten in the mention loop, plus that
+         * same one), which is exactly the defect this pins against reappearing.
+         */
+        Assert.Equal(2, h.Watchers.ListByTaskIdCalls);
     }
 
     // ── K3: editing adds a new mention → only the new person is told ────
@@ -304,6 +340,66 @@ public sealed class TaskMentionTests
         Assert.Equal([Other], result.Data!.Select(c => c.Id));
     }
 
+    // ── WP-PSS-MOD0024-FOLLOWUPS-02: the projection carries a comment's mentions ──
+
+    [Fact]
+    public async Task A_posted_comments_mentions_are_projected_as_named_people_not_bare_ids()
+    {
+        var h = new Harness();
+        var task = h.NewTask(assignee: Other, createdBy: Other);
+        h.Tasks.CreateAsync(task, CancellationToken.None).GetAwaiter().GetResult();
+        h.Watchers.CreateAsync(
+            new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, UserId = Watcher },
+            CancellationToken.None).GetAwaiter().GetResult();
+        h.Names.Known[Watcher] = "Nöbetçi Watcher";
+
+        var posted = await h.AddHandler().Handle(
+            new AddTaskCommentCommand(task.Id, new AddTaskCommentRequest("bak @Watcher", [Watcher]), "corr"),
+            CancellationToken.None);
+
+        var entry = await h.ActivityEntryAsync(task, posted.Data);
+
+        var mentioned = Assert.Single(entry.Mentioned!);
+        Assert.Equal(Watcher.ToString(), mentioned.Id);
+        Assert.Equal("Nöbetçi Watcher", mentioned.DisplayName);
+    }
+
+    [Fact]
+    public async Task A_comment_with_no_mentions_projects_Mentioned_as_absent_not_an_empty_array()
+    {
+        var h = new Harness();
+        var task = h.NewTask(assignee: Other, createdBy: Other);
+        h.Tasks.CreateAsync(task, CancellationToken.None).GetAwaiter().GetResult();
+
+        var posted = await h.AddHandler().Handle(
+            new AddTaskCommentCommand(task.Id, new AddTaskCommentRequest("düz yorum", null), "corr"),
+            CancellationToken.None);
+
+        var entry = await h.ActivityEntryAsync(task, posted.Data);
+
+        Assert.Null(entry.Mentioned);
+    }
+
+    [Fact]
+    public async Task A_mentioned_id_whose_name_never_resolved_is_omitted_from_the_projection_not_a_raw_GUID()
+    {
+        var h = new Harness();
+        var task = h.NewTask(assignee: Other, createdBy: Other);
+        h.Tasks.CreateAsync(task, CancellationToken.None).GetAwaiter().GetResult();
+        h.Watchers.CreateAsync(
+            new TaskWatcher { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, UserId = Watcher },
+            CancellationToken.None).GetAwaiter().GetResult();
+        // Deliberately NOT registering a name for Watcher.
+
+        var posted = await h.AddHandler().Handle(
+            new AddTaskCommentCommand(task.Id, new AddTaskCommentRequest("bak", [Watcher]), "corr"),
+            CancellationToken.None);
+
+        var entry = await h.ActivityEntryAsync(task, posted.Data);
+
+        Assert.Null(entry.Mentioned);
+    }
+
     // ── K1: no new permission is required ────────────────────────────────
 
     [Fact]
@@ -392,6 +488,41 @@ public sealed class TaskMentionTests
 
         public GetTaskMentionCandidatesHandler CandidatesHandler(Guid? caller = null) => new(
             Tasks, ReadAccess(caller ?? Me), Names, new FakeCurrentUserContext(caller ?? Me));
+
+        /// <summary>
+        /// The activity feed for one task, through the REAL provider — WP-PSS-MOD0024-FOLLOWUPS-02's projection
+        /// of a comment's mentions is a batched read (see the provider), and a fake that did its own thing would
+        /// prove nothing about the batching.
+        /// </summary>
+        public async Task<WorkItemActivityEntryDto> ActivityEntryAsync(
+            TaskItem task, Guid commentId)
+        {
+            var provider = new TaskWorkItemProvider(
+                Tasks, new FakePositionAssignmentRepository(), new TaskLifecycleService(),
+                new TaskAssignmentResolver(), Names, new FakeChecklistRunRepository(),
+                new FakeTaskApprovalService(), new FakeTaskDependencyRepository(), Comments,
+                Tasks.Transitions, new FakeTaskPersonalOverlayRepository(), Watchers, TaskActors.PermitAll(),
+                new FakePositionRepository(), OrganizationUnits, SlaForTests.Real(),
+                new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository());
+
+            // Whoever is reading has to hold the task for it to be in their own list (same pattern
+            // TaskCommentTrailTests.ProjectAsync uses); the point under test is what a comment entry carries,
+            // not who the work belongs to.
+            var previousAssignee = task.AssigneeUserId;
+            task.AssigneeUserId = Me;
+            try
+            {
+                var actor = new WorkItemActor(Me, IsPlatformActor: true, new HashSet<string>());
+                var item = Assert.Single(
+                    (await provider.GetWorkItemsAsync(actor, CancellationToken.None))
+                        .Where(candidate => candidate.Id == task.Id.ToString()));
+                return item.Activity!.Single(entry => entry.Id == commentId.ToString());
+            }
+            finally
+            {
+                task.AssigneeUserId = previousAssignee;
+            }
+        }
     }
 
     private sealed class EmptyScopeResolver : ITaskAssignmentScopeResolver
