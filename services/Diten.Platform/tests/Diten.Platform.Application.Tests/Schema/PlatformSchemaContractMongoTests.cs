@@ -44,6 +44,10 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // BL-395: this drops a fixed-name database. Another test process on this machine must not do that while
+        // this one is reading it back, so the machine-wide lock comes first.
+        await PlatformMongoTestLock.EnsureHeldAsync();
+
         var settings = MongoClientSettings.FromConnectionString(ConnectionString);
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         /*

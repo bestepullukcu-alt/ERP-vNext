@@ -4471,7 +4471,9 @@ atama 0 (2026-09-10 ölçümü) — "iki filtreli" kontrol için gereken veri, s
 
 **İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**
 
-DURUM: YAPILIYOR (sahip kararı 2026-09-15: altyapı CT, ortak kiracı tarafı denetim yazıcısı — İş Raporu + toplantı raporu dışa aktarması) · önceki: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPANDI (kod; canlı kontrol bekliyor) — `5681eaac` (görev motoru dalı, 2026-09-15), toplantı zincirine `aaa66e29` · SAHİP: altyapı CT · ÖLÇÜLDÜ: 2026-09-10
+
+**Kapanış (2026-09-15).** Ayrı bir yazıcı yazıldı: `IDataExportAuditWriter` (`Features/Audit/Services/DataExportAuditWriter.cs`). İş Raporu indirmesi dosyayı ürettikten sonra, kullanıcıya vermeden önce bir DataExport kaydı yazar. Aktör türü jetondaki `actor_type`'tan gelir (tenant_user / platform_admin / partner_admin); tanınmayan tür kayıt uydurmaz, indirmeyi reddeder. Kayıt ilgili kiracıya aittir (`IsPlatformGlobal=false`), filtre özetinde kişi kimliği yok. Kayıt yazılamazsa dosya verilmez: 503 `DATA_EXPORT_AUDIT_NOT_RECORDED` (ekran bugün genel "dışa aktarılamadı" mesajını gösteriyor; özel mesaj 7 dil, PSS takip WP'sinde). Platform denetim dışa aktarması değişmedi (regresyon testi). Ajan sabotajı S1–S3 kırmızı; CT sabotajı (kiracı kullanıcısı platform yöneticisi diye kaydedilince) 4 kırmızı → geri yükleme → 49/49 yeşil. **Canlı kontrol:** kiracı kullanıcısıyla CSV/JSON indir → `audit_outbox`'ta bir kayıt → `audit_events`'te TenantUser satırı. Ayrı ve eski kusur: genel komut denetim hattı aktör türünü yanlış yazıyor → BL-409.
 
 Dilim 1e (BL-346) audit export'unu taklit etti, bir yer hariç: audit handler'ı indirmeden
 sonra `AuditMetaAuditWriter.WriteAsync(... AuditCategory.DataExport ...)` çağırıyor. Aynı
@@ -5304,6 +5306,7 @@ girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
 **(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
 yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
 **2026-09-14:** CT önerisi engellemek (onaya tabi olmayan tür açıkça "onay gerekmez"; Veeva/MasterControl ve 21 CFR Part 11 ile uyumlu). Sahip soruyu Kural 4 ile birlikte Kalite'ye iletiyor.
+**2026-09-15:** sahip önerileri onayladı ve eksiklerin bu doğrultuda bitirilmesini istedi → BL-380 (boş onay kanıtı da engeller) ve Kural 4 (yürürlükte olmayan belgeye bağlı görev türü aktif edilemez) DM kulvarında uygulanıyor (WP-DM-DCP005-BL380-KURAL4-01). Kalite farklı cevap verirse kural tek yerde, geri çevrilebilir.
 
 ---
 
@@ -5481,7 +5484,7 @@ mevcut atamalar nasıl ele alınsın.
 
 **Paylaşılan Platform test veritabanı eşzamanlı koşularda siliniyor — aynı makinede iki test koşusu birbirine sahte kırmızı veriyor**
 
-DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
+DURUM: KAPANDI — `8e0e8ca7` (altyapı dalı, 2026-09-15), görev motoruna `f0a1456d`, toplantıya `b3c14be2` · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
 
 `MongoResidueSweeper` (`Persistence/MongoResidueSweeper.cs`) önceki koşudan kalan `diten_platform_itest` önekli veritabanlarını düşürüyor;
 `MongoIntegrationHarness` da dispose'ta kendi veritabanını düşürüyor. Aynı makinede iki worktree ya da iki ajan Platform testlerini aynı anda
@@ -5489,13 +5492,17 @@ koşunca biri diğerinin veritabanını silebiliyor → testler rastgele kırmı
 Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıcı çözüm: koşu başına benzersiz önek ya da sahiplik işareti
 (İş Referans Verisi temizleyicisinin işaret deseni) — sweeper yalnız kendi koşusunun izini düşürsün.
 
+**2026-09-15 CT ölçümü — sebep büyük olasılıkla temizleyici değil.** `MongoResidueSweeper` zaten harness işareti + farklı RunId + 1 saat bayatlık şartı arıyor. Asıl yarış: `MongoIntegrationHarness` kapsamlı veritabanlarını SABİT adla (`diten_platform_itest_<scope>`, DB-010 gereği) `emptyFirst: true` ile açıyor; ikinci koşu, birincinin kullandığı veritabanını açılışta boşaltıyor. Koşu başına ad DB-010'u ve `MongoTestDatabaseGuardTests`'i bozacağı için çözüm yönü değişti: makine genelinde özel dosya kilidi (sabit yol, TMPDIR'den bağımsız); ikinci test süreci birincinin bitmesini bekler.
+
+**Kapanış (2026-09-15).** `Persistence/PlatformMongoTestLock.cs`: `/tmp/diten-platform-itest.lock` üzerinde işletim sistemi dosya kilidi (macOS'ta ölçüldü: gerçek flock, SIGKILL'de bırakılıyor). Paylaşılan mongod'daki sabit adlı veritabanına dokunan her yol kilidi süreç başına bir kez alır ve süreç bitene kadar tutar: harness, şema sözleşmesi, iş akışı kapısı, İş Referans Verisi temizleyicisi ve harness'ları. Bekleyen süreç 30 sn'de bir kimin tuttuğunu yazar; 30 dk sonra test düşer, kilitsiz asla koşmaz; dosya kilitleme kapalıysa (`DOTNET_SYSTEM_IO_DISABLEFILELOCKING`) reddeder. Bir koruma testi 27017 adresi olup kilidi almayan dosyayı adıyla kırmızı verir. Ölçüm: yıkıcı filtre iki süreçte aynı anda — önce 17 ve 16 yarış kaynaklı ek kırmızı, sonra 0. Ajan sabotajı (kilit çağrısı kaldırıldı) 3/4 kırmızı; CT sabotajı (dosya paylaşımlı açıldı, kilit var gibi görünüp kilitlemiyor) iki süreç testi kırmızı → bayt bayt geri → 4/4 yeşil. **Kalanlar:** (1) Eventing.Tests (`_eventing_golden_flow`, `_eventing_failure_path`, `_tenant_lifecycle`; RabbitMQ yoksa atlanıyor) ve BackgroundJobs.Tests (`diten_platform_itest_container_validation`) sabit adları kilide bağlı değil — ayrı test projeleri. (2) Bekleme satırları varsayılan `dotnet test` ayrıntısında görünmüyor, `--logger "console;verbosity=normal"` ile görünüyor; zaman aşımı her ayrıntıda test hatası olarak görünür. (3) Linux ve Windows ölçülmedi. (4) Kilit yalnız kilidi taşıyan dallarda çalışır: zincire birleşmemiş kulvar dalları birleşene kadar eski davranışta.
+
 ---
 
 ### BL-396
 
 **Toplantı raporu / aksiyon kaydı yok — toplantılar arası izleme ve dışa aktarma**
 
-DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı yapılıyor · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
+DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı hazır (`5681eaac`) · uygulama WP-MG-MOD0357-S12-MEETING-REPORT-01 (2026-09-15) · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
 
 Bütün dallarda ölçüldü: toplantılar için rapor ekranı ya da dışa aktarma ucu yok; toplantı başına kayıt tutanak. **Karar:** içerik = dönem/tür/
 düzenleyen filtreli toplantı listesi, katılım oranı, kararlar, toplantılardan doğan açık ve geciken aksiyonlar (Blueprint "Follow-up Register";
@@ -5568,9 +5575,11 @@ BL-384 Platform'a süreç genelinde `IgnoreExtraElementsConvention` ekledi (`466
 
 **Dev kiracısında görev rolleri: Task-Manager'ın hiç izni yok, Task-User'ın izinleri görevle ilgisiz**
 
-DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
+DURUM: KAPANDI (ölçüldü; kod hatası değil, dev test verisi) — canlıyı ilgilendiren boşluklar BL-410 ve BL-411'e ayrıldı (2026-09-15) · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
 
 Ölçüm (`diten_auth_v3`): Task-Manager rolüne bağlı izin satırı 0; Task-User'da yalnız `ppm.benefit-commitments.change-lifecycle`, `mdm.brands.create`, `auth.roles.create`. Canlı tur için CT Task-Manager'a toplantı okuma + görev izinlerini elle verdi. Soru: bu roller hangi tohum/şablondan geliyor, canlı kiracılarda aynı boşluk var mı? Varsa rol şablonu düzeltilmeli.
+
+**Kapanış (2026-09-15, CT alt ajanı, salt okuma).** İki rolü hiçbir tohum, şablon ya da eşitleme açmadı: `admin@diten.com` 2026-09-08 11:29–11:30'da `POST api/roles` ile elle oluşturdu (Auth denetim günlüğü), aynı gün 8 dev kullanıcıya atadı. Task-User'daki üç ilgisiz anahtar aynı gün 12:36–13:53 arası yapılan elle atama/geri alma denemelerinden kalma (`GrantSource: Manual`); Task-Manager'da CT'nin 2026-09-13 atamalarına kadar izin yoktu. Eşitleme kodla elendi: yalnız Admin/Viewer ve ürün kısaltmalı rolleri hedefliyor. Yeni kiracıya bu roller hiç kurulmuyor, yani aynı boşluk canlıda tekrarlamaz. Asıl canlı boşluklar: görev/toplantı modüllerinin hiçbir planda olmaması ve Viewer'ın Görev Merkezi anahtarını alamaması → BL-410; iki şablon anahtarının "yalnız platform" kapsamı → BL-411. Yan bulgular: Auth'ta izin atamaları `AssignedBy: "System"` yazıyor → BL-412; dev'de `c9b39e99` kiracısında 65 rol-izin satırı var ama rol ve kullanıcı yok (dev veri artığı, dokunulmadı).
 
 ---
 
@@ -5578,9 +5587,11 @@ DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
 
 **Dev'de /health Unhealthy — `business_reference_data_provider` kontrolü**
 
-DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
+DURUM: AÇIK — sebep ölçüldü (2026-09-15); kod düzeltmesi İş Referans Verisi kulvarında (MOD-0048-FU01 paket revizyonu gerekir), ops adımı canlı kontrol listesi §7/11'de · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
 
 `/health` 503; tek kırmızı kontrol `business_reference_data_provider` ("configuration or state is invalid"). Diğerleri (mongodb, rabbitmq, hangfire_storage, masstransit-bus) sağlıklı. Toplantı/görev turundan önce de böyleydi. Canlıda aynı kontrolün değeri okunmalı; yük dengeleyici sağlık kontrolü bu uca bakıyorsa servis dışı sayılabilir.
+
+**2026-09-15 ölçümü (CT alt ajanı, CT satırları doğruladı).** `BusinessReferenceDataProviderReadinessHealthCheck` önce `GetRequiredReferenceTenantId()` çağırıyor; `BusinessReferenceData:Provider:ReferenceTenantId` dev'de hiçbir yerde yok (hiçbir dalda hiç ayarlanmamış) → `REFERENCE_PROVIDER_CONFIGURATION_INVALID` → Unhealthy. `0f71a237`'nin eklediği "pilot yapılandırılmamışsa sağlıklı" erken dönüşü bu çağrıdan SONRA; eksik ayarda hiç çalışmıyor. Birim testi çözümleyiciyi taklit edip GUID döndürdüğü için dev'deki durumu hiç sınamıyor — sabotaj kanıtı olmayan koruma. Paket (MOD-0048-FU01 `:1335`) eksik ayarda Unhealthy'yi tasarım olarak istiyor ve `CatalogLoad:TenantId`'ye düşmeyi yasaklıyor; "yalnız ready etiketi" isteği de `/health` filtresiz eşlendiği için korumuyor. Depoda dağıtım yapılandırması yok; belgeler dengeleyici için `/health/live` diyor, gerçek canlı ayarı bilinmiyor. Öneri: (A) dev'de ayarı açıkça ver; (B) canlı ortama ekle ya da dengeleyicinin `/health/live` kullandığını teyit et (kontrol listesi §7/11); (C) İş Referans Verisi kulvarı: yapılandırılmamış sağlayıcıda Degraded (200) ya da readiness dışı etiket + gerçek çözümleyiciyle test — paket revizyonu ister.
 
 ---
 
@@ -5590,7 +5601,7 @@ DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
 
 DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
 
-`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
+`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. **2026-09-15 (BL-395 ajanı):** İş Referans Verisi'nin 49 Mongo testi tek süreçte de kırmızı; sebep ölçüldü: yerel mongod bir replica set (`rs0`) ve `RunCommandAsync<object>("{ ping: 1 }")` cevaptaki Timestamp türünü `ObjectSerializer` ile okuyamıyor (GSKU `:363`, TenantAssignment `:28`, PublishOperation `:29`); ardından dispose "database is currently being dropped" ile düşüyor. İş Referans Verisi kulvarının işi. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
 
 ---
 
@@ -5618,9 +5629,51 @@ DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAY
 
 **CI kapısının "veritabanları arası erişim" adımı `rg` yoksa hiçbir şey denetlemeden "passed" diyor**
 
-DURUM: AÇIK · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
+DURUM: KAPANDI — `8e0e8ca7` (BL-395 ile aynı commit) · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
 
 `scripts/check_cross_db_enforcement.sh:7` aramayı `rg` ile yapıyor ve hatayı `|| true` ile yutuyor. `rg` kurulu olmayan makinede (yerel dev makinesi ölçüldü: `rg: command not found`) adım hiçbir dosyayı taramadan geçiyor. Ajan aynı denetimi grep ile koştu: 0 ihlal. GitHub `ubuntu-latest` imajında `rg` olup olmadığı ölçülmedi. Öneri: araç yoksa adım başarısız olsun ya da grep'e düşsün; `|| true` yalnız "eşleşme yok" çıkış kodunu yutsun.
+
+**Kapanış (2026-09-15).** Ölçüm: GitHub ubuntu-24.04 imajının araç listesinde ripgrep YOK, iş akışı yalnız jq kuruyor — yani CI'da da adım hiçbir şey taramıyordu. Düzeltme: `rg` varsa o, yoksa aynı kapsamda `grep -E -r` (obj/bin, gizli klasörler ve ikili dosyalar hariç; tüm ağaçta iki araç birebir aynı 60 satırı buldu). Yalnız çıkış 1 ("eşleşme yok") geçer; araç yok (127) ya da hata (2) adımı düşürür. Kanıt: temiz ağaç iki modda geçiyor; eklenen ihlal iki modda kırmızı; CT sabotajında tarayıcı komutu bozulunca "could not scan … 127" ile düştü. GNU grep yerelde koşulmadı.
+
+---
+
+### BL-409
+
+**Genel komut denetim hattı her kaydı "Sistem" aktörüyle yazıyor — kiracı kullanıcısının yaptığı değişiklik kimin türüyle kaydedildiğini söylemiyor**
+
+DURUM: AÇIK · BULAN: BL-347 ajanı (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01), CT · KAYIT: 2026-09-15
+
+`Contracts/Behaviors/AuditBehavior.cs` `IAuditableCommand` hattındaki her kaydı isteğin varsayılan aktör türüyle (`AuditActorType.System`) yazıyor; jetondaki `actor_type` okunmuyor. Kullanıcı kimliği kayıtta var, ama "bunu bir kiracı kullanıcısı mı, platform yöneticisi mi, sistem işi mi yaptı" sorusunun cevabı yanlış. GxP denetim izinde aktör türü ayırt edici bilgi. Öneri: BL-347'nin `ResolveActorType` eşlemesi tek bir paylaşılan çözümleyiciye çıkarılır; `AuditBehavior` ve `DataExportAuditWriter` onu kullanır; gerçekten arka plan işi olan komutlar `System` kalır. Etki: 62 denetlenen komut; denetim ekranı ve dışa aktarma aktör türünü gösteriyorsa görünen değer değişir (ölçülmeli). Çeviri/ekran işi yok; altyapı CT alt ajanı, BL-395 kilidi birleştikten sonra.
+
+---
+
+### BL-410
+
+**Görev ve toplantı modülleri hiçbir abonelik planında yok, Viewer Görev Merkezi'ni açamıyor — yeni kiracıda kimse bu ekranları kullanamaz**
+
+DURUM: AÇIK — sahip kararı bekliyor · BULAN: CT alt ajanı (BL-403 incelemesi), CT doğruladı · KAYIT: 2026-09-15
+
+Ölçüldü (dev): yeni kiracıya yalnız Admin ve Viewer kuruluyor (`RoleProvisioningService.cs:11-15`). Admin'in hazır listesinde (`DefaultRolePermissionTemplate.AdminModules`) `platform.tasks.*`/`platform.meetings.*` yok; dev Admin 29 görev/toplantı anahtarının hiçbirini tutmuyor. TASKS, MEETINGS, WORK-AGGREGATION ve WORK-REPORT `IsTenantAssignable=true`, `IsBaseline=false` ve beş planın hiçbirinde yok; plan hiç vermez, kiracı başına açık yetkilendirme gerekir. Viewer yalnız `read` eylemli anahtarları alıyor; `platform.work-aggregation.inbox.view` `view` eylemli olduğu için Viewer (ve eşitleme yoluyla da) Görev Merkezi gelen kutusunu açamıyor. Dev varsayılan kiracıda WORK-AGGREGATION yetkilendirmesi açık olduğu hâlde Admin/Viewer'da `inbox.view` yok — incelenmedi. Sahip kararları: (1) modüller planlara mı girer, yoksa canlı kiracıya açık yetkilendirme mi (öneri: bu turda açık yetkilendirme, kontrol listesi §5; plan kararı sonra); (2) `inbox.view` Viewer'a nasıl gider (öneri: Görev Merkezi anahtarı için eşitleme ve şablonda dar istisna; tüm `view` eylemlerini Viewer'a açmak geniş etkili, önce liste ölçülür). `AdminModules`'e eklemek sahibin "liste küratörlü kalsın" kararına ters.
+
+---
+
+### BL-411
+
+**İki görev şablonu izni Auth kataloğunda "yalnız platform" kapsamında — kiracı rolüne atanamıyor**
+
+DURUM: AÇIK — canlı katalog ölçümü + sahip kararı bekliyor · BULAN: CT alt ajanı, CT dev veritabanında doğruladı · KAYIT: 2026-09-15
+
+`diten_auth_v3.permissions`: `platform.tasks.checklist-templates.manage` ve `platform.tasks.templates.manage` → `Scope: 1` (PlatformAdmin); diğer görev anahtarları `Scope: 0`. Sayfaları kiracı yollarında (`TaskManifestProvider.cs:292`, `:314`). Kapsamı platform olan anahtar hiçbir kiracı rolüne verilemez, elle atama 403 → kontrol listesi şablonları ve görev şablonları ekranları kiracıda kullanılamaz. Olası sebep (çıkarım): başlangıç işçisi anahtarları manifest kapsamı gelmeden kaydetti (`TaskManifestProvider.cs:9-13` tam bu uyarıyı taşıyor); Auth'ta kapsam düşürme yolu yok. Öneri: canlı kataloğu salt okunur ölç (kontrol listesi §5); aynıysa yalnız bu iki anahtar için Auth veri adımı (kapsam 1 → 0), yükseltme sınırına dokunduğu için dar tutulur ve sahip onayıyla. Altyapı CT kulvarı.
+
+---
+
+### BL-412
+
+**Auth'ta role izin atama kaydı `AssignedBy: "System"` yazıyor — atamayı yapan kişi yalnız denetim günlüğünde**
+
+DURUM: AÇIK · BULAN: CT alt ajanı (BL-403 incelemesi) · KAYIT: 2026-09-15
+
+`AssignPermissionCommandHandler.cs:54` atayanı sabit `"System"` yazıyor; rol belgelerinde `CreatedBy` boş. Gerçek aktör yalnız `authAuditLogs`'ta. Rol-izin satırına bakan biri elle yapılmış atamayı sistem ataması sanır. Platform tarafındaki BL-409 ile aynı aile (aktörün yanlış kaydı), ama Auth servisinde. Öneri: işleyici oturumdaki kullanıcıyı yazsın, eşitleme ve tohum `System` kalsın; mevcut satırlar değişmez. Altyapı CT kulvarı, çeviri işi yok.
 
 ---
 
