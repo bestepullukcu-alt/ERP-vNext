@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 
@@ -277,7 +278,7 @@ public sealed record BulkDeleteTaskFieldDefinitionCommand(
 // ── DCP-005 slice 1: task types ─────────────────────────────────────────────
 
 public sealed record CreateTaskTypeCommand(
-    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<Guid>>;
+    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<CreateTaskTypeResultDto>>;
 
 public sealed record UpdateTaskTypeCommand(
     Guid Id, UpdateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;

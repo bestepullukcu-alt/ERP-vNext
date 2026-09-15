@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Zorunlu</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Gözden geçirme toplantısı ayarı İzin verilmez, İsteğe bağlı veya Zorunlu olmalıdır.</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Bu görev tipi siz düzenlerken başka biri tarafından değiştirildi. Sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>Görev türü pasif olarak kaydedildi: bağlı belgelerin hepsi yürürlükte değil.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>Belge durumu doğrulanamadı; tür pasif kaydedildi. Daha sonra aktif etmeyi deneyin.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>Şu belgeler yürürlükte olmadığı için tür aktif edilemez:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>Belge durumu doğrulanamadı, daha sonra tekrar deneyin.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>Aktif bir türe yürürlükte olmayan belge bağlanamaz. Önce türü pasife alın ya da belgenin yürürlüğe girmesini bekleyin.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Kayıt değil</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Operasyonel kayıt</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP kalite kaydı</value></data>

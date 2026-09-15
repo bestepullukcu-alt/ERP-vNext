@@ -159,6 +159,19 @@ public sealed class TaskTypeClosureOutcomeRow
 }
 
 /// <summary>
+/// WP-DM-DCP005-KURAL4-UI-01 (sahip 2026-09-15) — create never refuses; this is the wire shape of
+/// <c>CreateTaskTypeResultDto</c> the API answers with, so the controller can tell an active save from a
+/// passively-saved one and say why.
+/// </summary>
+public sealed class CreateTaskTypeResultApiModel
+{
+    public Guid Id { get; set; }
+    public bool IsActive { get; set; }
+    public List<string>? BlockingDocuments { get; set; }
+    public bool EffectivenessUnavailable { get; set; }
+}
+
+/// <summary>
 /// The Platform envelope. Declared per feature namespace exactly as the sibling does — the shape is shared, the
 /// type is not, so one module's response contract cannot silently change another's.
 /// </summary>

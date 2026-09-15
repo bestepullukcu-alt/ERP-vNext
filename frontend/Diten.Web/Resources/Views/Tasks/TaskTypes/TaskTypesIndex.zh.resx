@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>必需</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>评审会议设置必须为“不允许”、“可选”或“必需”。</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>您编辑此任务类型时，其他人已将其更改。请刷新页面后重试。</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>任务类型已保存为未启用：并非所有关联文档都已生效。</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>无法验证文档状态；任务类型已保存为未启用。请稍后再尝试启用。</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>由于以下文档尚未生效，无法启用该任务类型：</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>无法验证文档状态。请稍后重试。</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>未生效的文档不能与已启用的任务类型关联。请先停用该类型，或等待文档生效。</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>非记录</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>运营记录</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>GxP 质量记录</value></data>

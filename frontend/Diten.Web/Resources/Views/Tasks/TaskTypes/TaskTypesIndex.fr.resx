@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Obligatoire</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Le paramètre de réunion de revue doit être Non autorisée, Facultative ou Obligatoire.</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Ce type de tâche a été modifié par quelqu'un d'autre pendant que vous le modifiiez. Actualisez la page et réessayez.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>Le type de tâche a été enregistré comme inactif : tous les documents liés ne sont pas en vigueur.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>Le statut du document n'a pas pu être vérifié ; le type de tâche a été enregistré comme inactif. Essayez de l'activer plus tard.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>Le type de tâche ne peut pas être activé car ces documents ne sont pas en vigueur :</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>Le statut du document n'a pas pu être vérifié. Veuillez réessayer plus tard.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>Un document qui n'est pas en vigueur ne peut pas être lié à un type de tâche actif. Désactivez d'abord le type ou attendez que le document entre en vigueur.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Pas un enregistrement</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Enregistrement opérationnel</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Enregistrement qualité GxP</value></data>

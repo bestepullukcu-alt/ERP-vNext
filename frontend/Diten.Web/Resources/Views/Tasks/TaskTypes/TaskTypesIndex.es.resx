@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Obligatoria</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>La configuración de la reunión de revisión debe ser No permitida, Opcional u Obligatoria.</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Este tipo de tarea fue modificado por otra persona mientras usted lo editaba. Actualice la página e inténtelo de nuevo.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>El tipo de tarea se guardó como inactivo: no todos los documentos vinculados están vigentes.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>No se pudo verificar el estado del documento; el tipo de tarea se guardó como inactivo. Inténtelo activar más tarde.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>El tipo de tarea no se puede activar porque estos documentos no están vigentes:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>No se pudo verificar el estado del documento. Inténtelo de nuevo más tarde.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>No se puede vincular un documento que no está vigente a un tipo de tarea activo. Desactive primero el tipo o espere a que el documento esté vigente.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>No es un registro</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Registro operativo</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Registro de calidad GxP</value></data>

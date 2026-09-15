@@ -55,7 +55,7 @@ public sealed class TaskTypeConcurrencyTests
         var type = Stored(version: 3);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new UpdateTaskTypeHandler(types).Handle(
+        var result = await new UpdateTaskTypeHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new UpdateTaskTypeCommand(type.Id, UpdateRequest(3), "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
@@ -68,7 +68,7 @@ public sealed class TaskTypeConcurrencyTests
         var type = Stored(version: 3);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new UpdateTaskTypeHandler(types).Handle(
+        var result = await new UpdateTaskTypeHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new UpdateTaskTypeCommand(type.Id, UpdateRequest(2), "c"), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
@@ -153,7 +153,7 @@ public sealed class TaskTypeConcurrencyMongoTests
         await repository.CreateAsync(type);
         var before = await SnapshotAsync(database, type.Id);
 
-        var handler = new UpdateTaskTypeHandler(repository);
+        var handler = new UpdateTaskTypeHandler(repository, new FakeControlledDocumentEffectivenessPort());
         var stale = new UpdateTaskTypeRequest(
             "CNC", "Renamed while stale", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
             ExpectedVersion: 0 /* the row is really at Version 1 */);
@@ -176,7 +176,7 @@ public sealed class TaskTypeConcurrencyMongoTests
         await repository.CreateAsync(type);
         var startingVersion = (await repository.GetByIdAsync(type.Id))!.Version;
 
-        var handler = new UpdateTaskTypeHandler(repository);
+        var handler = new UpdateTaskTypeHandler(repository, new FakeControlledDocumentEffectivenessPort());
         var request = new UpdateTaskTypeRequest(
             "CNC", "Renamed", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
             ExpectedVersion: startingVersion);
@@ -201,7 +201,7 @@ public sealed class TaskTypeConcurrencyMongoTests
         await repository.CreateAsync(type);
         var readVersion = (await repository.GetByIdAsync(type.Id))!.Version;
 
-        var handler = new UpdateTaskTypeHandler(repository);
+        var handler = new UpdateTaskTypeHandler(repository, new FakeControlledDocumentEffectivenessPort());
         var managerA = new UpdateTaskTypeRequest(
             "CNC", "Manager A's name", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null,
             ExpectedVersion: readVersion);

@@ -8,6 +8,30 @@
  */
 'use strict';
 
+/**
+ * WP-DM-DCP005-KURAL4-UI-01 (Kural 4 v2, sahip 2026-09-15) — the /active toggle's own reason-code → sentence
+ * mapping, read off the proxied response body (this screen's toggle never goes through TaskTypesController's
+ * server-side ReasonCodeMessages — it is a raw client fetch to the same-origin proxy). The SAME wire code
+ * TaskTypesController maps to a DIFFERENT sentence server-side (edit-time, "cannot attach to an active type")
+ * gets ITS OWN activation sentence here ("cannot activate") — one reason code, two true things depending on
+ * which action asked. A top-level, dependency-free function (labels passed in, not closed over) so it is
+ * testable without booting the whole DataTable module.
+ */
+function buildToggleActiveErrorMessage(reasonCode, errors, labels) {
+    const L = labels || {};
+    if (reasonCode === 'task_type_enable_blocked_documents') {
+        const list = Array.isArray(errors) && errors.length > 0 ? ` ${errors.join(', ')}` : '';
+        return `${L.ErrorTaskTypeEnableBlockedDocuments || ''}${list}`;
+    }
+    if (reasonCode === 'task_type_enable_register_unavailable') {
+        return L.ErrorTaskTypeEnableRegisterUnavailable || '';
+    }
+    return L.ErrorOccurred || '';
+}
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { buildToggleActiveErrorMessage };
+}
+
 const TaskFieldDefinitionList = (function () {
     let dt;
     let defaultViewRecord = null;
@@ -461,12 +485,22 @@ const TaskFieldDefinitionList = (function () {
                         // the row as it actually stands.
                         body: JSON.stringify({ isActive: next, expectedVersion: row.version })
                     });
-                    if (!res.ok) { throw new Error('Toggle failed.'); }
+                    if (!res.ok) {
+                        // Kural 4 v2 — the two document-effectiveness refusals carry a reason_code and (for the
+                        // blocked-documents case) an Errors list naming which document, read here so the toast
+                        // can say the actual rule instead of a generic failure.
+                        let body = null;
+                        try { body = await res.json(); } catch { /* not JSON, or empty */ }
+                        const failure = new Error('Toggle failed.');
+                        failure.reasonCode = body?.reason_code;
+                        failure.errors = body?.errors;
+                        throw failure;
+                    }
                     reloadWithSuccessToast(next ? 'RecordActivated' : 'RecordDeactivated');
                 } catch (error) {
                     if (error?.authHandled) { return; }
                     console.error('[TaskTypes] Failed to change active state.', error);
-                    window.showToast?.(L.ErrorOccurred || '', 'error');
+                    window.showToast?.(buildToggleActiveErrorMessage(error?.reasonCode, error?.errors, L), 'error');
                 }
             };
             if (next) { void apply(); return; }

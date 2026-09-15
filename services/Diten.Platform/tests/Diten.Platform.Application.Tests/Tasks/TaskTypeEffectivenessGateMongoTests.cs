@@ -149,11 +149,16 @@ public sealed class TaskTypeEffectivenessGateMongoTests
         Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
     }
 
+    /// <summary>
+    /// Kural 4 v2 (sahip 2026-09-15, Blueprint/SAP/Oracle kıyasıyla doğrulandı — WP-CT-DECISION-BENCHMARK-01) —
+    /// SUPERSEDES this WP's own v1 behavior. Creation is NEVER refused for a document reason any more: a type
+    /// born with a non-Effective bound document is saved — 201, not 409 — but PASSIVE, and the response NAMES
+    /// which document blocked it. Measured (this WP's own NE): a type is born IsActive=true by default and CAN
+    /// already carry GroupDocuments at creation, so this is the ONLY moment creation itself is gated at all.
+    /// </summary>
     [Fact]
-    public async Task Creating_a_type_with_a_blocked_bound_document_is_refused_and_nothing_is_persisted()
+    public async Task Creating_a_type_with_a_blocked_bound_document_succeeds_but_is_saved_inactive_naming_the_blocker()
     {
-        // Measured (this WP's own NE): a type is born IsActive=true and CAN already carry GroupDocuments at
-        // creation — the gate that guards /active must therefore guard creation too, or it is a bypass.
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-DRAFT-2", ControlledDocumentLifecycleStatus.Draft));
         var tenant = new TenantContext();
@@ -165,14 +170,18 @@ public sealed class TaskTypeEffectivenessGateMongoTests
         var result = await new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object, port)
             .Handle(new CreateTaskTypeCommand(request, "c"), CancellationToken.None);
 
-        Assert.False(result.IsSuccessful);
-        Assert.Equal(409, result.StatusCode);
-        Assert.Equal(TaskReasonCodes.TaskTypeEnableBlockedDocuments, result.ReasonCode);
-        Assert.Null(await types.GetByCodeAsync("GOV"));
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        Assert.Equal(201, result.StatusCode);
+        Assert.False(result.Data!.IsActive);
+        Assert.False(result.Data.EffectivenessUnavailable);
+        Assert.Contains(result.Data.BlockingDocuments, e => e.Contains("DOC-DRAFT-2", StringComparison.Ordinal) && e.Contains("Draft", StringComparison.Ordinal));
+        var stored = await types.GetByCodeAsync("GOV");
+        Assert.NotNull(stored);
+        Assert.False(stored!.IsActive);
     }
 
     [Fact]
-    public async Task Creating_a_type_with_an_effective_bound_document_succeeds()
+    public async Task Creating_a_type_with_an_effective_bound_document_succeeds_active()
     {
         await using var mongo = await DisposableMongoReplicaSet.StartAsync();
         var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-OK", ControlledDocumentLifecycleStatus.Effective));
@@ -186,7 +195,159 @@ public sealed class TaskTypeEffectivenessGateMongoTests
             .Handle(new CreateTaskTypeCommand(request, "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
-        Assert.NotNull(await types.GetByCodeAsync("GOVOK"));
+        Assert.True(result.Data!.IsActive);
+        Assert.Empty(result.Data.BlockingDocuments);
+        Assert.False(result.Data.EffectivenessUnavailable);
+        var stored = await types.GetByCodeAsync("GOVOK");
+        Assert.NotNull(stored);
+        Assert.True(stored!.IsActive);
+    }
+
+    [Fact]
+    public async Task Creating_a_type_when_the_register_is_unreachable_succeeds_but_is_saved_inactive_as_unverified()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, _, tenantId) = await ArrangeAsync(mongo);
+        var tenant = new TenantContext();
+        tenant.SetTenant(tenantId);
+        var throwingPort = new FakeControlledDocumentEffectivenessPort { Throws = true };
+        var request = new CreateTaskTypeRequest(
+            "GOVUNK", "Governed, unverifiable", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-ANY"], LocalDocuments: null);
+
+        var result = await new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object, throwingPort)
+            .Handle(new CreateTaskTypeCommand(request, "c"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        Assert.False(result.Data!.IsActive);
+        Assert.True(result.Data.EffectivenessUnavailable);
+        Assert.Empty(result.Data.BlockingDocuments);
+        var stored = await types.GetByCodeAsync("GOVUNK");
+        Assert.NotNull(stored);
+        Assert.False(stored!.IsActive);
+    }
+
+    [Fact]
+    public async Task Creating_a_type_with_no_bound_documents_is_active_regardless_of_the_register()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, port, tenantId) = await ArrangeAsync(mongo);
+        var tenant = new TenantContext();
+        tenant.SetTenant(tenantId);
+        var request = new CreateTaskTypeRequest(
+            "GOVNONE", "Ungoverned", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: null, LocalDocuments: null);
+
+        var result = await new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object, port)
+            .Handle(new CreateTaskTypeCommand(request, "c"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        Assert.True(result.Data!.IsActive);
+    }
+
+    // ── Kural 4 v2 — editing an ACTIVE type's bound documents ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task Editing_an_active_types_documents_to_include_a_blocked_one_is_refused_and_nothing_is_written()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-BAD", ControlledDocumentLifecycleStatus.Draft));
+        var type = new TaskType { TenantId = tenantId, Code = "ACT", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
+        await types.CreateAsync(type);
+        var request = new UpdateTaskTypeRequest(
+            "ACT", "Renamed while at it", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-BAD"], LocalDocuments: null, ExpectedVersion: type.Version);
+
+        var result = await new UpdateTaskTypeHandler(types, port)
+            .Handle(new UpdateTaskTypeCommand(type.Id, request, "c"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.TaskTypeEnableBlockedDocuments, result.ReasonCode);
+        var stored = await types.GetByIdAsync(type.Id);
+        // NOTHING was written — not the document set, and not the unrelated Name this same request carried.
+        Assert.Equal(["DOC-OLD"], stored!.GroupDocuments);
+        Assert.Equal("Active governed", stored.Name);
+        Assert.True(stored.IsActive);
+    }
+
+    [Fact]
+    public async Task Editing_an_active_types_documents_to_all_Effective_writes_the_change()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-GOOD", ControlledDocumentLifecycleStatus.Effective));
+        var type = new TaskType { TenantId = tenantId, Code = "ACT2", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
+        await types.CreateAsync(type);
+        var request = new UpdateTaskTypeRequest(
+            "ACT2", "Active governed", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-GOOD"], LocalDocuments: null, ExpectedVersion: type.Version);
+
+        var result = await new UpdateTaskTypeHandler(types, port)
+            .Handle(new UpdateTaskTypeCommand(type.Id, request, "c"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        var stored = await types.GetByIdAsync(type.Id);
+        Assert.Equal(["DOC-GOOD"], stored!.GroupDocuments);
+    }
+
+    [Fact]
+    public async Task Editing_an_active_types_documents_when_the_register_is_unreachable_is_refused_503()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, _, tenantId) = await ArrangeAsync(mongo);
+        var type = new TaskType { TenantId = tenantId, Code = "ACT3", Name = "Active governed", IsActive = true, GroupDocuments = ["DOC-OLD"] };
+        await types.CreateAsync(type);
+        var throwingPort = new FakeControlledDocumentEffectivenessPort { Throws = true };
+        var request = new UpdateTaskTypeRequest(
+            "ACT3", "Active governed", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-NEW"], LocalDocuments: null, ExpectedVersion: type.Version);
+
+        var result = await new UpdateTaskTypeHandler(types, throwingPort)
+            .Handle(new UpdateTaskTypeCommand(type.Id, request, "c"), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(TaskReasonCodes.TaskTypeEnableRegisterUnavailable, result.ReasonCode);
+        Assert.Equal(["DOC-OLD"], (await types.GetByIdAsync(type.Id))!.GroupDocuments);
+    }
+
+    [Fact]
+    public async Task Editing_an_active_types_OTHER_fields_without_touching_its_blocked_documents_is_never_gated()
+    {
+        // HaveDocumentsChanged's own point: an already-active type whose bound documents predate this Kural (or
+        // were bound before they went Blocked) must remain editable for anything that is NOT a document change.
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-STILL-BAD", ControlledDocumentLifecycleStatus.Retired));
+        var type = new TaskType { TenantId = tenantId, Code = "ACT4", Name = "Old name", IsActive = true, GroupDocuments = ["DOC-STILL-BAD"] };
+        await types.CreateAsync(type);
+        var request = new UpdateTaskTypeRequest(
+            "ACT4", "New name, same documents", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-STILL-BAD"], LocalDocuments: null, ExpectedVersion: type.Version);
+
+        var result = await new UpdateTaskTypeHandler(types, port)
+            .Handle(new UpdateTaskTypeCommand(type.Id, request, "c"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        Assert.Equal("New name, same documents", (await types.GetByIdAsync(type.Id))!.Name);
+    }
+
+    [Fact]
+    public async Task Editing_a_PASSIVE_types_documents_to_a_blocked_one_is_free()
+    {
+        await using var mongo = await DisposableMongoReplicaSet.StartAsync();
+        var (types, port, tenantId) = await ArrangeAsync(mongo, ("DOC-BAD2", ControlledDocumentLifecycleStatus.Draft));
+        var type = new TaskType { TenantId = tenantId, Code = "PAS", Name = "Passive governed", IsActive = false };
+        await types.CreateAsync(type);
+        var request = new UpdateTaskTypeRequest(
+            "PAS", "Passive governed", null, TaskRecordClass.NOT_A_RECORD, null, null, false,
+            GroupDocuments: ["DOC-BAD2"], LocalDocuments: null, ExpectedVersion: type.Version);
+
+        var result = await new UpdateTaskTypeHandler(types, port)
+            .Handle(new UpdateTaskTypeCommand(type.Id, request, "c"), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful, string.Join(" | ", result.Errors));
+        Assert.Equal(["DOC-BAD2"], (await types.GetByIdAsync(type.Id))!.GroupDocuments);
+        Assert.False((await types.GetByIdAsync(type.Id))!.IsActive); // still passive — editing documents never activates
     }
 
     [Fact]

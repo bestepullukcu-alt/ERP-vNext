@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Обязательно</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>Параметр совещания по рассмотрению должен иметь значение «Не допускается», «Необязательно» или «Обязательно».</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Этот тип задачи был изменён кем-то другим, пока вы его редактировали. Обновите страницу и попробуйте снова.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>Тип задачи сохранён как неактивный: не все связанные документы действуют.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>Не удалось проверить статус документа; тип задачи сохранён как неактивный. Попробуйте активировать его позже.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>Тип задачи нельзя активировать, так как эти документы не действуют:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>Не удалось проверить статус документа. Повторите попытку позже.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>Документ, который не действует, нельзя привязать к активному типу задачи. Сначала деактивируйте тип или дождитесь, пока документ вступит в силу.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>Не запись</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Операционная запись</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Запись качества GxP</value></data>

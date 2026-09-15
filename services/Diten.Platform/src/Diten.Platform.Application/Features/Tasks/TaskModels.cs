@@ -1470,6 +1470,22 @@ public sealed record UpdateTaskTypeRequest(
 /// </summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive, int ExpectedVersion);
 
+/// <summary>
+/// WP-DM-DCP005-KURAL4-UI-01 (sahip 2026-09-15) — create never refuses; this is how the caller learns whether it
+/// got an active type or a passively-saved one, and why.
+/// </summary>
+public sealed record CreateTaskTypeResultDto(
+    Guid Id,
+    bool IsActive,
+    /// <summary>Populated only when <see cref="IsActive"/> is false because ≥1 bound document resolved to
+    /// something other than Effective — the SAME "{uid}: {State} ({reason})" shape /active's own 409 carries.
+    /// Empty when active, and empty (see <see cref="EffectivenessUnavailable"/> instead) when the register could
+    /// not be reached at all.</summary>
+    IReadOnlyList<string> BlockingDocuments,
+    /// <summary>True when the type was saved inactive because the effectiveness port itself could not be
+    /// reached — distinct from a document that WAS resolved and found not-Effective.</summary>
+    bool EffectivenessUnavailable);
+
 /// <summary>One task type as the management screen and the task form read it.</summary>
 public sealed record TaskTypeDto(
     Guid Id,

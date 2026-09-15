@@ -23,6 +23,11 @@
   <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>مطلوب</value></data>
   <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>يجب أن يكون إعداد اجتماع المراجعة: غير مسموح أو اختياري أو مطلوب.</value></data>
   <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>تم تغيير نوع المهمة هذا من قبل شخص آخر أثناء تحريرك له. يرجى تحديث الصفحة والمحاولة مرة أخرى.</value></data>
+  <data name="InfoTaskTypeSavedInactiveBlockedDocuments" xml:space="preserve"><value>تم حفظ نوع المهمة كغير نشط: ليست كل المستندات المرتبطة سارية المفعول.</value></data>
+  <data name="InfoTaskTypeSavedInactiveUnverified" xml:space="preserve"><value>تعذّر التحقق من حالة المستند؛ تم حفظ نوع المهمة كغير نشط. حاول تفعيله لاحقًا.</value></data>
+  <data name="ErrorTaskTypeEnableBlockedDocuments" xml:space="preserve"><value>لا يمكن تفعيل نوع المهمة لأن هذه المستندات غير سارية المفعول:</value></data>
+  <data name="ErrorTaskTypeEnableRegisterUnavailable" xml:space="preserve"><value>تعذّر التحقق من حالة المستند. يرجى المحاولة مرة أخرى لاحقًا.</value></data>
+  <data name="ErrorTaskTypeActiveDocumentBlocked" xml:space="preserve"><value>لا يمكن ربط مستند غير سارٍ بنوع مهمة نشط. قم بإلغاء تفعيل النوع أولاً أو انتظر حتى يصبح المستند ساري المفعول.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>ليس سجلًا</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>سجل تشغيلي</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>سجل جودة GxP</value></data>

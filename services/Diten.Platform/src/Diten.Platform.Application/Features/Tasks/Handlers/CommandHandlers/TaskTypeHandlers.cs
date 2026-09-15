@@ -17,7 +17,7 @@ namespace Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 /// <para>Modelled on <c>TaskFieldDefinitionHandlers</c> in this same folder: same layering, same validation
 /// placement, same response shapes. Nothing here is a new pattern.</para>
 /// </summary>
-public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeCommand, Response<Guid>>
+public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeCommand, Response<CreateTaskTypeResultDto>>
 {
     private readonly ITaskTypeRepository _types;
     private readonly ITenantContext _tenantContext;
@@ -34,30 +34,30 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
         _effectiveness = effectiveness;
     }
 
-    public async Task<Response<Guid>> Handle(CreateTaskTypeCommand command, CancellationToken ct)
+    public async Task<Response<CreateTaskTypeResultDto>> Handle(CreateTaskTypeCommand command, CancellationToken ct)
     {
         var request = command.Request;
 
         if (TaskTypeRules.ValidateShape(request.Code, request.Name, request.FunctionCode) is { } shapeInvalid)
         {
-            return Response<Guid>.Fail(shapeInvalid.Message, 400, shapeInvalid.ReasonCode, command.CorrelationId);
+            return Response<CreateTaskTypeResultDto>.Fail(shapeInvalid.Message, 400, shapeInvalid.ReasonCode, command.CorrelationId);
         }
 
         if (TaskTypeRules.ValidateClassification(request.RecordClass, request.GqmsDomain) is { } classInvalid)
         {
-            return Response<Guid>.Fail(classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
+            return Response<CreateTaskTypeResultDto>.Fail(classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
         if (TaskTypeRules.ValidateReviewMeetingRequirement(request.ReviewMeetingRequirement) is { } meetingInvalid)
         {
-            return Response<Guid>.Fail(meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
+            return Response<CreateTaskTypeResultDto>.Fail(meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
         }
 
         var (outcomes, outcomesInvalid) = TaskTypeRules.NormalizeClosureOutcomes(
             request.ClosureOutcomes?.Select(ToOutcome));
         if (outcomesInvalid is { } outcomeError)
         {
-            return Response<Guid>.Fail(
+            return Response<CreateTaskTypeResultDto>.Fail(
                 outcomeError.Message, 400, outcomeError.ReasonCode, command.CorrelationId);
         }
 
@@ -69,7 +69,7 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
          */
         if (TaskTypeRules.ValidateCodeUnique(code, existing) is { } duplicate)
         {
-            return Response<Guid>.Fail(duplicate.Message, 409, duplicate.ReasonCode, command.CorrelationId);
+            return Response<CreateTaskTypeResultDto>.Fail(duplicate.Message, 409, duplicate.ReasonCode, command.CorrelationId);
         }
 
         var type = new TaskType
@@ -89,22 +89,24 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             // Null takes Optional — the entity's own default, which changes no type's behaviour.
             ReviewMeetingRequirement = request.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional,
             RequiresDeliverableOnCompletion = request.RequiresDeliverableOnCompletion,
-            IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
 
-        // Kural 4 (DCP-005 Adım 3, G3) — a type is born ACTIVE (IsActive = true, above), and its governing
-        // documents can already be bound at creation (GroupDocuments/LocalDocuments, measured just above); the
-        // SAME gate SetTaskTypeActiveHandler applies on pasif→aktif therefore applies here too, or creation would
-        // be a silent bypass of the rule the /active endpoint enforces.
-        if (await TaskTypeEffectivenessGate.BlockIfGoverningDocumentsNotEffectiveAsync<Guid>(
-                _effectiveness, type, command.CorrelationId, ct) is { } blocked)
-        {
-            return blocked;
-        }
+        // Kural 4 v2 (sahip 2026-09-15, Blueprint/SAP/Oracle kıyasıyla doğrulandı — WP-CT-DECISION-BENCHMARK-01):
+        // creation is NEVER refused for a document reason. A type born with a non-Effective or unverifiable
+        // governing document is simply saved INACTIVE — the same posture SAP's "Created" status and Veeva's
+        // "draft document assigns no training" take. Only /active and an active type's own document-changing
+        // edit are hard gates now.
+        var check = await TaskTypeEffectivenessGate.CheckAsync(_effectiveness, type, ct);
+        type.IsActive = check.Outcome == TaskTypeEffectivenessOutcome.AllEffective;
 
         var created = await _types.CreateAsync(type, ct);
-        return Response<Guid>.Success(created.Id, 201, command.CorrelationId);
+        var result = new CreateTaskTypeResultDto(
+            created.Id,
+            created.IsActive,
+            BlockingDocuments: check.Outcome == TaskTypeEffectivenessOutcome.SomeBlocked ? check.BlockingDetails : [],
+            EffectivenessUnavailable: check.Outcome == TaskTypeEffectivenessOutcome.RegisterUnavailable);
+        return Response<CreateTaskTypeResultDto>.Success(result, 201, command.CorrelationId);
     }
 
     internal static string? Trimmed(string? value)
@@ -128,8 +130,13 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
 public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeCommand, Response<NoContent>>
 {
     private readonly ITaskTypeRepository _types;
+    private readonly IControlledDocumentEffectivenessPort _effectiveness;
 
-    public UpdateTaskTypeHandler(ITaskTypeRepository types) => _types = types;
+    public UpdateTaskTypeHandler(ITaskTypeRepository types, IControlledDocumentEffectivenessPort effectiveness)
+    {
+        _types = types;
+        _effectiveness = effectiveness;
+    }
 
     public async Task<Response<NoContent>> Handle(UpdateTaskTypeCommand command, CancellationToken ct)
     {
@@ -170,14 +177,37 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
                 meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
         }
 
+        var newGroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
+        var newLocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);
+
+        // Kural 4 v2 (sahip 2026-09-15) — an ACTIVE type whose bound documents actually CHANGE is hard-gated,
+        // the SAME refusal /active gives (409/503); editing anything else, or re-posting the same document set,
+        // never re-checks (HaveDocumentsChanged — an already-active type is not retroactively re-examined just
+        // because it was saved again). Checked BEFORE any field is assigned below, so a refusal here writes
+        // NOTHING — not even the unrelated fields this same request carried.
+        if (type.IsActive
+            && TaskTypeEffectivenessGate.HaveDocumentsChanged(type.GroupDocuments, type.LocalDocuments, newGroupDocuments, newLocalDocuments))
+        {
+            var probe = new TaskType
+            {
+                TenantId = type.TenantId, Code = type.Code, Name = type.Name,
+                GroupDocuments = newGroupDocuments, LocalDocuments = newLocalDocuments
+            };
+            var check = await TaskTypeEffectivenessGate.CheckAsync(_effectiveness, probe, ct);
+            if (TaskTypeEffectivenessGate.ToBlockingResponse<NoContent>(check, command.CorrelationId) is { } blocked)
+            {
+                return blocked;
+            }
+        }
+
         type.Name = request.Name.Trim();
         type.Description = CreateTaskTypeHandler.Trimmed(request.Description);
         type.RecordClass = request.RecordClass;
         type.GqmsDomain = request.GqmsDomain;
         type.FunctionCode = TaskTypeRules.ParseFunctionCode(request.FunctionCode).Value?.ToString();
         type.IsQualityEvent = request.IsQualityEvent;
-        type.GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
-        type.LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);
+        type.GroupDocuments = newGroupDocuments;
+        type.LocalDocuments = newLocalDocuments;
 
         /*
          * Null is "not asking" — the stored value stays. Only the TYPE changes: no task opened under it is read or
@@ -256,11 +286,13 @@ public sealed class SetTaskTypeActiveHandler : IRequestHandler<SetTaskTypeActive
         // Kural 4 (DCP-005 Adım 3, G3 — sahip 2026-09-15, Kalite teyidi bekliyor) — ONLY the pasif→aktif edge is
         // gated: deactivating never checks (a manager must always be able to retire a type), and a type that is
         // already active never re-checks itself just because this endpoint was called with IsActive=true again.
-        if (command.Request.IsActive && !type.IsActive
-            && await TaskTypeEffectivenessGate.BlockIfGoverningDocumentsNotEffectiveAsync<NoContent>(
-                _effectiveness, type, command.CorrelationId, ct) is { } blocked)
+        if (command.Request.IsActive && !type.IsActive)
         {
-            return blocked;
+            var check = await TaskTypeEffectivenessGate.CheckAsync(_effectiveness, type, ct);
+            if (TaskTypeEffectivenessGate.ToBlockingResponse<NoContent>(check, command.CorrelationId) is { } blocked)
+            {
+                return blocked;
+            }
         }
 
         type.IsActive = command.Request.IsActive;
