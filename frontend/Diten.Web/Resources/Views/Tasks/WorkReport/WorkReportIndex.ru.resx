@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>В отчёт входит больше задач, чем помещается в одну выгрузку. Сузьте период или фильтры и повторите попытку.</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>У вас нет прав на выгрузку этого отчёта.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>Не удалось подготовить выгрузку.</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>Экспорт не удалось зафиксировать в журнале аудита, поэтому файл не был предоставлен. Повторите попытку немного позже.</value></data>
 </root>

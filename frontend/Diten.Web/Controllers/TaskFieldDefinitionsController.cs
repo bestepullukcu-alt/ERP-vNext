@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.TaskFieldDefinitions;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -240,60 +241,16 @@ public sealed class TaskFieldDefinitionsController : Controller
         }
         catch { }
 
+        // BL-388/BL-398 — ASP.NET's OWN 400 is not the Platform envelope. When a request body cannot even be
+        // bound (a null for a non-nullable field, a wrong type) the API answers before any handler runs, with a
+        // ProblemDetails whose `errors` is a field → messages dictionary; the envelope read above cannot bind
+        // that shape. Reader shared across five Task-screen controllers (GatewayProblemDetailsReader) so a sixth
+        // one written by copying this cannot copy a gap along with it.
         var raw = await response.Content.ReadAsStringAsync();
-        if (TryReadProblemDetailsErrors(raw, out var problemErrors))
-            return problemErrors;
+        if (GatewayProblemDetailsReader.TryReadErrors(raw, out var problemErrors))
+            return problemErrors.Count > 0 ? problemErrors : [_sharedLocalizer["GatewayError"].Value];
 
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
-    }
-
-    /// <summary>
-    /// BL-388 — ASP.NET's OWN 400 is not the Platform envelope. When a request body cannot even be bound (a null for
-    /// a non-nullable field, a wrong type) the API answers before any handler runs, with a ProblemDetails whose
-    /// <c>errors</c> is a field → messages dictionary. The envelope read above cannot bind that shape, so the body
-    /// used to fall through to the raw fallback and the form printed the JSON itself. Field messages are returned
-    /// as they are; a ProblemDetails with none gets the shared generic message, never its own raw body.
-    /// </summary>
-    private bool TryReadProblemDetailsErrors(string raw, out List<string> errors)
-    {
-        errors = [];
-        if (string.IsNullOrWhiteSpace(raw))
-            return false;
-
-        try
-        {
-            using var document = JsonDocument.Parse(raw);
-            var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object)
-                return false;
-
-            var hasFieldErrors = root.TryGetProperty("errors", out var fieldErrors) && fieldErrors.ValueKind == JsonValueKind.Object;
-            var isProblemDetails = hasFieldErrors || (root.TryGetProperty("title", out _) && root.TryGetProperty("status", out _));
-            if (!isProblemDetails)
-                return false;
-
-            if (hasFieldErrors)
-            {
-                errors = fieldErrors.EnumerateObject()
-                    .Where(field => field.Value.ValueKind == JsonValueKind.Array)
-                    .SelectMany(field => field.Value.EnumerateArray())
-                    .Where(message => message.ValueKind == JsonValueKind.String)
-                    .Select(message => message.GetString())
-                    .Where(message => !string.IsNullOrWhiteSpace(message))
-                    .Select(message => message!)
-                    .Distinct()
-                    .ToList();
-            }
-
-            if (errors.Count == 0)
-                errors.Add(_sharedLocalizer["GatewayError"].Value);
-
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
     }
 
     private bool AddAuthHeaders()

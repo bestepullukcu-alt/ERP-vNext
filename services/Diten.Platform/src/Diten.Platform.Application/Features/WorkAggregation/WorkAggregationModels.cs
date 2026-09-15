@@ -808,7 +808,19 @@ public sealed record WorkItemActivityEntryDto(
     /// than derived client-side because the client has only the author's NAME — two people with one name would
     /// otherwise be handed each other's controls, and the handler would then refuse a button the screen offered.</para>
     /// </summary>
-    bool Editable = false);
+    bool Editable = false,
+    /// <summary>
+    /// Who this COMMENT @mentions (WP-PSS-MOD0024-FOLLOWUPS-02) — present on a comment entry only, absent on an
+    /// event and absent (never an empty array) on a comment that names nobody. Reuses <see cref="WorkItemPersonDto"/>
+    /// rather than a bare id list: the edit dialog's "already tagged" chips need a name to show, not a GUID, and
+    /// this is the SAME shape Assignee/Requester already use for the same reason (K6.3).
+    ///
+    /// <para>An unresolved id is omitted, never shown as a raw GUID — same rule as the mention-candidates
+    /// endpoint. Withdrawn comments still carry this: who was mentioned is a fact about what was said, and it
+    /// does not change because the words were later taken back.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemPersonDto>? Mentioned = null);
 
 /// <summary>
 /// What happened, as CODES rather than as a sentence (WC-1).

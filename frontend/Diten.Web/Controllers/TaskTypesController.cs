@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.TaskTypes;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -417,7 +418,13 @@ public sealed class TaskTypesController : Controller
         }
         catch { }
 
+        // BL-398 — ASP.NET's OWN 400 (a body that never reached a handler) is a ProblemDetails, not the
+        // Platform envelope; unread, its raw JSON was printed on the page. Shared reader, see
+        // GatewayProblemDetailsReader.
         var raw = await response.Content.ReadAsStringAsync();
+        if (GatewayProblemDetailsReader.TryReadErrors(raw, out var problemErrors))
+            return problemErrors.Count > 0 ? problemErrors : [_sharedLocalizer["GatewayError"].Value];
+
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 
