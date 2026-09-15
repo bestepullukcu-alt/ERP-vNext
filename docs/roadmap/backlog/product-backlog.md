@@ -5713,6 +5713,16 @@ Kural 4 (DCP-005 Adım 3) yalnız aktifleştirme anında denetliyor; sözleşme 
 
 ---
 
+### BL-416
+
+**CRM onay/tercih ekranı "kim oluşturdu" etiketini maskeli e-posta ile gösteriyor — Auth'un görünen ad ucuna geçmeli**
+
+DURUM: AÇIK (CRM kulvarı) · BULAN: CT alt ajanı (WP-INFRA-AUTH-LONG-RED-TESTS-01) · KAYIT: 2026-09-15
+
+`frontend/Diten.Web/Controllers/CRM/ConsentPreferencesController.cs:571-609` oluşturan/güncelleyen/arşivleyen kişinin etiketini üç adımda buluyor: `GET /api/users/{id}` (auth.users.read) → `lookup-validation` yanıtındaki `MaskedName`/`MaskedEmail` → GUID. Maskeli alanlar onaylı CAND-CAP-0001 §6'ya aykırı olarak `0f71a237`'de karar atfı olmadan eklenmişti; altyapı CT bu alanları kaldırıyor (sözleşme testleri `UserLookupValidationContractTests`). Etki: varsayılan Admin/Viewer adımı 1'de adı görüyor, değişiklik yok; `auth.users.read` olmayan özel rollerde etiket GUID'e düşer. Doğru kaynak: Auth'un kimlikten görünen ad okuması (WP-INFRA-AUTH-DISPLAY-LABEL-01, `b368c9df`; yalnız ad, e-posta asla; `auth.users.lookup`). Öneri: adım 2 bu uca geçsin, `AuditUserLookupDto` kaldırılsın. Kıyas: SAP/Oracle denetim alanlarında kullanıcı adı ya da kimliği gösterilir, yetkisiz kullanıcıya e-posta gösterilmez (veri azaltma).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
