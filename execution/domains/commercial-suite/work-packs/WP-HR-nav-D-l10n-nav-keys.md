@@ -52,11 +52,16 @@ DOĞRULA (E2): cd frontend && dotnet test Diten.Web.Tests → NavManifestL10nGua
 Durma koşulları: bir sayfanın İngilizce etiketi provider'da bulunamıyorsa · Normalize sonucu belirsizse · guard beklediğinden farklı anahtar şeması gerekiyorsa · kapsam resx dışına taşıyorsa → DUR + raporla.
 ```
 
-## §37 CT bağımsız doğrulama → (agent sonrası doldurulacak)
+## §37 CT bağımsız doğrulama (2026-09-15) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: db52f62b (tek) · Agent: PASS (137/137, guard 7/7) · CT: ACCEPTED E2
 ```
-- İzole worktree @commit → `dotnet test frontend/Diten.Web.Tests` → NavManifestL10nGuardTests tüm fact yeşil; 413 satır (59×7) present+non-empty+non-echo; yalnız 7 resx değişti; baseline-diff sıfır-yeni-fail.
+- ✅ **Scope:** yalnız 7 resx (`SharedResource.{en,tr,fr,es,zh,ar,ru}.resx`), her biri +58 satır = **406 insertion**. Manifest/DI/backend/entitlement/grant dokunulmadı. Working tree temiz.
+- ✅ **Kapsam düzeltmesi 59→58 net-yeni:** `Nav.Page.POSITIONASSIGNMENTS` resx'te ZATEN vardı (başka modülün "Position Assignments" sayfası, 7 dilde geçerli çeviri). Guard anahtarları `Distinct` ile tekilleştiriyor → HumanCapital POSITION_ASSIGNMENTS bu mevcut anahtarla kapsanmış; 2. satır `<data name>` duplicate → `ResxRows` ToDictionary çökmesi. Agent doğru düşürdü.
+- ✅ **CT bağımsız guard replikasyonu (kaynaktan):** 3 provider'dan Normalize ile **59 beklenen anahtar** türetildi (3 module + 2 domain + 54 page). 7 dilin HEPSİNDE: **missing=0, empty=0, echo=0, duplicate-name=0**. POSITIONASSIGNMENTS her dilde tam 1 satır + gerçek çeviri (ör. tr "Pozisyon Atamaları", zh "职位分配", ar "تعيينات المناصب") = dedup iddiası doğrulandı.
+- ✅ **Parser-completeness:** HR providers 23/1/30 = 54 sayfa, hepsi `new ModuleManifestPage("CODE"...` pozisyonel şeklinde → RawPageOccurrences==ParsedPageCount. Floor 45 alt sınırı aşılıyor.
+- ✅ **Baseline:** yalnız 7 resx değişti → HR-dışı test regresyonu yapısal olarak imkânsız; agent tam suite 137/137 bildirdi.
+- ⚠️ **Fleet kilidi notu:** çalışan Diten.Web dev-süreci `Diten.Web.dll`'i kilitliyor → resx değişince test-build MSB3021. Guard resx'i diskten okur (satellite gerekmez) → `dotnet build Diten.Web.Tests -p:BuildProjectReferences=false` + `dotnet test --no-build`. Fleet durdurulmadı. (CT tarafında disk-replikasyon build gerektirmedi.)
 
 ## Kalan (bu WP dışı)
 - PR `fix/hr-integration-gaps` → main (merge = Ali) → main → `feature/scmm-content-studio` sync (option X) → SCMM/ALMIBA A2d'den devam ([[almiba-retest-checkpoint]]).
