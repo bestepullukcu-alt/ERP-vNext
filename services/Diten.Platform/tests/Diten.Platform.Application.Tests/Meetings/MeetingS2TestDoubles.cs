@@ -195,6 +195,14 @@ internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersi
             .Select(Clone)
             .ToList());
 
+    public Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingMinutesVersion>>(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && meetingIds.Contains(x.MeetingId)
+                        && x.Status == MinutesStatus.Published)
+            .Select(Clone)
+            .ToList());
+
     public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
     {
         var stored = _items.FirstOrDefault(x => x.Id == version.Id && x.TenantId == Tenant && !x.IsDeleted);

@@ -38,6 +38,7 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
     private const string PageMeetingEdit = "MEETING_EDIT";
     private const string PageMeetingTypes = "MEETING_TYPES";
     private const string PageMeetingSeries = "MEETING_SERIES";
+    private const string PageMeetingReport = "MEETING_REPORT";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -162,7 +163,22 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete Meeting Series", MeetingPermissions.SeriesManage,
                             "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
-                    ])
+                    ]),
+
+                // S12 (pack §23) — the meeting report & action register. Nav-visible under MEETINGS, same shape
+                // MEETING_TYPES/MEETING_SERIES take. Gated on Read (owner decision, pack §23.13/1: reuse
+                // platform.meetings.read/.read-all — no new key); read-all's own widening happens INSIDE the
+                // handler (§23.6), same as every other Meetings read.
+                new ModuleManifestPage(
+                    PageCode: PageMeetingReport,
+                    DisplayName: "Meeting Report",
+                    RoutePath: "/Meetings/Report",
+                    RequiredPermission: MeetingPermissions.Read,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 22,
+                    Actions: [])
             ],
             NotificationEvents:
             [

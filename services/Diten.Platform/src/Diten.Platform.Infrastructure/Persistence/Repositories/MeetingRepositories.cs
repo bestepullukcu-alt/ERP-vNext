@@ -410,6 +410,21 @@ public sealed class MeetingMinutesVersionRepository
         return await Collection.Find(filter).SortByDescending(x => x.VersionNumber).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+    {
+        if (meetingIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.In(x => x.MeetingId, meetingIds),
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Status, MinutesStatus.Published));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
     public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
     {
         version.Version = expectedVersion + 1;
