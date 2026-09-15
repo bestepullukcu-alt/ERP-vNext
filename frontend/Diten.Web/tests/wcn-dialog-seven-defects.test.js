@@ -173,16 +173,19 @@ describe("two dialog selects become the product's own picker", () => {
     expect(APP, "app.js rebuilt its own binder body instead of delegating to the shared one")
       .toContain("DitenDialog.bindDialogSelect2(");
     /*
-     * FOUR REAL CALL SITES: the module picker, the assignee picker, the waiting-on picker, and — since the
-     * closure outcome dictionary — the outcome picker. (The delegating wrapper's own internal call to
-     * `DitenDialog.bindDialogSelect2(` is excluded by the negative lookbehind — it is not a fifth dialog.)
+     * FIVE REAL CALL SITES: the module picker, the assignee picker, the waiting-on picker, the closure outcome
+     * picker, and — since WP-PSS-MOD0024-TASK-MENTIONS-01 — the @mention picker. (The delegating wrapper's own
+     * internal call to `DitenDialog.bindDialogSelect2(` is excluded by the negative lookbehind — it is not a
+     * sixth dialog.)
      *
-     * ⚠ THREE UNTIL THE CLOSURE SLICE. The outcome picker is a dialog select like the other three, so it takes
-     * the same binder rather than a native `<select>` — which is the whole reason this count is pinned: the
-     * fourth one would otherwise have shipped with its list at the library's z-index, behind the dialog.
+     * ⚠ EACH ONE THAT GOES THROUGH THIS BINDER IS ONE THAT DID NOT SHIP AS A RAW `<select>` — which is the whole
+     * reason this count is pinned: an unbound select would otherwise ship with its list at the library's
+     * z-index, behind the dialog. The mention picker went through `sharedConfirm`'s existing
+     * `input: { type: 'select', onOpen }` seam rather than a new raw `Swal.fire`, for the same reason this test
+     * exists — see `wcn-dialog-one-language.test.js`'s raw-dialog count.
      */
     const realCallSites = (APP.match(/(?<!DitenDialog\.)\bbindDialogSelect2\(/g) || []).length;
-    expect(realCallSites, "a dialog select lost its picker").toBe(4);
+    expect(realCallSites, "a dialog select lost its picker").toBe(5);
 
     // The mechanism itself, read from shared/diten-dialog.js — not app.js, which no longer declares it.
     const fn = SHARED.slice(SHARED.indexOf("const bindDialogSelect2 ="), SHARED.indexOf("const bindDialogSelect2 =") + 2600);

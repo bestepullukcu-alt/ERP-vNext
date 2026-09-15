@@ -35,7 +35,9 @@ public sealed class TaskNotificationTemplateTests
         "platform.tasks.approvalrequested",
         // Somebody said something on the task (2026-08-14). Its seven languages are asserted by the same loop as
         // the other five — a sixth event added without its templates is an email that silently never arrives.
-        "platform.tasks.commented"
+        "platform.tasks.commented",
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — a direct @mention, same gate.
+        "platform.tasks.mentioned"
     ];
 
     [Fact]

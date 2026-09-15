@@ -86,6 +86,8 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Этого человека сейчас нельзя пригласить.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Этот человек уже приглашён.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Этого участника нет в совещании.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>Организатора нельзя удалить из совещания.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Этот пункт повестки не найден.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>Не удалось изменить порядок повестки; обновите страницу и повторите попытку.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Этот тип совещания не найден.</value></data>

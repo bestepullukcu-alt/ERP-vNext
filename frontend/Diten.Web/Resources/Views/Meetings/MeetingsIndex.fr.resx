@@ -86,6 +86,8 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Cette personne ne peut pas être invitée pour le moment.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Cette personne est déjà invitée.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Ce participant ne fait pas partie de la réunion.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>L'organisateur ne peut pas être retiré de la réunion.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Utilisateur inconnu</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Ce point de l'ordre du jour est introuvable.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>L'ordre du jour n'a pas pu être réorganisé ; veuillez recharger et réessayer.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Ce type de réunion est introuvable.</value></data>

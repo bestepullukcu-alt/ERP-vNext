@@ -119,4 +119,26 @@ public sealed class MeetingManifestProviderTests
             Assert.Equal(key, key.ToLowerInvariant());
         }
     }
+
+    /// <summary>BL-387 — the three organizer-variant events declared alongside the invite/change/cancel siblings
+    /// they mirror. <c>EventCode</c> == <c>DefaultTemplateKey</c> for every one of them, the same discipline the
+    /// mailer's own doc comment relies on being kept in step by hand across manifest, mailer consts and seed.</summary>
+    [Fact]
+    public void Declares_the_three_organizer_variant_notification_events_with_matching_event_and_template_codes()
+    {
+        var expected = new[]
+        {
+            "platform.meetings.organizer-added",
+            "platform.meetings.organizer-updated",
+            "platform.meetings.organizer-cancelled"
+        };
+
+        foreach (var code in expected)
+        {
+            var ev = Assert.Single(Manifest.NotificationEvents!, e => e.EventCode == code);
+            Assert.Equal(code, ev.DefaultTemplateKey);
+            Assert.DoesNotContain(ev.RequiredVariables, v => v.Name == "Organizer");
+            Assert.Contains(ev.RequiredVariables, v => v.Name == "MeetingUrl");
+        }
+    }
 }

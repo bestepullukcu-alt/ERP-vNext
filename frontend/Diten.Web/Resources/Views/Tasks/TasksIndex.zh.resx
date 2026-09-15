@@ -216,6 +216,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>该评论已被撤回。</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>您提到的其中一人无法查看此任务。请先将其添加为观察者。</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>一条评论最多可提及 10 人。</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>此处无法指定该人员。</value>
   </data>

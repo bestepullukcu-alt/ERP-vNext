@@ -44,6 +44,7 @@ namespace Diten.Platform.Application.Tests.Meetings;
 public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
 {
     private const string InviteEvent = "platform.meetings.invite";
+    private const string OrganizerAddedEvent = "platform.meetings.organizer-added";
 
     private readonly Guid _organizer = Guid.NewGuid();
     private readonly Guid _alice = Guid.NewGuid();
@@ -112,6 +113,10 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
         Assert.Equal(InvitationResponse.Pending, attendees.Single(a => a.UserId == _alice).InvitationResponse);
         Assert.Equal(InvitationResponse.Pending, attendees.Single(a => a.UserId == _bob).InvitationResponse);
 
+        // BL-373/BL-387 (owner, 2026-09-14) — the sweep acts as Guid.Empty, so the actor rule excludes nobody, and
+        // the organizer is now split into their OWN "added to your calendar" mail rather than the plain invite
+        // Alice and Bob get — never left out entirely (the rejected BL-387 patch), since the .ics is the only way
+        // this meeting reaches the organizer's own calendar.
         var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
         var recipients = invite.To.Select(r => r.Email).ToList();
         _output.WriteLine(
@@ -119,8 +124,14 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
             $"bob={recipients.Contains(EmailOf(_bob))} organizerAlsoMailed={recipients.Contains(EmailOf(_organizer))}");
         Assert.Contains(EmailOf(_alice), recipients);
         Assert.Contains(EmailOf(_bob), recipients);
+        Assert.DoesNotContain(EmailOf(_organizer), recipients);
         var ics = Encoding.UTF8.GetString(Assert.Single(invite.Attachments!).Content).Replace("\r\n ", string.Empty);
         Assert.Contains($"UID:{meeting.Id}@diten", ics);
+
+        var organizerAdded = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerAddedEvent);
+        Assert.Equal([EmailOf(_organizer)], organizerAdded.To.Select(r => r.Email).ToArray());
+        var organizerIcs = Encoding.UTF8.GetString(Assert.Single(organizerAdded.Attachments!).Content).Replace("\r\n ", string.Empty);
+        Assert.Contains($"UID:{meeting.Id}@diten", organizerIcs);
 
         Assert.Equal(meeting.Id, (await _series.GetByIdAsync(rule.Id))!.LastGeneratedMeetingId);
     }
@@ -135,6 +146,7 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
 
         var meeting = Assert.Single(await _meetings.ListAsync());
         Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
+        Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerAddedEvent);
         Assert.Equal(meeting.Id, (await _series.GetByIdAsync(rule.Id))!.LastGeneratedMeetingId);
     }
 

@@ -216,6 +216,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>This comment has already been withdrawn.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>One of the people you mentioned cannot see this task. Add them as a watcher first.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>A comment may mention at most 10 people.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>That person cannot be named here.</value>
   </data>

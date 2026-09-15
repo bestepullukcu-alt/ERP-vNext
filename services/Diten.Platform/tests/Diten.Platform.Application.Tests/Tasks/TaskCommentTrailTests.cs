@@ -324,11 +324,16 @@ public sealed class TaskCommentTrailTests
 
             var user = new FakeCurrentUserContext(actingAs ?? TaskTestData.Me);
             var tenant = new FakeTenantContext(TaskTestData.Tenant);
+            // Mentions are out of scope for this file (TaskMentionTests owns them) — no request here ever
+            // carries MentionedUserIds, so this policy's answer is never consulted.
+            var readAccess = new AlwaysAdmitReadAccessPolicy();
             var mediator = new DirectMediator(
                 new AddTaskCommentHandler(
                     _tasks, Comments, user, new FakeUserDisplayNameResolver(), tenant,
-                    Watchers, Notifications, NullLogger<AddTaskCommentHandler>.Instance),
-                new UpdateTaskCommentHandler(Comments, user),
+                    Watchers, Notifications, readAccess, NullLogger<AddTaskCommentHandler>.Instance),
+                new UpdateTaskCommentHandler(
+                    _tasks, Comments, user, readAccess, Notifications,
+                    NullLogger<UpdateTaskCommentHandler>.Instance),
                 new WithdrawTaskCommentHandler(Comments, user));
 
             var correlation = new CorrelationContext();

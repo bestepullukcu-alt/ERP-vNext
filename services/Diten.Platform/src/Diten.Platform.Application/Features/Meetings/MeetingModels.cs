@@ -45,6 +45,10 @@ public static class MeetingReasonCodes
     public const string AttendeeDuplicate = "MEETING_ATTENDEE_DUPLICATE";
     public const string AttendeeNotFound = "MEETING_ATTENDEE_NOT_FOUND";
 
+    /// <summary>BL-386 — the organizer's own attendee row can never be removed; reassign the meeting first
+    /// (<c>ReassignMeetingOrganizerCommand</c>).</summary>
+    public const string AttendeeIsOrganizer = "MEETING_ATTENDEE_IS_ORGANIZER";
+
     public const string AgendaItemNotFound = "MEETING_AGENDA_ITEM_NOT_FOUND";
     public const string AgendaReorderMismatch = "MEETING_AGENDA_REORDER_MISMATCH";
 

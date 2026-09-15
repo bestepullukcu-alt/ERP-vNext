@@ -105,11 +105,41 @@
     };
 
     // ─── Culture-aware date pickers ──────────────────────────────────────────
+
+    /*
+     * BL-391 — "2026-09-13" typed into this altInput (display format gg.aa.yyyy) silently saved as a DIFFERENT
+     * date (2026-06-20); no warning, no rejection. `allowInput: true` hands flatpickr free text on close, and
+     * flatpickr's own parser is lenient enough to resolve text that does not match `altFormat` into SOME date
+     * anyway. Effective/valid-to are GxP-relevant dates, so a silent drift here is worse than on an ordinary
+     * field — the exact text left in the altInput is tracked as the reader types (an `input` listener, captured
+     * BEFORE flatpickr's own close-time reformat can overwrite it), and on close that text is compared against
+     * flatpickr re-rendering whatever it resolved back into the SAME `altFormat`. Anything that does not read
+     * back identical — or nothing resolved at all — clears the field and marks it invalid (the same `is-invalid`
+     * class `validate()` below already uses) instead of keeping a date nobody typed.
+     */
+    const guardDateAgainstSilentMisparse = (instance) => {
+        if (!instance) return;
+        const target = instance.altInput || instance.input;
+        let lastTyped = target.value || '';
+        target.addEventListener('input', () => { lastTyped = target.value; });
+        instance.config.onClose.push((selectedDates) => {
+            const raw = lastTyped.trim();
+            if (!raw) { target.classList.remove('is-invalid'); lastTyped = target.value; return; }
+            const resolved = selectedDates[0];
+            const reformatted = resolved ? instance.formatDate(resolved, instance.config.altFormat) : '';
+            if (!resolved || reformatted !== raw) { instance.clear(); target.classList.add('is-invalid'); }
+            else { target.classList.remove('is-invalid'); }
+            lastTyped = target.value;
+        });
+    };
+
     const initDatePickers = () => {
         if (typeof window.flatpickr !== 'function') return;
         DATE_FIELDS.forEach((id) => {
             const el = byId(id);
-            if (el) window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            if (!el) return;
+            window.flatpickr(el, { dateFormat: 'Y-m-d', altInput: true, altFormat: L.DateFormat || 'Y-m-d', allowInput: true });
+            guardDateAgainstSilentMisparse(el._flatpickr);
         });
     };
     const dateOrNull = (id) => { const v = trim(byId(id)?.value); return v.length ? `${v}T00:00:00Z` : null; };

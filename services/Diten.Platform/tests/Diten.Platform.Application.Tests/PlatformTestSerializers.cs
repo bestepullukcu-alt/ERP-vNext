@@ -38,6 +38,10 @@ internal static class PlatformTestSerializers
     [ModuleInitializer]
     internal static void Register()
     {
+        // BL-384 — the PRODUCTION convention registration itself, not a copy: remove it from
+        // PlatformBsonConventions and UnknownFieldToleranceMongoTests goes red with FormatException.
+        Diten.Platform.Infrastructure.Persistence.PlatformBsonConventions.Register();
+
         // Try*, not Register*: RegisterSerializer throws if a serializer is already registered, and this must
         // be safe to call again from MongoIntegrationHarness for the benefit of anyone reading that file.
         BsonSerializer.TryRegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));

@@ -216,6 +216,12 @@
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Этот комментарий уже отозван.</value>
   </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Один из упомянутых вами людей не может видеть эту задачу. Сначала добавьте его как наблюдателя.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>В комментарии можно упомянуть не более 10 человек.</value>
+  </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Этого человека здесь указать нельзя.</value>
   </data>

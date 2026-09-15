@@ -266,6 +266,10 @@ public static class DependencyInjection
          */
         services.AddRemoteWorkItemProviders(configuration);
 
+        // BL-384 — unknown elements are ignored on read, so a rolled-back build can read documents a newer build
+        // wrote. Conventions bind when a class map is first built, so this stays the first BSON registration.
+        PlatformBsonConventions.Register();
+
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
 

@@ -44,6 +44,28 @@ public interface IMeetingInviteMailer
         IReadOnlyList<MeetingAttendee> recipients,
         Guid actingUserId,
         CancellationToken ct = default);
+
+    /// <summary>BL-386 — <paramref name="removedAttendee"/> was taken off an otherwise-still-scheduled meeting;
+    /// the same actor-exclusion rule every other Send*Async takes means a self-removal (the removed person is
+    /// also the actor) sends nothing, for free, with no extra branch here.</summary>
+    Task<MeetingInviteDeliveryResult> SendRemovedAsync(
+        Meeting meeting,
+        string meetingTypeName,
+        MeetingAttendee removedAttendee,
+        Guid actingUserId,
+        CancellationToken ct = default);
+
+    /// <summary>BL-387 — <paramref name="newOrganizerUserId"/> just became this meeting's organizer
+    /// (<c>meeting.OrganizerUserId</c> is already the new value by the time this is called) and gets told the
+    /// SAME "added to your calendar" mail a freshly-created meeting's own organizer gets, unless they reassigned
+    /// the meeting to themselves. Nobody else on the meeting is mailed by a reassignment on its own — the same
+    /// posture <c>ReassignMeetingOrganizerHandler</c> already takes toward every OTHER attendee row.</summary>
+    Task<MeetingInviteDeliveryResult> SendOrganizerReassignedAsync(
+        Meeting meeting,
+        string meetingTypeName,
+        Guid newOrganizerUserId,
+        Guid actingUserId,
+        CancellationToken ct = default);
 }
 
 /// <summary>K12's own shape — <see cref="Sent"/> and <see cref="Failed"/> are deliberately not each other's

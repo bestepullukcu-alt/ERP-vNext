@@ -28,9 +28,22 @@ public static class ExplicitGrantOnlyPermissions
     /// </summary>
     public const string TasksReadAll = "platform.tasks.read-all";
 
+    /// <summary>
+    /// WP-PSS-MOD0024-BL392-WORK-REPORT-READ-EXPLICIT-01 (BL-392) — reading the Work Report across the WHOLE
+    /// tenant, ignoring the caller's own data scope (<c>Diten.Platform</c>'s <c>WorkReportScopeSource</c>). It is
+    /// declared as the Work Report page's manifest action, so the module-entitlement sync would hand it to every
+    /// tenant Admin the moment the module was entitled, and the full-catalog path to SuperAdmin on first sync —
+    /// every one of them would then read the whole tenant's report and the scope would have nothing left to
+    /// narrow. A broad reporting view is held by far fewer people than the report itself and, as in SAP/Oracle,
+    /// is given by explicit assignment only. Enrolling it here stops NEW automatic grants; it removes no existing
+    /// role-permission row — today's holders are listed and re-granted explicitly during migration (owner
+    /// decision, 2026-09-14).
+    /// </summary>
+    public const string WorkReportReadTenantWide = "platform.tasks.work-report.read-tenant-wide";
+
     public static readonly IReadOnlySet<string> Keys =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll
+            PortfoliosAssignOwner, UsersAccountKindManage, TasksReadAll, WorkReportReadTenantWide
         };
 }

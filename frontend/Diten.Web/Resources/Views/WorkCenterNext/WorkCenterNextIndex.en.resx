@@ -1027,6 +1027,30 @@
   <data name="CommentPost" xml:space="preserve">
     <value>Post</value>
   </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mention someone</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Remove mention</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mention people</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Choose at least one person.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>There is nobody to mention on this task yet.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Everyone who can be mentioned is already added.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>A comment may mention at most {0} people.</value>
+  </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Write something before posting</value>
   </data>

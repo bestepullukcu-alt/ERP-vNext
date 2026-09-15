@@ -358,12 +358,23 @@ public sealed class CancelMeetingHandler : IRequestHandler<CancelMeetingCommand,
 public sealed class ReassignMeetingOrganizerHandler : IRequestHandler<ReassignMeetingOrganizerCommand, Response<NoContent>>
 {
     private readonly IMeetingRepository _meetings;
+    private readonly IMeetingTypeRepository _types;
+    private readonly ICurrentUserContext _currentUser;
     private readonly IMediator _mediator;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
-    public ReassignMeetingOrganizerHandler(IMeetingRepository meetings, IMediator mediator)
+    public ReassignMeetingOrganizerHandler(
+        IMeetingRepository meetings,
+        IMeetingTypeRepository types,
+        ICurrentUserContext currentUser,
+        IMediator mediator,
+        IMeetingInviteMailer inviteMailer)
     {
         _meetings = meetings;
+        _types = types;
+        _currentUser = currentUser;
         _mediator = mediator;
+        _inviteMailer = inviteMailer;
     }
 
     public async Task<Response<NoContent>> Handle(ReassignMeetingOrganizerCommand command, CancellationToken ct)
@@ -400,6 +411,15 @@ public sealed class ReassignMeetingOrganizerHandler : IRequestHandler<ReassignMe
             return Response<NoContent>.Fail(
                 "The meeting changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
+
+        // BL-387 — the new organizer's only path onto their own calendar: the same "added to your calendar"
+        // mail SendInviteAsync gives a freshly-created meeting's own organizer, sent when they did not just
+        // reassign the meeting to themselves. Nobody else is mailed by a reassignment on its own (NE — other
+        // attendee rows are untouched by this WP); the old organizer's fate is ordinary from here on — the next
+        // change or cancel mails them like any other attendee, because the mailer reads OrganizerUserId fresh.
+        var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
+        await _inviteMailer.SendOrganizerReassignedAsync(
+            meeting, type?.Name ?? string.Empty, meeting.OrganizerUserId, _currentUser.UserId, ct);
 
         return Response<NoContent>.Success(200, command.CorrelationId);
     }
@@ -485,12 +505,23 @@ public sealed class AddMeetingAttendeesHandler : IRequestHandler<AddMeetingAtten
 public sealed class RemoveMeetingAttendeeHandler : IRequestHandler<RemoveMeetingAttendeeCommand, Response<NoContent>>
 {
     private readonly IMeetingRepository _meetings;
+    private readonly IMeetingTypeRepository _types;
     private readonly IMeetingAttendeeRepository _attendees;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IMeetingInviteMailer _inviteMailer;
 
-    public RemoveMeetingAttendeeHandler(IMeetingRepository meetings, IMeetingAttendeeRepository attendees)
+    public RemoveMeetingAttendeeHandler(
+        IMeetingRepository meetings,
+        IMeetingTypeRepository types,
+        IMeetingAttendeeRepository attendees,
+        ICurrentUserContext currentUser,
+        IMeetingInviteMailer inviteMailer)
     {
         _meetings = meetings;
+        _types = types;
         _attendees = attendees;
+        _currentUser = currentUser;
+        _inviteMailer = inviteMailer;
     }
 
     public async Task<Response<NoContent>> Handle(RemoveMeetingAttendeeCommand command, CancellationToken ct)
@@ -513,7 +544,31 @@ public sealed class RemoveMeetingAttendeeHandler : IRequestHandler<RemoveMeeting
             return Response<NoContent>.Fail("The attendee is not on this meeting.", 404, MeetingReasonCodes.AttendeeNotFound, command.CorrelationId);
         }
 
+        // BL-386 — the organizer's own row is never removable; ReassignMeetingOrganizerCommand is the only door
+        // from here, so a caller who wants the organizer OFF the meeting is pointed there, not left to guess.
+        if (command.UserId == meeting.OrganizerUserId)
+        {
+            return Response<NoContent>.Fail(
+                "The organizer cannot be removed from the meeting.", 409, MeetingReasonCodes.AttendeeIsOrganizer, command.CorrelationId);
+        }
+
+        // BL-386 — the version bump happens BEFORE the delete, on purpose: if a concurrent write already moved
+        // Version out from under this read, this fails 409 (the meetings' own existing concurrency pattern) with
+        // the attendee row still intact — never a state where the row is gone but the caller was told to retry.
+        if (!await _meetings.UpdateAsync(meeting, meeting.Version, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The meeting changed meanwhile; reload and retry.", 409, MeetingReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         await _attendees.DeleteAsync(attendee.Id, ct);
+
+        // BL-386 — the removed attendee's own calendar entry does not disappear on its own; a single .ics CANCEL
+        // (SEQUENCE = the Version this write just bumped to, above the invite's own) tells JUST that one reader's
+        // calendar client to drop it. K12 — a mail failure here never undoes the removal already written.
+        var type = await _types.GetByIdAsync(meeting.MeetingTypeId, ct);
+        await _inviteMailer.SendRemovedAsync(meeting, type?.Name ?? string.Empty, attendee, _currentUser.UserId, ct);
+
         return Response<NoContent>.Success(200, command.CorrelationId);
     }
 }

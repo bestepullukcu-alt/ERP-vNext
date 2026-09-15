@@ -237,8 +237,8 @@
     <value>Actuar</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Ver</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de revisión</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de revisión programada: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
@@ -1026,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mencionar a alguien</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Quitar mención</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mencionar personas</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Elija al menos una persona.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Todavía no hay nadie a quien mencionar en esta tarea.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Ya se agregaron todas las personas que se pueden mencionar.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un comentario puede mencionar como máximo a {0} personas.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Escribe algo antes de publicar</value>

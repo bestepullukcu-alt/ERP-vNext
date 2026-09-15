@@ -177,6 +177,14 @@ public sealed class TaskComment : TenantScopedEntity
     /// arriving. Two different meanings, two different fields.</para>
     /// </summary>
     public DateTimeOffset? WithdrawnAt { get; set; }
+
+    /// <summary>
+    /// Who this comment @mentions — structured ids, never parsed back out of <see cref="Text"/>. The displayed
+    /// "@Name" the author typed is decoration the reader sees; the id is what a candidate check, a notification
+    /// and a re-render all agree on, so a later rename of the mentioned person cannot silently point the mention
+    /// at somebody else or lose it entirely. At most 10 (WP-PSS-MOD0024-TASK-MENTIONS-01 K4).
+    /// </summary>
+    public IReadOnlyList<Guid> MentionedUserIds { get; set; } = [];
 }
 
 /// <summary>

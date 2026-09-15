@@ -449,6 +449,36 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     LinkPolicy: "TargetPage",
                     Status: "Active"),
 
+                /*
+                 * WP-PSS-MOD0024-TASK-MENTIONS-01 — a direct @mention, distinct from the general "somebody
+                 * commented" event above. AddTaskCommentHandler excludes a mentioned person from the Commented
+                 * audience so the same comment never produces two emails for one reader; this event is the ONLY
+                 * one they get for it.
+                 *
+                 * Same variable set as its siblings, for the same reason: the comment TEXT is not among them,
+                 * because a comment can be withdrawn and an email cannot be recalled.
+                 */
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.Mentioned,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.mentioned",
+                    DisplayNameKey: "NotificationEvent_TaskMentioned",
+                    FallbackDisplayName: "Task mention",
+                    Description: "Sent when somebody @mentions you in a comment on a task.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
                 // Declared now, dispatched in Phase 3 when the MOD-0023 handoff lands.
                 new ModuleManifestNotificationEvent(
                     EventCode: TaskNotificationEvents.ApprovalRequested,

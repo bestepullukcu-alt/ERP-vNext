@@ -4471,7 +4471,7 @@ atama 0 (2026-09-10 ölçümü) — "iki filtreli" kontrol için gereken veri, s
 
 **İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+DURUM: YAPILIYOR (sahip kararı 2026-09-15: altyapı CT, ortak kiracı tarafı denetim yazıcısı — İş Raporu + toplantı raporu dışa aktarması) · önceki: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
 
 Dilim 1e (BL-346) audit export'unu taklit etti, bir yer hariç: audit handler'ı indirmeden
 sonra `AuditMetaAuditWriter.WriteAsync(... AuditCategory.DataExport ...)` çağırıyor. Aynı
@@ -4539,6 +4539,11 @@ bu muhafızın kapsamı dışında; ayrı iş. Metin taraması — iki ifadeye b
 **Görev detayı: kimliğini bilen herkes açabiliyor — liste süzülüyor, detay süzülmüyor**
 
 DURUM: KAPANDI — PSS dalı `feature/pss/mod-0024-review-meeting-policy` (WP-PSS-MOD0024-TASK-READ-ACCESS-01; CT sabotajla doğruladı, 2026-09-13). Detay, ek listesi ve ek içeriği tek okuma kuralını soruyor; ilişkisiz okuyana var olmayan görevle birebir aynı 404. Canlı doğrulama sabah sahipte (ikinci kullanıcıyla) · SAHİP: PSS · ÖLÇÜLDÜ: 2026-09-10
+
+**Ek (2026-09-14):** @ ile etiketleme (`b9476a4e`, `feature/pss/mod-0024-task-mentions`, MOD-0024 paketi §21) bu kurala bağlandı;
+kural `ResolveDataLegCandidatesAsync` ile adayları sayabiliyor. **Verimlilik notu (engel değil):** `CanReadAsync` artık her çağrıda bütün
+ilişki bacaklarını (havuz sahipleri, izleyiciler, üst görev) hesaplıyor; etiketleme doğrulaması bunu etiketlenen kişi başına (en çok 10)
+tekrarlıyor. Detay açılışında birkaç sorgu, 10 kişilik yorumda ~30 sorgu. Gerekirse adaylar bir kez hesaplanıp kişiler o kümede aranır.
 
 `GetTaskItemListHandler` yalnız bana atanan + havuzumdaki görevleri döner. `GetTaskItemByIdHandler` ise
 yalnız kiracı filtresi + `platform.tasks.read` ister: görevle hiçbir ilişkisi olmayan kullanıcı, kimliğini
@@ -4921,6 +4926,16 @@ onboarding, bkz. `project_platform_tenant_onboarding_gaps`) hiçbir organizasyon
 açamaz (BL-358 dev yeniden üretimi: 0 birim / 0 pozisyon). Öneri: onboarding tek bir aktif kök birim (tüzel kişiliğe bağlı, kod `ROOT`/
 ad kiracı adı) yaratır; pozisyon ve atamalar organizasyon ekranlarından (MOD-0288). SAP'ta şirket kodu ve kök org birimi kurulumun parçasıdır.
 
+**Ölçüldü (2026-09-14, WP-INFRA-BL384 Kısım 2 — ajan uydurmadan durdu, CT doğruladı):** kök birim kurulumda OLUŞTURULAMAZ:
+`OrganizationUnit.LegalEntityId` zorunlu (`OrganizationUnit.cs:9`, validator boş kabul etmiyor), birim oluşturma MDM'den tüzel kişiliğin
+başvurulabilir olduğunu doğruluyor (`CreateOrganizationUnitCommandHandler.cs:45-49`), `RegisterTenantCommand` tüzel kişilik taşımıyor ve MDM'de
+kiracı oluşturma olayını dinleyen yok. Görev oluşturmanın kök birim araması tüzel kişiliği kontrol etmediği için uydurma bir kimlikle ham kayıt
+"çalışırdı" — yasak olan tam da bu. **Sahip kararı gereken seçenekler:** (1) kiracının ilk tüzel kişiliği MDM'de aktifleşince kök birim oluşsun
+(yeni MDM olayı + Platform tüketicisi) · (2) kiracı yöneticisine ilk kurulum adımı: tüzel kişilik oluştur + aktifleştir, sonra var olan birim
+oluşturma (yeni arka uç yok) · (3) tüzel kişiliksiz birime izin (MOD-0288 sözleşmesi değişir) · (4) kurulum MDM'de tüzel kişiliği servisler
+arası oluştursun (yeni iç uç + yeni zorunlu kurulum alanı). CT önerisi: (2) hemen (belge/kılavuz), (1) sonra.
+**Sahip kararı (2026-09-14):** şimdi (2) — kontrol listesi §6'da; sonra (1) — MDM olayı + Platform tüketicisi, ayrı prompt (SAP/Oracle/Workday: önce tüzel kişilik, sonra birim).
+
 **Ölçüm komutu:**
 
     mongosh "mongodb://localhost:27017/diten_personalization_dev" --quiet --eval 'print(db.organization_units.countDocuments({}), db.positions.countDocuments({}), db.position_assignments.countDocuments({}))'
@@ -5147,7 +5162,7 @@ yerel Mongo çakışması (BL-343 d), S5c'nin işi değil.
 
 **Seri üretimi her örnekte davet postası atıyor — organizatör dahil**
 
-DURUM: KAPANDI — karar (a) olduğu gibi kalsın (sahip, 2026-09-13) · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
+DURUM: YERİNE GEÇİLDİ — BL-387 (`1da09a16`, sahip kararı 2026-09-14): düzenleyen artık düz davet değil kendi "takviminize eklendi" postasını alır; 2026-09-13'teki "olduğu gibi kalsın" kararı geçersiz · BULAN: CT (S11 kabulünde ölçüldü, ajan raporunda yoktu) · KAYIT: 2026-09-12
 
 **Karar gerekçesi:** S5b'den beri davet postası `.ics` taşıyor ve Google entegrasyonu olmadığı için toplantının organizatörün kendi takvimine düşmesinin TEK yolu bu posta. Organizatörü dışarıda bırakmak onun takviminden kendi toplantısını silmek olurdu. Posta hacmi, aynı toplantıları elle açmakla aynı.
 
@@ -5288,6 +5303,7 @@ devre dışı bırakılamayan sürüm kapısı 3 aynı alanı okumaya devam ediy
 girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
 **(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
 yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
+**2026-09-14:** CT önerisi engellemek (onaya tabi olmayan tür açıkça "onay gerekmez"; Veeva/MasterControl ve 21 CFR Part 11 ile uyumlu). Sahip soruyu Kural 4 ile birlikte Kalite'ye iletiyor.
 
 ---
 
@@ -5330,13 +5346,18 @@ testler "yeşil" göründü. Düzeltildi: en yakın `.git` GİRİŞİ (klasör y
 (`grep '".git"'`: ManagementGovernance mimari testleri, PPM GateI kanıt testleri, `DocsPathGuardTests`); her biri worktree'de koşunca
 başka checkout'un dosyalarını tarıyor olabilir — tek tek ölçülmeli.
 
+**Ölçüldü (2026-09-13, go-live kapı koşusu):** `run_phase1_gates.sh` ana checkout'ta koşunca mimari testler `.claude/worktrees/` altındaki
+kopyaları da taradı: `TenantContradictionSiteGuardTests` 8 yerine 48 nokta saydı, `MongoTestDatabaseGuardTests` istisna listesindeki
+dosyaları başka yollarda bulup "listede yok" dedi → 4 sahte kırmızı. Aynı commit (`9f65800f`) iç içe kopya içermeyen temiz bir checkout'ta
+18/18 geçti. CI temiz checkout kullandığı için etkilenmez; yerelde kapı yalnız worktree'de ya da ayrı temiz kopyada koşulmalı.
+
 ---
 
 ### BL-384
 
 **Eski sürüm yeni belgeleri okuyamıyor — Mongo varlıklarında bilinmeyen alan toleransı yok (geri alma riski)**
 
-DURUM: AÇIK (karar/tasarım) · BULAN: CT, 2026-09-13 · KAYIT: 2026-09-13
+DURUM: KAPANDI (tolerans) — `4663682c` (CT, `feature/infra/auth-display-label`, 2026-09-14): Platform süreç genelinde `IgnoreExtraElementsConvention`; CT sabotajı (kural kapsamı boş) 3/3 kırmızı → geri → 3/3. Kalan: bu değişikliği içermeyen eski sürüme geri alma yine çöker; eski sürüm tüm belgeyi yeniden yazarsa yeni alanlar kaybolur → canlıda "yedek + ileri düzeltme" kuralı sürer · BULAN: CT, 2026-09-13 · KAYIT: 2026-09-13
 
 Görev motoru dalının Platform'u, toplantı dalının yazdığı `RecordLink` belgelerini okurken `FormatException: Element 'IdempotencyKey' does
 not match any field` ile düştü; Görev Merkezi'nin görev kaynağı ve toplantı listesi 500 verdi. Aynı şey canlıda bir sürümü GERİ ALMAK
@@ -5364,12 +5385,21 @@ kuyruğa aldı) → geri → yeşil; Meetings|Notifications|WorkAggregation 544/
 
 **Toplantıdan çıkarılan katılımcıya iptal postası gitmiyor — takviminde toplantı kalıyor**
 
-DURUM: AÇIK · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KAPANDI — `d9dfec87` (`feature/mg/mod-0357-ui-polish`, WP-MG-MOD0357-FOLLOWUPS-01; CT sabotajla doğruladı, 2026-09-14; canlıda denenmedi): yeni `platform.meetings.removed` şablonu (7 dil, linksiz), çıkarmada sürüm artışı, düzenleyenin satırı çıkarılamaz, kendini çıkarana posta yok · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 `RemoveMeetingAttendeeHandler` (`MeetingCommandHandlers.cs`, katılımcı silme) posta göndermiyor; satırı silip 200 dönüyor. Sonraki
 değişiklik/iptal postaları o kişiyi atlıyor, yani daveti kabul etmiş kişinin takviminde toplantı sonsuza kadar kalıyor. Beklenen:
 çıkarılan kişiye `platform.meetings.cancel`, davetle aynı UID, `METHOD:CANCEL`. Test şekli: Alice + Bob ile toplantı, Bob çıkarılır →
 yalnız Bob'a tek bir iptal postası.
+
+**Ölçüldü (2026-09-14, WP-MG-MOD0357-BL386-REMOVED-ATTENDEE-CANCEL-01 — ajan şablon kapısında doğru durdu, kod yazılmadı):**
+(1) `platform.meetings.cancel` şablonu 7 dilde "davetli olduğunuz toplantı iptal edildi" diyor ve toplantı linki veriyor; çıkarılan
+kişi toplantının herkes için iptal edildiğini sanar, link ona 404 verir (`MeetingEligibility.CanView`). → yeni şablon anahtarı
+(`platform.meetings.removed`, linksiz, 7 dil, manifest olayı); seed yalnız EKSİK şablonu eklediği için var olanı yeniden yazmak
+kurulu veritabanına ulaşmaz. (2) `.ics` SEQUENCE = `meeting.Version`, çıkarma toplantı satırını yazmıyor → aynı SEQUENCE; öneri:
+çıkarmada beklenen-sürümlü yazımla sürüm artışı (SEQUENCE hiç düşmez). (3) Davetin gönderildiğini kaydeden alan yok; yaklaşık kural:
+toplantı Planlandı + kişi düzenleyen değil + kişi işlemi yapan değil. (4) Düzenleyenin katılımcı satırı bugün silinebiliyor (koruma
+yok). (5) Kendini çıkaran kişiye posta gitmez (davet kuralıyla aynı) — sahip teyidi.
 
 ---
 
@@ -5377,7 +5407,7 @@ yalnız Bob'a tek bir iptal postası.
 
 **Seri süpürmenin oluşturduğu toplantıda düzenleyen de kendi toplantısına davet postası alıyor (karar)**
 
-DURUM: AÇIK (sahip kararı) · BULAN: go-live test ajanı · KAYIT: 2026-09-13
+DURUM: KAPANDI — `1da09a16` (`feature/mg/mod-0357-organizer-calendar-mail`, WP-MG-MOD0357-BL387-ORGANIZER-CALENDAR-MAIL-01; CT sabotajla doğruladı, 2026-09-15; canlıda denenmedi): düzenleyen işlemi kendisi yapmadıysa `platform.meetings.organizer-added / -updated / -cancelled` (7 dil) + aynı .ics; kendisi yaptıysa posta yok; yeni düzenleyen atanınca "eklendi" postası · BULAN: go-live test ajanı · KAYIT: 2026-09-13
 
 Süpürmede oturum açmış kullanıcı yok; oluşturma işleyicisi eylemi yapan kişi olarak boş kimlik geçiyor, `MeetingInviteMailer`'ın
 "düzenleyene davet gitmez" kuralı bu yüzden işlemiyor (ölçüm: 3 alıcı). Elle oluşturulan toplantıda düzenleyen posta almaz. Seride
@@ -5389,7 +5419,7 @@ istenen davranış mı (düzenleyenin takvimine de düşsün) yoksa kural mı uy
 
 **Görev alan tanımı: "Sıra" boş bırakılınca kayıt 400 veriyor, hata ham JSON olarak sayfaya basılıyor**
 
-DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13 · main'de de var
+DURUM: KAPANDI — `0d551337` (PSS dalı, CT sabotajla doğruladı, 2026-09-14; canlıda denenmedi): boş Sıra 0 gider, ProblemDetails alan mesajı olarak gösterilir. Aynı ham JSON düşüşü 21 kardeş controller'da duruyor (TaskTypes, ChecklistTemplates, RecurrenceRules, Templates, OrganizationFieldDefinitions, Roles, ModuleCatalog, SubscriptionPlans, 11 CRM…) · BULAN: CT canlı tur · KAYIT: 2026-09-13 · main'de de var
 
 Web formu `SortOrder`'ı `int?` taşıyor, API isteği (`CreateTaskFieldDefinitionRequest`) `int` bekliyor → boş alan `null` gider,
 JSON dönüşümü 400 ile düşer. `TaskFieldDefinitionsController.ExtractGatewayErrorsAsync` ProblemDetails'i tanımadığı için ham gövdeyi
@@ -5402,7 +5432,7 @@ ProblemDetails `errors` sözlüğünü okuyan hata eşleyici.
 
 **"İnceleme toplantısı planla" eyleminin başarı bildirimi "Onay toplantısı planlandı" diyor**
 
-DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13
+DURUM: KAPANDI — `d9dfec87` (`feature/mg/mod-0357-ui-polish`, WP-MG-MOD0357-FOLLOWUPS-01; CT sabotajla doğruladı, 2026-09-14; canlıda denenmedi) · BULAN: CT canlı tur · KAYIT: 2026-09-13
 
 Görev Merkezi'nde eylem ve pencere başlığı "İnceleme toplantısı", bildirim "Onay toplantısı". Metin anahtarı ölçülmedi; düzeltme
 çeviri kapısından geçer (7 dil). Ölçüm: `grep -rn "Onay toplantısı planlandı" frontend/Diten.Web`.
@@ -5413,7 +5443,7 @@ Görev Merkezi'nde eylem ve pencere başlığı "İnceleme toplantısı", bildir
 
 **Toplantılar listesi düzenleyeni bulunamayan kayıtta ham GUID gösteriyor**
 
-DURUM: AÇIK · BULAN: CT canlı tur · KAYIT: 2026-09-13
+DURUM: KAPANDI — `d9dfec87` (`feature/mg/mod-0357-ui-polish`, WP-MG-MOD0357-FOLLOWUPS-01; CT sabotajla doğruladı, 2026-09-14; canlıda denenmedi): liste, detay ve tutanakta 6 yer · BULAN: CT canlı tur · KAYIT: 2026-09-13
 
 Dev'de "S5c E4 Canlı Doğrulama Daveti" satırının Düzenleyen hücresi `22222222-2222-2222-2222-222222222222`. Kullanıcısı olmayan (silinmiş
 ya da test) kimlikte etiket yerine GUID'e düşülüyor; ürünün "ekranda GUID yok" kuralına aykırı. Beklenen: "Bilinmeyen kullanıcı"
@@ -5425,7 +5455,7 @@ benzeri bir etiket.
 
 **Tarih alanına yanlış biçimde yazılan tarih hata vermeden başka bir tarihe dönüşüyor**
 
-DURUM: AÇIK · BULAN: CT canlı tur (Pozisyon Ataması) · KAYIT: 2026-09-13
+DURUM: KAPANDI (paylaşılan alan + Pozisyon Ataması) — `d9dfec87` (`feature/mg/mod-0357-ui-polish`, WP-MG-MOD0357-FOLLOWUPS-01; CT sabotajla doğruladı, 2026-09-14; canlıda denenmedi). Açık kalan: doğrudan flatpickr kullanan 14 ekran (CRM ×5, Tüzel Kişilik ×2, Organizasyon Birim/Pozisyon, Kiracılar, Talep Fikirleri ×2, Kurumsal Strateji ×2) · BULAN: CT canlı tur · KAYIT: 2026-09-13
 
 Tarih alanları flatpickr `altInput` + `allowInput` ile gösterim biçiminde (gg.aa.yyyy) yazı kabul ediyor. `2026-09-13` yazıldığında
 kayıt `2026-06-20` oldu, uyarı yok. Takvimden seçim doğru çalışıyor. Geçerlilik tarihleri GxP kaydı olduğu için sessiz kayma riskli:
@@ -5437,10 +5467,197 @@ tanınmayan girişte alan boşaltılmalı ya da hata göstermeli.
 
 **`platform.tasks.work-report.read-tenant-wide` yalnız-açık-yetki listesinde değil — modül yetkilendirmesiyle varsayılan rollere dağılabilir (karar)**
 
-DURUM: AÇIK (sahip kararı) · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-READ-ACCESS-01), CT doğruladı · KAYIT: 2026-09-13
+DURUM: KAPANDI (yeni otomatik atamalar) — `aa96b147` (`feature/pss/mod-0024-review-meeting-policy`; CT sabotajla doğruladı, 2026-09-14). AÇIK KALAN — SAHİP KARARI: bugün bu izni otomatik tutan rolleri "açıkça verilmiş" hale çevirmek API ile mümkün değil (System/Module satırı geri alınamıyor, elle atama tekil indekse takılıyor) → veri adımı: tutulacak satırlarda GrantSource=Manual, kalanları sil + kiracı rol-atama sürümünü artır + sahiplerin refresh token'larını iptal et. Sahipler için salt okunur sorgu kontrol listesinde (§5) · BULAN: PSS ajanı · KAYIT: 2026-09-13 · **Sahip kararı 2026-09-15:** (b) — canlıya geçişte önce salt okunur sorguyla sahipler listelenir, kiracı yöneticisi tek tek onaylar, sonra veri adımı
 
 `ExplicitGrantOnlyPermissions.Keys` bu WP'den önce yalnız iki anahtar taşıyordu (`ppm.portfolios.assign-owner`,
 `auth.users.account-kind.manage`); BL-349 üçüncüsü olarak `platform.tasks.read-all`'ı ekledi. İş Raporu'nun kiracı geneli okuma anahtarı
 manifest eylemi olarak modül yetkilendirme senkronuna giriyor, yani Görev Motoru yetkilendirilen kiracıda Admin rolüne kendiliğinden
 düşebilir. Listeye eklemek, bu yetkiyi bugün tutan rollerden geri alır — bu yüzden sessizce yapılmadı. Karar: listeye alınsın mı, alınırsa
 mevcut atamalar nasıl ele alınsın.
+
+---
+
+### BL-395
+
+**Paylaşılan Platform test veritabanı eşzamanlı koşularda siliniyor — aynı makinede iki test koşusu birbirine sahte kırmızı veriyor**
+
+DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
+
+`MongoResidueSweeper` (`Persistence/MongoResidueSweeper.cs`) önceki koşudan kalan `diten_platform_itest` önekli veritabanlarını düşürüyor;
+`MongoIntegrationHarness` da dispose'ta kendi veritabanını düşürüyor. Aynı makinede iki worktree ya da iki ajan Platform testlerini aynı anda
+koşunca biri diğerinin veritabanını silebiliyor → testler rastgele kırmızı. Tekrar koşuda kaybolan kırmızı kod hatası sanılmamalı.
+Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıcı çözüm: koşu başına benzersiz önek ya da sahiplik işareti
+(İş Referans Verisi temizleyicisinin işaret deseni) — sweeper yalnız kendi koşusunun izini düşürsün.
+
+---
+
+### BL-396
+
+**Toplantı raporu / aksiyon kaydı yok — toplantılar arası izleme ve dışa aktarma**
+
+DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı yapılıyor · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
+
+Bütün dallarda ölçüldü: toplantılar için rapor ekranı ya da dışa aktarma ucu yok; toplantı başına kayıt tutanak. **Karar:** içerik = dönem/tür/
+düzenleyen filtreli toplantı listesi, katılım oranı, kararlar, toplantılardan doğan açık ve geciken aksiyonlar (Blueprint "Follow-up Register";
+ISO 9001 §9.3.3; QMS araçlarının aksiyon kaydı) · görünürlük = toplantı kuralı (düzenleyen + katılımcı + read-all) · dışa aktarmada denetim izi
+ŞART → BL-347 ile aynı kiracı tarafı denetim yazıcısı kararına bağlı. Sıra: MOD-0357 paket dilimi (module-pack-author) → sahip onayı → uygulama.
+
+---
+
+### BL-397
+
+**14 ekranda doğrudan tarih seçici: yanlış biçimde yazılan tarih hâlâ sessizce başka tarihe dönüşebilir**
+
+DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı (BL-391 kalanı) · KAYIT: 2026-09-14
+
+BL-391 yalnız paylaşılan `diten-datefield.js` ve Pozisyon Ataması formunu düzeltti. `allowInput` ile doğrudan flatpickr kuran ekranlar dokunulmadı: CRM/ContentEngagementJourneys, CRM/Knowledge, CRM/KnowledgeConcepts, CRM/KnowledgePaths, CRM/Segments, MasterData/LegalEntities (index + wizard), Organization/OrganizationUnits/form.js, Organization/Positions/form.js, Platform/Tenants/details.js, demand-ideas (capture + list), enterprise-strategy (esbp-horizon-dates, project-ppm-form-init). Öneri: bu ekranları paylaşılan alana taşımak ya da aynı `guardAgainstSilentMisparse` korumasını bağlamak; her ekran sahibinin kulvarında.
+
+---
+
+### BL-398
+
+**21 ekran sunucu doğrulama hatasında ham ProblemDetails JSON'unu sayfaya basıyor**
+
+DURUM: AÇIK · BULAN: PSS ajanı (BL-388 kalanı) · KAYIT: 2026-09-14
+
+BL-388 yalnız `TaskFieldDefinitionsController`'ı düzeltti. Aynı ham gövde düşüşü: TaskTypes, TaskChecklistTemplates, TaskRecurrenceRules, TaskTemplates, OrganizationFieldDefinitions, GoldenReferenceCompact, GoldenReferenceSlim, Roles, Platform/ModuleCatalog, Platform/SubscriptionPlans ve 11 CRM controller'ı. Ortak yardımcı yok; `UsersController`'ın kendi ayrıştırıcısı var. Ek not: alan mesajları sunucunun İngilizce teknik metniyle geliyor (ör. JSON dönüşüm hatası); yerelleştirmek çeviri kapısından geçer. Öneri: tek paylaşılan hata çıkarıcı + kardeşleri ona bağlamak.
+
+---
+
+### BL-399
+
+**Görev okuma kuralı her çağrıda bütün ilişki bacaklarını hesaplıyor — etiketlemede kişi başına tekrar**
+
+DURUM: AÇIK (verimlilik, engel değil) · BULAN: CT (@ ile etiketleme doğrulaması) · KAYIT: 2026-09-14
+
+`TaskReadAccessPolicy.CanReadAsync` artık `ResolveDataLegCandidatesAsync` ile havuz sahiplerini, izleyicileri ve üst görevi her seferinde çözüyor (önceden ilk eşleşmede duruyordu). Görev detayında birkaç ek sorgu; @ etiketleme doğrulaması bunu etiketlenen her kişi için (en çok 10) tekrarlıyor → ~30 sorgu. Öneri: adaylar görev başına bir kez hesaplanıp kişiler o kümede aranır; kapsam/read-all bacakları yalnız çağıran için ayrıca.
+
+---
+
+### BL-400
+
+**@ ile etiketleme: var olan yorumu düzenlerken etiket ekleme ekranı yok, eski /Tasks/Details'te etiketleme yok**
+
+DURUM: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-MENTIONS-01) · KAYIT: 2026-09-14
+
+Arka uç her ikisini destekliyor (`UpdateTaskCommentRequest.MentionedUserIds`, yalnız yeni eklenene bildirim). Görev Merkezi'nin yorum düzenleme penceresi seçiciyle genişletilmedi; eski /Tasks/Details ekranı dilime alınmadı. MOD-0024 paketi §21'de işaretli.
+
+---
+
+### BL-401
+
+**Kiracının ilk tüzel kişiliği aktifleşince kök organizasyon birimi otomatik oluşsun**
+
+DURUM: AÇIK (sahip kararı: sonra) · BULAN: CT (BL-366 seçenek 1) · KAYIT: 2026-09-14
+
+BL-366 kararı: şimdi kurulumda elle adım, sonra otomatik. İhtiyaç: MDM'de tüzel kişilik aktifleşme olayı (bugün MDM `TenantCreatedV1` dinlemiyor, tüzel kişilik Taslak açılıp elle aktifleşiyor) + Platform'da tüketici; kiracı kapsamında kök birim, tüketilen-olay deposu ve (TenantId, Code) tekil indeksiyle idempotent. Çok servisli iş (MDM + Platform); ayrı paket/prompt.
+
+---
+
+### BL-402
+
+**Bilinmeyen alan toleransı yalnız Platform'da — Auth, MDM, HCM ve PPM'de durum farklı**
+
+DURUM: AÇIK · BULAN: altyapı ajanı (BL-384 takibi) · KAYIT: 2026-09-14
+
+BL-384 Platform'a süreç genelinde `IgnoreExtraElementsConvention` ekledi (`4663682c`). Ölçülen: Auth aynı convention'ı zaten kaydediyor (`Diten.AuthService.Persistence/DependencyInjection.cs:37-41`, testi ölçülmedi) · MDM yalnız BrandProduct class map'lerinde (`BrandProductClassMaps.cs:36,47,57`) · HCM'de yok · PPM bilerek katı (`PpmBsonConfiguration.cs:30-32`). Her servisin geri alma riski ayrı değerlendirilmeli; PPM'nin katılığı bilinçli karar mı teyit edilmeli.
+
+---
+
+### BL-403
+
+**Dev kiracısında görev rolleri: Task-Manager'ın hiç izni yok, Task-User'ın izinleri görevle ilgisiz**
+
+DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
+
+Ölçüm (`diten_auth_v3`): Task-Manager rolüne bağlı izin satırı 0; Task-User'da yalnız `ppm.benefit-commitments.change-lifecycle`, `mdm.brands.create`, `auth.roles.create`. Canlı tur için CT Task-Manager'a toplantı okuma + görev izinlerini elle verdi. Soru: bu roller hangi tohum/şablondan geliyor, canlı kiracılarda aynı boşluk var mı? Varsa rol şablonu düzeltilmeli.
+
+---
+
+### BL-404
+
+**Dev'de /health Unhealthy — `business_reference_data_provider` kontrolü**
+
+DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
+
+`/health` 503; tek kırmızı kontrol `business_reference_data_provider` ("configuration or state is invalid"). Diğerleri (mongodb, rabbitmq, hangfire_storage, masstransit-bus) sağlıklı. Toplantı/görev turundan önce de böyleydi. Canlıda aynı kontrolün değeri okunmalı; yük dengeleyici sağlık kontrolü bu uca bakıyorsa servis dışı sayılabilir.
+
+---
+
+### BL-405
+
+**CI'da koşmayan eski kırmızı testler — İş Referans Verisi 53, Doküman Yönetimi 15, Auth 3, ön yüz 25**
+
+DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
+
+`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
+
+---
+
+### BL-406
+
+**Tekrar denemeleri biten e-posta kalıcı başarısız kalıyor — kimseye söylenmiyor**
+
+DURUM: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT: 2026-09-14
+
+`EmailDispatchSweepJob` `MaxRetryCount` (5) dolunca satırı bir daha seçmiyor; satır `Failed` kalıyor. Düzenleyen davetin hiç ulaşmadığını bilmiyor, ekranda iz yok. Öneri: son denemede düzenleyene uygulama içi bildirim ya da toplantı detayında "davet iletilemedi" durumu; ops için kalıcı başarısız dispatch sayısı metriği.
+
+---
+
+### BL-407
+
+**Görev Merkezi'nde kullanılmayan `ActReviewMeeting` metin anahtarı**
+
+DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAYIT: 2026-09-14
+
+`WorkCenterNextIndex.*.resx` içindeki `ActReviewMeeting` app.js'te hiç referanslı değil (eylem etiketi `WorkAggregation_Action_ScheduleReviewMeeting`'den geliyor). BL-389'da yalnız metni düzeltildi. 7 dilde silinmesi çeviri kapısından geçer.
+
+---
+
+### BL-408
+
+**CI kapısının "veritabanları arası erişim" adımı `rg` yoksa hiçbir şey denetlemeden "passed" diyor**
+
+DURUM: AÇIK · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
+
+`scripts/check_cross_db_enforcement.sh:7` aramayı `rg` ile yapıyor ve hatayı `|| true` ile yutuyor. `rg` kurulu olmayan makinede (yerel dev makinesi ölçüldü: `rg: command not found`) adım hiçbir dosyayı taramadan geçiyor. Ajan aynı denetimi grep ile koştu: 0 ihlal. GitHub `ubuntu-latest` imajında `rg` olup olmadığı ölçülmedi. Öneri: araç yoksa adım başarısız olsun ya da grep'e düşsün; `|| true` yalnız "eşleşme yok" çıkış kodunu yutsun.
+
+---
+
+### BL-393
+
+**Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
+
+DURUM: KAPANDI — `657050ac` + mimari kural düzeltmesi (CT, `feature/infra/auth-display-label`, 2026-09-13; o dalda kapı uçtan uca geçti: kiracı 3/3, mimari 18/18, Web 137/137) · BULAN: CT (go-live öncesi yerel kapı koşusu) · KAYIT: 2026-09-13
+
+`cccd541f` gateway'e "jetondaki kiracıyı başlık ya da alt alan adı çelişirse 400 Tenant mismatch" kuralını getirdi ve kendi test
+paketini ekledi; `tests/tenancy/.../UnitTest1.cs` içindeki `JwtTenant_OverridesConflictingHeader` ise hâlâ eski davranışı (başlığın
+üzerine yazılıp isteğin geçmesi) bekliyordu. `run_phase1_gates.sh` ilk hatada durduğu için mimari testleri ve Web testleri de o
+tarihten beri CI'da hiç koşmadı; o arada birleşen PR'lar (ör. #105, #106) kırmızı hatla girdi. Ölçüm: temiz `origin/main`
+(`e5681231`) üzerinde aynı test kırmızı. Test bugünkü sözleşmeye çevrildi; sabotaj: çelişki kontrolü kapatılınca kırmızı.
+
+**İkinci kırmızı (ilki düzelince görüldü):** `MongoTestDatabaseGuardTests.NoTestCreatesItsOwnDatabasePerRun` 2026-08-31'de main'e giren
+`PpmAuditRetentionPolicySeedMongoTests` ve `DisposableStandaloneMongo`'yu işaretliyordu (temiz main'de de kırmızı). İkisi de paylaşılan
+mongod'a dokunmuyor: kendi geçici `mongod` sürecini açıp kapatıyor, klasörü siliyor; kuralın koruduğu dosya tanıtıcı baskısı ve artık
+veritabanı oluşmuyor. Gerekçesiyle istisna listesine eklendi — kuralın "kırmızıyı yeşile çevirmek için satır ekleme" uyarısı bilinerek;
+sahip isterse bu iki test ortak veritabanına taşınır ve satırlar silinir. Sabotaj: satır silinince kural o dosyayı adıyla kırmızı verdi.
+**Not:** tam Platform/Auth test paketleri ve vitest CI'da hiç koşmuyor; oradaki eski kırmızılar (Doküman Yönetimi, İş Referans Verisi,
+3 Auth, 25 vitest) bu kapıyı etkilemiyor, ayrı borç.
+
+---
+
+### BL-394
+
+**Abonelik işlem mimari testleri derlenmiş kodu kaba bayt taramasıyla okuyor — kod değişmeden sahte kırmızı veriyor**
+
+DURUM: KAPANDI — `0d551337` (PSS dalı, 2026-09-14): opcode tablosuyla gerçek IL yürüyüşü; birleşik toplantı derlemesinin kopyasında eski test 2 kırmızı, yeni 10/10; sabotaj (Suspend yazıcı çağrısı, AssignPlan kota çağrısı kaldırılınca) kırmızı · BULAN: CT (go-live öncesi tam paket karşılaştırması) · KAYIT: 2026-09-13
+
+`SubscriptionHandlerTransactionArchitectureTests.GetExecutableCalls` IL baytlarını sırayla gezip 0x28/0x6f gördüğü her yeri çağrı sayıyor;
+komut uzunluklarını bilmediği için bir operandın içindeki bayta takılıp kayabiliyor. Derlemeye başka yerde üye eklenince metadata numaraları
+değişiyor ve tarama gerçek çağrıyı atlıyor. Ölçüm (`scratchpad/ilprobe`, opcode uzunluklarını bilen doğru okuma ile testin taramasının
+birebir kopyası): toplantı dalının birleşik hali (`9f65800f`, MethodDefs 49 449) `SuspendTenantSubscriptionCommandHandler`'da doğru okumayla
+`TenantSubscriptionTransactionWriter::UpdateAsync`'i buluyor, kaba tarama bulamıyor (38 yerine 36 çağrı); `AssignPlanToTenantCommandHandler`'da
+`IQuotaService::InitializeSubscriptionQuotasAsync` için aynı. Auth (`3b004763`), görev motoru (`bdc6972d`) ve toplantının birleşme öncesi
+(`9e1a82f6`) derlemelerinde iki okuma da çağrıyı buluyor ve testler yeşil; işlemlerin kodu ve IL boyu (786 / 429 bayt) her derlemede aynı.
+Yani gerileme yok, test kırılgan. CI tam Platform paketini koşmadığı için PR'ı engellemez. Düzeltme: `System.Reflection.Metadata` ile
+opcode uzunluğunu bilen gerçek bir IL okuyucu (ilprobe'daki döngü yeterli).

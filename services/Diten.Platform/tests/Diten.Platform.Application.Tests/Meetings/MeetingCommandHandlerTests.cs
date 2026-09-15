@@ -42,6 +42,8 @@ public sealed class MeetingCommandHandlerTests
 
         public CancelMeetingHandler CancelHandler() => new(Meetings, Types, Attendees, CurrentUser, InviteMailer);
 
+        public ReassignMeetingOrganizerHandler ReassignHandler() => new(Meetings, Types, CurrentUser, Mediator, InviteMailer);
+
         public MeetingType SeedType()
         {
             var type = new MeetingType { TenantId = Tenant, Name = "MGMT-REVIEW " + Guid.NewGuid() };
@@ -229,7 +231,7 @@ public sealed class MeetingCommandHandlerTests
         };
         fx.Meetings.Seed(meeting);
 
-        var handler = new ReassignMeetingOrganizerHandler(fx.Meetings, fx.Mediator);
+        var handler = fx.ReassignHandler();
         var response = await handler.Handle(
             new ReassignMeetingOrganizerCommand(meeting.Id, new ReassignMeetingOrganizerRequest(newOrganizer, meeting.Version), "corr"),
             CancellationToken.None);
@@ -238,6 +240,41 @@ public sealed class MeetingCommandHandlerTests
         var reread = await fx.Meetings.GetByIdAsync(meeting.Id);
         Assert.Equal(newOrganizer, reread!.OrganizerUserId);
         Assert.Equal(Organizer, reread.PreviousOrganizerUserId);
+
+        // BL-387 — the new organizer's own "added to your calendar" mail, since the OLD organizer (fx.CurrentUser)
+        // performed the reassignment, not the new organizer themselves.
+        var call = Assert.Single(fx.InviteMailer.Calls);
+        Assert.Equal("organizer-reassigned", call.Kind);
+        Assert.Equal([newOrganizer], call.RecipientUserIds);
+        Assert.Equal(Organizer, call.ActingUserId);
+    }
+
+    [Fact]
+    public async Task ReassignOrganizer_to_the_ACTORS_OWN_user_id_still_asks_the_mailer_with_matching_recipient_and_actor()
+    {
+        var fx = new Fixture();
+        fx.Mediator.EligibleUserIds.Add(Organizer);
+        var meeting = new Meeting
+        {
+            TenantId = Tenant, Title = "T", MeetingTypeId = Guid.NewGuid(),
+            StartAt = DateTimeOffset.UtcNow, EndAt = DateTimeOffset.UtcNow.AddHours(1),
+            OrganizerUserId = Guid.NewGuid(), IdempotencyKey = Guid.NewGuid().ToString()
+        };
+        fx.Meetings.Seed(meeting);
+
+        // fx.CurrentUser is Organizer, and Organizer reassigns the meeting to themselves.
+        var response = await fx.ReassignHandler().Handle(
+            new ReassignMeetingOrganizerCommand(meeting.Id, new ReassignMeetingOrganizerRequest(Organizer, meeting.Version), "corr"),
+            CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        // The handler does not special-case self-reassignment — it always asks the mailer. What suppresses the
+        // mail is the recipient equalling the actor, which is the MAILER's own actor-exclusion rule (proven
+        // against the real MeetingInviteMailer by MeetingInviteMailerOrganizerVariantTests). Here we only prove
+        // the handler hands over the two values that rule depends on, correctly and undisguised.
+        var call = Assert.Single(fx.InviteMailer.Calls);
+        Assert.Equal([Organizer], call.RecipientUserIds);
+        Assert.Equal(Organizer, call.ActingUserId);
     }
 
     [Fact]
@@ -253,7 +290,7 @@ public sealed class MeetingCommandHandlerTests
         };
         fx.Meetings.Seed(meeting);
 
-        var handler = new ReassignMeetingOrganizerHandler(fx.Meetings, fx.Mediator);
+        var handler = fx.ReassignHandler();
         var response = await handler.Handle(
             new ReassignMeetingOrganizerCommand(meeting.Id, new ReassignMeetingOrganizerRequest(Guid.NewGuid(), meeting.Version), "corr"),
             CancellationToken.None);
@@ -261,5 +298,6 @@ public sealed class MeetingCommandHandlerTests
         Assert.False(response.IsSuccessful);
         Assert.Equal(409, response.StatusCode);
         Assert.Equal(MeetingReasonCodes.Cancelled, response.ReasonCode);
+        Assert.Empty(fx.InviteMailer.Calls);
     }
 }

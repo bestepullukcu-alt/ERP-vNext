@@ -88,6 +88,17 @@ public sealed class UsersController : CustomBaseController
         return CreateActionResultInstance(result);
     }
 
+    // GET api/users/{id}/display-label → { userId, displayLabel, labelState }; a display/history label ONLY — never
+    // eligibility, activity, or authorization evidence (see UserDisplayLabelDto remarks). 404 for a missing user AND
+    // for another tenant's user, byte-identical (same shape as account-assertion).
+    [HttpGet("{id:guid}/display-label")]
+    [HasPermission("auth.users.lookup")]
+    public async Task<IActionResult> GetDisplayLabel(Guid id, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetUserDisplayLabelQuery(id), ct);
+        return CreateActionResultInstance(result);
+    }
+
     [HttpPost]
     [HasPermission("auth.users.create")]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request, CancellationToken ct)

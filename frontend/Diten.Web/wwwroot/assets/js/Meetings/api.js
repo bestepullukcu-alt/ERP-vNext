@@ -53,6 +53,7 @@
         MEETING_ATTENDEE_NOT_ELIGIBLE: 'errorAttendeeNotEligible',
         MEETING_ATTENDEE_DUPLICATE: 'errorAttendeeDuplicate',
         MEETING_ATTENDEE_NOT_FOUND: 'errorAttendeeNotFound',
+        MEETING_ATTENDEE_IS_ORGANIZER: 'errorAttendeeIsOrganizer',
         MEETING_AGENDA_ITEM_NOT_FOUND: 'errorAgendaItemNotFound',
         MEETING_AGENDA_REORDER_MISMATCH: 'errorAgendaReorderMismatch',
         MEETING_TYPE_NOT_FOUND: 'errorTypeNotFound',
