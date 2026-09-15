@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>تعذر تسجيل التصدير في سجل التدقيق، لذا لم يتم إصدار الملف. حاول مرة أخرى لاحقًا.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>يحتوي هذا التقرير على عدد كبير جدًا من الصفوف للتصدير. ضيّق الفترة أو عوامل التصفية.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>يبدأ كل ملف يتم تنزيله بطابع زمني للقطة — إنه نسخة لحظية، وليس مستندًا خاضعًا للرقابة.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>كل ملف يتم تنزيله هو لقطة مأخوذة في لحظة التنزيل؛ وليست نسخة خاضعة للرقابة. لأغراض الاطلاع فقط — يرجى التحقق من الحالة الحالية في النظام.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>كل المستأجر</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>اجتماعاتي</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليس لديك صلاحية الوصول إلى هذا التقرير.</value></data>

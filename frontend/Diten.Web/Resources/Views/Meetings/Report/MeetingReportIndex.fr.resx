@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>Chargement…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>L'export n'a pas pu être enregistré dans la piste d'audit, le fichier n'a donc pas été délivré. Réessayez plus tard.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>Ce rapport contient trop de lignes pour être exporté. Réduisez la période ou les filtres.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>Chaque fichier téléchargé commence par un horodatage d'instantané — c'est une copie à un instant donné, pas un document contrôlé.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>Chaque fichier téléchargé est un instantané pris au moment du téléchargement ; ce n'est pas une copie contrôlée. À titre informatif uniquement — vérifiez l'état actuel dans le système.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>Tout le tenant</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Mes réunions</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas accès à ce rapport.</value></data>
