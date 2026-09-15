@@ -28,6 +28,21 @@ public sealed class FullCatalogPermissionGrantServiceTests
         Assert.Equal(GrantSource.System, grant.GrantSource);
     }
 
+    // BL-412 — the full-catalog auto-grant is system-initiated: it keeps the system actor and never names a person.
+    [Fact]
+    public async Task Full_catalog_grant_is_stamped_by_the_system_actor_not_a_person()
+    {
+        var superAdmin = new Role("SuperAdmin", "Super Administrator", null, Guid.NewGuid());
+        var grants = new FakeRolePermissionRepository();
+        var service = new FullCatalogPermissionGrantService(new FakeRoleRepository(superAdmin), grants, NullLogger<FullCatalogPermissionGrantService>.Instance);
+
+        await service.GrantToFullCatalogRolesAsync(Guid.NewGuid(), "goldenslim.records.read", CancellationToken.None);
+
+        var grant = Assert.Single(grants.Assigned);
+        Assert.Equal("system", grant.AssignedBy);
+        Assert.Equal("system", grant.CreatedBy);
+    }
+
     [Fact]
     public async Task Missing_full_catalog_role_does_not_throw_and_grants_nothing()
     {
