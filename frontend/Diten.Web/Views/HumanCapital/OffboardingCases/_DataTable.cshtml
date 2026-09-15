@@ -1,0 +1,33 @@
+@using Diten.Web.Views.HumanCapital.OffboardingCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OffboardingCasesIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-offboarding-cases" data-dt-standard="v2" class="datatables-offboarding-cases table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th>@Localizer["EmployeeProjectionId"]</th>
+                    <th>@Localizer["AssignmentOverlayId"]</th>
+                    <th>@Localizer["OffboardingState"]</th>
+                    <th>@Localizer["ChecklistState"]</th>
+                    <th>@Localizer["SensitiveAccessDecisionState"]</th>
+                    <th>@Localizer["DependencyDecisionState"]</th>
+                    <th>@Localizer["TepHandoffState"]</th>
+                    <th>@Localizer["PlannedExitDate"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

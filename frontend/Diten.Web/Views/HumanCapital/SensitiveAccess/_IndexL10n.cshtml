@@ -1,0 +1,25 @@
+@using Diten.Web.Views.HumanCapital.SensitiveAccess
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SensitiveAccessIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="sensitive-access-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        EmployeeProjectionId = Localizer["EmployeeProjectionId"].Value,
+        VisibilityClassification = Localizer["VisibilityClassification"].Value,
+        RequestedAction = Localizer["RequestedAction"].Value,
+        Decision = Localizer["Decision"].Value,
+        ReasonCode = Localizer["ReasonCode"].Value,
+        DataScope = Localizer["DataScope"].Value,
+        EvaluatedAt = Localizer["EvaluatedAt"].Value,
+        EvaluationRequired = Localizer["EvaluationRequired"].Value,
+        HealthLoadFailed = Localizer["HealthLoadFailed"].Value,
+        AuditUnavailable = Localizer["AuditUnavailable"].Value
+    })
+</script>
