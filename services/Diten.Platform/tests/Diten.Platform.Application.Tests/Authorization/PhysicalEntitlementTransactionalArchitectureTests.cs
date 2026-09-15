@@ -66,6 +66,7 @@ public sealed class PhysicalEntitlementTransactionalArchitectureTests
         var audit = new Mock<IAuditService>(MockBehavior.Strict);
         var behavior = new AuditBehavior<EnableTenantModuleEntitlementCommand, Response<NoContent>>(
             audit.Object,
+            new Diten.Platform.Common.Authorization.AnonymousTenantAuthorizationContext(),
             new AuditBehaviorOptions(),
             NullLogger<AuditBehavior<EnableTenantModuleEntitlementCommand, Response<NoContent>>>.Instance);
         var nextCalled = false;
