@@ -20,4 +20,13 @@ public sealed class MeetingAttendee : TenantScopedEntity
 
     /// <summary>Null until minutes are drafted (S6) — never set at invitation time.</summary>
     public AttendanceStatus? AttendanceStatus { get; set; }
+
+    /// <summary>
+    /// BL-406 — ADDITIVE ONLY, null on every row written before this WP and on every row whose meeting mail
+    /// still has retries left or was delivered. Set once a <c>NotificationDispatch</c> attributed to this
+    /// (MeetingId, UserId) pair (via <c>NotificationDispatch.CausationId</c> + <c>MeetingAttendeeUserId</c>)
+    /// permanently fails — see <c>MarkNotificationDispatchFailedHandler</c>. Drives the "mail undelivered" badge
+    /// on the meeting detail screen; no other writer of this field exists.
+    /// </summary>
+    public DateTimeOffset? MailUndeliveredAt { get; set; }
 }

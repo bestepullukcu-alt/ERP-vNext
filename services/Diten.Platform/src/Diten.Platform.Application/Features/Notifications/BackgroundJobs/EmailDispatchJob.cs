@@ -100,15 +100,23 @@ public sealed class EmailDispatchJob : IBackgroundJobHandler<EmailDispatchJobArg
             return;
         }
 
-        var nextRetryAt = ComputeNextRetryAt(dispatch.RetryCount + 1);
+        var newRetryCount = dispatch.RetryCount + 1;
+        var nextRetryAt = ComputeNextRetryAt(newRetryCount);
+        // BL-406 — this is the ONLY place that knows both the retry count this failure is about to persist AND
+        // the maxRetryCount the sweep used to select the dispatch for this attempt in the first place. Once
+        // newRetryCount reaches args.MaxRetryCount, FindDueRetriesAsync's own `RetryCount < maxRetryCount` filter
+        // will never surface this dispatch again — so this is the one and only transition where "no further
+        // retry is coming" becomes true, never re-entered on a later sweep pass over the same terminal row.
+        var isPermanentFailure = newRetryCount >= args.MaxRetryCount;
         await _mediator.Send(
             new MarkNotificationDispatchFailedCommand(
                 dispatch.TenantId,
                 dispatch.Id,
                 Redact(result.ErrorCode) ?? "ProviderRejected",
                 Redact(result.ErrorMessage) ?? "Provider rejected the message.",
-                RetryCount: dispatch.RetryCount + 1,
-                NextRetryAt: nextRetryAt),
+                RetryCount: newRetryCount,
+                NextRetryAt: nextRetryAt,
+                IsPermanentFailure: isPermanentFailure),
             cancellationToken);
     }
 

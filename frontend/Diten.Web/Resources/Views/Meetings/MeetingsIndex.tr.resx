@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>Ekle</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Gündem maddesi</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Katılımcıyı kaldır</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>Posta iletilemedi</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Ekle</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Düzenleyeni Değiştir</value></data>
   <data name="Minutes" xml:space="preserve"><value>Tutanak</value></data>

@@ -200,7 +200,11 @@ public sealed record MeetingAttendeeDto(
     Guid UserId,
     string? DisplayName,
     InvitationResponse InvitationResponse,
-    AttendanceStatus? AttendanceStatus);
+    AttendanceStatus? AttendanceStatus,
+    /// <summary>BL-406 — true only when this attendee's meeting mail permanently failed (no further retry is
+    /// coming). Never true on successful delivery or while retries are still possible; see
+    /// <c>MeetingAttendee.MailUndeliveredAt</c>.</summary>
+    bool MailUndelivered = false);
 
 /// <summary>Per-attendee outcome of a bulk add — K12, partial success is visible: some ids may be ineligible or
 /// already-invited while others succeed, and the caller must be told which is which, never one opaque failure.</summary>

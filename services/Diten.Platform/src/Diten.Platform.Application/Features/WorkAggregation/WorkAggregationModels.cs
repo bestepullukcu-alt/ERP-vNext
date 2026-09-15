@@ -674,13 +674,21 @@ public sealed record WorkItemProjectionDto(
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/
 /// ScheduledAt come from the "reviewMeeting"-type RecordLink when one exists — absent means none is scheduled
 /// yet, which is also the condition that keeps the <c>scheduleReviewMeeting</c> action offered.
+///
+/// <para>MinutesPublished (MOD-0357 S9, CT fix-up F1 2026-09-15) — whether a non-cancelled linked meeting has
+/// PUBLISHED minutes, i.e. whether the review-meeting gate is unlocked. The executable contract
+/// (fixture-contract.js, REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION) reads exactly this field, and
+/// work-items-api.js DROPS any item the contract rejects: without it on the wire, a Required task whose minutes
+/// had published (so its decision action is enabled) would vanish from the board.</para>
 /// </summary>
 public sealed record WorkItemReviewMeetingPolicyDto(
     string Requirement,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? MeetingId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? ScheduledAt = null);
+    DateTimeOffset? ScheduledAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? MinutesPublished = null);
 
 /// <summary>
 /// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide

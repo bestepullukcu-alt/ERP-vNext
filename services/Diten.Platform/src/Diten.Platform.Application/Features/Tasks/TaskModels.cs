@@ -267,6 +267,16 @@ public static class TaskReasonCodes
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
+    /// <summary>
+    /// MOD-0357 S9 (owner, 2026-09-13) — the task's TYPE requires a review meeting's minutes to publish before
+    /// its DECISION (`complete`, `submitReview`) may proceed. `start` is never refused with it: holding the
+    /// meeting is part of the work. A LOCAL MOD-0024 precondition, independent of
+    /// <see cref="ApprovalPending"/>/MOD-0023: this is never returned by the workflow gate, only by
+    /// <c>TransitionTaskItemHandler</c> (→ Done) and <c>SubmitTaskForReviewHandler</c> through the one shared rule
+    /// (see <c>ReviewMeetingDecisionGate</c>).
+    /// </summary>
+    public const string ReviewMeetingRequired = "REVIEW_MEETING_REQUIRED";
+
     /// <summary>The recurrence rule does not exist, or belongs to another tenant.</summary>
     public const string RecurrenceRuleNotFound = "RECURRENCE_RULE_NOT_FOUND";
 

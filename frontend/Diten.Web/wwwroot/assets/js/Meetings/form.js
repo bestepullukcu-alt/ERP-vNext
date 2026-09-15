@@ -278,7 +278,12 @@
         (meeting.attendees || []).forEach((a) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || t('unknownUser')} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span></span>`;
+            // BL-406 — a second badge, shown ONLY when this attendee's meeting mail permanently failed
+            // (`mailUndelivered` comes straight off the API's MeetingAttendeeDto; never inferred client-side).
+            const undeliveredBadge = a.mailUndelivered
+                ? `<span class="badge bg-label-danger ms-1">${esc(t('mailUndeliveredBadge'))}</span>`
+                : '';
+            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || t('unknownUser')} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span>${undeliveredBadge}</span>`;
             if (editable) {
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
