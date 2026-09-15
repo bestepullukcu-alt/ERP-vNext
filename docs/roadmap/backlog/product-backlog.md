@@ -5738,6 +5738,36 @@ Ekibim (`scope=team`, BL-023) astların işini listeliyor. Görev okuma kuralı 
 
 ---
 
+### BL-418
+
+**Modül eşitlemesinin anahtarla çalışan yolu izin kapsamına bakmıyor — dev'de kiracı Admin rolleri 15 "yalnız platform" izni tutuyor**
+
+DURUM: AÇIK — salt okuma inceleme başladı · BULAN: BL-411 ajanı (WP-INFRA-AUTH-REGISTER-ACTOR-AND-TEMPLATE-SCOPE-01) · KAYIT: 2026-09-15
+
+`ModulePermissionResolver.cs:99-103` kapsamı yalnız modül adıyla çözülen yedek yolda denetliyor; eşitleme tüketicisinin normal kullandığı anahtar yolu (`EntitlementPermissionSyncService.cs:110-113`) katalog satırını anahtarla seçip Scope'a hiç bakmıyor. Ölçüm (dev `diten_auth_v3`, salt okuma): kiracı Admin rollerinde modül kaynaklı 15 PlatformAdmin kapsamlı izin satırı — 13'ü `workflow`, 2'si `mod0251`. Nereden geldikleri izlenmedi. Not: iş akışı için bilinçli bir izin listesi istisnası vardı (plan eşitlemesi, "workflow allow-list bypasses platform.* boundary"); hangi satırların bu istisnaya, hangilerinin sızıntıya ait olduğu ölçülecek. Kiracı–platform yetki sınırı (escalation boundary) konusu; altyapı CT.
+
+---
+
+### BL-419
+
+**Platform izin otomatik kayıt işçisi 60 sn beklemeden sonra anahtarları kapsamsız kaydediyor — Auth onları "yalnız platform" damgalıyor ve bir daha düşürmüyor**
+
+DURUM: AÇIK · BULAN: BL-411 ajanı · KAYIT: 2026-09-15
+
+`PlatformPermissionAutoRegistrationWorker.cs:45-54` kendi kayıt kapısı 60 sn'de zaman aşımına uğrayınca devam ediyor; `:81` her anahtarı modül ve kapsam null ile eşitliyor. Auth kurucusu `platform` önekini PlatformAdmin sınıflıyor (`Permission.cs:44,63`); sonraki manifest eşitlemesi Tenant gönderse de eşitlemenin eşitlik bozma kuralı PlatformAdmin'i asla düşürmüyor (`InternalPermissionsController.cs:144-153`). BL-411'deki iki şablon anahtarının takılma sebebi bu (DCP-004 tehlike B2). BL-411 izin listesiyle yalnız o ikisini düzeltti; kök sebep açık. Öneri: işçi manifest gelmeden kapsamsız oluşturma yapmasın ya da Auth kapsamsız oluşturmayı rota kuralıyla sınıflasın — tasarım kararı gerekir. Ayrıca: aynı veritabanında ikinci canlı Auth süreci (kademeli yeniden başlatma) düzeltmeyi bir sonraki başlangıca kadar geri alabilir (kapalı yönde).
+
+---
+
+### BL-420
+
+**Kendi kaydında denetim olayı yazılamazsa kullanıcı olaysız kalıyor — yeniden deneme 409**
+
+DURUM: AÇIK (kabul edilen sınır, düşük öncelik) · BULAN: BL-412 inceleme ajanı · KAYIT: 2026-09-15
+
+`RegisterCommandHandler` olayı kullanıcı ve rol satırı kaydedildikten sonra yazıyor; yazma hata verirse kullanıcı olaysız kalır, yeniden deneme "zaten var" (409) alır. Giriş ve şifre değiştirme de aynı sırada. 21 CFR Part 11 "olay ya da hiçbiri" gerektirirse çözüm outbox ya da işlem (transaction). 
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
