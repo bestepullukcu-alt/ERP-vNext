@@ -5744,6 +5744,8 @@ Ekibim (`scope=team`, BL-023) astların işini listeliyor. Görev okuma kuralı 
 
 DURUM: AÇIK — salt okuma inceleme başladı · BULAN: BL-411 ajanı (WP-INFRA-AUTH-REGISTER-ACTOR-AND-TEMPLATE-SCOPE-01) · KAYIT: 2026-09-15
 
+**2026-09-15 inceleme sonucu (WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01, salt okuma):** 15 satırın hiçbiri gerçek yükseltme değil ve kaynağı eşitleme değil **dev DataSeeder** (`system` aktörü; varsayılan PLATFORM kiracısının Admin rolü, 0 kullanıcı). 13'ü bilinçli iş akışı istisnası (`ModulePermissionResolver.cs:39-47` `PlatformHostedTenantModules = {workflow}`, `286d019e`; kiracı sınırlı, onaylayan Admin olmak zorunda); 2'si yanlış etiketlenmiş kiracı anahtarı (`platform.person.lookup_validation`, `platform.audit.events.append` — MOD-0251 HCM kullanıcı jetonuyla çağırıyor). **Anahtar yolu açığı gerçek:** 5 kiracıda (sonra silinen rollerde) eşitleme PlatformAdmin anahtarları vermiş; yetkilendirme olursa WORKING-CALENDAR'ın 3 gerçek platform anahtarı (sınıf C, gizli; API yönetici önekinde olduğu için bugün etkisiz), REFERENCE-DATA 13 ve DOCUMENT-MANAGEMENT 34 anahtarı kiracı Admin'ine gider. İş akışı istisnası hiçbir pakette/ADR'de kayıtlı değil ve §2c'ye aykırı. Dev Viewer rolünde 17 PlatformAdmin okuma izni artığı var. **Önerilen düzeltme:** `GrantPermissionsToRolesAsync` içinde yalnız `IsTenantAssignable` ya da izin listesindeki modül anahtarları kalsın (iki yol aynı cevabı versin) — DOCUMENT-MANAGEMENT 34 anahtarının kapsam kararı ve REFERENCE-DATA'nın kiracıya açık mı sorusuyla birlikte; iş akışı istisnası §2c/MOD-0023'e kaydedilsin. Ayrı kayıtlar: BL-421 denetim olayı aktörü istekten, BL-422 iş akışı yükseltme saati istemciden.
+
 `ModulePermissionResolver.cs:99-103` kapsamı yalnız modül adıyla çözülen yedek yolda denetliyor; eşitleme tüketicisinin normal kullandığı anahtar yolu (`EntitlementPermissionSyncService.cs:110-113`) katalog satırını anahtarla seçip Scope'a hiç bakmıyor. Ölçüm (dev `diten_auth_v3`, salt okuma): kiracı Admin rollerinde modül kaynaklı 15 PlatformAdmin kapsamlı izin satırı — 13'ü `workflow`, 2'si `mod0251`. Nereden geldikleri izlenmedi. Not: iş akışı için bilinçli bir izin listesi istisnası vardı (plan eşitlemesi, "workflow allow-list bypasses platform.* boundary"); hangi satırların bu istisnaya, hangilerinin sızıntıya ait olduğu ölçülecek. Kiracı–platform yetki sınırı (escalation boundary) konusu; altyapı CT.
 
 ---
@@ -5765,6 +5767,36 @@ DURUM: AÇIK · BULAN: BL-411 ajanı · KAYIT: 2026-09-15
 DURUM: AÇIK (kabul edilen sınır, düşük öncelik) · BULAN: BL-412 inceleme ajanı · KAYIT: 2026-09-15
 
 `RegisterCommandHandler` olayı kullanıcı ve rol satırı kaydedildikten sonra yazıyor; yazma hata verirse kullanıcı olaysız kalır, yeniden deneme "zaten var" (409) alır. Giriş ve şifre değiştirme de aynı sırada. 21 CFR Part 11 "olay ya da hiçbiri" gerektirirse çözüm outbox ya da işlem (transaction). 
+
+---
+
+### BL-421
+
+**Kiracı denetim olayı ekleme ucu aktörü istek gövdesinden alıyor — kiracı kullanıcısı kendi denetim kaydına "platform yöneticisi" ya da "sistem" adına olay yazabilir**
+
+DURUM: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
+
+`POST /api/v1/platform/audit/events` (`PlatformAuditAppendController.cs:36-40,66,75`) kiracıyı çağıranınkine sabitliyor ama `ActorType`/`ActorId` gövdeden geliyor (`AuditAppendApiModels.cs:10-11,80-120`), çağıranla bağlanmıyor. `platform.audit.events.append` tutan biri kendi kiracısının denetim izine istediği aktörle olay yazabilir. Kiracılar arası değil ama GxP / 21 CFR Part 11 bütünlük açığı. Bilinen çağıran: HCM `GovernedHcmAuditAppendClient` (kullanıcının jetonunu iletiyor). Düzeltme: aktör kimliği doğrulanmış çağırandan (BL-409 çözümleyicisi), gövdedeki farklı aktör 400. SAP/Oracle denetim günlükleri de kimliği doğrulanmış kullanıcıyı yazar.
+
+---
+
+### BL-422
+
+**İş akışı yükseltme çalıştırması saati istemciden alıyor — yetkili biri süresi dolmamış görevleri kendi kiracısında zaman aşımına uğratabilir**
+
+DURUM: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
+
+`RunWorkflowEscalationsHandler.cs:41` istemcinin verdiği `NowUtc`'yi kabul ediyor; `platform.workflow.escalations.run` tutan biri geleceği vererek süresi dolmamış görevleri yükseltebilir. Düzeltme: API yolu sunucu saati; testler zamanı enjekte saatle yönetir.
+
+---
+
+### BL-423
+
+**Dev ve dev tohumlaması: Viewer'da 17 PlatformAdmin okuma izni artığı, PLATFORM kiracısı Admin'ine her açılışta iş akışı ve mod0251 izinleri**
+
+DURUM: AÇIK (sahip onayı gereken temizlik) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
+
+Varsayılan kiracı Viewer rolünde 2026-07-03/06 tarihli 17 System kaynaklı PlatformAdmin okuma izni (bugünkü şablon Tenant kapsamı istiyor; hiçbir kod System izinlerini geri almıyor; 14'ü `/api/platform/*` yönetici yollarında, rolde kullanıcı yok). DataSeeder her açılışta PLATFORM kiracısı Admin'ine 15 izni geri yazıyor (`DataSeeder.cs:159,953,1101,1794`) — Platform bu kiracıyı iş akışına yetkilendirmiyor. Canlı ortamlarda aynı artık var mı ölçülmedi. PKS-001: `mod0251.*` ve `lookup_validation` alt çizgi kullanıyor (standart yasaklıyor).
 
 ---
 
