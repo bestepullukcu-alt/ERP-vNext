@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
+using static Diten.Platform.Application.Tests.Meetings.MeetingDispatchAssertions;
 
 namespace Diten.Platform.Application.Tests.Meetings;
 
@@ -146,11 +147,15 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
 
     // ── B — the .ics each participant receives across invite → change → cancel ─────────────────────────────────
 
+    // BL-406 (CT F2, 2026-09-15) — the mailer sends ONE dispatch per recipient, so each test below asserts the
+    // per-recipient contract through MeetingDispatchAssertions: exactly the expected people, each on their own
+    // dispatch, nobody twice, and every copy of one event carrying the same UID/METHOD/SEQUENCE.
+
     [Fact]
     public async Task Moving_the_meeting_after_invites_sends_every_participant_a_REQUEST_with_the_same_UID_and_a_higher_SEQUENCE()
     {
         var meeting = await OrganizerCreatesMeetingAsync();
-        var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
+        var invites = AssertPerRecipient(_dispatches.Requests, InviteEvent, [_alice, _bob], EmailOf);
         var newStart = meeting.StartAt.AddHours(2);
 
         var update = await new UpdateMeetingHandler(
@@ -164,26 +169,28 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
                 CancellationToken.None);
 
         Assert.True(update.IsSuccessful);
-        var change = Assert.Single(_dispatches.Requests, r => r.EventCode == ChangeEvent);
-        Assert.Equal(ParticipantEmails(), RecipientEmails(change));
-        Assert.Equal(ParticipantEmails(), RecipientEmails(invite));
+        var changes = AssertPerRecipient(_dispatches.Requests, ChangeEvent, [_alice, _bob], EmailOf);
+        // The organizer moved it themselves: no mail about their own action, under ANY event code.
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == OrganizerUpdatedEvent);
+        Assert.DoesNotContain(_dispatches.Requests, r => r.To.Any(t => t.Email == EmailOf(_organizer)));
 
-        var inviteIcs = IcsOf(invite);
-        var changeIcs = IcsOf(change);
-        Assert.Equal("REQUEST", Property(changeIcs, "METHOD"));
-        Assert.Equal($"{meeting.Id}@diten", Property(inviteIcs, "UID"));
-        Assert.Equal(Property(inviteIcs, "UID"), Property(changeIcs, "UID"));
+        var inviteUid = SameIcsProperty(invites, "UID");
+        var inviteSequence = SameIcsProperty(invites, "SEQUENCE");
+        var changeSequence = SameIcsProperty(changes, "SEQUENCE");
+        Assert.Equal("REQUEST", SameIcsProperty(changes, "METHOD"));
+        Assert.Equal($"{meeting.Id}@diten", inviteUid);
+        Assert.Equal(inviteUid, SameIcsProperty(changes, "UID"));
         Assert.True(
-            int.Parse(Property(changeIcs, "SEQUENCE")) > int.Parse(Property(inviteIcs, "SEQUENCE")),
-            $"change SEQUENCE {Property(changeIcs, "SEQUENCE")} must be higher than invite SEQUENCE {Property(inviteIcs, "SEQUENCE")}");
-        Assert.Equal(newStart.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'"), Property(changeIcs, "DTSTART"));
+            int.Parse(changeSequence) > int.Parse(inviteSequence),
+            $"change SEQUENCE {changeSequence} must be higher than invite SEQUENCE {inviteSequence}");
+        Assert.Equal(newStart.ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'"), SameIcsProperty(changes, "DTSTART"));
     }
 
     [Fact]
     public async Task Cancelling_after_invites_sends_every_participant_a_CANCEL_with_the_same_UID_and_STATUS_CANCELLED()
     {
         var meeting = await OrganizerCreatesMeetingAsync();
-        var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
+        var invites = AssertPerRecipient(_dispatches.Requests, InviteEvent, [_alice, _bob], EmailOf);
 
         var cancel = await new CancelMeetingHandler(
                 _meetings, _types, _attendees, new FakeCurrentUserContext(_organizer), Mailer())
@@ -192,16 +199,17 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
                 CancellationToken.None);
 
         Assert.True(cancel.IsSuccessful);
-        var cancellation = Assert.Single(_dispatches.Requests, r => r.EventCode == CancelEvent);
-        Assert.Equal(ParticipantEmails(), RecipientEmails(cancellation));
-        Assert.Equal("text/calendar; charset=utf-8; method=CANCEL", Assert.Single(cancellation.Attachments!).ContentType);
+        var cancellations = AssertPerRecipient(_dispatches.Requests, CancelEvent, [_alice, _bob], EmailOf);
+        // The organizer cancelled it themselves: no mail about their own action, under ANY event code.
+        Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == OrganizerCancelledEvent);
+        Assert.DoesNotContain(_dispatches.Requests, r => r.To.Any(t => t.Email == EmailOf(_organizer)));
+        Assert.All(cancellations, c =>
+            Assert.Equal("text/calendar; charset=utf-8; method=CANCEL", Assert.Single(c.Attachments!).ContentType));
 
-        var inviteIcs = IcsOf(invite);
-        var cancelIcs = IcsOf(cancellation);
-        Assert.Equal("CANCEL", Property(cancelIcs, "METHOD"));
-        Assert.Equal("CANCELLED", Property(cancelIcs, "STATUS"));
-        Assert.Equal(Property(inviteIcs, "UID"), Property(cancelIcs, "UID"));
-        Assert.True(int.Parse(Property(cancelIcs, "SEQUENCE")) > int.Parse(Property(inviteIcs, "SEQUENCE")));
+        Assert.Equal("CANCEL", SameIcsProperty(cancellations, "METHOD"));
+        Assert.Equal("CANCELLED", SameIcsProperty(cancellations, "STATUS"));
+        Assert.Equal(SameIcsProperty(invites, "UID"), SameIcsProperty(cancellations, "UID"));
+        Assert.True(int.Parse(SameIcsProperty(cancellations, "SEQUENCE")) > int.Parse(SameIcsProperty(invites, "SEQUENCE")));
     }
 
     // ── C — BL-386: the removed attendee's own calendar entry is withdrawn, nobody else's is touched ──────────
@@ -210,24 +218,23 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
     public async Task Removing_Bob_sends_ONLY_Bob_a_removed_CANCEL_with_the_invites_own_UID_and_a_higher_SEQUENCE()
     {
         var meeting = await OrganizerCreatesMeetingAsync();
-        var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
+        var invites = AssertPerRecipient(_dispatches.Requests, InviteEvent, [_alice, _bob], EmailOf);
 
         var remove = await RemoveAttendeeAsync(_organizer, meeting.Id, _bob);
 
         Assert.True(remove.IsSuccessful, string.Join(" | ", remove.Errors));
-        var removed = Assert.Single(_dispatches.Requests, r => r.EventCode == RemovedEvent);
-        Assert.Equal([EmailOf(_bob)], RecipientEmails(removed));
+        var removed = AssertPerRecipient(_dispatches.Requests, RemovedEvent, [_bob], EmailOf);
 
-        var inviteIcs = IcsOf(invite);
-        var removedIcs = IcsOf(removed);
-        Assert.Equal("CANCEL", Property(removedIcs, "METHOD"));
-        Assert.Equal("CANCELLED", Property(removedIcs, "STATUS"));
-        Assert.Equal(Property(inviteIcs, "UID"), Property(removedIcs, "UID"));
-        Assert.True(int.Parse(Property(removedIcs, "SEQUENCE")) > int.Parse(Property(inviteIcs, "SEQUENCE")));
+        Assert.Equal("CANCEL", SameIcsProperty(removed, "METHOD"));
+        Assert.Equal("CANCELLED", SameIcsProperty(removed, "STATUS"));
+        Assert.Equal(SameIcsProperty(invites, "UID"), SameIcsProperty(removed, "UID"));
+        Assert.True(int.Parse(SameIcsProperty(removed, "SEQUENCE")) > int.Parse(SameIcsProperty(invites, "SEQUENCE")));
 
         var view = await OrganizerViewAsync(meeting.Id);
         Assert.DoesNotContain(view.Attendees, a => a.UserId == _bob);
         Assert.DoesNotContain(_dispatches.Requests, r => r.EventCode == RemovedEvent && RecipientEmails(r).Contains(EmailOf(_alice)));
+        // The organizer removed Bob themselves: no mail to the organizer about it, under ANY event code.
+        Assert.DoesNotContain(_dispatches.Requests, r => r.To.Any(t => t.Email == EmailOf(_organizer)));
     }
 
     [Fact]
@@ -467,8 +474,6 @@ public sealed class MeetingTwoUserFlowMongoTests : IAsyncLifetime
 
     private static InvitationResponse ResponseOf(MeetingDto meeting, Guid userId)
         => meeting.Attendees.Single(a => a.UserId == userId).InvitationResponse;
-
-    private string[] ParticipantEmails() => new[] { EmailOf(_alice), EmailOf(_bob) }.Order(StringComparer.Ordinal).ToArray();
 
     private static string[] RecipientEmails(NotificationEventDispatchRequest request)
         => request.To.Select(r => r.Email).Order(StringComparer.Ordinal).ToArray();

@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>Добавить</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Пункт повестки</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Удалить участника</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>Письмо не доставлено</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Добавить</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Сменить организатора</value></data>
   <data name="Minutes" xml:space="preserve"><value>Протокол</value></data>

@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>إضافة</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>بند جدول الأعمال</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>تعذر تسليم البريد</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>إضافة</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>إعادة تعيين المنظّم</value></data>
   <data name="Minutes" xml:space="preserve"><value>المحضر</value></data>

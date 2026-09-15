@@ -581,10 +581,36 @@
             if (requirement !== 'notAllowed' && !meetingAction) {
                 push(errors, fixture, 'REVIEW_MEETING_ACTION_REQUIRED', 'actions');
             }
-            if (requirement === 'required' && !fixture.reviewMeetingPolicy.meetingId) {
-                const decision = byCode.get('approve') || byCode.get('signoff');
-                if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
-                    push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+            /*
+             * MOD-0357 S9 (owner, 2026-09-13) — the gate holds until MINUTES publish, not merely until a meeting
+             * gets linked. Checked by `minutesPublished`, never by `meetingId` alone: a meeting can be linked for
+             * a long time before its minutes publish, and the earlier version of this rule (meetingId present ⇒
+             * "fine") would have waved every merely-scheduled meeting through.
+             *
+             * WHICH action is the decision depends on whose vocabulary the item speaks (CT fix-up F1, 2026-09-15):
+             *
+             * - A MOD-0024 task (`workIntent: 'task'`): the decision is `submitReview` / `complete`. Whichever of
+             *   them is present must NOT be enabled. Its disabled reason may legitimately be an earlier gate
+             *   (APPROVAL_PENDING, REVIEW_PENDING) — the projection shows only the first unmet reason. An Open task
+             *   carries no decision action yet, which is valid. `start` is NOT a decision and is never checked
+             *   here: scheduling and holding the meeting is part of the work, so the work must be able to begin.
+             * - A MOD-0023 review/approval item: the decision is `approve` / `signoff`, which must be present and
+             *   disabled with REVIEW_MEETING_REQUIRED (the INBOX-REVIEW-REQUIRED-MEETING showcase).
+             */
+            if (requirement === 'required' && fixture.reviewMeetingPolicy.minutesPublished !== true) {
+                if (fixture.workIntent === 'task') {
+                    const decisionEnabled = ['submitReview', 'complete'].some((code) => {
+                        const decision = byCode.get(code);
+                        return Boolean(decision && decision.enabled);
+                    });
+                    if (decisionEnabled) {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
+                } else {
+                    const decision = byCode.get('approve') || byCode.get('signoff');
+                    if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
                 }
             }
         }

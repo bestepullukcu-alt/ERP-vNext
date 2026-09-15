@@ -116,7 +116,12 @@ public sealed record QueueEmailNotificationRequest(
     /// synchronous call this handler already makes (see <c>QueueEmailNotificationHandler.Handle</c>'s own
     /// dispatch call, measured: despite the "Queue" name, there is no separate worker step here) — never
     /// written onto the persisted <see cref="Domain.Entities.Notifications.NotificationDispatch"/> row.</summary>
-    IReadOnlyList<Services.MessagingProviderAttachment>? Attachments = null);
+    IReadOnlyList<Services.MessagingProviderAttachment>? Attachments = null,
+    /// <summary>BL-406 — ADDITIVE ONLY. Set only by the meeting mailer's own 1:1 dispatch path; copied straight
+    /// onto <see cref="Domain.Entities.Notifications.NotificationDispatch.MeetingAttendeeUserId"/> so a permanent
+    /// failure can be attributed back to the one attendee this dispatch was for. Null for every non-meeting
+    /// producer.</summary>
+    Guid? MeetingAttendeeUserId = null);
 
 public sealed record NotificationDispatchDto(
     Guid Id,

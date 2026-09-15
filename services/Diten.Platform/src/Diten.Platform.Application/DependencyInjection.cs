@@ -412,6 +412,12 @@ public static class DependencyInjection
 
         services.AddScoped<Features.Tasks.Services.ITaskApprovalService,
             Features.Tasks.Services.TaskApprovalService>();
+        // MOD-0357 S9 (owner, 2026-09-13) — the review-meeting gate reader shared by TaskWorkItemProvider's
+        // projection hint and the two decision handlers' re-check (TransitionTaskItemHandler → Done,
+        // SubmitTaskForReviewHandler), so they can never drift on what "unlocked" means. Reads
+        // RecordLink/Meeting/MeetingMinutesVersion only; never MOD-0023's own services.
+        services.AddScoped<Features.Tasks.Services.IReviewMeetingGateReader,
+            Features.Tasks.Services.ReviewMeetingGateReader>();
         // Phase 3b — the REVIEW handoff: the same engine asked a second question, never a second engine.
         services.AddScoped<Features.Tasks.Services.ITaskReviewService,
             Features.Tasks.Services.TaskReviewService>();
