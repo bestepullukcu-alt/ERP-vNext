@@ -61,7 +61,9 @@ public sealed class AuditActorTypeResolverSourceGuardTests
     [Theory]
     [InlineData("Diten.Platform.Application/Contracts/Behaviors/AuditBehavior.cs", "AuditActorTypeResolver.ForCommand(")]
     [InlineData("Diten.Platform.Application/Features/Audit/Services/DataExportAuditWriter.cs", "AuditActorTypeResolver.ForDataExport(")]
-    public void Both_audit_writers_take_the_actor_type_from_the_resolver(string file, string call)
+    // BL-421 — the governed tenant append names its caller through the same resolver, never through the request body.
+    [InlineData("Diten.Platform.API/Controllers/Platform/PlatformAuditAppendController.cs", "AuditActorTypeResolver.ForCommand(")]
+    public void Every_audit_writer_takes_the_actor_type_from_the_resolver(string file, string call)
     {
         Assert.Contains(call, File.ReadAllText(Path.Combine(SourceRoot(), file)), StringComparison.Ordinal);
     }
