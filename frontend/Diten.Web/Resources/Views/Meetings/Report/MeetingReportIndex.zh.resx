@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>加载中…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>导出未能记录到审计日志，因此未生成文件。请稍后重试。</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>此报告行数过多，无法导出。请缩小期间或筛选范围。</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>每个下载的文件开头都带有快照时间戳——这是某一时刻的副本，不是受控文档。</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>每个下载的文件都是下载时刻的快照；非受控副本。仅供参考——请在系统中核实当前状态。</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>整个租户</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>我的会议</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权访问此报告。</value></data>
