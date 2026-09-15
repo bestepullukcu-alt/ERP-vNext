@@ -34,7 +34,7 @@ namespace Diten.Platform.Application.Tests.Tasks;
 /// <summary>
 /// BL-414 — <c>GET api/v1/work-items/{id}</c> on the WIRE, with the REAL read rule.
 ///
-/// <para>Real routing, the real <c>WorkItemsController</c> and its two <c>[HasPermission]</c> gates, the real
+/// <para>Real routing, the real <c>WorkItemsController</c> and its <c>[HasPermission]</c> gate, the real
 /// <see cref="GetTaskWorkItemByIdHandler"/>, the real <see cref="TaskReadAccessPolicy"/> (its pool leg through the
 /// real <see cref="TaskNotificationService"/> over one seat table, its scope leg through the real
 /// <see cref="TaskAssignmentScopeResolver"/>, its read-all leg through the real claims reader) and the real
@@ -192,20 +192,33 @@ public sealed class TaskWorkItemByIdHttpTests
 
     // ── the endpoint gates ───────────────────────────────────────────────────────────────────────────────────
 
-    [Theory]
-    [InlineData(TaskPermissions.Read)]
-    [InlineData(WorkAggregationPermissions.InboxView)]
-    public async Task Without_either_key_the_read_is_refused_even_for_the_assignee(string withheld)
+    [Fact]
+    public async Task Without_tasks_read_the_read_is_refused_even_for_the_assignee()
     {
         // The record endpoint demands platform.tasks.read for this very read; without it here, this endpoint would
-        // widen the rule it reuses. inbox.view is the surface's own gate.
+        // widen the rule it reuses.
         var task = NewTask(assignee: Me, createdBy: Other);
         using var host = new Host([task]);
 
-        var (status, body) = await host.GetAsync(task.Id, ReaderPermissions.Where(k => k != withheld).ToArray());
+        var (status, body) = await host.GetAsync(task.Id, ReaderPermissions.Where(k => k != TaskPermissions.Read).ToArray());
 
         Assert.Equal(HttpStatusCode.Forbidden, status);
         Assert.DoesNotContain(task.Title, body);
+    }
+
+    [Fact]
+    public async Task The_inbox_key_is_no_longer_asked_for_the_read()
+    {
+        // DCP-004 "Decision amendment 2026-09-15" (BL-410) — the Task Center is every tenant user's surface; the read
+        // rule and platform.tasks.read decide, not inbox.view.
+        var task = NewTask(assignee: Me, createdBy: Other);
+        using var host = new Host([task]);
+
+        var (status, body) = await host.GetAsync(
+            task.Id, ReaderPermissions.Where(k => k != WorkAggregationPermissions.InboxView).ToArray());
+
+        Assert.Equal(HttpStatusCode.OK, status);
+        Assert.Contains($"\"id\":\"{task.Id}\"", body);
     }
 
     [Fact]
@@ -316,6 +329,9 @@ public sealed class TaskWorkItemByIdHttpTests
                             unitRepository,
                             new FakeTenantContext(TaskTestData.Tenant),
                             me),
+                        // Nobody reports to Me here; the subordinate leg is measured in TaskTeamReadParityTests and
+                        // WorkItemsForEveryTenantUserHttpTests.
+                        new FakeTaskTeamResolver(),
                         sp.GetRequiredService<IActorPermissionContext>(),
                         me));
                     services.AddScoped<IEnumerable<IWorkItemProvider>>(sp => new IWorkItemProvider[]

@@ -79,12 +79,17 @@ public sealed class WorkItemsController : CustomBaseController
     /// BL-023 — <c>?scope=team</c> lists the caller's SUBORDINATES' own work instead of their own.
     ///
     /// <para>A query parameter rather than a second endpoint, because it is the same question about a different
-    /// owner; and the same permission, because seeing your team's load is not a different capability — WHO your
-    /// team is comes from the org chart and is already scope-limited (BL-057), so no extra grant can widen it.
-    /// An unrecognised value binds to <see cref="WorkItemScope.Self"/>, which is the fail-safe direction.</para>
+    /// owner. An unrecognised value binds to <see cref="WorkItemScope.Self"/>, which is the fail-safe direction.</para>
+    ///
+    /// <para><b>Login-only (DCP-004 "Decision amendment 2026-09-15", BL-410).</b> Every signed-in tenant user has a
+    /// personal inbox; the tenant-route actor check (BL-413, <c>TenantResolutionMiddleware</c>) is what makes the
+    /// caller a tenant user. Opening the inbox grants no write: each projected action is computed against the source
+    /// module's own key, and pressing one goes through <see cref="DispatchAction"/>, which checks that key again.
+    /// WHO the team is comes from the org chart (<c>ITaskTeamResolver</c>): a user with no subordinate positions gets
+    /// an empty team, and no grant can widen it.</para>
     /// </summary>
     [HttpGet("mine")]
-    [HasPermission(WorkAggregationPermissions.InboxView)]
+    [LoginOnly("The caller's own work items; the caller cannot name another subject, and team membership is the org chart's answer, not a grant.")]
     public async Task<IActionResult> GetMine(
         CancellationToken ct,
         [FromQuery] WorkItemScope scope = WorkItemScope.Self)
@@ -99,11 +104,11 @@ public sealed class WorkItemsController : CustomBaseController
 
     /// <summary>
     /// BL-023 — whether the caller has anybody reporting to them, so the scope control can be DISABLED with a
-    /// reason instead of offering a view that will always be empty. Same permission as the list: who your team
-    /// is comes from the org chart and is already scope-limited, so this widens nothing.
+    /// reason instead of offering a view that will always be empty. Login-only for the same reason as the list:
+    /// who your team is comes from the org chart, so no key could widen or narrow it.
     /// </summary>
     [HttpGet("team-availability")]
-    [HasPermission(WorkAggregationPermissions.InboxView)]
+    [LoginOnly("Whether the caller has subordinate positions in the org chart; it answers about the caller only.")]
     public async Task<IActionResult> GetTeamAvailability(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetMyTeamAvailabilityQuery(CorrelationId), ct);
@@ -119,17 +124,17 @@ public sealed class WorkItemsController : CustomBaseController
     /// rule the module's own record endpoint (<c>GET api/v1/tasks/{id}</c>) asks. A task that does not exist, lives
     /// in another tenant, or exists but is not readable by the caller all answer the SAME 404.</para>
     ///
-    /// <para><b>Two keys, both required.</b> <c>inbox.view</c> because this is the Task Center's read; and
-    /// <c>platform.tasks.read</c> because it is the key the record endpoint demands for the very same read. Without
-    /// the second, a watcher or scope reader who lacks it would read here what the record page refuses them — this
-    /// endpoint would WIDEN the rule it exists to reuse.</para>
+    /// <para><b>One key: <c>platform.tasks.read</c></b>, the key the record endpoint demands for the very same read.
+    /// Without it, a watcher or scope reader who lacks it would read here what the record page refuses them — this
+    /// endpoint would WIDEN the rule it exists to reuse. <c>inbox.view</c> is no longer asked (DCP-004 "Decision
+    /// amendment 2026-09-15", BL-414): the Task Center is every tenant user's surface, and the read rule, not a
+    /// surface key, decides who may open a task.</para>
     ///
     /// <para><b>Which list a task appears in does not change</b> (BL-016's tabs, BL-023's scopes): this returns one
     /// item and feeds no list. Tasks only — the one provider whose items a read rule governs by id; any other id
     /// answers 404.</para>
     /// </remarks>
     [HttpGet("{itemId:guid}")]
-    [HasPermission(WorkAggregationPermissions.InboxView)]
     [HasPermission(TaskPermissions.Read)]
     public async Task<IActionResult> GetById(Guid itemId, CancellationToken ct)
     {
@@ -155,7 +160,12 @@ public sealed class WorkItemsController : CustomBaseController
     ///
     /// <para><b>No [HasPermission] attribute on the method.</b> The required key depends on the ACTION, which is
     /// a route value; a fixed attribute would have to name one key for eleven different verbs. Attributing
-    /// <c>inbox.view</c> here would be worse than nothing: it would gate a write behind a read.</para>
+    /// <c>inbox.view</c> here would be worse than nothing: it would gate a write behind a read. It is not
+    /// <c>[LoginOnly]</c> either — it is a named exception in <c>LoginOnlyEndpointGuardTests</c>, because its key
+    /// is decided in the body.</para>
+    ///
+    /// <para><b>A dispatcher that names no key is refused (fail closed).</b> DCP-004 "Decision amendment
+    /// 2026-09-15", point 4: opening the inbox to every tenant user must not authorize any action by itself.</para>
     ///
     /// <para><b>Every refusal is explicit and stable.</b> A provider nobody bound, a provider with no dispatcher,
     /// an action code the dispatcher does not publish, a permission the caller lacks — each answers its own
@@ -206,9 +216,24 @@ public sealed class WorkItemsController : CustomBaseController
 
         var isPlatformActor = IsPlatformActor(User);
         var required = dispatcher.RequiredPermission(actionCode);
-        if (!isPlatformActor
-            && !string.IsNullOrWhiteSpace(required)
-            && !PermissionClaimEvaluator.Evaluate(User.Claims, required!).IsSatisfied)
+
+        /*
+         * FAIL CLOSED (DCP-004 "Decision amendment 2026-09-15", point 4). This check used to read
+         * `!IsNullOrWhiteSpace(required) && !Evaluate(...)`, so a dispatcher that named no key for a code it claims to
+         * dispatch let EVERY signed-in caller through to the module. With the inbox open to every tenant user that
+         * is a hole anyone can reach. No shipped dispatcher does it today (WorkItemActionDispatchTests pins that each
+         * names a declared key); this makes a future one unable to. Refused for every actor, platform included: a
+         * key-less write is a dispatcher defect, not a question about the caller's grants.
+         */
+        if (string.IsNullOrWhiteSpace(required))
+        {
+            return CreateActionResultInstance(Fail(
+                "The action names no permission, so it cannot be authorized.",
+                403,
+                WorkItemActionReasonCodes.ActionForbidden));
+        }
+
+        if (!isPlatformActor && !PermissionClaimEvaluator.Evaluate(User.Claims, required).IsSatisfied)
         {
             return CreateActionResultInstance(Fail(
                 "The caller does not hold the permission this action requires.",

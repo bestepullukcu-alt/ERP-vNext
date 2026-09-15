@@ -917,6 +917,17 @@
 
     const delegatorByName = (name) => data.delegators.find((d) => d.name === name) || null;
 
+    /*
+     * DCP-004 amendment 2026-09-15 (UAS-001 §6) — may this user create a task? Read from the permission snapshot the
+     * host view loads (_PermissionBootstrap → window.Permissions). FAIL-CLOSED: a page without the snapshot reads as
+     * "not held", so a missing partial hides the entry rather than showing a button the server will refuse.
+     * UX only — POST api/v1/tasks is the authority.
+     */
+    const TASK_CREATE_PERMISSION = 'platform.tasks.create';
+    const canCreateSelfTask = () =>
+        !!(global.Permissions && typeof global.Permissions.has === 'function'
+            && global.Permissions.has(TASK_CREATE_PERMISSION));
+
     const buildHeader = () => {
         const urgent = ownUrgentCount();
         // Current scope → the person/delegation dropdown label.
@@ -950,6 +961,7 @@
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
             `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+        const canCreateTask = canCreateSelfTask();
 
         return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
@@ -981,7 +993,14 @@
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
-                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${/*
+                           * DCP-004 amendment 2026-09-15 (UAS-001 §6) — HIDDEN, not disabled, without
+                           * platform.tasks.create. Every tenant user opens this page now and most cannot create a
+                           * task; a button that can only fail sends them into a second error. The divider below goes
+                           * with it so the menu does not open on a dangling rule. UX only: POST api/v1/tasks still
+                           * demands the key.
+                           */ ''}
+                        ${canCreateTask ? createItem('task', 'bx-task', t('NewSelfTask')) : ''}
                         ${/*
                            * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
                            *
@@ -997,7 +1016,7 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        <li><hr class="dropdown-divider"></li>
+                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
                 </div>
@@ -9847,7 +9866,8 @@
         const newEl = event.target.closest('[data-wcn-new]');
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
-            if (kind === 'task') { openSelfTask(); }
+            // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
+            if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
             else if (kind === 'source') { openCreateInSource(); }
             return;
         }
