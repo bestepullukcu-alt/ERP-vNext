@@ -5800,6 +5800,16 @@ Varsayılan kiracı Viewer rolünde 2026-07-03/06 tarihli 17 System kaynaklı Pl
 
 ---
 
+### BL-424
+
+**BL-421/422 takipleri: yükseltme ekranındaki NowUtc alanı artık 400 alıyor · denetim olayında OccurredAtUtc hâlâ istekten · HCM istemci testinin sözleşme yaması**
+
+DURUM: AÇIK · BULAN: WP-INFRA-AUDIT-APPEND-ACTOR-AND-ESCALATION-CLOCK-01 · KAYIT: 2026-09-15
+
+(1) **Ekran (iş akışı kulvarı, 7 dil):** `/Platform/Workflow` Escalations ve Index ekranlarında "NowUtc" tarih alanı (`Escalations.cshtml:43-44`, `Index.cshtml:153`; `escalations.js:400`, `index.js:1110`) doldurulursa sunucu artık `WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED` (400) döner — alan ve l10n anahtarı kaldırılmalı, çalıştırma yalnız sunucu saatiyle. (2) **OccurredAtUtc:** kiracı denetim ekleme ucunda olayın zamanı hâlâ gövdeden geliyor (kayıt ayrıca sunucu `WrittenAtUtc` tutuyor, `AuditOutboxPayloadMapper.cs:58-59`). 21 CFR Part 11 zaman damgası güvenilir kaynaktan olmalı: öneri, geçmişe/geleceğe kabul edilebilir bir pencere dışında reddetmek ya da yalnız sunucu zamanı; karar altyapı CT. (3) **HCM kulvarı:** `GovernedHcmAuditAppendClientTests.cs` için gövdedeki `actorId`'nin yük aktörü olduğunu sabitleyen ve 400 aktör reddinin eklemeyi durdurduğunu gösteren test değişikliği CT tarafından commit'e alınmadı (başka kulvarın dosyası); yama: CT scratchpad `ctverify/hcm-governed-audit-client-tests.BL-421.patch`. Ayrıca HCM `MapDraftEvent` aktör kimliği yokken "System" gönderiyor — kullanıcı jetonuyla HTTP'den gönderilirse artık reddedilir.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
