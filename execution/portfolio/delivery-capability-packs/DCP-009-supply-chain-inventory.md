@@ -15,7 +15,7 @@ authoring_branch: feature/inventory
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data (Supply Chain Execution Suite + Planning + Manufacturing)"
 canonical_modules: [MOD-0173, MOD-0174, MOD-0175, MOD-0176, MOD-0177, MOD-0178, MOD-0180, MOD-0181, MOD-0182, MOD-0188, MOD-0189, MOD-0190, MOD-0191, MOD-0192, MOD-0193]
 runtime_code_allowed: false
-runtime_code_scope: "NONE yet. No member module pack is ready-for-dev. Diten.SupplyChainService scaffold authorized in principle (user 2026-09-11) but starts only via an approved MOD-0173 module pack + @orchestrator /add-module."
+runtime_code_scope: "NONE yet. No member module pack is ready-for-dev. MVP-6-FIRST decision (user 2026-09-15): MVP-6 is the first lane to code, contract-first vs mocks. Diten.SupplyChainService scaffold trigger = an approved MOD-0183 module pack + @orchestrator /add-module (was MOD-0173; OD-4 resolved). MVP-1 (0173) later joins the same service. runtime_code_allowed flips per-module as each module pack reaches ready-for-dev."
 inputs:
   - "docs/analysis/inventory-capability-scope-and-dependency-report.md (v2.1 decision-complete, 19 DEC-INV)"
   - "docs/analysis/contracts/*.openapi.yaml (8 frozen Wave-0 contracts)"
@@ -93,7 +93,7 @@ DCP `approved` = kullanıcı onayı + üye module pack'ler kendi kapılarından 
 Procurement (0142 GRN → 0173 post) · Commercial ATP (0172 ← 0173 availability) · MRP (0189 ← 0173) · Finance (valuation → GL) · MDM (0290 hardening consumer).
 
 ## 18. Open decisions
-**OD-1** Location master owner alt-kırılım (Option A split vs B shared — B seçildi, MOD-# reservation + collision-check pending). **OD-2** BOM (0193) sırası — pharma composition foundation'a yakın (rapor §23.5). **OD-3** MVP-1 module pack bölünmesi (tek pack mi FU'lar mı). **OD-4** Servis scaffold tetik zamanı.
+**OD-1** Location master owner alt-kırılım (Option A split vs B shared — B seçildi, MOD-# reservation + collision-check pending). **OD-2** BOM (0193) sırası — pharma composition foundation'a yakın (rapor §23.5). **OD-3** MVP-1 module pack bölünmesi (tek pack mi FU'lar mı). **OD-4 RESOLVED (user 2026-09-15):** MVP-6-first. Servis scaffold tetik = onaylı MOD-0183 module pack + `@orchestrator /add-module`; MVP-1 (0173) sonra aynı servise katılır. MVP-6'nın consumed seam'leri (WAREHOUSE-OUTBOUND sahibi MVP-5, SUPPLIER sahibi MVP-2) merkezi CT tarafından öne çekilip frozen edildi (`docs/analysis/contracts/`), böylece MVP-6 mock'a karşı beklemeden geliştirir.
 
 ## 19. Future follow-ups
 External-integration adapter (DEC-INV-19) · special-stock/ownership (P2) · material ledger/costing advanced · Transport/TMS (MVP-6) · S&OP (MVP-6).
