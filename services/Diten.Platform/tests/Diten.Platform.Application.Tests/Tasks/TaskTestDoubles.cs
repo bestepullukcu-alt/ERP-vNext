@@ -50,6 +50,20 @@ internal sealed class FakeCurrentUserContext(Guid userId) : ICurrentUserContext
 }
 
 /// <summary>
+/// A permissive <see cref="ITaskReadAccessPolicy"/> double for suites that do not exercise BL-349/@mention
+/// visibility at all (comment trail, notification audience) — the rule itself is
+/// <c>TaskReadAccessPolicyTests</c>'s territory, and a per-candidate accept/deny double is
+/// <c>TaskMentionValidationTests</c>'s.
+/// </summary>
+internal sealed class AlwaysAdmitReadAccessPolicy : ITaskReadAccessPolicy
+{
+    public Task<bool> CanReadAsync(TaskItem task, Guid actorUserId, CancellationToken ct) => Task.FromResult(true);
+
+    public Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct)
+        => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>());
+}
+
+/// <summary>
 /// Stands in for MOD-0018-FU15's <c>OrgDataScopeResolver</c> (BL-057).
 ///
 /// <para>The scopes are handed in rather than derived, so a test states the org reality it wants in one line and
@@ -1360,6 +1374,13 @@ internal sealed class FakeTaskNotificationService
     /// <summary>Pool holders this double answers with, so a pooled audience can be arranged.</summary>
     public List<Guid> PoolHolders { get; } = [];
 
+    /// <summary>
+    /// BL-349 — per-task pool holders, for a suite that must tell a task's own pool apart from its PARENT's
+    /// (<c>TaskReadAccessPolicyTests</c>). Checked first; a task id absent here falls back to <see cref="PoolHolders"/>,
+    /// so every existing caller of the single-list form is unaffected.
+    /// </summary>
+    public Dictionary<Guid, List<Guid>> PoolHoldersByTaskId { get; } = [];
+
     /// <summary>Makes NotifyAsync throw, to prove a notification failure never fails the write.</summary>
     public bool Throws { get; set; }
 
@@ -1411,7 +1432,8 @@ internal sealed class FakeTaskNotificationService
     }
 
     public Task<IReadOnlyList<Guid>> ResolvePoolHoldersAsync(TaskItem task, CancellationToken ct)
-        => Task.FromResult<IReadOnlyList<Guid>>(PoolHolders);
+        => Task.FromResult<IReadOnlyList<Guid>>(
+            PoolHoldersByTaskId.TryGetValue(task.Id, out var holders) ? holders : PoolHolders);
 }
 
 /// <summary>
@@ -1860,11 +1882,13 @@ internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
         return Task.FromResult<IReadOnlyList<TaskType>>(_types.ToList());
     }
 
-    public Task UpdateAsync(TaskType type, CancellationToken ct = default)
+    public Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default)
     {
         var at = _types.FindIndex(x => x.Id == type.Id);
-        if (at >= 0) { _types[at] = type; }
-        return Task.CompletedTask;
+        if (at < 0 || _types[at].Version != expectedVersion) { return Task.FromResult(false); }
+        type.Version = expectedVersion + 1;
+        _types[at] = type;
+        return Task.FromResult(true);
     }
 }
 

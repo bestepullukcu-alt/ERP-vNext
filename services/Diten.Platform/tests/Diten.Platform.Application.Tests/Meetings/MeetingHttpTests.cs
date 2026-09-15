@@ -120,6 +120,7 @@ public sealed class MeetingHttpTests
         private readonly FakeMeetingAttendeeRepository _attendees = new() { Tenant = TaskTestData.Tenant };
         private readonly FakeAgendaItemRepository _agenda = new() { Tenant = TaskTestData.Tenant };
         private readonly FakeEligibilityMediator _eligibility = new();
+        private readonly FakeMeetingInviteMailer _inviteMailer = new();
 
         public Host()
         {
@@ -221,12 +222,18 @@ public sealed class MeetingHttpTests
                     CreateMeetingCommand cmd => new CreateMeetingHandler(
                         host._meetings, host._types, host._attendees,
                         new FakeTenantContext(TaskTestData.Tenant), new FakeCurrentUserContext(Organizer),
-                        new MeetingIdempotencyKeyResolver(), host._eligibility).Handle(cmd, ct),
+                        new MeetingIdempotencyKeyResolver(), host._eligibility, host._inviteMailer).Handle(cmd, ct),
                     GetMeetingByIdQuery query => new GetMeetingByIdHandler(
                         host._meetings, host._types, host._attendees, host._agenda,
                         new FakeCurrentUserContext(Organizer), new FakeActorPermissionContext()).Handle(query, ct),
-                    UpdateMeetingCommand cmd => new UpdateMeetingHandler(host._meetings, host._types).Handle(cmd, ct),
-                    CancelMeetingCommand cmd => new CancelMeetingHandler(host._meetings).Handle(cmd, ct),
+                    UpdateMeetingCommand cmd => new UpdateMeetingHandler(
+                        host._meetings, host._types, host._attendees,
+                        new FakeCurrentUserContext(Organizer), host._inviteMailer).Handle(cmd, ct),
+                    CancelMeetingCommand cmd => new CancelMeetingHandler(
+                        host._meetings, host._types, host._attendees,
+                        new FakeCurrentUserContext(Organizer), host._inviteMailer).Handle(cmd, ct),
+                    RespondToInvitationCommand cmd => new RespondToInvitationHandler(
+                        host._meetings, host._attendees, new FakeCurrentUserContext(Organizer)).Handle(cmd, ct),
                     _ => throw new NotSupportedException($"RoutingMediator does not support {request.GetType().Name}.")
                 };
                 return (Task<TResponse>)result;

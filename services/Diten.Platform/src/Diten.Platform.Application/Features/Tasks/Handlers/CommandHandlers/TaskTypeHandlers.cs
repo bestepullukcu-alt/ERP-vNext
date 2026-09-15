@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Tasks;
+using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -43,6 +44,11 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             return Response<Guid>.Fail(classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
+        if (TaskTypeRules.ValidateReviewMeetingRequirement(request.ReviewMeetingRequirement) is { } meetingInvalid)
+        {
+            return Response<Guid>.Fail(meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
+        }
+
         var (outcomes, outcomesInvalid) = TaskTypeRules.NormalizeClosureOutcomes(
             request.ClosureOutcomes?.Select(ToOutcome));
         if (outcomesInvalid is { } outcomeError)
@@ -76,6 +82,9 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments),
             LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments),
             ClosureOutcomes = outcomes!,
+            // Null takes Optional — the entity's own default, which changes no type's behaviour.
+            ReviewMeetingRequirement = request.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional,
+            RequiresDeliverableOnCompletion = request.RequiresDeliverableOnCompletion,
             IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
@@ -141,6 +150,12 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
                 classInvalid.Message, 400, classInvalid.ReasonCode, command.CorrelationId);
         }
 
+        if (TaskTypeRules.ValidateReviewMeetingRequirement(request.ReviewMeetingRequirement) is { } meetingInvalid)
+        {
+            return Response<NoContent>.Fail(
+                meetingInvalid.Message, 400, meetingInvalid.ReasonCode, command.CorrelationId);
+        }
+
         type.Name = request.Name.Trim();
         type.Description = CreateTaskTypeHandler.Trimmed(request.Description);
         type.RecordClass = request.RecordClass;
@@ -149,6 +164,17 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
         type.IsQualityEvent = request.IsQualityEvent;
         type.GroupDocuments = TaskTypeRules.NormalizeDocuments(request.GroupDocuments);
         type.LocalDocuments = TaskTypeRules.NormalizeLocalDocuments(request.LocalDocuments);
+
+        /*
+         * Null is "not asking" — the stored value stays. Only the TYPE changes: no task opened under it is read or
+         * written here, so the setting is forward-looking by construction.
+         */
+        if (request.ReviewMeetingRequirement is { } reviewMeetingRequirement)
+        {
+            type.ReviewMeetingRequirement = reviewMeetingRequirement;
+        }
+
+        type.RequiresDeliverableOnCompletion = request.RequiresDeliverableOnCompletion;
 
         /*
          * ⚠ NULL IS "NOT ASKING", AND THIS BRANCH IS THE WHOLE REASON THE FIELD IS NULLABLE.
@@ -172,7 +198,15 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
             type.ClosureOutcomes = outcomes!;
         }
 
-        await _types.UpdateAsync(type, ct);
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — two managers editing the same type at once used to
+        // have the second silently overwrite the first's change with no warning at all.
+        if (!await _types.UpdateAsync(type, request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task type changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }
@@ -201,7 +235,16 @@ public sealed class SetTaskTypeActiveHandler : IRequestHandler<SetTaskTypeActive
         }
 
         type.IsActive = command.Request.IsActive;
-        await _types.UpdateAsync(type, ct);
+
+        // Same write path as the full edit, same protection (BL-375): a manager retiring a type must not silently
+        // discard a colleague's edit that landed between this read and this write.
+        if (!await _types.UpdateAsync(type, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task type changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
     }
 }

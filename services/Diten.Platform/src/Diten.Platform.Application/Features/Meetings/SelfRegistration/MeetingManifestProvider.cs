@@ -37,6 +37,7 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
     private const string PageMeetingDetail = "MEETING_DETAIL";
     private const string PageMeetingEdit = "MEETING_EDIT";
     private const string PageMeetingTypes = "MEETING_TYPES";
+    private const string PageMeetingSeries = "MEETING_SERIES";
 
     public ModuleManifestDocument GetManifest() =>
         new(
@@ -79,6 +80,8 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "RowAction", 60, IsDangerous: true, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("TYPES_MANAGE", "Manage Meeting Types", MeetingPermissions.TypesManage,
                             "Toolbar", 70, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("SERIES_MANAGE", "Manage Meeting Series", MeetingPermissions.SeriesManage,
+                            "Toolbar", 75, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
                         new ModuleManifestAction("READ_ALL", "View All Meetings", MeetingPermissions.ReadAll,
                             "Toolbar", 80, IsDangerous: false, IsToolbarAction: false, IsRowAction: false)
                     ]),
@@ -138,7 +141,208 @@ public sealed class MeetingManifestProvider : IModuleManifestProvider
                             "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
                         new ModuleManifestAction("DELETE", "Delete Meeting Type", MeetingPermissions.TypesManage,
                             "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
+                    ]),
+
+                // S11 — the recurring cadence rule catalogue (pack §19). Nav-visible under MEETINGS, same shape
+                // the MEETING_TYPES page above takes.
+                new ModuleManifestPage(
+                    PageCode: PageMeetingSeries,
+                    DisplayName: "Meeting Series",
+                    RoutePath: "/Meetings/Series",
+                    RequiredPermission: MeetingPermissions.SeriesManage,
+                    ParentPageCode: PageMeetings,
+                    IsNavigationVisible: true,
+                    PageType: "List",
+                    SortOrder: 21,
+                    Actions:
+                    [
+                        new ModuleManifestAction("CREATE", "Create Meeting Series", MeetingPermissions.SeriesManage,
+                            "Toolbar", 10, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        new ModuleManifestAction("EDIT", "Edit Meeting Series", MeetingPermissions.SeriesManage,
+                            "RowAction", 20, IsDangerous: false, IsToolbarAction: false, IsRowAction: true),
+                        new ModuleManifestAction("DELETE", "Delete Meeting Series", MeetingPermissions.SeriesManage,
+                            "RowAction", 30, IsDangerous: true, IsToolbarAction: false, IsRowAction: true)
                     ])
             ],
-            NotificationEvents: []);
+            NotificationEvents:
+            [
+                // S5 — invite/change/cancel (pack §3 IMeetingInviteMailer, K12). Email only, same posture
+                // TaskManifestProvider's own events take: there is no in-app channel for these yet.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.invite",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.invite",
+                    DisplayNameKey: "NotificationEvent_MeetingInvite",
+                    FallbackDisplayName: "Meeting invitation",
+                    Description: "Sent to attendees when a meeting is created.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.change",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.change",
+                    DisplayNameKey: "NotificationEvent_MeetingChange",
+                    FallbackDisplayName: "Meeting changed",
+                    Description: "Sent to attendees when a meeting's date, time or location changes.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.cancel",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.cancel",
+                    DisplayNameKey: "NotificationEvent_MeetingCancel",
+                    FallbackDisplayName: "Meeting cancelled",
+                    Description: "Sent to attendees when a meeting is cancelled.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                // BL-387/BL-373 (owner, 2026-09-14) — the ORGANIZER's own variant of invite/change/cancel, used
+                // whenever the organizer did not perform the action themselves (series sweep, a delegate acting
+                // on their behalf, or a reassignment). No "Organizer" variable: the reader IS the organizer, so
+                // naming them back to themselves would be redundant, unlike the three sibling events above.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-added",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-added",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerAdded",
+                    FallbackDisplayName: "Meeting added to your calendar",
+                    Description: "Sent to the organizer when a meeting they did not personally create is scheduled on their behalf.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-updated",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-updated",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerUpdated",
+                    FallbackDisplayName: "Your meeting was updated",
+                    Description: "Sent to the organizer when a meeting they organize changes and they did not make the change themselves.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.organizer-cancelled",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.organizer-cancelled",
+                    DisplayNameKey: "NotificationEvent_MeetingOrganizerCancelled",
+                    FallbackDisplayName: "Your meeting was cancelled",
+                    Description: "Sent to the organizer when a meeting they organize is cancelled and they did not cancel it themselves.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("MeetingUrl")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: PageMeetingDetail,
+                    RequiredPermissionKey: MeetingPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                // BL-386 — the removed attendee only, never the rest of the meeting; deliberately LINKLESS
+                // (`LinkPolicy: "None"`, no TargetPageCode): the meeting detail page 404s for someone no longer
+                // on the meeting (D3's own visibility rule), so a link here would point straight at that dead end.
+                new ModuleManifestNotificationEvent(
+                    EventCode: "platform.meetings.removed",
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.meetings.removed",
+                    DisplayNameKey: "NotificationEvent_MeetingRemoved",
+                    FallbackDisplayName: "Removed from meeting",
+                    Description: "Sent to a single attendee when they are removed from a meeting.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("MeetingTitle"),
+                        new ModuleManifestNotificationVariable("MeetingType"),
+                        new ModuleManifestNotificationVariable("StartAt"),
+                        new ModuleManifestNotificationVariable("EndAt"),
+                        new ModuleManifestNotificationVariable("Organizer")
+                    ],
+                    OptionalVariables: [new ModuleManifestNotificationVariable("Location", IsRequired: false)],
+                    TargetPageCode: null,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "None",
+                    Status: "Active")
+            ]);
 }

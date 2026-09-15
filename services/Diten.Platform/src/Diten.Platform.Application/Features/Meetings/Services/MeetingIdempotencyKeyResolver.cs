@@ -24,4 +24,30 @@ public sealed class MeetingIdempotencyKeyResolver : IMeetingIdempotencyKeyResolv
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
+
+    public string ResolveForTaskBridge(Guid meetingId, Guid actorUserId, string clientIdempotencyKey)
+    {
+        var input = string.Join(
+            '|',
+            "bridge",
+            meetingId.ToString("N"),
+            actorUserId.ToString("N"),
+            clientIdempotencyKey.Trim());
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    public string ResolveForFollowUp(Guid meetingId, Guid actorUserId, string clientIdempotencyKey)
+    {
+        var input = string.Join(
+            '|',
+            "follow-up",
+            meetingId.ToString("N"),
+            actorUserId.ToString("N"),
+            clientIdempotencyKey.Trim());
+
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
 }

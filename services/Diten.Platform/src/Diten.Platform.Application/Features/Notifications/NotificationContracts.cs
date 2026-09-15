@@ -111,7 +111,12 @@ public sealed record QueueEmailNotificationRequest(
     IReadOnlyList<EmailRecipientDto> To,
     IReadOnlyList<EmailRecipientDto>? Cc = null,
     IReadOnlyList<EmailRecipientDto>? Bcc = null,
-    Guid? CausationId = null);
+    Guid? CausationId = null,
+    /// <summary>MOD-0357 S5b — ADDITIVE ONLY. Carried through to the messaging provider inside the SAME
+    /// synchronous call this handler already makes (see <c>QueueEmailNotificationHandler.Handle</c>'s own
+    /// dispatch call, measured: despite the "Queue" name, there is no separate worker step here) — never
+    /// written onto the persisted <see cref="Domain.Entities.Notifications.NotificationDispatch"/> row.</summary>
+    IReadOnlyList<Services.MessagingProviderAttachment>? Attachments = null);
 
 public sealed record NotificationDispatchDto(
     Guid Id,

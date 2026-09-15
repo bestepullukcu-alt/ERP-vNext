@@ -264,6 +264,28 @@ public sealed class NotificationsBatch1ATests
         Assert.Equal(NotificationDispatchStatus.Failed, dispatches.Items[0].Status);
     }
 
+    /// <summary>
+    /// S10B live pass (2026-09-13): a first send that fails must leave a row the retry sweep can SEE. FindDueRetriesAsync
+    /// selects Failed rows with a NextRetryAt; the handler never wrote one, so the mail stayed failed forever.
+    /// </summary>
+    [Fact]
+    public async Task QueueEmail_ShouldScheduleTheFirstRetry_WhenTheFirstSendFails()
+    {
+        var tenantId = Guid.NewGuid();
+        var dispatches = new InMemoryNotificationDispatchRepository();
+        var provider = new CountingProvider(MessagingProviderResult.Fail("ProviderConnectivityFailed", "smtp down"));
+        var handler = CreateQueueHandler(tenantId, dispatches, provider: provider);
+        var before = DateTimeOffset.UtcNow;
+
+        await handler.Handle(new QueueEmailNotificationCommand(tenantId, ValidQueueRequest(), "corr-retry"), CancellationToken.None);
+
+        var dispatch = Assert.Single(dispatches.Items);
+        Assert.Equal(NotificationDispatchStatus.Failed, dispatch.Status);
+        Assert.Equal(0, dispatch.RetryCount);
+        Assert.NotNull(dispatch.NextRetryAt);
+        Assert.InRange(dispatch.NextRetryAt!.Value, before, DateTimeOffset.UtcNow.AddMinutes(2));
+    }
+
     [Fact]
     public async Task FakeProvider_ShouldBlockProductionEvenWhenEnabled()
     {

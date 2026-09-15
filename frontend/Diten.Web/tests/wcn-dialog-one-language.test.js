@@ -159,11 +159,17 @@ describe("eight dialogs, four moved and four dressed", () => {
      * category as the survivor above — a shape the shared wrapper cannot express — and it is DRESSED with the
      * declared package rather than inventing an appearance, which is what this test is actually protecting.
      */
-    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(2);
-    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(2);
+    /*
+     * ⚠ THREE (MOD-0024 Slice ATT-1). The third is the ATTACHMENT UPLOAD dialog: a file input, a kind select
+     * and a note textarea. `showConfirm` supports one value (BL-146); this asks for three, so it is the same
+     * category as the other two survivors — a shape the shared wrapper cannot express — and it is DRESSED with
+     * the declared package the same way, not given an appearance of its own.
+     */
+    expect(raw, "a raw dialog appeared or disappeared without this test being told").toHaveLength(3);
+    expect(dressed, "a raw dialog is drawing itself again").toHaveLength(3);
     // Each raw call is an `Object.assign(...)`, which is the only shape that can carry the package.
     expect((stripped.match(/Swal\.fire\(Object\.assign\(/g) || []),
-      "a raw dialog opened without the appearance").toHaveLength(2);
+      "a raw dialog opened without the appearance").toHaveLength(3);
   });
 
   it("reads the package instead of copying it", () => {
@@ -293,8 +299,10 @@ describe("a field gets a glyph only when the glyph says something", () => {
      * the dialog it opened drew a speech bubble. `inboxActionIcon` is the product's one dictionary and both
      * surfaces read it. Only the SNOOZE keeps a hand-named glyph, and it is not opened by an action.
      */
+    // MOD-0357 S4 — review meeting became a two-step flow (type, then date/time); both steps read the SAME
+    // dictionary, which is why this grew from 3 to 4 rather than a dialog starting to name its own glyph.
     expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length,
-      "an action dialog started choosing its own picture").toBe(3);
+      "an action dialog started choosing its own picture").toBe(4);
     expect(APP, "the snooze moon is not action-driven and stays").toContain("icon: 'bx-moon'");
   });
 });

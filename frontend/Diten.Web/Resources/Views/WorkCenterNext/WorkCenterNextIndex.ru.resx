@@ -237,8 +237,8 @@
     <value>Действовать</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Просмотр</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить встречу для согласования</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Встреча для согласования назначена: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Назначить совещание по обзору</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Совещание по обзору назначено: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Подготовить таблицу внутригрупповых исключений</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Исключить внутригрупповые остатки перед консолидацией.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Расследовать регрессию правила ценообразования</value></data>
@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Дата и время встречи</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Тип совещания</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Выберите тип совещания для планирования.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Типы совещаний ещё не настроены. Попросите администратора добавить тип.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Это создаёт реальное совещание в модуле «Совещания», связанное с этой задачей.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Обзор закрытия III квартала</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Отправить</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Упомянуть кого-то</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Убрать упоминание</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Упомянуть людей</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Выберите хотя бы одного человека.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>В этой задаче пока нет никого, кого можно упомянуть.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Все, кого можно упомянуть, уже добавлены.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>В комментарии можно упомянуть не более {0} человек.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Напишите что-нибудь перед отправкой</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Совместная работа и записи</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Сведения о рабочем элементе</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>Запрошенный рабочий элемент не найден.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Этот рабочий элемент не может быть показан, так как он не прошёл проверку контракта.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Вернуться в рабочий центр</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Ваши полномочия по этому элементу завершены.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Обязательная зависимость не завершена.</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Согласование: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Ожидает</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Ожидает согласования</value>
@@ -1543,6 +1583,15 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Ожидание…</value>
   </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Запланировать совещание по обзору</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Принять</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Отклонить</value>
+  </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Вернуть</value>
   </data>
@@ -1615,9 +1664,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>Не отмечено обязательных пунктов: {0}. Задача всё равно будет закрыта.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Для отмеченных пунктов требуется подтверждение. Используйте скрепку в строке, чтобы прикрепить его.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value>
   </data>
@@ -1897,6 +1944,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Подзадача ещё открыта</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Совещание по обзору уже запланировано</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Чек-лист обновлён.</value>
   </data>
@@ -2160,6 +2210,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Некоторые источники не ответили — список может быть неполным.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>Не удалось показать {0} рабочих элементов из-за ошибки контракта.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Некоторые источники не ответили, поэтому это число может быть неполным.</value>
   </data>
@@ -2205,6 +2258,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Закрыто с результатом: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Закрытие</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>Приложено результатов работы: {0}.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>Приложено файлов с доказательствами: {0}.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Чем завершилась эта работа?</value>
   </data>
@@ -2225,6 +2287,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Этот результат требует указания причины.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Это поле обязательно для завершения задачи.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Выполнено как запрошено</value>
@@ -2259,4 +2324,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>Возвращалась {0} раз, последний раз: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Пока нет вложений.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Добавить файл</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Подтверждение</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Результат</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Вложение</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Тип</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Примечание (необязательно)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Добавьте краткое примечание к файлу</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Файл</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Загрузить</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Добавить вложение</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Сначала выберите файл.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Удалить это вложение?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Удалить вложение</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>Загрузил(а) {0} · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Вложение добавлено.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Вложение удалено.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Добавьте файл результата или доказательства (необязательно)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Тип этой задачи требует файл результата</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Выберите файл перед завершением этой задачи.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Добавить подтверждение</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>Файлов подтверждения: {0}</value></data>
 </root>

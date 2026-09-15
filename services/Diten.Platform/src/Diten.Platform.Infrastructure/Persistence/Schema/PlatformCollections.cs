@@ -26,6 +26,7 @@ public static class PlatformCollections
     public const string BusinessReferenceDataValidationResults = "business_reference_data_validation_results";
     public const string BusinessReferenceDataVersions = "business_reference_data_versions";
     public const string ChecklistRuns = "checklist_runs";
+    public const string TaskAttachments = "task_attachments";
     public const string ChecklistTemplates = "checklist_templates";
     public const string ConsumedEvents = "consumed_events";
     public const string DocumentManagementAccessPolicies = "document_management_access_policies";
@@ -121,6 +122,10 @@ public static class PlatformCollections
     public const string MeetingAttendees = "meeting_attendees";
     public const string MeetingAgendaItems = "meeting_agenda_items";
     public const string MeetingTypes = "meeting_types";
+    // MOD-0357 S6 — one row per version of a meeting's minutes; append-only (see MeetingMinutesVersion.cs).
+    public const string MeetingMinutesVersions = "meeting_minutes_versions";
+    // MOD-0357 S11 — one row per recurring cadence rule (see MeetingSeries.cs).
+    public const string MeetingSeries = "meeting_series";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

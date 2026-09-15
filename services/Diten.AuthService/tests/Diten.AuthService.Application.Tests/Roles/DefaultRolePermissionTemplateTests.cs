@@ -343,6 +343,51 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.DoesNotContain("auth.users.lookup", viewerKeys); // not a read action
     }
 
+    // MOD0024-TASK-READ-ACCESS-01 (BL-349, owner decision 2026-09-13) — the third explicit-grant-only key. Proven
+    // the same way UsersAccountKindManage is proven directly above: even under its OWN module ("tasks", where the
+    // Task Engine's other platform.tasks.* keys DO reach Admin's breadth clause were "tasks" listed there), it
+    // reaches no default role — a tenant activating Task Engine must not hand every Admin/Viewer "read every task".
+    [Fact]
+    public void Tasks_read_all_enters_no_default_role_even_under_a_module_ordinary_task_keys_would_reach()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks", "read", "Read Task", null, moduleOverride: "tasks"));
+        catalog.Add(new Permission("platform", "tasks", "read-all", "Read All Tasks", null, moduleOverride: "tasks"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.read-all", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", adminKeys);
+        Assert.DoesNotContain("platform.tasks.read-all", viewerKeys);
+    }
+
+    // WP-PSS-MOD0024-BL392-WORK-REPORT-READ-EXPLICIT-01 (BL-392, owner decision 2026-09-14) — the fourth
+    // explicit-grant-only key. Placed under a module the Admin breadth clause DOES reach, with its ordinary sibling
+    // report key beside it, so the exclusion is not vacuous: the sibling reaches Admin (and Viewer, being a read),
+    // the tenant-wide key reaches no default role. Remove the key from ExplicitGrantOnlyPermissions.Keys and this
+    // test goes red (measured 2026-09-14: the SuperAdmin full-catalog assertion is the first to fail).
+    [Fact]
+    public void Work_report_read_tenant_wide_enters_no_default_role_even_under_the_Admin_module_while_work_report_read_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("platform", "tasks.work-report", "read", "Read Work Report", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+        catalog.Add(new Permission("platform", "tasks.work-report", "read-tenant-wide", "View Work Report Tenant-Wide", null,
+            moduleOverride: "access-governance", scope: PermissionScope.Tenant));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", superAdminKeys);
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", adminKeys);
+        Assert.DoesNotContain("platform.tasks.work-report.read-tenant-wide", viewerKeys);
+        Assert.Contains("platform.tasks.work-report.read", adminKeys);  // ordinary key: Admin breadth clause
+        Assert.Contains("platform.tasks.work-report.read", viewerKeys); // ordinary read: Viewer read clause
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

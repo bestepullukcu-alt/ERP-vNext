@@ -2,6 +2,7 @@ using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Common.Persistence;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MongoDB.Driver;
 
@@ -65,6 +66,14 @@ public sealed class RecordLinkRepository : TenantRepository<RecordLink>, IRecord
                 ?? throw new InvalidOperationException(
                     "A duplicate-key write was refused but no matching link could be re-read afterward.");
         }
+    }
+
+    public async Task<RecordLink?> FindByIdempotencyKeyAsync(string idempotencyKey, CancellationToken ct = default)
+    {
+        var filter = Builders<RecordLink>.Filter.And(
+            ExecutionFilter,
+            Builders<RecordLink>.Filter.Eq(x => x.IdempotencyKey, idempotencyKey));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
     }
 
     public async Task<IReadOnlyList<RecordLink>> ListBySourceAsync(
@@ -196,6 +205,24 @@ public sealed class MeetingRepository : TenantRepository<Meeting>, IMeetingRepos
             Builders<Meeting>.Filter.Eq(x => x.MeetingTypeId, meetingTypeId));
         return await Collection.Find(filter).AnyAsync(ct);
     }
+
+    public async Task<Meeting?> FindByFollowUpOfMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<Meeting>.Filter.And(
+            ExecutionFilter,
+            Builders<Meeting>.Filter.Eq(x => x.FollowUpOfMeetingId, meetingId));
+
+        // LIVE-MEASURED (S7): ordered IN MEMORY, not by the server — the same reason
+        // BusinessReferenceDataStewardshipRepository.GetUsageRegistrationsAsync and
+        // WorkflowInstanceRepository.GetLatestByObjectRefAsync already do (BL-030): with no
+        // DateTimeOffsetSerializer registered, CreatedAt is stored as a BSON [ticks, offsetMinutes] array, and a
+        // server-side sort on it does not reliably reflect chronological order. Verified broken against a real
+        // Mongo here too — two follow-ups seeded 15ms apart came back in a non-deterministic order. This
+        // repository's own row count per source meeting is always small (a handful of accidental duplicate
+        // schedules at most), so an in-memory sort costs nothing worth avoiding a full-collection scan for.
+        var rows = await Collection.Find(filter).ToListAsync(ct);
+        return rows.OrderBy(x => x.CreatedAt).FirstOrDefault();
+    }
 }
 
 /// <summary>Raw storage for <see cref="MeetingAttendee"/>.</summary>
@@ -235,6 +262,35 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
             Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
             Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
         return Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.Id, id));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.InvitationResponse, response);
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+    }
+
+    public async Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.InvitationResponse, InvitationResponse.Pending));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task UpdateAttendanceStatusAsync(
+        Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
+        await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
 }
 
@@ -306,5 +362,123 @@ public sealed class MeetingTypeRepository : TenantRepository<MeetingType>, IMeet
             new FindOneAndReplaceOptions<MeetingType> { ReturnDocument = ReturnDocument.Before },
             ct);
         return previous is not null;
+    }
+}
+
+/// <summary>Raw storage for <see cref="MeetingMinutesVersion"/> — MOD-0357 S6. See the interface's own doc
+/// comment for why this is append-only by convention rather than by anything enforced here.</summary>
+public sealed class MeetingMinutesVersionRepository
+    : TenantRepository<MeetingMinutesVersion>, IMeetingMinutesVersionRepository
+{
+    public MeetingMinutesVersionRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.MeetingMinutesVersions)
+    {
+    }
+
+    /// <summary>The one place a <c>MongoWriteException</c> from THIS collection is allowed to be caught
+    /// (architecture rule) — a genuine version-number race (two concurrent first-drafts, or two concurrent
+    /// corrections) is refused by the unique index and turned into "no" here, never a 500.</summary>
+    public async Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default)
+    {
+        try
+        {
+            return await CreateAsync(version, ct);
+        }
+        catch (MongoWriteException exception) when (
+            exception.WriteError?.Category == ServerErrorCategory.DuplicateKey)
+        {
+            return null;
+        }
+    }
+
+    public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.MeetingId, meetingId));
+        return Collection.Find(filter)
+            .SortByDescending(x => x.VersionNumber)
+            .Limit(1)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.MeetingId, meetingId));
+        return await Collection.Find(filter).SortByDescending(x => x.VersionNumber).ToListAsync(ct);
+    }
+
+    public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+    {
+        version.Version = expectedVersion + 1;
+        version.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Id, version.Id),
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Version, expectedVersion));
+
+        var previous = await Collection.FindOneAndReplaceAsync(
+            filter,
+            version,
+            new FindOneAndReplaceOptions<MeetingMinutesVersion> { ReturnDocument = ReturnDocument.Before },
+            ct);
+        return previous is not null;
+    }
+}
+
+/// <summary>Raw storage for <see cref="MeetingSeries"/> (MOD-0357 S11).</summary>
+public sealed class MeetingSeriesRepository : TenantRepository<MeetingSeries>, IMeetingSeriesRepository
+{
+    public MeetingSeriesRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.MeetingSeries)
+    {
+    }
+
+    // CreateAsync is NOT overridden here — TenantRepository<T>'s own base implementation already stamps
+    // TenantId from the ambient context on every write (defensively, regardless of what the candidate object
+    // was constructed with), the same convention MeetingTypeRepository already relies on without overriding it.
+
+    public async Task<MeetingSeries?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(ExecutionFilter, Builders<MeetingSeries>.Filter.Eq(x => x.Id, id));
+        return await Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    // Sorted by Name — a STRING field. BL-030: this entity carries three DateTimeOffset fields (StartsAt,
+    // EndsAt, LastGeneratedAt), and a server-side sort on any of them is not trusted for exact chronological
+    // order in this codebase (no DateTimeOffsetSerializer registered — see MeetingRepository.
+    // FindByFollowUpOfMeetingIdAsync's own doc comment, measured broken against a real server). Neither list
+    // below needs date order at all, so the safe field is used instead of adding a needless in-memory sort.
+    public async Task<IReadOnlyList<MeetingSeries>> ListAllAsync(CancellationToken ct = default)
+        => await Collection.Find(ExecutionFilter).SortBy(x => x.Name).ToListAsync(ct);
+
+    public async Task<IReadOnlyList<MeetingSeries>> ListActiveAsync(CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.IsActive, true));
+        return await Collection.Find(filter).SortBy(x => x.Name).ToListAsync(ct);
+    }
+
+    public Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.Name, name));
+        return Collection.Find(filter).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+    {
+        series.Version = expectedVersion + 1;
+        series.UpdatedAt = DateTimeOffset.UtcNow;
+        var filter = Builders<MeetingSeries>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingSeries>.Filter.Eq(x => x.Id, series.Id),
+            Builders<MeetingSeries>.Filter.Eq(x => x.Version, expectedVersion));
+        var result = await Collection.ReplaceOneAsync(filter, series, new ReplaceOptions(), ct);
+        return result.IsAcknowledged && result.ModifiedCount == 1;
     }
 }

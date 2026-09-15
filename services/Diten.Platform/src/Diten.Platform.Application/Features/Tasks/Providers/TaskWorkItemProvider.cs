@@ -4,6 +4,7 @@ using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
 using Diten.Platform.Application.Features.WorkAggregation.Services;
+using Diten.Platform.Domain.Entities.Meetings;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
@@ -55,6 +56,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string ActionReturnKey = "WorkAggregation_Action_Return";
     /// <summary>Hand work to a different person. Code and endpoint are both <c>reassign</c>.</summary>
     private const string ActionReassignKey = "WorkAggregation_Action_Reassign";
+    private const string ActionScheduleReviewMeetingKey = "WorkAggregation_Action_ScheduleReviewMeeting";
     private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
     private const string DisabledApprovalKey = "WorkAggregation_ActionDisabled_ApprovalPending";
     private const string DisabledChecklistKey = "WorkAggregation_ActionDisabled_ChecklistIncomplete";
@@ -68,6 +70,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private const string DisabledDependencyKey = "WorkAggregation_ActionDisabled_DependencyBlocked";
     /// <summary>An open subtask. Same shape as above: the blocker names which child, this is the button's reason.</summary>
     private const string DisabledSubtaskKey = "WorkAggregation_ActionDisabled_SubtaskBlocked";
+    /// <summary>BL-379 — scheduleReviewMeeting offered (to this task's own owner/requester) when a review
+    /// meeting is already linked.</summary>
+    private const string DisabledReviewMeetingAlreadyScheduledKey = "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled";
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
@@ -129,6 +134,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
 
+    /// <summary>MOD-0024 Slice ATT-1 — optional; see the constructor parameter's own doc comment.</summary>
+    private readonly ITaskAttachmentRepository? _attachments;
+
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
         ITaskSeatDirectory seats,
@@ -162,11 +170,20 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         IRecordLinkService? recordLinks = null,
         IRelatedRecordResolverRegistry? relatedRecordResolvers = null,
-        ILogger<TaskWorkItemProvider>? logger = null)
+        /*
+         * MOD-0024 Slice ATT-1 — OPTIONAL for the same reason teamResolver/recordLinks are: every existing
+         * caller (every test in this suite predates ATT-1) is unaffected, and an absent repository can only
+         * ever narrow the projection to "no attachments, zero evidence counts" — it can never widen one.
+         */
+        ITaskAttachmentRepository? attachments = null,
+        ILogger<TaskWorkItemProvider>? logger = null,
+        IMeetingRepository? meetingRepository = null)
     {
+        _attachments = attachments;
         _recordLinks = recordLinks;
         _relatedRecordResolvers = relatedRecordResolvers;
         _logger = logger;
+        _meetings = meetingRepository;
         _teamResolver = teamResolver;
         _sla = sla;
         _fieldDefinitions = fieldDefinitions;
@@ -207,6 +224,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>Optional — a missing logger only means the "no resolver for this module code" warning (AC5)
     /// is not written anywhere; it never changes what is projected.</summary>
     private readonly ILogger<TaskWorkItemProvider>? _logger;
+
+    /// <summary>MOD-0357 S4 — reads the linked meeting's <c>StartAt</c> for <c>reviewMeetingPolicy.scheduledAt</c>.
+    /// Null ⇒ <c>scheduledAt</c> is simply omitted (the policy's <c>requirement</c>/<c>meetingId</c> still
+    /// project from <see cref="_recordLinks"/> alone); every existing test predates this and passes neither.</summary>
+    private readonly IMeetingRepository? _meetings;
 
     /// <summary>
     /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
@@ -318,6 +340,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var checklistByTask = (await _checklistRuns.ListByTaskIdsAsync(taskIds, ct))
             .GroupBy(run => run.TaskItemId)
             .ToDictionary(group => group.Key, group => group.First());
+
+        // MOD-0024 Slice ATT-1 — same batched-read reason as checklist/children above. Optional: an absent
+        // repository (compat-only DI paths, existing tests) projects every task with zero attachments.
+        var attachmentsByTask = _attachments is null
+            ? new Dictionary<Guid, IReadOnlyList<TaskAttachment>>()
+            : (await _attachments.ListByTaskIdsAsync(taskIds, ct))
+                .GroupBy(a => a.TaskId)
+                .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskAttachment>)group.ToList());
 
         // Only TOP-LEVEL tasks can have children (one level only), so nothing else needs asking about.
         var parentIds = tasks.Where(t => t.ParentTaskItemId is null).Select(t => t.Id).ToList();
@@ -443,6 +473,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         var relatedRecordsByTask = await ResolveRelatedRecordsAsync(taskIds, ct);
 
+        // MOD-0357 S4 — the review-meeting policy's own data, batched the same way.
+        var reviewMeetingByTask = await ResolveReviewMeetingLinksAsync(taskIds, ct);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -483,7 +516,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     personalByTask.GetValueOrDefault(t.Id),
                     watchersByTask.GetValueOrDefault(t.Id, []),
                     initiatorOnly.Contains(t.Id),
-                    relatedRecordsByTask.GetValueOrDefault(t.Id));
+                    relatedRecordsByTask.GetValueOrDefault(t.Id),
+                    attachmentsByTask.GetValueOrDefault(t.Id, []),
+                    reviewMeetingByTask.TryGetValue(t.Id, out var reviewMeetingLink)
+                        ? reviewMeetingLink
+                        : ((RecordLink Link, Meeting? Meeting)?)null);
             })
             .ToList();
     }
@@ -521,7 +558,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool initiatorOnly = false,
         // MOD-0357 S1 — this task's resolved related records, already capped at the contract's own limit.
         // Null (not merely empty) means "no capability" — see ResolveCapabilities.
-        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null)
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null,
+        // MOD-0024 Slice ATT-1 — this task's live (non-deleted) attachments, batched above.
+        IReadOnlyList<TaskAttachment>? attachments = null,
+        // MOD-0357 S4 — this task's live "reviewMeeting" link, if any, plus the linked meeting (when the
+        // repository seam is wired). Null means none is scheduled yet — the condition that keeps
+        // scheduleReviewMeeting offered.
+        (RecordLink Link, Meeting? Meeting)? reviewMeetingLink = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -586,10 +629,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          *
          * Declared-and-empty is a state the contract models (CAPABILITY_CONTAINER_REQUIRED); a half is not.
          */
-        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist, actor);
+        var taskAttachments = attachments ?? [];
+        var checklistBlock = checklist is null
+            ? EmptyChecklist
+            : ToChecklist(checklist, actor, taskAttachments);
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
+        // MOD-0024 Slice ATT-1 — same declared-and-empty rule as checklist/subtasks: the shell's "add file"
+        // affordance needs the container even on a task with zero attachments today.
+        var attachmentsBlock = ToAttachments(taskAttachments, actor, displayNames);
         var businessContext = ToBusinessContext(task, fieldDefinitions, _permissions);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
@@ -632,6 +681,51 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     : action)
                 .ToList();
 
+        /*
+         * MOD-0357 S4, corrected by BL-379 + CT decision 2026-09-13 — the receiving side of
+         * scheduleReviewMeeting (pack §7, K3). The policy and its action are published TOGETHER, and only for
+         * the task's own owner/requester on a task that is not yet closed.
+         *
+         * An earlier reading of fixture-contract.js's REVIEW_MEETING_ACTION_REQUIRED rule ("policy present and
+         * not notAllowed ⇒ action MUST be present") tried to satisfy it by publishing the policy on EVERY task
+         * unconditionally and then deciding separately whether to show the action — which collided head-on with
+         * two deliberate, already-tested product rules: a closed task offers no actions at all, and a task that
+         * is not yours offers none either (TaskWorkItemProviderTests.A_terminal_task_exposes_no_enabled_action,
+         * TaskApprovalProjectionTests's rejected-approval case, TaskTeamScopeTests's Ekibim-scope case,
+         * TaskActionRoundTripTests's cancel case — all four UNCHANGED by this fix, all four green). The contract
+         * rule is satisfied instead by never emitting the POLICY at all outside this gate — the same
+         * declared-and-populated-or-entirely-absent posture every other capability container on this DTO
+         * already takes (see the checklist/subtasks comment above: "a half is not [a state the contract
+         * models]"). Read-gated: the server's own decisive gate is MeetingPermissions.Create on the receiving
+         * endpoint, checked there, never here (this is a hint).
+         *
+         * S9 note: "required" is not implemented this slice. When a review meeting's approval becomes
+         * mandatory rather than optional, and the approving party is not this task's own holder/requester, how
+         * that lock surfaces on THIS provider's projection needs its own look then — not assumed here.
+         */
+        WorkItemReviewMeetingPolicyDto? reviewMeetingPolicy = null;
+        if (!terminal)
+        {
+            var isRequesterForReview = task.CreatedByUserId is not null && task.CreatedByUserId == actor.UserId;
+            var isHolderForReview = task.AssigneeUserId == actor.UserId;
+            if (isHolderForReview || isRequesterForReview)
+            {
+                reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
+                    Requirement: "optional",
+                    MeetingId: reviewMeetingLink?.Link.SourceRecordId.ToString(),
+                    ScheduledAt: reviewMeetingLink?.Meeting?.StartAt);
+
+                var reviewMeetingAction = reviewMeetingLink is not null
+                    ? Disabled(
+                        "scheduleReviewMeeting", ActionScheduleReviewMeetingKey,
+                        WorkAggregationReasonCodes.ReviewMeetingAlreadyScheduled, DisabledReviewMeetingAlreadyScheduledKey)
+                    : Build("scheduleReviewMeeting", ActionScheduleReviewMeetingKey, actor.Has(TaskPermissions.Update));
+
+                actions = actions.Append(reviewMeetingAction).ToList();
+                overflowActionCodes = overflowActionCodes.Append("scheduleReviewMeeting").ToList();
+            }
+        }
+
         return new WorkItemProjectionDto(
             FixtureKind: WorkItemContract.FixtureKindWorkItem,
             Id: task.Id.ToString(),
@@ -665,7 +759,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
                 dependencyList, checklistBlock, subtasks, businessContext,
-                task.EstimateHours, task.SpentHours, relatedRecords),
+                task.EstimateHours, task.SpentHours, relatedRecords, attachmentsBlock),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -700,6 +794,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // see the block that builds them. No condition is restated here, so none can drift.
             Checklist: checklistBlock,
             Subtasks: subtasks,
+            Attachments: attachmentsBlock,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
                 task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
@@ -740,7 +835,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                      * you always did".
                      */
                     ToClosureOutcomes(taskType, TaskClosureDisposition.Completed),
-                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled))
+                    ToClosureOutcomes(taskType, TaskClosureDisposition.Cancelled),
+                    taskType.RequiresDeliverableOnCompletion)
                 : null,
             Pool: ToPool(task, poolLabels),
             BusinessContext: businessContext,
@@ -772,7 +868,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * WHAT WAS DECIDED, beside WHEN it ended. Resolved against the type's CURRENT dictionary, so an
              * outcome that has since been retired yields the bare code rather than a blank — see WorkItemClosureDto.
              */
-            Closure: terminal ? ToClosure(task, resolvedType) : null,
+            Closure: terminal ? ToClosure(task, resolvedType, fieldDefinitions, taskAttachments, _permissions) : null,
             /*
              * WHERE THIS CAME FROM — and it travels for a CLOSED task too, deliberately.
              *
@@ -839,7 +935,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             ReminderLeadDays: task.ReminderLeadDays,
             // BL-016 — stated ONLY when the shell cannot work it out for itself; see the DTO for why the holder
             // and pool cases are deliberately silent.
-            ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null);
+            ViewerRelation: initiatorOnly ? WorkItemContract.ViewerRelationInitiator : null,
+            ReviewMeetingPolicy: reviewMeetingPolicy);
     }
 
     /// <summary>
@@ -933,7 +1030,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         WorkItemBusinessContextDto? businessContext,
         decimal? estimateHours,
         decimal spentHours,
-        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords)
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords,
+        WorkItemAttachmentsDto? attachments)
     {
         // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
@@ -951,6 +1049,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         if (subtasks is not null)
         {
             capabilities.Add("subtasks");
+        }
+
+        // MOD-0024 Slice ATT-1 — same "declared for every task, run or no run" rule checklist follows: the
+        // container is never null on MOD-0024's own projection (ToAttachments never returns null), so this is
+        // effectively unconditional for this provider, exactly like checklist above.
+        if (attachments is not null)
+        {
+            capabilities.Add("attachments");
         }
 
         if (dependencies is not null)
@@ -1010,7 +1116,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static readonly WorkItemChecklistDto EmptyChecklist = new([], Version: 0);
 
-    private static WorkItemChecklistDto ToChecklist(ChecklistRun run, WorkItemActor actor)
+    private static WorkItemChecklistDto ToChecklist(
+        ChecklistRun run, WorkItemActor actor, IReadOnlyList<TaskAttachment> attachments)
         => new(run.Items
             .OrderBy(item => item.SortOrder)
             .Select(item => new WorkItemChecklistItemDto(
@@ -1031,9 +1138,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  * firmly if this line said true for everything; drawing a control that the server will reject is
                  * simply a worse way to tell someone the answer.
                  */
-                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId))
+                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId,
+                // MOD-0024 Slice ATT-1 — computed from the same batched attachments read, never a per-item query.
+                EvidenceCount: attachments.Count(a =>
+                    a.Kind == TaskAttachmentKind.Evidence
+                    && string.Equals(a.ChecklistRunItemCode, item.Code, StringComparison.Ordinal))))
             .ToList(),
             Version: run.Version);
+
+    /// <summary>MOD-0024 Slice ATT-1 — never null; an empty <see cref="TaskAttachment"/> list still projects a
+    /// container with zero items (the same "declared-and-empty" rule <c>ToChecklist</c>'s caller follows).</summary>
+    private static WorkItemAttachmentsDto ToAttachments(
+        IReadOnlyList<TaskAttachment> attachments, WorkItemActor actor, IReadOnlyDictionary<Guid, string> displayNames)
+        => new(attachments
+            .OrderByDescending(a => a.UploadedAt)
+            .Select(a => new WorkItemAttachmentDto(
+                Id: a.Id.ToString(),
+                FileName: a.FileName,
+                MediaType: a.MediaType,
+                ByteSize: a.ByteSize,
+                Kind: a.Kind.ToString(),
+                Note: a.Note,
+                UploadedBy: Person(a.UploadedByUserId, actor, displayNames),
+                UploadedAt: a.UploadedAt,
+                ChecklistItemId: a.ChecklistRunItemCode))
+            .ToList());
 
     /// <summary>
     /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are
@@ -1305,6 +1434,45 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }
 
         return byTask;
+    }
+
+    /// <summary>
+    /// MOD-0357 S4 — the "reviewMeeting"-type link, per task, plus the linked meeting's own <c>StartAt</c> for
+    /// <c>scheduledAt</c>. A SEPARATE target-side read from <see cref="ResolveRelatedRecordsAsync"/>'s own
+    /// (that method's <c>byTarget</c> is local to it and already resolved into titles, not raw links) — one
+    /// extra indexed query for the whole page, not one per task.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, (RecordLink Link, Meeting? Meeting)>> ResolveReviewMeetingLinksAsync(
+        IReadOnlyList<Guid> taskIds, CancellationToken ct)
+    {
+        if (_recordLinks is null || taskIds.Count == 0)
+        {
+            return new Dictionary<Guid, (RecordLink Link, Meeting? Meeting)>();
+        }
+
+        var links = await _recordLinks.ListByTargetAsync(taskIds, ct);
+        var reviewLinks = links
+            .Where(link => link.LinkType == RecordLinkTypes.ReviewMeeting
+                            && link.SourceModuleCode == RecordLinkModuleCodes.Meetings)
+            // A task may in principle collect more than one over time if a prior one was soft-deleted; K3 keeps
+            // exactly one LIVE link per task, so the live set here is at most one per task already — first is
+            // fine, and there is no created-at field to prefer a "latest" by.
+            .ToList();
+        if (reviewLinks.Count == 0)
+        {
+            return new Dictionary<Guid, (RecordLink Link, Meeting? Meeting)>();
+        }
+
+        var meetingsById = new Dictionary<Guid, Meeting>();
+        if (_meetings is not null)
+        {
+            var meetingIds = reviewLinks.Select(link => link.SourceRecordId).Distinct().ToList();
+            meetingsById = (await _meetings.ListByIdsAsync(meetingIds, ct)).ToDictionary(m => m.Id);
+        }
+
+        return reviewLinks.ToDictionary(
+            link => link.TargetRecordId,
+            link => (link, meetingsById.TryGetValue(link.SourceRecordId, out var meeting) ? meeting : null));
     }
 
     private static WorkItemSubtasksDto ToSubtasks(
@@ -1607,10 +1775,46 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <para>A code with no matching outcome keeps the code and loses only the label — see
     /// <see cref="WorkItemClosureDto"/> for why that beats blanking the record of a retired outcome.</para>
     /// </summary>
-    private static WorkItemClosureDto? ToClosure(TaskItem task, TaskType? type) =>
-        string.IsNullOrWhiteSpace(task.ClosureReasonCode)
-            ? null
-            : new WorkItemClosureDto(task.ClosureReasonCode, ResolveOutcomeLabel(type, task.ClosureReasonCode));
+    private static WorkItemClosureDto? ToClosure(
+        TaskItem task,
+        TaskType? type,
+        IReadOnlyDictionary<string, TaskFieldDefinition>? definitions,
+        IReadOnlyList<TaskAttachment> attachments,
+        IActorPermissionContext actor)
+    {
+        if (string.IsNullOrWhiteSpace(task.ClosureReasonCode))
+        {
+            return null;
+        }
+
+        var catalogue = definitions ?? new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
+
+        // Faz 2a — CLOSURE-stage values only. An entry-stage value under the same FieldValues list stays out of
+        // this block; it already has its own home in businessContext.
+        var fields = task.FieldValues
+            .Select(value => (Value: value, Definition: catalogue.GetValueOrDefault(value.DefinitionCode)))
+            .Where(pair => pair.Definition?.Stage == TaskFieldStage.Closure)
+            .OrderBy(pair => pair.Definition!.SortOrder)
+            .ThenBy(pair => pair.Value.DefinitionCode, StringComparer.OrdinalIgnoreCase)
+            .Select(pair => ToBusinessField(pair.Value, pair.Definition, actor))
+            .ToList();
+
+        // Faz 2a — a count and a reference, never a second copy of the attachment. `attachments.items[]` already
+        // carries the full record; this says how many of each closure-relevant KIND exist and which ones.
+        var deliverables = attachments
+            .Where(a => a.Kind is TaskAttachmentKind.Deliverable or TaskAttachmentKind.Evidence)
+            .GroupBy(a => a.Kind)
+            .Select(group => new WorkItemClosureAttachmentRefDto(
+                group.Key.ToString(), group.Count(), group.Select(a => a.Id.ToString()).ToList()))
+            .ToList();
+
+        return new WorkItemClosureDto(
+            task.ClosureReasonCode,
+            ResolveOutcomeLabel(type, task.ClosureReasonCode),
+            task.ClosureNote,
+            fields.Count == 0 ? null : fields,
+            deliverables.Count == 0 ? null : deliverables);
+    }
 
     /// <summary>The label for a stored code, or null when the type does not (or no longer) offers it.</summary>
     private static WorkItemLabelDto? ResolveOutcomeLabel(TaskType? type, string? reasonCode)

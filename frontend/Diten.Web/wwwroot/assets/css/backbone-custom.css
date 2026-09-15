@@ -5769,7 +5769,7 @@ tags.diten-tags .tagify__input {
 .wcn-kcard.unread { border-inline-start: 3px solid var(--bs-primary); }
 .wcn-kcard-title { font-size: .8125rem; font-weight: 600; margin-block-end: .375rem; }
 .wcn-kcard-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
-.wcn-kcard-actions { margin-block-start: .5rem; }
+.wcn-kcard-actions { margin-block-start: .5rem; display: flex; gap: .375rem; }
 
 /* Calendar (read-only deadline clustering) --------------------------------- */
 .wcn-cal-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: .625rem; flex-wrap: wrap; gap: .5rem; }
@@ -6135,6 +6135,10 @@ tags.diten-tags .tagify__input {
 .wcn-inbox-actions { display: flex; align-items: center; gap: .375rem; flex: 0 0 auto; }
 .wcn-inbox-actions .btn { transform: none !important; box-shadow: none !important; }
 .wcn-inbox-action-primary { white-space: nowrap; font-weight: 600; }
+/* MOD-0357 S5c — the meetingInvite card's second visible action (Reddet), never folded into the
+   ··· overflow the way every other provider's non-primary actions are. Shares the primary's nowrap
+   so "Reddet" cannot wrap onto its own line next to "Kabul et". */
+.wcn-inbox-action-secondary { white-space: nowrap; }
 
 /* Split-detail: the master rail stays pinned below Sneat's fixed navbar while
    the detail surface follows the page. Long master lists scroll inside the rail. */
@@ -7291,10 +7295,19 @@ tags.diten-tags .tagify__input {
     color: var(--bs-secondary-color);
     cursor: help;
 }
-.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; cursor: pointer; }
+.wcn-attach { display: flex; align-items: center; gap: .5rem; font-size: .8125rem; padding: .375rem .5rem; border: 1px solid var(--bs-border-color); border-radius: .375rem; }
 .wcn-attach:hover { border-color: var(--bs-primary); }
-.wcn-attach-name { flex: 1; }
-.wcn-attach-size { font-size: .6875rem; color: var(--bs-secondary-color); }
+.wcn-attach-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wcn-attach-size { flex: 0 0 auto; font-size: .6875rem; color: var(--bs-secondary-color); }
+/* Slice ATT-1 — the name and its "who/when" sit in one column so the row stays one line of controls tall
+   regardless of how long the uploader's name is; `min-inline-size: 0` is what lets the ellipsis above actually
+   engage inside a flex row instead of pushing the row wider. */
+.wcn-attach-main { flex: 1 1 auto; min-inline-size: 0; display: flex; flex-direction: column; gap: .0625rem; }
+.wcn-attach-meta { font-size: .6875rem; color: var(--bs-secondary-color); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The checklist row's "kanıt ekle" — same bare-icon-button family the row's own controls use
+   (.diten-checkitem-btn), plus the live count `ToChecklist`/`WorkItemChecklistItemDto.EvidenceCount` sends. */
+.wcn-check-evidence-add { gap: .1875rem; }
+.wcn-check-evidence-count { font-size: .6875rem; font-weight: 600; }
 /* The personal plan, at the head of the Personal card. Same row shape as a summary pair so the two cards read
    as one family, but this one KEEPS its empty state: "I have not planned this yet" is a thing the holder needs
    to notice about themselves, where an absent due date is simply absent. */
@@ -7718,6 +7731,21 @@ tags.diten-tags .tagify__input {
 /* The button matches the input's height rather than Bootstrap's default, so the two read as one row. `btn-sm`
    was what made them 30px; the size now comes from the field beside it. */
 .wcn-composer-post { flex: 0 0 auto; display: inline-flex; align-items: center; gap: .375rem; }
+/* WP-PSS-MOD0024-TASK-MENTIONS-01 — the @ trigger sits beside the field, same height as the post button. */
+.wcn-composer-mention { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; }
+/* The draft @mention tray. A genuine token/removable-selection chip — unlike `.wcn-watcher-role` above, this one
+   IS the kind of chip this page reserves the word for: it names something the write is about to act on. Wraps
+   onto its own row below the input/buttons rather than fighting them for width. */
+.wcn-mention-chips { flex: 1 1 100%; display: flex; flex-wrap: wrap; gap: .375rem; margin-block-start: .375rem; }
+.wcn-mention-chip {
+    display: inline-flex; align-items: center; gap: .25rem; padding: .1875rem .5rem;
+    border-radius: 999px; background-color: var(--bs-secondary-bg); font-size: .8125rem;
+}
+.wcn-mention-chip-remove {
+    display: inline-flex; align-items: center; padding: 0; border: 0; background: transparent;
+    color: var(--bs-secondary-color); line-height: 1;
+}
+.wcn-mention-chip-remove:hover { color: var(--bs-danger); }
 
 /* Table — real DataTables v2 + shared Sneat/Golden Reference defaults. */
 .wcn-main:has(.wcn-datatable-card) { padding: 0; border: 0; background: transparent; }

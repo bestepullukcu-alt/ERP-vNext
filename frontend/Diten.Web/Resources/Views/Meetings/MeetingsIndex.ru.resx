@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Удалить участника</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Добавить</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Сменить организатора</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Протокол</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>Новый организатор</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Отменить совещание</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Причина отмены</value></data>
@@ -49,6 +50,27 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>С этим совещанием пока не связаны задачи.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Повестка</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>Пунктов повестки пока нет.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Создать задачу</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Связать существующую задачу</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Создать задачу из этой строки</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Название задачи</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>Название задачи обязательно.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Исполнитель</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Я сам</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Срок выполнения</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Задача</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Поиск задач для связывания</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Выберите задачу для связывания.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Задача создана и связана с этим совещанием.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Задача связана с этим совещанием.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Запланировать повторную встречу</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>Ещё открытые задачи, связанные с повесткой этой встречи, будут перенесены в новую встречу в исходном порядке.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>продолжение</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Повторная встреча запланирована.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Повторная встреча запланирована с пустой повесткой — нет открытых задач для переноса.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Предыдущая встреча</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Повторная встреча</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Из предыдущей встречи</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Сведения о совещании</value></data>
@@ -64,13 +86,29 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Этого человека сейчас нельзя пригласить.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Этот человек уже приглашён.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Этого участника нет в совещании.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>Организатора нельзя удалить из совещания.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Неизвестный пользователь</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Этот пункт повестки не найден.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>Не удалось изменить порядок повестки; обновите страницу и повторите попытку.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Этот тип совещания не найден.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Тип совещания с таким названием уже существует.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Этот тип совещания используется совещанием и не может быть удалён.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Эта задача уже связана с этим совещанием.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Для этой задачи уже запланировано совещание по обзору.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>Ответ должен быть «Принять» или «Отклонить».</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>Опубликованный протокол нельзя редактировать напрямую.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>Нет опубликованной версии для исправления.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Необходимо указать причину исправления.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>Запись изменилась тем временем; обновите страницу и повторите попытку.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>Это решение не найдено.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>Эта серия совещаний не найдена.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>Серия совещаний с таким названием уже существует.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Проверьте начало, окончание и срок подготовки серии — расписание недействительно.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>Интервал должен быть не менее 1.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Требуется указать организатора.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому действию.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Сервис совещаний сейчас недоступен.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Пожалуйста, заполните все обязательные поля.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Типы совещаний</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Серии совещаний</value></data>
 </root>

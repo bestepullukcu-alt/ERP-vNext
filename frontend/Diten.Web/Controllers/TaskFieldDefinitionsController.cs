@@ -174,13 +174,15 @@ public sealed class TaskFieldDefinitionsController : Controller
         section = model.Section,
         importance = model.Importance,
         isRequired = model.IsRequired,
-        sortOrder = model.SortOrder,
+        // BL-388 — the form keeps SortOrder optional (UI-020), the API contract's SortOrder is a plain int: empty means 0.
+        sortOrder = model.SortOrder ?? 0,
         optionsSourceKind = model.OptionsSourceKind,
         optionsSourceKey = Nullable(model.OptionsSourceKey),
         appliesToModuleCode = Nullable(model.AppliesToModuleCode),
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
-        isActive = model.IsActive
+        isActive = model.IsActive,
+        stage = model.Stage
     };
 
     /// <summary>
@@ -195,14 +197,16 @@ public sealed class TaskFieldDefinitionsController : Controller
         section = model.Section,
         importance = model.Importance,
         isRequired = model.IsRequired,
-        sortOrder = model.SortOrder,
+        // BL-388 — the form keeps SortOrder optional (UI-020), the API contract's SortOrder is a plain int: empty means 0.
+        sortOrder = model.SortOrder ?? 0,
         optionsSourceKind = model.OptionsSourceKind,
         optionsSourceKey = Nullable(model.OptionsSourceKey),
         appliesToModuleCode = Nullable(model.AppliesToModuleCode),
         classification = model.Classification,
         defaultAccessState = model.DefaultAccessState,
         isActive = model.IsActive,
-        expectedVersion = model.ExpectedVersion
+        expectedVersion = model.ExpectedVersion,
+        stage = model.Stage
     };
 
     private static string? Nullable(string? value) => string.IsNullOrWhiteSpace(value) ? null : value;
@@ -237,7 +241,59 @@ public sealed class TaskFieldDefinitionsController : Controller
         catch { }
 
         var raw = await response.Content.ReadAsStringAsync();
+        if (TryReadProblemDetailsErrors(raw, out var problemErrors))
+            return problemErrors;
+
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
+    }
+
+    /// <summary>
+    /// BL-388 — ASP.NET's OWN 400 is not the Platform envelope. When a request body cannot even be bound (a null for
+    /// a non-nullable field, a wrong type) the API answers before any handler runs, with a ProblemDetails whose
+    /// <c>errors</c> is a field → messages dictionary. The envelope read above cannot bind that shape, so the body
+    /// used to fall through to the raw fallback and the form printed the JSON itself. Field messages are returned
+    /// as they are; a ProblemDetails with none gets the shared generic message, never its own raw body.
+    /// </summary>
+    private bool TryReadProblemDetailsErrors(string raw, out List<string> errors)
+    {
+        errors = [];
+        if (string.IsNullOrWhiteSpace(raw))
+            return false;
+
+        try
+        {
+            using var document = JsonDocument.Parse(raw);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object)
+                return false;
+
+            var hasFieldErrors = root.TryGetProperty("errors", out var fieldErrors) && fieldErrors.ValueKind == JsonValueKind.Object;
+            var isProblemDetails = hasFieldErrors || (root.TryGetProperty("title", out _) && root.TryGetProperty("status", out _));
+            if (!isProblemDetails)
+                return false;
+
+            if (hasFieldErrors)
+            {
+                errors = fieldErrors.EnumerateObject()
+                    .Where(field => field.Value.ValueKind == JsonValueKind.Array)
+                    .SelectMany(field => field.Value.EnumerateArray())
+                    .Where(message => message.ValueKind == JsonValueKind.String)
+                    .Select(message => message.GetString())
+                    .Where(message => !string.IsNullOrWhiteSpace(message))
+                    .Select(message => message!)
+                    .Distinct()
+                    .ToList();
+            }
+
+            if (errors.Count == 0)
+                errors.Add(_sharedLocalizer["GatewayError"].Value);
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
     }
 
     private bool AddAuthHeaders()

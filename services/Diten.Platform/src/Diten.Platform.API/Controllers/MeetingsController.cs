@@ -4,6 +4,7 @@ using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Meetings;
 using Diten.Platform.Application.Features.Meetings.Commands;
 using Diten.Platform.Application.Features.Meetings.Queries;
+using Diten.Platform.Application.Features.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -138,6 +139,111 @@ public sealed class MeetingsController : CustomBaseController
     public async Task<IActionResult> GetLinkedTasks(Guid id, CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLinkedTasksQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>S5, K5 — Accept/Decline. Read-gated, deliberately: responding to an invitation is not managing
+    /// the meeting, and the 404-for-non-attendee rule (pack §13 :497) is enforced by the handler, not by a
+    /// tighter permission here.</summary>
+    [HttpPost("{id:guid}/respond")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> Respond(Guid id, [FromBody] RespondToInvitationRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new RespondToInvitationCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── S6 — minutes (pack §3 "Minutes as a versioned document", K4). GET is Read-gated (a published record is
+    // a record everyone with visibility should be able to read); the three writes are MinutesWrite/MinutesPublish
+    // — never Update, which is about the MEETING's own scheduling fields, not its closure record. ─────────────
+
+    [HttpGet("{id:guid}/minutes")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> GetMinutes(Guid id, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetMeetingMinutesQuery(id, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPut("{id:guid}/minutes/draft")]
+    [HasPermission(MeetingPermissions.MinutesWrite)]
+    public async Task<IActionResult> SaveMinutesDraft(Guid id, [FromBody] SaveMinutesDraftRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new SaveMinutesDraftCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/minutes/publish")]
+    [HasPermission(MeetingPermissions.MinutesPublish)]
+    public async Task<IActionResult> PublishMinutes(Guid id, [FromBody] PublishMinutesRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new PublishMinutesCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpPost("{id:guid}/minutes/correct")]
+    [HasPermission(MeetingPermissions.MinutesPublish)]
+    public async Task<IActionResult> CorrectPublishedMinutes(
+        Guid id, [FromBody] CorrectPublishedMinutesRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CorrectPublishedMinutesCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── S7 — continuation scheduling (pack §3/§4, K6). Delegates meeting creation to the SAME Create path
+    // (Create permission, not Update — this is a new meeting, not an edit to the source one). ─────────────────
+
+    [HttpPost("{id:guid}/follow-up")]
+    [HasPermission(MeetingPermissions.Create)]
+    public async Task<IActionResult> ScheduleFollowUp(
+        Guid id, [FromBody] ScheduleFollowUpMeetingRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ScheduleFollowUpMeetingCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    // ── S4 — the meeting↔task bridge (pack §3 Commands "bridge", §14 K9). Every action below stacks a
+    // Meetings permission with an ORDINARY MOD-0024 permission — AND semantics (HasPermissionAttribute's own
+    // doc comment) — so platform.meetings.* alone grants nothing over TaskItem (K9), the same precedent
+    // DocumentManagementControlledDocumentRegistrationController already sets for stacking permissions across
+    // feature namespaces on one action. ──────────────────────────────────────────────────────────────────────
+
+    /// <summary>"Create-and-link" — delegates to MOD-0024's own create path (K2); see the command's own doc
+    /// comment.</summary>
+    [HttpPost("{id:guid}/tasks")]
+    [HasPermission(MeetingPermissions.Update)]
+    [HasPermission(TaskPermissions.Create)]
+    
+    public async Task<IActionResult> CreateTaskFromMeeting(
+        Guid id, [FromBody] CreateTaskFromMeetingRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new CreateTaskFromMeetingCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>Links an EXISTING task — always <c>LinkType: "agenda"</c>. Read-gated on the Tasks side: the
+    /// caller only needs to be ABLE TO SEE the task they are naming, not to manage it.</summary>
+    [HttpPost("{id:guid}/tasks/{taskId:guid}/link")]
+    [HasPermission(MeetingPermissions.Update)]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> LinkExistingTask(
+        Guid id, Guid taskId, [FromBody] LinkExistingTaskRequestBody? body, CancellationToken ct)
+    {
+        var request = new LinkExistingTaskRequest(taskId, body?.AgendaItemId);
+        var response = await _mediator.Send(new LinkExistingTaskCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>The receiving side of MOD-0024's <c>scheduleReviewMeeting</c> work-item action — NOT nested
+    /// under <c>{id}</c> (pack §3 API list): the caller names a TASK, not a meeting, since the meeting does not
+    /// exist yet.</summary>
+    [HttpPost("tasks/{taskId:guid}/schedule-review-meeting")]
+    [HasPermission(MeetingPermissions.Create)]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> ScheduleReviewMeetingForTask(
+        Guid taskId, [FromBody] ScheduleReviewMeetingForTaskRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new ScheduleReviewMeetingForTaskCommand(taskId, request, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

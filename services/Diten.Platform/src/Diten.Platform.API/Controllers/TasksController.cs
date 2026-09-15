@@ -1,7 +1,9 @@
 using Diten.Platform.API.Controllers.Common;
 using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
+using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Attachments;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
@@ -288,6 +290,68 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // ── MOD-0024 Slice ATT-1: task attachments ────────────────────────────────
+    //
+    // Guarded by UPDATE, like checklist writes — the handler itself narrows further (holder or requester only,
+    // AC3). Upload/download are multipart/stream, never JSON-with-base64 (AD-4).
+
+    /// <summary>Uploads one file. The 400/413/415-style validation (extension, media type, size) is the
+    /// repository's own (MOD-0262-FU01) — this endpoint adds no rule of its own beyond task-level authorization.</summary>
+    [HttpPost("{id:guid}/attachments")]
+    [HasPermission(TaskPermissions.Update)]
+    [RequestSizeLimit(long.MaxValue)]
+    [RequestFormLimits(MultipartBodyLengthLimit = long.MaxValue)]
+    public async Task<IActionResult> AddAttachment(
+        Guid id,
+        [FromForm] IFormFile? file,
+        [FromForm] TaskAttachmentKind kind,
+        [FromForm] string? checklistItemCode,
+        [FromForm] string? note,
+        CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return CreateActionResultInstance(Response<TaskAttachmentDto>.Fail(
+                "A file is required.", 400, TaskReasonCodes.ValidationFailed, CorrelationId));
+        }
+
+        await using var content = file.OpenReadStream();
+        var response = await _mediator.Send(
+            new AddTaskAttachmentCommand(
+                id, content, file.FileName, file.ContentType, kind,
+                string.IsNullOrWhiteSpace(checklistItemCode) ? null : checklistItemCode.Trim(),
+                string.IsNullOrWhiteSpace(note) ? null : note.Trim(),
+                CorrelationId),
+            ct);
+        return CreateActionResultInstance(response);
+    }
+
+    [HttpGet("{id:guid}/attachments")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> ListAttachments(Guid id, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new ListTaskAttachmentsQuery(id, CorrelationId), ct));
+
+    /// <summary>Streams the stored bytes. Addressed by attachment id only — the repository's object key is never
+    /// exposed (MOD-0262-FU01 AD-4/AD-5), and another task's/tenant's attachment id resolves to 404.</summary>
+    [HttpGet("{id:guid}/attachments/{attachmentId:guid}/content")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> AttachmentContent(Guid id, Guid attachmentId, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new OpenTaskAttachmentQuery(id, attachmentId, CorrelationId), ct);
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        return File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
+
+    /// <summary>Soft delete only — the stored object is untouched (AD-6).</summary>
+    [HttpDelete("{id:guid}/attachments/{attachmentId:guid}")]
+    [HasPermission(TaskPermissions.Update)]
+    public async Task<IActionResult> RemoveAttachment(Guid id, Guid attachmentId, CancellationToken ct) =>
+        CreateActionResultInstance(await _mediator.Send(new RemoveTaskAttachmentCommand(id, attachmentId, CorrelationId), ct));
+
     // ── Comments (BL-034 item 7) ─────────────────────────────────────────────
 
     /*
@@ -347,6 +411,19 @@ public sealed class TasksController : CustomBaseController
     public async Task<IActionResult> WithdrawComment(Guid id, Guid commentId, CancellationToken ct)
     {
         var response = await _mediator.Send(new WithdrawTaskCommentCommand(id, commentId, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// Who the comment box's @ picker may offer for THIS task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). READ-guarded
+    /// like the comment endpoints themselves — the relationship check that actually decides candidacy is
+    /// per-candidate, inside the handler, via <c>ITaskReadAccessPolicy</c>.
+    /// </summary>
+    [HttpGet("{id:guid}/mention-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetMentionCandidates(Guid id, [FromQuery] string? q, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskMentionCandidatesQuery(id, q, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 
@@ -454,6 +531,19 @@ public sealed class TasksController : CustomBaseController
     // import under DocumentManagementMasterRegister reuses it directly), and TaskPermissions.DocumentListRead /
     // .DocumentListImport (removing either from the Auth permission catalog is a separate, Control-Tower-owned
     // step). DocumentListRead stays enforced below (SearchDocumentCitations, GetTaskTypeGoverningDocuments).
+
+    /// <summary>
+    /// MOD-0357 S4 — the "link an existing task" picker's typeahead. Guarded by <c>Read</c> alone: choosing a
+    /// task to link is not managing it, the same posture the meeting-type dropdown already takes for Meetings.
+    /// </summary>
+    [HttpGet("lookups/link-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetLinkCandidates(
+        [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskLinkCandidatesQuery(term, limit, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
 
     /// <summary>
     /// DCP-005 Step 2 — the picker's search, against the live Document Master Register

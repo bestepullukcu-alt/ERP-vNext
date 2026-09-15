@@ -1,0 +1,406 @@
+{
+  "invitee_none_linkedTask": {
+    "fixtureKind": "workItem",
+    "id": "e1e1e1e1-0000-0000-0000-0000000000e1",
+    "workIntent": "meetingInvite",
+    "assignmentMode": "direct",
+    "ownershipState": "notApplicable",
+    "admissionState": "notApplicable",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "notApplicable",
+    "executionState": "notApplicable",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Q4 Management Review",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Pending",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_NativeStatus_Pending"
+      }
+    },
+    "source": {
+      "providerCode": "meetings",
+      "providerContractVersion": "1.0",
+      "objectType": "MGMT-REVIEW",
+      "objectId": "e1e1e1e1-0000-0000-0000-0000000000e1",
+      "deepLink": "/Meetings/e1e1e1e1-0000-0000-0000-0000000000e1"
+    },
+    "lifecycleOwner": "meetings",
+    "workItemCapabilities": [
+      "relatedRecords"
+    ],
+    "actions": [
+      {
+        "code": "acceptInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_AcceptInvite"
+        },
+        "semanticType": "approve",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "declineInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_DeclineInvite"
+        },
+        "semanticType": "reject",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": "2099-01-05T09:00:00+00:00",
+    "primaryActionCode": "acceptInvite",
+    "overflowActionCodes": null,
+    "assignee": {
+      "id": "e4e4e4e4-0000-0000-0000-0000000000e4",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "e3e3e3e3-0000-0000-0000-0000000000e3",
+      "displayName": "Ay\u015Fe Y\u0131lmaz",
+      "isCurrentUser": false
+    },
+    "relatedRecords": [
+      {
+        "id": "e6e6e6e6-0000-0000-0000-0000000000e6",
+        "type": "tasks",
+        "title": "Prepare the KPI pack",
+        "link": "/Tasks/e6e6e6e6-0000-0000-0000-0000000000e6"
+      }
+    ],
+    "slaState": "on-track",
+    "secondaryActionCodes": [
+      "declineInvite"
+    ]
+  },
+  "invitee_none_none": {
+    "fixtureKind": "workItem",
+    "id": "e1e1e1e1-0000-0000-0000-0000000000e1",
+    "workIntent": "meetingInvite",
+    "assignmentMode": "direct",
+    "ownershipState": "notApplicable",
+    "admissionState": "notApplicable",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "notApplicable",
+    "executionState": "notApplicable",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Q4 Management Review",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Pending",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_NativeStatus_Pending"
+      }
+    },
+    "source": {
+      "providerCode": "meetings",
+      "providerContractVersion": "1.0",
+      "objectType": "MGMT-REVIEW",
+      "objectId": "e1e1e1e1-0000-0000-0000-0000000000e1",
+      "deepLink": "/Meetings/e1e1e1e1-0000-0000-0000-0000000000e1"
+    },
+    "lifecycleOwner": "meetings",
+    "workItemCapabilities": [],
+    "actions": [
+      {
+        "code": "acceptInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_AcceptInvite"
+        },
+        "semanticType": "approve",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "declineInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_DeclineInvite"
+        },
+        "semanticType": "reject",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": "2099-01-05T09:00:00+00:00",
+    "primaryActionCode": "acceptInvite",
+    "overflowActionCodes": null,
+    "assignee": {
+      "id": "e4e4e4e4-0000-0000-0000-0000000000e4",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "e3e3e3e3-0000-0000-0000-0000000000e3",
+      "displayName": "Ay\u015Fe Y\u0131lmaz",
+      "isCurrentUser": false
+    },
+    "slaState": "on-track",
+    "secondaryActionCodes": [
+      "declineInvite"
+    ]
+  },
+  "invitee_read_linkedTask": {
+    "fixtureKind": "workItem",
+    "id": "e1e1e1e1-0000-0000-0000-0000000000e1",
+    "workIntent": "meetingInvite",
+    "assignmentMode": "direct",
+    "ownershipState": "notApplicable",
+    "admissionState": "notApplicable",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "notApplicable",
+    "executionState": "notApplicable",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Q4 Management Review",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Pending",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_NativeStatus_Pending"
+      }
+    },
+    "source": {
+      "providerCode": "meetings",
+      "providerContractVersion": "1.0",
+      "objectType": "MGMT-REVIEW",
+      "objectId": "e1e1e1e1-0000-0000-0000-0000000000e1",
+      "deepLink": "/Meetings/e1e1e1e1-0000-0000-0000-0000000000e1"
+    },
+    "lifecycleOwner": "meetings",
+    "workItemCapabilities": [
+      "relatedRecords"
+    ],
+    "actions": [
+      {
+        "code": "acceptInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_AcceptInvite"
+        },
+        "semanticType": "approve",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "declineInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_DeclineInvite"
+        },
+        "semanticType": "reject",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": "2099-01-05T09:00:00+00:00",
+    "primaryActionCode": "acceptInvite",
+    "overflowActionCodes": null,
+    "assignee": {
+      "id": "e4e4e4e4-0000-0000-0000-0000000000e4",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "e3e3e3e3-0000-0000-0000-0000000000e3",
+      "displayName": "Ay\u015Fe Y\u0131lmaz",
+      "isCurrentUser": false
+    },
+    "relatedRecords": [
+      {
+        "id": "e6e6e6e6-0000-0000-0000-0000000000e6",
+        "type": "tasks",
+        "title": "Prepare the KPI pack",
+        "link": "/Tasks/e6e6e6e6-0000-0000-0000-0000000000e6"
+      }
+    ],
+    "slaState": "on-track",
+    "secondaryActionCodes": [
+      "declineInvite"
+    ]
+  },
+  "invitee_read_none": {
+    "fixtureKind": "workItem",
+    "id": "e1e1e1e1-0000-0000-0000-0000000000e1",
+    "workIntent": "meetingInvite",
+    "assignmentMode": "direct",
+    "ownershipState": "notApplicable",
+    "admissionState": "notApplicable",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "notApplicable",
+    "executionState": "notApplicable",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Q4 Management Review",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Pending",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_NativeStatus_Pending"
+      }
+    },
+    "source": {
+      "providerCode": "meetings",
+      "providerContractVersion": "1.0",
+      "objectType": "MGMT-REVIEW",
+      "objectId": "e1e1e1e1-0000-0000-0000-0000000000e1",
+      "deepLink": "/Meetings/e1e1e1e1-0000-0000-0000-0000000000e1"
+    },
+    "lifecycleOwner": "meetings",
+    "workItemCapabilities": [],
+    "actions": [
+      {
+        "code": "acceptInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_AcceptInvite"
+        },
+        "semanticType": "approve",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "declineInvite",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_DeclineInvite"
+        },
+        "semanticType": "reject",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": "2099-01-05T09:00:00+00:00",
+    "primaryActionCode": "acceptInvite",
+    "overflowActionCodes": null,
+    "assignee": {
+      "id": "e4e4e4e4-0000-0000-0000-0000000000e4",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "e3e3e3e3-0000-0000-0000-0000000000e3",
+      "displayName": "Ay\u015Fe Y\u0131lmaz",
+      "isCurrentUser": false
+    },
+    "slaState": "on-track",
+    "secondaryActionCodes": [
+      "declineInvite"
+    ]
+  }
+}

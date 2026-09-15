@@ -400,6 +400,36 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiCreateFromTemplate()
         => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/tasks/from-template", readBody: true);
 
+    // ── MOD-0024 Slice ATT-1: task attachments ────────────────────────────────
+    //
+    // The file NEVER becomes browser-side base64 or a buffered-whole byte array (AD-4): upload streams multipart
+    // straight through (StreamContent over the request body's own stream), and download streams the upstream
+    // response body straight back. Both a browser can call at real file sizes without this app holding the whole
+    // thing in memory.
+
+    [HttpPost("api/{id:guid}/attachments")]
+    public Task<IActionResult> ApiAddAttachment(Guid id, IFormFile? file, string kind, string? checklistItemCode, string? note) =>
+        ProxyMultipartAsync($"{_gatewayUrl}/api/v1/tasks/{id}/attachments", file, new Dictionary<string, string?>
+        {
+            ["kind"] = kind,
+            ["checklistItemCode"] = checklistItemCode,
+            ["note"] = note
+        });
+
+    [HttpGet("api/{id:guid}/attachments")]
+    public Task<IActionResult> ApiListAttachments(Guid id) =>
+        ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/{id}/attachments", readBody: false);
+
+    /// <summary>Reuses the established download-relay pattern (<see cref="ProxyFileAsync"/>, the audit export's
+    /// own proxy) — same reasoning: a success relays the upstream file name; a failure (403/404) relays verbatim.</summary>
+    [HttpGet("api/{id:guid}/attachments/{attachmentId:guid}/content")]
+    public Task<IActionResult> ApiAttachmentContent(Guid id, Guid attachmentId) =>
+        ProxyFileAsync($"{_gatewayUrl}/api/v1/tasks/{id}/attachments/{attachmentId}/content");
+
+    [HttpDelete("api/{id:guid}/attachments/{attachmentId:guid}")]
+    public Task<IActionResult> ApiRemoveAttachment(Guid id, Guid attachmentId) =>
+        ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}/attachments/{attachmentId}", readBody: false);
+
     /// <summary>
     /// Post a comment. Its own resource under a task, so it is NOT a transition code and not in
     /// TaskTransitionRoutes — but it still has to be listed here explicitly, or the composer posts into a 404 that
@@ -418,6 +448,17 @@ public sealed class TasksController : Controller
     [HttpDelete("api/{id:guid}/comments/{commentId:guid}")]
     public Task<IActionResult> ApiWithdrawComment(Guid id, Guid commentId)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/tasks/{id}/comments/{commentId}", readBody: false);
+
+    /// <summary>
+    /// Who the comment box's @ picker may offer for THIS task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). Its own
+    /// route for the same reason the comment routes above are listed explicitly — an unproxied route is a 404
+    /// that never leaves the web tier.
+    /// </summary>
+    [HttpGet("api/{id:guid}/mention-candidates")]
+    public Task<IActionResult> ApiMentionCandidates(Guid id)
+        => ProxyAsync(
+            HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/{id}/mention-candidates{Request.QueryString.Value}",
+            readBody: false);
 
     // ── The personal overlay (WC-1) ──────────────────────────────────────────
     //
@@ -570,6 +611,14 @@ public sealed class TasksController : Controller
     public Task<IActionResult> ApiDecisionMakers()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/tasks/lookups/decision-makers", readBody: false);
 
+    /// <summary>MOD-0357 S4 — the "link an existing task" dialog's own search box (term, limit).</summary>
+    [HttpGet("api/link-candidates")]
+    public Task<IActionResult> ApiLinkCandidates()
+        => ProxyAsync(
+            HttpMethod.Get,
+            $"{_gatewayUrl}/api/v1/tasks/lookups/link-candidates{Request.QueryString.Value}",
+            readBody: false);
+
     /// <summary>
     /// Forward to the gateway.
     ///
@@ -624,6 +673,74 @@ public sealed class TasksController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Task engine proxy failed for {Method} {TargetUrl}.", method, targetUrl);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Task engine dependency unavailable." });
+        }
+    }
+
+    /// <summary>
+    /// MOD-0024 Slice ATT-1 — forward a file UPLOAD as multipart, not base64-in-JSON (AD-4). The incoming
+    /// <see cref="IFormFile"/>'s own stream is wrapped in <see cref="StreamContent"/> and attached to a fresh
+    /// <see cref="MultipartFormDataContent"/> alongside the other form fields; nothing here reads the file into a
+    /// byte array first.
+    /// </summary>
+    private async Task<IActionResult> ProxyMultipartAsync(
+        string targetUrl, IFormFile? file, IReadOnlyDictionary<string, string?> fields)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return UnprocessableEntity(new { message = "A file is required." });
+        }
+
+        if (!TryCreateTenantRequest(HttpMethod.Post, targetUrl, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            await using (var fileStream = file.OpenReadStream())
+            {
+                using var multipart = new MultipartFormDataContent();
+                using var streamContent = new StreamContent(fileStream);
+                if (!string.IsNullOrWhiteSpace(file.ContentType))
+                {
+                    streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                }
+                multipart.Add(streamContent, "file", file.FileName);
+
+                foreach (var (key, value) in fields)
+                {
+                    if (!string.IsNullOrWhiteSpace(value))
+                    {
+                        multipart.Add(new StringContent(value), key);
+                    }
+                }
+
+                request.Content = multipart;
+
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+                var content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted);
+
+                return new ContentResult
+                {
+                    Content = content,
+                    ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                    StatusCode = (int)response.StatusCode
+                };
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Task engine attachment upload proxy failed for {TargetUrl}.", targetUrl);
             return StatusCode(
                 StatusCodes.Status503ServiceUnavailable,
                 new { message = "Task engine dependency unavailable." });

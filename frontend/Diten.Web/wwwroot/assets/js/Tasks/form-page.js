@@ -397,6 +397,92 @@
         });
     };
 
+    /* ── Attachments staged on the CREATE form (WP-PSS-MOD0024-ATTACHMENTS-UX-01) ────────────────────────────
+     *
+     * The files never touch the server here: `AddTaskAttachmentHandler` takes a TaskItemId this page does not
+     * have until `TasksApi.create` answers. Staged in memory, kept as real `File` objects (a DOM round-trip
+     * cannot carry one), and uploaded one at a time against the new id from the submit handler below — never a
+     * second upload dialog and never a multipart create (YAPMA).
+     */
+    let pendingAttachments = [];
+    let attachmentSeq = 0;
+
+    const attachmentKindLabel = (kind) => (kind === 'Evidence' ? t('attachmentKindEvidence')
+        : kind === 'Deliverable' ? t('attachmentKindDeliverable')
+            : t('attachmentKindAttachment'));
+
+    const renderPendingAttachments = () => {
+        const list = el('taskAttachmentsPending');
+        if (!list) { return; }
+        list.replaceChildren();
+        pendingAttachments.forEach((entry) => {
+            const row = document.createElement('li');
+            row.className = 'list-group-item d-flex align-items-center justify-content-between';
+            row.setAttribute('data-task-attachment-row', String(entry.id));
+            const label = document.createElement('span');
+            // textContent, not innerHTML — the file name is whatever the OS gave it, never markup.
+            label.textContent = `${entry.file.name} — ${attachmentKindLabel(entry.kind)}`;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'btn btn-text-secondary btn-icon';
+            remove.setAttribute('data-task-attachment-remove', String(entry.id));
+            remove.setAttribute('aria-label', t('attachmentRemoveButton'));
+            remove.title = t('attachmentRemoveButton');
+            const icon = document.createElement('i');
+            icon.className = 'bx bx-x';
+            remove.appendChild(icon);
+            row.appendChild(label);
+            row.appendChild(remove);
+            list.appendChild(row);
+        });
+    };
+
+    const bindAttachments = (mode) => {
+        // Same reason the checklist editor is create-only: an edit posts no attachment list, so anything staged
+        // here would be silently dropped on save rather than uploaded.
+        if (mode !== 'create') {
+            el('taskAttachmentsCard')?.remove();
+            return;
+        }
+
+        el('taskAttachmentAddRow')?.querySelector('[data-task-attachment-add]')?.addEventListener('click', () => {
+            const fileInput = el('taskAttachmentFile');
+            const file = fileInput?.files?.[0];
+            if (!file) { return; }
+            const kind = el('taskAttachmentKind')?.value || 'Attachment';
+            pendingAttachments.push({ id: ++attachmentSeq, file, kind });
+            renderPendingAttachments();
+            fileInput.value = '';
+        });
+
+        el('taskAttachmentsPending')?.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-task-attachment-remove]');
+            if (!button) { return; }
+            const id = Number(button.getAttribute('data-task-attachment-remove'));
+            pendingAttachments = pendingAttachments.filter((entry) => entry.id !== id);
+            renderPendingAttachments();
+        });
+    };
+
+    /*
+     * Uploads every staged file against the just-created task, IN ORDER, stopping for nothing: a failed upload
+     * does not cancel the rest, because each is an independent write and the reader should not lose the ones
+     * that succeeded to save the one that did not.
+     *
+     * Returns the file NAMES that failed — empty when every upload succeeded (including "nothing was staged").
+     */
+    const uploadPendingAttachments = async (taskId) => {
+        const failed = [];
+        for (const entry of pendingAttachments) {
+            /* eslint-disable no-await-in-loop -- sequential by design: AddTaskAttachmentHandler writes one row
+               per call, and firing them concurrently would let two uploads race the same task's attachment list
+               for no benefit (the Document Binary Store gains nothing from parallel writes here). */
+            const result = await global.TasksApi.addAttachment(taskId, { file: entry.file, kind: entry.kind });
+            if (!result.ok) { failed.push(entry.file.name); }
+        }
+        return failed;
+    };
+
     /* ── Configurable fields (Phase 5) ────────────────────────────────────────────────────────────────────
      *
      * The form has carried `#taskCustomFields`/`#taskCustomFieldsRow` since Phase 1 with NO code touching
@@ -418,11 +504,25 @@
 
     const customFieldsRow = () => el('taskCustomFieldsRow');
 
-    // Which definitions this surface offers: live, and either module-agnostic or claimed by MOD-0024 itself.
+    /*
+     * Which definitions this surface offers: live, module-agnostic or claimed by MOD-0024 itself, and asked at
+     * CREATE time.
+     *
+     * ⚠ `stage !== 'Closure'` IS LOAD-BEARING, NOT A NICETY. `GET /field-definitions` answers this same catalogue
+     * to the closure window too — there is no second endpoint — so without this filter a Closure-stage field
+     * would render on the create/edit form the pack explicitly says it must not (MOD-0024 Task Closure &
+     * Reporting §4). A definition with no `stage` at all (every one written before Faz 2a) keeps rendering here,
+     * exactly as it always has: absence reads as the same default the server gives it, Entry.
+     */
     const applicableDefinitions = (rows) => (rows || []).filter((definition) =>
         definition
         && definition.isActive !== false
+        && definition.stage !== 'Closure'
         && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    // Testability only — this page has no other export, and this sits ABOVE the page's own boot() call so a
+    // test against an empty document (no #taskForm) still gets it even if boot() throws on the missing form.
+    global.TaskFormPage = { applicableDefinitions };
 
     /*
      * Resolve every option-driven field's list BEFORE rendering, so a field is either offered complete or not
@@ -804,6 +904,7 @@
         // Chips after hydration for the same reason as the rest: Tagify reads the input's value when it starts.
         global.TaskForm.enhanceTags(form);
         bindChecklist(mode);
+        bindAttachments(mode);
 
         el('taskAssignmentTarget')?.addEventListener('change', syncVisibility);
         // BL-023 — the direction depends on WHO, so both controls have to re-ask.
@@ -870,6 +971,30 @@
 
             if (result.ok) {
                 global.TaskForm.clearDraft();
+
+                /*
+                 * The task exists now — upload whatever was staged in the Attachments card. A create with no
+                 * staged files (the overwhelming majority, today) costs nothing here: the loop is empty and
+                 * `failedUploads` is `[]`, so this falls straight through to the SAME success flow as before.
+                 */
+                const newTaskId = mode === 'create' ? result.data : null;
+                const failedUploads = newTaskId ? await uploadPendingAttachments(newTaskId) : [];
+                if (failedUploads.length > 0) {
+                    /*
+                     * ⚠ THE TASK STAYS CREATED. Rolling it back would throw away a title, an assignee and
+                     * possibly a checklist over a FILE that failed to upload — the create succeeded and stays
+                     * succeeded; this dialog is honest about the one part that did not, and sends the reader to
+                     * the one place they can retry it (the task's own Attachments card, ATT-1).
+                     */
+                    await global.DitenModal.error({
+                        title: t('attachmentUploadPartialTitle'),
+                        message: `${t('attachmentUploadPartialBody')} ${failedUploads.join(', ')}`,
+                        confirmButtonText: t('attachmentUploadRetryLink')
+                    });
+                    global.location.href = `/Tasks/${newTaskId}`;
+                    return;
+                }
+
                 /*
                  * ⚠ A REPORT, NOT A QUESTION (2026-09-02).
                  *

@@ -110,7 +110,8 @@ public sealed class TaskChecklistSubtaskTests
         Assert.False(before.Checklist!.Items.Single().Completed);
 
         var handler = new SetChecklistItemStateHandler(
-            tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me));
+            tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me),
+            new FakeTaskAttachmentRepository());
         var result = await handler.Handle(
             new SetChecklistItemStateCommand(
                 task.Id, new SetChecklistItemStateRequest("i0", true, run.Version), "corr"),
@@ -470,7 +471,8 @@ public sealed class TaskChecklistSubtaskTests
         => new TransitionTaskItemHandler(
                 tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                 runs, new TaskChecklistService(), new FakeWorkflowTransitionGate(),
-                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance)
+                new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance)
             .Handle(
                 new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),
                 CancellationToken.None);

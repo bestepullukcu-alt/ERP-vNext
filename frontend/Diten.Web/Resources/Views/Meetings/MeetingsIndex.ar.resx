@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>إزالة الحاضر</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>إضافة</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>إعادة تعيين المنظّم</value></data>
+  <data name="Minutes" xml:space="preserve"><value>المحضر</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>المنظّم الجديد</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>إلغاء الاجتماع</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>سبب الإلغاء</value></data>
@@ -49,6 +50,27 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>لا توجد مهام مرتبطة بهذا الاجتماع بعد.</value></data>
   <data name="Agenda" xml:space="preserve"><value>جدول الأعمال</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>لا توجد بنود في جدول الأعمال بعد.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>إنشاء مهمة</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>ربط مهمة موجودة</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>إنشاء مهمة من هذا السطر</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>عنوان المهمة</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>عنوان المهمة مطلوب.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>المكلَّف</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>أنا نفسي</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>تاريخ الاستحقاق</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>المهمة</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>البحث عن مهام للربط</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>اختر مهمة للربط.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>تم إنشاء المهمة وربطها بهذا الاجتماع.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>تم ربط المهمة بهذا الاجتماع.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>جدولة اجتماع متابعة</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>سيتم نقل المهام المرتبطة بجدول أعمال هذا الاجتماع والتي ما زالت مفتوحة إلى الاجتماع الجديد، بترتيبها الأصلي.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>متابعة</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>تمت جدولة اجتماع المتابعة.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>تمت جدولة اجتماع المتابعة بجدول أعمال فارغ — لا توجد مهام مفتوحة لنقلها.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>الاجتماع السابق</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>اجتماع المتابعة</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>من الاجتماع السابق</value></data>
   <data name="Yes" xml:space="preserve"><value>نعم</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>معلومات الاجتماع</value></data>
@@ -64,13 +86,29 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>لا يمكن دعوة هذا الشخص حاليًا.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>هذا الشخص مدعو بالفعل.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>هذا الحاضر ليس ضمن الاجتماع.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>لا يمكن إزالة المنظم من الاجتماع.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>مستخدم غير معروف</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>تعذر العثور على بند جدول الأعمال هذا.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>تعذرت إعادة ترتيب جدول الأعمال؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>تعذر العثور على نوع الاجتماع هذا.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>يوجد بالفعل نوع اجتماع بهذا الاسم.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>نوع الاجتماع هذا مستخدم من قبل اجتماع ولا يمكن حذفه.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>هذه المهمة مرتبطة بهذا الاجتماع بالفعل.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>تم جدولة اجتماع مراجعة لهذه المهمة بالفعل.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>يجب أن يكون الرد قبول أو رفض.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>لا يمكن تعديل محضر الاجتماع المنشور مباشرة.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>لا توجد نسخة منشورة لتصحيحها.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>سبب التصحيح مطلوب.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>تم تغيير السجل في هذه الأثناء؛ يرجى إعادة التحميل والمحاولة مرة أخرى.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>تعذر العثور على هذا القرار.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>تعذر العثور على سلسلة الاجتماعات هذه.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>توجد بالفعل سلسلة اجتماعات بهذا الاسم.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>تحقق من بداية السلسلة ونهايتها ومدة المهلة — الجدول غير صالح.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>يجب أن تكون الفترة الفاصلة 1 على الأقل.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>يلزم وجود منظم.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذا الإجراء.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>خدمة الاجتماعات غير متاحة حاليًا.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>يرجى تعبئة جميع الحقول المطلوبة.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
 </root>

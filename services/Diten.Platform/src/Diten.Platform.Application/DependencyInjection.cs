@@ -76,6 +76,10 @@ public static class DependencyInjection
         // accepts exactly who the pickers offer.
         services.AddScoped<Features.Tasks.Services.ITaskAssignmentGuard,
             Features.Tasks.Services.TaskAssignmentGuard>();
+        // BL-349 at the READ — who may see one task's detail/attachments, a different question from who it is
+        // assigned to. ONE rule, asked by every read-side endpoint that resolves a single task by id.
+        services.AddScoped<Features.Tasks.Services.ITaskReadAccessPolicy,
+            Features.Tasks.Services.TaskReadAccessPolicy>();
         // BL-023 — turns that resolver's DESCENT into "my team". Walks nothing of its own.
         services.AddScoped<Features.Tasks.Services.ITaskTeamResolver,
             Features.Tasks.Services.TaskTeamResolver>();
@@ -289,6 +293,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
+        services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();
         services.AddScoped<IGlobalApplicabilityTransactionCoordinator, GlobalApplicabilityTransactionCoordinator>();
         services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
         services.AddScoped<SchedulerSmokeTestJob>();
@@ -305,6 +311,11 @@ public static class DependencyInjection
         // is decided by BackgroundJobs:RegisterStandardJobs + EnabledJobs, both of which default to off.
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskRecurrenceSweepJob>();
         services.AddScoped<Features.Tasks.BackgroundJobs.TaskDueSoonSweepJob>();
+        // S10 live pass (2026-09-13): both handlers below were referenced by PlatformRecurringJobRegistrar but never
+        // registered, so the executor's GetRequiredService threw on every run the moment their flag was switched on.
+        // BackgroundJobHandlerRegistrationTests now fails for any IBackgroundJobHandler<> left out of this list.
+        services.AddScoped<Features.Meetings.BackgroundJobs.MeetingSeriesSweepJob>();
+        services.AddScoped<Features.WorkingCalendarImport.HolidayAutoFetchJob>();
         services.AddSingleton<IRecurringJobRegistrar, PlatformRecurringJobRegistrar>();
 
         // A3 — workflow transition gate (defence-in-depth): business modules inject this and must check it
@@ -340,6 +351,9 @@ public static class DependencyInjection
         // WC-1's own code is untouched, which is exactly what the IWorkItemProvider seam exists for.
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.Tasks.Providers.TaskWorkItemProvider>();
+        // MOD-0357 S5c — the THIRD work-item provider: the actor's own pending meeting invitations (K5).
+        services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
+            Features.Meetings.Providers.MeetingWorkItemProvider>();
 
         /*
          * WC-D2 (DCP-004 §2 D2) — the WRITE half, registered as its own IEnumerable beside the read providers.
@@ -356,6 +370,8 @@ public static class DependencyInjection
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemActionDispatcher>();
         services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
             Features.Tasks.Providers.TaskWorkItemActionDispatcher>();
+        services.AddScoped<Features.WorkAggregation.Dispatch.IWorkItemActionDispatcher,
+            Features.Meetings.Providers.MeetingWorkItemActionDispatcher>();
 
         // MOD-0024 Task Engine services. The lifecycle service is the SINGLE owner of the lifecycle→normalized
         // map, so the API and the Task Center projection can never disagree.

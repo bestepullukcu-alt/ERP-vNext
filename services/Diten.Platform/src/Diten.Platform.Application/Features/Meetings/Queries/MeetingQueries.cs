@@ -13,6 +13,11 @@ public sealed record GetMeetingByIdQuery(Guid Id, string CorrelationId) : IReque
 public sealed record GetLinkedTasksQuery(Guid MeetingId, string CorrelationId)
     : IRequest<Response<IReadOnlyList<LinkedTaskDto>>>;
 
+/// <summary>S6 — every minutes version for this meeting, newest first (draft or published; the editor decides
+/// what to render read-only from <see cref="MeetingMinutesVersionDto.Status"/>).</summary>
+public sealed record GetMeetingMinutesQuery(Guid MeetingId, string CorrelationId)
+    : IRequest<Response<MeetingMinutesDto>>;
+
 public sealed record GetMeetingTypeListQuery(string CorrelationId) : IRequest<Response<IReadOnlyList<MeetingTypeDto>>>;
 
 public sealed record GetMeetingTypeByIdQuery(Guid Id, string CorrelationId) : IRequest<Response<MeetingTypeDto>>;
@@ -26,3 +31,11 @@ public sealed record GetMeetingAttendeeLookupQuery(string CorrelationId)
 
 public sealed record GetMeetingTypeLookupQuery(string CorrelationId)
     : IRequest<Response<IReadOnlyList<MeetingTypeLookupItemDto>>>;
+
+// ── S11 — recurring meeting series ──────────────────────────────────────────────────────────────────────────
+
+public sealed record GetMeetingSeriesListQuery(string CorrelationId)
+    : IRequest<Response<IReadOnlyList<MeetingSeriesDto>>>;
+
+public sealed record GetMeetingSeriesByIdQuery(Guid Id, string CorrelationId)
+    : IRequest<Response<MeetingSeriesDto>>;

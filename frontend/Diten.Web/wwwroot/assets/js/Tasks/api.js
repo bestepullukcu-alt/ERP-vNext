@@ -7,6 +7,20 @@
 (function (global) {
     const BASE = '/Tasks/api';
 
+    // Shared by every call: the envelope is the same shape whether the request carried JSON or a multipart body.
+    const toResult = async (response) => {
+        let payload = null;
+        try { payload = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
+        return {
+            ok: response.ok,
+            status: response.status,
+            // The upstream reason code is passed through so the UI can react precisely (e.g. a claim race).
+            reasonCode: payload?.reason_code ?? payload?.reasonCode ?? null,
+            data: payload?.data ?? null,
+            errors: payload?.errors ?? []
+        };
+    };
+
     const request = async (method, path, body) => {
         let response;
         try {
@@ -20,18 +34,33 @@
         } catch (_) {
             return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
         }
+        return toResult(response);
+    };
 
-        let payload = null;
-        try { payload = await response.json(); } catch (_) { /* 204 and empty bodies are fine */ }
-
-        return {
-            ok: response.ok,
-            status: response.status,
-            // The upstream reason code is passed through so the UI can react precisely (e.g. a claim race).
-            reasonCode: payload?.reason_code ?? payload?.reasonCode ?? null,
-            data: payload?.data ?? null,
-            errors: payload?.errors ?? []
-        };
+    /*
+     * MULTIPART, for the one payload this module ever sends that is not JSON: a file. AD-4 (the document store's
+     * own rule) is stream-only, never base64 — so this is `FormData`, not `request()` with a data-URI string
+     * squeezed into a JSON field. No `Content-Type` header is set: the browser writes the multipart boundary
+     * itself, and overriding it here is the one reliable way to corrupt the body the gateway forwards.
+     */
+    const requestMultipart = async (path, fields) => {
+        const form = new global.FormData();
+        Object.keys(fields).forEach((key) => {
+            const value = fields[key];
+            if (value !== undefined && value !== null && value !== '') { form.append(key, value); }
+        });
+        let response;
+        try {
+            response = await global.fetch(`${BASE}${path}`, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+                credentials: 'same-origin',
+                body: form
+            });
+        } catch (_) {
+            return { ok: false, status: 0, reasonCode: 'UNAVAILABLE', data: null };
+        }
+        return toResult(response);
     };
 
     /*
@@ -43,6 +72,11 @@
         ORGANIZATION_UNIT_UNRESOLVED: 'errorOrganizationUnitUnresolved',
         TASK_ALREADY_CLAIMED: 'errorAlreadyClaimed',
         POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable',
+        // BL-355 — an organization unit named directly in the request: does not exist in this tenant, or exists
+        // but is not the caller's to file into. Reached only by a client posting straight to the API; the create
+        // form never sends this field (pack §12 K6).
+        TASK_ORGANIZATION_UNIT_NOT_FOUND: 'errorOrganizationUnitNotFound',
+        TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE: 'errorOrganizationUnitOutOfScope',
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
@@ -55,6 +89,13 @@
          * and "start it first" is exactly that.
          */
         TASK_INVALID_STATE: 'errorTaskInvalidState',
+        /*
+         * Faz 2a-rest — a CLOSURE-stage field marked Required was not supplied. Reached only when the closure
+         * window's own client-side check (ClosureFieldRequired, in WorkCenterNextIndex's own resx) is somehow
+         * skipped — a stale screen, the dispatch route hit directly — so the server's refusal still reads as a
+         * sentence rather than "an error occurred".
+         */
+        TASK_CLOSURE_FIELD_REQUIRED: 'errorClosureFieldRequired',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
@@ -63,6 +104,10 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — mapped the moment the codes were written, not after somebody reads
+        // "İşlem sırasında bir hata oluştu" for a limit or a visibility rule they can actually act on.
+        TASK_MENTION_NOT_VISIBLE: 'errorMentionNotVisible',
+        TASK_MENTION_LIMIT_EXCEEDED: 'errorMentionLimitExceeded',
         /*
          * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
          * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
@@ -174,7 +219,24 @@
         WORKFLOW_NOT_TERMINAL_APPROVED: 'errorApprovalNotApproved',
         // The gate's own code when it cannot reach a verdict (kept at its original spelling, which is the value
         // already on the wire).
-        WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable'
+        WorkflowGateEvaluationFailed: 'errorApprovalGateUnavailable',
+        /*
+         * MOD-0024 Slice ATT-1 — task attachments (evidence/deliverable/attachment files on the Document Binary
+         * Store). `TASK_ATTACHMENT_NOT_AUTHORIZED` (403, neither holder nor requester) and
+         * `TASK_ATTACHMENT_NOT_FOUND` (404, non-leakage — a stale row, a cross-tenant/cross-task id, or an
+         * already-removed attachment) both keep their own sentence for the same reason every other refusal on
+         * this map does: the generic "İşlem sırasında bir hata oluştu" names nothing the reader can act on.
+         */
+        TASK_ATTACHMENT_NOT_AUTHORIZED: 'errorAttachmentNotAuthorized',
+        TASK_ATTACHMENT_TASK_CLOSED: 'errorAttachmentTaskClosed',
+        TASK_ATTACHMENT_NOT_FOUND: 'errorAttachmentNotFound',
+        TASK_ATTACHMENT_CHECKLIST_ITEM_NOT_FOUND: 'errorAttachmentChecklistItemNotFound',
+        // The checklist completion gate (SetChecklistItemStateHandler): ticking an evidence-required item with
+        // zero live Evidence-kind attachments refuses with this code before ANY other state changes.
+        CHECKLIST_EVIDENCE_REQUIRED: 'errorChecklistEvidenceRequired',
+        // The repository's OWN upload rule (extension/size) refusing the file — DocumentRepositoryReasonCodes.
+        // ValidationFailed on the wire, passed through untouched from the repository slice this endpoint calls.
+        VALIDATION_FAILED: 'errorAttachmentInvalid'
     };
 
     /*
@@ -203,6 +265,9 @@
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',
         'TASK_COMMENT_TASK_CLOSED',
+        // Both RULES about the task's state, not a race — see the map above.
+        'TASK_ATTACHMENT_TASK_CLOSED',
+        'CHECKLIST_EVIDENCE_REQUIRED',
         'WORKFLOW_PENDING_APPROVAL',
         'WORKFLOW_WAITING_EVIDENCE',
         'WORKFLOW_REJECTED',
@@ -338,6 +403,15 @@
             });
         },
         decisionMakers: () => request('GET', '/decision-makers'),
+        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
+         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        linkCandidates: (term, limit) => {
+            const params = new URLSearchParams();
+            if (term) { params.set('term', term); }
+            if (limit) { params.set('limit', String(limit)); }
+            const query = params.toString();
+            return request('GET', query ? `/link-candidates?${query}` : '/link-candidates');
+        },
         /*
          * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is
          * pressed. The server answers from the same reporting-chain scope it uses when it opens the request, so
@@ -359,17 +433,25 @@
         // and two people reordering at once interleave into an order neither of them chose.
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
+        // `payload` may carry `mentionedUserIds` (WP-PSS-MOD0024-TASK-MENTIONS-01 K1-K4) alongside `text`.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         /*
          * ⚠ THIS LINE USED TO SAY: "Comments are POST-only, deliberately: they are immutable, so there is no
          * update or delete to call." That decision is not gone, it is COMPLETED — the compromise it was waiting
          * for is the trail. An edit stamps `editedAt` and the feed shows it; a withdrawal is a TOMBSTONE that
          * clears the words and keeps the row. Only the author may call either; the server decides that.
+         *
+         * `payload.mentionedUserIds` is the FULL replacement set for this comment, not a delta — the server
+         * diffs it against what is already stored and only notifies whoever is newly named.
          */
         updateComment: (taskId, commentId, payload) =>
             request('PUT', `/${taskId}/comments/${encodeURIComponent(commentId)}`, payload),
         withdrawComment: (taskId, commentId) =>
             request('DELETE', `/${taskId}/comments/${encodeURIComponent(commentId)}`),
+        // Who the @ picker may offer for THIS task (K2) — assignee, pool, creator, watchers, parent holder.
+        // Never the whole tenant directory: an id this endpoint does not offer is refused server-side too.
+        mentionCandidates: (taskId, query) =>
+            request('GET', `/${taskId}/mention-candidates?q=${encodeURIComponent(query || '')}`),
 
         // ── The personal overlay (WC-1) ──────────────────────────────────────
         //
@@ -399,6 +481,32 @@
         typeGoverningDocuments: (typeId, organizationCode) =>
             request('GET', `/task-types/${encodeURIComponent(typeId)}/governing-documents`
                 + `?organizationCode=${encodeURIComponent(organizationCode || '')}`),
-        createFromTemplate: (payload) => request('POST', '/from-template', payload)
+        createFromTemplate: (payload) => request('POST', '/from-template', payload),
+
+        // ── MOD-0024 Slice ATT-1 — task attachments ──────────────────────────
+        // Backed by the MOD-0262-FU01 Document Binary Store, via the API's own /attachments slice. No
+        // expectedVersion: an attachment is its own row, not a field on the checklist run or the task, so there
+        // is nothing here for two writers to race over the way a checklist edit or a reorder can.
+        listAttachments: (taskId) => request('GET', `/${taskId}/attachments`),
+        /**
+         * @param {object} payload {file, kind, checklistItemCode, note}
+         */
+        addAttachment: (taskId, payload) => requestMultipart(`/${taskId}/attachments`, {
+            file: payload.file,
+            kind: payload.kind,
+            checklistItemCode: payload.checklistItemCode,
+            note: payload.note
+        }),
+        removeAttachment: (taskId, attachmentId) =>
+            request('DELETE', `/${taskId}/attachments/${encodeURIComponent(attachmentId)}`),
+        /*
+         * NOT a `request()` call — this is a URL for an `<a href>` / `download` attribute, not a fetch this
+         * module makes for the caller. The browser's own navigation carries the same-origin cookie the way
+         * `credentials: 'same-origin'` does for fetch, and lets the server's `Content-Disposition` name the
+         * saved file — a blob fetched here and re-served through a manufactured anchor would have to reinvent
+         * both for no benefit.
+         */
+        attachmentContentUrl: (taskId, attachmentId) =>
+            `${BASE}/${taskId}/attachments/${encodeURIComponent(attachmentId)}/content`
     };
 })(typeof window !== 'undefined' ? window : globalThis);

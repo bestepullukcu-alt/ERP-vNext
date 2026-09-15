@@ -12,6 +12,20 @@ public sealed record GetTaskItemByIdQuery(Guid Id, string CorrelationId)
     : IRequest<Response<TaskItemDetailDto>>;
 
 /// <summary>
+/// Who this task's comment box may @mention (WP-PSS-MOD0024-TASK-MENTIONS-01 K2) — the assignee, the pool
+/// holders, the creator, the watchers, and the parent task's assignee/pool holders
+/// (<see cref="Services.ITaskReadAccessPolicy.ResolveDataLegCandidatesAsync"/>). Deliberately NOT the same
+/// membership <c>CanReadAsync</c> would grant the CALLER through scope or <c>ReadAll</c> — those two legs only
+/// answer for the caller asking, never for an arbitrary other person, so a candidate list built from them would
+/// silently vary with who is composing the comment.
+///
+/// <para><paramref name="SearchText"/> filters by display name, case-insensitively; null/empty returns the
+/// whole (small, task-scoped) set.</para>
+/// </summary>
+public sealed record GetTaskMentionCandidatesQuery(Guid TaskItemId, string? SearchText, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskMentionCandidateDto>>>;
+
+/// <summary>
 /// Positions a task may be pooled to (pack §12 K4). Returns the organization unit CODE and NAME alongside the
 /// position, because <c>PositionDto</c> exposes only <c>OrganizationUnitId</c> — without the unit label a picker
 /// cannot tell "QA Specialist — Facility A" from "QA Specialist — Facility B" and work lands in the wrong pool.
@@ -210,3 +224,12 @@ public sealed record SearchDocumentCitationsQuery(string? Term, int Limit, strin
 public sealed record GetTaskTypeGoverningDocumentsQuery(
     Guid TaskTypeId, string? OrganizationCode, string CorrelationId)
     : IRequest<Response<TaskTypeGoverningDocumentsDto>>;
+
+/// <summary>
+/// MOD-0357 S4 — the "link an existing task" picker's own typeahead (pack §7 "two narrow touches"). Tenant-
+/// scoped, title-contains, cancelled tasks excluded (a called-off task is not something a meeting should link
+/// forward to), capped at <see cref="Limit"/>. Mirrors <see cref="SearchDocumentReferencesQuery"/>'s shape —
+/// the closest existing term+limit lookup — rather than opening a second one.
+/// </summary>
+public sealed record GetTaskLinkCandidatesQuery(string? Term, int Limit, string CorrelationId)
+    : IRequest<Response<IReadOnlyList<TaskLinkCandidateDto>>>;

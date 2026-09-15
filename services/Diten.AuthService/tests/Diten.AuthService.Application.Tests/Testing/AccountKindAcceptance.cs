@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using Diten.AuthService.Application.Common;
@@ -694,5 +695,54 @@ public static class AccountKindAcceptance
             PmoToken: await TokenFor(pmo, pmoRole),
             CreatorToken: await TokenFor(creator, creatorRole),
             NoPermissionToken: await TokenFor(noPermission, null));
+    }
+
+    // ── WP-INFRA-AUTH-DISPLAY-LABEL-01 additive fixture ─────────────────────────────────────────────────
+
+    /// <summary>Four disposable subjects for the display-label endpoint's edge cases; see <see cref="SeedDisplayLabelSubjectsAsync"/>.</summary>
+    public sealed record DisplayLabelSubjects(SeedUser Unnamed, SeedUser Whitespace, SeedUser EmailUserName, SeedUser LongName);
+
+    // xUnit constructs a new UserDisplayLabelEndpointTests instance per test method, but the host (IClassFixture) is
+    // shared across all of them — so this seeds the four subjects into the host's ALREADY-seeded tenant exactly once,
+    // no matter how many times InitializeAsync calls it for that same host.
+    private static readonly ConditionalWeakTable<AuthTestHost, Task<DisplayLabelSubjects>> DisplayLabelSubjectsCache = new();
+
+    public static Task<DisplayLabelSubjects> SeedDisplayLabelSubjectsAsync(AuthTestHost host) =>
+        DisplayLabelSubjectsCache.GetValue(host, static h => SeedDisplayLabelSubjectsCoreAsync(h));
+
+    private static async Task<DisplayLabelSubjects> SeedDisplayLabelSubjectsCoreAsync(AuthTestHost host)
+    {
+        var tenantId = host.Seeded.TenantId;
+        var stamp = Guid.NewGuid().ToString("N")[..8];
+
+        using var scope = host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenantId);
+
+        var users = sp.GetRequiredService<IUserRepository>();
+        var hasher = sp.GetRequiredService<IPasswordHasher>();
+
+        async Task<SeedUser> NewSubject(string slug, string first, string last, string? userName = null)
+        {
+            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(DisposablePassword), first, last, tenantId);
+            user.ConfirmEmail();
+            user.SetAccountKind(AccountKind.Human);
+            if (userName is not null)
+            {
+                user.SetUserName(userName);
+            }
+
+            var created = await users.CreateAsync(user, CancellationToken.None);
+            return new SeedUser(created.Id, created.Email, created.FirstName, created.LastName);
+        }
+
+        var unnamed = await NewSubject("displaylabel-unnamed", "", "");
+        var whitespace = await NewSubject("displaylabel-whitespace", "  ", "\t");
+        var emailUserName = await NewSubject(
+            "displaylabel-emailusername", "", "",
+            userName: $"displaylabel-emailusername.{stamp}@acceptance.invalid");
+        var longName = await NewSubject("displaylabel-longname", new string('a', 150), new string('b', 150));
+
+        return new DisplayLabelSubjects(unnamed, whitespace, emailUserName, longName);
     }
 }

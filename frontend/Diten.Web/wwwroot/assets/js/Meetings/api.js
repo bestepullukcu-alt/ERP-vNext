@@ -53,11 +53,33 @@
         MEETING_ATTENDEE_NOT_ELIGIBLE: 'errorAttendeeNotEligible',
         MEETING_ATTENDEE_DUPLICATE: 'errorAttendeeDuplicate',
         MEETING_ATTENDEE_NOT_FOUND: 'errorAttendeeNotFound',
+        MEETING_ATTENDEE_IS_ORGANIZER: 'errorAttendeeIsOrganizer',
         MEETING_AGENDA_ITEM_NOT_FOUND: 'errorAgendaItemNotFound',
         MEETING_AGENDA_REORDER_MISMATCH: 'errorAgendaReorderMismatch',
         MEETING_TYPE_NOT_FOUND: 'errorTypeNotFound',
         MEETING_TYPE_NAME_DUPLICATE: 'errorTypeNameDuplicate',
-        MEETING_TYPE_IN_USE: 'errorTypeInUse'
+        MEETING_TYPE_IN_USE: 'errorTypeInUse',
+
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        MEETING_TASK_ALREADY_LINKED: 'errorTaskAlreadyLinked',
+        MEETING_REVIEW_ALREADY_SCHEDULED: 'errorReviewAlreadyScheduled',
+
+        // ── S5 — invitation response ─────────────────────────────────────────
+        MEETING_INVITATION_RESPONSE_INVALID: 'errorInvitationResponseInvalid',
+
+        // ── S6 — minutes ───────────────────────────────────────────────────
+        MEETING_MINUTES_PUBLISHED: 'errorMinutesPublished',
+        MEETING_MINUTES_NOT_PUBLISHED: 'errorMinutesNotPublished',
+        MEETING_MINUTES_CORRECTION_REASON_REQUIRED: 'errorMinutesCorrectionReasonRequired',
+        MEETING_MINUTES_CONCURRENCY_CONFLICT: 'errorMinutesConcurrencyConflict',
+        MEETING_DECISION_NOT_FOUND: 'errorDecisionNotFound',
+
+        // ── S11 — recurring meeting series ───────────────────────────────────
+        MEETING_SERIES_NOT_FOUND: 'errorSeriesNotFound',
+        MEETING_SERIES_NAME_DUPLICATE: 'errorSeriesNameDuplicate',
+        MEETING_SERIES_INVALID_WINDOW: 'errorSeriesInvalidWindow',
+        MEETING_SERIES_INTERVAL_INVALID: 'errorSeriesIntervalInvalid',
+        MEETING_SERIES_ORGANIZER_REQUIRED: 'errorSeriesOrganizerRequired'
     };
 
     const isConcurrencyConflict = (result) =>
@@ -93,6 +115,25 @@
         updateAgendaItem: (id, itemId, payload) => request('PUT', `/${id}/agenda/${itemId}`, payload),
         deleteAgendaItem: (id, itemId) => request('DELETE', `/${id}/agenda/${itemId}`),
         linkedTasks: (id) => request('GET', `/${id}/tasks`),
+
+        // S5, K5 — Accept/Decline. `response` is exactly 'Accept' or 'Decline'.
+        respond: (id, response) => request('POST', `/${id}/respond`, { response }),
+
+        // ── S6 — minutes ──────────────────────────────────────────────────
+        getMinutes: (id) => request('GET', `/${id}/minutes`),
+        saveMinutesDraft: (id, payload) => request('PUT', `/${id}/minutes/draft`, payload),
+        publishMinutes: (id, payload) => request('POST', `/${id}/minutes/publish`, payload),
+        correctPublishedMinutes: (id, payload) => request('POST', `/${id}/minutes/correct`, payload),
+
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        createTaskFromMeeting: (id, payload) => request('POST', `/${id}/tasks`, payload),
+        linkExistingTask: (id, taskId, payload) => request('POST', `/${id}/tasks/${taskId}/link`, payload ?? {}),
+        scheduleReviewMeetingForTask: (taskId, payload) =>
+            request('POST', `/tasks/${taskId}/schedule-review-meeting`, payload),
+
+        // ── S7 — continuation scheduling ─────────────────────────────────────
+        scheduleFollowUp: (id, payload) => request('POST', `/${id}/follow-up`, payload),
+
         lookupAttendees: () => request('GET', '/lookups/attendees'),
         lookupTypes: () => request('GET', '/lookups/types'),
 
@@ -101,6 +142,13 @@
         typesGet: (id) => request('GET', `/types/${id}`),
         typesCreate: (payload) => request('POST', '/types', payload),
         typesUpdate: (id, payload) => request('PUT', `/types/${id}`, payload),
-        typesDelete: (id) => request('DELETE', `/types/${id}`)
+        typesDelete: (id) => request('DELETE', `/types/${id}`),
+
+        // ── S11 — Meeting Series (series-manage) ─────────────────────────────
+        seriesList: () => request('GET', '/series'),
+        seriesGet: (id) => request('GET', `/series/${id}`),
+        seriesCreate: (payload) => request('POST', '/series', payload),
+        seriesUpdate: (id, payload) => request('PUT', `/series/${id}`, payload),
+        seriesDelete: (id) => request('DELETE', `/series/${id}`)
     };
 })(typeof window !== 'undefined' ? window : globalThis);

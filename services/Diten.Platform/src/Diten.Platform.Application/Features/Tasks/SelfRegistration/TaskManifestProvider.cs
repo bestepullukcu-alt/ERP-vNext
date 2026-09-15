@@ -102,7 +102,16 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         // Gives the field-definition key manifest attribution; its UI lands in Phase 5.
                         new ModuleManifestAction("FIELD_DEFINITIONS", "Manage Task Fields",
                             TaskPermissions.FieldDefinitionsManage,
-                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        // BL-349 — gives ReadAll manifest attribution (Module="tasks", Scope=Tenant) so an
+                        // authorized person CAN grant it to a tenant role; without a manifest home it would be
+                        // stamped Module="platform"/Scope=PlatformAdmin by the A1 reflection worker and could
+                        // never reach a tenant role at all (see the manifest's own class-level note). Declared as
+                        // a Toolbar action the same way WorkReportReadTenantWide's own manifest action is — a
+                        // declared AUTHORITY, not a request-body flag, even though no button calls it yet.
+                        new ModuleManifestAction("READ_ALL", "Read All Tasks (Tenant-Wide)",
+                            TaskPermissions.ReadAll,
+                            "Toolbar", 100, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 new ModuleManifestPage(
@@ -407,6 +416,36 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     DisplayNameKey: "NotificationEvent_TaskCommented",
                     FallbackDisplayName: "Task commented",
                     Description: "Sent when somebody comments on a task. Edits and withdrawals send nothing.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                /*
+                 * WP-PSS-MOD0024-TASK-MENTIONS-01 — a direct @mention, distinct from the general "somebody
+                 * commented" event above. AddTaskCommentHandler excludes a mentioned person from the Commented
+                 * audience so the same comment never produces two emails for one reader; this event is the ONLY
+                 * one they get for it.
+                 *
+                 * Same variable set as its siblings, for the same reason: the comment TEXT is not among them,
+                 * because a comment can be withdrawn and an email cannot be recalled.
+                 */
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.Mentioned,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.mentioned",
+                    DisplayNameKey: "NotificationEvent_TaskMentioned",
+                    FallbackDisplayName: "Task mention",
+                    Description: "Sent when somebody @mentions you in a comment on a task.",
                     RequiredVariables:
                     [
                         new ModuleManifestNotificationVariable("TaskTitle"),

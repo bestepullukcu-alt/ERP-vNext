@@ -58,6 +58,15 @@ public sealed class MeetingsController : Controller
         return View("~/Views/Meetings/Edit.cshtml");
     }
 
+    // ── S6 — Minutes editor (Compact satellite screen, own page not a tab — pack §5 :323) ────
+
+    [HttpGet("{id:guid}/Minutes")]
+    public IActionResult MinutesEditor(Guid id)
+    {
+        ViewData["MeetingId"] = id.ToString();
+        return View("~/Views/Meetings/MinutesEditor/Index.cshtml");
+    }
+
     // ── S8 — Meeting Types (Compact satellite settings screen, pack §5 :323) ──
 
     [HttpGet("MeetingTypes")]
@@ -71,6 +80,21 @@ public sealed class MeetingsController : Controller
     {
         ViewData["MeetingTypeId"] = id.ToString();
         return View("~/Views/Meetings/MeetingTypes/Edit.cshtml");
+    }
+
+    // ── S11 — Meeting Series (Compact satellite settings screen, pack §19) ────
+
+    [HttpGet("Series")]
+    public IActionResult MeetingSeriesIndex() => View("~/Views/Meetings/Series/Index.cshtml");
+
+    [HttpGet("Series/Create")]
+    public IActionResult MeetingSeriesCreate() => View("~/Views/Meetings/Series/Create.cshtml");
+
+    [HttpGet("Series/{id:guid}/Edit")]
+    public IActionResult MeetingSeriesEdit(Guid id)
+    {
+        ViewData["MeetingSeriesId"] = id.ToString();
+        return View("~/Views/Meetings/Series/Edit.cshtml");
     }
 
     // ── Same-origin API proxy ────────────────────────────────────────────────
@@ -127,6 +151,49 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiGetLinkedTasks(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: false);
 
+    // S5, K5 — Accept/Decline.
+    [HttpPost("api/{id:guid}/respond")]
+    public Task<IActionResult> ApiRespond(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/respond", readBody: true);
+
+    // ── S6 — minutes (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────────────────────
+
+    [HttpGet("api/{id:guid}/minutes")]
+    public Task<IActionResult> ApiGetMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes", readBody: false);
+
+    [HttpPut("api/{id:guid}/minutes/draft")]
+    public Task<IActionResult> ApiSaveMinutesDraft(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/draft", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/publish")]
+    public Task<IActionResult> ApiPublishMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/publish", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/correct")]
+    public Task<IActionResult> ApiCorrectPublishedMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/correct", readBody: true);
+
+    // ── S7 — continuation scheduling (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────
+
+    [HttpPost("api/{id:guid}/follow-up")]
+    public Task<IActionResult> ApiScheduleFollowUp(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/follow-up", readBody: true);
+
+    // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
+
+    [HttpPost("api/{id:guid}/tasks")]
+    public Task<IActionResult> ApiCreateTaskFromMeeting(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: true);
+
+    [HttpPost("api/{id:guid}/tasks/{taskId:guid}/link")]
+    public Task<IActionResult> ApiLinkExistingTask(Guid id, Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks/{taskId}/link", readBody: true);
+
+    [HttpPost("api/tasks/{taskId:guid}/schedule-review-meeting")]
+    public Task<IActionResult> ApiScheduleReviewMeetingForTask(Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/tasks/{taskId}/schedule-review-meeting", readBody: true);
+
     [HttpGet("api/lookups/attendees")]
     public Task<IActionResult> ApiLookupAttendees()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/attendees", readBody: false);
@@ -157,6 +224,29 @@ public sealed class MeetingsController : Controller
     [HttpDelete("api/types/{id:guid}")]
     public Task<IActionResult> ApiTypesDelete(Guid id)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/types/{id}", readBody: false);
+
+    // ── S11 — Meeting Series CRUD proxy (series-manage only; "series" never matches {id:guid}, same
+    // disambiguation the S8 "types" sub-route already relies on) ─────────────────────────────────────
+
+    [HttpGet("api/series")]
+    public Task<IActionResult> ApiSeriesList()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/series", readBody: false);
+
+    [HttpGet("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesGet(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: false);
+
+    [HttpPost("api/series")]
+    public Task<IActionResult> ApiSeriesCreate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/series", readBody: true);
+
+    [HttpPut("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesUpdate(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: true);
+
+    [HttpDelete("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesDelete(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: false);
 
     // ── Proxy plumbing (identical to TasksController's own) ──────────────────
 

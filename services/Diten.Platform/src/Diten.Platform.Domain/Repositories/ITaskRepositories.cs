@@ -296,7 +296,13 @@ public interface ITaskTypeRepository
     /// <summary>Every type, retired ones included — the management screen and the uniqueness check.</summary>
     Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default);
 
-    Task UpdateAsync(TaskType type, CancellationToken ct = default);
+    /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — expected-version write, like every other MOD-0024 edit
+    /// (see <see cref="ITaskFieldDefinitionRepository.UpdateAsync"/>, the sibling this was modelled on). Used by
+    /// BOTH the full edit and the activate/deactivate toggle — they share this one write path, so both get the
+    /// same protection.
+    /// </summary>
+    Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default);
 }
 
 // WP-DM-DCP005-DEADCODE-01 — IDocumentReferenceListRepository (DCP-005 slice 2, the CSV document reference
@@ -306,3 +312,41 @@ public interface ITaskTypeRepository
 // the Document Master Register). The underlying document_reference_entries / document_reference_list_versions
 // collections and the DocumentReferenceListVersion / DocumentReferenceEntry entities are UNTOUCHED — a schema
 // or data decision is out of this WP's scope.
+
+/// <summary>
+/// MOD-0024 Slice ATT-1 — task attachment metadata (the binary itself lives in MOD-0262-FU01's repository,
+/// addressed here only by <see cref="TaskAttachment.ContentId"/>). Soft delete only; the stored object is never
+/// removed by this repository (AD-6 — no purge path).
+/// </summary>
+public interface ITaskAttachmentRepository
+{
+    Task<TaskAttachment> CreateAsync(TaskAttachment attachment, CancellationToken ct = default);
+
+    /// <summary>Null for another tenant's row, a hard-deleted row (never happens) or a missing id.</summary>
+    Task<TaskAttachment?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Live (not soft-deleted) attachments for one task, newest first.</summary>
+    Task<IReadOnlyList<TaskAttachment>> ListByTaskIdAsync(Guid taskId, CancellationToken ct = default);
+
+    /// <summary>Attachments for MANY tasks in one read — the same N+1 reason every other Tasks batch read gives.</summary>
+    Task<IReadOnlyList<TaskAttachment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default);
+
+    /// <summary>
+    /// The checklist evidence gate's own question: does this item have at least one LIVE Evidence-kind
+    /// attachment? A count, not a list — the gate only ever needs to know "zero or more".
+    /// </summary>
+    Task<int> CountEvidenceForChecklistItemAsync(
+        Guid taskId, string checklistItemCode, CancellationToken ct = default);
+
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the <c>TaskType.RequiresDeliverableOnCompletion</c> gate's own question:
+    /// does this task have at least one LIVE Deliverable-kind attachment? A count, not a list, for the same reason
+    /// <see cref="CountEvidenceForChecklistItemAsync"/> is — the gate only ever needs "zero or more".
+    /// </summary>
+    Task<int> CountDeliverablesAsync(Guid taskId, CancellationToken ct = default);
+
+    /// <summary>Marks the row deleted. The physical object is untouched — this repository never calls the
+    /// storage gateway's delete; that decision belongs to the caller (it does not, per the pack: AD-6).</summary>
+    Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default);
+}

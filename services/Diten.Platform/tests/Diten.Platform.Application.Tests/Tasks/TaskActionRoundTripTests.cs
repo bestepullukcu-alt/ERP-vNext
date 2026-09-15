@@ -97,11 +97,15 @@ public sealed class TaskActionRoundTripTests
         // work is blocked on someone else, instead of leaving it looking active or cancelling it outright.
         // `reassign` joined it too — a holder may hand work on. `return` is deliberately ABSENT: this task's
         // requester IS its assignee, and returning it to yourself is a no-op dressed as an action.
-        Assert.Equal(new[] { "start", "plan", "inquire", "reassign", "cancel" }, item.Actions.Select(a => a.Code));
+        // `scheduleReviewMeeting` (MOD-0357 S4) trails every other action: it is not a lifecycle transition, and
+        // this self-task's holder IS its requester, so the bridge action is offered once, at the end.
+        Assert.Equal(
+            new[] { "start", "plan", "inquire", "reassign", "cancel", "scheduleReviewMeeting" },
+            item.Actions.Select(a => a.Code));
         Assert.DoesNotContain(item.Actions, a => a.Code == "return");
         Assert.Equal("start", item.PrimaryActionCode);
         // The rest populate the ··· menu, which used to be empty.
-        Assert.Equal(new[] { "plan", "inquire", "reassign", "cancel" }, item.OverflowActionCodes);
+        Assert.Equal(new[] { "plan", "inquire", "reassign", "cancel", "scheduleReviewMeeting" }, item.OverflowActionCodes);
     }
 
     [Fact]
@@ -191,7 +195,8 @@ public sealed class TaskActionRoundTripTests
         var expectedVersion = int.Parse(projection.Concurrency.Token);
         var handler = new TransitionTaskItemHandler(
             repository, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
-            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+            new FakeChecklistRunRepository(), new TaskChecklistService(), new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(), new FakeTaskNotificationService(),
+                new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()), new FakeTaskAttachmentRepository(), NullLogger<TransitionTaskItemHandler>.Instance);
 
         return handler.Handle(
             new TransitionTaskItemCommand(id, target, new TaskTransitionRequest(expectedVersion, null, null), "corr"),

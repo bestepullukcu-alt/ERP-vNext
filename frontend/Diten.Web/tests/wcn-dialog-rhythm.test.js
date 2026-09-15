@@ -86,18 +86,19 @@ describe("one action, one icon", () => {
     // The rail button reads it…
     expect(APP).toContain("inboxActionIcon(primary)");
     /*
-     * …and so does every dialog an action opens. SIX reads: the overflow-MENU row (which was already reading
-     * it), plus the five dialogs — plan, review meeting, log time, the raw reason+assignee form, and the
-     * closure outcome picker.
+     * …and so does every dialog an action opens. SEVEN reads: the overflow-MENU row (which was already reading
+     * it), plus the six dialogs — plan, review meeting (now TWO steps, see below), log time, the raw
+     * reason+assignee form, and the closure outcome picker.
      *
-     * ⚠ FIVE BEFORE THE CLOSURE SLICE. The new dialog is opened BY an action (complete/cancel), so it asks the
-     * dictionary exactly as the other five do. Picking its glyph by hand is the defect this count exists to
-     * catch — it is how one action came to show a pin on its button and a speech bubble in its dialog.
+     * ⚠ SIX BEFORE MOD-0357 S4. Review meeting became a real two-step flow (pick the meeting type, then the
+     * date/time) instead of one dialog, and BOTH steps of that ONE action's flow ask the dictionary for the
+     * SAME glyph — this is the count growing because a step was added to an existing action, not because a new
+     * dialog started naming its own glyph by hand (the defect this count exists to catch).
      */
     expect((APP.match(/inboxActionIcon\(action\)/g) || []).length,
-      "a dialog stopped reading the dictionary").toBe(6);
-    // Three of those are the `icon:` seam; the fourth is the raw dialog's own builder call.
-    expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length).toBe(3);
+      "a dialog stopped reading the dictionary").toBe(7);
+    // Four of those are the `icon:` seam; the fifth is the raw dialog's own builder call.
+    expect((APP.match(/icon: inboxActionIcon\(action\)/g) || []).length).toBe(4);
   });
 
   it("adds a missing action TO the dictionary rather than working around it", () => {

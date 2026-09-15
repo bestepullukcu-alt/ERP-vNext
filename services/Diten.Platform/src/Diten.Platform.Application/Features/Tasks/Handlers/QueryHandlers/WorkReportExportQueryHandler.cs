@@ -1,4 +1,6 @@
+using System.Globalization;
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.Tasks.Services;
 using MediatR;
 
@@ -40,21 +42,35 @@ public sealed record WorkReportExportQuery(
 /// <para><b>Too many rows is REFUSED, not trimmed.</b> A cut file looks complete; the reader would pivot it,
 /// get numbers that disagree with the screen, and have nothing to tell them why. Refused, they narrow the filter.</para>
 ///
-/// <para><b>⚠ NOT META-AUDITED, and that is a gap, not a choice</b> — the audit export writes an
-/// <c>AuditMetaAuditWriter</c> record, but that writer stamps every event <c>PlatformAdministrator</c> /
-/// <c>IsPlatformGlobal</c> / <c>SourceModule = "Audit"</c>. A tenant user's download recorded through it would
-/// say a platform administrator did it. Recorded in the pack as an open item rather than written wrongly.</para>
+/// <para><b>⚠ EVERY FILE HANDED OUT LEAVES EXACTLY ONE AUDIT RECORD — OR IS NOT HANDED OUT (BL-347).</b> The
+/// record goes through <see cref="IDataExportAuditWriter"/>, which takes the actor type and the tenant from the
+/// authenticated request; this handler names neither. When the record cannot be written the export is refused
+/// (<see cref="DataExportAuditReasonCodes.NotRecorded"/>, 503): a GxP export with no trace is not acceptable, and
+/// a download that has to be retried is. Refused exports (bad format, inverted period, too many rows) hand out
+/// no file and therefore write no record.</para>
 /// </summary>
 public sealed class WorkReportExportQueryHandler
     : IRequestHandler<WorkReportExportQuery, Response<WorkReportExportResultDto>>
 {
+    /// <summary>The exporting feature, as the audit record names it.</summary>
+    internal const string AuditSourceModule = "MOD-0024";
+
+    internal const string AuditRequestType = "Tasks.WorkReportExportQuery";
+
+    internal const string AuditEntityType = "WorkReport";
+
     private readonly IWorkReportRepository _reports;
     private readonly IWorkReportScopeSource _scope;
+    private readonly IDataExportAuditWriter _exportAudit;
 
-    public WorkReportExportQueryHandler(IWorkReportRepository reports, IWorkReportScopeSource scope)
+    public WorkReportExportQueryHandler(
+        IWorkReportRepository reports,
+        IWorkReportScopeSource scope,
+        IDataExportAuditWriter exportAudit)
     {
         _reports = reports;
         _scope = scope;
+        _exportAudit = exportAudit;
     }
 
     public async Task<Response<WorkReportExportResultDto>> Handle(WorkReportExportQuery query, CancellationToken ct)
@@ -96,14 +112,58 @@ public sealed class WorkReportExportQueryHandler
         }
 
         var isJson = format == WorkReportExportFormats.Json;
+        var content = isJson ? WorkReportExportSerializer.ToJson(set.Rows) : WorkReportExportSerializer.ToCsv(set.Rows);
+
+        /*
+         * ⚠ AFTER THE FILE EXISTS, BEFORE IT IS RETURNED. Earlier, a serializer failure would leave a record of a
+         * file nobody received; later, the file would already be on its way whatever the audit answered.
+         */
+        var audit = await _exportAudit.RecordAsync(
+            new DataExportAuditEntry(
+                AuditSourceModule,
+                AuditRequestType,
+                AuditEntityType,
+                format,
+                set.Rows.Count,
+                AuditFilterSummary(query),
+                RequestCorrelationId: query.CorrelationId),
+            ct);
+
+        if (!audit.IsRecorded)
+        {
+            return Response<WorkReportExportResultDto>.Fail(
+                "The export could not be recorded in the audit trail, so the file was not issued. Try again later.",
+                503, DataExportAuditReasonCodes.NotRecorded, query.CorrelationId);
+        }
 
         return Response<WorkReportExportResultDto>.Success(
             new WorkReportExportResultDto(
-                isJson ? WorkReportExportSerializer.ToJson(set.Rows) : WorkReportExportSerializer.ToCsv(set.Rows),
+                content,
                 isJson ? "application/json" : "text/csv; charset=utf-8",
                 WorkReportExportFormats.FileName(query.From, query.To, format),
                 set.Rows.Count),
             200,
             query.CorrelationId);
+    }
+
+    /// <summary>
+    /// The filters the file was cut under, as the audit record carries them. Organization references, codes and
+    /// the period are written as they are; ⚠ the ASSIGNEE is a person, so only the fact that it was applied is.
+    /// </summary>
+    internal static IReadOnlyDictionary<string, string?> AuditFilterSummary(WorkReportExportQuery query)
+    {
+        var filter = query.Filter;
+
+        return new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["from"] = query.From.ToString("O", CultureInfo.InvariantCulture),
+            ["to"] = query.To.ToString("O", CultureInfo.InvariantCulture),
+            ["scopePreference"] = query.ScopePreference?.ToString(),
+            ["legalEntityId"] = filter?.LegalEntityId?.ToString(),
+            ["organizationUnitId"] = filter?.OrganizationUnitId?.ToString(),
+            ["taskTypeCode"] = filter?.TaskTypeCode,
+            ["priority"] = filter?.Priority?.ToString(),
+            ["assignee"] = DataExportFilterSummary.Person(filter?.AssigneeUserId)
+        };
     }
 }

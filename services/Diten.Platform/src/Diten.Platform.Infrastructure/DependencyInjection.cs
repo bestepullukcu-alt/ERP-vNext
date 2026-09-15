@@ -266,6 +266,10 @@ public static class DependencyInjection
          */
         services.AddRemoteWorkItemProviders(configuration);
 
+        // BL-384 — unknown elements are ignored on read, so a rolled-back build can read documents a newer build
+        // wrote. Conventions bind when a class map is first built, so this stays the first BSON registration.
+        PlatformBsonConventions.Register();
+
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         BsonSerializer.RegisterSerializer(new DecimalSerializer(BsonType.Decimal128));
 
@@ -371,6 +375,14 @@ public static class DependencyInjection
         services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
         services.AddScoped<IAgendaItemRepository, AgendaItemRepository>();
         services.AddScoped<IMeetingTypeRepository, MeetingTypeRepository>();
+        // MOD-0357 S6 — the minutes-version collection's own storage (K4, append-only).
+        services.AddScoped<IMeetingMinutesVersionRepository, MeetingMinutesVersionRepository>();
+        // MOD-0357 S11 — the recurring cadence rule's own storage.
+        services.AddScoped<IMeetingSeriesRepository, MeetingSeriesRepository>();
+        // MOD-0357 S5 — needs AuthServiceOptions.FrontendBaseUrl for the "Toplantıyı aç" deep link, which is
+        // why the implementation lives here rather than beside ITaskNotificationService in Application.
+        services.AddScoped<Diten.Platform.Application.Features.Meetings.Services.IMeetingInviteMailer,
+            MeetingInviteMailer>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
@@ -380,6 +392,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        // MOD-0024 Slice ATT-1 — task attachment metadata.
+        services.AddScoped<ITaskAttachmentRepository, TaskAttachmentRepository>();
         services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
         services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
 

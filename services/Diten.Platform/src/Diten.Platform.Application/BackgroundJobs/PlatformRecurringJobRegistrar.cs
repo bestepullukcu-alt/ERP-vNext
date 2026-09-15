@@ -1,4 +1,5 @@
 using Diten.BuildingBlocks.BackgroundJobs;
+using Diten.Platform.Application.Features.Meetings.BackgroundJobs;
 using Diten.Platform.Application.Features.Notifications.BackgroundJobs;
 using Diten.Platform.Application.Features.Tasks.BackgroundJobs;
 using Diten.Platform.Application.Features.Workflow.BackgroundJobs;
@@ -34,6 +35,7 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             CreateWorkflowEscalationSweepRegistration(),
             CreateTaskRecurrenceSweepRegistration(),
             CreateTaskDueSoonSweepRegistration(),
+            CreateMeetingSeriesSweepRegistration(),
             CreateDeferred("Diten.Platform.MOD-0009.ProvisioningRetryJob", "ProvisioningRetryJob", "MOD-0009", "*/2 * * * *")
         };
 
@@ -176,6 +178,55 @@ public sealed class PlatformRecurringJobRegistrar : IRecurringJobRegistrar
             typeof(TaskRecurrenceSweepJob),
             typeof(TaskRecurrenceSweepJobArgs),
             new TaskRecurrenceSweepJobArgs(MaxRulesPerTenant: 200),
+            new BackgroundJobContext(
+                TriggerType: BackgroundJobTriggerTypes.Recurring,
+                TriggeredBy: nameof(PlatformRecurringJobRegistrar),
+                Metadata: new Dictionary<string, string>
+                {
+                    ["owner"] = owner,
+                    ["execution"] = "sweep"
+                }));
+    }
+
+    private RecurringJobRegistration CreateMeetingSeriesSweepRegistration()
+    {
+        // The id is the CONFIGURATION KEY as well as the job's name — EnabledJobs is keyed by exactly this
+        // string, so a typo here is a job that silently never runs.
+        const string id = "Diten.Platform.MOD-0357.MeetingSeriesSweepJob";
+        const string jobName = "MeetingSeriesSweepJob";
+        const string owner = "MOD-0357";
+        // Hourly, the same cadence the Tasks recurrence sweep uses. LeadTimeDays is measured in whole days, so
+        // a finer sweep would spend its life finding nothing; an hour still catches a series on the day its
+        // lead window opens.
+        const string cron = "0 * * * *";
+
+        // Two flags, but only ONE of them is really holding this job: RegisterStandardJobs ships TRUE in both
+        // appsettings.json and appsettings.Development.json, so the per-job entry below is the switch that keeps
+        // it off in Development. Production has a third, larger gate — BackgroundJobs:Enabled is false there, so
+        // the scheduler itself does not run. Check this before filing "the series doesn't generate" as a defect.
+        var enabled = _options.RegisterStandardJobs
+                      && _options.EnabledJobs.TryGetValue(id, out var configuredEnabled)
+                      && configuredEnabled;
+
+        var descriptor = new BackgroundJobDescriptor(
+            Id: id,
+            ServiceName: ServiceName,
+            JobName: jobName,
+            Owner: owner,
+            CronExpression: cron,
+            // UTC, matching the schedule arithmetic — see MeetingSeriesSchedule for why (no tenant time zone
+            // exists anywhere in the platform to derive anything else from).
+            TimeZoneId: "UTC",
+            IsEnabled: enabled,
+            Queue: "platform",
+            MaxRetryAttempts: _options.DefaultRetryAttempts,
+            TriggerType: BackgroundJobTriggerTypes.Recurring);
+
+        return new RecurringJobRegistration(
+            descriptor,
+            typeof(MeetingSeriesSweepJob),
+            typeof(MeetingSeriesSweepJobArgs),
+            new MeetingSeriesSweepJobArgs(MaxSeriesPerTenant: 200),
             new BackgroundJobContext(
                 TriggerType: BackgroundJobTriggerTypes.Recurring,
                 TriggeredBy: nameof(PlatformRecurringJobRegistrar),

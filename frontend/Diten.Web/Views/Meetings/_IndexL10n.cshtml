@@ -75,6 +75,31 @@
         Agenda = Localizer["Agenda"].Value,
         NoAgendaItems = Localizer["NoAgendaItems"].Value,
 
+        // ── S4 — the meeting↔task bridge ────────────────────────────────────
+        CreateTaskFromMeeting = Localizer["CreateTaskFromMeeting"].Value,
+        LinkExistingTask = Localizer["LinkExistingTask"].Value,
+        CreateTaskFromAgendaItem = Localizer["CreateTaskFromAgendaItem"].Value,
+        TaskTitleLabel = Localizer["TaskTitleLabel"].Value,
+        TaskTitleRequired = Localizer["TaskTitleRequired"].Value,
+        TaskAssigneeLabel = Localizer["TaskAssigneeLabel"].Value,
+        TaskAssigneeSelf = Localizer["TaskAssigneeSelf"].Value,
+        TaskDueAtLabel = Localizer["TaskDueAtLabel"].Value,
+        LinkExistingTaskLabel = Localizer["LinkExistingTaskLabel"].Value,
+        LinkExistingTaskPlaceholder = Localizer["LinkExistingTaskPlaceholder"].Value,
+        LinkExistingTaskRequired = Localizer["LinkExistingTaskRequired"].Value,
+        ToastTaskCreated = Localizer["ToastTaskCreated"].Value,
+        ToastTaskLinked = Localizer["ToastTaskLinked"].Value,
+
+        // ── S7 — continuation scheduling ─────────────────────────────────────
+        ScheduleFollowUp = Localizer["ScheduleFollowUp"].Value,
+        ScheduleFollowUpHint = Localizer["ScheduleFollowUpHint"].Value,
+        FollowUpTitleSuffix = Localizer["FollowUpTitleSuffix"].Value,
+        ToastFollowUpScheduled = Localizer["ToastFollowUpScheduled"].Value,
+        ToastFollowUpScheduledNoOpenWork = Localizer["ToastFollowUpScheduledNoOpenWork"].Value,
+        PreviousMeetingLabel = Localizer["PreviousMeetingLabel"].Value,
+        FollowUpMeetingLabel = Localizer["FollowUpMeetingLabel"].Value,
+        CarriedFromPreviousMeetingBadge = Localizer["CarriedFromPreviousMeetingBadge"].Value,
+
         // ── error-code bridge (BL-040/BL-351 pattern) — every MEETING_*/MEETING_TYPE_* reason code Platform
         // can return, mapped to its own sentence; AC6's guard asserts this list is exhaustive and unique. ──
         ErrorMeetingNotFound = Localizer["ErrorMeetingNotFound"].Value,
@@ -89,11 +114,29 @@
         ErrorAttendeeNotEligible = Localizer["ErrorAttendeeNotEligible"].Value,
         ErrorAttendeeDuplicate = Localizer["ErrorAttendeeDuplicate"].Value,
         ErrorAttendeeNotFound = Localizer["ErrorAttendeeNotFound"].Value,
+        ErrorAttendeeIsOrganizer = Localizer["ErrorAttendeeIsOrganizer"].Value,
+        UnknownUser = Localizer["UnknownUser"].Value,
         ErrorAgendaItemNotFound = Localizer["ErrorAgendaItemNotFound"].Value,
         ErrorAgendaReorderMismatch = Localizer["ErrorAgendaReorderMismatch"].Value,
         ErrorTypeNotFound = Localizer["ErrorTypeNotFound"].Value,
         ErrorTypeNameDuplicate = Localizer["ErrorTypeNameDuplicate"].Value,
         ErrorTypeInUse = Localizer["ErrorTypeInUse"].Value,
+        ErrorTaskAlreadyLinked = Localizer["ErrorTaskAlreadyLinked"].Value,
+        ErrorReviewAlreadyScheduled = Localizer["ErrorReviewAlreadyScheduled"].Value,
+        ErrorInvitationResponseInvalid = Localizer["ErrorInvitationResponseInvalid"].Value,
+        ErrorMinutesPublished = Localizer["ErrorMinutesPublished"].Value,
+        ErrorMinutesNotPublished = Localizer["ErrorMinutesNotPublished"].Value,
+        ErrorMinutesCorrectionReasonRequired = Localizer["ErrorMinutesCorrectionReasonRequired"].Value,
+        ErrorMinutesConcurrencyConflict = Localizer["ErrorMinutesConcurrencyConflict"].Value,
+        ErrorDecisionNotFound = Localizer["ErrorDecisionNotFound"].Value,
+
+        // ── S11 — recurring meeting series ────────────────────────────────
+        ErrorSeriesNotFound = Localizer["ErrorSeriesNotFound"].Value,
+        ErrorSeriesNameDuplicate = Localizer["ErrorSeriesNameDuplicate"].Value,
+        ErrorSeriesInvalidWindow = Localizer["ErrorSeriesInvalidWindow"].Value,
+        ErrorSeriesIntervalInvalid = Localizer["ErrorSeriesIntervalInvalid"].Value,
+        ErrorSeriesOrganizerRequired = Localizer["ErrorSeriesOrganizerRequired"].Value,
+
         ErrorNoAccess = Localizer["ErrorNoAccess"].Value,
         ErrorUnavailable = Localizer["ErrorUnavailable"].Value,
         FormValidationError = Localizer["FormValidationError"].Value,

@@ -39,6 +39,7 @@
   <data name="RemoveAttendee" xml:space="preserve"><value>Katılımcıyı kaldır</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Ekle</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Düzenleyeni Değiştir</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Tutanak</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>Yeni Düzenleyen</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Toplantıyı İptal Et</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>İptal gerekçesi</value></data>
@@ -49,6 +50,27 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>Bu toplantıya bağlı bir görev yok.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Gündem</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>Henüz gündem maddesi yok.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Görev oluştur</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Mevcut görevi bağla</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Bu satırdan görev oluştur</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Görev başlığı</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>Görev başlığı gereklidir.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Atanan kişi</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Ben</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Bitiş tarihi</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Görev</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Bağlanacak görevi arayın</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Bağlanacak bir görev seçin.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Görev oluşturuldu ve bu toplantıya bağlandı.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Görev bu toplantıya bağlandı.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Devam toplantısı planla</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>Bu toplantının gündemine bağlı, hâlâ açık olan görevler, orijinal sırasıyla yeni toplantıya taşınacaktır.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>devam</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Devam toplantısı planlandı.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Devam toplantısı boş gündemle planlandı — taşınacak açık iş yok.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Önceki toplantı</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Devam toplantısı</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>Önceki toplantıdan</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Toplantı Bilgileri</value></data>
@@ -64,13 +86,29 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>Bu kişi şu anda davet edilemiyor.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>Bu kişi zaten davet edilmiş.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>Bu katılımcı toplantıda değil.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>Organizatör toplantıdan çıkarılamaz.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Bilinmeyen kullanıcı</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>Bu gündem maddesi bulunamadı.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>Gündem yeniden sıralanamadı; lütfen sayfayı yenileyip tekrar deneyin.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>Bu toplantı türü bulunamadı.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>Bu adla bir toplantı türü zaten var.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>Bu toplantı türü bir toplantı tarafından kullanılıyor ve silinemez.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>Bu görev bu toplantıya zaten bağlı.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>Bu görev için zaten bir gözden geçirme toplantısı planlanmış.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>Yanıt Kabul veya Reddet olmalıdır.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>Yayımlanmış tutanak doğrudan düzenlenemez.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>Düzeltilecek yayımlanmış bir sürüm yok.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>Düzeltme gerekçesi zorunludur.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>Kayıt bu sırada değişti; sayfayı yenileyip tekrar deneyin.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>Bu karar bulunamadı.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>Bu toplantı serisi bulunamadı.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>Bu adla bir toplantı serisi zaten var.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Serinin başlangıcını, bitişini ve hazırlık süresini kontrol edin — takvim geçersiz.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>Aralık en az 1 olmalıdır.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Bir organizatör gereklidir.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Toplantılar servisi şu anda kullanılamıyor.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Lütfen zorunlu tüm alanları doldurun.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Toplantı Türleri</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Toplantı Serileri</value></data>
 </root>

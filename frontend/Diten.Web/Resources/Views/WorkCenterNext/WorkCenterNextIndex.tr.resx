@@ -237,8 +237,8 @@
     <value>Aksiyon al</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Görüntüle</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Onay toplantısı planla</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Onay toplantısı planlandı: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>İnceleme toplantısı planla</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>İnceleme toplantısı planlandı: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Şirketler arası eliminasyon cetvelini hazırla</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Konsolidasyon öncesi şirketler arası bakiyeleri elimine et.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Fiyatlandırma kuralı regresyonunu araştır</value></data>
@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Toplantı tarihi ve saati</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Toplantı türü</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Planlanacak toplantının türünü seçin.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Henüz tanımlı bir toplantı türü yok. Bir yöneticiden eklemesini isteyin.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Bu işlem, Toplantılar modülünde bu göreve bağlı gerçek bir toplantı oluşturur.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Q3 kapanış gözden geçirme</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Gönder</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Birini etiketle</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Etiketi kaldır</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Kişi etiketle</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>En az bir kişi seçin.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Bu görevde henüz etiketlenebilecek kimse yok.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Etiketlenebilecek herkes zaten eklendi.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Bir yorumda en fazla {0} kişi etiketlenebilir.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Göndermeden önce bir şey yazın</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>İşbirliği ve kayıtlar</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Görev detayı</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>İstenen iş öğesi bulunamadı.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Bu iş öğesi sözleşme doğrulamasını geçemediği için gösterilemedi.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Görev Merkezi’ne dön</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Bu öğe için yetkiniz sona erdi.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Zorunlu bir bağımlılık tamamlanmadı.</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 Temmuz 2026, 14:00–15:00 · Teams · Düzenleyen: Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Onay: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Bekliyor</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Onay bekliyor</value>
@@ -1543,6 +1583,15 @@
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Bilgi bekle</value>
   </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>İnceleme toplantısı planla</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Kabul et</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Reddet</value>
+  </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>İade et</value>
   </data>
@@ -1615,9 +1664,7 @@
   <data name="ConfirmRequiredOpen" xml:space="preserve">
     <value>{0} zorunlu madde işaretlenmedi. Görev yine de kapatılacak.</value>
   </data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve">
-    <value>Kanıt belgesi gerekiyor. Belge bağlantısı doküman modülü bağlandığında etkinleşecek.</value>
-  </data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>İşaretli maddeler için kanıt gerekiyor. Kanıt eklemek için satırdaki ataç simgesini kullanın.</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve">
     <value>Seviyeyi değiştir: İsteğe bağlı → Beklenen → Engelleyici</value>
   </data>
@@ -1897,6 +1944,9 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Bir alt görev hâlâ açık</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>İnceleme toplantısı zaten planlandı</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Kontrol listesi güncellendi.</value>
   </data>
@@ -2160,6 +2210,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Bazı kaynaklar yanıt vermedi — liste eksik olabilir.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} iş öğesi sözleşme hatası nedeniyle gösterilemedi.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Bazı kaynaklar yanıt vermediği için bu sayı eksik olabilir.</value>
   </data>
@@ -2205,6 +2258,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Kapanış: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Kapanış</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} teslimat eklendi.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} kanıt dosyası eklendi.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Bu iş nasıl sonuçlandı?</value>
   </data>
@@ -2225,6 +2287,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Bu sonuç bir gerekçe ister.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Görev tamamlanmadan önce bu alan doldurulmalıdır.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>İstendiği gibi tamamlandı</value>
@@ -2259,4 +2324,26 @@
   <data name="StepReturnedTimesBecause" xml:space="preserve">
     <value>{0} kez geri gönderildi, en son: {1}</value>
   </data>
+  <data name="AttachmentsEmpty" xml:space="preserve"><value>Henüz ek yok.</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentNoteLabel" xml:space="preserve"><value>Not (opsiyonel)</value></data>
+  <data name="AttachmentNotePlaceholder" xml:space="preserve"><value>Bu dosya hakkında kısa bir not</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentUploadConfirm" xml:space="preserve"><value>Yükle</value></data>
+  <data name="AttachmentUploadTitle" xml:space="preserve"><value>Ek ekle</value></data>
+  <data name="AttachmentFileRequired" xml:space="preserve"><value>Önce bir dosya seçin.</value></data>
+  <data name="AttachmentRemoveConfirm" xml:space="preserve"><value>Bu ek kaldırılsın mı?</value></data>
+  <data name="AttachmentRemove" xml:space="preserve"><value>Eki kaldır</value></data>
+  <data name="AttachmentUploadedBy" xml:space="preserve"><value>{0} tarafından yüklendi · {1}</value></data>
+  <data name="ToastAttachmentAdded" xml:space="preserve"><value>Ek eklendi.</value></data>
+  <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Ek kaldırıldı.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Bir çıktı ya da kanıt dosyası ekleyin (isteğe bağlı)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Bu görev türü, tamamlanmadan önce bir çıktı dosyası ister</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce bir dosya seçin.</value></data>
+  <data name="ChecklistAddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
+  <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} kanıt dosyası</value></data>
 </root>

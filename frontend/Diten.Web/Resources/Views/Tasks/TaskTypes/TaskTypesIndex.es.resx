@@ -13,8 +13,16 @@
   <data name="GqmsDomain" xml:space="preserve"><value>Dominio de calidad</value></data>
   <data name="FunctionCode" xml:space="preserve"><value>Función</value></data>
   <data name="QualityEvent" xml:space="preserve"><value>Evento de calidad</value></data>
+  <data name="RequiresDeliverableOnCompletion" xml:space="preserve"><value>Requiere un archivo entregable para completarse</value></data>
   <data name="QualityEventYes" xml:space="preserve"><value>Evento de calidad</value></data>
   <data name="QualityEventNo" xml:space="preserve"><value>No es un evento de calidad</value></data>
+  <data name="ReviewMeetingRequirement" xml:space="preserve"><value>Reunión de revisión antes de la decisión</value></data>
+  <data name="ReviewMeetingRequirementHint" xml:space="preserve"><value>Indica si puede o debe celebrarse una reunión de revisión antes de que el revisor tome la decisión final sobre este tipo de trabajo.</value></data>
+  <data name="ReviewMeetingRequirementNotAllowed" xml:space="preserve"><value>No permitida</value></data>
+  <data name="ReviewMeetingRequirementOptional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ReviewMeetingRequirementRequired" xml:space="preserve"><value>Obligatoria</value></data>
+  <data name="ErrorReviewMeetingRequirementInvalid" xml:space="preserve"><value>La configuración de la reunión de revisión debe ser No permitida, Opcional u Obligatoria.</value></data>
+  <data name="ErrorConcurrencyConflict" xml:space="preserve"><value>Este tipo de tarea fue modificado por otra persona mientras usted lo editaba. Actualice la página e inténtelo de nuevo.</value></data>
   <data name="RecordClassNOT_A_RECORD" xml:space="preserve"><value>No es un registro</value></data>
   <data name="RecordClassOPERATIONAL_RECORD" xml:space="preserve"><value>Registro operativo</value></data>
   <data name="RecordClassGXP_QUALITY_RECORD" xml:space="preserve"><value>Registro de calidad GxP</value></data>
