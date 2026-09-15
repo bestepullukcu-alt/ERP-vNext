@@ -434,6 +434,9 @@ public static class DependencyInjection
         // MOD-0149 — Commercial Suite CRM (Account Foundation). Reconciles the CRM catalog identity + /CRM/Accounts page
         // descriptor (nav-visible=false; static tenant-shell menu owns nav until the MOD-0285 migration).
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Crm.SelfRegistration.CrmManifestProvider>();
+        // HR nav-wiring gap #4 (WP-HR-nav-B) — Talent Ecosystem (TEP): 30 nav pages (TepShellMetadata shell excluded).
+        // Route source = Diten.Web TalentEcosystem/* controllers; readPerm = Diten.TalentEcosystemService backend keys.
+        services.AddSingleton<Contracts.IModuleManifestProvider, Features.TalentEcosystem.SelfRegistration.TalentEcosystemManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.Ppm.SelfRegistration.PpmManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendar.SelfRegistration.WorkingCalendarManifestProvider>();
         services.AddSingleton<Contracts.IModuleManifestProvider, Features.WorkingCalendarImport.WorkingCalendarImportManifestProvider>();
