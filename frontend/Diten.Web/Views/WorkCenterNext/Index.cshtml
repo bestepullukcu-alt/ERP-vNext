@@ -20,6 +20,10 @@
 <partial name="~/Views/Tasks/_QuickCreateOffcanvas.cshtml" />
 
 @section Scripts {
+    @* DCP-004 amendment 2026-09-15 — every tenant user opens this page now, so app.js must know which create actions
+       the user holds (UAS-001 §6: "+ Yeni ▸ Görev" is hidden without platform.tasks.create). UX only; the server
+       re-checks every key. Loaded first so window.Permissions exists before app.js renders the header. *@
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
     @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />

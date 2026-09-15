@@ -132,6 +132,14 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
         if (item is not null) { item.AttendanceStatus = status; }
         return Task.CompletedTask;
     }
+
+    public Task<bool> MarkMailUndeliveredAsync(Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);
+        if (item is null) { return Task.FromResult(false); }
+        item.MailUndeliveredAt = failedAt;
+        return Task.FromResult(true);
+    }
 }
 
 /// <summary>MOD-0357 S6 — in-memory double for <see cref="IMeetingMinutesVersionRepository"/>. No unique-index

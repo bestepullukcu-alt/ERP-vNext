@@ -292,6 +292,18 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
         var update = Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
+
+    public async Task<bool> MarkMailUndeliveredAsync(
+        Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.MailUndeliveredAt, failedAt);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount > 0;
+    }
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>

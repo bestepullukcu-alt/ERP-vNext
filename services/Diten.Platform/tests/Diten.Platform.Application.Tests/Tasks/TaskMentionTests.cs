@@ -475,7 +475,7 @@ public sealed class TaskMentionTests
 
         private ITaskReadAccessPolicy ReadAccess(Guid caller) => new TaskReadAccessPolicy(
             Tasks, Watchers, Notifications, OrganizationUnits,
-            new EmptyScopeResolver(), TaskActors.None(),
+            new EmptyScopeResolver(), new FakeTaskTeamResolver(), TaskActors.None(),
             new FakeCurrentUserContext(caller));
 
         public AddTaskCommentHandler AddHandler(Guid? caller = null) => new(

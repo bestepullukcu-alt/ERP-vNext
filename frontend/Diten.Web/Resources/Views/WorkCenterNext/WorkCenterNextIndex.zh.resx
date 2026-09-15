@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>已安排审查会议</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>在关联审查会议的纪要发布之前,此决定将保持锁定状态。</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>清单已更新。</value>
   </data>

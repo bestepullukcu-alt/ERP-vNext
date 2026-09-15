@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>Загрузка…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>Экспорт не удалось записать в журнал аудита, поэтому файл не был выдан. Повторите попытку позже.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>В этом отчёте слишком много строк для экспорта. Сузьте период или фильтры.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>Каждый скачанный файл начинается с метки времени снимка — это копия на определённый момент, а не контролируемый документ.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>Каждый скачанный файл является снимком на момент скачивания; не является контролируемой копией. Только для справки — проверьте актуальное состояние в системе.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>Весь тенант</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Мои совещания</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>У вас нет доступа к этому отчёту.</value></data>

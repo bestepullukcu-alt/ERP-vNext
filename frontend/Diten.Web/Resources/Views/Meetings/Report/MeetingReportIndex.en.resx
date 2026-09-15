@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>The export could not be recorded in the audit trail, so the file was not issued. Try again later.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>This report covers too many rows to export. Narrow the period or the filters.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>Every downloaded file starts with a snapshot timestamp — it is a point-in-time copy, not a controlled document.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>Every downloaded file is a snapshot as of the moment of download; not a controlled copy. For reference only — verify the current state in the system.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>Whole tenant</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Your meetings</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this report.</value></data>

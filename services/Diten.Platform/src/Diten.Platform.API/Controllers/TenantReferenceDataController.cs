@@ -1,4 +1,5 @@
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
 using Diten.Platform.Application.Features.BusinessReferenceData.Models;
@@ -48,6 +49,7 @@ public sealed class TenantReferenceDataController : CustomBaseController
     }
 
     [HttpGet("sets/{setCode}/published-values")]
+    [LoginOnly("Published values of three allow-listed Global reference sets (legal-form, country, base-currency); any authenticated actor (see class note).")]
     public async Task<IActionResult> GetPublishedValues(string setCode, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(setCode) || !TenantReadableSets.Contains(setCode))

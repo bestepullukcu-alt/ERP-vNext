@@ -20,13 +20,13 @@ public static class MeetingReportExportDisclaimer
 {
     private static readonly IReadOnlyDictionary<string, string> Sentences = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
     {
-        ["en"] = "Snapshot taken as of {0} — not a controlled copy.",
-        ["tr"] = "{0} itibarıyla alınmış anlık görüntüdür, kontrollü kopya değildir.",
-        ["fr"] = "Instantané pris le {0} — ce n'est pas une copie contrôlée.",
-        ["es"] = "Instantánea tomada el {0} — no es una copia controlada.",
-        ["zh"] = "本快照生成于 {0} — 非受控副本。",
-        ["ar"] = "لقطة مأخوذة بتاريخ {0} — ليست نسخة خاضعة للرقابة.",
-        ["ru"] = "Снимок сделан по состоянию на {0} — не является контролируемой копией."
+        ["en"] = "Snapshot taken as of {0}; not a controlled copy. For reference only — verify the current state in the system.",
+        ["tr"] = "{0} itibarıyla alınmış anlık görüntüdür; kontrollü kopya değildir. Yalnız bilgi amaçlıdır, güncel durumu sistemden doğrulayın.",
+        ["fr"] = "Instantané pris le {0} ; ce n'est pas une copie contrôlée. À titre informatif uniquement — vérifiez l'état actuel dans le système.",
+        ["es"] = "Instantánea tomada el {0}; no es una copia controlada. Solo con fines informativos — verifique el estado actual en el sistema.",
+        ["zh"] = "本快照生成于 {0}；非受控副本。仅供参考——请在系统中核实当前状态。",
+        ["ar"] = "لقطة مأخوذة بتاريخ {0}؛ ليست نسخة خاضعة للرقابة. لأغراض الاطلاع فقط — يرجى التحقق من الحالة الحالية في النظام.",
+        ["ru"] = "Снимок сделан по состоянию на {0}; не является контролируемой копией. Только для справки — проверьте актуальное состояние в системе."
     };
 
     /// <summary>

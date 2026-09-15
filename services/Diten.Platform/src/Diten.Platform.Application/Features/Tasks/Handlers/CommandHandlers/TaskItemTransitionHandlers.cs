@@ -220,6 +220,17 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     private readonly ITaskAttachmentRepository _attachments;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
 
+    /// <summary>MOD-0357 S9 (owner, 2026-09-13) — the shared review-meeting gate re-check; see the type's own
+    /// doc comment. Independent of <see cref="_workflowGate"/>: this never touches MOD-0023.
+    ///
+    /// <para>OPTIONAL for the same reason every other MOD-0357 seam on sibling constructors in this feature is:
+    /// every test written before S9 constructs this handler directly and predates the parameter. A null reader
+    /// fails CLOSED exactly like <see cref="_workflowGate"/>'s own outage case — but only a task whose TYPE says
+    /// Required ever asks it anything, and no pre-S9 test's task type does, so the compatibility is real, not
+    /// just compiled: nothing pre-S9 exercises the branch that would notice.</para>
+    /// </summary>
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
+
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
@@ -232,7 +243,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskNotificationService notifications,
         ITaskFieldDefinitionService fieldDefinitions,
         ITaskAttachmentRepository attachments,
-        ILogger<TransitionTaskItemHandler> logger)
+        ILogger<TransitionTaskItemHandler> logger,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _logger = logger;
         _notifications = notifications;
@@ -246,6 +258,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         _checklists = checklists;
         _checklistService = checklistService;
         _workflowGate = workflowGate;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     /// <summary>Which half of the outcome dictionary this transition is closing into, or null when it closes
@@ -386,6 +399,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                     gate.BlockingReasonCode ?? TaskReasonCodes.ApprovalPending,
                     command.CorrelationId);
             }
+        }
+
+        // ── Review-meeting gate (MOD-0357 S9, owner 2026-09-13; CT fix-up F1 2026-09-15) ────────────────
+        // An INDEPENDENT check, deliberately its own `if` block rather than folded into the approval gate above:
+        // the two ask different questions of different systems (MOD-0023's own decision vs. a RecordLink read
+        // this module owns), and merging them would make one look like a special case of the other.
+        //
+        // Asked on → Done ONLY — the task's own DECISION. Never on → InProgress: scheduling and holding the review
+        // meeting is part of the work, so starting (or resuming) must stay possible while the minutes are still to
+        // come. The other decision path, submit-for-review, asks the same rule in SubmitTaskForReviewHandler.
+        //
+        // AFTER the approval gate so the reason matches the projection's precedence (approval first, then the
+        // review meeting). Never calls IWorkflowTransitionGate or ITaskApprovalService: a LOCAL MOD-0024
+        // precondition, not a second approval engine — see ReviewMeetingDecisionGate.
+        if (command.Target == TaskLifecycle.Done
+            && await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*
@@ -820,13 +851,23 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
     private readonly ITaskApprovalService _reviewStates;
     private readonly ILogger<SubmitTaskForReviewHandler> _logger;
 
+    /// <summary>MOD-0357 S9 (CT fix-up F1, 2026-09-15) — submitting for review is a DECISION the review-meeting
+    /// gate holds back, so this handler asks the same shared rule TransitionTaskItemHandler asks on → Done (see
+    /// <see cref="ReviewMeetingDecisionGate"/>). OPTIONAL for the same reason as that handler's own seam: every
+    /// test written before this constructs the handler directly. A null seam fails CLOSED — but only for a task
+    /// that carries a type, and no pre-existing submit test's task does.</summary>
+    private readonly ITaskTypeRepository? _types;
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
+
     public SubmitTaskForReviewHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         ITaskReviewService reviews,
         ITaskApprovalService reviewStates,
-        ILogger<SubmitTaskForReviewHandler> logger)
+        ILogger<SubmitTaskForReviewHandler> logger,
+        ITaskTypeRepository? types = null,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _reviewStates = reviewStates;
         _tasks = tasks;
@@ -834,6 +875,8 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         _currentUser = currentUser;
         _reviews = reviews;
         _logger = logger;
+        _types = types;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     public async Task<Response<NoContent>> Handle(SubmitTaskForReviewCommand command, CancellationToken ct)
@@ -891,6 +934,20 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Review-meeting gate (MOD-0357 S9, CT fix-up F1 2026-09-15) — the same shared rule → Done asks in
+         * TransitionTaskItemHandler: a type that requires a review meeting cannot hand its work to a reviewer until
+         * a non-cancelled linked meeting has published minutes. Applies to a resubmission after a refusal too, so
+         * the projection's hint and this refusal agree on every path that leads here.
+         *
+         * BEFORE TryStartReviewAsync, and that placement is the approval boundary: a refused submit opens no
+         * MOD-0023 instance, so nothing is left behind in MOD-0023 and no review outcome is touched.
+         */
+        if (await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*

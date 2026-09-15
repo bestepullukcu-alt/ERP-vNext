@@ -44,6 +44,21 @@ public sealed class NotificationDispatch : BaseEntity
     public string? CorrelationId { get; set; }
     public Guid? CausationId { get; set; }
 
+    // BL-406 — ADDITIVE ONLY, both null on every row written before this WP and on every non-meeting dispatch
+    // afterward. Meeting mail is now dispatched 1:1 (one NotificationDispatch per attendee — see
+    // MeetingInviteMailer.DispatchGroupAsync); CausationId carries the MeetingId (its own pre-existing,
+    // previously-unused meaning: "the id of the thing that caused this dispatch"), and this field carries WHICH
+    // attendee this particular dispatch was for, since a dispatch's own `To` list on its own cannot be resolved
+    // back to a MeetingAttendee row (no email is stored on MeetingAttendee). Never set for non-meeting mail.
+    public Guid? MeetingAttendeeUserId { get; set; }
+
+    // BL-406 — set exactly once, at the moment this dispatch's failure is first recognised as PERMANENT (no
+    // further retry will occur — see EmailDispatchJob/MarkNotificationDispatchFailedHandler). Idempotency guard:
+    // a later re-entry over an already-terminal dispatch (e.g. a duplicate Hangfire execution of the same retry
+    // job) must not fire the organizer notification / ops counter a second time. Null on every row that has
+    // never permanently failed, and on every row written before this WP.
+    public DateTimeOffset? PermanentlyFailedNotifiedAt { get; set; }
+
     public bool TryMarkSent(string? providerMessageId, DateTimeOffset now)
     {
         // A retry sends a row that is already Failed; refusing that transition left an accepted mail Failed and due,

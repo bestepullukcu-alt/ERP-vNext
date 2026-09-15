@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>添加</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>议程项</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>移除参会人员</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>邮件未送达</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>添加</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>更换组织者</value></data>
   <data name="Minutes" xml:space="preserve"><value>会议纪要</value></data>

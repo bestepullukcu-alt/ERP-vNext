@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>Yükleniyor…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>Dışa aktarma denetim izine kaydedilemediği için dosya verilmedi. Daha sonra tekrar deneyin.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>Bu rapor dışa aktarım için çok fazla satır içeriyor. Dönemi ya da filtreleri daraltın.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>İndirilen her dosyanın başında bir anlık görüntü zaman damgası bulunur — kontrollü bir belge değil, belirli bir ana ait kopyadır.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>İndirilen her dosya, indirme anı itibarıyla alınmış bir anlık görüntüdür; kontrollü kopya değildir. Yalnız bilgi amaçlıdır, güncel durumu sistemden doğrulayın.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>Tüm kiracı</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Kendi toplantılarım</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Bu rapora erişiminiz yok.</value></data>

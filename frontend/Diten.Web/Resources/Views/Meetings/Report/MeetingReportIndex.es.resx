@@ -98,7 +98,7 @@
   <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
   <data name="ExportAuditNotRecorded" xml:space="preserve"><value>La exportación no pudo registrarse en el rastro de auditoría, por lo que no se emitió el archivo. Inténtelo de nuevo más tarde.</value></data>
   <data name="ExportTooLarge" xml:space="preserve"><value>Este informe tiene demasiadas filas para exportar. Reduzca el período o los filtros.</value></data>
-  <data name="ExportSnapshotNote" xml:space="preserve"><value>Cada archivo descargado comienza con una marca de tiempo de instantánea — es una copia de un momento dado, no un documento controlado.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>Cada archivo descargado es una instantánea tomada en el momento de la descarga; no es una copia controlada. Solo con fines informativos — verifique el estado actual en el sistema.</value></data>
   <data name="ScopeTenant" xml:space="preserve"><value>Todo el tenant</value></data>
   <data name="ScopeScoped" xml:space="preserve"><value>Mis reuniones</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>No tiene acceso a este informe.</value></data>

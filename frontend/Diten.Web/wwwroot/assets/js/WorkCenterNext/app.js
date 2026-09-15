@@ -917,6 +917,17 @@
 
     const delegatorByName = (name) => data.delegators.find((d) => d.name === name) || null;
 
+    /*
+     * DCP-004 amendment 2026-09-15 (UAS-001 §6) — may this user create a task? Read from the permission snapshot the
+     * host view loads (_PermissionBootstrap → window.Permissions). FAIL-CLOSED: a page without the snapshot reads as
+     * "not held", so a missing partial hides the entry rather than showing a button the server will refuse.
+     * UX only — POST api/v1/tasks is the authority.
+     */
+    const TASK_CREATE_PERMISSION = 'platform.tasks.create';
+    const canCreateSelfTask = () =>
+        !!(global.Permissions && typeof global.Permissions.has === 'function'
+            && global.Permissions.has(TASK_CREATE_PERMISSION));
+
     const buildHeader = () => {
         const urgent = ownUrgentCount();
         // Current scope → the person/delegation dropdown label.
@@ -950,6 +961,7 @@
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
             `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+        const canCreateTask = canCreateSelfTask();
 
         return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
@@ -981,7 +993,14 @@
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
-                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${/*
+                           * DCP-004 amendment 2026-09-15 (UAS-001 §6) — HIDDEN, not disabled, without
+                           * platform.tasks.create. Every tenant user opens this page now and most cannot create a
+                           * task; a button that can only fail sends them into a second error. The divider below goes
+                           * with it so the menu does not open on a dangling rule. UX only: POST api/v1/tasks still
+                           * demands the key.
+                           */ ''}
+                        ${canCreateTask ? createItem('task', 'bx-task', t('NewSelfTask')) : ''}
                         ${/*
                            * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
                            *
@@ -997,7 +1016,7 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        <li><hr class="dropdown-divider"></li>
+                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
                 </div>
@@ -9847,7 +9866,8 @@
         const newEl = event.target.closest('[data-wcn-new]');
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
-            if (kind === 'task') { openSelfTask(); }
+            // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
+            if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
             else if (kind === 'source') { openCreateInSource(); }
             return;
         }
@@ -10388,6 +10408,31 @@
      */
     let loadGeneration = 0;
 
+    /*
+     * BL-414 — the id the detail page was opened for, or '' on the list page. Read from the same server-rendered
+     * attribute (Details.cshtml) renderUnsafe resolves its item by.
+     */
+    const requestedDetailId = () => {
+        const root = document.getElementById('wcnApp');
+        return root && root.dataset.wcnPage === 'detail' ? (root.dataset.wcnItemId || '') : '';
+    };
+
+    /*
+     * BL-414 — the ONE item the detail page was opened for, when the list just read does not hold it.
+     *
+     * Null when there is nothing to ask (the list page; an item already on the list; an id the contract already
+     * rejected from the list, whose BL-379 sentence is the more specific one) and null when the server has no
+     * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
+     * the page's not-found answer exactly as it was.
+     */
+    const readDetailItemMissingFrom = async (api, result) => {
+        const id = requestedDetailId();
+        if (!id || result.items.some((item) => item.id === id)) { return null; }
+        if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
+        const single = await api.fetchWorkItem(id);
+        return single.status === api.STATUS.OK ? single : null;
+    };
+
     const loadWorkItems = async () => {
         const generation = ++loadGeneration;
         const isStale = () => generation !== loadGeneration;
@@ -10440,8 +10485,23 @@
         // A newer read has been issued while this one was in flight: its answer is the current one, and this
         // answer describes a state that no longer exists. Drop it without touching the screen.
         if (isStale()) { return; }
+        /*
+         * BL-414 — THE DETAIL PAGE IS THE TASK'S RECORD VIEW, NOT A WINDOW ONTO MY LIST.
+         *
+         * MEASURED: this page resolved its item ONLY out of the list above, and that list holds the reader's own
+         * work (assigned, own-pool, opened). Every other reader the task read rule admits — a watcher, a mentioned
+         * person, a manager with scope, a read-all holder — got "not found" here while /Tasks/{id} opened for them.
+         * So did a manager opening a subordinate's task from Ekibim: this page boots without the list's URL state
+         * (boot skips hydrateStateFromUrl, openDetailPage carries no scope), so it always reads the SELF list.
+         *
+         * So when the list does not hold the requested id, the page asks the server for that ONE item. The fetched
+         * item joins state.items on THIS page only — the detail page draws no list, so no tab and no scope gains a
+         * row, and a write's re-read (which comes back through here) fetches it again.
+         */
+        const detailRead = result.status === api.STATUS.OK ? await readDetailItemMissingFrom(api, result) : null;
+        if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
-            state.items = result.items;
+            state.items = detailRead && detailRead.item ? result.items.concat([detailRead.item]) : result.items;
             // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
             // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
             // very failure the backend change stopped doing.
@@ -10452,12 +10512,15 @@
              * the drop can no longer be silent: every rejection is named on the console (fixtureId + code, so a
              * specific row can be traced) and counted for a non-blocking on-screen note (buildContractRejectedNote).
              */
-            if (Array.isArray(result.errors) && result.errors.length > 0) {
-                result.errors.forEach((error) => {
+            // BL-414 — an item fetched by id that the contract refuses is reported on the SAME channel as a list row.
+            const rejected = (Array.isArray(result.errors) ? result.errors : [])
+                .concat((detailRead && detailRead.errors) || []);
+            if (rejected.length > 0) {
+                rejected.forEach((error) => {
                     console.warn(
                         `[WorkCenterNext] work item rejected by contract: fixtureId=${error.fixtureId} code=${error.code}`);
                 });
-                state.contractRejectedErrors = result.errors;
+                state.contractRejectedErrors = rejected;
             } else {
                 state.contractRejectedErrors = [];
             }
