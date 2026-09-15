@@ -119,53 +119,6 @@ public sealed class ProductItemSkuMasterMongoTests
     }
 
     [Fact]
-    public async Task Concurrent_first_gsku_commands_allocate_unique_parent_ordinals_and_soft_delete_never_reuses()
-    {
-        await using var scope = await MongoTestScope.CreateAsync();
-        var parent = await InsertParentAsync(scope, scope.TenantA);
-        var reservations = new List<CodeReservation>();
-        for (var index = 0; index < 6; index++)
-        {
-            reservations.Add(await scope.Reservations(scope.TenantA).ReserveAsync(
-                CodeBearingEntityType.Gsku, $"gsku-reserve-{index}", "actor", "corr"));
-        }
-
-        var tasks = reservations.Select((reservation, index) => CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver())
-            .Handle(new CreateFirstGskuDraftCommand(new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
-            {
-                GlobalProductId = parent.Id,
-                GskuReservationId = reservation.Id,
-                ExpectedReservationVersion = reservation.Version,
-                CreationCommandId = $"concurrent-{index}",
-                PackQuantity = 1.250m,
-                PackUomCode = "KGM"
-            }), CancellationToken.None));
-        var results = await Task.WhenAll(tasks);
-
-        Assert.All(results, result => Assert.True(result.IsSuccessful, string.Join(',', result.Errors)));
-        Assert.Equal(6, results.Select(x => x.Data!.RevisionIdentifier).Distinct().Count());
-        Assert.Equal(Enumerable.Range(1, 6).Select(x => $"REV-{x:D3}"),
-            results.Select(x => x.Data!.RevisionIdentifier).OrderBy(x => x));
-        var firstId = results.Single(x => x.Data!.RevisionIdentifier == "REV-001").Data!.ProductDefinitionRevisionId;
-        await scope.Database.GetCollection<ProductDefinitionRevision>("mdm_product_definition_revisions").UpdateOneAsync(
-            Builders<ProductDefinitionRevision>.Filter.Eq(x => x.Id, firstId),
-            Builders<ProductDefinitionRevision>.Update.Set(x => x.IsDeleted, true).Set(x => x.DeletedAt, DateTimeOffset.UtcNow));
-        var nextReservation = await scope.Reservations(scope.TenantA).ReserveAsync(
-            CodeBearingEntityType.Gsku, "gsku-reserve-next", "actor", "corr");
-        var next = await CreateFirstGskuHandler(scope, scope.TenantA, new VerifiedResolver()).Handle(
-            new CreateFirstGskuDraftCommand(new ProductItemSkuMasterModels.CreateFirstGskuDraftRequest
-            {
-                GlobalProductId = parent.Id,
-                GskuReservationId = nextReservation.Id,
-                ExpectedReservationVersion = nextReservation.Version,
-                CreationCommandId = "after-soft-delete",
-                PackQuantity = 1m,
-                PackUomCode = "C62"
-            }), CancellationToken.None);
-        Assert.Equal("REV-007", next.Data!.RevisionIdentifier);
-    }
-
-    [Fact]
     public async Task First_gsku_parent_and_provider_failures_are_fail_closed_without_writes()
     {
         await using var scope = await MongoTestScope.CreateAsync();
@@ -1094,7 +1047,7 @@ public sealed class ProductItemSkuMasterMongoTests
         return current?.FullName ?? throw new InvalidOperationException("Repository root was not found.");
     }
 
-    private static async Task<GlobalProduct> InsertParentAsync(MongoTestScope scope, Guid tenantId)
+    internal static async Task<GlobalProduct> InsertParentAsync(MongoTestScope scope, Guid tenantId)
     {
         _ = scope.GlobalProducts(tenantId);
         var parent = new GlobalProduct
@@ -1111,7 +1064,7 @@ public sealed class ProductItemSkuMasterMongoTests
         return parent;
     }
 
-    private static CreateFirstGskuDraftHandler CreateFirstGskuHandler(
+    internal static CreateFirstGskuDraftHandler CreateFirstGskuHandler(
         MongoTestScope scope,
         Guid tenantId,
         IVerifiedGskuReferenceResolver resolver)
@@ -1225,7 +1178,7 @@ public sealed class ProductItemSkuMasterMongoTests
             => Task.FromResult<IReadOnlyList<Guid>>([]);
     }
 
-    private sealed class VerifiedResolver(bool succeeds = true, bool cancel = false) : IVerifiedGskuReferenceResolver
+    internal sealed class VerifiedResolver(bool succeeds = true, bool cancel = false) : IVerifiedGskuReferenceResolver
     {
         private int _callCount;
         public int CallCount => _callCount;
@@ -1485,21 +1438,38 @@ public sealed class ProductItemSkuMasterMongoTests
         }
     }
 
-    private sealed class MongoTestScope : IAsyncDisposable
+    internal sealed class MongoTestScope : IAsyncDisposable
     {
-        private readonly IMongoClient _client;
+        private static readonly string[] FixedDatabaseOwnedCollections =
+        [
+            "mdm_code_reservations",
+            "mdm_global_products",
+            "mdm_canonical_code_counters",
+            "mdm_product_definition_revisions",
+            "mdm_product_definition_revision_allocators",
+            "mdm_gskus"
+        ];
 
-        private MongoTestScope(IMongoClient client, IMongoDatabase database, string databaseName)
+        private readonly IMongoClient _client;
+        private readonly CleanupMode _cleanupMode;
+        private int _disposed;
+
+        private MongoTestScope(IMongoClient client, IMongoDatabase database, string databaseName, CleanupMode cleanupMode,
+            string topologyEvidence = "")
         {
             _client = client;
             Database = database;
             DatabaseName = databaseName;
+            _cleanupMode = cleanupMode;
+            TopologyEvidence = topologyEvidence;
         }
 
         public Guid TenantA { get; } = Guid.NewGuid();
         public Guid TenantB { get; } = Guid.NewGuid();
         public IMongoDatabase Database { get; }
         private string DatabaseName { get; }
+        public string TopologyEvidence { get; }
+        public string CleanupEvidence { get; private set; } = "CLEANUP_NOT_STARTED";
 
         public static async Task<MongoTestScope> CreateAsync()
         {
@@ -1514,7 +1484,51 @@ public sealed class ProductItemSkuMasterMongoTests
             var databaseName = "DitenERP_MOD0290_Test_" + Guid.NewGuid().ToString("N");
             var database = client.GetDatabase(databaseName);
             await database.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("ping", 1));
-            return new MongoTestScope(client, database, databaseName);
+            return new MongoTestScope(client, database, databaseName, CleanupMode.PerRunDatabase);
+        }
+
+        /// <summary>
+        /// Safe path for the one named concurrency test. It accepts only the test-owned fixture's replica
+        /// connection and cleans tenant-owned records from the fixed DB; it can never call DropDatabase.
+        /// </summary>
+        public static async Task<MongoTestScope> CreateReplicaAsync(Audit.AuditIntentTemporalMongoFixture fixture)
+        {
+            ArgumentNullException.ThrowIfNull(fixture);
+            if (string.IsNullOrWhiteSpace(fixture.ReplicaConnectionString))
+                throw new InvalidOperationException("GSKU_TEST_OWNED_REPLICA_CONNECTION_REQUIRED");
+
+            var settings = MongoClientSettings.FromConnectionString(fixture.ReplicaConnectionString);
+            var server = settings.Servers.SingleOrDefault();
+            if (server is null || !string.Equals(server.Host, "127.0.0.1", StringComparison.Ordinal) ||
+                server.Port == 27017 || string.IsNullOrWhiteSpace(settings.ReplicaSetName))
+            {
+                throw new InvalidOperationException("GSKU_TEST_OWNED_REPLICA_TOPOLOGY_REQUIRED");
+            }
+
+            settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+            settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+#pragma warning disable CS0618 // Driver 2.x requires client-level Standard representation to match production wiring.
+            settings.GuidRepresentation = MongoDB.Bson.GuidRepresentation.Standard;
+#pragma warning restore CS0618
+            var client = new MongoClient(settings);
+            var database = client.GetDatabase(ProductLegalEntityScopeMongoCollection.DatabaseName);
+            var hello = await database.RunCommandAsync<MongoDB.Bson.BsonDocument>(
+                new MongoDB.Bson.BsonDocument("hello", 1));
+            if (!hello.TryGetValue("setName", out var setName) || !setName.IsString ||
+                !string.Equals(setName.AsString, settings.ReplicaSetName, StringComparison.Ordinal) ||
+                !hello.TryGetValue("isWritablePrimary", out var writablePrimary) || !writablePrimary.ToBoolean())
+            {
+                throw new InvalidOperationException("GSKU_TEST_OWNED_REPLICA_WRITABLE_PRIMARY_REQUIRED");
+            }
+
+            var serverStatus = await client.GetDatabase("admin").RunCommandAsync<MongoDB.Bson.BsonDocument>(
+                new MongoDB.Bson.BsonDocument("serverStatus", 1));
+            var topologyEvidence = $"host={server.Host};port={server.Port};replicaSet={setName.AsString};" +
+                $"writablePrimary={writablePrimary.ToBoolean()};driverVersion={typeof(MongoClient).Assembly.GetName().Version};" +
+                $"mongoVersion={serverStatus.GetValue("version", "unknown")};mongodPid={serverStatus.GetValue("pid", "unknown")};" +
+                $"database={database.DatabaseNamespace.DatabaseName}";
+            return new MongoTestScope(client, database, ProductLegalEntityScopeMongoCollection.DatabaseName,
+                CleanupMode.FixedDatabaseTenantOwned, topologyEvidence);
         }
 
         public TenantContext Context(Guid tenantId)
@@ -1531,6 +1545,59 @@ public sealed class ProductItemSkuMasterMongoTests
             => new(Database, Context(tenantId));
 
         public async ValueTask DisposeAsync()
-            => await _client.DropDatabaseAsync(DatabaseName);
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0) return;
+
+            if (_cleanupMode == CleanupMode.PerRunDatabase)
+            {
+                await _client.DropDatabaseAsync(DatabaseName);
+                return;
+            }
+
+            await CleanupFixedDatabaseTenantsAsync();
+        }
+
+        private async Task CleanupFixedDatabaseTenantsAsync()
+        {
+            var results = new List<string>();
+            var failures = new List<string>();
+            foreach (var tenantId in new[] { TenantA, TenantB })
+            {
+                foreach (var collectionName in FixedDatabaseOwnedCollections)
+                {
+                    try
+                    {
+                        var collection = Database.GetCollection<MongoDB.Bson.BsonDocument>(collectionName);
+                        var filter = Builders<MongoDB.Bson.BsonDocument>.Filter.Eq(
+                            "TenantId", new MongoDB.Bson.BsonBinaryData(tenantId, MongoDB.Bson.GuidRepresentation.Standard));
+                        var deleted = await collection.DeleteManyAsync(filter);
+                        if (!deleted.IsAcknowledged)
+                        {
+                            failures.Add($"GSKU_TENANT_CLEANUP_UNACKNOWLEDGED:{collectionName}:{tenantId:D}");
+                        }
+                        var remaining = await collection.CountDocumentsAsync(filter);
+                        results.Add($"tenant={tenantId:D};collection={collectionName};deleted={deleted.DeletedCount};remaining={remaining}");
+                        if (remaining != 0)
+                        {
+                            failures.Add($"GSKU_TENANT_CLEANUP_REMAINDER:{collectionName}:{tenantId:D}:{remaining}");
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        results.Add($"tenant={tenantId:D};collection={collectionName};cleanupError={exception.GetType().Name}");
+                        failures.Add($"GSKU_TENANT_CLEANUP_ERROR:{collectionName}:{tenantId:D}:{exception.GetType().Name}");
+                    }
+                }
+            }
+
+            CleanupEvidence = string.Join(Environment.NewLine, results);
+            if (failures.Count != 0) throw new InvalidOperationException(string.Join(Environment.NewLine, failures));
+        }
+
+        private enum CleanupMode
+        {
+            PerRunDatabase,
+            FixedDatabaseTenantOwned
+        }
     }
 }
