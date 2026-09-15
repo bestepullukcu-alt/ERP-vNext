@@ -42,5 +42,15 @@ DOĞRULA (E2): Platform build temiz; provider DI'de; GetManifest ~30 page geçer
 Durma koşulları: readPerm bulunamıyorsa · shell sayfa · imza farklı · kapsam dışı → DUR+raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-15) → **ACCEPTED (E2)** · E4 = Platform restart + WP-C sonrası menü
+```text
+Commit: 9b89a7a5 (tek) · Agent: PASS (WP-A ile paralel) · CT: ACCEPTED E2
+```
+- ✅ **Scope:** 2 dosya — TalentEcosystemManifestProvider (255) + DI (+3). WP-A ile çakışmadan birleşti (DI'de 3 provider da mevcut: TalentEcosystem 439 + HumanCapital 457 + HcmEmployeeMaster 458).
+- ✅ **Build (HEAD, WP-A+B, Release):** Platform.Application **0 hata**; **UYDURMA YOK: 31/31 read izni** (tep.<kebab>.read) backend `Diten.TalentEcosystemService`'te **verbatim mevcut** (eksik 0).
+- ✅ **Manifest:** **30 sayfa** (31 controller − TepShellMetadata shell, doğru hariç tutuldu); ModuleCode TALENT-ECOSYSTEM.
+- ✅ **Test:** manifest/module-registration/nav **160/160** (HEAD, WP-A+B birlikte).
+- ⏳ **E4:** Platform restart → catalog TALENT-ECOSYSTEM + page_descriptors 30 + izin auto-register; menü WP-C sonrası.
+
 ## Kalan (bu WP dışı)
-- WP-C entitlement+RBAC grant · WP-D L10n. → menüde görünür → PR→main (Ali).
+- **WP-C entitlement+RBAC grant (sıradaki)** · WP-D L10n+Nav.Page.*. → menüde görünür → PR→main (Ali).

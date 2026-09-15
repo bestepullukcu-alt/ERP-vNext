@@ -44,5 +44,17 @@ Ayrı commit. §22 raporu TÜRKÇE. K13 — CT bağımsız doğrular (Platform r
 Durma koşulları: bir route'un readPerm'i controller/backend'de bulunamıyorsa · manifest imzası farklıysa · shell/metadata sayfası (hariç tut+belgele) · kapsam Platform dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-15) → **ACCEPTED (E2)** · E4 = Platform restart + WP-C sonrası menü
+```text
+Commit: 869dc45f (tek) · Agent: PASS · CT: ACCEPTED E2
+```
+- ✅ **Scope:** 3 dosya — HumanCapitalManifestProvider (194) + HcmEmployeeMasterManifestProvider (43) + DI (+5). HR-only; frontend/backend-servis/entitlement/token dokunulmadı.
+- ✅ **Build (izole worktree @869dc45f, Release):** Platform.Application **0 hata**; **UYDURMA YOK doğrulandı: 23/23 read izni** (hcm.<kebab>.read) backend `Diten.HumanCapitalService`'te **verbatim mevcut**; HCM master `mod0251.employee.view` + `create_draft` DitenHcmService'te gerçek.
+- ✅ **Manifest:** HumanCapital 23 sayfa + HCM-EMPLOYEE-MASTER 1 sayfa; ModuleCode/Domain/Service doğru; DI'de 2 provider (TalentEcosystem yok = temiz ayrım).
+- ✅ **Test:** manifest/module-registration/nav filtresi **160/160** (ilk koşuda 1 fail = bilinen Mongo/env flake, rerun temiz).
+- ✅ **Karar:** ayrı ModuleCode (HCM-EMPLOYEE-MASTER) → IModuleManifestProvider tek-doküman döndürdüğü için 2. provider zorunlu (kapsam taşması değil) — kabul.
+- ⏳ **E4:** Platform restart → self-reg → catalog HUMAN-CAPITAL+HCM-EMPLOYEE-MASTER + page_descriptors 23+1 + izin auto-register; menü **WP-C entitlement+grant** sonrası.
+- ⚠️ **Follow-up (WP-D):** frontend NavManifestL10nGuardTests her sayfa için `Nav.Page.*` resx anahtarı ister (7-dil) — bu WP dışı, WP-D.
+
 ## Kalan (bu WP dışı)
-- WP-HR-nav-B (TalentEcosystem 31) · WP-C entitlement+RBAC grant · WP-D L10n. → menüde görünür → PR→main (Ali).
+- WP-HR-nav-B ✅ (TalentEcosystem, commit 9b89a7a5) · **WP-C entitlement+RBAC grant (sıradaki)** · WP-D L10n+Nav.Page.*. → menüde görünür → PR→main (Ali).
