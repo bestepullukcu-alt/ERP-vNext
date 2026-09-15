@@ -14,18 +14,26 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// watcher, the assignee/pool-holder of the PARENT task (so a subtask panel keeps working for whoever can already
 /// see the parent), inside their <see cref="TaskAssignmentScope"/> for the task's own organization unit
 /// (<see cref="TaskAssigneeEligibility.AllowsUnit"/> — the same scope leg <see cref="TaskAssignmentGuard"/> asks
-/// on the write side), or holds <see cref="TaskPermissions.ReadAll"/>.</para>
+/// on the write side), the manager of the task's holder in the org chart (the subordinate leg, below), or holds
+/// <see cref="TaskPermissions.ReadAll"/>.</para>
+///
+/// <para><b>The subordinate leg (BL-417 option a, DCP-004 "Decision amendment 2026-09-15").</b> A task on the
+/// caller's Ekibim list is readable by the caller. It is decided by the SAME resolver that builds that list
+/// (<see cref="ITaskTeamResolver"/>) and the SAME predicate the list applies (<see cref="TaskTeamScope.Covers"/>),
+/// so the list and the detail page cannot answer differently. No legal-entity restriction, by owner decision: the
+/// position reporting chain may cross the company boundary, and the team follows it.</para>
 ///
 /// <para><b>The parent leg is narrower than the direct leg on purpose.</b> A subtask is covered by its parent's
 /// assignee and pool, not by the parent's creator or watchers — the prompt asks only for "the parent task's
 /// assignee and pool holders" (WCN's subtask panel resolves a person who can already open the parent), and
 /// widening it further would be a second, unrequested visibility rule.</para>
 ///
-/// <para><b>Scope and read-all are asked only for the CURRENT caller.</b> Both ride
-/// <see cref="ITaskAssignmentScopeResolver"/> and <see cref="IActorPermissionContext"/>, which resolve "the actor
-/// making this request" — there is no per-arbitrary-user variant of either in this codebase today. A future
-/// consumer (e.g. an @mention candidate check) that calls this policy for somebody OTHER than the caller gets a
-/// true answer only from the data legs above; that is a real, documented narrowing, not a silent gap.</para>
+/// <para><b>Scope, team and read-all are asked only for the CURRENT caller.</b> They ride
+/// <see cref="ITaskAssignmentScopeResolver"/>, <see cref="ITaskTeamResolver"/> and
+/// <see cref="IActorPermissionContext"/>, which resolve "the actor making this request" — there is no
+/// per-arbitrary-user variant of any of them in this codebase today. A consumer (e.g. the @mention check) that calls
+/// this policy for somebody OTHER than the caller gets a true answer only from the data legs above; that is a real,
+/// documented narrowing, not a silent gap.</para>
 /// </summary>
 public interface ITaskReadAccessPolicy
 {
@@ -36,8 +44,9 @@ public interface ITaskReadAccessPolicy
     /// watchers, and the parent task's assignee/pool holders. This is exactly the "future consumer" the class doc
     /// above anticipated — an @mention candidate list needs "who", not "can this one person" — and it is written
     /// as a refactor of <see cref="CanReadAsync"/>'s own legs rather than a second copy of them, so the two
-    /// cannot drift apart. Deliberately excludes the scope and read-all legs; both only answer for the CURRENT
-    /// caller (see the class doc), so they contribute nothing to an arbitrary candidate's membership.
+    /// cannot drift apart. Deliberately excludes the scope, subordinate and read-all legs: all three only answer for
+    /// the CURRENT caller (see the class doc), so <see cref="CanReadAsync"/> would not admit an arbitrary candidate
+    /// through them either — listing their members here would be a second rule.
     /// </summary>
     Task<IReadOnlySet<Guid>> ResolveDataLegCandidatesAsync(TaskItem task, CancellationToken ct);
 }
@@ -50,6 +59,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
     private readonly ITaskNotificationService _notifications;
     private readonly IOrganizationUnitRepository _organizationUnits;
     private readonly ITaskAssignmentScopeResolver _scopes;
+    private readonly ITaskTeamResolver _team;
     private readonly IActorPermissionContext _permissions;
     private readonly ICurrentUserContext _currentUser;
 
@@ -59,6 +69,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         ITaskNotificationService notifications,
         IOrganizationUnitRepository organizationUnits,
         ITaskAssignmentScopeResolver scopes,
+        ITaskTeamResolver team,
         IActorPermissionContext permissions,
         ICurrentUserContext currentUser)
     {
@@ -67,6 +78,7 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
         _notifications = notifications;
         _organizationUnits = organizationUnits;
         _scopes = scopes;
+        _team = team;
         _permissions = permissions;
         _currentUser = currentUser;
     }
@@ -85,7 +97,12 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             return true;
         }
 
-        // ReadAll is a permission grant on the CALLER, not a fact about actorUserId — see the "scope and
+        if (await ActorTeamHoldsTaskAsync(task, actorUserId, ct))
+        {
+            return true;
+        }
+
+        // ReadAll is a permission grant on the CALLER, not a fact about actorUserId — see the "scope, team and
         // read-all" note on the interface. An arbitrary-actor call (actorUserId != caller) never gets a true
         // answer from this leg.
         return actorUserId == _currentUser.UserId && _permissions.Has(TaskPermissions.ReadAll);
@@ -157,5 +174,23 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
 
         var scope = await _scopes.ResolveAsync(ct);
         return TaskAssigneeEligibility.AllowsUnit(unit.Id, unit.LegalEntityId, scope);
+    }
+
+    /// <summary>
+    /// BL-417 (a) — the task is held by one of the caller's subordinates. The resolver and the predicate are the
+    /// Ekibim list's own (<see cref="ITaskTeamResolver"/>, <see cref="TaskTeamScope.Covers"/>); nothing about "who
+    /// reports to whom" is decided here.
+    /// </summary>
+    private async Task<bool> ActorTeamHoldsTaskAsync(TaskItem task, Guid actorUserId, CancellationToken ct)
+    {
+        // The team is the CALLER's org chart. There is no "whose manager is this other person" variant, so an
+        // @mention-style call about somebody else never gets a true answer from this leg — see the interface note.
+        if (actorUserId != _currentUser.UserId)
+        {
+            return false;
+        }
+
+        var team = await _team.ResolveTeamAsync(ct);
+        return team.Covers(task);
     }
 }

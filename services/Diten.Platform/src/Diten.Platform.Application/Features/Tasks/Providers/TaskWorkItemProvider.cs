@@ -305,7 +305,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 theirs.AddRange(await _tasks.ListByAssigneeAsync(member, ct));
             }
 
-            tasks = theirs.DistinctBy(t => t.Id).ToList();
+            // BL-417 (a) — the list keeps exactly what TaskTeamScope.Covers admits. The task read rule asks the SAME
+            // predicate over the SAME resolver, so a row on this list is a task its reader may open by id
+            // (TaskTeamReadParityTests); there is no second definition of "my subordinate's task".
+            tasks = theirs.Where(team.Covers).DistinctBy(t => t.Id).ToList();
         }
         else
         {

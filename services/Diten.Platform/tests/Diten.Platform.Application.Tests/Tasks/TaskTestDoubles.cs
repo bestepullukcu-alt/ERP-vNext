@@ -64,6 +64,20 @@ internal sealed class AlwaysAdmitReadAccessPolicy : ITaskReadAccessPolicy
 }
 
 /// <summary>
+/// BL-417 (a) — "my team" as a test states it: the user ids handed in ARE the caller's subordinates. No ids means
+/// "nobody reports to me" (<see cref="TaskTeamScope.None"/>), which is what every suite that predates the
+/// subordinate read leg needs. The real descent is proven against <c>TaskTeamResolver</c> in TaskTeamScopeTests and
+/// TaskTeamReadParityTests.
+/// </summary>
+internal sealed class FakeTaskTeamResolver(params Guid[] subordinateUserIds) : ITaskTeamResolver
+{
+    public Task<TaskTeamScope> ResolveTeamAsync(CancellationToken ct)
+        => Task.FromResult(subordinateUserIds.Length == 0
+            ? TaskTeamScope.None
+            : new TaskTeamScope(HasTeam: true, UserIds: subordinateUserIds));
+}
+
+/// <summary>
 /// Stands in for MOD-0018-FU15's <c>OrgDataScopeResolver</c> (BL-057).
 ///
 /// <para>The scopes are handed in rather than derived, so a test states the org reality it wants in one line and
