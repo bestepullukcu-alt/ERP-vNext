@@ -364,6 +364,13 @@ public static class DependencyInjection
         services.AddScoped<IWorkReportRepository, WorkReportRepository>();
         services.AddScoped<ITaskAssignmentRepository, TaskAssignmentRepository>();
         services.AddScoped<ITaskDependencyRepository, TaskDependencyRepository>();
+        // MOD-0357 S1 — the one bridge collection's storage. See IRecordLinkRepository/IRecordLinkService.
+        services.AddScoped<IRecordLinkRepository, RecordLinkRepository>();
+        // MOD-0357 S2 — the meeting aggregate's own storage.
+        services.AddScoped<IMeetingRepository, MeetingRepository>();
+        services.AddScoped<IMeetingAttendeeRepository, MeetingAttendeeRepository>();
+        services.AddScoped<IAgendaItemRepository, AgendaItemRepository>();
+        services.AddScoped<IMeetingTypeRepository, MeetingTypeRepository>();
         services.AddScoped<ITaskWatcherRepository, TaskWatcherRepository>();
         services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
         services.AddScoped<ITaskPersonalOverlayRepository, TaskPersonalOverlayRepository>();
@@ -372,6 +379,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskFieldDefinitionRepository, TaskFieldDefinitionRepository>();
         services.AddScoped<IChecklistTemplateRepository, ChecklistTemplateRepository>();
         services.AddScoped<IChecklistRunRepository, ChecklistRunRepository>();
+        // MOD-0024 Slice ATT-1 — task attachment metadata.
+        services.AddScoped<ITaskAttachmentRepository, TaskAttachmentRepository>();
         services.AddScoped<ITaskTemplateRepository, TaskTemplateRepository>();
         services.AddScoped<ITaskRecurrenceRuleRepository, TaskRecurrenceRuleRepository>();
 
@@ -408,6 +417,8 @@ public static class DependencyInjection
         services.AddScoped<IDocumentCollectionDeviationRepository, DocumentCollectionDeviationRepository>();
         // MOD-0029-FU06 — Document Master Register (LOG-0001) repository (sidecar governance projection).
         services.AddScoped<IDocumentMasterRegisterRepository, DocumentMasterRegisterRepository>();
+        // WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the register's CSV upload history.
+        services.AddScoped<IDocumentRegisterImportBatchRepository, DocumentRegisterImportBatchRepository>();
         // MOD-0029-FU36 — durable controlled-document registration orchestration.
         services.AddScoped<IControlledDocumentRegistrationRepository, ControlledDocumentRegistrationRepository>();
         // MOD-0029-FU07 — document identifier (Permanent UID / Document Code) allocation ledger + sequence counter.

@@ -491,6 +491,7 @@ describe("clicking the calendar icon opens the calendar", () => {
     delete global.TaskForm;
     delete global.DitenDateField;
     loadScript("wwwroot/assets/js/shared/diten-datefield.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
 
     document.body.innerHTML = `

@@ -268,7 +268,8 @@ public sealed class CreateWithChecklistTests
         var run = runs.Runs.Single();
 
         var tick = await new SetChecklistItemStateHandler(
-                tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me))
+                tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me),
+                new FakeTaskAttachmentRepository())
             .Handle(
                 new SetChecklistItemStateCommand(
                     task.Id,

@@ -102,6 +102,7 @@ describe("the detailed task form reports a save; it does not stop to ask about i
     // The tenant shell, loaded exactly where the layout loads it: BEFORE the page's own scripts. It owns the
     // hand-over key, so a harness without it would be testing a page no reader ever gets.
     loadScript("wwwroot/assets/js/backbone-shell.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     loadScript("wwwroot/assets/js/Tasks/api.js");
     loadScript("wwwroot/assets/js/Tasks/form-page.js");

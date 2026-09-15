@@ -223,6 +223,16 @@
         ErrorFieldValueInvalid = Localizer["ErrorFieldValueInvalid"].Value,
         ErrorFieldOptionSourceInvalid = Localizer["ErrorFieldOptionSourceInvalid"].Value,
         ErrorFieldDefinitionUnknown = Localizer["ErrorFieldDefinitionUnknown"].Value,
-        ErrorFieldLimitExceeded = Localizer["ErrorFieldLimitExceeded"].Value
+        ErrorFieldLimitExceeded = Localizer["ErrorFieldLimitExceeded"].Value,
+
+        // MOD-0024 Slice ATT-1 — task attachments (Tasks/api.js's REASON_CODE_MESSAGE_KEYS). This bridge does
+        // NOT auto-enumerate its resx, so a code mapped in api.js without a line here reaches the reader as the
+        // generic "an error occurred" — the same gap this comment has warned about above, four times already.
+        ErrorAttachmentNotAuthorized = Localizer["ErrorAttachmentNotAuthorized"].Value,
+        ErrorAttachmentTaskClosed = Localizer["ErrorAttachmentTaskClosed"].Value,
+        ErrorAttachmentNotFound = Localizer["ErrorAttachmentNotFound"].Value,
+        ErrorAttachmentChecklistItemNotFound = Localizer["ErrorAttachmentChecklistItemNotFound"].Value,
+        ErrorChecklistEvidenceRequired = Localizer["ErrorChecklistEvidenceRequired"].Value,
+        ErrorAttachmentInvalid = Localizer["ErrorAttachmentInvalid"].Value
     })
 </script>

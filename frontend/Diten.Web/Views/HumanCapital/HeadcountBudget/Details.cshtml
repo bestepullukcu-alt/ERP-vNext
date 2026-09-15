@@ -1,0 +1,120 @@
+@model Diten.Web.Models.HumanCapital.HeadcountBudget.HeadcountBudgetDetailViewModel
+@using Diten.Web.Views.HumanCapital.HeadcountBudget
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<HeadcountBudgetIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+
+    var stateLabels = new Dictionary<int, string>
+    {
+        [0] = Localizer["StateDraft"].Value,
+        [1] = Localizer["StateReady"].Value,
+        [2] = Localizer["StateDeferred"].Value,
+        [3] = Localizer["StateBlocked"].Value,
+        [4] = Localizer["StateNotRequired"].Value,
+        [5] = Localizer["StateArchived"].Value
+    };
+    var stateBadgeClass = new Dictionary<int, string>
+    {
+        [0] = "bg-label-warning",
+        [1] = "bg-label-success",
+        [2] = "bg-label-info",
+        [3] = "bg-label-danger",
+        [4] = "bg-label-secondary",
+        [5] = "bg-label-secondary"
+    };
+    Func<int, IHtmlContent> stateBadge = (value) =>
+    {
+        var label = stateLabels.TryGetValue(value, out var l) ? l : value.ToString();
+        var cls = stateBadgeClass.TryGetValue(value, out var c) ? c : "bg-label-warning";
+        return Html.Raw($"<span class=\"badge {cls}\">{System.Net.WebUtility.HtmlEncode(label)}</span>");
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["DetailsTitle"]</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/HumanCapital/HeadcountBudget">@Localizer["HeadcountBudgetTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+            </ol>
+        </nav>
+    </div>
+    <a href="/HumanCapital/HeadcountBudget" class="btn btn-label-secondary">@Localizer["Back"]</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="text-muted small">@Localizer["Code"]</div>
+                    <div class="fw-medium mt-1">@(string.IsNullOrWhiteSpace(Model.Code) ? "-" : Model.Code)</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="text-muted small">@Localizer["HeadcountBudgetReadinessState"]</div>
+                    <div class="mt-1">@stateBadge(Model.HeadcountBudgetReadinessState)</div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted small">@Localizer["DisplayName"]</div>
+                    <div class="fw-medium mt-1">@(string.IsNullOrWhiteSpace(Model.DisplayName) ? "-" : Model.DisplayName)</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="text-muted small">@Localizer["SourceContractVersion"]</div>
+                    <div class="fw-medium mt-1">@(string.IsNullOrWhiteSpace(Model.SourceContractVersion) ? "-" : Model.SourceContractVersion)</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="text-muted small">@Localizer["HeadcountBudgetReadinessVersion"]</div>
+                    <div class="fw-medium mt-1">@Model.HeadcountBudgetReadinessVersion</div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="text-muted small">@Localizer["LastEvaluatedAt"]</div>
+                    <div class="fw-medium mt-1">@(Model.LastEvaluatedAt?.ToLocalTime().ToString("yyyy-MM-dd HH:mm") ?? "-")</div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted small">@Localizer["DeferredReason"]</div>
+                    <div class="mt-1">@(string.IsNullOrWhiteSpace(Model.DeferredReason) ? "-" : Model.DeferredReason)</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["WorkflowSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["HeadcountRequisitionBoundaryState"]</div><div class="mt-1">@stateBadge(Model.HeadcountRequisitionBoundaryState)</div></div>
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["PositionBudgetBoundaryState"]</div><div class="mt-1">@stateBadge(Model.PositionBudgetBoundaryState)</div></div>
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["BudgetAllocationBoundaryState"]</div><div class="mt-1">@stateBadge(Model.BudgetAllocationBoundaryState)</div></div>
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["BudgetApprovalBoundaryState"]</div><div class="mt-1">@stateBadge(Model.BudgetApprovalBoundaryState)</div></div>
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["BudgetReconciliationBoundaryState"]</div><div class="mt-1">@stateBadge(Model.BudgetReconciliationBoundaryState)</div></div>
+                <div class="col-12 col-md-6"><div class="text-muted small">@Localizer["AutomatedDecisionBoundaryState"]</div><div class="mt-1">@stateBadge(Model.AutomatedDecisionBoundaryState)</div></div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["DependencySection"]</h6>
+            <div class="row g-4">
+                <div class="col-12"><div class="text-muted small">@Localizer["OrganizationStructureDependencyState"]</div><div class="mt-1">@stateBadge(Model.OrganizationStructureDependencyState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["PositionFrameworkDependencyState"]</div><div class="mt-1">@stateBadge(Model.PositionFrameworkDependencyState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["DocumentDependencyState"]</div><div class="mt-1">@stateBadge(Model.DocumentDependencyState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["NotificationDependencyState"]</div><div class="mt-1">@stateBadge(Model.NotificationDependencyState)</div></div>
+            </div>
+        </section>
+
+        <section class="card p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["GovernanceSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12"><div class="text-muted small">@Localizer["ConsentPreconditionState"]</div><div class="mt-1">@stateBadge(Model.ConsentPreconditionState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["DataMinimizationState"]</div><div class="mt-1">@stateBadge(Model.DataMinimizationState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["RetentionPolicyState"]</div><div class="mt-1">@stateBadge(Model.RetentionPolicyState)</div></div>
+                <div class="col-12"><div class="text-muted small">@Localizer["EvidencePolicyState"]</div><div class="mt-1">@stateBadge(Model.EvidencePolicyState)</div></div>
+            </div>
+        </section>
+    </div>
+</div>

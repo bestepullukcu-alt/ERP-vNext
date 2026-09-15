@@ -110,7 +110,8 @@ public sealed class TaskChecklistSubtaskTests
         Assert.False(before.Checklist!.Items.Single().Completed);
 
         var handler = new SetChecklistItemStateHandler(
-            tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me));
+            tasks, runs, new TaskChecklistService(), new FakeCurrentUserContext(TaskTestData.Me),
+            new FakeTaskAttachmentRepository());
         var result = await handler.Handle(
             new SetChecklistItemStateCommand(
                 task.Id, new SetChecklistItemStateRequest("i0", true, run.Version), "corr"),

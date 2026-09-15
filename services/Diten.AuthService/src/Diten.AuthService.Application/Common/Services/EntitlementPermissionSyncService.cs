@@ -52,8 +52,12 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
     public async Task GrantModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — the refusal gate and the processing below read the SAME normalized code (trim + lower), so
+        // " PPM " / " ppm " / "Ppm" are refused exactly like "PPM". Gating on the raw code with an ignore-case
+        // compare let a padded code through and then normalize to "ppm" (Codex review of 0bf3b283, 2026-09-11).
+        // PpmEntitlementPermissionPolicy.Applies (resolver-facing, exact-case) is deliberately not used here.
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(code)) return;
         if (code.Length == 0)
         {
             return; // fail-safe: blank module code is a no-op
@@ -72,8 +76,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — same gate as GrantModuleAsync: normalized code first, then the refusal.
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(code)) return;
         if (code.Length == 0)
         {
             return; // fail-safe: blank module code is a no-op
@@ -125,6 +130,13 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
         string actor,
         CancellationToken ct)
     {
+        // BL-359 — defense in depth: module-entitlement sync never grants an explicit-grant-only key, even
+        // if a future module code or key set were to reach this shared path. PPM itself is already fully
+        // blocked above by IsPpmModuleCodeAnyCase, so this is currently a no-op filter for PPM specifically.
+        modulePermissions = modulePermissions
+            .Where(permission => !ExplicitGrantOnlyPermissions.Keys.Contains(permission.Key))
+            .ToList();
+
         if (modulePermissions.Count == 0)
         {
             return;
@@ -182,8 +194,9 @@ public sealed class EntitlementPermissionSyncService : IEntitlementPermissionSyn
 
     public async Task RevokeModuleAsync(Guid tenantId, string moduleCode, string actor, CancellationToken ct = default)
     {
-        if (_ppmPolicy.Applies(moduleCode)) return;
+        // BL-360 — revoke reads the same normalized code as grant, so no spelling of PPM can bulk-revoke it.
         var code = ModulePermissionResolver.NormalizeModuleCode(moduleCode);
+        if (_ppmPolicy.IsPpmModuleCodeAnyCase(code)) return;
         if (code.Length == 0)
         {
             return;

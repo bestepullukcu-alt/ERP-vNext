@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<UsersIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
 
 <div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
     aria-labelledby="offcanvasDetailsPreviewLabel">
@@ -56,6 +57,30 @@
                             <div class="min-w-0 flex-grow-1">
                                 <div class="backbone-preview-label">@Localizer["Roles"]</div>
                                 <div id="oc-roles" class="backbone-preview-value mt-1 d-flex flex-wrap gap-1">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="backbone-preview-field">
+                            <i class="bx bx-id-card"></i>
+                            <div class="min-w-0 flex-grow-1">
+                                <div class="backbone-preview-label">@Localizer["AccountKind"]</div>
+                                <div class="mt-1 d-flex align-items-center flex-wrap gap-2">
+                                    <span id="oc-accountkind" class="badge bg-label-secondary">-</span>
+                                    @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — "Change type" is drawn ONLY for a holder of the
+                                       explicit-grant-only key (UAS-001: no disabled control for the others). The confirm
+                                       goes through window.showConfirm (BL-367, one dialog body); the POST goes through
+                                       /Users/api/{id}/account-kind, never to a service port. *@
+                                    @if (Perms.Has("auth.users.account-kind.manage"))
+                                    {
+                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto" aria-label="@Localizer["AccountKind"]">
+                                            <option value="Unknown">@Localizer["AccountKindUnknown"]</option>
+                                            <option value="Human">@Localizer["AccountKindHuman"]</option>
+                                            <option value="Service">@Localizer["AccountKindService"]</option>
+                                        </select>
+                                        <button type="button" id="oc-btn-accountkind" class="btn btn-sm btn-label-primary">@Localizer["ChangeAccountKind"]</button>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>

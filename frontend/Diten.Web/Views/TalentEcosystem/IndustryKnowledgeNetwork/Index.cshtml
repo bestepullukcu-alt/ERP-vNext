@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.IndustryKnowledgeNetwork
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<IndustryKnowledgeNetworkIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["IndustryKnowledgeNetworkTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.industry-knowledge-network.manage");
+    var canEvaluate = Perms.Has("tep.industry-knowledge-network.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["IndustryKnowledgeNetworkTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="industry-knowledge-network-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-industry-knowledge-network" data-dt-standard="v2"> *@
+    <partial name="~/Views/TalentEcosystem/IndustryKnowledgeNetwork/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/IndustryKnowledgeNetwork/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/IndustryKnowledgeNetwork/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/IndustryKnowledgeNetwork/index.js" asp-append-version="true"></script>
+}

@@ -293,6 +293,56 @@ public sealed class DefaultRolePermissionTemplateTests
         Assert.Empty(DefaultRolePermissionTemplate.SelectFor("Nope", Catalog()));
     }
 
+    // BL-359 — MOD-0117-FU01: an explicit-grant-only permission never enters any default/startup role
+    // template, including SuperAdmin's otherwise-unfiltered full-catalog branch (owner decision, 2026-09-11).
+    [Fact]
+    public void SuperAdmin_excludes_explicit_grant_only_permissions()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("ppm", "portfolios", "assign-owner", "Assign Owner", null));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", superAdminKeys);
+        Assert.Equal(5, superAdminKeys.Count); // the base Catalog() rows only
+    }
+
+    [Fact]
+    public void Admin_and_Viewer_exclude_explicit_grant_only_permissions_even_under_a_matching_module()
+    {
+        var catalog = new List<Permission>
+        {
+            new("mdm", "legal-entities", "read", "Read Legal Entity", null, moduleOverride: "legal-entity"),
+            new("ppm", "portfolios", "assign-owner", "Assign Owner", null, moduleOverride: "legal-entity")
+        };
+
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", adminKeys);
+        Assert.DoesNotContain("ppm.portfolios.assign-owner", viewerKeys);
+    }
+
+    // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the second explicit-grant-only key (K1-a: remove it from
+    // ExplicitGrantOnlyPermissions.Keys and this goes red together with its siblings in the other grant paths).
+    [Fact]
+    public void Account_kind_manage_enters_no_default_role_even_under_the_Admin_module_while_lookup_reaches_Admin()
+    {
+        var catalog = Catalog();
+        catalog.Add(new Permission("auth", "users", "lookup", "Lookup Users", null, moduleOverride: "access-governance"));
+        catalog.Add(new Permission("auth", "users.account-kind", "manage", "Manage Account Kind", null, moduleOverride: "access-governance"));
+
+        var superAdminKeys = DefaultRolePermissionTemplate.SelectFor("SuperAdmin", catalog).Select(p => p.Key).ToList();
+        var adminKeys = DefaultRolePermissionTemplate.SelectFor("Admin", catalog).Select(p => p.Key).ToList();
+        var viewerKeys = DefaultRolePermissionTemplate.SelectFor("Viewer", catalog).Select(p => p.Key).ToList();
+
+        Assert.DoesNotContain("auth.users.account-kind.manage", superAdminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", adminKeys);
+        Assert.DoesNotContain("auth.users.account-kind.manage", viewerKeys);
+        Assert.Contains("auth.users.lookup", adminKeys);      // ordinary tenant key: Admin breadth clause
+        Assert.DoesNotContain("auth.users.lookup", viewerKeys); // not a read action
+    }
+
     [Fact]
     public void Deleted_permissions_are_excluded()
     {

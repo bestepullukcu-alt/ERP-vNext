@@ -1,0 +1,28 @@
+@model Diten.Web.Models.TalentEcosystem.SectorTalentTrends.SectorTalentTrendsEditViewModel
+@using Diten.Web.Views.TalentEcosystem.SectorTalentTrends
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SectorTalentTrendsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleCreate"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/TalentEcosystem/SectorTalentTrends/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var select2Elements = $('.select2');
+            if (select2Elements.length) {
+                select2Elements.each(function () {
+                    var $this = $(this);
+                    $this.wrap('<div class="position-relative"></div>').select2({
+                        dropdownParent: $this.parent(),
+                        minimumResultsForSearch: Infinity
+                    });
+                });
+            }
+        });
+    </script>
+}

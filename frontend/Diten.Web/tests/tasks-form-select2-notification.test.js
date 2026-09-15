@@ -31,6 +31,7 @@ const loadRealStack = () => {
   ["TaskForm", "jQuery", "$"].forEach((key) => { delete global[key]; });
   loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
   loadScript("wwwroot/assets/vendor/libs/select2/select2.js");
+  loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
   loadScript("wwwroot/assets/js/Tasks/form.js");
 };
 
@@ -158,6 +159,7 @@ describe("the page's conditional fields open when the user picks, end to end", (
 
     loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
     loadScript("wwwroot/assets/vendor/libs/select2/select2.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     loadScript("wwwroot/assets/js/Tasks/api.js");
     loadScript("wwwroot/assets/js/Tasks/form-page.js");
@@ -365,6 +367,7 @@ describe("the review type has a place, with the meeting option disabled and expl
      * reader has to interpret.
      */
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     const payload = global.TaskForm.buildCreatePayload({
       title: "t", dueAt: "2026-09-01", assignmentTarget: "SelfAssigned", reviewRequired: true,
@@ -388,6 +391,7 @@ describe("the configurable fields line up with the rest of the form", () => {
     expect(dominant).toBe("6");
 
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     document.body.innerHTML = '<div id="row"></div>';
     const row = document.getElementById("row");
@@ -425,6 +429,7 @@ describe("tags are entered as chips, using the pattern the repo already has", ()
     delete global.TaskForm;
     delete global.DitenTags;
     loadScript("wwwroot/assets/js/shared/diten-tags.js");
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     document.body.innerHTML = '<input id="taskTags" />';
 
@@ -447,6 +452,7 @@ describe("tags are entered as chips, using the pattern the repo already has", ()
 
   test("the wire shape is still an array of tags", () => {
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
 
     const payload = global.TaskForm.buildCreatePayload({

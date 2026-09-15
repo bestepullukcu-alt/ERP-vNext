@@ -26,6 +26,7 @@ public static class PlatformCollections
     public const string BusinessReferenceDataValidationResults = "business_reference_data_validation_results";
     public const string BusinessReferenceDataVersions = "business_reference_data_versions";
     public const string ChecklistRuns = "checklist_runs";
+    public const string TaskAttachments = "task_attachments";
     public const string ChecklistTemplates = "checklist_templates";
     public const string ConsumedEvents = "consumed_events";
     public const string DocumentManagementAccessPolicies = "document_management_access_policies";
@@ -69,6 +70,7 @@ public static class PlatformCollections
     public const string DocumentManagementLegalHolds = "document_management_legal_holds";
     public const string DocumentManagementLifecycleTransitions = "document_management_lifecycle_transitions";
     public const string DocumentManagementMasterRegister = "document_management_master_register";
+    public const string DocumentRegisterImportBatches = "document_management_register_import_batches";
     public const string DocumentManagementObsoleteCopyFindings = "document_management_obsolete_copy_findings";
     public const string DocumentManagementPeriodicReviewEscalations = "document_management_periodic_review_escalations";
     public const string DocumentManagementPeriodicReviewExtensions = "document_management_periodic_review_extensions";
@@ -113,6 +115,13 @@ public static class PlatformCollections
     public const string InterfaceDiscoveryBatches = "platform_interface_discovery_batches";
     public const string InterfaceDiscoveryDiffItems = "platform_interface_discovery_diff_items";
     public const string JobExecutionLogs = "job_execution_logs";
+    // MOD-0357 S1 — the one bridge between a meeting and anything else (a task today). See RecordLink.cs.
+    public const string MeetingRecordLinks = "meeting_record_links";
+    // MOD-0357 S2 — the meeting aggregate's own collections.
+    public const string MeetingMeetings = "meeting_meetings";
+    public const string MeetingAttendees = "meeting_attendees";
+    public const string MeetingAgendaItems = "meeting_agenda_items";
+    public const string MeetingTypes = "meeting_types";
     public const string ModuleCatalog = "platform_module_catalog";
     public const string ModuleDomains = "platform_module_domains";
     public const string ModulePageActionDescriptors = "platform_module_page_action_descriptors";

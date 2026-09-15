@@ -40,6 +40,8 @@
        undefined on this page. Loading the vendored file rather than adding a second CDN consumer keeps BL-081 a
        single-line change about _Layout instead of a widening one. *@
     <script src="~/assets/vendor/libs/sortablejs/sortable.js"></script>
+    @* WP-WC-SHARED-UI-01, E2 — Tasks/form.js's own person/avatar picker now delegates here. *@
+    <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/fixture-contract.js" asp-append-version="true"></script>
@@ -58,5 +60,9 @@
     <script src="~/assets/js/WorkCenterNext/trigger-response-resolver.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/mock-data.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/work-items-api.js" asp-append-version="true"></script>
+    @* WP-WC-SHARED-UI-01, E1 — app.js's own dialogIcon/dialogDescriptionClass now delegate here. *@
+    <script src="~/assets/js/shared/diten-dialog.js" asp-append-version="true"></script>
+    @* WP-WC-SHARED-UI-01, E3 — app.js's own renderRelated row markup now delegates here. *@
+    <script src="~/assets/js/shared/diten-related-records.js" asp-append-version="true"></script>
     <script src="~/assets/js/WorkCenterNext/app.js" asp-append-version="true"></script>
 }

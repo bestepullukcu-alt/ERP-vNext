@@ -897,3 +897,63 @@ public sealed class TaskPersonalOverlayRepository
         await Collection.ReplaceOneAsync(filter, overlay, new ReplaceOptions { IsUpsert = true }, ct);
     }
 }
+
+/// <summary>MOD-0024 Slice ATT-1 — tenant-scoped repository for task attachment metadata.</summary>
+public sealed class TaskAttachmentRepository : TenantRepository<TaskAttachment>, ITaskAttachmentRepository
+{
+    public TaskAttachmentRepository(IPlatformDbContext dbContext, ITenantContext tenantContext)
+        : base(dbContext.Database, tenantContext, PlatformCollections.TaskAttachments)
+    {
+    }
+
+    public new Task<TaskAttachment> CreateAsync(TaskAttachment attachment, CancellationToken ct = default) =>
+        base.CreateAsync(attachment, ct);
+
+    public async Task<IReadOnlyList<TaskAttachment>> ListByTaskIdAsync(Guid taskId, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskAttachment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskAttachment>.Filter.Eq(x => x.TaskId, taskId));
+        return await Collection.Find(filter).SortByDescending(x => x.UploadedAt).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<TaskAttachment>> ListByTaskIdsAsync(
+        IReadOnlyCollection<Guid> taskIds, CancellationToken ct = default)
+    {
+        if (taskIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<TaskAttachment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskAttachment>.Filter.In(x => x.TaskId, taskIds));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
+
+    public async Task<int> CountEvidenceForChecklistItemAsync(
+        Guid taskId, string checklistItemCode, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskAttachment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskAttachment>.Filter.Eq(x => x.TaskId, taskId),
+            Builders<TaskAttachment>.Filter.Eq(x => x.ChecklistRunItemCode, checklistItemCode),
+            Builders<TaskAttachment>.Filter.Eq(x => x.Kind, TaskAttachmentKind.Evidence));
+        return (int)await Collection.CountDocumentsAsync(filter, cancellationToken: ct);
+    }
+
+    public async Task<bool> SoftDeleteAsync(Guid id, string deletedBy, CancellationToken ct = default)
+    {
+        var filter = Builders<TaskAttachment>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskAttachment>.Filter.Eq(x => x.Id, id));
+        var now = DateTimeOffset.UtcNow;
+        var update = Builders<TaskAttachment>.Update
+            .Set(x => x.IsDeleted, true)
+            .Set(x => x.DeletedAt, now)
+            .Set(x => x.UpdatedAt, now)
+            .Set(x => x.UpdatedBy, deletedBy);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.ModifiedCount > 0;
+    }
+}

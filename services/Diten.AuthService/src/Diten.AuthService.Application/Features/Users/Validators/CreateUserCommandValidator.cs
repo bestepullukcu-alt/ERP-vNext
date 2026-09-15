@@ -1,5 +1,6 @@
 using FluentValidation;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Domain.Enums;
 
 namespace Diten.AuthService.Application.Features.Users.Validators;
 
@@ -24,5 +25,12 @@ public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCom
         RuleFor(x => x.LastName)
             .NotEmpty().WithMessage("Soyad boş bırakılamaz.")
             .MaximumLength(100).WithMessage("Soyad en fazla 100 karakter olabilir.");
+
+        // WP-INFRA-AUTH-ACCOUNT-KIND-01 — when a kind IS supplied it must be a spelled-out enum name. Blank is not
+        // an error: it means "leave the account Unknown". The permission check is the handler's (403, not 400).
+        RuleFor(x => x.AccountKind)
+            .Must(value => SetAccountKindCommandValidator.IsDefinedKindName(value))
+            .WithMessage("AccountKind must be one of: " + string.Join(", ", Enum.GetNames<AccountKind>()) + ".")
+            .When(x => !string.IsNullOrWhiteSpace(x.AccountKind));
     }
 }

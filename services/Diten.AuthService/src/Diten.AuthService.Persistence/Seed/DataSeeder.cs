@@ -1,5 +1,6 @@
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
+using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Repositories;
 using MongoDB.Driver;
 
@@ -383,6 +384,13 @@ public static class DataSeeder
             new("auth", "users", "delete", "Delete User", "Permission to delete users", moduleOverride: "access-governance"),
             new("auth", "users", "assign-role", "Assign Role", "Permission to assign roles to users", moduleOverride: "access-governance"),
             new("auth", "users", "lookup-validation", "Lookup Validation", "Permission to validate tenant user references", moduleOverride: "access-governance"),
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — two keys, two natures. `auth.users.lookup` is an ORDINARY tenant key
+            // (name search + account assertion for reference pickers; no email, no roles) and reaches the tenant Admin
+            // baseline like its siblings. `auth.users.account-kind.manage` is EXPLICIT-GRANT-ONLY
+            // (ExplicitGrantOnlyPermissions): it is seeded into the catalog so an authorized person can assign it, and
+            // NO role — SuperAdmin included — receives it here or in any automatic path. Both Scope=Tenant.
+            new("auth", "users", "lookup", "Lookup Users", "Permission to search active tenant users by name and read the account assertion (no email, no roles)", moduleOverride: "access-governance"),
+            new("auth", "users.account-kind", "manage", "Manage Account Kind", "Permission to classify a tenant user account as Unknown, Human or Service (explicit grant only; never granted automatically)", moduleOverride: "access-governance"),
 
             new("auth", "roles", "create", "Create Role", "Permission to create a new role", moduleOverride: "access-governance"),
             new("auth", "roles", "read", "Read Role", "Permission to view role lists", moduleOverride: "access-governance"),
@@ -940,6 +948,8 @@ public static class DataSeeder
             user.SetPlatformActorType("platform_admin");
             user.Activate();
             user.ConfirmEmail();
+            // WP-INFRA-AUTH-ACCOUNT-KIND-01 — the seed is an automatic creation path: Unknown, never Human by structure.
+            user.SetAccountKind(AccountKind.Unknown);
             await userCol.InsertOneAsync(user);
             Console.WriteLine("Created admin user with static Guid.");
         }
@@ -998,6 +1008,7 @@ public static class DataSeeder
                 mu.SetUserName($"user-{suffix}-{i + 1}");
                 mu.Activate();
                 mu.ConfirmEmail();
+                mu.SetAccountKind(AccountKind.Unknown); // WP-INFRA-AUTH-ACCOUNT-KIND-01 — seed never classifies
                 await userCol.InsertOneAsync(mu);
             }
             Console.WriteLine($"Seeded 5 mock users for tenant {tenantId}.");

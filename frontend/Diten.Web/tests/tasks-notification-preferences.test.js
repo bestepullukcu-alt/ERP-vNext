@@ -29,6 +29,7 @@ const serverEventCodes = () => {
 
 const loadForm = () => {
   delete global.TaskForm;
+  loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
   loadScript("wwwroot/assets/js/Tasks/form.js");
   return global.TaskForm;
 };
@@ -231,6 +232,7 @@ describe("the preferences travel to the API and come back", () => {
 describe("an edit can switch the reminder off", () => {
   const loadForm = () => {
     delete global.TaskForm;
+    loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
     loadScript("wwwroot/assets/js/Tasks/form.js");
     return global.TaskForm;
   };

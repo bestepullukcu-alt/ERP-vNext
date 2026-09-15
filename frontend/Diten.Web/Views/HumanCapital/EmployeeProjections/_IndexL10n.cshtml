@@ -1,0 +1,25 @@
+@using Diten.Web.Views.HumanCapital.EmployeeProjections
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeProjectionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="employee-projections-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        ProjectionState = Localizer["ProjectionState"].Value,
+        VisibilityClassification = Localizer["VisibilityClassification"].Value,
+        CreatedAt = Localizer["CreatedAt"].Value,
+        UpdatedAt = Localizer["UpdatedAt"].Value
+    })
+</script>

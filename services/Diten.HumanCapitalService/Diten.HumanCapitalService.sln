@@ -1,0 +1,42 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.HumanCapitalService.Api", "src\Diten.HumanCapitalService.Api\Diten.HumanCapitalService.Api.csproj", "{34DA8256-5961-415D-9BCF-26C6ABDAFC04}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.HumanCapitalService.Application", "src\Diten.HumanCapitalService.Application\Diten.HumanCapitalService.Application.csproj", "{049EFC0A-BADB-4960-9002-6B4562632DEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.HumanCapitalService.Domain", "src\Diten.HumanCapitalService.Domain\Diten.HumanCapitalService.Domain.csproj", "{EF1C43F3-0F7C-4EFB-9530-9D8CE718D610}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.HumanCapitalService.Infrastructure", "src\Diten.HumanCapitalService.Infrastructure\Diten.HumanCapitalService.Infrastructure.csproj", "{4CD3D0EE-0134-4BDE-8FF8-A5711D61C519}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diten.HumanCapitalService.Persistence", "src\Diten.HumanCapitalService.Persistence\Diten.HumanCapitalService.Persistence.csproj", "{8284DD4D-1A1A-4159-8D4A-A43681B12AC3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{34DA8256-5961-415D-9BCF-26C6ABDAFC04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{34DA8256-5961-415D-9BCF-26C6ABDAFC04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{34DA8256-5961-415D-9BCF-26C6ABDAFC04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{34DA8256-5961-415D-9BCF-26C6ABDAFC04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{049EFC0A-BADB-4960-9002-6B4562632DEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{049EFC0A-BADB-4960-9002-6B4562632DEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{049EFC0A-BADB-4960-9002-6B4562632DEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{049EFC0A-BADB-4960-9002-6B4562632DEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF1C43F3-0F7C-4EFB-9530-9D8CE718D610}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF1C43F3-0F7C-4EFB-9530-9D8CE718D610}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF1C43F3-0F7C-4EFB-9530-9D8CE718D610}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF1C43F3-0F7C-4EFB-9530-9D8CE718D610}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CD3D0EE-0134-4BDE-8FF8-A5711D61C519}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CD3D0EE-0134-4BDE-8FF8-A5711D61C519}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CD3D0EE-0134-4BDE-8FF8-A5711D61C519}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CD3D0EE-0134-4BDE-8FF8-A5711D61C519}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8284DD4D-1A1A-4159-8D4A-A43681B12AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8284DD4D-1A1A-4159-8D4A-A43681B12AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8284DD4D-1A1A-4159-8D4A-A43681B12AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8284DD4D-1A1A-4159-8D4A-A43681B12AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -5,6 +5,9 @@
  *     no password) → offcanvas via /Users MVC controller
  *   - List → gateway /api/users (paginated envelope → custom dataSrc extracts items)
  *   - FE-B (window.Permissions) gates Add/Edit/Delete — UX ONLY; backend authoritative.
+ *   - WP-INFRA-AUTH-ACCOUNT-KIND-01: "Account type" column + filter (Unknown/Human/Service, enum NAMES as
+ *     strings), quick-view badge, and "Change type" for holders of auth.users.account-kind.manage only
+ *     (explicit-grant-only key). The change POSTs to the same-origin /Users/api proxy, never a service port.
  */
 'use strict';
 
@@ -20,17 +23,40 @@ const UsersList = (function () {
     const personalizationContext = { moduleKey: 'Governance', pageKey: 'Users' };
     const filterHostId = 'inlineFilterHost';
     const filterCollapseId = 'inlineFilterCollapse';
-    const saveViewColumnIndexes = [1, 2, 3, 4, 5];
-    const totalColumnCount = 7;
-    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5];
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6];
+    const totalColumnCount = 8;
+    const defaultVisibleColumnIndexes = [1, 2, 3, 4, 5, 6];
     const baseOrder = [[1, 'asc']];
-    let appliedFilters = { status: [], roles: [] };
+    let appliedFilters = { status: [], roles: [], accountKinds: [] };
     let L = window.L10n || {};
 
     const can = (key) => window.Permissions?.has?.(key) === true;
     const canCreate = () => can('auth.users.create');
     const canUpdate = () => can('auth.users.update');
     const canDelete = () => can('auth.users.delete');
+    // Explicit-grant-only key (owner decision 2026-09-11): never in any default role; UX gate only, the backend
+    // [HasPermission] on POST /api/users/{id}/account-kind is the authority.
+    const canManageKind = () => can('auth.users.account-kind.manage');
+
+    // ─── Account kind (the AuthService enum, by NAME) ───────────────────────
+    // The DTO carries the enum NAME as a string ("Unknown" | "Human" | "Service"). Anything else — a number
+    // from an older payload, a casing drift, an absent field — collapses to "Unknown": the unconfirmed state
+    // is the truthful fallback, never a guessed "Human".
+    const ACCOUNT_KINDS = ['Unknown', 'Human', 'Service'];
+    const normalizeAccountKind = (value) => {
+        if (typeof value === 'number') return ACCOUNT_KINDS[value] || 'Unknown';
+        const text = typeof value === 'string' ? value.trim().toLowerCase() : '';
+        return ACCOUNT_KINDS.find((k) => k.toLowerCase() === text) || 'Unknown';
+    };
+    const accountKindLabel = (value) => {
+        const kind = normalizeAccountKind(value);
+        return L['AccountKind' + kind] || kind;
+    };
+    const accountKindBadgeClass = (value) => ({
+        Unknown: 'bg-label-secondary',
+        Human: 'bg-label-info',
+        Service: 'bg-label-warning'
+    })[normalizeAccountKind(value)];
 
     let editingId = null;
     let responsiveReturnModalEl = null;
@@ -61,10 +87,11 @@ const UsersList = (function () {
         return s ? [s] : [];
     };
     const normalizeFilterValue = (value) => Array.isArray(value) ? normalizeArray(value) : normalizeString(value);
-    const emptyFilters = () => ({ status: [], roles: [] });
+    const emptyFilters = () => ({ status: [], roles: [], accountKinds: [] });
     const normalizeFilters = (filters) => ({
         status: normalizeArray((filters || {}).status),
-        roles: normalizeArray((filters || {}).roles)
+        roles: normalizeArray((filters || {}).roles),
+        accountKinds: normalizeArray((filters || {}).accountKinds)
     });
     const hasFilterValue = (v) => Array.isArray(v) ? normalizeArray(v).length > 0 : normalizeString(v).length > 0;
     const matchesStatusFilter = (selected, isActive) => {
@@ -77,6 +104,11 @@ const UsersList = (function () {
         if (!norm.length) return true;
         const rowRoles = normalizeArray(roles);
         return norm.some((r) => rowRoles.includes(r));
+    };
+    const matchesAccountKindFilter = (selected, accountKind) => {
+        const norm = normalizeArray(selected).map(normalizeAccountKind);
+        if (!norm.length) return true;
+        return norm.includes(normalizeAccountKind(accountKind));
     };
 
     // ─── Column visibility / order helpers ──────────────────────────────────
@@ -247,7 +279,8 @@ const UsersList = (function () {
             const row = rowData || dt?.row(dataIndex)?.data?.() || null;
             if (!row) return true;
             return matchesStatusFilter(appliedFilters.status, row.isActive)
-                && matchesRolesFilter(appliedFilters.roles, row.roles);
+                && matchesRolesFilter(appliedFilters.roles, row.roles)
+                && matchesAccountKindFilter(appliedFilters.accountKinds, row.accountKind);
         });
     };
 
@@ -310,7 +343,7 @@ const UsersList = (function () {
             });
         };
 
-        $('#filterStatus, #filterRoles').each(function () {
+        $('#filterStatus, #filterRoles, #filterAccountKind').each(function () {
             const $s = $(this);
             if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
             $s.select2({
@@ -331,8 +364,10 @@ const UsersList = (function () {
     const syncFilterControls = (values) => {
         $('#filterStatus').val(normalizeArray(values.status)).trigger('change');
         $('#filterRoles').val(normalizeArray(values.roles)).trigger('change');
+        $('#filterAccountKind').val(normalizeArray(values.accountKinds)).trigger('change');
     };
-    const getAppliedFilterCount = () => [appliedFilters.status, appliedFilters.roles].filter(hasFilterValue).length;
+    const getAppliedFilterCount = () =>
+        [appliedFilters.status, appliedFilters.roles, appliedFilters.accountKinds].filter(hasFilterValue).length;
 
     // Build the role filter options from the distinct roles present in the loaded rows.
     const populateRoleFilterOptions = (api) => {
@@ -374,7 +409,11 @@ const UsersList = (function () {
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
-            appliedFilters = { status: $('#filterStatus').val() || [], roles: $('#filterRoles').val() || [] };
+            appliedFilters = {
+                status: $('#filterStatus').val() || [],
+                roles: $('#filterRoles').val() || [],
+                accountKinds: $('#filterAccountKind').val() || []
+            };
             api.draw();
             window.DtDefaults.updateVisualState(api, getAppliedFilterCount());
             if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
@@ -412,6 +451,8 @@ const UsersList = (function () {
     //   • table (collapse:true)      → one nowrap line; overflow folds into a "+N" dropdown.
     //   • offcanvas (collapse:false) → wraps and shows every role.
     const escapeChip = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const renderAccountKindBadge = (value) =>
+        `<span class="badge ${accountKindBadgeClass(value)}">${escapeChip(accountKindLabel(value))}</span>`;
     const ROLE_CHIP_MAX = 3;
     const roleChip = (r) => `<span class="badge bg-label-info">${escapeChip(r)}</span>`;
     const renderRoleChips = (roles, options) => {
@@ -480,6 +521,25 @@ const UsersList = (function () {
         statusEl.className = `badge ${status.class}`;
         statusEl.innerText = status.title || '-';
 
+        // ── Account kind: the badge for every reader; the change control only where the server drew it AND
+        //    the snapshot agrees (the server gate is the one that matters; this keeps the two from disagreeing).
+        const kindEl = document.getElementById('oc-accountkind');
+        if (kindEl) {
+            kindEl.className = `badge ${accountKindBadgeClass(data.accountKind)}`;
+            kindEl.innerText = accountKindLabel(data.accountKind);
+        }
+        const kindSelect = document.getElementById('oc-accountkind-select');
+        const kindBtn = document.getElementById('oc-btn-accountkind');
+        if (kindSelect) {
+            kindSelect.value = normalizeAccountKind(data.accountKind);
+            kindSelect.classList.toggle('d-none', !canManageKind());
+        }
+        if (kindBtn) {
+            kindBtn.dataset.userId = data.id || '';
+            kindBtn.dataset.userEmail = data.email || '';
+            kindBtn.classList.toggle('d-none', !canManageKind());
+        }
+
         // ── Security metrics (from row JSON — no extra fetch) ──
         const lastLoginEl = document.getElementById('oc-lastlogin');
         if (lastLoginEl) lastLoginEl.innerText = data.lastLoginAt ? new Date(data.lastLoginAt).toLocaleString() : (L.Never || 'Never');
@@ -499,6 +559,8 @@ const UsersList = (function () {
     const setCreateMode = (isCreate) => {
         // Invitation hint shows on create; status switch shows on edit. No password field (invite flow).
         document.getElementById('userInviteHint')?.classList.toggle('d-none', !isCreate);
+        // Classification is a CREATE-time choice here; UpdateUser carries no kind (quick view's "Change type" does).
+        document.getElementById('userAccountKindRow')?.classList.toggle('d-none', !isCreate);
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
@@ -524,6 +586,8 @@ const UsersList = (function () {
         document.getElementById('userFirstName').value = '';
         document.getElementById('userLastName').value = '';
         document.getElementById('userIsActive').checked = true;
+        const kindSelect = document.getElementById('userAccountKind');
+        if (kindSelect) kindSelect.value = '';
         document.getElementById('formUserAlert').classList.add('d-none');
     };
     const openCreateOffcanvas = () => {
@@ -750,6 +814,43 @@ const UsersList = (function () {
         });
 
         document.getElementById('btnSaveUser')?.addEventListener('click', submitCreateEditForm);
+
+        // ── Change account kind (quick view) → same-origin proxy → AuthService POST /api/users/{id}/account-kind.
+        //    One dialog body (window.showConfirm, BL-367); the entity line names the account and the target kind.
+        document.getElementById('oc-btn-accountkind')?.addEventListener('click', () => {
+            if (!canManageKind()) return;
+            const btn = document.getElementById('oc-btn-accountkind');
+            const id = btn?.dataset.userId;
+            const email = btn?.dataset.userEmail || '';
+            const kind = normalizeAccountKind(document.getElementById('oc-accountkind-select')?.value);
+            if (!id) return;
+            window.showConfirm?.(L.ChangeAccountKind, async () => {
+                try {
+                    const res = await fetch(`/Users/api/${id}/account-kind`, {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': getAntiForgeryToken(),
+                            ...getAuthHeaders()
+                        },
+                        body: JSON.stringify({ kind })
+                    });
+                    const json = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error((json.errors && json.errors[0]) || json.detail || L.ErrorOccurred);
+                    }
+                    suppressResponsiveReturn = true;
+                    responsiveReturnModalEl = null;
+                    getOcDetailsInstance()?.hide();
+                    reloadWithSuccessToast('AccountKindChanged');
+                } catch (error) {
+                    console.error('[Users] Account kind change failed.', error);
+                    window.showToast?.(error.message || L.ErrorOccurred, 'error');
+                }
+            }, { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', confirmButtonText: L.ChangeAccountKind });
+        });
+
         document.getElementById('oc-btn-edit')?.addEventListener('click', () => {
             const id = document.getElementById('oc-btn-edit')?.dataset.editId;
             if (id) openEditOffcanvas(id);
@@ -811,6 +912,7 @@ const UsersList = (function () {
                     { data: 'firstName', name: 'firstName' },
                     { data: 'lastName', name: 'lastName' },
                     { data: 'roles', name: 'roles' },
+                    { data: 'accountKind', name: 'accountKind' },
                     { data: 'isActive', name: 'isActive' },
                     { data: 'id', name: 'action' }
                 ],
@@ -827,6 +929,11 @@ const UsersList = (function () {
                     },
                     {
                         targets: 5,
+                        className: 'text-start',
+                        render: (data, type) => type === 'display' ? renderAccountKindBadge(data) : accountKindLabel(data)
+                    },
+                    {
+                        targets: 6,
                         render: (data, type) => type === 'display'
                             ? window.DitenDataTable.renderStatusBadge(data, getStatusMap())
                             : (getStatusMap()[String(!!data)] || { title: L.Unknown }).title
@@ -872,7 +979,7 @@ const UsersList = (function () {
                 ],
                 buttons: window.DtDefaults.exportButtons(
                     L.AddNew, {}, extraButtons,
-                    { exportColumns: [1, 2, 3, 4, 5], colvisColumns: [1, 2, 3, 4, 5] }
+                    { exportColumns: [1, 2, 3, 4, 5, 6], colvisColumns: [1, 2, 3, 4, 5, 6] }
                 ),
                 initComplete: function () {
                     mountInlineFilter();

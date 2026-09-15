@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateProfilesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CandidateProfilesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.candidate-profiles.evaluate");
+    var canAudit = Perms.Has("tep.candidate-profiles.audit.read");
+    var canManage = Perms.Has("tep.candidate-profiles.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CandidateProfilesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="candidate-profiles-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/CandidateProfiles/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/CandidateProfiles/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/CandidateProfiles/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/CandidateProfiles/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/CandidateProfiles/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/CandidateProfiles/index.js" asp-append-version="true"></script>
+}

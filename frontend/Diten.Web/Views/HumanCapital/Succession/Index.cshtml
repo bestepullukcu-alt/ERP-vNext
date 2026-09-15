@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.Succession
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SuccessionIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SuccessionTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("hcm.succession.manage");
+    var canEvaluate = Perms.Has("hcm.succession.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SuccessionTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="succession-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-succession" data-dt-standard="v2"> *@
+    <partial name="~/Views/HumanCapital/Succession/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/Succession/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/Succession/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/Succession/index.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,27 @@
+@using Diten.Web.Views.TalentEcosystem.TepShellMetadata
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TepShellMetadataIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TepShellMetadataTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.shell.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TepShellMetadataTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="tep-shell-metadata-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/TepShellMetadata/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/TepShellMetadata/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/TepShellMetadata/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/TepShellMetadata/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/TepShellMetadata/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/TepShellMetadata/index.js" asp-append-version="true"></script>
+}

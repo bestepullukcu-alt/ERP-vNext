@@ -65,6 +65,10 @@ public sealed class DocumentManagementMasterRegisterController : Controller
         return View("~/Views/DocumentManagement/MasterRegister/Details.cshtml");
     }
 
+    /// <summary>WP-DM-DCP005-REGISTER-IMPORT-UI-01 — the audited CSV import screen (preview → commit).</summary>
+    [HttpGet("Import")]
+    public IActionResult Import() => View("~/Views/DocumentManagement/MasterRegister/Import.cshtml");
+
     // ── Same-origin proxy API ────────────────────────────────────────────────
 
     /// <summary>
@@ -173,6 +177,66 @@ public sealed class DocumentManagementMasterRegisterController : Controller
     [ValidateAntiForgeryToken]
     public Task<IActionResult> UpdateEntry(Guid id, [FromForm] string payloadJson, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Put, $"{ApiBase}/{id}", ParsePayload(payloadJson), ct);
+
+    // ── WP-DM-DCP005-REGISTER-IMPORT-UI-01 — audited CSV import (preview → commit) ───────────────────────
+    //
+    // File bytes never become browser-side base64 state: the browser posts multipart FormData, this boundary reads
+    // the IFormFile and base64-encodes it in memory, then forwards JSON through Gateway — the same adaptation
+    // CreateControlledDocumentRegistration below already does for its initialFile.
+
+    [HttpPost("/DocumentManagement/MasterRegister/api/import/dry-run")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportDryRun(IFormFile? file, CancellationToken ct)
+    {
+        var payload = await BuildImportPayloadAsync(file, ct);
+        if (payload is null)
+        {
+            return UnprocessableJson("file_required");
+        }
+
+        return await ProxyJsonAsync(HttpMethod.Post, $"{ApiBase}/import:dry-run", payload, ct);
+    }
+
+    [HttpPost("/DocumentManagement/MasterRegister/api/import/commit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportCommit(IFormFile? file, [FromForm] string expectedContentHash, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(expectedContentHash))
+        {
+            return UnprocessableJson("expected_content_hash_required");
+        }
+
+        var payload = await BuildImportPayloadAsync(file, ct);
+        if (payload is null)
+        {
+            return UnprocessableJson("file_required");
+        }
+
+        var withHash = (IDictionary<string, object?>)payload;
+        withHash["expectedContentHash"] = expectedContentHash;
+        return await ProxyJsonAsync(HttpMethod.Post, $"{ApiBase}/import:commit", withHash, ct);
+    }
+
+    [HttpGet("/DocumentManagement/MasterRegister/api/import/history")]
+    public Task<IActionResult> ImportHistory(CancellationToken ct) => ProxyGetAsync($"{ApiBase}/import-history", ct);
+
+    private static async Task<IDictionary<string, object?>?> BuildImportPayloadAsync(IFormFile? file, CancellationToken ct)
+    {
+        if (file is null || file.Length == 0)
+        {
+            return null;
+        }
+
+        await using var source = file.OpenReadStream();
+        using var buffer = new MemoryStream();
+        await source.CopyToAsync(buffer, ct);
+
+        return new Dictionary<string, object?>
+        {
+            ["fileName"] = Path.GetFileName(file.FileName),
+            ["contentBase64"] = Convert.ToBase64String(buffer.ToArray())
+        };
+    }
 
     // ── MOD-0029-FU36B — unified controlled-document registration ───────────
     //

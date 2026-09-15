@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.SectorTalentTrends
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SectorTalentTrendsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SectorTalentTrendsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.sector-talent-trends.manage");
+    var canEvaluate = Perms.Has("tep.sector-talent-trends.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SectorTalentTrendsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="sector-talent-trends-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-sector-talent-trends" data-dt-standard="v2"> *@
+    <partial name="~/Views/TalentEcosystem/SectorTalentTrends/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/SectorTalentTrends/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/SectorTalentTrends/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/SectorTalentTrends/index.js" asp-append-version="true"></script>
+}

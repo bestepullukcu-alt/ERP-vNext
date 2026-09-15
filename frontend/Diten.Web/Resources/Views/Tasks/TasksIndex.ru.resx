@@ -158,7 +158,7 @@
   <data name="ChecklistLevelBlocking" xml:space="preserve"><value>Блокирующий</value></data>
   <data name="ChecklistLevelHint" xml:space="preserve"><value>Изменить уровень: Необязательно → Ожидается → Блокирующий</value></data>
   <data name="ChecklistEvidenceToggle" xml:space="preserve"><value>Требовать подтверждение</value></data>
-  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Требуется подтверждающий документ. Привязка документа заработает после подключения модуля документов.</value></data>
+  <data name="ChecklistEvidenceHint" xml:space="preserve"><value>Для отмеченных пунктов требуется подтверждение. Прикрепите его на странице задачи после её создания.</value></data>
   <data name="ChecklistRemove" xml:space="preserve"><value>Удалить пункт</value></data>
   <data name="ChecklistMoveUp" xml:space="preserve"><value>Вверх</value></data>
   <data name="ChecklistMoveDown" xml:space="preserve"><value>Вниз</value></data>
@@ -210,4 +210,11 @@
   <data name="ErrorWorkItemActionForbidden" xml:space="preserve"><value>У вас нет прав на выполнение этого действия.</value></data>
   <data name="ErrorWorkItemActionPayloadInvalid" xml:space="preserve"><value>Для этого действия требуется больше сведений, чем было отправлено. Заполните обязательные поля.</value></data>
   <data name="ErrorWorkItemRemoteUnavailable" xml:space="preserve"><value>Система, которой принадлежит эта запись, не ответила, поэтому неизвестно, было ли действие выполнено. Обновите список, чтобы увидеть текущее состояние, и повторите попытку.</value></data>
+  <data name="ErrorAttachmentNotAuthorized" xml:space="preserve"><value>Управлять вложениями задачи может только её исполнитель или инициатор.</value></data>
+  <data name="ErrorAttachmentTaskClosed" xml:space="preserve"><value>Задача закрыта, изменить её вложения больше нельзя.</value></data>
+  <data name="ErrorAttachmentNotFound" xml:space="preserve"><value>Это вложение не найдено.</value></data>
+  <data name="ErrorAttachmentChecklistItemNotFound" xml:space="preserve"><value>Этот пункт чек-листа не найден.</value></data>
+  <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Этот пункт нельзя завершить без подтверждающего документа.</value></data>
+  <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Не удалось загрузить файл. Проверьте его тип и размер и повторите попытку.</value></data>
+  <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Вложения, включая подтверждающие документы, можно добавить после создания задачи.</value></data>
 </root>

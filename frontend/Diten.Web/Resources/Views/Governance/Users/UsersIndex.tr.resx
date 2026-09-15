@@ -41,4 +41,11 @@
   <data name="KpiActiveUsers" xml:space="preserve"><value>Aktif</value></data>
   <data name="KpiPassiveUsers" xml:space="preserve"><value>Pasif</value></data>
   <data name="KpiNoRoleUsers" xml:space="preserve"><value>Rolsüz</value></data>
+  <data name="AccountKind" xml:space="preserve"><value>Hesap Türü</value></data>
+  <data name="AccountKindUnknown" xml:space="preserve"><value>Onaylanmamış</value></data>
+  <data name="AccountKindHuman" xml:space="preserve"><value>Kişi</value></data>
+  <data name="AccountKindService" xml:space="preserve"><value>Servis hesabı</value></data>
+  <data name="ChangeAccountKind" xml:space="preserve"><value>Türü değiştir</value></data>
+  <data name="AccountKindChanged" xml:space="preserve"><value>Hesap türü güncellendi</value></data>
+  <data name="AccountKindCreateHint" xml:space="preserve"><value>Boş bırakılırsa hesap onaylanmamış kalır.</value></data>
 </root>

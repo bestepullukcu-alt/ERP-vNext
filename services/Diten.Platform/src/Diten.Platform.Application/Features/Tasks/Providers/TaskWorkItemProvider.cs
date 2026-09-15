@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Meetings.RecordLinks;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
@@ -6,6 +7,7 @@ using Diten.Platform.Application.Features.WorkAggregation.Services;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using Diten.Platform.Domain.Repositories;
+using Microsoft.Extensions.Logging;
 
 namespace Diten.Platform.Application.Features.Tasks.Providers;
 
@@ -127,6 +129,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
 
+    /// <summary>MOD-0024 Slice ATT-1 — optional; see the constructor parameter's own doc comment.</summary>
+    private readonly ITaskAttachmentRepository? _attachments;
+
     public TaskWorkItemProvider(
         ITaskItemRepository tasks,
         ITaskSeatDirectory seats,
@@ -151,8 +156,27 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * that scope (every caller before this change, and every test that pins Self behaviour) is unaffected,
          * and an absent resolver can only ever narrow the answer to Self — it can never widen one.
          */
-        ITaskTeamResolver? teamResolver = null)
+        ITaskTeamResolver? teamResolver = null,
+        /*
+         * MOD-0357 S1 — the batched read behind `relatedRecords`. OPTIONAL for the same reason `teamResolver`
+         * is: every existing caller (every test in this suite predates MOD-0357) is unaffected, and an absent
+         * service can only ever narrow the projection to "no related records" — it can never widen one or
+         * change what any action does.
+         */
+        IRecordLinkService? recordLinks = null,
+        IRelatedRecordResolverRegistry? relatedRecordResolvers = null,
+        /*
+         * MOD-0024 Slice ATT-1 — OPTIONAL for the same reason teamResolver/recordLinks are: every existing
+         * caller (every test in this suite predates ATT-1) is unaffected, and an absent repository can only
+         * ever narrow the projection to "no attachments, zero evidence counts" — it can never widen one.
+         */
+        ITaskAttachmentRepository? attachments = null,
+        ILogger<TaskWorkItemProvider>? logger = null)
     {
+        _attachments = attachments;
+        _recordLinks = recordLinks;
+        _relatedRecordResolvers = relatedRecordResolvers;
+        _logger = logger;
         _teamResolver = teamResolver;
         _sla = sla;
         _fieldDefinitions = fieldDefinitions;
@@ -182,6 +206,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
 
     /// <summary>BL-023 — the descent that answers "whose work is my team's". Null ⇒ only the Self scope is served.</summary>
     private readonly ITaskTeamResolver? _teamResolver;
+
+    /// <summary>MOD-0357 S1 — the one bridge's read side. Null ⇒ `relatedRecords` is never declared (see
+    /// <see cref="ResolveCapabilities"/>).</summary>
+    private readonly IRecordLinkService? _recordLinks;
+
+    /// <summary>Turns a link's far-side id into a title/link, per module code. Null ⇒ same as above.</summary>
+    private readonly IRelatedRecordResolverRegistry? _relatedRecordResolvers;
+
+    /// <summary>Optional — a missing logger only means the "no resolver for this module code" warning (AC5)
+    /// is not written anywhere; it never changes what is projected.</summary>
+    private readonly ILogger<TaskWorkItemProvider>? _logger;
 
     /// <summary>
     /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
@@ -293,6 +328,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var checklistByTask = (await _checklistRuns.ListByTaskIdsAsync(taskIds, ct))
             .GroupBy(run => run.TaskItemId)
             .ToDictionary(group => group.Key, group => group.First());
+
+        // MOD-0024 Slice ATT-1 — same batched-read reason as checklist/children above. Optional: an absent
+        // repository (compat-only DI paths, existing tests) projects every task with zero attachments.
+        var attachmentsByTask = _attachments is null
+            ? new Dictionary<Guid, IReadOnlyList<TaskAttachment>>()
+            : (await _attachments.ListByTaskIdsAsync(taskIds, ct))
+                .GroupBy(a => a.TaskId)
+                .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskAttachment>)group.ToList());
 
         // Only TOP-LEVEL tasks can have children (one level only), so nothing else needs asking about.
         var parentIds = tasks.Where(t => t.ParentTaskItemId is null).Select(t => t.Id).ToList();
@@ -411,6 +454,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             ? (await _fieldDefinitions.ListAllAsync(ct)).ToDictionary(d => d.Code, StringComparer.OrdinalIgnoreCase)
             : new Dictionary<string, TaskFieldDefinition>(StringComparer.OrdinalIgnoreCase);
 
+        /*
+         * MOD-0357 S1 — `relatedRecords`, batched for the whole page: ONE query per direction (never per task),
+         * exactly like the dependency edges above. Optional service: a caller that predates MOD-0357 (every
+         * test in this suite) gets an empty map and the capability is simply never declared.
+         */
+        var relatedRecordsByTask = await ResolveRelatedRecordsAsync(taskIds, ct);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -450,7 +500,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     fieldDefinitions,
                     personalByTask.GetValueOrDefault(t.Id),
                     watchersByTask.GetValueOrDefault(t.Id, []),
-                    initiatorOnly.Contains(t.Id));
+                    initiatorOnly.Contains(t.Id),
+                    relatedRecordsByTask.GetValueOrDefault(t.Id),
+                    attachmentsByTask.GetValueOrDefault(t.Id, []));
             })
             .ToList();
     }
@@ -485,7 +537,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         IReadOnlyList<TaskWatcher>? watchers = null,
         // BL-016 — the actor OPENED this and holds no other relationship to it. Decided by GetWorkItemsAsync,
         // the only code that knows which read produced the row; see the precedence note there.
-        bool initiatorOnly = false)
+        bool initiatorOnly = false,
+        // MOD-0357 S1 — this task's resolved related records, already capped at the contract's own limit.
+        // Null (not merely empty) means "no capability" — see ResolveCapabilities.
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords = null,
+        // MOD-0024 Slice ATT-1 — this task's live (non-deleted) attachments, batched above.
+        IReadOnlyList<TaskAttachment>? attachments = null)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -550,10 +607,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          *
          * Declared-and-empty is a state the contract models (CAPABILITY_CONTAINER_REQUIRED); a half is not.
          */
-        var checklistBlock = checklist is null ? EmptyChecklist : ToChecklist(checklist, actor);
+        var taskAttachments = attachments ?? [];
+        var checklistBlock = checklist is null
+            ? EmptyChecklist
+            : ToChecklist(checklist, actor, taskAttachments);
         // A subtask cannot have subtasks. A parent always gets the container, even empty, because the shell
         // offers "add a subtask" there — declared-and-empty is a state the contract models; a half is not.
         var subtasks = task.ParentTaskItemId is null ? ToSubtasks(children, actor, displayNames) : null;
+        // MOD-0024 Slice ATT-1 — same declared-and-empty rule as checklist/subtasks: the shell's "add file"
+        // affordance needs the container even on a task with zero attachments today.
+        var attachmentsBlock = ToAttachments(taskAttachments, actor, displayNames);
         var businessContext = ToBusinessContext(task, fieldDefinitions, _permissions);
         var blockers = ResolveBlockers(task, edges ?? [], edgeTasks, children);
 
@@ -629,7 +692,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
                 dependencyList, checklistBlock, subtasks, businessContext,
-                task.EstimateHours, task.SpentHours),
+                task.EstimateHours, task.SpentHours, relatedRecords, attachmentsBlock),
             Actions: actions,
             Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
             WaitingContext: waiting is null
@@ -664,12 +727,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // see the block that builds them. No condition is restated here, so none can drift.
             Checklist: checklistBlock,
             Subtasks: subtasks,
+            Attachments: attachmentsBlock,
             ParentTaskItemId: task.ParentTaskItemId?.ToString(),
             Gates: BuildGates(
                 task, actor, displayNames, approvalOutstanding, approvalRejected, reviewOutstanding, reviewRejected),
             // The engine's own spelling, straight through — the contract's PRIORITIES are that enum (BL-032).
             Priority: task.Priority.ToString(),
             Dependencies: dependencyList,
+            RelatedRecords: relatedRecords,
             // Absent when nothing blocks. A terminal task offers no actions at all, so a blocker pointing at one
             // would break the contract's "every affected code is a disabled action" rule.
             BlockedState: effectiveBlockers.Count == 0
@@ -895,7 +960,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         WorkItemSubtasksDto? subtasks,
         WorkItemBusinessContextDto? businessContext,
         decimal? estimateHours,
-        decimal spentHours)
+        decimal spentHours,
+        IReadOnlyList<WorkItemRelatedRecordDto>? relatedRecords,
+        WorkItemAttachmentsDto? attachments)
     {
         // Unconditional: MOD-0024 owns planning and execution for every task it projects.
         var capabilities = new List<string> { "planning", "execution" };
@@ -915,9 +982,28 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             capabilities.Add("subtasks");
         }
 
+        // MOD-0024 Slice ATT-1 — same "declared for every task, run or no run" rule checklist follows: the
+        // container is never null on MOD-0024's own projection (ToAttachments never returns null), so this is
+        // effectively unconditional for this provider, exactly like checklist above.
+        if (attachments is not null)
+        {
+            capabilities.Add("attachments");
+        }
+
         if (dependencies is not null)
         {
             capabilities.Add("dependencies");
+        }
+
+        /*
+         * MOD-0357 S1 — DATA-DRIVEN like `checklist`/`businessContext`, not unconditional like `subtasks`: a
+         * task with no linked records gets no capability and no container, ever (AC4). Declared only when at
+         * least one link resolved to a real record — the same "a capability is a promise the card has
+         * something to show" rule every conditional capability here already follows.
+         */
+        if (relatedRecords is not null)
+        {
+            capabilities.Add("relatedRecords");
         }
 
         /*
@@ -961,7 +1047,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static readonly WorkItemChecklistDto EmptyChecklist = new([], Version: 0);
 
-    private static WorkItemChecklistDto ToChecklist(ChecklistRun run, WorkItemActor actor)
+    private static WorkItemChecklistDto ToChecklist(
+        ChecklistRun run, WorkItemActor actor, IReadOnlyList<TaskAttachment> attachments)
         => new(run.Items
             .OrderBy(item => item.SortOrder)
             .Select(item => new WorkItemChecklistItemDto(
@@ -982,9 +1069,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  * firmly if this line said true for everything; drawing a control that the server will reject is
                  * simply a worse way to tell someone the answer.
                  */
-                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId))
+                Editable: item.AddedByUserId is not null && item.AddedByUserId == actor.UserId,
+                // MOD-0024 Slice ATT-1 — computed from the same batched attachments read, never a per-item query.
+                EvidenceCount: attachments.Count(a =>
+                    a.Kind == TaskAttachmentKind.Evidence
+                    && string.Equals(a.ChecklistRunItemCode, item.Code, StringComparison.Ordinal))))
             .ToList(),
             Version: run.Version);
+
+    /// <summary>MOD-0024 Slice ATT-1 — never null; an empty <see cref="TaskAttachment"/> list still projects a
+    /// container with zero items (the same "declared-and-empty" rule <c>ToChecklist</c>'s caller follows).</summary>
+    private static WorkItemAttachmentsDto ToAttachments(
+        IReadOnlyList<TaskAttachment> attachments, WorkItemActor actor, IReadOnlyDictionary<Guid, string> displayNames)
+        => new(attachments
+            .OrderByDescending(a => a.UploadedAt)
+            .Select(a => new WorkItemAttachmentDto(
+                Id: a.Id.ToString(),
+                FileName: a.FileName,
+                MediaType: a.MediaType,
+                ByteSize: a.ByteSize,
+                Kind: a.Kind.ToString(),
+                Note: a.Note,
+                UploadedBy: Person(a.UploadedByUserId, actor, displayNames),
+                UploadedAt: a.UploadedAt,
+                ChecklistItemId: a.ChecklistRunItemCode))
+            .ToList());
 
     /// <summary>
     /// Subtasks in the contract's own vocabulary. MOD-0024 is their source, so the mode is `full`: they are
@@ -1148,6 +1257,114 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         return definition?.LabelResourceKey is { Length: > 0 } key
             ? WorkItemLabelDto.Resource(key)
             : WorkItemLabelDto.Resource(FieldUnknownKey);
+    }
+
+    /// <summary>
+    /// MOD-0357 S1 — `relatedRecords`, resolved for the WHOLE page in a fixed number of calls: one
+    /// <c>RecordLink</c> read per direction, then one resolver call per distinct far-side module code —
+    /// never one call per task and never one per link. Contract limit (20, `fixture-contract.js`
+    /// <c>maxRelatedRecords</c>) is applied per task, last.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<Guid, IReadOnlyList<WorkItemRelatedRecordDto>>> ResolveRelatedRecordsAsync(
+        IReadOnlyList<Guid> taskIds, CancellationToken ct)
+    {
+        if (_recordLinks is null || _relatedRecordResolvers is null || taskIds.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<WorkItemRelatedRecordDto>>();
+        }
+
+        var bySource = await _recordLinks.ListBySourceAsync(taskIds, ct);
+        var byTarget = await _recordLinks.ListByTargetAsync(taskIds, ct);
+        // A link could — in principle — name the same task on both ends; DistinctBy(Id) is what keeps that
+        // case from being counted twice rather than assuming it cannot happen.
+        var links = bySource.Concat(byTarget).DistinctBy(link => link.Id).ToList();
+        if (links.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<WorkItemRelatedRecordDto>>();
+        }
+
+        // Every (thisTaskId, farModuleCode, farRecordId, linkType) triple this page needs, from EITHER side of
+        // EITHER direction. A task can be the source of one link and the target of another.
+        var perTask = new List<(Guid TaskId, string FarModuleCode, Guid FarRecordId, string LinkType)>();
+        var taskIdSet = taskIds.ToHashSet();
+        foreach (var link in links)
+        {
+            if (taskIdSet.Contains(link.SourceRecordId))
+            {
+                perTask.Add((link.SourceRecordId, link.TargetModuleCode, link.TargetRecordId, link.LinkType));
+            }
+
+            if (taskIdSet.Contains(link.TargetRecordId))
+            {
+                perTask.Add((link.TargetRecordId, link.SourceModuleCode, link.SourceRecordId, link.LinkType));
+            }
+        }
+
+        // ONE resolver call per distinct far-side module code, batched with every id that module needs across
+        // the WHOLE page — the N+1 this method exists to avoid.
+        var resolvedByModule = new Dictionary<string, IReadOnlyDictionary<Guid, RelatedRecordSummary>>(StringComparer.Ordinal);
+        var missingResolverModules = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var moduleCode in perTask.Select(x => x.FarModuleCode).Distinct(StringComparer.Ordinal))
+        {
+            if (!_relatedRecordResolvers.TryGet(moduleCode, out var resolver))
+            {
+                missingResolverModules.Add(moduleCode);
+                continue;
+            }
+
+            var idsForModule = perTask
+                .Where(x => x.FarModuleCode == moduleCode)
+                .Select(x => x.FarRecordId)
+                .Distinct()
+                .ToList();
+            resolvedByModule[moduleCode] = await resolver.ResolveAsync(idsForModule, ct);
+        }
+
+        if (missingResolverModules.Count > 0 && _logger is not null)
+        {
+            /*
+             * Reportable, not fatal (pack §, "çözücüsü olmayan modül kodu... uydurma başlık yok"): every link
+             * naming an unresolvable module code is dropped below, and this is the one line that says so —
+             * once per module code per page read, not once per link, so a busy page cannot flood the log.
+             */
+            _logger.LogWarning(
+                "relatedRecords: no IRelatedRecordResolver registered for module code(s) {ModuleCodes}; "
+                + "{LinkCount} link(s) referencing them were dropped rather than shown with an invented title.",
+                string.Join(", ", missingResolverModules), perTask.Count(x => missingResolverModules.Contains(x.FarModuleCode)));
+        }
+
+        var byTask = new Dictionary<Guid, IReadOnlyList<WorkItemRelatedRecordDto>>();
+        foreach (var group in perTask.GroupBy(x => x.TaskId))
+        {
+            var rows = new List<WorkItemRelatedRecordDto>();
+            foreach (var (_, farModuleCode, farRecordId, _) in group)
+            {
+                if (rows.Count >= WorkItemContract.MaxRelatedRecords)
+                {
+                    break;
+                }
+
+                // Dangling (deleted, cross-tenant, retired) or an unregistered module code: DROPPED, never
+                // rendered as "a task" with no name behind it — the same rule this file already applies to a
+                // dependency edge whose far end cannot be read.
+                if (!resolvedByModule.TryGetValue(farModuleCode, out var resolved)
+                    || !resolved.TryGetValue(farRecordId, out var summary))
+                {
+                    continue;
+                }
+
+                rows.Add(new WorkItemRelatedRecordDto(
+                    Id: farRecordId.ToString(), Type: farModuleCode, Title: summary.Title, Link: summary.Link));
+            }
+
+            // Data-driven (AC4): a task whose every link dropped gets NO container, same as a task with none.
+            if (rows.Count > 0)
+            {
+                byTask[group.Key] = rows;
+            }
+        }
+
+        return byTask;
     }
 
     private static WorkItemSubtasksDto ToSubtasks(
