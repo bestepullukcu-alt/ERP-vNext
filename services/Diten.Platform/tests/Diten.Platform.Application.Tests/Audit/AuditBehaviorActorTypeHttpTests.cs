@@ -66,16 +66,19 @@ public sealed class AuditBehaviorActorTypeHttpTests
     }
 
     [Fact]
-    public async Task A_signed_token_with_no_actor_type_still_reaches_the_command_which_succeeds_but_leaves_no_record()
+    public async Task A_signed_token_with_no_actor_type_is_refused_before_the_command_runs_so_nothing_runs_unrecorded()
     {
-        // The one real Unknown path, measured: TenantResolutionMiddleware 403s a NON-EMPTY actor type other than
-        // tenant_user on tenant paths, but lets a MISSING one through. AuthService never mints such a token today.
+        // WP-INFRA-ACTOR-TYPE-REQUIRED-01 (BL-409 remainder). This test used to pin the one real Unknown path:
+        // TenantResolutionMiddleware 403'd a NON-EMPTY actor type other than tenant_user on tenant paths but let a
+        // MISSING one through, so the command ran and left no audit record. The middleware now refuses the missing
+        // claim exactly as it refuses an unrecognised one, so the command never runs and nothing runs unrecorded.
+        // AuthService never mints such a token (measured in that WP).
         using var host = new Host();
 
         var response = await host.PostAsync(Host.TenantToken(Tenant, User, actorType: null));
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(1, host.Calls.Count);
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(0, host.Calls.Count);
         Assert.Empty(host.Outbox.Writes);
     }
 
