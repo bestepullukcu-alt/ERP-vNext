@@ -17,6 +17,17 @@
 
 **→ 8/8 Faz-0 contract OpenAPI TAMAM (hepsi valid, x-status FROZEN).**
 
+### MVP-6 öne çekilmiş consumed seam'ler (front-loaded 2026-09-15)
+
+MVP-6'yı "ilk giden lane" yapmak için, tükettiği ama sahibi olmadığı iki seam merkezi CT tarafından öne çekilip donduruldu (§22). Producer (MVP-5/MVP-2) sırası gelince bu frozen sözleşmeye **uyarak** implemente eder; değişiklik yalnız additive (K16).
+
+| Contract | Owner (producer) | Öne çekildi | Format | Durum |
+|---|---|---|---|---|
+| **WAREHOUSE-OUTBOUND** | MOD-0178 (MVP-5) | MOD-0183 için | `warehouse-outbound.openapi.yaml` | ✅ **v1 FROZEN · consumer-facing slice** |
+| **SUPPLIER** | MOD-0140 (MVP-2) | MOD-0147/0148 için | `supplier.openapi.yaml` | ✅ **v1 FROZEN · consumer-facing slice** |
+
+> ⚠ Bu iki dosya MVP-6'nın tükettiği **minimal yüzeydir**, producer'ın tam contract'ı değil. MVP-5/MVP-2 kendi tam producer contract'ını yazarken bu slice'ı **kapsamalı** (superset), daraltmamalı.
+
 İskeletler: [wave0-contracts](../wave0-contracts-product-master-and-inventory.md) · INVENTORY detay: [inventory-bundle-contract-detailed-v0.1](../inventory-bundle-contract-detailed-v0.1.md)
 
 ## Mock nasıl çalıştırılır (developer)
