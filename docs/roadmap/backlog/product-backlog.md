@@ -4364,6 +4364,7 @@ Her koşumda veritabanı adını yeni bir GUID'den kuran iki dosyayı gösteriyo
 
 ---
 
+**2026-09-15 (a) kapandı — `d9d7b90e`:** `UserLookupValidationContractTests` haklıydı; `0f71a237`'nin karar atfı olmadan eklediği `MaskedName`/`MaskedEmail` kaldırıldı, sözleşme testleri değişmeden yeşil. Tek okuyucu CRM onay ekranının yedek etiketi (BL-416).
 
 ### BL-345
 
@@ -5601,7 +5602,7 @@ DURUM: AÇIK — sebep ölçüldü (2026-09-15); kod düzeltmesi İş Referans V
 
 **CI'da koşmayan eski kırmızı testler — İş Referans Verisi 53, Doküman Yönetimi 15, Auth 3, ön yüz 25**
 
-DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
+DURUM: KISMEN KAPANDI — Auth'un 3 kırmızısı `d9d7b90e` (2026-09-15): izin kapsamı referans dosyasına 11 crm.knowledge satırı (birleştirme sırası; kapsam doğru), kullanıcı referans doğrulama cevabı onaylı CAND-CAP-0001 §6 haline döndü (maskeli ad/e-posta kaldırıldı; CRM etiketi → BL-416). Auth Application 849/849. CT sabotajı: referans dosyasında crm.knowledge.read platform kapsamı → kırmızı → geri → yeşil. Kalan: İş Referans Verisi Mongo (replica set Timestamp), Doküman Yönetimi (DM kulvarında düzeltildi, dördüncü PR), ön yüz 25 · önceki: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
 
 `run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. **2026-09-15 (BL-395 ajanı):** İş Referans Verisi'nin 49 Mongo testi tek süreçte de kırmızı; sebep ölçüldü: yerel mongod bir replica set (`rs0`) ve `RunCommandAsync<object>("{ ping: 1 }")` cevaptaki Timestamp türünü `ObjectSerializer` ile okuyamıyor (GSKU `:363`, TenantAssignment `:28`, PublishOperation `:29`); ardından dispose "database is currently being dropped" ile düşüyor. İş Referans Verisi kulvarının işi. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
 
