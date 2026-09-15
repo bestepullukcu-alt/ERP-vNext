@@ -91,7 +91,7 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
         return await ReplaceOneAsync(role, ct);
     }
 
-    public async Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct)
+    public async Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct)
     {
         var filter = Builders<Role>.Filter.And(
             Builders<Role>.Filter.Eq(r => r.Id, id),
@@ -100,7 +100,8 @@ public sealed class RoleRepository : RepositoryBase<Role>, IRoleRepository
 
         var update = Builders<Role>.Update
             .Set(r => r.IsDeleted, true)
-            .Set(r => r.UpdatedAt, DateTimeOffset.UtcNow);
+            .Set(r => r.UpdatedAt, DateTimeOffset.UtcNow)
+            .Set(r => r.UpdatedBy, deletedBy);
 
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
