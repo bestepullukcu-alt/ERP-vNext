@@ -293,6 +293,8 @@ public static class DependencyInjection
         services.AddScoped<IAuditRetentionPolicyResolver, AuditRetentionPolicyResolver>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAuditMetaAuditWriter, AuditMetaAuditWriter>();
+        // BL-347 — tenant-side data export audit (MOD-0024 work report; MOD-0357 S12 meeting report next).
+        services.AddScoped<IDataExportAuditWriter, DataExportAuditWriter>();
         services.AddScoped<IGlobalApplicabilityTransactionCoordinator, GlobalApplicabilityTransactionCoordinator>();
         services.AddScoped<IJobExecutionLogWriter, JobExecutionLogWriter>();
         services.AddScoped<SchedulerSmokeTestJob>();
