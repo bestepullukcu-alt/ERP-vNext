@@ -5296,7 +5296,7 @@ kapanmamış, toplantısı henüz olmayan görevde, sahibine/açanına ekliyor. 
 
 **Belge yürürlüğe alma: onay kanıtı hiç değerlendirilmemişse uyarıyla geçiyor — Kalite teyidi + ekran/davranış tutarsızlığı**
 
-DURUM: AÇIK · BULAN: DM ajanı (WP-DM-DOCMGMT-RED-TESTS-01), CT · KAYIT: 2026-09-13
+DURUM: KAPANDI (kod, DM kulvarı) — `91901559` (`feature/dm/dcp-005-retire-csv-list`, 2026-09-15). Boş onay kanıtı artık yürürlüğe almayı engelliyor; durum ekranı ve işlem tek kuralı kullanıyor. Not: NotRequired kodda yazılabiliyor ama hiçbir kritiklik onu üretmiyor — onaya tabi olmayan belge türü bugün yok (Kalite teyidiyle birlikte konuşulacak) · önceki: AÇIK · BULAN: DM ajanı (WP-DM-DOCMGMT-RED-TESTS-01), CT · KAYIT: 2026-09-13
 
 **(1) Kalite sorusu (Kural 4 ile birlikte sorulabilir):** `DocumentLifecycleService` artık onay kanıtı durumu boş (FU09 onay rotası hiç
 çalışmamış) bir belgeyi Effective'e uyarıyla geçiriyor; `Complete` ve `NotRequired` dışındaki her dolu değer engelliyor (CT, fail-closed).
@@ -5502,7 +5502,7 @@ Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıc�
 
 **Toplantı raporu / aksiyon kaydı yok — toplantılar arası izleme ve dışa aktarma**
 
-DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı hazır (`5681eaac`) · uygulama WP-MG-MOD0357-S12-MEETING-REPORT-01 (2026-09-15) · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
+DURUM: KAPANDI (kod; canlı kontrol bekliyor) — `6a62eec6`, toplantı zincirine `340be2e7` (2026-09-15). CT sabotajı: gecikme saati ileri çekilince AC4 kırmızı → geri → 308/308 yeşil. Dışa aktarma ibaresinin sözcükleri Kalite onayı bekliyor; verify_datatable_page.py CRUD sayfaları içindir, salt okunur rapor kapsam dışı (CT kararı) · önceki: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı hazır (`5681eaac`) · uygulama WP-MG-MOD0357-S12-MEETING-REPORT-01 (2026-09-15) · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
 
 Bütün dallarda ölçüldü: toplantılar için rapor ekranı ya da dışa aktarma ucu yok; toplantı başına kayıt tutanak. **Karar:** içerik = dönem/tür/
 düzenleyen filtreli toplantı listesi, katılım oranı, kararlar, toplantılardan doğan açık ve geciken aksiyonlar (Blueprint "Follow-up Register";
@@ -5525,7 +5525,7 @@ BL-391 yalnız paylaşılan `diten-datefield.js` ve Pozisyon Ataması formunu d�
 
 **21 ekran sunucu doğrulama hatasında ham ProblemDetails JSON'unu sayfaya basıyor**
 
-DURUM: AÇIK · BULAN: PSS ajanı (BL-388 kalanı) · KAYIT: 2026-09-14
+DURUM: KISMEN KAPANDI — görev ekranları `fddc01a6` (TaskFieldDefinitions, TaskTypes, TaskChecklistTemplates, TaskRecurrenceRules, TaskTemplates tek paylaşılan okuyucuda; CT sabotajı 10 kırmızı → geri → yeşil). Kalan 17 ekran (CRM, Roles, Platform) sahip kulvarlarında · önceki: AÇIK · BULAN: PSS ajanı (BL-388 kalanı) · KAYIT: 2026-09-14
 
 BL-388 yalnız `TaskFieldDefinitionsController`'ı düzeltti. Aynı ham gövde düşüşü: TaskTypes, TaskChecklistTemplates, TaskRecurrenceRules, TaskTemplates, OrganizationFieldDefinitions, GoldenReferenceCompact, GoldenReferenceSlim, Roles, Platform/ModuleCatalog, Platform/SubscriptionPlans ve 11 CRM controller'ı. Ortak yardımcı yok; `UsersController`'ın kendi ayrıştırıcısı var. Ek not: alan mesajları sunucunun İngilizce teknik metniyle geliyor (ör. JSON dönüşüm hatası); yerelleştirmek çeviri kapısından geçer. Öneri: tek paylaşılan hata çıkarıcı + kardeşleri ona bağlamak.
 
@@ -5535,7 +5535,7 @@ BL-388 yalnız `TaskFieldDefinitionsController`'ı düzeltti. Aynı ham gövde d
 
 **Görev okuma kuralı her çağrıda bütün ilişki bacaklarını hesaplıyor — etiketlemede kişi başına tekrar**
 
-DURUM: AÇIK (verimlilik, engel değil) · BULAN: CT (@ ile etiketleme doğrulaması) · KAYIT: 2026-09-14
+DURUM: KAPANDI — `fddc01a6`: @ doğrulaması okuma bacaklarını yazma başına bir kez çözüyor (10 kişi: 11 okuma → 2); okuma kuralının anlamı değişmedi · önceki: AÇIK (verimlilik, engel değil) · BULAN: CT (@ ile etiketleme doğrulaması) · KAYIT: 2026-09-14
 
 `TaskReadAccessPolicy.CanReadAsync` artık `ResolveDataLegCandidatesAsync` ile havuz sahiplerini, izleyicileri ve üst görevi her seferinde çözüyor (önceden ilk eşleşmede duruyordu). Görev detayında birkaç ek sorgu; @ etiketleme doğrulaması bunu etiketlenen her kişi için (en çok 10) tekrarlıyor → ~30 sorgu. Öneri: adaylar görev başına bir kez hesaplanıp kişiler o kümede aranır; kapsam/read-all bacakları yalnız çağıran için ayrıca.
 
@@ -5545,7 +5545,7 @@ DURUM: AÇIK (verimlilik, engel değil) · BULAN: CT (@ ile etiketleme doğrulam
 
 **@ ile etiketleme: var olan yorumu düzenlerken etiket ekleme ekranı yok, eski /Tasks/Details'te etiketleme yok**
 
-DURUM: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-MENTIONS-01) · KAYIT: 2026-09-14
+DURUM: KAPANDI (Görev Merkezi) — `fddc01a6`: yorum düzenlerken etiketler dolu gelir, aynı seçici kullanılır. Eski /Tasks/{id} sayfasında yorum arayüzü hiç yok; etiketleme bildiriminin o sayfaya götürmesi → BL-414 · önceki: AÇIK · BULAN: PSS ajanı (WP-PSS-MOD0024-TASK-MENTIONS-01) · KAYIT: 2026-09-14
 
 Arka uç her ikisini destekliyor (`UpdateTaskCommentRequest.MentionedUserIds`, yalnız yeni eklenene bildirim). Görev Merkezi'nin yorum düzenleme penceresi seçiciyle genişletilmedi; eski /Tasks/Details ekranı dilime alınmadı. MOD-0024 paketi §21'de işaretli.
 
@@ -5619,7 +5619,7 @@ DURUM: AÇIK · BULAN: CT canlı tur (Ali'nin daveti 5 denemede durdu) · KAYIT:
 
 **Görev Merkezi'nde kullanılmayan `ActReviewMeeting` metin anahtarı**
 
-DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAYIT: 2026-09-14
+DURUM: KAPANDI (geçersiz) — ölçüm: `ActReviewMeeting` Görev Merkezi örnek kartlarında (`fixtures/inbox-showcase-fixtures.js:39,58,76`) kullanılıyor; silinirse o satırlarda ham anahtar görünür. Değişiklik yapılmadı · önceki: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAYIT: 2026-09-14
 
 `WorkCenterNextIndex.*.resx` içindeki `ActReviewMeeting` app.js'te hiç referanslı değil (eylem etiketi `WorkAggregation_Action_ScheduleReviewMeeting`'den geliyor). BL-389'da yalnız metni düzeltildi. 7 dilde silinmesi çeviri kapısından geçer.
 
@@ -5641,7 +5641,7 @@ DURUM: KAPANDI — `8e0e8ca7` (BL-395 ile aynı commit) · BULAN: PSS ajanı (BL
 
 **Genel komut denetim hattı her kaydı "Sistem" aktörüyle yazıyor — kiracı kullanıcısının yaptığı değişiklik kimin türüyle kaydedildiğini söylemiyor**
 
-DURUM: AÇIK · BULAN: BL-347 ajanı (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01), CT · KAYIT: 2026-09-15
+DURUM: KAPANDI — `94985da5`, toplantı zincirine `cf2f03cf` (2026-09-15). CT sabotajı: oturumsuz komut Bilinmiyor'a çözülünce iki test kırmızı → geri → 278/278 yeşil. Kalan: aktör türü taşımayan jetonun kiracı ara katmanından geçmesi → BL-413 (yapılıyor) · önceki: AÇIK · BULAN: BL-347 ajanı (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01), CT · KAYIT: 2026-09-15
 
 `Contracts/Behaviors/AuditBehavior.cs` `IAuditableCommand` hattındaki her kaydı isteğin varsayılan aktör türüyle (`AuditActorType.System`) yazıyor; jetondaki `actor_type` okunmuyor. Kullanıcı kimliği kayıtta var, ama "bunu bir kiracı kullanıcısı mı, platform yöneticisi mi, sistem işi mi yaptı" sorusunun cevabı yanlış. GxP denetim izinde aktör türü ayırt edici bilgi. Öneri: BL-347'nin `ResolveActorType` eşlemesi tek bir paylaşılan çözümleyiciye çıkarılır; `AuditBehavior` ve `DataExportAuditWriter` onu kullanır; gerçekten arka plan işi olan komutlar `System` kalır. Etki: 62 denetlenen komut; denetim ekranı ve dışa aktarma aktör türünü gösteriyorsa görünen değer değişir (ölçülmeli). Çeviri/ekran işi yok; altyapı CT alt ajanı, BL-395 kilidi birleştikten sonra.
 
@@ -5674,6 +5674,26 @@ DURUM: AÇIK — canlı katalog ölçümü + sahip kararı bekliyor · BULAN: CT
 DURUM: AÇIK · BULAN: CT alt ajanı (BL-403 incelemesi) · KAYIT: 2026-09-15
 
 `AssignPermissionCommandHandler.cs:54` atayanı sabit `"System"` yazıyor; rol belgelerinde `CreatedBy` boş. Gerçek aktör yalnız `authAuditLogs`'ta. Rol-izin satırına bakan biri elle yapılmış atamayı sistem ataması sanır. Platform tarafındaki BL-409 ile aynı aile (aktörün yanlış kaydı), ama Auth servisinde. Öneri: işleyici oturumdaki kullanıcıyı yazsın, eşitleme ve tohum `System` kalsın; mevcut satırlar değişmez. Altyapı CT kulvarı, çeviri işi yok.
+
+---
+
+### BL-413
+
+**Aktör türü taşımayan jeton kiracı yollarından geçiyor — o komut denetim kaydı bırakmıyor**
+
+DURUM: YAPILIYOR (CT alt ajanı, görev motoru dalı, 2026-09-15) · BULAN: BL-409 ajanı · KAYIT: 2026-09-15
+
+BL-409 sonrası oturum açmış ama `actor_type` taşımayan kimlik Bilinmiyor'a çözülüyor; denetim servisi Bilinmiyor'u reddettiği için komut çalışıyor ama kayıt yazılmıyor (yalnız uyarı). Platform'un kiracı ara katmanı tanınmayan değeri 403 ile reddediyor, eksik olanı geçiriyor (HTTP ile ölçüldü). Bugün `actor_type`'sız jeton üreten gerçek kaynak yok. Düzeltme: eksik ya da boş değer de aynı şekilde reddedilir; önce tüm jeton kaynakları ölçülür.
+
+---
+
+### BL-414
+
+**Görev bildirimleri eski /Tasks/{id} sayfasına götürüyor — o sayfada yorumlar hiç yok**
+
+DURUM: AÇIK — S9 düzeltmesi birleşince yapılacak (aynı sağlayıcı dosyası) · BULAN: PSS ajanı (WP-PSS-MOD0024-FOLLOWUPS-02), CT doğruladı · KAYIT: 2026-09-15
+
+`TaskNotificationService.TaskDeepLink` → `/Tasks/{taskId}` (etiketleme dahil tüm görev bildirimleri, uygulama içi ve e-posta); ayrıca `TaskWorkItemProvider.cs:757` DeepLink ve toplantıların ilişkili kayıt satırı (`TaskRelatedRecordResolver.cs:38`) aynı adresi veriyor. Eski `Views/Tasks/Details.cshtml` sayfasında yorum akışı ve yorum kutusu yok: "sizi bir yorumda etiketledi" bildirimine tıklayan kişi o yorumu göremiyor. Canlı yüzey Görev Merkezi detayı: `/WorkCenterNext/Details/{id}` (görev kimliğini doğrudan alıyor, app.js aynı adresi kullanıyor). Öneri: üç bağlantı Görev Merkezi detayına çevrilir; eski sayfa silinmez. Çeviri işi yok, alt ajan.
 
 ---
 
