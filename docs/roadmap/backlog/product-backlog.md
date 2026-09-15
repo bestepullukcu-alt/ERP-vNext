@@ -4471,7 +4471,9 @@ atama 0 (2026-09-10 ölçümü) — "iki filtreli" kontrol için gereken veri, s
 
 **İş Raporu dışa aktarması denetim kaydı bırakmıyor — kiracı tarafında uygun yazıcı yok**
 
-DURUM: YAPILIYOR (sahip kararı 2026-09-15: altyapı CT, ortak kiracı tarafı denetim yazıcısı — İş Raporu + toplantı raporu dışa aktarması) · önceki: AÇIK · SAHİP: SAHİPSİZ · ÖLÇÜLDÜ: 2026-09-10
+DURUM: KAPANDI (kod; canlı kontrol bekliyor) — `5681eaac` (görev motoru dalı, 2026-09-15), toplantı zincirine `aaa66e29` · SAHİP: altyapı CT · ÖLÇÜLDÜ: 2026-09-10
+
+**Kapanış (2026-09-15).** Ayrı bir yazıcı yazıldı: `IDataExportAuditWriter` (`Features/Audit/Services/DataExportAuditWriter.cs`). İş Raporu indirmesi dosyayı ürettikten sonra, kullanıcıya vermeden önce bir DataExport kaydı yazar. Aktör türü jetondaki `actor_type`'tan gelir (tenant_user / platform_admin / partner_admin); tanınmayan tür kayıt uydurmaz, indirmeyi reddeder. Kayıt ilgili kiracıya aittir (`IsPlatformGlobal=false`), filtre özetinde kişi kimliği yok. Kayıt yazılamazsa dosya verilmez: 503 `DATA_EXPORT_AUDIT_NOT_RECORDED` (ekran bugün genel "dışa aktarılamadı" mesajını gösteriyor; özel mesaj 7 dil, PSS takip WP'sinde). Platform denetim dışa aktarması değişmedi (regresyon testi). Ajan sabotajı S1–S3 kırmızı; CT sabotajı (kiracı kullanıcısı platform yöneticisi diye kaydedilince) 4 kırmızı → geri yükleme → 49/49 yeşil. **Canlı kontrol:** kiracı kullanıcısıyla CSV/JSON indir → `audit_outbox`'ta bir kayıt → `audit_events`'te TenantUser satırı. Ayrı ve eski kusur: genel komut denetim hattı aktör türünü yanlış yazıyor → BL-409.
 
 Dilim 1e (BL-346) audit export'unu taklit etti, bir yer hariç: audit handler'ı indirmeden
 sonra `AuditMetaAuditWriter.WriteAsync(... AuditCategory.DataExport ...)` çağırıyor. Aynı
@@ -5304,6 +5306,7 @@ girmesi GxP açısından kabul mü, yoksa boş durum da engellemeli mi?
 **(2) Tutarsızlık:** `GetStateAsync` (`DocumentLifecycleService.cs` ≈61-74) hazır olma durumunu hâlâ eski kuralla (yalnız `Complete`, gate
 yoksa engel) raporluyor. Ekran "hazır değil" derken işlem geçebilir. Düzeltme (1)'in cevabına göre yapılmalı.
 **2026-09-14:** CT önerisi engellemek (onaya tabi olmayan tür açıkça "onay gerekmez"; Veeva/MasterControl ve 21 CFR Part 11 ile uyumlu). Sahip soruyu Kural 4 ile birlikte Kalite'ye iletiyor.
+**2026-09-15:** sahip önerileri onayladı ve eksiklerin bu doğrultuda bitirilmesini istedi → BL-380 (boş onay kanıtı da engeller) ve Kural 4 (yürürlükte olmayan belgeye bağlı görev türü aktif edilemez) DM kulvarında uygulanıyor (WP-DM-DCP005-BL380-KURAL4-01). Kalite farklı cevap verirse kural tek yerde, geri çevrilebilir.
 
 ---
 
@@ -5481,7 +5484,7 @@ mevcut atamalar nasıl ele alınsın.
 
 **Paylaşılan Platform test veritabanı eşzamanlı koşularda siliniyor — aynı makinede iki test koşusu birbirine sahte kırmızı veriyor**
 
-DURUM: AÇIK · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
+DURUM: YAPILIYOR (CT alt ajanı, `feature/infra/auth-display-label`, 2026-09-15) · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
 
 `MongoResidueSweeper` (`Persistence/MongoResidueSweeper.cs`) önceki koşudan kalan `diten_platform_itest` önekli veritabanlarını düşürüyor;
 `MongoIntegrationHarness` da dispose'ta kendi veritabanını düşürüyor. Aynı makinede iki worktree ya da iki ajan Platform testlerini aynı anda
@@ -5489,13 +5492,15 @@ koşunca biri diğerinin veritabanını silebiliyor → testler rastgele kırmı
 Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıcı çözüm: koşu başına benzersiz önek ya da sahiplik işareti
 (İş Referans Verisi temizleyicisinin işaret deseni) — sweeper yalnız kendi koşusunun izini düşürsün.
 
+**2026-09-15 CT ölçümü — sebep büyük olasılıkla temizleyici değil.** `MongoResidueSweeper` zaten harness işareti + farklı RunId + 1 saat bayatlık şartı arıyor. Asıl yarış: `MongoIntegrationHarness` kapsamlı veritabanlarını SABİT adla (`diten_platform_itest_<scope>`, DB-010 gereği) `emptyFirst: true` ile açıyor; ikinci koşu, birincinin kullandığı veritabanını açılışta boşaltıyor. Koşu başına ad DB-010'u ve `MongoTestDatabaseGuardTests`'i bozacağı için çözüm yönü değişti: makine genelinde özel dosya kilidi (sabit yol, TMPDIR'den bağımsız); ikinci test süreci birincinin bitmesini bekler.
+
 ---
 
 ### BL-396
 
 **Toplantı raporu / aksiyon kaydı yok — toplantılar arası izleme ve dışa aktarma**
 
-DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı yapılıyor · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
+DURUM: PAKET READY-FOR-DEV (MOD-0357 §23, sahip kararları 2026-09-15: izin A · "şu an taşındığı" sütunu evet · yalnız yayınlanmış tutanak · DataTable · dışa aktarılan dosya "o anın görüntüsü" [Kalite teyidi bekliyor] · ortak denetim yazıcısı altyapı CT) · önkoşul BL-347 yazıcısı hazır (`5681eaac`) · uygulama WP-MG-MOD0357-S12-MEETING-REPORT-01 (2026-09-15) · SAHİP KARARI: 2026-09-14 · KAYIT: 2026-09-14
 
 Bütün dallarda ölçüldü: toplantılar için rapor ekranı ya da dışa aktarma ucu yok; toplantı başına kayıt tutanak. **Karar:** içerik = dönem/tür/
 düzenleyen filtreli toplantı listesi, katılım oranı, kararlar, toplantılardan doğan açık ve geciken aksiyonlar (Blueprint "Follow-up Register";
@@ -5618,9 +5623,19 @@ DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAY
 
 **CI kapısının "veritabanları arası erişim" adımı `rg` yoksa hiçbir şey denetlemeden "passed" diyor**
 
-DURUM: AÇIK · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
+DURUM: YAPILIYOR (CT alt ajanı, BL-395 ile aynı WP, 2026-09-15) · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
 
 `scripts/check_cross_db_enforcement.sh:7` aramayı `rg` ile yapıyor ve hatayı `|| true` ile yutuyor. `rg` kurulu olmayan makinede (yerel dev makinesi ölçüldü: `rg: command not found`) adım hiçbir dosyayı taramadan geçiyor. Ajan aynı denetimi grep ile koştu: 0 ihlal. GitHub `ubuntu-latest` imajında `rg` olup olmadığı ölçülmedi. Öneri: araç yoksa adım başarısız olsun ya da grep'e düşsün; `|| true` yalnız "eşleşme yok" çıkış kodunu yutsun.
+
+---
+
+### BL-409
+
+**Genel komut denetim hattı her kaydı "Sistem" aktörüyle yazıyor — kiracı kullanıcısının yaptığı değişiklik kimin türüyle kaydedildiğini söylemiyor**
+
+DURUM: AÇIK · BULAN: BL-347 ajanı (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01), CT · KAYIT: 2026-09-15
+
+`Contracts/Behaviors/AuditBehavior.cs` `IAuditableCommand` hattındaki her kaydı isteğin varsayılan aktör türüyle (`AuditActorType.System`) yazıyor; jetondaki `actor_type` okunmuyor. Kullanıcı kimliği kayıtta var, ama "bunu bir kiracı kullanıcısı mı, platform yöneticisi mi, sistem işi mi yaptı" sorusunun cevabı yanlış. GxP denetim izinde aktör türü ayırt edici bilgi. Öneri: BL-347'nin `ResolveActorType` eşlemesi tek bir paylaşılan çözümleyiciye çıkarılır; `AuditBehavior` ve `DataExportAuditWriter` onu kullanır; gerçekten arka plan işi olan komutlar `System` kalır. Etki: 62 denetlenen komut; denetim ekranı ve dışa aktarma aktör türünü gösteriyorsa görünen değer değişir (ölçülmeli). Çeviri/ekran işi yok; altyapı CT alt ajanı, BL-395 kilidi birleştikten sonra.
 
 ---
 
