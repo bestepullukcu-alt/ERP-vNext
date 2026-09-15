@@ -5774,7 +5774,7 @@ DURUM: AÇIK (kabul edilen sınır, düşük öncelik) · BULAN: BL-412 inceleme
 
 **Kiracı denetim olayı ekleme ucu aktörü istek gövdesinden alıyor — kiracı kullanıcısı kendi denetim kaydına "platform yöneticisi" ya da "sistem" adına olay yazabilir**
 
-DURUM: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
+DURUM: KAPANDI — `809cbc34`, toplantı zincirinde `ff5e611b` (2026-09-15). Kiracı denetim ekleme ucu aktörü hep kimliği doğrulanmış çağırandan yazıyor (BL-409 çözümleyicisi); gövdede başka aktör → 400 `actor_type_mismatch`/`actor_id_mismatch`, adlandırılamayan çağıran → 403 `actor_unresolved`. HCM istemcisi bugün çağırmıyor, CRM zaten uyumlu; iç S2S ekleme ucu değişmedi. CT sabotajı: kaydedilen aktör türü System'e sabitlenince 4 kırmızı → geri → temiz kopyada Audit|Workflow|Escalation 426/426. Takipler BL-424 · önceki: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
 
 `POST /api/v1/platform/audit/events` (`PlatformAuditAppendController.cs:36-40,66,75`) kiracıyı çağıranınkine sabitliyor ama `ActorType`/`ActorId` gövdeden geliyor (`AuditAppendApiModels.cs:10-11,80-120`), çağıranla bağlanmıyor. `platform.audit.events.append` tutan biri kendi kiracısının denetim izine istediği aktörle olay yazabilir. Kiracılar arası değil ama GxP / 21 CFR Part 11 bütünlük açığı. Bilinen çağıran: HCM `GovernedHcmAuditAppendClient` (kullanıcının jetonunu iletiyor). Düzeltme: aktör kimliği doğrulanmış çağırandan (BL-409 çözümleyicisi), gövdedeki farklı aktör 400. SAP/Oracle denetim günlükleri de kimliği doğrulanmış kullanıcıyı yazar.
 
@@ -5784,7 +5784,7 @@ DURUM: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUND
 
 **İş akışı yükseltme çalıştırması saati istemciden alıyor — yetkili biri süresi dolmamış görevleri kendi kiracısında zaman aşımına uğratabilir**
 
-DURUM: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
+DURUM: KAPANDI — `809cbc34`, zincirde `ff5e611b` (2026-09-15). Yükseltme çalıştırması yalnız enjekte `TimeProvider`; istekte `NowUtc` → 400 `WORKFLOW_ESCALATION_CLOCK_NOT_ACCEPTED`. Ekrandaki NowUtc alanının kaldırılması BL-424 · önceki: YAPILIYOR (CT alt ajanı, 2026-09-15) · BULAN: WP-INFRA-ESCALATION-BOUNDARY-AUDIT-01 · KAYIT: 2026-09-15
 
 `RunWorkflowEscalationsHandler.cs:41` istemcinin verdiği `NowUtc`'yi kabul ediyor; `platform.workflow.escalations.run` tutan biri geleceği vererek süresi dolmamış görevleri yükseltebilir. Düzeltme: API yolu sunucu saati; testler zamanı enjekte saatle yönetir.
 
