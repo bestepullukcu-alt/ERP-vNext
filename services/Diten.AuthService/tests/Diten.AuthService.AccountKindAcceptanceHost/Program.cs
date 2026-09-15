@@ -1,0 +1,841 @@
+// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 — the out-of-process acceptance host (W2). Protocol v1.2 (v1.1 + C7-C10 +
+// D1-D8 + P1-P8, CT-approved 2026-09-15/16).
+//
+// This process is the "host" side. A supervisor (PPM's test process, out of scope — see the WP boundary) starts
+// it in a NEW process group (D1: posix_spawn + POSIX_SPAWN_SETPGROUP) with three environment variables:
+//   DITEN_ACCEPTANCE_ROOT         — the supervisor-owned, mkdtemp'd, lstat-verified 0700 run root (C9). This
+//                                    host reads ONLY the fixed relative names below from it; no path is ever
+//                                    read from a message, and `ready` carries no path field.
+//   DITEN_ACCEPTANCE_RUN_ID       — every message on the control channel must echo this back (C7 §0/§6).
+//   DITEN_ACCEPTANCE_DOTNET_PATH  — the supervisor's own absolute resolution of `dotnet`, so the API child never
+//                                    needs PATH to find it (C10).
+// Fixed root layout (supervisor creates all of these 0700 before spawn — C9 §1):
+//   <root>/control.sock  — this host connects to it as a client (supervisor listens/accepts).
+//   <root>/api.sock       — Kestrel listens here for the real Auth API (R2 Tercih A).
+//   <root>/mongo/         — EphemeralMongo's data directory (D5 — PID is read from mongod.lock here, not lsof).
+//   <root>/home/          — HOME for the API child (C10 — the developer's real HOME never reaches it).
+//   <root>/tmp/           — TMPDIR for the API child.
+//   <root>/content/       — API child's --contentRoot AND working directory; left EMPTY (C10 — appsettings.json,
+//                            appsettings.Development.json and their bin-output copies are never read this way).
+//
+// Sequence: hello -> hello-ack -> [seed via AuthTestHost, reused per R6, NOT copied] -> launch real Api process
+// (dotnet <dll>, no `dotnet run`, no intermediate process) -> health-poll -> ONE real login round trip BEFORE
+// declaring ready (P7 — proves the whole Mongo+DB path end to end, not just Kestrel liveness) -> ready ->
+// seed-ready -> wait shutdown -> graceful kill (D3: SIGTERM, 5s, SIGKILL) -> dispose mongod -> bye -> exit.
+//
+// Honest accounting of what this pass does NOT fully cover (see the delivery report): C7's full 13-item negative
+// test list is exercised only partially by the supervisor-side driver (a throwaway scratchpad script, not this
+// file); POSIX_SPAWN_CLOEXEC_DEFAULT is not set for the API/mongod children (P4 — measured mechanism documented
+// in the protocol text instead, evidence deferred to the real 7-state run).
+
+using System.Diagnostics;
+using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using Diten.AuthService.Application.Tests.Testing;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace Diten.AuthService.AccountKindAcceptanceHost;
+
+// P3 — fixed host exit codes.
+internal static class ExitCodes
+{
+    public const int Success = 0;                  // normal: shutdown -> bye
+    public const int ProtocolViolation = 1;         // protocol-violation or unsupported-version
+    public const int MongoStartFailed = 2;
+    public const int ApiStartFailed = 3;            // api-start-failed or api-bind-failed
+    public const int SeedFailed = 4;
+    public const int Unexpected = 5;
+    public const int SupervisorLost = 6;             // EOF before shutdown
+    public const int Timeout = 7;                    // host-side timeout waiting for a message
+}
+
+// P2 — fixed, English, code-keyed error text. NEVER exception text, input fragments, paths, PIDs, or secrets.
+internal static class ProtocolErrors
+{
+    public static readonly IReadOnlyDictionary<string, string> Text = new Dictionary<string, string>
+    {
+        ["unsupported-version"] = "Protocol version not supported.",
+        ["peer-verification-failed"] = "Peer verification failed.",
+        ["mongo-start-failed"] = "Disposable MongoDB could not be started.",
+        ["api-start-failed"] = "Auth API process could not be started.",
+        ["api-bind-failed"] = "Auth API did not bind its socket.",
+        ["seed-failed"] = "Seeding the disposable tenant failed.",
+        ["timeout"] = "A protocol step timed out.",
+        ["protocol-violation"] = "Protocol violation.",
+    };
+}
+
+internal static class Program
+{
+    private const string ProtocolVersion = "1.2";
+
+    private static async Task<int> Main(string[] args)
+    {
+        // Measured (Stage 2 / C4 report): WebApplicationFactory<Program>'s content-root guess (inside
+        // AccountKindAcceptance.AuthTestHost, reused per R6) is sensitive to Directory.GetCurrentDirectory() at
+        // the moment the in-process seed host is built. A supervisor can launch this process from ANY working
+        // directory; AppContext.BaseDirectory (this assembly's own bin output, deterministic regardless of
+        // caller) is pinned as CWD before anything else touches WebApplicationFactory.
+        Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+
+        var root = Environment.GetEnvironmentVariable("DITEN_ACCEPTANCE_ROOT");
+        var runId = Environment.GetEnvironmentVariable("DITEN_ACCEPTANCE_RUN_ID");
+        var dotnetPath = Environment.GetEnvironmentVariable("DITEN_ACCEPTANCE_DOTNET_PATH");
+        if (string.IsNullOrWhiteSpace(root) || string.IsNullOrWhiteSpace(runId) || string.IsNullOrWhiteSpace(dotnetPath))
+        {
+            await Console.Error.WriteLineAsync(
+                "DITEN_ACCEPTANCE_ROOT, DITEN_ACCEPTANCE_RUN_ID and DITEN_ACCEPTANCE_DOTNET_PATH are required (protocol v1.2).");
+            return ExitCodes.Unexpected;
+        }
+
+        var controlSockPath = Path.Combine(root, "control.sock");
+        var apiSockPath = Path.Combine(root, "api.sock");
+        var mongoDataDir = Path.Combine(root, "mongo");
+        var homeDir = Path.Combine(root, "home");
+        var tmpDir = Path.Combine(root, "tmp");
+        var contentDir = Path.Combine(root, "content");
+
+        await using var channel = await ControlChannel.ConnectAsync(controlSockPath, runId);
+        AccountKindAcceptance.AuthTestHost? seedHost = null;
+        Process? apiProcess = null;
+        PlatformLoginSettingsStub? platformStub = null;
+
+        try
+        {
+            await channel.SendAsync("hello", new { protocolVersion = ProtocolVersion, hostPid = Environment.ProcessId });
+            ControlMessage ack;
+            try
+            {
+                await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} waiting for hello-ack (10s)...");
+                ack = await channel.ReceiveAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (TimeoutException)
+            {
+                await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} hello-ack TIMED OUT, returning exit 7");
+                return ExitCodes.Timeout;
+            }
+
+            if (ack.Type == "error")
+            {
+                return ExitCodes.ProtocolViolation; // supervisor already refused (e.g. unsupported-version)
+            }
+
+            if (ack.Type != "hello-ack" || ack.ProtocolVersion != ProtocolVersion)
+            {
+                await channel.SendErrorAsync("unsupported-version");
+                return ExitCodes.ProtocolViolation;
+            }
+
+            // ── seed (R6, reused not copied) — mongod's data directory is the supervisor-owned <root>/mongo (D5) ──
+            try
+            {
+                seedHost = await AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(mongoDataDir);
+            }
+            catch (Exception diagEx)
+            {
+                await Console.Error.WriteLineAsync("[host] DIAG mongo-start-failed: " + diagEx);
+                await channel.SendErrorAsync("mongo-start-failed");
+                return ExitCodes.MongoStartFailed;
+            }
+
+            // C8's subjects list needs 4 more display-label subjects, seeded via the SAME in-process factory —
+            // must happen BEFORE the factory is disposed below.
+            var displayLabelSubjects = await AccountKindAcceptance.SeedDisplayLabelSubjectsAsync(seedHost);
+
+            await seedHost.DisposeFactoryOnlyAsync();
+
+            // D5 — mongod PID from mongod.lock (measured: plain-text PID + newline, verified against a real
+            // mongod on this machine), NOT a port/lsof lookup. Parent must be THIS process; executable name must
+            // be "mongod".
+            int mongodPid;
+            try
+            {
+                mongodPid = ReadMongodPidFromLockFile(mongoDataDir);
+                var mongodPpid = ProcessTiming.GetParentPid(mongodPid);
+                var mongodComm = ReadProcessComm(mongodPid);
+                if (mongodPpid != Environment.ProcessId || mongodComm != "mongod")
+                {
+                    throw new InvalidOperationException(
+                        $"mongod.lock PID failed parent/name verification: pid={mongodPid} ppid={mongodPpid} (expected {Environment.ProcessId}) comm='{mongodComm}'");
+                }
+            }
+            catch (Exception diagEx)
+            {
+                await Console.Error.WriteLineAsync("[host] DIAG mongod PID verification: " + diagEx);
+                await channel.SendErrorAsync("mongo-start-failed");
+                return ExitCodes.MongoStartFailed;
+            }
+
+            var mongodStartTime = ProcessTiming.GetStartTimeUnixMs(mongodPid);
+
+            // P1 — the login-settings stub replaces the old bind/close/rebind race: a real in-process Kestrel
+            // bound directly to 127.0.0.1:0, with the actually-bound address read AFTER start.
+            platformStub = await PlatformLoginSettingsStub.StartAsync();
+
+            var apiDllPath = ResolveApiDllPath();
+            var internalEventApiKey = GenerateDisposableKey();
+            var platformInternalApiKey = GenerateDisposableKey();
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = dotnetPath,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true,
+                WorkingDirectory = contentDir // C10 — empty; never the API's own bin directory
+            };
+            psi.ArgumentList.Add(apiDllPath);
+            psi.ArgumentList.Add("--contentRoot");
+            psi.ArgumentList.Add(contentDir);
+
+            // C1/C10 — CLEANED environment: Clear() then an explicit allow-list only.
+            psi.Environment.Clear();
+            psi.Environment["PATH"] = "/usr/bin:/bin";
+            psi.Environment["HOME"] = homeDir;
+            psi.Environment["TMPDIR"] = tmpDir;
+            psi.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(dotnetPath)!;
+            psi.Environment["ASPNETCORE_ENVIRONMENT"] = "AcceptanceHost"; // C3/C10 — not "Development"
+            psi.Environment["ASPNETCORE_URLS"] = $"http://unix:{apiSockPath}";
+            psi.Environment["MongoDbSettings__ConnectionString"] = seedHost.ConnectionString;
+            psi.Environment["MongoDbSettings__DatabaseName"] = AccountKindAcceptance.DatabaseName;
+            psi.Environment["JwtSettings__Secret"] = seedHost.GeneratedJwtSecretForLeakGuardOnly
+                ?? throw new InvalidOperationException("seed host did not generate a JWT secret");
+            psi.Environment["Eventing__Transport"] = "InMemory";
+            psi.Environment["Smtp__Enabled"] = "false";
+            psi.Environment["TenantResolution__DevBypassEnabled"] = "false";
+            psi.Environment["Observability__Metrics__Enabled"] = "false";
+            psi.Environment["Observability__Seq__Enabled"] = "false";
+            psi.Environment["OTEL_SDK_DISABLED"] = "true";
+            psi.Environment["InternalEventAuth__ApiKey"] = internalEventApiKey;
+            psi.Environment["PlatformService__InternalApiKey"] = platformInternalApiKey;
+            psi.Environment["PlatformService__BaseUrl"] = platformStub.BaseUrl;
+
+            apiProcess = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            var stdout = new List<string>();
+            var stderr = new List<string>();
+            apiProcess.OutputDataReceived += (_, e) => { if (e.Data is not null) stdout.Add(e.Data); };
+            apiProcess.ErrorDataReceived += (_, e) => { if (e.Data is not null) stderr.Add(e.Data); };
+
+            // T6 — Process.Start THROWS (Win32Exception) when FileName does not resolve to an existing
+            // executable; it does not just return false. A bad DITEN_ACCEPTANCE_DOTNET_PATH must map to
+            // api-start-failed/exit 3, not fall through to the generic top-level catch (protocol-violation/5).
+            bool started;
+            try
+            {
+                started = apiProcess.Start();
+            }
+            catch (Exception startEx)
+            {
+                await Console.Error.WriteLineAsync("[host] DIAG api process Start() threw: " + startEx);
+                apiProcess = null; // nothing to kill in finally — Start() never produced a live process
+                await channel.SendErrorAsync("api-start-failed");
+                return ExitCodes.ApiStartFailed;
+            }
+
+            if (!started)
+            {
+                apiProcess = null;
+                await channel.SendErrorAsync("api-start-failed");
+                return ExitCodes.ApiStartFailed;
+            }
+
+            apiProcess.BeginOutputReadLine();
+            apiProcess.BeginErrorReadLine();
+
+            var apiPid = apiProcess.Id;
+            var apiStartTime = ProcessTiming.GetStartTimeUnixMs(apiPid);
+
+            var healthy = await WaitForHealthyAsync(apiSockPath, apiProcess, TimeSpan.FromSeconds(30));
+            if (!healthy)
+            {
+                await channel.SendErrorAsync("api-bind-failed");
+                return ExitCodes.ApiStartFailed;
+            }
+
+            var seed = seedHost.Seeded;
+
+            // P7 — ONE real login round trip through api.sock BEFORE declaring ready: proves the FULL path
+            // (Kestrel -> TenantResolution -> LoginCommandHandler -> ITenantLoginSettingsClient -> the stub ->
+            // Mongo user lookup -> password verify -> JWT mint), not just /health/live's liveness. noPermission
+            // is used deliberately: it has no grants, so a genuine 401/403 on a LATER permission check would be
+            // expected, but LOGIN ITSELF must still succeed (login needs no permission) — a real, measurable
+            // pass/fail signal that Mongo and the login-settings stub are actually reachable from THIS process.
+            var preReadyLoginOk = await TryLoginAsync(apiSockPath, seed.TenantId, seed.NoPermission.Email, seedHost.ActorPassword);
+            if (!preReadyLoginOk)
+            {
+                await channel.SendErrorAsync("api-bind-failed");
+                return ExitCodes.ApiStartFailed;
+            }
+
+            await channel.SendAsync("ready", new
+            {
+                apiPid,
+                apiStartTime,
+                mongodPid,
+                mongodStartTime,
+                endpoint = new { kind = "unix", socket = "api.sock" }
+            });
+
+            // ── C8 seed-ready shape: actors (4, with password) + subjects (10, userId only) + foreignTenantId ──
+            await channel.SendAsync("seed-ready", new
+            {
+                tenantId = seed.TenantId,
+                foreignTenantId = seed.ForeignTenantId,
+                actors = new Dictionary<string, object>
+                {
+                    ["kindAdmin"] = new { userId = seed.KindAdmin.Id, email = seed.KindAdmin.Email, password = seedHost.ActorPassword },
+                    ["pmo"] = new { userId = seed.Pmo.Id, email = seed.Pmo.Email, password = seedHost.ActorPassword },
+                    ["creator"] = new { userId = seed.Creator.Id, email = seed.Creator.Email, password = seedHost.ActorPassword },
+                    ["noPermission"] = new { userId = seed.NoPermission.Id, email = seed.NoPermission.Email, password = seedHost.ActorPassword },
+                },
+                subjects = new Dictionary<string, object>
+                {
+                    ["human"] = new { userId = seed.Human.Id },
+                    ["unknown"] = new { userId = seed.Unknown.Id },
+                    ["service"] = new { userId = seed.Service.Id },
+                    ["passive"] = new { userId = seed.Passive.Id },
+                    ["foreign"] = new { userId = seed.Foreign.Id },
+                    ["mutable"] = new { userId = seed.Mutable.Id },
+                    ["unnamed"] = new { userId = displayLabelSubjects.Unnamed.Id },
+                    ["whitespace"] = new { userId = displayLabelSubjects.Whitespace.Id },
+                    ["emailUserName"] = new { userId = displayLabelSubjects.EmailUserName.Id },
+                    ["longName"] = new { userId = displayLabelSubjects.LongName.Id },
+                }
+            });
+
+            // ── wait for shutdown; EOF before it => supervisor-lost (P3, exit 6); a timeout => exit 7 ────────
+            ControlMessage shutdown;
+            try
+            {
+                shutdown = await channel.ReceiveAsync(TimeSpan.FromMinutes(5));
+            }
+            catch (IOException)
+            {
+                return ExitCodes.SupervisorLost;
+            }
+            catch (TimeoutException)
+            {
+                return ExitCodes.Timeout;
+            }
+
+            if (shutdown.Type != "shutdown")
+            {
+                await channel.SendErrorAsync("protocol-violation");
+                return ExitCodes.ProtocolViolation;
+            }
+
+            return ExitCodes.Success;
+        }
+        catch (Exception diagEx)
+        {
+            await Console.Error.WriteLineAsync("[host] DIAG top-level: " + diagEx);
+            try { await channel.SendErrorAsync("protocol-violation"); } catch { /* channel already gone */ }
+            return ExitCodes.Unexpected;
+        }
+        finally
+        {
+            await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} entering finally block");
+            // ── cleanup — every path (D3: graceful SIGTERM -> 5s -> SIGKILL as last resort) ─────────────────
+            if (apiProcess is not null)
+            {
+                await GracefulKillAsync(apiProcess);
+            }
+
+            platformStub?.Dispose();
+
+            if (seedHost is not null)
+            {
+                await seedHost.DisposeAsync(); // factory already null — this stops mongod + drops the DB
+            }
+
+            await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} about to send bye");
+            try
+            {
+                await channel.SendAsync("bye", new { });
+                await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} bye sent");
+            }
+            catch
+            {
+                // best effort
+            }
+        }
+    }
+
+    // D3 — libc kill(pid, SIGTERM), 5s grace, then SIGKILL as the LAST resort (never Process.Kill first).
+    private static async Task GracefulKillAsync(Process process)
+    {
+        if (process.HasExited) return;
+
+        var pid = process.Id;
+        try
+        {
+            Kill(pid, 15); // SIGTERM
+            var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+            while (DateTime.UtcNow < deadline && !process.HasExited)
+            {
+                await Task.Delay(100);
+            }
+
+            if (!process.HasExited)
+            {
+                Kill(pid, 9); // SIGKILL — last resort
+                await process.WaitForExitAsync(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
+            }
+        }
+        catch
+        {
+            // best effort
+        }
+
+        [DllImport("libc", SetLastError = true)]
+        static extern int kill(int pid, int sig);
+        static void Kill(int pid, int sig) => kill(pid, sig);
+    }
+
+    private static int ReadMongodPidFromLockFile(string mongoDataDir)
+    {
+        // Measured: mongod holds mongod.lock with an exclusive advisory flock() while running (verified against
+        // a real 7.0.28 mongod on this machine — file contains the PID as plain decimal text + trailing
+        // newline). .NET's FileStream on Unix ALSO takes its own advisory lock to emulate Windows FileShare
+        // semantics (even FileAccess.Read + FileShare.ReadWrite still trips on mongod's exclusive flock) — a
+        // plain POSIX open()/read()/close() (no flock involved) reads it without contention.
+        var lockPath = Path.Combine(mongoDataDir, "mongod.lock");
+        const int O_RDONLY = 0;
+        var fd = open(lockPath, O_RDONLY);
+        if (fd < 0) throw new IOException($"open({lockPath}) failed, errno={Marshal.GetLastWin32Error()}");
+        try
+        {
+            var buffer = new byte[64];
+            var n = read(fd, buffer, (nint)buffer.Length);
+            if (n < 0) throw new IOException($"read({lockPath}) failed, errno={Marshal.GetLastWin32Error()}");
+            return int.Parse(Encoding.ASCII.GetString(buffer, 0, (int)n).Trim());
+        }
+        finally
+        {
+            close(fd);
+        }
+
+        [DllImport("libc", SetLastError = true, EntryPoint = "open")]
+        static extern int open(string path, int flags);
+        [DllImport("libc", SetLastError = true)]
+        static extern nint read(int fd, byte[] buf, nint count);
+        [DllImport("libc", SetLastError = true)]
+        static extern int close(int fd);
+    }
+
+    private static string ReadProcessComm(int pid)
+    {
+        var psi = new ProcessStartInfo("ps", $"-o comm= -p {pid}") { RedirectStandardOutput = true, UseShellExecute = false };
+        using var p = Process.Start(psi)!;
+        var output = p.StandardOutput.ReadToEnd().Trim();
+        p.WaitForExit(3000);
+        return Path.GetFileName(output);
+    }
+
+    private static string GenerateDisposableKey()
+    {
+        Span<byte> bytes = stackalloc byte[24];
+        RandomNumberGenerator.Fill(bytes);
+        return Convert.ToHexString(bytes);
+    }
+
+    private static string ResolveApiDllPath()
+    {
+        var candidate = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.Api.dll");
+        if (File.Exists(candidate)) return candidate;
+        throw new FileNotFoundException("Diten.AuthService.Api.dll was not found next to this host's own build output.", candidate);
+    }
+
+    private static async Task<bool> WaitForHealthyAsync(string socketPath, Process apiProcess, TimeSpan timeout)
+    {
+        using var handler = UnixSocketHandler(socketPath);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/"), Timeout = TimeSpan.FromSeconds(3) };
+
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            if (apiProcess.HasExited) return false;
+            if (File.Exists(socketPath))
+            {
+                try
+                {
+                    var response = await client.GetAsync("health/live");
+                    if (response.IsSuccessStatusCode) return true;
+                }
+                catch { /* not ready yet */ }
+            }
+
+            await Task.Delay(250);
+        }
+
+        return false;
+    }
+
+    private static async Task<bool> TryLoginAsync(string apiSockPath, Guid tenantId, string email, string password)
+    {
+        using var handler = UnixSocketHandler(apiSockPath);
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/"), Timeout = TimeSpan.FromSeconds(10) };
+
+        var body = JsonSerializer.Serialize(new { email, password, rememberMe = false });
+        using var req = new HttpRequestMessage(HttpMethod.Post, "api/tenant-auth/login")
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json")
+        };
+        req.Headers.Add("X-Tenant-Id", tenantId.ToString("D"));
+
+        try
+        {
+            using var resp = await client.SendAsync(req);
+            if (!resp.IsSuccessStatusCode) return false;
+            using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync());
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("isSuccessful", out var isSuccessful) || !isSuccessful.GetBoolean()) return false;
+            if (!root.TryGetProperty("data", out var data) || data.ValueKind != JsonValueKind.Object) return false;
+            return data.TryGetProperty("accessToken", out var token) && token.ValueKind == JsonValueKind.String && !string.IsNullOrEmpty(token.GetString());
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static SocketsHttpHandler UnixSocketHandler(string socketPath) => new()
+    {
+        ConnectCallback = async (_, ct) =>
+        {
+            var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+            await socket.ConnectAsync(new UnixDomainSocketEndPoint(socketPath), ct);
+            return new NetworkStream(socket, ownsSocket: true);
+        }
+    };
+}
+
+/// <summary>C7 — a message parsed off the control channel. Fields are validated per-type by the caller.</summary>
+internal sealed record ControlMessage(string Type, string RunId, string? ProtocolVersion, JsonElement Root);
+
+/// <summary>
+/// C7 — the strict wire protocol: UTF-8 bytes + single LF, no BOM/CR, 65536-byte cap enforced WHILE reading
+/// (never after an unbounded ReadLine), a 5s cap on completing a line once it starts, strict UTF-8 decoding, and
+/// duplicate-JSON-key rejection at every depth (JsonDocument does not reject these — Utf8JsonReader is used to
+/// scan for them explicitly before any value is trusted).
+/// </summary>
+internal sealed class ControlChannel : IAsyncDisposable
+{
+    private const int MaxLineBytes = 65536;
+    private static readonly TimeSpan LineTimeout = TimeSpan.FromSeconds(5);
+
+    private readonly Socket _socket;
+    private readonly NetworkStream _stream;
+    private readonly string _runId;
+
+    private ControlChannel(Socket socket, string runId)
+    {
+        _socket = socket;
+        _stream = new NetworkStream(socket, ownsSocket: false);
+        _runId = runId;
+    }
+
+    public static async Task<ControlChannel> ConnectAsync(string channelPath, string runId)
+    {
+        var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+        await socket.ConnectAsync(new UnixDomainSocketEndPoint(channelPath));
+        return new ControlChannel(socket, runId);
+    }
+
+    public async Task SendAsync(string type, object payload)
+    {
+        var merged = new Dictionary<string, object?> { ["type"] = type, ["runId"] = _runId };
+        if (type is "hello") merged["protocolVersion"] = "1.2";
+        foreach (var prop in payload.GetType().GetProperties()) merged[prop.Name] = prop.GetValue(payload);
+
+        var json = JsonSerializer.Serialize(merged);
+        var bytes = Encoding.UTF8.GetBytes(json + "\n");
+        await _stream.WriteAsync(bytes);
+        await _stream.FlushAsync();
+    }
+
+    public Task SendErrorAsync(string code) =>
+        SendAsync("error", new { code, message = ProtocolErrors.Text[code] });
+
+    public async Task<ControlMessage> ReceiveAsync(TimeSpan timeout)
+    {
+        var readTask = ReadStrictLineAsync();
+        var completed = await Task.WhenAny(readTask, Task.Delay(timeout));
+        if (completed != readTask)
+        {
+            throw new TimeoutException($"No message received within {timeout}.");
+        }
+
+        var lineBytes = await readTask;
+        return ParseAndValidate(lineBytes);
+    }
+
+    /// <summary>Byte-level strict reader: LF-delimited, size-capped WHILE reading, per-line timeout.</summary>
+    private async Task<byte[]> ReadStrictLineAsync()
+    {
+        var buffer = new List<byte>(256);
+        var single = new byte[1];
+        DateTime? firstByteAt = null;
+
+        while (true)
+        {
+            if (firstByteAt is { } started && DateTime.UtcNow - started > LineTimeout)
+            {
+                throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+            }
+
+            var readTask = _stream.ReadAsync(single.AsMemory(0, 1));
+            var timeLeft = firstByteAt is null ? Timeout.InfiniteTimeSpan : LineTimeout - (DateTime.UtcNow - firstByteAt.Value);
+            var n = timeLeft == Timeout.InfiniteTimeSpan
+                ? await readTask
+                : await WithTimeout(readTask.AsTask(), timeLeft);
+
+            if (n == 0)
+            {
+                throw new IOException("control channel closed (EOF) mid-line or before a message arrived");
+            }
+
+            firstByteAt ??= DateTime.UtcNow;
+
+            if (single[0] == (byte)'\n')
+            {
+                return buffer.ToArray();
+            }
+
+            buffer.Add(single[0]);
+            if (buffer.Count > MaxLineBytes)
+            {
+                throw new InvalidOperationException("protocol-violation: line exceeded 65536 bytes without LF.");
+            }
+        }
+
+        static async Task<int> WithTimeout(Task<int> task, TimeSpan timeout)
+        {
+            if (timeout <= TimeSpan.Zero) throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+            var completed = await Task.WhenAny(task, Task.Delay(timeout));
+            if (completed != task) throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+            return await task;
+        }
+    }
+
+    private ControlMessage ParseAndValidate(byte[] lineBytes)
+    {
+        if (lineBytes.Length == 0)
+        {
+            throw new InvalidOperationException("protocol-violation: empty line.");
+        }
+
+        // No BOM: EF BB BF at the start is refused outright.
+        if (lineBytes.Length >= 3 && lineBytes[0] == 0xEF && lineBytes[1] == 0xBB && lineBytes[2] == 0xBF)
+        {
+            throw new InvalidOperationException("protocol-violation: UTF-8 BOM present.");
+        }
+
+        // No CR anywhere (a CRLF pair would otherwise silently leave a trailing \r in the "line").
+        if (Array.IndexOf(lineBytes, (byte)'\r') >= 0)
+        {
+            throw new InvalidOperationException("protocol-violation: CR present.");
+        }
+
+        // Strict UTF-8: throws on any invalid byte sequence instead of substituting U+FFFD.
+        var strictUtf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        string text;
+        try
+        {
+            text = strictUtf8.GetString(lineBytes);
+        }
+        catch (DecoderFallbackException)
+        {
+            throw new InvalidOperationException("protocol-violation: invalid UTF-8 sequence.");
+        }
+
+        EnsureNoDuplicateKeys(lineBytes);
+
+        using var doc = JsonDocument.Parse(text);
+        var root = doc.RootElement.Clone();
+        if (root.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException("protocol-violation: message is not a JSON object.");
+        }
+
+        var type = RequireString(root, "type");
+        var runId = RequireString(root, "runId");
+        if (!string.Equals(runId, _runId, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("protocol-violation: runId mismatch.");
+        }
+
+        string? protocolVersion = null;
+        if (root.TryGetProperty("protocolVersion", out var pv))
+        {
+            if (type != "hello" && type != "hello-ack")
+            {
+                throw new InvalidOperationException("protocol-violation: protocolVersion outside hello/hello-ack.");
+            }
+
+            protocolVersion = pv.ValueKind == JsonValueKind.String ? pv.GetString() : throw new InvalidOperationException("protocol-violation: protocolVersion not a string.");
+        }
+        else if (type is "hello" or "hello-ack")
+        {
+            throw new InvalidOperationException("protocol-violation: protocolVersion missing on hello/hello-ack.");
+        }
+
+        return new ControlMessage(type, runId, protocolVersion, root);
+    }
+
+    private static string RequireString(JsonElement obj, string name)
+    {
+        if (!obj.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(value.GetString()))
+        {
+            throw new InvalidOperationException($"protocol-violation: '{name}' missing, null, or not a non-empty string.");
+        }
+
+        return value.GetString()!;
+    }
+
+    /// <summary>C7 — Utf8JsonReader walk maintaining a per-object-depth name set; a repeat at ANY depth throws.
+    /// JsonDocument/JsonSerializer silently accept the LAST duplicate value and are never used for this check.</summary>
+    private static void EnsureNoDuplicateKeys(ReadOnlySpan<byte> json)
+    {
+        var reader = new Utf8JsonReader(json, isFinalBlock: true, state: default);
+        var stack = new Stack<HashSet<string>>();
+
+        while (reader.Read())
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.StartObject:
+                    stack.Push(new HashSet<string>(StringComparer.Ordinal));
+                    break;
+                case JsonTokenType.EndObject:
+                    if (stack.Count > 0) stack.Pop();
+                    break;
+                case JsonTokenType.PropertyName:
+                    if (stack.Count > 0)
+                    {
+                        var name = reader.GetString()!;
+                        if (!stack.Peek().Add(name))
+                        {
+                            throw new InvalidOperationException($"protocol-violation: duplicate JSON key '{name}'.");
+                        }
+                    }
+                    break;
+            }
+        }
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _stream.Dispose();
+        _socket.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}
+
+/// <summary>
+/// P1 — real in-process Kestrel bound to 127.0.0.1:0; the actually-bound address is read from
+/// IServerAddressesFeature AFTER start, closing the old find-free-port/close/rebind race. Serves ONLY
+/// `GET /api/internal/tenants/{id}/login-settings` (D6) — the header name it checks (X-Internal-Api-Key) is the
+/// one measured from PlatformTenantLoginSettingsClient.cs. Every other path is 404. Never Platform's own code,
+/// data, or a second real service — and this endpoint's acceptance is NOT PPM's real entitlement provider (D6).
+/// </summary>
+internal sealed class PlatformLoginSettingsStub : IDisposable
+{
+    private readonly WebApplication _app;
+    public string BaseUrl { get; }
+
+    private PlatformLoginSettingsStub(WebApplication app, string baseUrl)
+    {
+        _app = app;
+        BaseUrl = baseUrl;
+    }
+
+    public static async Task<PlatformLoginSettingsStub> StartAsync()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Logging.ClearProviders();
+        var app = builder.Build();
+
+        app.MapGet("/api/internal/tenants/{tenantId:guid}/login-settings", (Guid tenantId) =>
+        {
+            var snapshot = new
+            {
+                tenantId,
+                twoFactorEnabled = false,
+                mfaRequired = false,
+                emailLoginEnabled = true,
+                phoneLoginEnabled = false,
+                passwordMinLength = 8,
+                passwordRequireUppercase = false,
+                passwordRequireLowercase = false,
+                passwordRequireDigit = false,
+                passwordRequireSpecialChar = false,
+                passwordExpirationDays = (int?)null,
+                sessionTimeoutMinutes = 60,
+                refreshTokenLifetimeDays = 7,
+                maxFailedLoginAttempts = 5,
+                lockoutDurationMinutes = 15
+            };
+            return Results.Json(new { succeeded = true, message = (string?)null, data = snapshot });
+        });
+
+        await app.StartAsync();
+
+        var addressesFeature = app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
+        var boundAddress = addressesFeature?.Addresses.FirstOrDefault()
+            ?? throw new InvalidOperationException("login-settings stub did not report a bound address.");
+
+        return new PlatformLoginSettingsStub(app, boundAddress.TrimEnd('/') + "/");
+    }
+
+    public void Dispose()
+    {
+        _app.StopAsync(new CancellationTokenSource(TimeSpan.FromSeconds(3)).Token).GetAwaiter().GetResult();
+    }
+}
+
+/// <summary>C6/D5 — OS process start time and parent PID, macOS branch (measured against known references — see
+/// the Stage 2 report: offset 0 for start time, offset 560 for parent PID, neither a textbook struct offset).</summary>
+internal static class ProcessTiming
+{
+    public static long GetStartTimeUnixMs(int pid) => ReadKinfoInt64(pid, offset: 0) is { } sec
+        ? sec * 1000 + (ReadKinfoInt64(pid, offset: 8) ?? 0) / 1000
+        : throw new InvalidOperationException($"pid {pid} not found.");
+
+    public static int GetParentPid(int pid) => (int)(ReadKinfoInt64(pid, offset: 560, readAsInt32: true)
+        ?? throw new InvalidOperationException($"pid {pid} not found."));
+
+    private static long? ReadKinfoInt64(int pid, int offset, bool readAsInt32 = false)
+    {
+        const int CTL_KERN = 1, KERN_PROC = 14, KERN_PROC_PID = 1;
+        int[] mib = { CTL_KERN, KERN_PROC, KERN_PROC_PID, pid };
+        nuint size = 0;
+        sysctl(mib, 4, IntPtr.Zero, ref size, IntPtr.Zero, 0);
+        if (size == 0) return null;
+
+        var buf = Marshal.AllocHGlobal((int)size);
+        try
+        {
+            sysctl(mib, 4, buf, ref size, IntPtr.Zero, 0);
+            return readAsInt32 ? Marshal.ReadInt32(buf, offset) : Marshal.ReadInt64(buf, offset);
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(buf);
+        }
+
+        [DllImport("libc", SetLastError = true)]
+        static extern int sysctl(int[] name, uint namelen, IntPtr oldp, ref nuint oldlenp, IntPtr newp, nuint newlen);
+    }
+}
