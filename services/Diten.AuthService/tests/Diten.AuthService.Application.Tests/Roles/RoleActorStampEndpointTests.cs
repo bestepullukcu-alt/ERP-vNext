@@ -114,6 +114,49 @@ public sealed class RoleActorStampEndpointTests : IClassFixture<AccountKindAccep
         Assert.All(seeded, rp => Assert.Equal("system", rp.CreatedBy));
     }
 
+    // E6 ────────────────────────────────────────────────────────────────────────────────────────────────
+    // BL-412 F1 — POST api/users/{id}/roles used to store AssignedBy "System" for a person's assignment.
+    [Fact]
+    public async Task Assigning_a_role_to_a_user_over_http_records_the_acting_user_as_AssignedBy_same_as_the_audit_actor()
+    {
+        using var client = _host.Client(_admin.Token, _admin.TenantId);
+        var role = await CreateRoleAsync(client, "assign-user");
+        var subjectId = _host.Seeded.Human.Id;
+
+        var response = await client.PostAsJsonAsync($"api/users/{subjectId}/roles", new { roleId = role.Id });
+
+        Assert.True(response.StatusCode == HttpStatusCode.NoContent, await response.Content.ReadAsStringAsync());
+        using var scope = TenantScope();
+        var userRoles = scope.ServiceProvider.GetRequiredService<IMongoDatabase>().GetCollection<UserRole>("userRoles");
+        var assignment = Assert.Single(await userRoles
+            .Find(ur => ur.UserId == subjectId && ur.RoleId == role.Id && ur.TenantId == _admin.TenantId)
+            .ToListAsync());
+        Assert.Equal(_admin.UserId.ToString(), assignment.AssignedBy);
+        Assert.Equal(_admin.UserId.ToString(), assignment.CreatedBy);
+        Assert.NotEqual("System", assignment.AssignedBy, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(_admin.UserId, await AuditActorAsync("user_role_assigned", role.Id));
+    }
+
+    // E7 ────────────────────────────────────────────────────────────────────────────────────────────────
+    // BL-412 F1 — DELETE api/roles/{id} is a soft delete; it used to set UpdatedAt without saying who deleted the role.
+    [Fact]
+    public async Task Deleting_a_role_over_http_soft_deletes_it_and_records_the_acting_user_as_UpdatedBy()
+    {
+        using var client = _host.Client(_admin.Token, _admin.TenantId);
+        var role = await CreateRoleAsync(client, "delete");
+
+        var response = await client.DeleteAsync($"api/roles/{role.Id}");
+
+        Assert.True(response.StatusCode == HttpStatusCode.NoContent, await response.Content.ReadAsStringAsync());
+        using var scope = TenantScope();
+        var roles = scope.ServiceProvider.GetRequiredService<IMongoDatabase>().GetCollection<Role>("roles");
+        var stored = Assert.Single(await roles.Find(r => r.Id == role.Id && r.TenantId == _admin.TenantId).ToListAsync());
+        Assert.True(stored.IsDeleted, "DELETE api/roles/{id} must stay a soft delete");
+        Assert.NotNull(stored.UpdatedAt);
+        Assert.Equal(_admin.UserId.ToString(), stored.UpdatedBy);
+        Assert.Equal(_admin.UserId, await AuditActorAsync("role_deleted", role.Id));
+    }
+
     // ── helpers ───────────────────────────────────────────────────────────────────────────────────────────
 
     private static string Stamp() => Guid.NewGuid().ToString("N")[..8];
@@ -171,7 +214,7 @@ public sealed class RoleActorStampEndpointTests : IClassFixture<AccountKindAccep
     private sealed record RolesAdmin(Guid TenantId, Guid UserId, string Token);
 
     private static readonly string[] RolesAdminPermissionKeys =
-        ["auth.roles.create", "auth.roles.read", "auth.roles.update", "auth.roles.assign-permission"];
+        ["auth.roles.create", "auth.roles.read", "auth.roles.update", "auth.roles.delete", "auth.roles.assign-permission", "auth.users.assign-role"];
 
     // xUnit builds a new test-class instance per test, but the host (IClassFixture) is shared — seed exactly once per host.
     private static readonly ConditionalWeakTable<AccountKindAcceptance.AuthTestHost, Task<RolesAdmin>> RolesAdminCache = new();

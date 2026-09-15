@@ -94,7 +94,7 @@ public sealed class FullCatalogPermissionGrantServiceTests
         public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeRolePermissionRepository : IRolePermissionRepository

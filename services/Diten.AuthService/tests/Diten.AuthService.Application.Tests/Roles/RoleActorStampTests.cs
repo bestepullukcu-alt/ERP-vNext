@@ -7,8 +7,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Diten.AuthService.Application.Tests.Roles;
 
-// BL-412 — a role created or edited by a person (POST / PUT api/roles) used to leave CreatedBy empty and UpdatedBy
-// unset; only authAuditLogs knew who did it. The document now names the acting user, taken from the same
+// BL-412 — a role created, edited or deleted by a person (POST / PUT / DELETE api/roles) used to leave CreatedBy empty
+// and UpdatedBy unset; only authAuditLogs knew who did it. The document now names the acting user, taken from the same
 // ICurrentUserAccessor the RBAC audit row uses. Real handlers, hand-written fakes (codebase convention).
 public sealed class RoleActorStampTests
 {
@@ -82,6 +82,39 @@ public sealed class RoleActorStampTests
         Assert.Equal(0, version.IncrementCount);
     }
 
+    // BL-412 F1 — the soft delete names who deleted the role: the actor reaches the repository's single atomic update.
+    [Fact]
+    public async Task Delete_role_passes_the_acting_user_to_the_soft_delete()
+    {
+        var existing = new Role("qa-lead", "QA Lead", null, TenantId) { CreatedBy = OriginalCreator };
+        var roles = new FakeRoleRepository(existing);
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = DeleteHandler(roles, version, ActorId);
+
+        var result = await handler.Handle(new DeleteRoleCommand(existing.Id), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(204, result.StatusCode);
+        Assert.Equal((existing.Id, TenantId, ActorId.ToString()), roles.DeletedCall);
+        Assert.Equal(1, version.IncrementCount);
+    }
+
+    [Fact]
+    public async Task Delete_role_without_an_authenticated_actor_is_refused_with_401_and_deletes_nothing()
+    {
+        var existing = new Role("qa-lead", "QA Lead", null, TenantId) { CreatedBy = OriginalCreator };
+        var roles = new FakeRoleRepository(existing);
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = DeleteHandler(roles, version, actor: null);
+
+        var result = await handler.Handle(new DeleteRoleCommand(existing.Id), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(401, result.StatusCode);
+        Assert.Null(roles.DeletedCall);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static TenantContext Tenant()
     {
         var context = new TenantContext();
@@ -95,12 +128,16 @@ public sealed class RoleActorStampTests
     private static UpdateRoleCommandHandler UpdateHandler(FakeRoleRepository roles, FakeRoleAssignmentVersionService version, Guid? actor)
         => new(roles, new FakeRolePermissionRepository(), version, Tenant(), new NoOpRbacAuditRecorder(), new FakeCurrentUser(actor));
 
+    private static DeleteRoleCommandHandler DeleteHandler(FakeRoleRepository roles, FakeRoleAssignmentVersionService version, Guid? actor)
+        => new(roles, version, Tenant(), new NoOpRbacAuditRecorder(), new FakeCurrentUser(actor), NullLogger<DeleteRoleCommandHandler>.Instance);
+
     // ── Minimal inline fakes ──
 
     private sealed class FakeRoleRepository(Role? existing) : IRoleRepository
     {
         public Role? Created { get; private set; }
         public Role? Updated { get; private set; }
+        public (Guid id, Guid tenantId, string deletedBy)? DeletedCall { get; private set; }
 
         public Task<Role?> GetByNameAndTenantAsync(string name, Guid tenantId, CancellationToken ct) => Task.FromResult<Role?>(null);
         public Task<Role?> GetByIdAndTenantAsync(Guid id, Guid tenantId, CancellationToken ct) => Task.FromResult(existing);
@@ -117,9 +154,14 @@ public sealed class RoleActorStampTests
             return Task.FromResult(role);
         }
 
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct)
+        {
+            DeletedCall = (id, tenantId, deletedBy);
+            return Task.CompletedTask;
+        }
+
         public Task<IEnumerable<Role>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakeRolePermissionRepository : IRolePermissionRepository

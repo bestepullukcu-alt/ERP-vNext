@@ -894,7 +894,7 @@ public sealed class EntitlementPermissionSyncServiceTests
             return Task.FromResult(role);
         }
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakePermissionRepository(List<Permission> catalog) : IPermissionRepository
