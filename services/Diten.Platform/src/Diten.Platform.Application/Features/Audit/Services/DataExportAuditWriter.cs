@@ -19,12 +19,12 @@ namespace Diten.Platform.Application.Features.Audit.Services;
 /// meta-audit record about tenant data. And a parameter puts the actor type in the CALLER's hand, which is the
 /// exact mistake BL-347 is about.</para>
 ///
-/// <para><b>⚠ WHY THIS IS NOT A QUERY-SIDE <c>IAuditableRequest</c> THROUGH <c>AuditBehavior</c>.</b> Measured
-/// 2026-09-15: <c>AuditBehavior.AppendAuditAsync</c> never sets <see cref="AuditAppendRequest.ActorType"/>, so
-/// every command it audits is recorded with the request's default, <see cref="AuditActorType.System"/>. Routing
-/// an export through it would write "the system did it" — a wrong record again. The row count is also only known
-/// after the handler has read the rows, and the behaviour builds its metadata from the request before that.
-/// Changing either would change what every audited command records.</para>
+/// <para><b>⚠ WHY THIS IS NOT A QUERY-SIDE <c>IAuditableRequest</c> THROUGH <c>AuditBehavior</c>.</b> The row
+/// count is only known after the handler has read the rows, and the behaviour builds its metadata from the request
+/// before that — and it does not audit queries at all. When this writer was built (2026-09-15) the behaviour also
+/// stamped every record <see cref="AuditActorType.System"/>; BL-409 fixed that, and both now take the actor type
+/// from <see cref="AuditActorTypeResolver"/>. What stays the export's own is the policy: an unattributable
+/// principal is refused here, while the behaviour never blocks a command.</para>
 ///
 /// <para><b>Callers:</b> MOD-0024 work report export (first) and MOD-0357 S12 meeting report export (designed
 /// for, not built). Both are tenant routes, both need exactly the fields on <see cref="DataExportAuditEntry"/>.</para>
@@ -137,7 +137,7 @@ public sealed class DataExportAuditWriter : IDataExportAuditWriter
          * not guessed into "tenant user": an unattributable export is refused, because a wrong actor on a GxP
          * record is worse than no record — and no record is not acceptable either.
          */
-        var actorType = ResolveActorType();
+        var actorType = AuditActorTypeResolver.ForDataExport(_principal);
         if (actorType == AuditActorType.Unknown)
         {
             return NotRecorded(entry, actorType, null, "The exporting principal carries no recognised actor type.");
@@ -198,23 +198,6 @@ public sealed class DataExportAuditWriter : IDataExportAuditWriter
         return append.Status == AuditAppendStatus.Queued
             ? new DataExportAuditResult(true, actorType, append.Status, null)
             : NotRecorded(entry, actorType, append.Status, append.Diagnostic);
-    }
-
-    private AuditActorType ResolveActorType()
-    {
-        if (!_principal.IsAuthenticated)
-        {
-            return AuditActorType.Unknown;
-        }
-
-        // The same vocabulary PlatformEntitlementAuditSink maps, minus its System fallback: see RecordAsync.
-        return _principal.ActorType?.Trim().ToLowerInvariant() switch
-        {
-            "tenant_user" => AuditActorType.TenantUser,
-            "platform_admin" => AuditActorType.PlatformAdministrator,
-            "partner_admin" => AuditActorType.PartnerAdministrator,
-            _ => AuditActorType.Unknown
-        };
     }
 
     private static IReadOnlyDictionary<string, object?> BuildMetadata(DataExportAuditEntry entry)
