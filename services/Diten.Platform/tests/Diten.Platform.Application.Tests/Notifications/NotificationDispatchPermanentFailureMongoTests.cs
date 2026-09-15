@@ -14,6 +14,7 @@ using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Driver;
 using Prometheus;
@@ -241,6 +242,204 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
         Assert.False(anyNotification);
     }
 
+    // ── BL-406 boundary: a NON-final failure tells nobody ────────────────────────
+    //
+    // The three tests above only look at the state AFTER the permanent attempt, so "exactly one notice" stays
+    // true even when the notice fires on the FIRST failed attempt instead of the last one (CT sabotage,
+    // 2026-09-15: handler guard reduced to `PermanentlyFailedNotifiedAt is null`, every Notification /
+    // EmailDispatch test stayed green). These two pin the state BEFORE the permanent attempt: an organizer must
+    // never be told "not delivered" about a mail whose next retry is still due and may well succeed.
+
+    private const string PermanentlyFailedLogPrefix = "email.dispatch.permanently_failed";
+    private const string AttendeeDisplayName = "Ayşe Attendee";
+
+    [Fact]
+    public async Task Handler_non_final_failure_of_a_meeting_dispatch_tells_nobody_and_the_final_failure_tells_the_organizer_once()
+    {
+        const string templateKey = "platform.meetings.bl406.nonfinal.handler";
+        var tenantId = _harness.TenantId;
+        var organizerUserId = Guid.NewGuid();
+        var attendeeUserId = Guid.NewGuid();
+
+        var dispatches = new NotificationDispatchRepository(_harness.DbContext);
+        var templates = new NotificationTemplateRepository(_harness.DbContext);
+        var meetings = new MeetingRepository(_harness.DbContext, _harness.TenantContext);
+        var attendees = new MeetingAttendeeRepository(_harness.DbContext, _harness.TenantContext);
+        var userNotifications = new UserNotificationRepository(_harness.DbContext);
+        var bus = new NoOpEventBus();
+
+        var (meeting, dispatchId) = await QueueFailedMeetingDispatchAsync(
+            templateKey, organizerUserId, attendeeUserId, dispatches, templates, meetings, attendees, new AlwaysFailingProvider(), bus);
+
+        var logger = new CapturingLogger<MarkNotificationDispatchFailedHandler>();
+        var handler = new MarkNotificationDispatchFailedHandler(dispatches, bus, logger, meetings, attendees, userNotifications);
+        var counterBefore = PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true);
+
+        // Act 1 — a failed attempt that is NOT the last one: the caller says another retry is still coming.
+        var nonFinal = await handler.Handle(
+            new MarkNotificationDispatchFailedCommand(
+                tenantId, dispatchId, "ProviderConnectivityFailed", "smtp down",
+                RetryCount: 1, NextRetryAt: DateTimeOffset.UtcNow.AddMinutes(1), IsPermanentFailure: false),
+            CancellationToken.None);
+
+        Assert.True(nonFinal.IsSuccessful);
+        var afterNonFinal = (await dispatches.GetByIdForTenantAsync(tenantId, dispatchId))!;
+        Assert.Equal(NotificationDispatchStatus.Failed, afterNonFinal.Status);
+        Assert.Equal(1, afterNonFinal.RetryCount);
+        Assert.Null(afterNonFinal.PermanentlyFailedNotifiedAt);
+        await AssertNobodyWasToldUndeliveredAsync(meeting.Id, attendeeUserId, attendees);
+        Assert.Equal(counterBefore, PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true));
+        Assert.DoesNotContain(logger.Entries, e => e.Message.StartsWith(PermanentlyFailedLogPrefix, StringComparison.Ordinal));
+
+        // Act 2 — the same dispatch's final attempt fails.
+        var finalFailure = await handler.Handle(
+            new MarkNotificationDispatchFailedCommand(
+                tenantId, dispatchId, "ProviderConnectivityFailed", "smtp down",
+                RetryCount: MaxRetryCount, NextRetryAt: DateTimeOffset.UtcNow.AddMinutes(1), IsPermanentFailure: true),
+            CancellationToken.None);
+
+        Assert.True(finalFailure.IsSuccessful);
+        Assert.NotNull((await dispatches.GetByIdForTenantAsync(tenantId, dispatchId))!.PermanentlyFailedNotifiedAt);
+        await AssertOrganizerWasToldUndeliveredExactlyOnceAsync(meeting, organizerUserId, attendeeUserId, attendees);
+        Assert.Equal(counterBefore + 1, PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true));
+        Assert.Single(logger.Entries, e => e.Message.StartsWith(PermanentlyFailedLogPrefix, StringComparison.Ordinal));
+    }
+
+    [Theory]
+    [InlineData(5)] // production: BackgroundJobs:DefaultRetryAttempts = 5 → EmailDispatchSweepJobArgs → EmailDispatchJobArgs
+    [InlineData(2)] // the boundary follows args.MaxRetryCount, not a literal 5
+    public async Task Job_attempt_before_max_retry_count_tells_nobody_and_the_attempt_reaching_it_tells_the_organizer_once(int maxRetryCount)
+    {
+        var templateKey = $"platform.meetings.bl406.boundary.max{maxRetryCount}";
+        var tenantId = _harness.TenantId;
+        var organizerUserId = Guid.NewGuid();
+        var attendeeUserId = Guid.NewGuid();
+
+        var dispatches = new NotificationDispatchRepository(_harness.DbContext);
+        var templates = new NotificationTemplateRepository(_harness.DbContext);
+        var meetings = new MeetingRepository(_harness.DbContext, _harness.TenantContext);
+        var attendees = new MeetingAttendeeRepository(_harness.DbContext, _harness.TenantContext);
+        var userNotifications = new UserNotificationRepository(_harness.DbContext);
+        var provider = new AlwaysFailingProvider();
+        var bus = new NoOpEventBus();
+
+        // The first, synchronous send fails and leaves RetryCount 0 — no retry has run yet.
+        var (meeting, dispatchId) = await QueueFailedMeetingDispatchAsync(
+            templateKey, organizerUserId, attendeeUserId, dispatches, templates, meetings, attendees, provider, bus);
+        await AssertNobodyWasToldUndeliveredAsync(meeting.Id, attendeeUserId, attendees);
+
+        var logger = new CapturingLogger<MarkNotificationDispatchFailedHandler>();
+        var job = BuildJob(dispatches, templates, provider, meetings, attendees, userNotifications, bus, logger);
+        var args = new EmailDispatchJobArgs(tenantId, dispatchId, maxRetryCount);
+        var counterBefore = PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true);
+
+        // Retry attempts 1 .. maxRetryCount-1 — each fails, and after each one RetryCount is still below
+        // maxRetryCount, so the sweep's own `RetryCount < maxRetryCount` selection will bring it back.
+        for (var attempt = 1; attempt < maxRetryCount; attempt++)
+        {
+            await job.HandleAsync(args, new BackgroundJobContext(TenantId: tenantId), CancellationToken.None);
+
+            var row = (await dispatches.GetByIdForTenantAsync(tenantId, dispatchId))!;
+            Assert.Equal(attempt, row.RetryCount);
+            Assert.Equal(NotificationDispatchStatus.Failed, row.Status);
+            Assert.Null(row.PermanentlyFailedNotifiedAt);
+            await AssertNobodyWasToldUndeliveredAsync(meeting.Id, attendeeUserId, attendees);
+        }
+
+        Assert.Equal(counterBefore, PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true));
+        Assert.DoesNotContain(logger.Entries, e => e.Message.StartsWith(PermanentlyFailedLogPrefix, StringComparison.Ordinal));
+
+        // Retry attempt maxRetryCount — RetryCount reaches maxRetryCount: no further retry will ever be due.
+        await job.HandleAsync(args, new BackgroundJobContext(TenantId: tenantId), CancellationToken.None);
+
+        var terminal = (await dispatches.GetByIdForTenantAsync(tenantId, dispatchId))!;
+        Assert.Equal(maxRetryCount, terminal.RetryCount);
+        Assert.NotNull(terminal.PermanentlyFailedNotifiedAt);
+        await AssertOrganizerWasToldUndeliveredExactlyOnceAsync(meeting, organizerUserId, attendeeUserId, attendees);
+        Assert.Equal(counterBefore + 1, PermanentlyFailedCounterValue(templateKey, isMeetingRelated: true));
+        Assert.Single(logger.Entries, e => e.Message.StartsWith(PermanentlyFailedLogPrefix, StringComparison.Ordinal));
+
+        // The provider really was tried every time: 1 synchronous send + maxRetryCount job attempts.
+        Assert.Equal(1 + maxRetryCount, provider.Requests.Count);
+    }
+
+    private async Task<(Meeting Meeting, Guid DispatchId)> QueueFailedMeetingDispatchAsync(
+        string templateKey,
+        Guid organizerUserId,
+        Guid attendeeUserId,
+        NotificationDispatchRepository dispatches,
+        NotificationTemplateRepository templates,
+        MeetingRepository meetings,
+        MeetingAttendeeRepository attendees,
+        IMessagingProvider provider,
+        IEventBus bus)
+    {
+        var tenantId = _harness.TenantId;
+        await templates.CreateAsync(BuildTemplate(tenantId, templateKey));
+
+        var meeting = await meetings.CreateAsync(new Meeting
+        {
+            TenantId = tenantId,
+            Title = "Supplier Audit Readout",
+            MeetingTypeId = Guid.NewGuid(),
+            StartAt = DateTimeOffset.UtcNow.AddDays(1),
+            EndAt = DateTimeOffset.UtcNow.AddDays(1).AddHours(1),
+            OrganizerUserId = organizerUserId,
+            IdempotencyKey = Guid.NewGuid().ToString("N")
+        });
+        await attendees.CreateAsync(new MeetingAttendee { TenantId = tenantId, MeetingId = meeting.Id, UserId = attendeeUserId });
+
+        var queueResult = await new QueueEmailNotificationHandler(
+                new FixedSettingsResolver(), templates, new EmailTemplateRenderer(), dispatches,
+                new SingleProviderResolver(provider), bus, NullLogger<QueueEmailNotificationHandler>.Instance)
+            .Handle(
+                new QueueEmailNotificationCommand(
+                    tenantId,
+                    new QueueEmailNotificationRequest(
+                        TemplateKey: templateKey,
+                        Locale: "en",
+                        Variables: new Dictionary<string, object?> { ["MeetingTitle"] = meeting.Title },
+                        To: [new EmailRecipientDto("attendee@example.test", AttendeeDisplayName)],
+                        CausationId: meeting.Id,
+                        MeetingAttendeeUserId: attendeeUserId),
+                    "corr-bl406-non-final"),
+                CancellationToken.None);
+        Assert.False(queueResult.IsSuccessful);
+
+        var dispatch = Assert.Single(await dispatches.ListByTenantAsync(tenantId));
+        Assert.Equal(0, dispatch.RetryCount);
+        Assert.Null(dispatch.PermanentlyFailedNotifiedAt);
+        return (meeting, dispatch.Id);
+    }
+
+    private async Task AssertNobodyWasToldUndeliveredAsync(Guid meetingId, Guid attendeeUserId, MeetingAttendeeRepository attendees)
+    {
+        var tenantId = _harness.TenantId;
+        var anyNotice = await _harness.Database.GetCollection<UserNotification>(PlatformCollections.UserNotifications)
+            .Find(x => x.TenantId == tenantId).AnyAsync();
+        Assert.False(anyNotice, "A failed attempt with a retry still due wrote an in-app 'not delivered' notification.");
+
+        var attendeeRow = await attendees.FindAsync(meetingId, attendeeUserId);
+        Assert.NotNull(attendeeRow);
+        Assert.Null(attendeeRow!.MailUndeliveredAt);
+    }
+
+    private async Task AssertOrganizerWasToldUndeliveredExactlyOnceAsync(
+        Meeting meeting, Guid organizerUserId, Guid attendeeUserId, MeetingAttendeeRepository attendees)
+    {
+        var tenantId = _harness.TenantId;
+        var notices = await _harness.Database.GetCollection<UserNotification>(PlatformCollections.UserNotifications)
+            .Find(x => x.TenantId == tenantId).ToListAsync();
+        var notice = Assert.Single(notices);
+        Assert.Equal(organizerUserId, notice.UserId);
+        Assert.Equal("platform.meetings.invite-undelivered", notice.EventCode);
+        Assert.Equal(meeting.Title, notice.Title);
+        Assert.Equal(AttendeeDisplayName, notice.Body);
+
+        var attendeeRow = await attendees.FindAsync(meeting.Id, attendeeUserId);
+        Assert.NotNull(attendeeRow!.MailUndeliveredAt);
+    }
+
     private static double PermanentlyFailedCounterValue(string templateKey, bool isMeetingRelated)
     {
         // Same registration call the handler itself makes (Metrics.CreateCounter is idempotent by name) —
@@ -274,18 +473,34 @@ public sealed class NotificationDispatchPermanentFailureMongoTests : IAsyncLifet
         MeetingRepository meetings,
         MeetingAttendeeRepository attendees,
         UserNotificationRepository userNotifications,
-        IEventBus bus) =>
+        IEventBus bus,
+        ILogger<MarkNotificationDispatchFailedHandler>? failedHandlerLogger = null) =>
         new(
             dispatches, new FixedSettingsResolver(), new SingleProviderResolver(provider),
             new DirectMediator(
                 new MarkNotificationDispatchSentHandler(dispatches, bus),
                 new MarkNotificationDispatchFailedHandler(
-                    dispatches, bus, NullLogger<MarkNotificationDispatchFailedHandler>.Instance,
+                    dispatches, bus, failedHandlerLogger ?? NullLogger<MarkNotificationDispatchFailedHandler>.Instance,
                     meetings, attendees, userNotifications),
                 new CancelNotificationDispatchHandler(dispatches, bus)),
             NullLogger<EmailDispatchJob>.Instance, templates, new EmailTemplateRenderer());
 
     // ── doubles ──────────────────────────────────────────────────────────────
+
+    private sealed class CapturingLogger<T> : ILogger<T>
+    {
+        public List<LogEntry> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Entries.Add(new LogEntry(logLevel, formatter(state, exception)));
+    }
+
+    private sealed record LogEntry(LogLevel LogLevel, string Message);
 
     private sealed class AlwaysFailingProvider : IMessagingProvider
     {
