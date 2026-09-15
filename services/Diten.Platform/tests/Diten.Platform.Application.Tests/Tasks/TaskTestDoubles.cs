@@ -2,6 +2,8 @@ using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Handlers.CommandHandlers;
 using MediatR;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Models;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
@@ -1889,6 +1891,42 @@ internal sealed class FakeTaskTypeRepository : ITaskTypeRepository
         type.Version = expectedVersion + 1;
         _types[at] = type;
         return Task.FromResult(true);
+    }
+}
+
+/// <summary>
+/// WP-DM-DCP005-BL380-KURAL4-01 (Kural 4) — a scripted double for the document-management effectiveness port
+/// task-type tests are otherwise unrelated to. Default answers every identifier Effective (the common case: a
+/// type with no bound documents, or documents already in force) so tests that don't care about Kural 4 stay
+/// unaffected; a test that DOES care overrides <see cref="Answers"/> or <see cref="Throws"/> explicitly.
+/// </summary>
+internal sealed class FakeControlledDocumentEffectivenessPort : IControlledDocumentEffectivenessPort
+{
+    public Dictionary<string, DocumentEffectivenessState> Answers { get; } = new(StringComparer.Ordinal);
+    public bool Throws { get; set; }
+    public List<DocumentEffectivenessQuery> Calls { get; } = [];
+
+    public Task<DocumentEffectivenessResult> ResolveAsync(DocumentEffectivenessQuery query, CancellationToken ct)
+    {
+        Calls.Add(query);
+        if (Throws)
+        {
+            throw new InvalidOperationException("register unavailable (test double)");
+        }
+
+        var items = query.Identifiers
+            .Select(id =>
+            {
+                var state = Answers.TryGetValue(id, out var s) ? s : DocumentEffectivenessState.Effective;
+                return new DocumentEffectivenessItem(
+                    id, state,
+                    DocumentCode: state == DocumentEffectivenessState.Unresolved ? null : id,
+                    PermanentUid: state == DocumentEffectivenessState.Unresolved ? null : id,
+                    LifecycleStatus: state == DocumentEffectivenessState.Unresolved ? null : state.ToString(),
+                    BlockedReason: state == DocumentEffectivenessState.Blocked ? "Draft" : null);
+            })
+            .ToList();
+        return Task.FromResult(new DocumentEffectivenessResult(items));
     }
 }
 

@@ -36,7 +36,8 @@ public sealed class TaskTypeReviewMeetingRequirementTests
     {
         var tenant = new TenantContext();
         tenant.SetTenant(TenantId);
-        return new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object);
+        return new CreateTaskTypeHandler(
+            types, tenant, new Mock<ICurrentUserContext>().Object, new FakeControlledDocumentEffectivenessPort());
     }
 
     private static CreateTaskTypeRequest Create(TaskReviewMeetingRequirement? requirement) => new(

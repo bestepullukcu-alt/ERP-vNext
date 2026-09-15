@@ -65,6 +65,7 @@ public sealed class DocumentLifecycleStatusTests
     {
         var f = Fixture();
         var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000001", code: "GMG-QMS-SOP-0001");
+        e.ApprovalEvidenceStatus = nameof(ApprovalEvidenceState.NotRequired); // BL-380 — this test targets the uid/code guard, not the evidence gate
 
         var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
 
@@ -237,6 +238,7 @@ public sealed class DocumentLifecycleStatusTests
         var f = Fixture();
         var previous = SeedEntry(f, ControlledDocumentLifecycleStatus.Effective, uid: "UID-0000001", code: "GMG-QMS-SOP-0001");
         var next = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000002", code: "GMG-QMS-SOP-0002");
+        next.ApprovalEvidenceStatus = nameof(ApprovalEvidenceState.NotRequired); // BL-380 — this test targets supersession, not the evidence gate
 
         var r = await f.Service.TransitionAsync(next.Id, To("Effective", replacement: previous.Id), Corr, CancellationToken.None);
 
@@ -253,6 +255,7 @@ public sealed class DocumentLifecycleStatusTests
         var f = Fixture();
         SeedEntry(f, ControlledDocumentLifecycleStatus.Effective, uid: "UID-0000001", code: "GMG-QMS-SOP-0001");
         var next = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000001", code: "GMG-QMS-SOP-0001");
+        next.ApprovalEvidenceStatus = nameof(ApprovalEvidenceState.NotRequired); // BL-380 — this test targets the single-effective guard, not the evidence gate
 
         var r = await f.Service.TransitionAsync(next.Id, To("Effective"), Corr, CancellationToken.None);
 
@@ -324,21 +327,49 @@ public sealed class DocumentLifecycleStatusTests
         Assert.Equal(LifecycleReasonCodes.StaleVersion, r.ReasonCode);
     }
 
+    /// <summary>
+    /// BL-380 (sahip 2026-09-15, Kalite teyidi bekliyor) — SUPERSEDES this test's own former name and shape.
+    /// The FU08-era behavior this test used to pin (an unevaluated/never-computed approval status lets the
+    /// document become Effective, with a warning) is exactly the gap BL-380 closes: an entry whose
+    /// ApprovalEvidenceStatus was never even computed (FU09's ResolveRouteAsync never ran for it) now REFUSES
+    /// MarkEffective with 409, the same as every other non-passing value — it no longer gets a free pass just
+    /// because nobody has looked at it yet.
+    /// </summary>
     [Fact]
-    public async Task MarkEffective_without_evidence_or_gate_succeeds_with_warnings()
+    public async Task MarkEffective_without_evaluated_approval_evidence_is_refused_ApprovalEvidenceMissing()
     {
         var f = Fixture();
         var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000001", code: "GMG-QMS-SOP-0001");
+        Assert.Null(e.ApprovalEvidenceStatus); // SeedEntry's own default — never evaluated (FU09 route never ran)
+
+        var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
+
+        Assert.False(r.IsSuccessful);
+        Assert.Equal(409, r.StatusCode);
+        Assert.Equal(LifecycleReasonCodes.ApprovalEvidenceMissing, r.ReasonCode);
+    }
+
+    /// <summary>The release-gate warning (FU10 pending) survives BL-380 unchanged — it is a SEPARATE guard from
+    /// approval evidence, and still only warns (does not block) when no release-gate adapter is wired.</summary>
+    [Fact]
+    public async Task MarkEffective_with_evaluated_evidence_still_succeeds_with_a_release_gate_warning()
+    {
+        var f = Fixture();
+        var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000099", code: "GMG-QMS-SOP-0099");
+        e.ApprovalEvidenceStatus = nameof(ApprovalEvidenceState.Complete);
 
         var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
 
         Assert.True(r.IsSuccessful);
-        Assert.NotEmpty(r.Data!.Warnings); // release-gate + evidence warnings (FU10 pending), non-blocking by default
+        Assert.NotEmpty(r.Data!.Warnings); // release-gate warning (FU10 pending), non-blocking by default
     }
 
     /// <summary>
     /// CT 2026-09-13 — the evidence check is FAIL-CLOSED. Every negative member blocks, and so does a value no member of
     /// ApprovalEvidenceState names today ("Expired"): a deny-list of the four negative members would let that through.
+    /// BL-380 (2026-09-15) adds the unevaluated case (null/empty) to this same refusal, covered by its own dedicated
+    /// test above rather than folded into this theory — an empty string is a distinct, more common real-world shape
+    /// (SeedEntry's own default) worth naming on its own.
     /// </summary>
     [Theory]
     [InlineData("Pending")]
@@ -346,6 +377,7 @@ public sealed class DocumentLifecycleStatusTests
     [InlineData("Blocked")]
     [InlineData("SegregationFailed")]
     [InlineData("Expired")]
+    [InlineData("")]
     public async Task MarkEffective_is_refused_for_any_evidence_status_other_than_Complete_or_NotRequired(string status)
     {
         var f = Fixture();
@@ -356,6 +388,7 @@ public sealed class DocumentLifecycleStatusTests
 
         Assert.False(r.IsSuccessful);
         Assert.Equal(409, r.StatusCode);
+        Assert.Equal(LifecycleReasonCodes.ApprovalEvidenceMissing, r.ReasonCode);
     }
 
     [Theory]
@@ -370,6 +403,27 @@ public sealed class DocumentLifecycleStatusTests
         var r = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
 
         Assert.True(r.IsSuccessful);
+    }
+
+    // ── BL-380 — GetStateAsync.CanMarkEffective and MarkEffective now read the SAME helper ──────────────────
+
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("Pending", false)]
+    [InlineData("Complete", true)]
+    [InlineData("NotRequired", true)]
+    public async Task GetStateAsync_CanMarkEffective_matches_whether_MarkEffective_would_actually_succeed(string? status, bool expectCanMark)
+    {
+        var f = Fixture();
+        var e = SeedEntry(f, ControlledDocumentLifecycleStatus.ApprovedPendingEffective, uid: "UID-0000004", code: "GMG-QMS-SOP-0004");
+        e.ApprovalEvidenceStatus = status;
+
+        var state = await f.Service.GetStateAsync(e.Id, Corr, CancellationToken.None);
+        var transition = await f.Service.TransitionAsync(e.Id, To("Effective"), Corr, CancellationToken.None);
+
+        Assert.Equal(expectCanMark, state.Data!.CanMarkEffective);
+        Assert.Equal(expectCanMark, transition.IsSuccessful);
     }
 
     // ── fixtures ──────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.DocumentManagementMasterRegister.Services;
 using Diten.Platform.Application.Features.Tasks.Commands;
 using Diten.Platform.Application.Features.Tasks.Services;
 using Diten.Platform.Common.Tenancy;
@@ -21,13 +22,16 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
     private readonly ITaskTypeRepository _types;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserContext _currentUser;
+    private readonly IControlledDocumentEffectivenessPort _effectiveness;
 
     public CreateTaskTypeHandler(
-        ITaskTypeRepository types, ITenantContext tenantContext, ICurrentUserContext currentUser)
+        ITaskTypeRepository types, ITenantContext tenantContext, ICurrentUserContext currentUser,
+        IControlledDocumentEffectivenessPort effectiveness)
     {
         _types = types;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _effectiveness = effectiveness;
     }
 
     public async Task<Response<Guid>> Handle(CreateTaskTypeCommand command, CancellationToken ct)
@@ -88,6 +92,16 @@ public sealed class CreateTaskTypeHandler : IRequestHandler<CreateTaskTypeComman
             IsActive = true,
             CreatedBy = _currentUser.ActorName
         };
+
+        // Kural 4 (DCP-005 Adım 3, G3) — a type is born ACTIVE (IsActive = true, above), and its governing
+        // documents can already be bound at creation (GroupDocuments/LocalDocuments, measured just above); the
+        // SAME gate SetTaskTypeActiveHandler applies on pasif→aktif therefore applies here too, or creation would
+        // be a silent bypass of the rule the /active endpoint enforces.
+        if (await TaskTypeEffectivenessGate.BlockIfGoverningDocumentsNotEffectiveAsync<Guid>(
+                _effectiveness, type, command.CorrelationId, ct) is { } blocked)
+        {
+            return blocked;
+        }
 
         var created = await _types.CreateAsync(type, ct);
         return Response<Guid>.Success(created.Id, 201, command.CorrelationId);
@@ -222,8 +236,13 @@ public sealed class UpdateTaskTypeHandler : IRequestHandler<UpdateTaskTypeComman
 public sealed class SetTaskTypeActiveHandler : IRequestHandler<SetTaskTypeActiveCommand, Response<NoContent>>
 {
     private readonly ITaskTypeRepository _types;
+    private readonly IControlledDocumentEffectivenessPort _effectiveness;
 
-    public SetTaskTypeActiveHandler(ITaskTypeRepository types) => _types = types;
+    public SetTaskTypeActiveHandler(ITaskTypeRepository types, IControlledDocumentEffectivenessPort effectiveness)
+    {
+        _types = types;
+        _effectiveness = effectiveness;
+    }
 
     public async Task<Response<NoContent>> Handle(SetTaskTypeActiveCommand command, CancellationToken ct)
     {
@@ -232,6 +251,16 @@ public sealed class SetTaskTypeActiveHandler : IRequestHandler<SetTaskTypeActive
         {
             return Response<NoContent>.Fail(
                 "Task type not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        // Kural 4 (DCP-005 Adım 3, G3 — sahip 2026-09-15, Kalite teyidi bekliyor) — ONLY the pasif→aktif edge is
+        // gated: deactivating never checks (a manager must always be able to retire a type), and a type that is
+        // already active never re-checks itself just because this endpoint was called with IsActive=true again.
+        if (command.Request.IsActive && !type.IsActive
+            && await TaskTypeEffectivenessGate.BlockIfGoverningDocumentsNotEffectiveAsync<NoContent>(
+                _effectiveness, type, command.CorrelationId, ct) is { } blocked)
+        {
+            return blocked;
         }
 
         type.IsActive = command.Request.IsActive;

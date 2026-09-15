@@ -557,6 +557,19 @@ public static class TaskReasonCodes
 
     /// <summary>Nothing has been imported yet, so there is no register to freeze a citation against.</summary>
     public const string DocumentListNotImported = "DOCUMENT_LIST_NOT_IMPORTED";
+
+    // ── DCP-005 Adım 3, Kural 4 (G3 — sahip 2026-09-15, Kalite teyidi bekliyor): task-type activation gate ──
+    // Deliberately lowercase-dotted, not SCREAMING_SNAKE like every sibling in this class: the exact wire value
+    // is pinned by the document-management handoff (work-packs/handoff-dcp-005-docreg-migration-to-task-center.md
+    // §2 note) and by this WP's own prompt, not by this class's own naming convention.
+
+    /// <summary>One or more of a task type's bound governing documents (<c>GroupDocuments</c> / <c>LocalDocuments</c>)
+    /// are not <c>Effective</c> in the Document Master Register.</summary>
+    public const string TaskTypeEnableBlockedDocuments = "task_type_enable_blocked_documents";
+
+    /// <summary>The Document Master Register could not be reached to check effectiveness — fail-closed, never a
+    /// silent pass.</summary>
+    public const string TaskTypeEnableRegisterUnavailable = "task_type_enable_register_unavailable";
 }
 
 /// <summary>

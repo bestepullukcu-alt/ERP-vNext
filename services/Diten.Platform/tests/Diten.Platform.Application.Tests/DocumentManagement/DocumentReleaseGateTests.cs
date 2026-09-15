@@ -305,6 +305,7 @@ public sealed class DocumentReleaseGateTests
         var f = Fixture();
         // Non-critical, not flagged, policy off → not subject to hard gating even with the port present.
         var e = SeedEntry(f, uid: "UID-0000001", code: "GMG-QMS-SOP-0001", criticality: DocumentCriticality.Minor);
+        e.ApprovalEvidenceStatus = "Complete"; // BL-380 — this test targets the release-gate guard, not the evidence gate
         e.LifecycleStatus = ControlledDocumentLifecycleStatus.ApprovedPendingEffective;
         var lifecycle = LifecycleService(f);
 

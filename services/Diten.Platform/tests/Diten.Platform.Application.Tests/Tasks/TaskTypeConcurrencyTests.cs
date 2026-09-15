@@ -35,7 +35,8 @@ public sealed class TaskTypeConcurrencyTests
     {
         var tenant = new TenantContext();
         tenant.SetTenant(TenantId);
-        return new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object);
+        return new CreateTaskTypeHandler(
+            types, tenant, new Mock<ICurrentUserContext>().Object, new FakeControlledDocumentEffectivenessPort());
     }
 
     private static UpdateTaskTypeRequest UpdateRequest(int expectedVersion) => new(
@@ -89,7 +90,7 @@ public sealed class TaskTypeConcurrencyTests
         var type = Stored(version: 1);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new SetTaskTypeActiveHandler(types).Handle(
+        var result = await new SetTaskTypeActiveHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(false, 1), "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
@@ -105,7 +106,7 @@ public sealed class TaskTypeConcurrencyTests
         var types = new FakeTaskTypeRepository(type);
         var before = type.IsActive;
 
-        var result = await new SetTaskTypeActiveHandler(types).Handle(
+        var result = await new SetTaskTypeActiveHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(!before, 4), "c"), CancellationToken.None);
 
         Assert.False(result.IsSuccessful);
@@ -229,7 +230,7 @@ public sealed class TaskTypeConcurrencyMongoTests
         await repository.CreateAsync(type);
         var before = await SnapshotAsync(database, type.Id);
 
-        var handler = new SetTaskTypeActiveHandler(repository);
+        var handler = new SetTaskTypeActiveHandler(repository, new FakeControlledDocumentEffectivenessPort());
         var result = await handler.Handle(
             new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(false, 0 /* stale */), "c"),
             CancellationToken.None);
