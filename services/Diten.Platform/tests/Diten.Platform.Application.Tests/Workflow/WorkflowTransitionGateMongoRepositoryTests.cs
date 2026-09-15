@@ -23,6 +23,10 @@ public sealed class WorkflowTransitionGateMongoRepositoryTests
     [Fact]
     public async Task Active_bound_instance_returns_blocked_pending_approval_without_mongo_sort_failure()
     {
+        // BL-395: the fixed-name database below is dropped on the way in and out; the machine-wide lock keeps a
+        // second test process from dropping it under this one.
+        await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync();
+
         var mongo = MongoTestSettings.FromEnvironment();
         var settings = MongoClientSettings.FromConnectionString(mongo.ConnectionString);
         /*
