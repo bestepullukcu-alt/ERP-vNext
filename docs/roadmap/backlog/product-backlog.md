@@ -5575,9 +5575,11 @@ BL-384 Platform'a süreç genelinde `IgnoreExtraElementsConvention` ekledi (`466
 
 **Dev kiracısında görev rolleri: Task-Manager'ın hiç izni yok, Task-User'ın izinleri görevle ilgisiz**
 
-DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
+DURUM: KAPANDI (ölçüldü; kod hatası değil, dev test verisi) — canlıyı ilgilendiren boşluklar BL-410 ve BL-411'e ayrıldı (2026-09-15) · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
 
 Ölçüm (`diten_auth_v3`): Task-Manager rolüne bağlı izin satırı 0; Task-User'da yalnız `ppm.benefit-commitments.change-lifecycle`, `mdm.brands.create`, `auth.roles.create`. Canlı tur için CT Task-Manager'a toplantı okuma + görev izinlerini elle verdi. Soru: bu roller hangi tohum/şablondan geliyor, canlı kiracılarda aynı boşluk var mı? Varsa rol şablonu düzeltilmeli.
+
+**Kapanış (2026-09-15, CT alt ajanı, salt okuma).** İki rolü hiçbir tohum, şablon ya da eşitleme açmadı: `admin@diten.com` 2026-09-08 11:29–11:30'da `POST api/roles` ile elle oluşturdu (Auth denetim günlüğü), aynı gün 8 dev kullanıcıya atadı. Task-User'daki üç ilgisiz anahtar aynı gün 12:36–13:53 arası yapılan elle atama/geri alma denemelerinden kalma (`GrantSource: Manual`); Task-Manager'da CT'nin 2026-09-13 atamalarına kadar izin yoktu. Eşitleme kodla elendi: yalnız Admin/Viewer ve ürün kısaltmalı rolleri hedefliyor. Yeni kiracıya bu roller hiç kurulmuyor, yani aynı boşluk canlıda tekrarlamaz. Asıl canlı boşluklar: görev/toplantı modüllerinin hiçbir planda olmaması ve Viewer'ın Görev Merkezi anahtarını alamaması → BL-410; iki şablon anahtarının "yalnız platform" kapsamı → BL-411. Yan bulgular: Auth'ta izin atamaları `AssignedBy: "System"` yazıyor → BL-412; dev'de `c9b39e99` kiracısında 65 rol-izin satırı var ama rol ve kullanıcı yok (dev veri artığı, dokunulmadı).
 
 ---
 
@@ -5585,9 +5587,11 @@ DURUM: AÇIK · BULAN: CT canlı tur (2026-09-13) · KAYIT: 2026-09-14
 
 **Dev'de /health Unhealthy — `business_reference_data_provider` kontrolü**
 
-DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
+DURUM: AÇIK — sebep ölçüldü (2026-09-15); kod düzeltmesi İş Referans Verisi kulvarında (MOD-0048-FU01 paket revizyonu gerekir), ops adımı canlı kontrol listesi §7/11'de · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
 
 `/health` 503; tek kırmızı kontrol `business_reference_data_provider` ("configuration or state is invalid"). Diğerleri (mongodb, rabbitmq, hangfire_storage, masstransit-bus) sağlıklı. Toplantı/görev turundan önce de böyleydi. Canlıda aynı kontrolün değeri okunmalı; yük dengeleyici sağlık kontrolü bu uca bakıyorsa servis dışı sayılabilir.
+
+**2026-09-15 ölçümü (CT alt ajanı, CT satırları doğruladı).** `BusinessReferenceDataProviderReadinessHealthCheck` önce `GetRequiredReferenceTenantId()` çağırıyor; `BusinessReferenceData:Provider:ReferenceTenantId` dev'de hiçbir yerde yok (hiçbir dalda hiç ayarlanmamış) → `REFERENCE_PROVIDER_CONFIGURATION_INVALID` → Unhealthy. `0f71a237`'nin eklediği "pilot yapılandırılmamışsa sağlıklı" erken dönüşü bu çağrıdan SONRA; eksik ayarda hiç çalışmıyor. Birim testi çözümleyiciyi taklit edip GUID döndürdüğü için dev'deki durumu hiç sınamıyor — sabotaj kanıtı olmayan koruma. Paket (MOD-0048-FU01 `:1335`) eksik ayarda Unhealthy'yi tasarım olarak istiyor ve `CatalogLoad:TenantId`'ye düşmeyi yasaklıyor; "yalnız ready etiketi" isteği de `/health` filtresiz eşlendiği için korumuyor. Depoda dağıtım yapılandırması yok; belgeler dengeleyici için `/health/live` diyor, gerçek canlı ayarı bilinmiyor. Öneri: (A) dev'de ayarı açıkça ver; (B) canlı ortama ekle ya da dengeleyicinin `/health/live` kullandığını teyit et (kontrol listesi §7/11); (C) İş Referans Verisi kulvarı: yapılandırılmamış sağlayıcıda Degraded (200) ya da readiness dışı etiket + gerçek çözümleyiciyle test — paket revizyonu ister.
 
 ---
 
@@ -5640,6 +5644,36 @@ DURUM: KAPANDI — `8e0e8ca7` (BL-395 ile aynı commit) · BULAN: PSS ajanı (BL
 DURUM: AÇIK · BULAN: BL-347 ajanı (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01), CT · KAYIT: 2026-09-15
 
 `Contracts/Behaviors/AuditBehavior.cs` `IAuditableCommand` hattındaki her kaydı isteğin varsayılan aktör türüyle (`AuditActorType.System`) yazıyor; jetondaki `actor_type` okunmuyor. Kullanıcı kimliği kayıtta var, ama "bunu bir kiracı kullanıcısı mı, platform yöneticisi mi, sistem işi mi yaptı" sorusunun cevabı yanlış. GxP denetim izinde aktör türü ayırt edici bilgi. Öneri: BL-347'nin `ResolveActorType` eşlemesi tek bir paylaşılan çözümleyiciye çıkarılır; `AuditBehavior` ve `DataExportAuditWriter` onu kullanır; gerçekten arka plan işi olan komutlar `System` kalır. Etki: 62 denetlenen komut; denetim ekranı ve dışa aktarma aktör türünü gösteriyorsa görünen değer değişir (ölçülmeli). Çeviri/ekran işi yok; altyapı CT alt ajanı, BL-395 kilidi birleştikten sonra.
+
+---
+
+### BL-410
+
+**Görev ve toplantı modülleri hiçbir abonelik planında yok, Viewer Görev Merkezi'ni açamıyor — yeni kiracıda kimse bu ekranları kullanamaz**
+
+DURUM: AÇIK — sahip kararı bekliyor · BULAN: CT alt ajanı (BL-403 incelemesi), CT doğruladı · KAYIT: 2026-09-15
+
+Ölçüldü (dev): yeni kiracıya yalnız Admin ve Viewer kuruluyor (`RoleProvisioningService.cs:11-15`). Admin'in hazır listesinde (`DefaultRolePermissionTemplate.AdminModules`) `platform.tasks.*`/`platform.meetings.*` yok; dev Admin 29 görev/toplantı anahtarının hiçbirini tutmuyor. TASKS, MEETINGS, WORK-AGGREGATION ve WORK-REPORT `IsTenantAssignable=true`, `IsBaseline=false` ve beş planın hiçbirinde yok; plan hiç vermez, kiracı başına açık yetkilendirme gerekir. Viewer yalnız `read` eylemli anahtarları alıyor; `platform.work-aggregation.inbox.view` `view` eylemli olduğu için Viewer (ve eşitleme yoluyla da) Görev Merkezi gelen kutusunu açamıyor. Dev varsayılan kiracıda WORK-AGGREGATION yetkilendirmesi açık olduğu hâlde Admin/Viewer'da `inbox.view` yok — incelenmedi. Sahip kararları: (1) modüller planlara mı girer, yoksa canlı kiracıya açık yetkilendirme mi (öneri: bu turda açık yetkilendirme, kontrol listesi §5; plan kararı sonra); (2) `inbox.view` Viewer'a nasıl gider (öneri: Görev Merkezi anahtarı için eşitleme ve şablonda dar istisna; tüm `view` eylemlerini Viewer'a açmak geniş etkili, önce liste ölçülür). `AdminModules`'e eklemek sahibin "liste küratörlü kalsın" kararına ters.
+
+---
+
+### BL-411
+
+**İki görev şablonu izni Auth kataloğunda "yalnız platform" kapsamında — kiracı rolüne atanamıyor**
+
+DURUM: AÇIK — canlı katalog ölçümü + sahip kararı bekliyor · BULAN: CT alt ajanı, CT dev veritabanında doğruladı · KAYIT: 2026-09-15
+
+`diten_auth_v3.permissions`: `platform.tasks.checklist-templates.manage` ve `platform.tasks.templates.manage` → `Scope: 1` (PlatformAdmin); diğer görev anahtarları `Scope: 0`. Sayfaları kiracı yollarında (`TaskManifestProvider.cs:292`, `:314`). Kapsamı platform olan anahtar hiçbir kiracı rolüne verilemez, elle atama 403 → kontrol listesi şablonları ve görev şablonları ekranları kiracıda kullanılamaz. Olası sebep (çıkarım): başlangıç işçisi anahtarları manifest kapsamı gelmeden kaydetti (`TaskManifestProvider.cs:9-13` tam bu uyarıyı taşıyor); Auth'ta kapsam düşürme yolu yok. Öneri: canlı kataloğu salt okunur ölç (kontrol listesi §5); aynıysa yalnız bu iki anahtar için Auth veri adımı (kapsam 1 → 0), yükseltme sınırına dokunduğu için dar tutulur ve sahip onayıyla. Altyapı CT kulvarı.
+
+---
+
+### BL-412
+
+**Auth'ta role izin atama kaydı `AssignedBy: "System"` yazıyor — atamayı yapan kişi yalnız denetim günlüğünde**
+
+DURUM: AÇIK · BULAN: CT alt ajanı (BL-403 incelemesi) · KAYIT: 2026-09-15
+
+`AssignPermissionCommandHandler.cs:54` atayanı sabit `"System"` yazıyor; rol belgelerinde `CreatedBy` boş. Gerçek aktör yalnız `authAuditLogs`'ta. Rol-izin satırına bakan biri elle yapılmış atamayı sistem ataması sanır. Platform tarafındaki BL-409 ile aynı aile (aktörün yanlış kaydı), ama Auth servisinde. Öneri: işleyici oturumdaki kullanıcıyı yazsın, eşitleme ve tohum `System` kalsın; mevcut satırlar değişmez. Altyapı CT kulvarı, çeviri işi yok.
 
 ---
 
