@@ -350,6 +350,83 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 .ToList();
         }
 
+        return await ProjectAsync(tasks, initiatorOnly, actor, ct);
+    }
+
+    /// <summary>
+    /// BL-414 — ONE task by id, projected by the very batch <see cref="GetWorkItemsAsync"/> runs, over a page of
+    /// one. Called only for a task the caller has ALREADY been admitted to by <see cref="ITaskReadAccessPolicy"/>
+    /// (<c>GetTaskWorkItemByIdHandler</c>); this method decides nothing about visibility.
+    ///
+    /// <para><b>No second projection.</b> The list and this read differ only in how the task was FOUND — by id
+    /// here, by the three ownership reads there. The one fact those reads decide, BL-016's "initiator only", is
+    /// decided here from the same three conditions (<c>IsInitiatorOnlyAsync</c>); <c>TaskWorkItemSingleReadTests</c>
+    /// pins that the two answers are identical for every task on the list.</para>
+    ///
+    /// <para><b>The actions are the caller's.</b> BuildActions reads who the actor is to THIS task, so a watcher, a
+    /// scope reader or a read-all holder — holder of nothing, requester of nothing — gets what any non-holder gets
+    /// on the Ekibim list: no holder act. Being able to read a task never adds a button.</para>
+    ///
+    /// <para><see cref="WorkItemActor.Scope"/> is not read: a scope chooses WHICH tasks a list holds, and this read
+    /// is handed its task.</para>
+    /// </summary>
+    public async Task<WorkItemProjectionDto> GetWorkItemAsync(
+        TaskItem task,
+        WorkItemActor actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(actor);
+
+        var initiatorOnly = await IsInitiatorOnlyAsync(task, actor, ct)
+            ? new HashSet<Guid> { task.Id }
+            : new HashSet<Guid>();
+
+        var projected = await ProjectAsync([task], initiatorOnly, actor, ct);
+        return projected[0];
+    }
+
+    /// <summary>
+    /// BL-016's "initiator only" for ONE task — the answer the Self list reaches with its three reads
+    /// (<c>TaskItemRepository</c>), restated as the conditions those reads filter on:
+    /// <list type="bullet">
+    /// <item>OPENED it — <c>ListByCreatorAsync</c>: the creator, and not Done/Cancelled;</item>
+    /// <item>does not HOLD it — <c>ListByAssigneeAsync</c>: the assignee, any lifecycle;</item>
+    /// <item>is not OFFERED it — <c>ListUnclaimedByPositionsAsync</c>: an unclaimed pool task on a position the
+    /// actor holds (its not-Done/Cancelled filter is already implied by the first condition).</item>
+    /// </list>
+    /// </summary>
+    private async Task<bool> IsInitiatorOnlyAsync(TaskItem task, WorkItemActor actor, CancellationToken ct)
+    {
+        if (task.CreatedByUserId != actor.UserId
+            || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled
+            || task.AssigneeUserId == actor.UserId)
+        {
+            return false;
+        }
+
+        if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool
+            && task.AssigneeUserId is null
+            && task.PoolPositionId is { } poolPositionId)
+        {
+            var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
+            return !positionIds.Contains(poolPositionId);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The batched projection — every container read ONCE for the whole set, then <c>Project</c> per task. Shared
+    /// by the list (<see cref="GetWorkItemsAsync"/>) and the single read (<see cref="GetWorkItemAsync"/>), which is
+    /// what keeps a task fetched by id and the same task on the list the same item (BL-414).
+    /// </summary>
+    private async Task<IReadOnlyList<WorkItemProjectionDto>> ProjectAsync(
+        List<TaskItem> tasks,
+        HashSet<Guid> initiatorOnly,
+        WorkItemActor actor,
+        CancellationToken ct)
+    {
         // Phase 2 containers, both batched: one read for every task's checklist and one for every task's
         // children. Per-task reads here would be an N+1 over the whole page.
         var taskIds = tasks.Select(t => t.Id).ToList();
@@ -811,8 +888,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 ProviderContractVersion: ProviderContractVersion,
                 ObjectType: "task",
                 ObjectId: task.Id.ToString(),
-                // MOD-0024 owns its own detail surface, so it can supply a real deep link.
-                DeepLink: $"/Tasks/{task.Id}"),
+                // MOD-0024 owns its own record page, so it can supply a real deep link. It is the way OUT of the
+                // Task Center to that record ("open in source", the row's Edit) — the Record link, never Detail,
+                // which would point the door back at the page it sits on (BL-414).
+                DeepLink: TaskLinks.Record(task.Id)),
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(

@@ -4,6 +4,8 @@ using Diten.Platform.API.Observability;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Tasks;
+using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.Dispatch;
 using Diten.Platform.Application.Features.WorkAggregation.Providers;
@@ -89,22 +91,8 @@ public sealed class WorkItemsController : CustomBaseController
     {
         var isPlatformActor = IsPlatformActor(User);
 
-        // Platform actors pass every permission; otherwise evaluate each action key against the principal's
-        // claims using the same side-effect-free evaluator the enforcement filter uses.
-        var granted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (!isPlatformActor)
-        {
-            foreach (var key in RequiredActionPermissions())
-            {
-                if (PermissionClaimEvaluator.Evaluate(User.Claims, key).IsSatisfied)
-                {
-                    granted.Add(key);
-                }
-            }
-        }
-
         var response = await _mediator.Send(
-            new GetMyWorkItemsQuery(isPlatformActor, granted, CorrelationId, scope),
+            new GetMyWorkItemsQuery(isPlatformActor, GrantedActionPermissions(isPlatformActor), CorrelationId, scope),
             ct);
         return CreateActionResultInstance(response);
     }
@@ -119,6 +107,37 @@ public sealed class WorkItemsController : CustomBaseController
     public async Task<IActionResult> GetTeamAvailability(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetMyTeamAvailabilityQuery(CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// BL-414 — ONE work item by id: the Task Center detail acting as the task's record view for ANY reader the
+    /// task read rule admits, not only for whoever has the task on their own list.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Who may read it is the task read rule's decision</b> (<c>ITaskReadAccessPolicy</c>, BL-349) — the
+    /// rule the module's own record endpoint (<c>GET api/v1/tasks/{id}</c>) asks. A task that does not exist, lives
+    /// in another tenant, or exists but is not readable by the caller all answer the SAME 404.</para>
+    ///
+    /// <para><b>Two keys, both required.</b> <c>inbox.view</c> because this is the Task Center's read; and
+    /// <c>platform.tasks.read</c> because it is the key the record endpoint demands for the very same read. Without
+    /// the second, a watcher or scope reader who lacks it would read here what the record page refuses them — this
+    /// endpoint would WIDEN the rule it exists to reuse.</para>
+    ///
+    /// <para><b>Which list a task appears in does not change</b> (BL-016's tabs, BL-023's scopes): this returns one
+    /// item and feeds no list. Tasks only — the one provider whose items a read rule governs by id; any other id
+    /// answers 404.</para>
+    /// </remarks>
+    [HttpGet("{itemId:guid}")]
+    [HasPermission(WorkAggregationPermissions.InboxView)]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetById(Guid itemId, CancellationToken ct)
+    {
+        var isPlatformActor = IsPlatformActor(User);
+
+        var response = await _mediator.Send(
+            new GetTaskWorkItemByIdQuery(itemId, isPlatformActor, GrantedActionPermissions(isPlatformActor), CorrelationId),
+            ct);
         return CreateActionResultInstance(response);
     }
 
@@ -203,20 +222,8 @@ public sealed class WorkItemsController : CustomBaseController
          * to pass a SECOND authority to its handler as data (cancel carries "may cancel any task"), and an actor
          * carrying only the action's own key would silently answer false for it.
          */
-        var granted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        if (!isPlatformActor)
-        {
-            foreach (var key in RequiredActionPermissions())
-            {
-                if (PermissionClaimEvaluator.Evaluate(User.Claims, key).IsSatisfied)
-                {
-                    granted.Add(key);
-                }
-            }
-        }
-
         // UserId is resolved server-side, never read off the payload.
-        var actor = new WorkItemActor(_currentUser.UserId, isPlatformActor, granted);
+        var actor = new WorkItemActor(_currentUser.UserId, isPlatformActor, GrantedActionPermissions(isPlatformActor));
 
         var response = await dispatcher.DispatchAsync(
             new WorkItemActionDispatchRequest(
@@ -232,6 +239,31 @@ public sealed class WorkItemsController : CustomBaseController
 
     private Response<WorkItemActionResultDto> Fail(string error, int statusCode, string reasonCode)
         => Response<WorkItemActionResultDto>.Fail(error, statusCode, reasonCode, CorrelationId);
+
+    /// <summary>
+    /// The caller's granted subset of the providers' declared action keys, evaluated against the principal's claims
+    /// with the same side-effect-free evaluator the enforcement filter uses. ONE method for every path that builds an
+    /// actor — the list, the single read and the action write — so the three cannot answer "may press" differently.
+    /// Empty for a platform actor, who passes every key anyway (<see cref="WorkItemActor.Has"/>).
+    /// </summary>
+    private HashSet<string> GrantedActionPermissions(bool isPlatformActor)
+    {
+        var granted = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (isPlatformActor)
+        {
+            return granted;
+        }
+
+        foreach (var key in RequiredActionPermissions())
+        {
+            if (PermissionClaimEvaluator.Evaluate(User.Claims, key).IsSatisfied)
+            {
+                granted.Add(key);
+            }
+        }
+
+        return granted;
+    }
 
     /// <summary>
     /// The union of every bound provider's declared action permissions, de-duplicated case-insensitively.
