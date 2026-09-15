@@ -5484,7 +5484,7 @@ mevcut atamalar nasıl ele alınsın.
 
 **Paylaşılan Platform test veritabanı eşzamanlı koşularda siliniyor — aynı makinede iki test koşusu birbirine sahte kırmızı veriyor**
 
-DURUM: YAPILIYOR (CT alt ajanı, `feature/infra/auth-display-label`, 2026-09-15) · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
+DURUM: KAPANDI — `8e0e8ca7` (altyapı dalı, 2026-09-15), görev motoruna `f0a1456d`, toplantıya `b3c14be2` · BULAN: toplantı düzeltmeleri ajanı ("collection dropped", 7 geçici kırmızı), CT ölçtü · KAYIT: 2026-09-14
 
 `MongoResidueSweeper` (`Persistence/MongoResidueSweeper.cs`) önceki koşudan kalan `diten_platform_itest` önekli veritabanlarını düşürüyor;
 `MongoIntegrationHarness` da dispose'ta kendi veritabanını düşürüyor. Aynı makinede iki worktree ya da iki ajan Platform testlerini aynı anda
@@ -5493,6 +5493,8 @@ Geçici kural: Mongo'lu Platform test koşuları aynı makinede SIRAYLA. Kalıc�
 (İş Referans Verisi temizleyicisinin işaret deseni) — sweeper yalnız kendi koşusunun izini düşürsün.
 
 **2026-09-15 CT ölçümü — sebep büyük olasılıkla temizleyici değil.** `MongoResidueSweeper` zaten harness işareti + farklı RunId + 1 saat bayatlık şartı arıyor. Asıl yarış: `MongoIntegrationHarness` kapsamlı veritabanlarını SABİT adla (`diten_platform_itest_<scope>`, DB-010 gereği) `emptyFirst: true` ile açıyor; ikinci koşu, birincinin kullandığı veritabanını açılışta boşaltıyor. Koşu başına ad DB-010'u ve `MongoTestDatabaseGuardTests`'i bozacağı için çözüm yönü değişti: makine genelinde özel dosya kilidi (sabit yol, TMPDIR'den bağımsız); ikinci test süreci birincinin bitmesini bekler.
+
+**Kapanış (2026-09-15).** `Persistence/PlatformMongoTestLock.cs`: `/tmp/diten-platform-itest.lock` üzerinde işletim sistemi dosya kilidi (macOS'ta ölçüldü: gerçek flock, SIGKILL'de bırakılıyor). Paylaşılan mongod'daki sabit adlı veritabanına dokunan her yol kilidi süreç başına bir kez alır ve süreç bitene kadar tutar: harness, şema sözleşmesi, iş akışı kapısı, İş Referans Verisi temizleyicisi ve harness'ları. Bekleyen süreç 30 sn'de bir kimin tuttuğunu yazar; 30 dk sonra test düşer, kilitsiz asla koşmaz; dosya kilitleme kapalıysa (`DOTNET_SYSTEM_IO_DISABLEFILELOCKING`) reddeder. Bir koruma testi 27017 adresi olup kilidi almayan dosyayı adıyla kırmızı verir. Ölçüm: yıkıcı filtre iki süreçte aynı anda — önce 17 ve 16 yarış kaynaklı ek kırmızı, sonra 0. Ajan sabotajı (kilit çağrısı kaldırıldı) 3/4 kırmızı; CT sabotajı (dosya paylaşımlı açıldı, kilit var gibi görünüp kilitlemiyor) iki süreç testi kırmızı → bayt bayt geri → 4/4 yeşil. **Kalanlar:** (1) Eventing.Tests (`_eventing_golden_flow`, `_eventing_failure_path`, `_tenant_lifecycle`; RabbitMQ yoksa atlanıyor) ve BackgroundJobs.Tests (`diten_platform_itest_container_validation`) sabit adları kilide bağlı değil — ayrı test projeleri. (2) Bekleme satırları varsayılan `dotnet test` ayrıntısında görünmüyor, `--logger "console;verbosity=normal"` ile görünüyor; zaman aşımı her ayrıntıda test hatası olarak görünür. (3) Linux ve Windows ölçülmedi. (4) Kilit yalnız kilidi taşıyan dallarda çalışır: zincire birleşmemiş kulvar dalları birleşene kadar eski davranışta.
 
 ---
 
@@ -5595,7 +5597,7 @@ DURUM: AÇIK · BULAN: CT (2026-09-13 dev yığını) · KAYIT: 2026-09-14
 
 DURUM: AÇIK (borç) · BULAN: CT (go-live öncesi tam paket karşılaştırması, temiz main `e5681231`) · KAYIT: 2026-09-14
 
-`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
+`run_phase1_gates.sh` tam Platform/Auth paketlerini ve vitest'i koşmuyor. Temiz main'de kırmızılar: Platform 68 (İş Referans Verisi Mongo 53 — çoğu yerel replica set/harness gerektiriyor; Doküman Yönetimi 15 — DM kulvarının birleşmemiş dalında düzeltilmiş), Auth 3 (`PermissionScopePreservationTests.Baseline…`, `UserLookupValidationContractTests` ×2), vitest 25 test / 13 dosya (CRM campaign/consent, dialog-one-implementation, diten-tags, global-confirm-input-type, objectives, planning-cycles ×2, pvg-case-intake, strategy ×3, wcn-dialog-one-language). Karşılaştırma listeleri: CT scratchpad. **2026-09-15 (BL-395 ajanı):** İş Referans Verisi'nin 49 Mongo testi tek süreçte de kırmızı; sebep ölçüldü: yerel mongod bir replica set (`rs0`) ve `RunCommandAsync<object>("{ ping: 1 }")` cevaptaki Timestamp türünü `ObjectSerializer` ile okuyamıyor (GSKU `:363`, TenantAssignment `:28`, PublishOperation `:29`); ardından dispose "database is currently being dropped" ile düşüyor. İş Referans Verisi kulvarının işi. Öneri: sahipli kulvarlara dağıtmak; yeşillenen paketleri kapıya eklemek.
 
 ---
 
@@ -5623,9 +5625,11 @@ DURUM: AÇIK (küçük temizlik) · BULAN: toplantı düzeltmeleri ajanı · KAY
 
 **CI kapısının "veritabanları arası erişim" adımı `rg` yoksa hiçbir şey denetlemeden "passed" diyor**
 
-DURUM: YAPILIYOR (CT alt ajanı, BL-395 ile aynı WP, 2026-09-15) · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
+DURUM: KAPANDI — `8e0e8ca7` (BL-395 ile aynı commit) · BULAN: PSS ajanı (BL-392 kapı koşusu) · KAYIT: 2026-09-14
 
 `scripts/check_cross_db_enforcement.sh:7` aramayı `rg` ile yapıyor ve hatayı `|| true` ile yutuyor. `rg` kurulu olmayan makinede (yerel dev makinesi ölçüldü: `rg: command not found`) adım hiçbir dosyayı taramadan geçiyor. Ajan aynı denetimi grep ile koştu: 0 ihlal. GitHub `ubuntu-latest` imajında `rg` olup olmadığı ölçülmedi. Öneri: araç yoksa adım başarısız olsun ya da grep'e düşsün; `|| true` yalnız "eşleşme yok" çıkış kodunu yutsun.
+
+**Kapanış (2026-09-15).** Ölçüm: GitHub ubuntu-24.04 imajının araç listesinde ripgrep YOK, iş akışı yalnız jq kuruyor — yani CI'da da adım hiçbir şey taramıyordu. Düzeltme: `rg` varsa o, yoksa aynı kapsamda `grep -E -r` (obj/bin, gizli klasörler ve ikili dosyalar hariç; tüm ağaçta iki araç birebir aynı 60 satırı buldu). Yalnız çıkış 1 ("eşleşme yok") geçer; araç yok (127) ya da hata (2) adımı düşürür. Kanıt: temiz ağaç iki modda geçiyor; eklenen ihlal iki modda kırmızı; CT sabotajında tarayıcı komutu bozulunca "could not scan … 127" ile düştü. GNU grep yerelde koşulmadı.
 
 ---
 
