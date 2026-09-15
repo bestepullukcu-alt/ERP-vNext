@@ -1,0 +1,3 @@
+namespace Diten.Web.Views.TalentEcosystem.TalentSupplyDemandForecasting;
+
+public sealed class TalentSupplyDemandForecastingIndex;

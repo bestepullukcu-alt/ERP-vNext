@@ -1,0 +1,19 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateDisputes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateDisputesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="candidate-disputes-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AuditMetadata = Localizer["AuditMetadata"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        EvaluateDisabled = Localizer["EvaluateDisabled"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value
+    })
+</script>

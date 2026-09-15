@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.TrustLevels
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TrustLevelsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TrustLevelsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.trust-levels.evaluate");
+    var canAudit = Perms.Has("tep.trust-levels.audit.read");
+    var canManage = Perms.Has("tep.trust-levels.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TrustLevelsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="trust-levels-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/TrustLevels/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/TrustLevels/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/TrustLevels/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/TrustLevels/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/TrustLevels/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/TrustLevels/index.js" asp-append-version="true"></script>
+}
