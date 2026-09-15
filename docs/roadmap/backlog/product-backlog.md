@@ -5726,6 +5726,16 @@ DURUM: AÇIK (CRM kulvarı) · BULAN: CT alt ajanı (WP-INFRA-AUTH-LONG-RED-TEST
 
 ---
 
+### BL-417
+
+**Ekip görünümü astın görevini listeliyor ama okuma kuralı "astımın görevi" yolunu tanımıyor — başka tüzel kişilikteki astın görevi detayda "bulunamadı"**
+
+DURUM: AÇIK — tasarım kararı · BULAN: BL-414 ajanı (WP-WCN-TASK-DETAIL-READ-AND-LINKS-01) · KAYIT: 2026-09-15
+
+Ekibim (`scope=team`, BL-023) astların işini listeliyor. Görev okuma kuralı (`TaskReadAccessPolicy`, BL-349) ise yöneticiyi yalnız aynı tüzel kişilik ya da verilmiş birim bacağından, ReadAll'dan ya da görevle doğrudan ilişkiden içeri alıyor; kapsam denetimi (`AllowsUnit`) boş pozisyon kimliğiyle çağrıldığı için astın pozisyonu bacağı hiç eşleşmiyor. Sonuç: listede görünen bir ast görevi (başka tüzel kişilikte, birim izni yok) detayda "bulunamadı" diyor. Liste ile okuma kuralı aynı soruya iki cevap veriyor. Seçenekler: (a) okuma kuralına "yöneticinin astlarının görevleri" bacağı eklemek (SAP'te yönetici ekip görevlerini organizasyon yapısından görür; Oracle'da yönetici hiyerarşisi erişimi), (b) ekip listesini okuma kuralıyla aynı kümeye daraltmak. Öneri: (a) — ekip görünümü bilinçli bir yönetici yetkisi (BL-023) ve Blueprint organizasyon yapısına dayanıyor; ancak tüzel kişilikler arası görünürlük GxP/kiracı politikası sorusu olduğu için sahip kararı gerekir.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
