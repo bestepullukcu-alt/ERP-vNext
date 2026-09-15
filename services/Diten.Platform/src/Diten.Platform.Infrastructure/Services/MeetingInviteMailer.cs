@@ -203,13 +203,35 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
         }
     }
 
-    /// <summary>One recipient GROUP, one dispatch call, its own try/catch — so the organizer's mail and everyone
-    /// else's mail never share a single point of failure. Same posture as <see cref="SendAsync"/>'s own outer
-    /// try/catch, one level down.</summary>
+    /// <summary>One recipient GROUP: dispatched as one call PER RECIPIENT (BL-406), not one call carrying the
+    /// whole group's <c>To[]</c> — so a permanently-failed send can be attributed back to the single attendee it
+    /// was for (see <see cref="NotificationEventDispatchRequest.MeetingAttendeeUserId"/>). Same total mail sent
+    /// either way; only the provider call shape changes. Each recipient's own try/catch, so one attendee's
+    /// throw/failure never costs another attendee in the same group their mail.</summary>
     private async Task<MeetingInviteDeliveryResult> DispatchGroupAsync(
         string eventCode,
         Guid meetingId,
         IReadOnlyList<TaskNotificationRecipient> group,
+        IReadOnlyDictionary<string, object?> variables,
+        MessagingProviderAttachment? icsAttachment,
+        CancellationToken ct)
+    {
+        MeetingInviteDeliveryResult? combined = null;
+        foreach (var recipient in group)
+        {
+            var result = await DispatchOneAsync(eventCode, meetingId, recipient, variables, icsAttachment, ct);
+            combined = Combine(combined, result);
+        }
+
+        return combined ?? MeetingInviteDeliveryResult.NoRecipients;
+    }
+
+    /// <summary>The actual single-recipient dispatch call — BL-406's own attribution unit. Its own try/catch,
+    /// same posture as <see cref="SendAsync"/>'s own outer try/catch, one level down.</summary>
+    private async Task<MeetingInviteDeliveryResult> DispatchOneAsync(
+        string eventCode,
+        Guid meetingId,
+        TaskNotificationRecipient recipient,
         IReadOnlyDictionary<string, object?> variables,
         MessagingProviderAttachment? icsAttachment,
         CancellationToken ct)
@@ -220,12 +242,17 @@ public sealed class MeetingInviteMailer : IMeetingInviteMailer
                 new NotificationEventDispatchRequest(
                     TenantId: _tenantContext.TenantId,
                     EventCode: eventCode,
-                    To: group.Select(r => new EmailRecipientDto(r.Email, r.DisplayName)).ToList(),
+                    To: [new EmailRecipientDto(recipient.Email, recipient.DisplayName)],
                     Variables: variables,
                     // Same posture as TaskNotificationService: the reader's own language is not known here, so
                     // the adapter resolves the TENANT's configured language rather than guessing at the actor's.
                     Locale: null,
-                    Attachments: icsAttachment is null ? null : [icsAttachment]),
+                    Attachments: icsAttachment is null ? null : [icsAttachment],
+                    // BL-406 — the meeting a permanently-failed send about this recipient must be attributed to,
+                    // and which attendee that send was for. CausationId had no prior meaning for these dispatches
+                    // (never set before this WP); this is the first and only producer that populates it.
+                    CausationId: meetingId,
+                    MeetingAttendeeUserId: recipient.UserId),
                 ct);
 
             if (!response.IsSuccessful)

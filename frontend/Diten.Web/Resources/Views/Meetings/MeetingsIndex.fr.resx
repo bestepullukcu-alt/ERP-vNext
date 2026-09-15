@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>Ajouter</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Point de l'ordre du jour</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Retirer le participant</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>E-mail non distribué</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Ajouter</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Réaffecter l'organisateur</value></data>
   <data name="Minutes" xml:space="preserve"><value>Procès-verbal</value></data>
@@ -106,6 +107,8 @@
   <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Vérifiez le début, la fin et le délai de préparation de la série — le calendrier est invalide.</value></data>
   <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>L'intervalle doit être d'au moins 1.</value></data>
   <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>Un organisateur est requis.</value></data>
+  <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>La période du rapport doit se terminer après son début.</value></data>
+  <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>Ce rapport contient trop de lignes pour être exporté. Réduisez la période ou les filtres.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>Vous n'avez pas accès à cette action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>Le service Réunions est actuellement indisponible.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Veuillez remplir tous les champs obligatoires.</value></data>

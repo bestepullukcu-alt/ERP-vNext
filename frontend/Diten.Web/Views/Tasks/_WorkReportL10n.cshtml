@@ -109,6 +109,10 @@
         ExportTooManyRows = Localizer["ExportTooManyRows"].Value,
         ExportForbidden = Localizer["ExportForbidden"].Value,
         ExportFailed = Localizer["ExportFailed"].Value,
+        // BL-347 follow-up (WP-PSS-MOD0024-FOLLOWUPS-02) — DATA_EXPORT_AUDIT_NOT_RECORDED (503) is a distinct
+        // refusal from a generic failure: the export itself succeeded, but nothing may leave without an audit
+        // trail (GxP), so "try again shortly" is the honest next step rather than "it failed".
+        ExportAuditNotRecorded = Localizer["ExportAuditNotRecorded"].Value,
 
 
         NotMeasured = Localizer["NotMeasured"].Value,

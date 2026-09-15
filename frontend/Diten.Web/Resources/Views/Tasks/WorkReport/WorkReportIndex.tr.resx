@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>Bu rapor tek bir dışa aktarmanın taşıyabileceğinden fazla görev içeriyor. Dönemi veya filtreleri daraltıp yeniden deneyin.</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>Bu raporu dışa aktarma yetkiniz yok.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>Dışa aktarma hazırlanamadı.</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>Dışa aktarma denetim kaydına yazılamadığı için dosya verilmedi. Lütfen biraz sonra tekrar deneyin.</value></data>
 </root>

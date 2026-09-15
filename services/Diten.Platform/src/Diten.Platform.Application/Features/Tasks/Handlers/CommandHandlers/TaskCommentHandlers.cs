@@ -392,8 +392,27 @@ internal static class TaskMentionValidation
                 400, TaskReasonCodes.MentionLimitExceeded));
         }
 
+        /*
+         * WP-PSS-MOD0024-FOLLOWUPS-02 (BL-399) — the DATA legs (pool holders, watchers, the parent task) are
+         * resolved ONCE for the whole comment, not once per mentioned person. `CanReadAsync` itself asks
+         * `ResolveDataLegCandidatesAsync` first (that IS the refactor BL-399 asked for; see
+         * TaskReadAccessPolicy), so a candidate this ONE call already admits never has to ask again — up to 10
+         * mentions on one comment used to mean 10 repeats of the same pool/watcher/parent reads.
+         *
+         * The scope and ReadAll legs stay PER-CANDIDATE, deliberately (K2's own narrowing, unchanged by this
+         * WP): they answer true only for the CURRENT caller, never for an arbitrary candidate, so they cannot be
+         * folded into a task-wide cache — falling through to the full `CanReadAsync` for the rare candidate the
+         * data legs do not already cover is one extra (redundant) resolution at most, not ten.
+         */
+        var dataLegCandidates = await readAccess.ResolveDataLegCandidatesAsync(task, ct);
+
         foreach (var candidateId in mentionedUserIds)
         {
+            if (dataLegCandidates.Contains(candidateId))
+            {
+                continue;
+            }
+
             if (!await readAccess.CanReadAsync(task, candidateId, ct))
             {
                 // Refuses the WHOLE write rather than silently dropping the unreadable name — a mention that

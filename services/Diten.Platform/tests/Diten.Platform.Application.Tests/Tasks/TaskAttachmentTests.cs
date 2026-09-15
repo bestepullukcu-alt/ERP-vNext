@@ -115,7 +115,7 @@ public sealed class TaskAttachmentTests : IDisposable
         // Non-relationship access is TaskReadAccessPolicyTests's own territory, not re-proven here.
         var readAccess = new TaskReadAccessPolicy(
             tasksRepo, new FakeTaskWatcherRepository(), new FakeTaskNotificationService(),
-            new FakeOrganizationUnitRepository(), new NoScopeResolver(), TaskActors.None(), currentUser);
+            new FakeOrganizationUnitRepository(), new NoScopeResolver(), new FakeTaskTeamResolver(), TaskActors.None(), currentUser);
 
         return new Harness
         {

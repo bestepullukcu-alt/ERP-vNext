@@ -1,0 +1,76 @@
+@using Diten.Web.Views.Meetings.Report
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingReportIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    // MOD-0357 S12 (pack §23.3) — the period is REQUIRED, the same rule the work report's own filter already
+    // states out loud rather than leaving a reader to discover it: the API refuses an unbounded report, so
+    // both boxes are pre-filled. Rolling 30 days, the SAME default `Views/Tasks/WorkReport.cshtml` uses and
+    // for the identical reason — attendance rate and the action register need enough meetings to mean anything.
+    var today = DateTime.UtcNow.Date;
+    var defaultTo = today.AddDays(1);
+    var defaultFrom = defaultTo.AddDays(-30);
+}
+
+<section class="card mb-4">
+    <div class="card-body p-4">
+        <form id="reportFilterForm" class="row g-3 align-items-end" novalidate>
+            <div class="col-12 col-md-6 col-xl-2">
+                <label for="mrFrom" class="form-label fw-medium">@Localizer["From"]</label>
+                <input type="text" id="mrFrom" class="form-control flatpickr-date" autocomplete="off" required
+                       value="@defaultFrom.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-md-6 col-xl-2">
+                @* Exclusive, exactly as the API reads it — the value shown is the first day NOT counted. *@
+                <label for="mrTo" class="form-label fw-medium">@Localizer["To"]</label>
+                <input type="text" id="mrTo" class="form-control flatpickr-date" autocomplete="off" required
+                       value="@defaultTo.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <label for="mrMeetingType" class="form-label fw-medium">@Localizer["FilterMeetingType"]</label>
+                <select id="mrMeetingType" class="form-select select2" data-placeholder="@SharedLocalizer["ShowAll"]">
+                    <option value="">@SharedLocalizer["ShowAll"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <label for="mrOrganizer" class="form-label fw-medium">@Localizer["FilterOrganizer"]</label>
+                <select id="mrOrganizer" class="form-select select2" data-placeholder="@SharedLocalizer["ShowAll"]">
+                    <option value="">@SharedLocalizer["ShowAll"]</option>
+                </select>
+            </div>
+            <div class="col-12 col-xl-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">@SharedLocalizer["Apply"]</button>
+                <div class="dropdown">
+                    @* Owner decision, pack §23.13/1 — same permission as the screen, no separate export key;
+                       disabled until the first report loads, the same "nothing to export yet" rule the work
+                       report's own export menu follows. *@
+                    <button type="button" class="btn btn-icon btn-label-secondary dropdown-toggle hide-arrow"
+                            data-bs-toggle="dropdown" aria-expanded="false" disabled data-mr-export-toggle
+                            title="@Localizer["ExportButton"]" aria-label="@Localizer["ExportButton"]">
+                        <i class="icon-base bx bx-download icon-sm"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><h6 class="dropdown-header">@Localizer["ExportMeetingsHeader"]</h6></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="meetings" data-mr-export-format="csv">@Localizer["ExportCsv"]</button></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="meetings" data-mr-export-format="json">@Localizer["ExportJson"]</button></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><h6 class="dropdown-header">@Localizer["ExportDecisionsHeader"]</h6></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="decisions" data-mr-export-format="csv">@Localizer["ExportCsv"]</button></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="decisions" data-mr-export-format="json">@Localizer["ExportJson"]</button></li>
+                        <li><hr class="dropdown-divider" /></li>
+                        <li><h6 class="dropdown-header">@Localizer["ExportActionsHeader"]</h6></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="actions" data-mr-export-format="csv">@Localizer["ExportCsv"]</button></li>
+                        <li><button type="button" class="dropdown-item" data-mr-export="actions" data-mr-export-format="json">@Localizer["ExportJson"]</button></li>
+                    </ul>
+                </div>
+            </div>
+        </form>
+        <p class="text-muted mb-0 mt-2" id="mrStatus" role="status" aria-live="polite"></p>
+    </div>
+
+    @* The scope badge — the SAME "what the numbers cover, said out loud" rule the work report's own scope bar
+       states (pack §23.6): "there is no work" and "there is no work I may see" must never look identical. *@
+    <div class="px-4 py-3 border-top" id="mrScope" hidden>
+        <span class="badge" id="mrScopeBadge"></span>
+    </div>
+</section>

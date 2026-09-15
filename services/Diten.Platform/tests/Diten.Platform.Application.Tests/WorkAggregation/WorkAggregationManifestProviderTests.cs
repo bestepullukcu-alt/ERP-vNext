@@ -1,24 +1,23 @@
 using System.Reflection;
 using Diten.BuildingBlocks.ModuleRegistration.Abstractions;
+using Diten.Platform.API.Controllers;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Application.Features.WorkAggregation.SelfRegistration;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.WorkAggregation;
 
-// WC-1b (DCP-004 §8 row 1b) — the Görev Merkezi manifest must mirror the REAL tenant route and carry the verbatim
-// WorkAggregationPermissions constant the WC-1 controller enforces. Asserted in both directions so a missing/extra
-// page or a drifted permission breaks the build. The permission oracle is reflected off the constants class, so a
-// hand-typed string literal in the manifest fails here.
+// WC-1b (DCP-004 §8 row 1b), revised by DCP-004 "Decision amendment 2026-09-15" (BL-410) — the Görev Merkezi manifest
+// mirrors the REAL tenant route, is a BASELINE module and its page needs NO key, so every tenant user sees it. The
+// inbox key stays declared but no endpoint enforces it. The permission oracle is reflected off the constants class,
+// so a hand-typed string literal in the manifest fails here.
 public sealed class WorkAggregationManifestProviderTests
 {
     private static readonly ModuleManifestDocument Manifest = new WorkAggregationManifestProvider().GetManifest();
 
-    // The real tenant route, with the exact permission it is gated on.
-    private static readonly Dictionary<string, string> ExpectedRoutePermissions = new(StringComparer.Ordinal)
-    {
-        ["/WorkCenterNext"] = "platform.work-aggregation.inbox.view"
-    };
+    // The real tenant routes. The page needs no key (amendment point 2).
+    private static readonly HashSet<string> ExpectedRoutes = new(StringComparer.Ordinal) { "/WorkCenterNext" };
 
     // Zero-drift oracle: every permission constant declared by WC-1.
     private static readonly HashSet<string> KnownPermissionKeys = typeof(WorkAggregationPermissions)
@@ -28,15 +27,17 @@ public sealed class WorkAggregationManifestProviderTests
         .ToHashSet(StringComparer.Ordinal);
 
     [Fact]
-    public void Declares_a_clean_slug_entitlement_gated_module_identity()
+    public void Declares_a_clean_slug_baseline_module_identity()
     {
         Assert.Equal("work-aggregation", Manifest.ModuleCode);
         Assert.Equal("Work Aggregation", Manifest.ModuleName);
         Assert.Equal("Görev Merkezi / Task Center", Manifest.DisplayName);
         Assert.Equal("Workspace", Manifest.Domain);       // pack DEC-5
         Assert.Equal("DitenPlatform", Manifest.Service);
+        // The tenant menu reads only assignable catalog rows (ModuleCatalogRepository.GetAssignableAsync), so a
+        // baseline module that stopped being assignable would vanish from every sidebar.
         Assert.True(Manifest.IsTenantAssignable);
-        Assert.False(Manifest.IsBaseline);                // pack DEC-4 — entitlement-gated, NOT baseline
+        Assert.True(Manifest.IsBaseline);                 // amendment 2026-09-15 — every tenant user, no entitlement
         Assert.Equal("bx-been-here", Manifest.Icon);
         Assert.Equal(10, Manifest.SortOrder);
         Assert.NotEmpty(Manifest.Pages);
@@ -58,17 +59,16 @@ public sealed class WorkAggregationManifestProviderTests
     }
 
     [Fact]
-    public void Pages_mirror_the_tenant_route_and_permission_exactly_both_directions()
+    public void Pages_mirror_the_tenant_route_exactly_and_need_no_key()
     {
-        Assert.Equal(ExpectedRoutePermissions.Count, Manifest.Pages.Count);
         var manifestRoutes = Manifest.Pages.Select(p => p.RoutePath).ToHashSet(StringComparer.Ordinal);
-        Assert.True(manifestRoutes.SetEquals(ExpectedRoutePermissions.Keys),
+        Assert.True(manifestRoutes.SetEquals(ExpectedRoutes),
             "Manifest pages must mirror the real tenant routes exactly (both directions).");
 
-        foreach (var page in Manifest.Pages)
-        {
-            Assert.Equal(ExpectedRoutePermissions[page.RoutePath], page.RequiredPermission);
-        }
+        // A key on the page hides Görev Merkezi from every user who lacks it (the sidebar and Ctrl+K gate on it).
+        Assert.All(Manifest.Pages, page => Assert.True(
+            string.IsNullOrWhiteSpace(page.RequiredPermission),
+            $"Page {page.PageCode} requires '{page.RequiredPermission}', so users without it lose the menu entry."));
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public sealed class WorkAggregationManifestProviderTests
     {
         Assert.NotEmpty(KnownPermissionKeys);
 
-        foreach (var page in Manifest.Pages)
+        foreach (var page in Manifest.Pages.Where(p => !string.IsNullOrWhiteSpace(p.RequiredPermission)))
         {
             Assert.Contains(page.RequiredPermission, KnownPermissionKeys);
         }
@@ -88,15 +88,37 @@ public sealed class WorkAggregationManifestProviderTests
     }
 
     [Fact]
-    public void Page_is_a_visible_top_level_nav_entry_with_no_commands()
+    public void The_inbox_key_stays_declared_but_no_endpoint_enforces_it()
+    {
+        // Declared: the catalog→Auth sync and the entitled-module key pull keep knowing it as this module's key.
+        var declared = Assert.Single(Manifest.Pages.SelectMany(p => p.Actions));
+        Assert.Equal(WorkAggregationPermissions.InboxView, declared.PermissionKey);
+
+        // Unenforced: no [HasPermission] anywhere in the Platform API names it. If one comes back, the Task Center
+        // closes again for every user the sync never granted it to (every non-Admin role today).
+        var enforced = HasPermissionReflector.CollectPermissionKeys(typeof(WorkItemsController).Assembly);
+        Assert.DoesNotContain(WorkAggregationPermissions.InboxView, enforced, StringComparer.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Page_is_a_visible_top_level_nav_entry_whose_only_action_is_no_button()
     {
         var page = Assert.Single(Manifest.Pages);
         Assert.Equal("WORKCENTER", page.PageCode);
         Assert.True(page.IsNavigationVisible);
         Assert.Null(page.ParentPageCode);
         Assert.Equal("List", page.PageType);
-        // Read-only slice: approve/reject/delegate stay on the MOD-0023 endpoints, so no actions are projected.
-        Assert.Empty(page.Actions);
+
+        // The declaration action renders nowhere: not a toolbar button, not a row action. Commands go through the
+        // work-item action endpoint, each under its source module's own key.
+        var action = Assert.Single(page.Actions);
+        Assert.Equal("INBOX_VIEW", action.ActionCode);
+        Assert.Equal("View", action.ActionType);
+        Assert.False(action.IsToolbarAction);
+        Assert.False(action.IsRowAction);
+        Assert.False(action.IsDangerous);
+        // No new text: the declaration reuses the page's own display name.
+        Assert.Equal(page.DisplayName, action.DisplayName);
     }
 
     [Fact]

@@ -15,7 +15,9 @@
         'FormValidationError', 'GqmsDomain', 'Import', 'Name', 'NotAvailable', 'Passive',
         'QualityEventNo', 'QualityEventYes', 'QuickView', 'RecordActivated', 'RecordClass',
         'RecordCreated', 'RecordDeactivated', 'RecordSaved', 'RecordUpdated', 'Reset', 'Save',
-        'SaveView', 'Search', 'ShowAll', 'Status', 'Unknown', 'Update', 'ViewDetails'
+        'SaveView', 'Search', 'ShowAll', 'Status', 'Unknown', 'Update', 'ViewDetails',
+        // WP-DM-DCP005-KURAL4-UI-01 (Kural 4 v2) — the /active toggle's own two refusal sentences.
+        'ErrorTaskTypeEnableBlockedDocuments', 'ErrorTaskTypeEnableRegisterUnavailable'
     ];
 
     const logMissingKeys = (dictionary) => {

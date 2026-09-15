@@ -114,6 +114,11 @@ public sealed class MongoIntegrationHarness : IAsyncDisposable
         bool emptyFirst,
         bool dropOnDispose)
     {
+        // BL-395: before this process touches the shared mongod at all — the ping, the residue sweep, the marker,
+        // the schema, the emptying below — it holds the machine-wide lock. A second test process on this machine
+        // waits here instead of emptying a scoped database this one is asserting against. See PlatformMongoTestLock.
+        await PlatformMongoTestLock.EnsureHeldAsync();
+
         RegisterProductionSerializers();
 
         var settings = MongoClientSettings.FromConnectionString(ConnectionString);

@@ -305,6 +305,7 @@ public sealed class DocumentReleaseGateTests
         var f = Fixture();
         // Non-critical, not flagged, policy off → not subject to hard gating even with the port present.
         var e = SeedEntry(f, uid: "UID-0000001", code: "GMG-QMS-SOP-0001", criticality: DocumentCriticality.Minor);
+        e.ApprovalEvidenceStatus = "Complete"; // BL-380 — this test targets the release-gate guard, not the evidence gate
         e.LifecycleStatus = ControlledDocumentLifecycleStatus.ApprovedPendingEffective;
         var lifecycle = LifecycleService(f);
 
@@ -357,6 +358,12 @@ public sealed class DocumentReleaseGateTests
             DocumentType = DocumentType.Sop,
             Criticality = criticality,
             IsControlledDocument = true,
+            // Gate 1 (DocumentLinkGovernanceGuard) requires a controlled-document relation that has passed scope
+            // compatibility validation whenever IsControlledDocument is set — a governed, properly-linked document
+            // is the default fixture shape here; the two Gate1_blocks_when_* tests below still block for their own
+            // targeted reason (missing uid/code) regardless of this.
+            ControlledDocumentId = Guid.NewGuid(),
+            LinkScopeCompatibilityStatus = DocumentLinkScopeCompatibilityStatus.Compatible,
             PermanentUid = uid,
             DocumentCode = code,
             RegisterStatus = DocumentRegisterStatus.Active,

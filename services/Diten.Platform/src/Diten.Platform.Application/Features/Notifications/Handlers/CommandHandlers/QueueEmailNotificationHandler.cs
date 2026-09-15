@@ -143,7 +143,8 @@ public sealed class QueueEmailNotificationHandler
             QueuedAt = DateTimeOffset.UtcNow,
             RetryCount = 0,
             CorrelationId = correlationId,
-            CausationId = request.Request.CausationId
+            CausationId = request.Request.CausationId,
+            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId
         };
 
         await _dispatchRepository.CreateAsync(dispatch, ct);

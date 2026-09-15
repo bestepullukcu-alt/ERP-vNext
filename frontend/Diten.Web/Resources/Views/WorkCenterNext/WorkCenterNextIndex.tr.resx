@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>İnceleme toplantısı zaten planlandı</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Bağlantılı inceleme toplantısının tutanağı yayımlanana kadar bu karar kilitlidir.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Kontrol listesi güncellendi.</value>
   </data>

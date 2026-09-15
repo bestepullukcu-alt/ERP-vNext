@@ -1,4 +1,5 @@
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
 using Diten.Platform.Application.Features.Lookups.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -26,6 +27,7 @@ public sealed class TenantReferenceLookupsController : CustomBaseController
     }
 
     [HttpGet("countries")]
+    [LoginOnly("Universal ISO country list, non-sensitive; any authenticated actor (see class note).")]
     public async Task<IActionResult> GetCountries(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetLookupOptionsQuery("countries"), ct);
@@ -33,6 +35,7 @@ public sealed class TenantReferenceLookupsController : CustomBaseController
     }
 
     [HttpGet("currencies")]
+    [LoginOnly("Universal ISO currency list, non-sensitive; any authenticated actor (see class note).")]
     public async Task<IActionResult> GetCurrencies(CancellationToken ct)
     {
         var response = await _mediator.Send(new GetCurrencyLookupQuery(), ct);

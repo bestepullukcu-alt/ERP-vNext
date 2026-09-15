@@ -17,6 +17,8 @@ public sealed class BusinessReferenceDataPublishOperationMongoTests : IAsyncLife
 
     public async Task InitializeAsync()
     {
+        await Diten.Platform.Application.Tests.Persistence.PlatformMongoTestLock.EnsureHeldAsync(); // BL-395
+
         var settings = MongoClientSettings.FromConnectionString("mongodb://127.0.0.1:27017");
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         _client = new MongoClient(settings);

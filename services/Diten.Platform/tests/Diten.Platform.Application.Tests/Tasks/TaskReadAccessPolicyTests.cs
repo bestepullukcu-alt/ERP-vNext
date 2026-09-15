@@ -31,11 +31,12 @@ public sealed class TaskReadAccessPolicyTests
         public FakeTaskNotificationService Notifications { get; } = new();
         public FakeOrganizationUnitRepository OrganizationUnits { get; init; } = new();
         public ITaskAssignmentScopeResolver Scope { get; init; } = new EmptyScopeResolver();
+        public ITaskTeamResolver Team { get; init; } = new FakeTaskTeamResolver();
         public FakeActorPermissions Permissions { get; init; } = TaskActors.None();
         public Guid CurrentUser { get; init; } = Me;
 
         public ITaskReadAccessPolicy Build() => new TaskReadAccessPolicy(
-            Tasks, Watchers, Notifications, OrganizationUnits, Scope, Permissions,
+            Tasks, Watchers, Notifications, OrganizationUnits, Scope, Team, Permissions,
             new FakeCurrentUserContext(CurrentUser));
     }
 
@@ -280,5 +281,61 @@ public sealed class TaskReadAccessPolicyTests
         task.OrganizationUnitId = unit.Id;
 
         Assert.False(await h.Build().CanReadAsync(task, Rival, CancellationToken.None));
+    }
+
+    // ── the subordinate leg (BL-417 option a, DCP-004 amendment 2026-09-15) ──────────────────────────────────
+    // The real resolver and the real list are measured together in TaskTeamReadParityTests; these pin the LEG's
+    // shape against a stated team, one fact each.
+
+    [Fact]
+    public async Task A_manager_can_read_a_task_HELD_by_a_subordinate_with_no_scope_and_no_relationship()
+    {
+        var h = new Harness { Team = new FakeTaskTeamResolver(Rival) };
+        var task = NewTask(assignee: Rival, createdBy: Other);
+
+        Assert.True(await h.Build().CanReadAsync(task, Me, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task A_task_a_subordinate_only_CREATED_is_not_team_work()
+    {
+        // The Ekibim list is holder-only (TaskTeamScope.Covers); the read leg cannot be wider than the list.
+        var h = new Harness { Team = new FakeTaskTeamResolver(Rival) };
+        var task = NewTask(assignee: Other, createdBy: Rival);
+
+        Assert.False(await h.Build().CanReadAsync(task, Me, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task An_unclaimed_pool_task_is_not_team_work()
+    {
+        var h = new Harness { Team = new FakeTaskTeamResolver(Rival) };
+        var task = NewTask(target: TaskAssignmentTarget.PositionPool, poolPositionId: Guid.NewGuid());
+
+        Assert.False(await h.Build().CanReadAsync(task, Me, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task The_subordinate_leg_does_not_extend_to_an_actor_other_than_the_current_caller()
+    {
+        // The team is the CALLER's org chart. Asked about Watcher's access, the caller's team must not answer.
+        var h = new Harness { CurrentUser = Me, Team = new FakeTaskTeamResolver(Rival) };
+        var task = NewTask(assignee: Rival, createdBy: Other);
+
+        Assert.False(await h.Build().CanReadAsync(task, Watcher, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task The_subordinate_leg_is_not_a_data_leg_so_mention_candidates_do_not_list_the_manager()
+    {
+        // One rule: CanReadAsync would not admit the manager for somebody else's request, so the enumerated
+        // candidates (the @mention list and its validation) must not list the manager either.
+        var h = new Harness { Team = new FakeTaskTeamResolver(Rival) };
+        var task = NewTask(assignee: Rival, createdBy: Other);
+
+        var candidates = await h.Build().ResolveDataLegCandidatesAsync(task, CancellationToken.None);
+
+        Assert.DoesNotContain(Me, candidates);
+        Assert.Contains(Rival, candidates);
     }
 }

@@ -267,4 +267,55 @@ public sealed class MeetingsController : CustomBaseController
         var response = await _mediator.Send(new GetMeetingTypeLookupQuery(CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
+
+    // ── S12 (pack §23) — meeting report & action register. Reuses platform.meetings.read/.read-all (owner
+    // decision, pack §23.13/1): no new permission key. Visibility is resolved inside the handler through the
+    // SAME MeetingEligibility.CanView every other Meetings read already calls (§23.6). ──────────────────────
+
+    [HttpGet("report")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> GetReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] Guid? meetingTypeId,
+        [FromQuery] Guid? organizerUserId,
+        CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new GetMeetingReportQuery(from, to, meetingTypeId, organizerUserId, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
+    /// The report's own rows, as a file — one <paramref name="dataset"/> at a time (pack §23.7). Every file
+    /// handed out leaves exactly one <c>DataExport</c> audit record or is refused (503, BL-347) — see
+    /// <see cref="ExportMeetingReportHandler"/>.
+    /// </summary>
+    [HttpGet("report/export")]
+    [HasPermission(MeetingPermissions.Read)]
+    public async Task<IActionResult> ExportReport(
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        [FromQuery] Guid? meetingTypeId,
+        [FromQuery] Guid? organizerUserId,
+        [FromQuery] string dataset,
+        [FromQuery] string? format,
+        [FromQuery] string? locale,
+        CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new ExportMeetingReportQuery(from, to, meetingTypeId, organizerUserId, dataset, format, locale, CorrelationId), ct);
+
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        Response.Headers[ReportExportRowCountHeader] =
+            response.Data.RowCount.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return File(response.Data.Content, response.Data.ContentType, response.Data.FileName);
+    }
+
+    /// <summary>How many rows the file carries — the work report's own <c>X-Work-Report-Export-Row-Count</c>, renamed.</summary>
+    public const string ReportExportRowCountHeader = "X-Meeting-Report-Export-Row-Count";
 }

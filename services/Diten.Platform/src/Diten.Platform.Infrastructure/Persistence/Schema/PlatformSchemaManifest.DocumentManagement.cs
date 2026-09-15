@@ -7,6 +7,7 @@ using Diten.Platform.Domain.Entities.InterfaceRegistry;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Entities.Workflow;
+using Diten.Platform.Domain.Enums.DocumentManagement;
 using Diten.Platform.Domain.Features.SubscriptionFeatures;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence.Models;
@@ -123,7 +124,26 @@ public static partial class PlatformSchemaManifest
                             .Ascending(x => x.BaselineReleaseId)
                             .Ascending(x => x.InstanceToken)
                             .Ascending(x => x.FullPath),
-                        new CreateIndexOptions { Name = "ix_dm_collection_instances_company_baseline_path" })
+                        new CreateIndexOptions { Name = "ix_dm_collection_instances_company_baseline_path" }),
+                    // Corporate scope has no company to key off of; a corporate owner may have exactly one
+                    // Active node per (baseline, canonical position) — Blocked/Superseded/Archived nodes are
+                    // lifecycle history and must not block a later Active tree from being provisioned.
+                    new CreateIndexModel<CollectionInstance>(
+                        Builders<CollectionInstance>.IndexKeys
+                            .Ascending(x => x.TenantId)
+                            .Ascending(x => x.CollectionScopeType)
+                            .Ascending(x => x.ScopeOwnerId)
+                            .Ascending(x => x.BaselineReleaseId)
+                            .Ascending(x => x.CanonicalId),
+                        new CreateIndexOptions<CollectionInstance>
+                        {
+                            Unique = true,
+                            Name = "ux_dm_collection_instances_corporate_owner_baseline_node_active",
+                            PartialFilterExpression = Builders<CollectionInstance>.Filter.And(
+                                Builders<CollectionInstance>.Filter.Eq(x => x.IsDeleted, false),
+                                Builders<CollectionInstance>.Filter.Eq(x => x.CollectionScopeType, CollectionScopeType.Corporate),
+                                Builders<CollectionInstance>.Filter.Eq(x => x.InstanceStatus, CollectionInstanceStatus.Active))
+                        })
 
             }),
         Collection<InstantiationOperation>(

@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>Ce rapport couvre plus de tâches qu’un export ne peut en contenir. Réduisez la période ou les filtres, puis réessayez.</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>Vous n’êtes pas autorisé à exporter ce rapport.</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>L’export n’a pas pu être préparé.</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>L'export n'a pas pu être enregistré dans la piste d'audit, le fichier n'a donc pas été fourni. Veuillez réessayer dans un instant.</value></data>
 </root>

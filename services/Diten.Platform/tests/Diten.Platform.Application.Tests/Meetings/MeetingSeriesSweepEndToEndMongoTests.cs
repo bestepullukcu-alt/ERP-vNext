@@ -1,4 +1,3 @@
-using System.Text;
 using Diten.BuildingBlocks.BackgroundJobs;
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
@@ -27,6 +26,7 @@ using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
 using Xunit.Abstractions;
+using static Diten.Platform.Application.Tests.Meetings.MeetingDispatchAssertions;
 
 namespace Diten.Platform.Application.Tests.Meetings;
 
@@ -117,21 +117,19 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
         // the organizer is now split into their OWN "added to your calendar" mail rather than the plain invite
         // Alice and Bob get — never left out entirely (the rejected BL-387 patch), since the .ics is the only way
         // this meeting reaches the organizer's own calendar.
-        var invite = Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
-        var recipients = invite.To.Select(r => r.Email).ToList();
+        //
+        // BL-406 (CT F2, 2026-09-15) — one dispatch per recipient: exactly Alice and Bob on the plain invite, each on
+        // their own dispatch and never twice, the organizer on none of them.
+        var invites = AssertPerRecipient(_dispatches.Requests, InviteEvent, [_alice, _bob], EmailOf);
+        var recipients = invites.Select(i => i.To[0].Email).ToList();
         _output.WriteLine(
-            $"sweep invite recipients={recipients.Count} alice={recipients.Contains(EmailOf(_alice))} " +
+            $"sweep invite dispatches={invites.Count} alice={recipients.Contains(EmailOf(_alice))} " +
             $"bob={recipients.Contains(EmailOf(_bob))} organizerAlsoMailed={recipients.Contains(EmailOf(_organizer))}");
-        Assert.Contains(EmailOf(_alice), recipients);
-        Assert.Contains(EmailOf(_bob), recipients);
         Assert.DoesNotContain(EmailOf(_organizer), recipients);
-        var ics = Encoding.UTF8.GetString(Assert.Single(invite.Attachments!).Content).Replace("\r\n ", string.Empty);
-        Assert.Contains($"UID:{meeting.Id}@diten", ics);
+        Assert.Equal($"{meeting.Id}@diten", SameIcsProperty(invites, "UID"));
 
-        var organizerAdded = Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerAddedEvent);
-        Assert.Equal([EmailOf(_organizer)], organizerAdded.To.Select(r => r.Email).ToArray());
-        var organizerIcs = Encoding.UTF8.GetString(Assert.Single(organizerAdded.Attachments!).Content).Replace("\r\n ", string.Empty);
-        Assert.Contains($"UID:{meeting.Id}@diten", organizerIcs);
+        var organizerAdded = AssertPerRecipient(_dispatches.Requests, OrganizerAddedEvent, [_organizer], EmailOf);
+        Assert.Equal($"{meeting.Id}@diten", SameIcsProperty(organizerAdded, "UID"));
 
         Assert.Equal(meeting.Id, (await _series.GetByIdAsync(rule.Id))!.LastGeneratedMeetingId);
     }
@@ -145,8 +143,10 @@ public sealed class MeetingSeriesSweepEndToEndMongoTests : IAsyncLifetime
         await RunSweepAsync();
 
         var meeting = Assert.Single(await _meetings.ListAsync());
-        Assert.Single(_dispatches.Requests, r => r.EventCode == InviteEvent);
-        Assert.Single(_dispatches.Requests, r => r.EventCode == OrganizerAddedEvent);
+        // Once per RECIPIENT (BL-406): the second pass must add no dispatch for anyone — a duplicate for any one
+        // person fails here, not only a second whole-group send.
+        AssertPerRecipient(_dispatches.Requests, InviteEvent, [_alice, _bob], EmailOf);
+        AssertPerRecipient(_dispatches.Requests, OrganizerAddedEvent, [_organizer], EmailOf);
         Assert.Equal(meeting.Id, (await _series.GetByIdAsync(rule.Id))!.LastGeneratedMeetingId);
     }
 

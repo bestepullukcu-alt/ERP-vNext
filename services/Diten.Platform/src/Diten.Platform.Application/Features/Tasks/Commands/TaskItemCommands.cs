@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Common;
+using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
 using MediatR;
 
@@ -277,7 +278,7 @@ public sealed record BulkDeleteTaskFieldDefinitionCommand(
 // ── DCP-005 slice 1: task types ─────────────────────────────────────────────
 
 public sealed record CreateTaskTypeCommand(
-    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<Guid>>;
+    CreateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<CreateTaskTypeResultDto>>;
 
 public sealed record UpdateTaskTypeCommand(
     Guid Id, UpdateTaskTypeRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
@@ -290,17 +291,7 @@ public sealed record SetTaskTypeActiveCommand(
     Guid Id, SetTaskTypeActiveRequest Request, string CorrelationId) : IRequest<Response<NoContent>>;
 
 
-// ── DCP-005 slice 2: the document reference list ────────────────────────────
-
-public sealed record DryRunDocumentReferenceListCommand(
-    ImportDocumentReferenceListRequest Request, string CorrelationId)
-    : IRequest<Response<DocumentReferenceListDryRunResult>>;
-
-public sealed record ImportDocumentReferenceListCommand(
-    ImportDocumentReferenceListRequest Request, string CorrelationId)
-    : IRequest<Response<DocumentReferenceListVersionDto>>;
-
-
-public sealed record WithdrawDocumentListVersionCommand(
-    Guid Id, WithdrawDocumentListVersionRequest Request, string CorrelationId)
-    : IRequest<Response<NoContent>>;
+// WP-DM-DCP005-DEADCODE-01 — DryRunDocumentReferenceListCommand, ImportDocumentReferenceListCommand and
+// WithdrawDocumentListVersionCommand (DCP-005 slice 2, the CSV document reference list) were removed here:
+// their handlers, endpoints and calling screen are all gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide
+// search found no other caller of any of the three.

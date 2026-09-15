@@ -1116,6 +1116,7 @@
   <data name="HistoryActorColumn" xml:space="preserve"><value>Importado por</value></data>
   <data name="HistoryAppliedAtColumn" xml:space="preserve"><value>Importado el</value></data>
   <data name="HistoryCountsColumn" xml:space="preserve"><value>Filas (nuevas / actualizadas / bloqueadas)</value></data>
+  <data name="HistoryUnchangedColumn" xml:space="preserve"><value>Sin cambios</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>Aún no hay importaciones.</value></data>
   <data name="ImportFileRequired" xml:space="preserve"><value>Seleccione primero un archivo CSV.</value></data>
   <data name="ImportInvalidFileType" xml:space="preserve"><value>Solo se aceptan archivos .csv.</value></data>

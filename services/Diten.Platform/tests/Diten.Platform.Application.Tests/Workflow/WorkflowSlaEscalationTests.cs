@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Diten.Platform.Application.Tests.Workflow;
 
-public sealed class WorkflowSlaEscalationTests
+public sealed partial class WorkflowSlaEscalationTests
 {
     private static readonly Guid TenantA = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid TenantB = Guid.Parse("22222222-2222-2222-2222-222222222222");
@@ -99,8 +99,8 @@ public sealed class WorkflowSlaEscalationTests
         var f = Fixture(TenantA);
         var runtime = await f.SeedRuntimeWithRuleAsync(status, dueAt: DateTimeOffset.UtcNow.AddMinutes(-10));
 
-        var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow, "run-escalate"), CancellationToken.None);
-        var duplicate = await f.Run.Handle(Run(DateTimeOffset.UtcNow, "run-escalate"), CancellationToken.None);
+        var response = await f.Run.Handle(Run("run-escalate"), CancellationToken.None);
+        var duplicate = await f.Run.Handle(Run("run-escalate"), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
         Assert.Equal(1, response.Data!.EscalatedCount);
@@ -121,7 +121,7 @@ public sealed class WorkflowSlaEscalationTests
         var f = Fixture(TenantA);
         await f.SeedRuntimeWithRuleAsync(ApprovalTaskStatus.WaitingApproval, dueAt: DateTimeOffset.UtcNow.AddMinutes(5));
 
-        var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow), CancellationToken.None);
+        var response = await f.Run.Handle(Run(), CancellationToken.None);
 
         Assert.Equal(0, response.Data!.EvaluatedCount);
         Assert.Equal(0, response.Data.EscalatedCount);
@@ -137,7 +137,7 @@ public sealed class WorkflowSlaEscalationTests
         var f = Fixture(TenantA);
         await f.SeedRuntimeWithRuleAsync(status, dueAt: DateTimeOffset.UtcNow.AddMinutes(-10));
 
-        var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow), CancellationToken.None);
+        var response = await f.Run.Handle(Run(), CancellationToken.None);
 
         Assert.Equal(0, response.Data!.EvaluatedCount);
         Assert.Single(f.Logs.Items);
@@ -152,7 +152,7 @@ public sealed class WorkflowSlaEscalationTests
             dueAt: DateTimeOffset.UtcNow.AddMinutes(-45),
             timeoutAfterMinutes: 40);
 
-        var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow, "run-timeout"), CancellationToken.None);
+        var response = await f.Run.Handle(Run("run-timeout"), CancellationToken.None);
         var gate = await new EvaluateWorkflowTransitionGateHandler(f.Instances, f.Tasks)
             .Handle(new EvaluateWorkflowTransitionGateQuery(
                 new EvaluateWorkflowTransitionGateRequest(
@@ -173,7 +173,7 @@ public sealed class WorkflowSlaEscalationTests
         Assert.Equal(WorkflowTransitionGateDecision.Blocked, gate.Data!.Decision);
         Assert.Equal(WorkflowReasonCodes.WorkflowNotTerminalApproved, gate.Data.BlockingReasonCode);
 
-        var duplicate = await f.Run.Handle(Run(DateTimeOffset.UtcNow, "run-timeout"), CancellationToken.None);
+        var duplicate = await f.Run.Handle(Run("run-timeout"), CancellationToken.None);
         Assert.True(duplicate.Data!.Results.Single().IsIdempotent);
         Assert.Equal(2, f.Logs.Items.Count);
     }
@@ -185,7 +185,7 @@ public sealed class WorkflowSlaEscalationTests
         await f.SeedRuntimeWithRuleAsync(ApprovalTaskStatus.WaitingApproval, dueAt: DateTimeOffset.UtcNow.AddMinutes(-10));
 
         f.TenantContext.SetTenant(TenantB);
-        var response = await f.Run.Handle(Run(DateTimeOffset.UtcNow), CancellationToken.None);
+        var response = await f.Run.Handle(Run(), CancellationToken.None);
 
         Assert.True(response.IsSuccessful);
         Assert.Equal(Correlation, response.Data!.CorrelationId);
@@ -215,8 +215,9 @@ public sealed class WorkflowSlaEscalationTests
             timeoutAfterMinutes,
             principals ?? ["manager-001"]), Correlation);
 
-    private static RunWorkflowEscalationsCommand Run(DateTimeOffset now, string? idempotencyKey = null) =>
-        new(new RunWorkflowEscalationsRequest(now, 100, idempotencyKey), Correlation);
+    // BL-422 — a run never carries the clock; the fixture's ServerClock is what the handler reads.
+    private static RunWorkflowEscalationsCommand Run(string? idempotencyKey = null) =>
+        new(new RunWorkflowEscalationsRequest(NowUtc: null, 100, idempotencyKey), Correlation);
 
     private static StartWorkflowInstanceCommand Start(Guid templateId, DateTimeOffset? dueAt) =>
         new(new StartWorkflowInstanceRequest(
@@ -251,6 +252,7 @@ public sealed class WorkflowSlaEscalationTests
         var snapshots = new FakeRuntimeAssignmentSnapshotRepository(tenantContext);
         var logs = new FakeWorkflowTransitionLogRepository(tenantContext);
         var rules = new FakeSlaEscalationRuleRepository(tenantContext);
+        var clock = new ServerClock();
         return new TestFixture(
             tenantContext,
             templates,
@@ -262,7 +264,7 @@ public sealed class WorkflowSlaEscalationTests
             rules,
             new CreateSlaEscalationRuleHandler(templates, rules, tenantContext),
             new GetSlaEscalationRulesHandler(rules),
-            new RunWorkflowEscalationsHandler(tasks, instances, rules, logs, null, snapshots),
+            new RunWorkflowEscalationsHandler(tasks, instances, rules, logs, clock, null, snapshots),
             new StartWorkflowInstanceHandler(
                 templates,
                 versions,
@@ -272,7 +274,8 @@ public sealed class WorkflowSlaEscalationTests
                 logs,
                 tenantContext,
                 new FakeCurrentUserContext(),
-                slaRules: rules));
+                slaRules: rules),
+            clock);
     }
 
     private sealed record RuntimeSeed(WorkflowInstance Instance, ApprovalTask Task);
@@ -289,7 +292,8 @@ public sealed class WorkflowSlaEscalationTests
         CreateSlaEscalationRuleHandler CreateRule,
         GetSlaEscalationRulesHandler ListRules,
         RunWorkflowEscalationsHandler Run,
-        StartWorkflowInstanceHandler Start)
+        StartWorkflowInstanceHandler Start,
+        ServerClock Clock)
     {
         public async Task<Guid> AddPublishedTemplateAsync(string code)
         {

@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Tasks.Services;
@@ -202,6 +203,13 @@ public sealed class WorkReportExportTests
     private static (WorkReportExportQueryHandler Handler, RecordingExports Reports) Build(
         WorkReportExportSet answer,
         params EntitlementDataScope[] scopes)
+        => BuildAudited(answer, new RecordingExportAudit(), scopes);
+
+    /// <summary>BL-347 — the same handler, with the audit writer a test wants to watch or to fail.</summary>
+    private static (WorkReportExportQueryHandler Handler, RecordingExports Reports) BuildAudited(
+        WorkReportExportSet answer,
+        RecordingExportAudit audit,
+        params EntitlementDataScope[] scopes)
     {
         var reports = new RecordingExports(answer);
         /*
@@ -215,7 +223,7 @@ public sealed class WorkReportExportTests
             TaskActors.Holding(TaskPermissions.WorkReportRead),
             NullLogger<WorkReportScopeSource>.Instance);
 
-        return (new WorkReportExportQueryHandler(reports, source), reports);
+        return (new WorkReportExportQueryHandler(reports, source, audit), reports);
     }
 
     private static EntitlementDataScope Unit(Guid id) => new(EntitlementDataScopeKind.OrgUnit, id, scopeCode: null);
@@ -299,6 +307,116 @@ public sealed class WorkReportExportTests
         Assert.Equal(400, (await handler.Handle(
             new WorkReportExportQuery(To, From, "csv", "corr"), CancellationToken.None)).StatusCode);
         Assert.Equal(0, reports.Calls);
+    }
+
+    // ── BL-347 — ONE AUDIT RECORD PER FILE HANDED OUT, OR NO FILE ────────────────────────────────────────
+    //
+    // The writer itself (actor from the token, tenant from the request) is DataExportAuditWriterTests'; the
+    // real append on a real database is WorkReportExportAuditTrailMongoTests'. These guard the HANDLER's half:
+    // it asks, it asks once, it asks only for a file it hands out, and it does not hand one out unrecorded.
+
+    private sealed class RecordingExportAudit(bool recorded = true) : IDataExportAuditWriter
+    {
+        public List<DataExportAuditEntry> Entries { get; } = [];
+
+        public System.Threading.Tasks.Task<DataExportAuditResult> RecordAsync(
+            DataExportAuditEntry entry, CancellationToken ct = default)
+        {
+            Entries.Add(entry);
+            return System.Threading.Tasks.Task.FromResult(new DataExportAuditResult(
+                recorded,
+                global::Diten.Platform.Domain.Enums.AuditActorType.TenantUser,
+                recorded
+                    ? global::Diten.Platform.Application.Contracts.Audit.AuditAppendStatus.Queued
+                    : global::Diten.Platform.Application.Contracts.Audit.AuditAppendStatus.EnqueueFailed,
+                recorded ? null : "test: the audit outbox refused the record"));
+        }
+    }
+
+    [Fact]
+    public async Task A_file_handed_out_leaves_exactly_one_export_record_naming_its_format_and_row_count()
+    {
+        var audit = new RecordingExportAudit();
+        var rows = WorkReportTally.Export(Criteria(), Set());
+        var (handler, _) = BuildAudited(new WorkReportExportSet(rows.Count, rows), audit, Unit(MyUnit));
+
+        var response = await handler.Handle(Query(format: "json"), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal("MOD-0024", entry.SourceModule);
+        Assert.Equal("Tasks.WorkReportExportQuery", entry.RequestType);
+        Assert.Equal("WorkReport", entry.EntityType);
+        Assert.Equal(WorkReportExportFormats.Json, entry.Format);
+        Assert.Equal(rows.Count, entry.RowCount);
+        Assert.Equal(response.Data!.RowCount, entry.RowCount);
+        Assert.Equal("corr", entry.RequestCorrelationId);
+        Assert.Null(entry.Dataset);
+    }
+
+    [Fact]
+    public async Task An_empty_file_is_still_a_file_handed_out_and_is_recorded_with_zero_rows()
+    {
+        // A caller whose scope resolves to nothing downloads a header — that download is still an export.
+        var audit = new RecordingExportAudit();
+        var (handler, _) = BuildAudited(new WorkReportExportSet(3, []), audit);
+
+        var response = await handler.Handle(Query(), CancellationToken.None);
+
+        Assert.True(response.IsSuccessful);
+        Assert.Equal(0, Assert.Single(audit.Entries).RowCount);
+    }
+
+    [Fact]
+    public async Task A_person_filter_is_recorded_as_applied_and_never_as_whose()
+    {
+        var audit = new RecordingExportAudit();
+        var person = Guid.Parse("12345678-aaaa-4bbb-8ccc-1234567890ab");
+        var (handler, _) = BuildAudited(WorkReportExportSet.Empty, audit, Unit(MyUnit));
+
+        await handler.Handle(
+            Query(new WorkReportFilter(OrganizationUnitId: MyUnit, AssigneeUserId: person, Priority: TaskPriority.High)),
+            CancellationToken.None);
+
+        var filters = Assert.Single(audit.Entries).Filters;
+        Assert.Equal(DataExportFilterSummary.Applied, filters["assignee"]);
+        Assert.DoesNotContain(filters.Values, value =>
+            value is not null && value.Contains(person.ToString(), StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(MyUnit.ToString(), filters["organizationUnitId"]);
+        Assert.Equal(nameof(TaskPriority.High), filters["priority"]);
+        Assert.Equal(From.ToString("O", CultureInfo.InvariantCulture), filters["from"]);
+    }
+
+    [Fact]
+    public async Task When_the_audit_record_cannot_be_written_the_export_is_refused_and_carries_no_file()
+    {
+        // ⚠ SABOTAGE 3's GUARD at the handler: swallowing the answer and returning the file turns this red.
+        var audit = new RecordingExportAudit(recorded: false);
+        var rows = WorkReportTally.Export(Criteria(), Set());
+        var (handler, _) = BuildAudited(new WorkReportExportSet(rows.Count, rows), audit, Unit(MyUnit));
+
+        var response = await handler.Handle(Query(), CancellationToken.None);
+
+        Assert.False(response.IsSuccessful);
+        Assert.Equal(503, response.StatusCode);
+        Assert.Equal(DataExportAuditReasonCodes.NotRecorded, response.ReasonCode);
+        Assert.Null(response.Data);
+        Assert.Single(audit.Entries);
+    }
+
+    [Fact]
+    public async Task A_refused_export_hands_out_no_file_and_therefore_writes_no_record()
+    {
+        var audit = new RecordingExportAudit();
+        var (tooLarge, _) = BuildAudited(
+            new WorkReportExportSet(WorkReportExportLimits.MaxRows + 1, []), audit, Unit(MyUnit));
+        var (plain, _) = BuildAudited(WorkReportExportSet.Empty, audit, Unit(MyUnit));
+
+        Assert.False((await tooLarge.Handle(Query(), CancellationToken.None)).IsSuccessful);
+        Assert.False((await plain.Handle(Query(format: "xlsx"), CancellationToken.None)).IsSuccessful);
+        Assert.False((await plain.Handle(new WorkReportExportQuery(To, From, "csv", "corr"), CancellationToken.None)).IsSuccessful);
+
+        Assert.Empty(audit.Entries);
     }
 
     // ── (4) THE REPOSITORY CALLS THE REPORT'S OWN READ ───────────────────────────────────────────────────

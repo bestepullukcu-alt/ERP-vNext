@@ -267,6 +267,16 @@ public static class TaskReasonCodes
     /// <summary>Review was submitted on a task that never asked for one.</summary>
     public const string ReviewNotRequired = "REVIEW_NOT_REQUIRED";
 
+    /// <summary>
+    /// MOD-0357 S9 (owner, 2026-09-13) — the task's TYPE requires a review meeting's minutes to publish before
+    /// its DECISION (`complete`, `submitReview`) may proceed. `start` is never refused with it: holding the
+    /// meeting is part of the work. A LOCAL MOD-0024 precondition, independent of
+    /// <see cref="ApprovalPending"/>/MOD-0023: this is never returned by the workflow gate, only by
+    /// <c>TransitionTaskItemHandler</c> (→ Done) and <c>SubmitTaskForReviewHandler</c> through the one shared rule
+    /// (see <c>ReviewMeetingDecisionGate</c>).
+    /// </summary>
+    public const string ReviewMeetingRequired = "REVIEW_MEETING_REQUIRED";
+
     /// <summary>The recurrence rule does not exist, or belongs to another tenant.</summary>
     public const string RecurrenceRuleNotFound = "RECURRENCE_RULE_NOT_FOUND";
 
@@ -557,6 +567,19 @@ public static class TaskReasonCodes
 
     /// <summary>Nothing has been imported yet, so there is no register to freeze a citation against.</summary>
     public const string DocumentListNotImported = "DOCUMENT_LIST_NOT_IMPORTED";
+
+    // ── DCP-005 Adım 3, Kural 4 (G3 — sahip 2026-09-15, Kalite teyidi bekliyor): task-type activation gate ──
+    // Deliberately lowercase-dotted, not SCREAMING_SNAKE like every sibling in this class: the exact wire value
+    // is pinned by the document-management handoff (work-packs/handoff-dcp-005-docreg-migration-to-task-center.md
+    // §2 note) and by this WP's own prompt, not by this class's own naming convention.
+
+    /// <summary>One or more of a task type's bound governing documents (<c>GroupDocuments</c> / <c>LocalDocuments</c>)
+    /// are not <c>Effective</c> in the Document Master Register.</summary>
+    public const string TaskTypeEnableBlockedDocuments = "task_type_enable_blocked_documents";
+
+    /// <summary>The Document Master Register could not be reached to check effectiveness — fail-closed, never a
+    /// silent pass.</summary>
+    public const string TaskTypeEnableRegisterUnavailable = "task_type_enable_register_unavailable";
 }
 
 /// <summary>
@@ -1457,6 +1480,22 @@ public sealed record UpdateTaskTypeRequest(
 /// </summary>
 public sealed record SetTaskTypeActiveRequest(bool IsActive, int ExpectedVersion);
 
+/// <summary>
+/// WP-DM-DCP005-KURAL4-UI-01 (sahip 2026-09-15) — create never refuses; this is how the caller learns whether it
+/// got an active type or a passively-saved one, and why.
+/// </summary>
+public sealed record CreateTaskTypeResultDto(
+    Guid Id,
+    bool IsActive,
+    /// <summary>Populated only when <see cref="IsActive"/> is false because ≥1 bound document resolved to
+    /// something other than Effective — the SAME "{uid}: {State} ({reason})" shape /active's own 409 carries.
+    /// Empty when active, and empty (see <see cref="EffectivenessUnavailable"/> instead) when the register could
+    /// not be reached at all.</summary>
+    IReadOnlyList<string> BlockingDocuments,
+    /// <summary>True when the type was saved inactive because the effectiveness port itself could not be
+    /// reached — distinct from a document that WAS resolved and found not-Effective.</summary>
+    bool EffectivenessUnavailable);
+
 /// <summary>One task type as the management screen and the task form read it.</summary>
 public sealed record TaskTypeDto(
     Guid Id,
@@ -1480,41 +1519,13 @@ public sealed record TaskTypeDto(
     int Version = 0);
 
 
-// ── DCP-005 slice 2: the controlled-document reference list ────────────────
-
-/// <summary>
-/// One import of the register. Shaped after <c>QmsBaselineCommitRequest</c> — same file/version/source triple,
-/// because a second import shape would be a second thing to keep in step.
-/// </summary>
-public sealed record ImportDocumentReferenceListRequest(
-    string FileName,
-    string ContentBase64,
-    string SourceKey,
-    string ListVersion);
-
-/// <summary>What a dry run reports without writing anything.</summary>
-public sealed record DocumentReferenceListDryRunResult(
-    int EntryCount,
-    int LinkableCount,
-    int BlockedCount,
-    IReadOnlyList<string> Errors,
-    IReadOnlyList<string> MissingColumns,
-    /// <summary>Columns the register carries that this importer does not read — reported, never ignored.</summary>
-    IReadOnlyList<string> UnreadColumns,
-    string ContentHash,
-    /// <summary>Set when these exact bytes are already stored: the import would add nothing.</summary>
-    string? AlreadyImportedAsVersion);
-
-public sealed record DocumentReferenceListVersionDto(
-    Guid Id, string ListVersion, string SourceKey, string FileName,
-    string ContentHash, int EntryCount, int LinkableCount, DateTimeOffset ImportedAt,
-    /// <summary>Set when this version is no longer in service. The row still travels — it is marked, not gone.</summary>
-    DateTimeOffset? WithdrawnAt = null,
-    string? WithdrawnReason = null,
-    string? WithdrawnBy = null);
-
-/// <summary>Take a version out of service. The reason is required; see the handler.</summary>
-public sealed record WithdrawDocumentListVersionRequest(string Reason);
+// WP-DM-DCP005-DEADCODE-01 — ImportDocumentReferenceListRequest, DocumentReferenceListDryRunResult,
+// DocumentReferenceListVersionDto and WithdrawDocumentListVersionRequest (DCP-005 slice 2, the CSV document
+// reference list) were removed here: the handlers that built/consumed them, their endpoints and the calling
+// screen are all gone (WP-DM-DCP005-RETIRE-CSV-01), and a repo-wide search found no other caller of any of the
+// four. TaskDocumentReferenceDto below is the LIVE frozen-citation shape (a task's own record of what it cited)
+// and is untouched; DocumentReferenceEntryDto further down is untouched too — the register's own citation
+// search and the task-type governing-documents read both still construct it.
 
 /// <summary>One row of the lookup, as the search returns it.</summary>
 /// <summary>

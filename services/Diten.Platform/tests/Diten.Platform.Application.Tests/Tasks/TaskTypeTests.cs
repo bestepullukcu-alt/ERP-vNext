@@ -150,7 +150,7 @@ public sealed class TaskTypeTests
          */
         var type = Existing("DEV-QMS");
         var repo = new FakeTaskTypeRepository(type);
-        var handler = new SetTaskTypeActiveHandler(repo);
+        var handler = new SetTaskTypeActiveHandler(repo, new FakeControlledDocumentEffectivenessPort());
 
         var response = await handler.Handle(
             new SetTaskTypeActiveCommand(type.Id, new SetTaskTypeActiveRequest(false, type.Version), "c1"),

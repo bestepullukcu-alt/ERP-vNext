@@ -100,7 +100,8 @@ public sealed class TenantResolutionMiddleware
                 return;
             }
 
-            if (!string.IsNullOrWhiteSpace(actorType) && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+            // WP-INFRA-ACTOR-TYPE-REQUIRED-01 — same rule as the tenant branch below; see IsRefusedTenantActor.
+            if (IsRefusedTenantActor(context.User, actorType))
             {
                 await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant personalization endpoints require tenant_user tokens.");
                 return;
@@ -167,7 +168,7 @@ public sealed class TenantResolutionMiddleware
             return;
         }
 
-        if (!string.IsNullOrWhiteSpace(actorType) && !string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+        if (IsRefusedTenantActor(context.User, actorType))
         {
             await WriteProblemDetails(context, StatusCodes.Status403Forbidden, "Forbidden Actor", "Tenant endpoints require tenant_user tokens.");
             return;
@@ -175,6 +176,39 @@ public sealed class TenantResolutionMiddleware
 
         tenantContext.SetTenant(resolvedTenant.Value);
         await _next(context);
+    }
+
+    /*
+     * WP-INFRA-ACTOR-TYPE-REQUIRED-01 (BL-409 remainder) — A SIGNED-IN PRINCIPAL MUST NAME ITS ACTOR ON A TENANT ROUTE.
+     *
+     * Both tenant call sites (the tenant branch and tenant-mode personalization) used to read
+     * `!IsNullOrWhiteSpace(actorType) && actorType != tenant_user`: an UNRECOGNISED actor type was refused 403, a
+     * MISSING or blank one walked through. BL-409 made audited commands record the token's actor type; a principal
+     * with none resolves to Unknown, the audit service refuses Unknown, and the command ran with no audit record, only a
+     * warning. Missing and blank now get the same refusal as unrecognised: same status, same body, no claim value echoed.
+     *
+     * ⚠ ONLY AN AUTHENTICATED PRINCIPAL. A request with no token, or with a token the bearer handler rejected, has no
+     * actor to name and keeps today's path (header tenant, then [Authorize] answers 401). Bypass paths (/api/internal
+     * API-key routes, /health, ...) return before this point and never read an actor.
+     *
+     * Measured before the change — no real issuer omits the claim: grepping for "new JwtSecurityToken(" across every
+     * service's src, the gateway and Diten.Web finds only AuthService's TokenService, whose tenant token hard-codes tenant_user and
+     * whose platform token is always platform_admin or partner_admin; the gateway forwards the caller's token unchanged.
+     * Behaviour test: services/Diten.Platform/tests/Diten.Platform.Application.Tests/Tenancy/TenantActorTypeRequiredHttpTests.cs.
+     */
+    private static bool IsRefusedTenantActor(System.Security.Claims.ClaimsPrincipal user, string? actorType)
+    {
+        if (string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrWhiteSpace(actorType))
+        {
+            return true;
+        }
+
+        return user.Identities.Any(identity => identity.IsAuthenticated);
     }
 
     /*

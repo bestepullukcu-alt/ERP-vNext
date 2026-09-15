@@ -30,6 +30,13 @@ public sealed class DocumentRegisterImportBatch : TenantScopedEntity
     public required int TotalRows { get; set; }
     public required int Created { get; set; }
     public required int Updated { get; set; }
+
+    /// <summary>WP-DM-DCP005-RETIRE-CSV-01, AC1 — an existing row the commit left untouched because
+    /// <c>DocumentRegisterIngestMapping.WouldChange</c> said nothing had changed. Additive: a batch committed
+    /// before this field existed reads back as 0 here, which is the honest answer for a row this WP never
+    /// measured — not a claim that nothing was unchanged.</summary>
+    public required int Unchanged { get; set; }
+
     public required int Blocked { get; set; }
 
     public string? CorrelationId { get; set; }

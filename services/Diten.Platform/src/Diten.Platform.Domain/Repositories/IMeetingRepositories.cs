@@ -136,6 +136,12 @@ public interface IMeetingAttendeeRepository
     /// user's Accept/Decline, across every meeting in the tenant. Filtered at the query, not in memory — an
     /// actor's own Pending set stays small regardless of how large the tenant's meeting history grows.</summary>
     Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>BL-406 — the one write for <see cref="MeetingAttendee.MailUndeliveredAt"/>. No <c>expectedVersion</c>,
+    /// same reasoning as <see cref="UpdateAttendanceStatusAsync"/>: nothing else writes this field, and re-marking
+    /// an already-undelivered row with the same fact is a no-op either way. A no-op (false) return means no row
+    /// matched this (meetingId, userId) — the caller logs and moves on, never throws.</summary>
+    Task<bool> MarkMailUndeliveredAsync(Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default);
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>
@@ -193,6 +199,17 @@ public interface IMeetingMinutesVersionRepository
     /// <summary>Every version for this meeting, <see cref="MeetingMinutesVersion.VersionNumber"/> descending —
     /// the editor's own history view (<c>GetMeetingMinutesQuery</c>).</summary>
     Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default);
+
+    /// <summary>
+    /// S12 — every PUBLISHED version across a SET of meetings, batched — one query for the whole report, never
+    /// one per meeting. A meeting may carry more than one published version (a correction after publish adds a
+    /// new one, K4); the caller reduces to the highest <see cref="MeetingMinutesVersion.VersionNumber"/> per
+    /// meeting, the same "group in memory over an already-narrow, already-indexed read" style
+    /// <c>GetMeetingListHandler</c> already uses for attendees and linked tasks — a Meetings-scale read, not a
+    /// hundred-thousand-row aggregation MOD-0024's own report needed.
+    /// </summary>
+    Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default);
 
     /// <summary>Optimistic-concurrency replace, same shape as every other MOD-0024-adjacent
     /// <c>UpdateAsync(entity, expectedVersion)</c>. Callers use this ONLY on a row still

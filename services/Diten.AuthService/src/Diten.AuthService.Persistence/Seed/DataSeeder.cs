@@ -185,6 +185,8 @@ public static class DataSeeder
         await ReconcilePermissionModulesAsync(col, permissions);
         await ReconcilePermissionSegmentsFromSeedAsync(col, permissions);
         await ReconcilePermissionScopesAsync(col, permissions);
+        // BL-411 — allowlisted PlatformAdmin → Tenant correction for synced-only keys the seed-list reconcile cannot reach.
+        await ApplyTenantRouteScopeCorrectionsAsync(col);
         await ReconcilePermissionModuleCasingAsync(col);
         await ReconcileServiceNamespaceModuleAttributionAsync(col);
         await ReconcilePermissionSegmentSpellingAsync(col);
@@ -867,6 +869,66 @@ public static class DataSeeder
         {
             Console.WriteLine($"Reconciled Scope for {result.ModifiedCount} existing permission(s).");
         }
+    }
+
+    /// <summary>
+    /// BL-411 (CT benchmark D3) — applies <see cref="TenantRouteScopeCorrections"/>: the allowlisted, idempotent
+    /// PlatformAdmin → Tenant correction for the two MOD-0024 template keys that a scope-less A1 auto-registration sync
+    /// stamped PlatformAdmin before the Tasks manifest (route-derived Tenant) reached Auth.
+    ///
+    /// <para>The seed-list Scope reconcile above cannot reach them (synced-only keys), and the catalog sync never
+    /// downgrades. This is NOT a general downgrade: it reads the whole collection so the planner — not the query — is
+    /// the single place that decides which rows qualify (allowlisted key, currently PlatformAdmin, tenant registered
+    /// route). Each write repeats the PlatformAdmin condition server-side, so a second run modifies nothing and a plan
+    /// made from a stale read never overwrites a writer that landed first. Scope + UpdatedAt/UpdatedBy only: Key, Module,
+    /// IsDeleted and every rolePermissions row are untouched.</para>
+    ///
+    /// <para>⚠ GRANTS (CT decision 2026-09-15, accepted as intended). The correction run itself adds or removes no grant.
+    /// Its effect on grants comes LATER: once the two keys are Tenant, the next entitlement sync for a tenant entitled to
+    /// <c>tasks</c> gives that tenant's Admin role both keys (Admin receives the module's full permission set;
+    /// ModulePermissionResolver no longer excludes them as platform-scoped), while Viewer receives neither (Viewer
+    /// receives read actions only). MOD-0024 templates are tenant configuration maintained by the tenant's
+    /// administrators. Pinned by TenantRouteScopeCorrectionMongoTests.</para>
+    ///
+    /// <para>Returns the rows actually changed; each is logged once, on the run that changes it.</para>
+    /// </summary>
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyTenantRouteScopeCorrectionsAsync(IMongoCollection<Permission> col)
+    {
+        var all = await col.Find(FilterDefinition<Permission>.Empty).ToListAsync();
+        return await ApplyPlannedTenantRouteScopeCorrectionsAsync(col, TenantRouteScopeCorrections.Plan(all));
+    }
+
+    /// <summary>
+    /// BL-411 — writes a plan made by <see cref="TenantRouteScopeCorrections.Plan"/>. Split out so a test can hold a plan
+    /// across a second writer: the server-side PlatformAdmin condition is what keeps a stale plan from overwriting it.
+    /// </summary>
+    public static async Task<IReadOnlyList<TenantRouteScopeCorrections.Correction>> ApplyPlannedTenantRouteScopeCorrectionsAsync(
+        IMongoCollection<Permission> col,
+        IReadOnlyList<TenantRouteScopeCorrections.Correction> plan)
+    {
+        var applied = new List<TenantRouteScopeCorrections.Correction>();
+
+        foreach (var correction in plan)
+        {
+            var filter = Builders<Permission>.Filter.And(
+                Builders<Permission>.Filter.Eq(x => x.Id, correction.PermissionId),
+                Builders<Permission>.Filter.Eq(x => x.Key, correction.PermissionKey),
+                Builders<Permission>.Filter.Eq(x => x.Scope, PermissionScope.PlatformAdmin));
+            var update = Builders<Permission>.Update
+                .Set(x => x.Scope, PermissionScope.Tenant)
+                .Set(x => x.UpdatedAt, (DateTimeOffset?)DateTimeOffset.UtcNow)
+                .Set(x => x.UpdatedBy, SystemUser);
+
+            var result = await col.UpdateOneAsync(filter, update);
+            if (result.ModifiedCount == 1)
+            {
+                applied.Add(correction);
+                Console.WriteLine(
+                    $"BL-411 scope correction: {correction.PermissionKey} PlatformAdmin -> Tenant (registered route {correction.RegisteredRoutePath}).");
+            }
+        }
+
+        return applied;
     }
 
     private static async Task SeedRolesAsync(IMongoDatabase database)

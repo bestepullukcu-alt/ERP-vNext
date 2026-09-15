@@ -674,13 +674,21 @@ public sealed record WorkItemProjectionDto(
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/
 /// ScheduledAt come from the "reviewMeeting"-type RecordLink when one exists — absent means none is scheduled
 /// yet, which is also the condition that keeps the <c>scheduleReviewMeeting</c> action offered.
+///
+/// <para>MinutesPublished (MOD-0357 S9, CT fix-up F1 2026-09-15) — whether a non-cancelled linked meeting has
+/// PUBLISHED minutes, i.e. whether the review-meeting gate is unlocked. The executable contract
+/// (fixture-contract.js, REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION) reads exactly this field, and
+/// work-items-api.js DROPS any item the contract rejects: without it on the wire, a Required task whose minutes
+/// had published (so its decision action is enabled) would vanish from the board.</para>
 /// </summary>
 public sealed record WorkItemReviewMeetingPolicyDto(
     string Requirement,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     string? MeetingId = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    DateTimeOffset? ScheduledAt = null);
+    DateTimeOffset? ScheduledAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? MinutesPublished = null);
 
 /// <summary>
 /// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide
@@ -862,7 +870,19 @@ public sealed record WorkItemActivityEntryDto(
     /// than derived client-side because the client has only the author's NAME — two people with one name would
     /// otherwise be handed each other's controls, and the handler would then refuse a button the screen offered.</para>
     /// </summary>
-    bool Editable = false);
+    bool Editable = false,
+    /// <summary>
+    /// Who this COMMENT @mentions (WP-PSS-MOD0024-FOLLOWUPS-02) — present on a comment entry only, absent on an
+    /// event and absent (never an empty array) on a comment that names nobody. Reuses <see cref="WorkItemPersonDto"/>
+    /// rather than a bare id list: the edit dialog's "already tagged" chips need a name to show, not a GUID, and
+    /// this is the SAME shape Assignee/Requester already use for the same reason (K6.3).
+    ///
+    /// <para>An unresolved id is omitted, never shown as a raw GUID — same rule as the mention-candidates
+    /// endpoint. Withdrawn comments still carry this: who was mentioned is a fact about what was said, and it
+    /// does not change because the words were later taken back.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemPersonDto>? Mentioned = null);
 
 /// <summary>
 /// What happened, as CODES rather than as a sentence (WC-1).

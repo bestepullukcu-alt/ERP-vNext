@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>تمت جدولة اجتماع مراجعة بالفعل</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>يظل هذا القرار مقفلاً حتى يتم نشر محضر اجتماع المراجعة المرتبط.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>تم تحديث قائمة التحقق.</value>
   </data>

@@ -61,8 +61,18 @@ Dashboard canlıda kapalı kalır.
   Diğer `platform.meetings.*` anahtarları main'de zaten var.
 - `platform.tasks.read-all` **yalnız açıkça verilir**: hiçbir varsayılan role, SuperAdmin'e ya da modül yetkilendirmesiyle
   otomatik gitmez. Vermediğiniz sürece herkes yalnız ilişkili olduğu görevleri açar.
-- Rollerin toplantı ve görev izinleri canlıda gözden geçirilir. Dev'de "Task-Manager" rolünün **hiç izni yoktu**; canlıdaki
-  rollerin durumu ölçülmedi.
+- **Kiracı rolleri görev ve toplantı izinlerini kendiliğinden almaz (BL-410, dev'de ölçüldü).** Yeni kiracıya yalnız Admin ve Viewer
+  kurulur; Admin'in hazır listesinde `platform.tasks.*` ve `platform.meetings.*` yok. TASKS, MEETINGS, WORK-AGGREGATION ve
+  WORK-REPORT modülleri hiçbir abonelik planında yok. **Canlı kiracıya bu dört modül açıkça yetkilendirilir**; eşitleme o zaman
+  Admin'e tüm anahtarları, Viewer'a okuma anahtarlarını verir. Yapılmazsa kiracıda kimse görev ve toplantı ekranlarını kullanamaz.
+- **Viewer Görev Merkezi'ni açamaz:** `platform.work-aggregation.inbox.view` anahtarının eylemi `view`, Viewer yalnız `read`
+  eylemlerini alır. Görev Merkezi'ni kullanacak her rol bu anahtarı almalı (sahip kararı, BL-410).
+- **İki şablon ekranı kiracıya verilemiyor olabilir (BL-411, dev'de ölçüldü).** `platform.tasks.checklist-templates.manage` ve
+  `platform.tasks.templates.manage` dev Auth kataloğunda "yalnız platform" kapsamında (`Scope: 1`): hiçbir kiracı rolüne
+  atanamaz, elle atama 403 döner. Canlı kataloğu önce salt okunur ölç:
+  `db.permissions.find({Key:{$in:["platform.tasks.checklist-templates.manage","platform.tasks.templates.manage"]}},{Key:1,Scope:1})`.
+  `Scope: 1` çıkarsa kontrol listesi şablonları ve görev şablonları ekranları kiracıda kullanılamaz; düzeltme Auth veri adımı ister.
+- Dev'deki "Task-Manager" ve "Task-User" rolleri 2026-09-08'de elle açılmış test rolleridir (BL-403); canlıda yoklar.
 - `platform.tasks.work-report.read-tenant-wide` da artık **yalnız açıkça verilir** (BL-392, `aa96b147`). Bugün bu izni otomatik tutan roller
   kendiliğinden kaybetmez ama "açıkça verilmiş" hale çevrilmeleri bir veri adımı ister (sahip kararı). Canlıdan önce sahipleri
   listelemek için salt okunur sorgu (yazma yok; `AUTH_DB` canlı Auth veritabanı adına ayarlanır):
@@ -133,6 +143,10 @@ if (!perm) {
 }
 ```
 
+**Aynı sorgu `platform.tasks.read-all` için de koşulur** (`KEY` değiştirilerek). Dev'de SuperAdmin bu anahtarı kural gelmeden
+önceki Auth sürümünden otomatik almış (System, 2026-09-13). Yeni Auth sürümü var olan satırı silmez; kimde kalacağı BL-392 ile aynı
+yöntemle (liste → kiracı yöneticisi onayı) belirlenir.
+
 ## 6. Organizasyon verisi
 
 - Toplantı düzenleyen, katılımcı olan ya da başkasına görev atayan her kullanıcının **aktif bir pozisyonu** olmalı.
@@ -153,17 +167,24 @@ if (!perm) {
 8. Görev yorumunda @ ile görevi gören birini etiketle → uygulama içi bildirim + e-posta; görevi görmeyen biri listede çıkmaz.
 9. Toplantıdan bir katılımcıyı çıkar → yalnız ona "toplantıdan çıkarıldınız" postası; takviminden etkinlik kalkar.
 10. Başka bir kullanıcı adına toplantı oluştur ve düzenleyeni değiştir → düzenleyen "takviminize eklendi" postasını alır (düz davet değil); düzenleyen kendi toplantısını değiştirince ona posta gitmez.
-11. `/health`: dev'de `business_reference_data_provider` bu turdan önce de kırmızıydı; canlıdaki değeri ayrıca okunur.
+13. İnceleme toplantısı zorunlu bir görev türüyle görev aç → "Başlat" çalışır; "Tamamla" / "İncelemeye gönder" devre dışı ve gerekçe görünür → toplantı planla, tutanağı yayınla → iki eylem açılır.
+14. Bir katılımcının e-posta adresini geçersiz yap (test kiracısında) → son tekrar denemeden sonra düzenleyene tek "posta iletilemedi" bildirimi, toplantı detayında o katılımcıda rozet.
+12. Toplantı raporu: `/Meetings/Report` → dönem seç → toplantılar, kararlar ve aksiyonlar dolar; bir indirme `audit_events`'te tek bir TenantUser DataExport satırı bırakır.
+11. **Sağlık uçları — canlıdan ÖNCE teyit (BL-404).** `/health` ve `/health/ready` İş Referans Verisi sağlayıcı kontrolünü içerir;
+    `BusinessReferenceData:Provider:ReferenceTenantId` ayarlanmamışsa ikisi de 503 döner (dev'de ölçüldü, kodda "pilot yoksa sağlıklı"
+    kontrolünden önce bu ayar isteniyor). Bu uçları yoklayan bir yük dengeleyici bütün Platform'u servis dışı sayar; `/health/live`
+    etkilenmez. Ya ortama `BusinessReferenceData__Provider__ReferenceTenantId` verilir (değer İş Referans Verisi sahibinden) ya da
+    dengeleyici GEÇİCİ olarak `/health/live`'a bağlanır (belgelenmiş geçici adım: Mongo'su düşen örneğe trafik gitmeye devam eder). Kalıcı hedef (Microsoft/Kubernetes/OCI uygulaması): kontrol "yapılandırılmamış" durumda Degraded döndüğünde dengeleyici `/health/ready`'ye, yeniden başlatma yoklaması `/health/live`'a bakar (MOD-0048-FU01 revizyonu). Canlıdan sonra üç ucun cevabı okunur.
 
 ## 8. Bilinen açıklar (bu turu engellemez)
 
 | Kayıt | Konu |
 | :-- | :-- |
-| BL-387 | Seri toplantıda düzenleyen de davet alıyor — sahip kararı |
-| BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); aynı ham hata metni 21 başka ekranda duruyor |
+| BL-388 | Görev alanı tanımında "Sıra" boşken kaydın düşmesi bu turda düzeltildi (`0d551337`); görev ayar ekranları `fddc01a6` ile düzeldi; aynı ham hata metni 17 ekranda (CRM, Roles, Platform) duruyor (BL-398) |
 | BL-391 kalanı | Doğrudan tarih seçici kullanan 14 ekranda yanlış biçimde yazılan tarih hâlâ sessizce kayabilir |
-| @ ile etiketleme kalanı | Var olan yorumu düzenlerken etiket ekleme ekranı yok; eski /Tasks/Details ekranında etiketleme yok |
-| BL-395 | Aynı makinede eşzamanlı Platform test koşuları paylaşılan test veritabanını silebilir; kırmızı tekrar koşuda kayboluyorsa kod hatası değildir |
-| BL-392 | İş Raporu kiracı geneli okuma izni varsayılan rollere dağılabilir — sahip kararı |
-| BL-347 | İş Raporu indirmesi denetim izi bırakmıyor |
+| BL-414 | Görev bildirimleri (etiketleme dahil) eski /Tasks/{id} sayfasına götürüyor; o sayfada yorumlar yok — düzeltme sırada |
+| BL-392 | İş Raporu kiracı geneli okuma izni artık yalnız açıkça verilir; bugün tutan roller §5'teki sorguyla listelenip kiracı yöneticisine onaylatılır (sahip kararı b) |
+| BL-409 | Genel komut denetim hattı aktör türünü "Sistem" yazıyor; kullanıcı kimliği kayıtta var, türü yanlış — düzeltme yapılıyor |
+| BL-411 | Kontrol listesi şablonları ve görev şablonları izinleri "yalnız platform" kapsamında olabilir (§5'teki ölçüm) |
+| BL-412 | Auth'ta role izin atama kaydı `AssignedBy: "System"` yazıyor; atamayı yapan gerçek kişi yalnız Auth denetim günlüğünde |
 | BL-393 notu | Tam Platform/Auth test paketleri ve ön yüz testleri CI'da koşmuyor; main'de önceden kırmızı olanlar: Doküman Yönetimi 15, İş Referans Verisi 53, Auth 3, ön yüz 25 |

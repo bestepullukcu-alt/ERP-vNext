@@ -52,7 +52,7 @@
             viewerRole: 'Reviewer',
             source: source('quality', 'TaskCompletionReview', 'CAPA-2231-R1'),
             concurrency: { kind: 'version', token: 'review-optional-3' },
-            reviewMeetingPolicy: { requirement: 'optional', meetingId: null, scheduledAt: null },
+            reviewMeetingPolicy: { requirement: 'optional', meetingId: null, scheduledAt: null, minutesPublished: false },
             actions: [
                 action('signoff', { requiresConfirmation: true }),
                 action('scheduleReviewMeeting', { label: resource('ActReviewMeeting'), input: 'meeting' }),
@@ -69,7 +69,7 @@
             viewerRole: 'Reviewer',
             source: source('project-governance', 'TaskCompletionReview', 'PRJ-104-R2'),
             concurrency: { kind: 'version', token: 'review-required-8' },
-            reviewMeetingPolicy: { requirement: 'required', meetingId: null, scheduledAt: null },
+            reviewMeetingPolicy: { requirement: 'required', meetingId: null, scheduledAt: null, minutesPublished: false },
             escalated: true,
             actions: [
                 disabledAction('signoff', 'REVIEW_MEETING_REQUIRED', 'ActionDisabledReviewMeetingRequired', { requiresConfirmation: true }),

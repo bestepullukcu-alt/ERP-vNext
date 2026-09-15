@@ -38,7 +38,8 @@ public sealed class TaskTypeDeliverableRequirementTests
     {
         var tenant = new TenantContext();
         tenant.SetTenant(TenantId);
-        return new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object);
+        return new CreateTaskTypeHandler(
+            types, tenant, new Mock<ICurrentUserContext>().Object, new FakeControlledDocumentEffectivenessPort());
     }
 
     private static CreateTaskTypeRequest CreateRequest(bool requiresDeliverable) => new(
@@ -94,7 +95,7 @@ public sealed class TaskTypeDeliverableRequirementTests
         var type = Stored(requiresDeliverable: true);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new UpdateTaskTypeHandler(types).Handle(
+        var result = await new UpdateTaskTypeHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new UpdateTaskTypeCommand(type.Id, UpdateRequest(requiresDeliverable: false), "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);

@@ -13,23 +13,30 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
     private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly ICurrentUserAccessor _currentUser;
 
     public UpdateRoleCommandHandler(
         IRoleRepository roleRepository,
         IRolePermissionRepository rolePermissionRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit)
+        IRbacAuditRecorder rbacAudit,
+        ICurrentUserAccessor currentUser)
     {
         _roleRepository = roleRepository;
         _rolePermissionRepository = rolePermissionRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
         _rbacAudit = rbacAudit;
+        _currentUser = currentUser;
     }
 
     public async Task<Response<RoleDto>> Handle(UpdateRoleCommand request, CancellationToken ct)
     {
+        // BL-412 — PUT api/roles/{id} is a person path: UpdatedBy names the person (same actor id as role_updated).
+        if (_currentUser.UserId is not { } actorId)
+            return Response<RoleDto>.Fail("An authenticated user is required to update a role.", 401);
+
         var role = await _roleRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
         if (role == null) return Response<RoleDto>.Fail("Role not found.", 404);
 
@@ -38,6 +45,7 @@ public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand
         var beforeDescription = role.Description;
 
         role.Update(request.DisplayName, request.Description);
+        role.UpdatedBy = actorId.ToString();
         var updated = await _roleRepository.UpdateAsync(role, ct);
 
         // FU13 — bump the tenant role-assignment version so cached authorization snapshots refresh.

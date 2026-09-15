@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>Add</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Agenda item</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Remove attendee</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>Mail undelivered</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Add</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Reassign Organizer</value></data>
   <data name="Minutes" xml:space="preserve"><value>Minutes</value></data>
@@ -106,6 +107,8 @@
   <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Check the series' start, end and lead time — the schedule is invalid.</value></data>
   <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>The interval must be at least 1.</value></data>
   <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>An organizer is required.</value></data>
+  <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>The report period must end after it starts.</value></data>
+  <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>This report covers too many rows to export. Narrow the period or the filters.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>

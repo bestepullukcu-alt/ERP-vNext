@@ -39,6 +39,17 @@
     let previewedSignature = null;
     let previewedHash = null;
     let previewedTotalRows = 0;
+    /*
+     * WP-DM-DCP005-RETIRE-CSV-01, AC2 — carried from the LAST preview so a commit-time 409 IMPORT_ALREADY_APPLIED
+     * can show the same "already imported on {date} by {actor}" sentence the preview already knows how to build,
+     * instead of the server's raw English detail string. This is the ordinary path: by the time someone reaches
+     * Commit for a file that turns out to be already applied, their own preview a moment earlier already set
+     * `alreadyImported` (showPreview draws the warning alert then). A rarer race — committed by someone else in
+     * the gap between this preview and this commit — leaves these null, and the 409 handler falls back to the
+     * unparameterized `ReasonAlreadyApplied` sentence rather than inventing a date/actor it does not have.
+     */
+    let previewedAlreadyImportedAt = null;
+    let previewedAlreadyImportedBy = null;
 
     const fileSignature = (f) => (f ? `${f.name}|${f.size}|${f.lastModified}` : null);
 
@@ -96,9 +107,14 @@
             const when = data.alreadyImportedAt ? new Date(data.alreadyImportedAt).toLocaleString() : '';
             alreadyAppliedAlert.textContent = t('AlreadyImportedWarning')
                 .replace('{0}', when).replace('{1}', data.alreadyImportedBy || '');
+            // Kept for a commit-time 409 on this same file — see the module-level comment on these two variables.
+            previewedAlreadyImportedAt = data.alreadyImportedAt || null;
+            previewedAlreadyImportedBy = data.alreadyImportedBy || null;
         } else {
             alreadyAppliedAlert.classList.add('d-none');
             alreadyAppliedAlert.textContent = '';
+            previewedAlreadyImportedAt = null;
+            previewedAlreadyImportedBy = null;
         }
 
         summaryCounts.innerHTML =
@@ -119,6 +135,35 @@
     };
 
     const showControlledFailure = (resp) => {
+        const reasonCode = resp?.reason_code || resp?.reasonCode;
+
+        /*
+         * WP-DM-DCP005-RETIRE-CSV-01, AC2 — IMPORT_ALREADY_APPLIED is not a failed preview, it is the SAME "this
+         * file was already loaded" fact the preview step already shows as a warning (see showPreview's own
+         * `alreadyImported` branch, immediately above). Falling into the generic danger-card path below did two
+         * things wrong at once: it recolored a warning as an error, and — because that path renders `resp.errors`
+         * verbatim — it printed the server's raw, English, un-localized detail sentence ("This exact file was
+         * already imported on 2026-…Z by …") under "Row errors" instead of the localized, parameterized one this
+         * screen already knows how to build. Neither the badge nor the row-errors list is touched for this code;
+         * only the warning alert is (re)shown, exactly as a preview reporting the same fact would.
+         */
+        if (reasonCode === 'IMPORT_ALREADY_APPLIED') {
+            summaryCard.classList.remove('d-none');
+            summaryBadge.className = 'badge bg-label-warning';
+            summaryBadge.textContent = t('Step2Preview');
+            summaryCounts.innerHTML = '';
+            summaryFindings.innerHTML = '';
+            alreadyAppliedAlert.classList.remove('d-none');
+            alreadyAppliedAlert.textContent = previewedAlreadyImportedAt
+                ? t('AlreadyImportedWarning')
+                    .replace('{0}', new Date(previewedAlreadyImportedAt).toLocaleString())
+                    .replace('{1}', previewedAlreadyImportedBy || '')
+                // The race noted where these two are declared: committed by someone else since this preview.
+                : t('ReasonAlreadyApplied');
+            setActiveStep(2);
+            return;
+        }
+
         summaryCard.classList.remove('d-none');
         summaryBadge.className = 'badge bg-label-danger';
         summaryBadge.textContent = t('PreviewFailed');
@@ -126,7 +171,7 @@
         alreadyAppliedAlert.classList.add('d-none');
         const errors = Array.isArray(resp?.errors) ? resp.errors : [];
         summaryFindings.innerHTML =
-            `<div class="alert alert-danger mb-3">${esc(mapReason(resp?.reason_code || resp?.reasonCode))}</div>` +
+            `<div class="alert alert-danger mb-3">${esc(mapReason(reasonCode))}</div>` +
             renderErrorsList('PreviewErrors', errors);
         setActiveStep(2);
     };
@@ -224,6 +269,7 @@
 
     fileInput.addEventListener('change', () => {
         previewedSignature = null; previewedHash = null; previewedTotalRows = 0;
+        previewedAlreadyImportedAt = null; previewedAlreadyImportedBy = null;
         setCommitEnabled(false);
         renderFileInfo(fileInput.files?.[0]);
         setActiveStep(1);
@@ -249,7 +295,9 @@
                     { data: 'fileName', name: 'fileName' },
                     { data: 'actor', name: 'actor' },
                     { data: 'appliedAt', name: 'appliedAt' },
-                    { data: 'totalRows', name: 'counts' }
+                    { data: 'totalRows', name: 'counts' },
+                    // WP-DM-DCP005-RETIRE-CSV-01, AC1 — its own column; see the header's own comment in Import.cshtml.
+                    { data: 'unchanged', name: 'unchanged' }
                 ],
                 columnDefs: [
                     { targets: 0, render: (data) => esc(data) },
@@ -258,7 +306,8 @@
                     {
                         targets: 3, orderable: false,
                         render: (data, type, full) => `${full.created ?? 0} / ${full.updated ?? 0} / ${full.blocked ?? 0}`
-                    }
+                    },
+                    { targets: 4, render: (data) => data ?? 0 }
                 ]
             }
         });

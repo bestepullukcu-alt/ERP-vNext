@@ -18,12 +18,14 @@ public sealed class RunWorkflowEscalationsHandler
     private readonly IWorkflowTransitionLogRepository _logs;
     private readonly IPositionAssignmentRepository? _positionAssignmentRepository;
     private readonly IRuntimeAssignmentSnapshotRepository? _assignmentSnapshotRepository;
+    private readonly TimeProvider _clock;
 
     public RunWorkflowEscalationsHandler(
         IApprovalTaskRepository tasks,
         IWorkflowInstanceRepository instances,
         ISlaEscalationRuleRepository rules,
         IWorkflowTransitionLogRepository logs,
+        TimeProvider clock,
         IPositionAssignmentRepository? positionAssignmentRepository = null,
         IRuntimeAssignmentSnapshotRepository? assignmentSnapshotRepository = null)
     {
@@ -31,6 +33,7 @@ public sealed class RunWorkflowEscalationsHandler
         _instances = instances;
         _rules = rules;
         _logs = logs;
+        _clock = clock ?? throw new ArgumentNullException(nameof(clock));
         _positionAssignmentRepository = positionAssignmentRepository;
         _assignmentSnapshotRepository = assignmentSnapshotRepository;
     }
@@ -39,7 +42,21 @@ public sealed class RunWorkflowEscalationsHandler
         RunWorkflowEscalationsCommand request,
         CancellationToken ct)
     {
-        var now = (request.Request.NowUtc ?? DateTimeOffset.UtcNow).ToUniversalTime();
+        // BL-422 — WHAT "OVERDUE" MEANS IS THE SERVER'S CALL. NowUtc used to be honoured, so anyone holding
+        // platform.workflow.escalations.run could escalate or time out tasks in their tenant that were not due yet by
+        // sending a date in the future — and the transition log would record it as the system acting on time. A value
+        // is REFUSED rather than ignored so a client still sending it finds out. The recurring sweep sends none, and
+        // tests move time through the injected TimeProvider, not through the request.
+        if (request.Request.NowUtc.HasValue)
+        {
+            return Response<RunWorkflowEscalationsResponse>.Fail(
+                "NowUtc is not accepted: escalations are evaluated against the server clock.",
+                400,
+                WorkflowReasonCodes.WorkflowEscalationClockNotAccepted,
+                request.CorrelationId);
+        }
+
+        var now = _clock.GetUtcNow();
         var maxItems = request.Request.MaxItems.GetValueOrDefault(100);
         var overdueTasks = await _tasks.ListOverdueTasksAsync(now, maxItems, ct);
         var results = new List<WorkflowEscalationResultDto>();

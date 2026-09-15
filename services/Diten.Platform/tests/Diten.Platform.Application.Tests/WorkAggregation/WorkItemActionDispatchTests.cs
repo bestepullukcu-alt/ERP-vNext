@@ -212,6 +212,63 @@ public sealed class WorkItemActionDispatchTests
         Assert.Empty(mediator.Sent);
     }
 
+    /// <summary>
+    /// DCP-004 "Decision amendment 2026-09-15", point 4 — FAIL CLOSED. The gate used to read
+    /// <c>!IsNullOrWhiteSpace(required) &amp;&amp; !Evaluate(...)</c>: a dispatcher that named no key for a code it
+    /// dispatches let every signed-in caller through. With the inbox open to every tenant user that is a hole anyone
+    /// could reach, so a blank key is refused for everybody — including a caller who holds every key and a platform
+    /// actor, because the defect is the dispatcher's, not the caller's.
+    /// </summary>
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("   ", false)]
+    [InlineData(null, true)]
+    [InlineData("   ", true)]
+    public async Task A_dispatcher_that_names_no_permission_is_refused_and_nothing_is_dispatched(
+        string? blankKey, bool isPlatformActor)
+    {
+        var dispatcher = new BlankKeyDispatcher(blankKey);
+        var controller = Controller(
+            providers: [new StubProvider(BlankKeyDispatcher.Code)],
+            dispatchers: [dispatcher],
+            claims: [TaskPermissions.Update, TaskPermissions.Complete, WorkflowPermissions.TasksApprove],
+            isPlatformActor: isPlatformActor);
+
+        var response = Payload(await controller.DispatchAction(
+            Guid.NewGuid(), BlankKeyDispatcher.Action,
+            new WorkItemActionRequestDto(BlankKeyDispatcher.Code), CancellationToken.None));
+
+        Assert.Equal(403, response.StatusCode);
+        Assert.Equal(WorkItemActionReasonCodes.ActionForbidden, response.ReasonCode);
+        Assert.Equal(0, dispatcher.DispatchCount);
+    }
+
+    /// <summary>A dispatcher that claims an action and names no key for it — the shape the fail-closed gate refuses.</summary>
+    private sealed class BlankKeyDispatcher(string? key) : IWorkItemActionDispatcher
+    {
+        public const string Code = "blank-key-probe";
+        public const string Action = "doIt";
+
+        public int DispatchCount { get; private set; }
+
+        public string ProviderCode => Code;
+
+        public IReadOnlyCollection<string> SupportedActionCodes { get; } = [Action];
+
+        public bool CanDispatch(string actionCode) => actionCode == Action;
+
+        public string? RequiredPermission(string actionCode) => key;
+
+        public Task<Response<WorkItemActionResultDto>> DispatchAsync(
+            WorkItemActionDispatchRequest request, CancellationToken ct = default)
+        {
+            DispatchCount++;
+            return Task.FromResult(Response<WorkItemActionResultDto>.Success(
+                new WorkItemActionResultDto(request.ItemId.ToString(), Code, request.ActionCode), 200, "corr"));
+        }
+    }
+
     // ── (d) AN UNKNOWN ACTION CODE IS AN EXPLICIT ERROR ───────────────────────
 
     [Fact]

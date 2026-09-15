@@ -109,7 +109,9 @@ public static class AccountKindAcceptance
         string CreatorToken,
         string NoPermissionToken);
 
-    public sealed class AuthTestHost : IAsyncLifetime
+    // BL-412 — not sealed: SelfRegistrationTestHost derives from it to replace ONE outbound network edge (the Platform
+    // login-settings HTTP call) inside the same locked start window. Nothing else about the host changes.
+    public class AuthTestHost : IAsyncLifetime
     {
         // C1/C3 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
         // interleave their env-var mutation windows. [Collection("AccountKindAcceptance")] already serializes every
@@ -179,6 +181,15 @@ public static class AccountKindAcceptance
         /// fails. Not part of the fixture's external contract.
         /// </summary>
         internal Func<WebApplicationFactory<Program>, Task>? DisposeFactoryHookForTesting { get; set; }
+
+        /// <summary>
+        /// BL-412 — additive, test-only seam applied through <c>ConfigureTestServices</c> while the host is built inside
+        /// the start lock. The base host changes nothing. A derived host may replace an OUTBOUND network edge (e.g. a
+        /// Platform HTTP call) — never the Mongo settings, the JWT secret or anything the pre-flight checks guard.
+        /// </summary>
+        protected virtual void ConfigureTestServices(IServiceCollection services)
+        {
+        }
 
         /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
@@ -284,6 +295,9 @@ public static class AccountKindAcceptance
                     _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
                     {
                         builder.UseEnvironment("Development");
+                        // BL-412 — additive seam, a no-op for every host but SelfRegistrationTestHost. Applied here, inside
+                        // the same lock hold as the env overrides, so a derived host can never build against other settings.
+                        Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.ConfigureTestServices(builder, ConfigureTestServices);
                     });
 
                     // Force the host to build now so a startup failure surfaces here, with its message, not in a test.

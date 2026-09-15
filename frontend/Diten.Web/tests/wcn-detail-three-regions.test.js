@@ -3330,6 +3330,115 @@ describe("a comment can be rewritten and withdrawn, and says so", () => {
   });
 });
 
+/*
+ * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — editing a comment's @mentions goes through the SAME picker the new
+ * comment box uses (`pickMentionAsync`), not a second implementation. `global.showConfirm` is called TWICE for
+ * this flow — once for the edit's own text box, once (nested) for the mention picker the tray's "@" button
+ * opens — so the mock below tells the two apart by call order, the same technique this file already uses for
+ * `onCancel` capture elsewhere.
+ */
+describe("BL-400 — editing a comment reuses the compose @mention picker", () => {
+  const mentionedComment = (extra) => Object.assign({
+    id: "c1", kind: "comment", text: "muhasebeye sordum", actor: "Diten Admin", editable: true,
+    at: "2026-08-10T09:00:00+00:00", mentioned: [{ id: "watcher-1", displayName: "Nöbetçi Watcher" }]
+  }, extra || {});
+  const withFeed = (entries) => projectionItem({
+    workItemCapabilities: ["planning", "execution", "subtasks", "activity"],
+    subtasks: { mode: "full", items: [] },
+    activity: entries
+  });
+
+  afterEach(() => { delete global.showConfirm; });
+
+  it("pre-fills the tray with the comment's existing mentions", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editOptions;
+    global.showConfirm = (title, callback, options) => { editOptions = options; };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(editOptions, "editComment never called the shared confirm").toBeTruthy();
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+
+    expect(popup.querySelector(".wcn-mention-chips").textContent).toContain("Nöbetçi Watcher");
+  });
+
+  it("sends the untouched existing mention PLUS a newly added one, together, on save", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editCallback;
+    let editOptions;
+    let pickerCallback;
+    let calls = 0;
+    global.showConfirm = (title, callback, options) => {
+      calls += 1;
+      if (calls === 1) { editCallback = callback; editOptions = options; } else { pickerCallback = callback; }
+    };
+    global.TasksApi.mentionCandidates = () =>
+      Promise.resolve({ ok: true, data: [{ id: "u-2", displayName: "Rıza Kaya" }] });
+    let updateArgs = null;
+    global.TasksApi.updateComment = (taskId, commentId, payload) => {
+      updateArgs = [taskId, commentId, payload];
+      return Promise.resolve({ ok: true, status: 204 });
+    };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+
+    // The tray's own "@" button opens the SAME picker the compose box uses (a second `showConfirm` call).
+    popup.querySelector(".wcn-composer-mention").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(calls, "the tray's add button did not open the shared picker").toBe(2);
+    pickerCallback("u-2");
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // The newly-added chip must be ON SCREEN before the author saves, not only in the payload.
+    expect(popup.querySelector(".wcn-mention-chips").textContent).toContain("Rıza Kaya");
+
+    await editCallback("değiştirilmiş yorum");
+
+    expect(updateArgs).not.toBeNull();
+    const [, , payload] = updateArgs;
+    expect(new Set(payload.mentionedUserIds)).toEqual(new Set(["watcher-1", "u-2"]));
+  });
+
+  it("removing the pre-filled mention before saving sends the SHRUNK set, not the original", async () => {
+    await boot(withFeed([mentionedComment()]));
+    let editCallback;
+    let editOptions;
+    global.showConfirm = (title, callback, options) => { editCallback = callback; editOptions = options; };
+    let updateArgs = null;
+    global.TasksApi.updateComment = (taskId, commentId, payload) => {
+      updateArgs = [taskId, commentId, payload];
+      return Promise.resolve({ ok: true, status: 204 });
+    };
+
+    app().querySelector("[data-wcn-comment-edit]").click();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const popup = document.createElement("div");
+    const box = document.createElement("textarea");
+    box.className = "swal2-textarea"; // real Swal2's class for a prose input — the shared wrapper's own selector looks for it
+    popup.appendChild(box);
+    editOptions.didOpen(popup);
+    popup.querySelector("[data-wcn-edit-mention-remove]").click();
+
+    await editCallback("değiştirilmiş yorum");
+
+    expect(updateArgs[2].mentionedUserIds).toEqual([]);
+  });
+});
+
 describe("the tab the reader is on goes into the address", () => {
   /*
    * BL-087. `#etkinlik` worked on the way IN and not on the way OUT, so somebody sitting on Etkinlik who copied

@@ -964,6 +964,10 @@
     var SERVER_FILE_PREFIX = 'work-report';
     var ROW_COUNT_HEADER = 'X-Work-Report-Export-Row-Count';
     var TOO_LARGE = 'WORK_REPORT_EXPORT_TOO_LARGE';
+    // BL-347 follow-up (WP-PSS-MOD0024-FOLLOWUPS-02) — the audit trail could not be written (503), so the file
+    // was withheld on purpose. Distinct from a genuine failure: the reader is told to retry shortly, not to
+    // re-check their filters (that is TOO_LARGE's sentence) or assume the export itself is broken.
+    var AUDIT_NOT_RECORDED = 'DATA_EXPORT_AUDIT_NOT_RECORDED';
 
     var setExportEnabled = function (enabled) {
         var toggle = $('[data-wr-export-toggle]');
@@ -1041,9 +1045,14 @@
                         .catch(function () { return null; })
                         .then(function (body) {
                             var reason = body && (body.reason_code || body.reasonCode);
-                            // ⚠ REFUSED IS NOT FAILED. Too many rows is something the reader can fix — narrow
-                            // the filters — and saying "it failed" would leave them trying the same thing again.
-                            notify(t(reason === TOO_LARGE ? 'ExportTooManyRows' : 'ExportFailed'), 'error');
+                            // ⚠ REFUSED IS NOT FAILED, and neither refusal is the same one. Too many rows is
+                            // something the reader can fix — narrow the filters. An unrecorded audit trail is
+                            // not the reader's to fix at all — retrying shortly is the honest suggestion, and
+                            // "it failed" would wrongly imply the export itself was broken.
+                            var key = reason === TOO_LARGE
+                                ? 'ExportTooManyRows'
+                                : (reason === AUDIT_NOT_RECORDED ? 'ExportAuditNotRecorded' : 'ExportFailed');
+                            notify(t(key), 'error');
                         });
                 }
 

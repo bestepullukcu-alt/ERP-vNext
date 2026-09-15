@@ -40,6 +40,20 @@ crm.contact.overview.read,0
 crm.contact.preference.read,0
 crm.contact.read,0
 crm.contact.update,0
+# WP-SCMM-05-S1(a), 4231dd9d (2026-09-07) — 11 SCMM knowledge keys, stated Tenant (0): moduleOverride "crm-knowledge"
+# is not in DefaultRolePermissionTemplate.PlatformAdminModules {platform, reference-data}; CRM is a tenant-shell domain.
+# Missing only because this file was captured (59f9f560) on a line that did not yet contain 4231dd9d.
+crm.knowledge.concept-link.manage,0
+crm.knowledge.concept-template.manage,0
+crm.knowledge.concept.manage,0
+crm.knowledge.concept.read,0
+crm.knowledge.manage,0
+crm.knowledge.path.manage,0
+crm.knowledge.path.publish,0
+crm.knowledge.path.read,0
+crm.knowledge.read,0
+crm.knowledge.subject.manage,0
+crm.knowledge.subject.read,0
 crm.territory.model.manage,0
 crm.territory.model.read,0
 crm.territory.node.manage,0

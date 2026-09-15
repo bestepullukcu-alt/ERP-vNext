@@ -572,7 +572,8 @@
     "reviewMeetingPolicy": {
       "requirement": "optional",
       "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
-      "scheduledAt": "2026-11-01T09:00:00+00:00"
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
     }
   },
   "holder_open_linked_yes": {
@@ -780,7 +781,8 @@
     "reviewMeetingPolicy": {
       "requirement": "optional",
       "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
-      "scheduledAt": "2026-11-01T09:00:00+00:00"
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
     }
   },
   "holder_open_none_no": {
@@ -998,7 +1000,8 @@
       "emailEnabled": true
     },
     "reviewMeetingPolicy": {
-      "requirement": "optional"
+      "requirement": "optional",
+      "minutesPublished": false
     }
   },
   "holder_open_none_yes": {
@@ -1201,7 +1204,8 @@
       "emailEnabled": true
     },
     "reviewMeetingPolicy": {
-      "requirement": "optional"
+      "requirement": "optional",
+      "minutesPublished": false
     }
   },
   "requester_closed_linked_no": null,
@@ -1378,7 +1382,8 @@
     "reviewMeetingPolicy": {
       "requirement": "optional",
       "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
-      "scheduledAt": "2026-11-01T09:00:00+00:00"
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
     }
   },
   "requester_open_linked_yes": {
@@ -1548,7 +1553,8 @@
     "reviewMeetingPolicy": {
       "requirement": "optional",
       "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
-      "scheduledAt": "2026-11-01T09:00:00+00:00"
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
     }
   },
   "requester_open_none_no": {
@@ -1719,7 +1725,8 @@
     },
     "viewerRelation": "initiator",
     "reviewMeetingPolicy": {
-      "requirement": "optional"
+      "requirement": "optional",
+      "minutesPublished": false
     }
   },
   "requester_open_none_yes": {
@@ -1884,7 +1891,8 @@
     },
     "viewerRelation": "initiator",
     "reviewMeetingPolicy": {
-      "requirement": "optional"
+      "requirement": "optional",
+      "minutesPublished": false
     }
   },
   "thirdParty_closed_linked_no": {

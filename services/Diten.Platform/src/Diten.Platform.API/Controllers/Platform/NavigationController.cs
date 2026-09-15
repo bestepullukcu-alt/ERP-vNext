@@ -34,6 +34,7 @@ public sealed class NavigationController : CustomBaseController
     }
 
     [HttpGet("menu")]
+    [LoginOnly("The caller's own tenant menu; the per-item permission filter is applied to what the menu lists, not to fetching it.")]
     public async Task<IActionResult> GetMenu(CancellationToken ct)
     {
         // Defence in depth: the middleware already resolves a tenant_user into a tenant context, but never

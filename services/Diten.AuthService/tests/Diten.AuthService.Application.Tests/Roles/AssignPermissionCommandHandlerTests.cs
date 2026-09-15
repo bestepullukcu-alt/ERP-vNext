@@ -15,6 +15,7 @@ public sealed class AssignPermissionCommandHandlerTests
     private static readonly Guid TenantId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
     private static readonly Guid RoleId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private static readonly Guid PermissionId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+    private static readonly Guid ActorId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
 
     private static Permission TenantPermission() => new("auth", "users", "read", "Read User", null);
     private static Permission PlatformPermission() => new("platform", "tenants", "read", "Read Tenant", null);
@@ -107,6 +108,47 @@ public sealed class AssignPermissionCommandHandlerTests
         Assert.Equal(1, version.IncrementCount);
     }
 
+    // BL-412 — a person's grant used to be stored as AssignedBy "System", so the row claimed the system did it.
+    // It now names the acting user (the id ICurrentUserAccessor gives the RBAC audit row), in both tenant and
+    // platform-admin context, and stays a Manual grant so the S-GUARD still lets the person revoke it.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Grant_records_the_acting_user_not_System_as_AssignedBy_and_CreatedBy(bool platformContext)
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var permission = platformContext ? PlatformPermission() : TenantPermission();
+        var handler = CreateHandler(Role(), permission, rolePerms, new FakeRoleAssignmentVersionService(), platformContext);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        var grant = Assert.IsType<RolePermission>(rolePerms.Assigned);
+        Assert.Equal(ActorId.ToString(), grant.AssignedBy);
+        Assert.Equal(ActorId.ToString(), grant.CreatedBy);
+        Assert.NotEqual("System", grant.AssignedBy, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(GrantSource.Manual, grant.GrantSource);
+        Assert.Null(grant.SourceModuleCode);
+    }
+
+    // BL-412 — measured: RolesController ([Authorize] + [HasPermission]) is the only dispatcher and every token Auth
+    // issues carries a Guid sub, so a missing actor is never a system-initiated call. Nothing is written, and the
+    // handler never falls back to "System".
+    [Fact]
+    public async Task Grant_without_an_authenticated_actor_is_refused_with_401_and_writes_nothing()
+    {
+        var rolePerms = new FakeRolePermissionRepository();
+        var version = new FakeRoleAssignmentVersionService();
+        var handler = CreateHandler(Role(), TenantPermission(), rolePerms, version, platformContext: false, authenticated: false);
+
+        var result = await handler.Handle(new AssignPermissionCommand(RoleId, PermissionId), CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(401, result.StatusCode);
+        Assert.Null(rolePerms.Assigned);
+        Assert.Equal(0, version.IncrementCount);
+    }
+
     private static Role Role() => new("admin", "Admin", null, TenantId);
 
     private static AssignPermissionCommandHandler CreateHandler(
@@ -114,7 +156,8 @@ public sealed class AssignPermissionCommandHandlerTests
         Permission? permission,
         FakeRolePermissionRepository rolePerms,
         FakeRoleAssignmentVersionService version,
-        bool platformContext)
+        bool platformContext,
+        bool authenticated = true)
     {
         var tenantContext = new TestTenantContext();
         if (platformContext) tenantContext.SetPlatformContext(TenantId);
@@ -126,7 +169,8 @@ public sealed class AssignPermissionCommandHandlerTests
             rolePerms,
             version,
             tenantContext,
-            new NoOpRbacAuditRecorder());
+            new NoOpRbacAuditRecorder(),
+            new FakeCurrentUser(authenticated ? ActorId : null));
     }
 
     // ── Minimal inline fakes (codebase convention: hand-written, no Moq) ──
@@ -139,7 +183,7 @@ public sealed class AssignPermissionCommandHandlerTests
         public Task<Role> CreateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpsertSystemRoleAsync(string name, string displayName, string? description, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakePermissionRepository(Permission? permission) : IPermissionRepository
@@ -158,10 +202,12 @@ public sealed class AssignPermissionCommandHandlerTests
     private sealed class FakeRolePermissionRepository : IRolePermissionRepository
     {
         public (Guid roleId, Guid permissionId, Guid tenantId)? AssignedCall { get; private set; }
+        public RolePermission? Assigned { get; private set; }
 
         public Task AssignAsync(RolePermission rolePermission, CancellationToken ct)
         {
             AssignedCall = (rolePermission.RoleId, rolePermission.PermissionId, rolePermission.TenantId);
+            Assigned = rolePermission;
             return Task.CompletedTask;
         }
 
@@ -176,6 +222,11 @@ public sealed class AssignPermissionCommandHandlerTests
     private sealed class NoOpRbacAuditRecorder : IRbacAuditRecorder
     {
         public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private sealed class FakeCurrentUser(Guid? userId) : ICurrentUserAccessor
+    {
+        public Guid? UserId { get; } = userId;
     }
 
     private sealed class TestTenantContext : ITenantContext

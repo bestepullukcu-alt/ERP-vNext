@@ -73,6 +73,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>BL-379 — scheduleReviewMeeting offered (to this task's own owner/requester) when a review
     /// meeting is already linked.</summary>
     private const string DisabledReviewMeetingAlreadyScheduledKey = "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled";
+    /// <summary>MOD-0357 S9 (owner, 2026-09-13) — the DECISION actions submitReview/complete offered DISABLED while
+    /// the task's type requires a review meeting and no non-cancelled linked meeting has published minutes yet.
+    /// Never on start/resume: holding the meeting is part of the work (CT fix-up F1).</summary>
+    private const string DisabledReviewMeetingRequiredKey = "WorkAggregation_ActionDisabled_ReviewMeetingRequired";
     // `complete` needs its OWN wording: "waiting for approval, cannot be started" is wrong on a task already
     // in progress, and the server refuses Done for the same reason it refuses InProgress.
     private const string DisabledApprovalCompleteKey = "WorkAggregation_ActionDisabled_ApprovalPendingComplete";
@@ -177,13 +181,21 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          */
         ITaskAttachmentRepository? attachments = null,
         ILogger<TaskWorkItemProvider>? logger = null,
-        IMeetingRepository? meetingRepository = null)
+        IMeetingRepository? meetingRepository = null,
+        /*
+         * MOD-0357 S9 (owner, 2026-09-13) — the shared review-meeting gate, the SAME reader
+         * TransitionTaskItemHandler re-checks against. OPTIONAL for the same reason every other MOD-0357 seam
+         * on this constructor is: every existing test predates S9, and an absent reader can only ever resolve
+         * every task's gate to "not unlocked" — which changes nothing for a type that is not Required.
+         */
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _attachments = attachments;
         _recordLinks = recordLinks;
         _relatedRecordResolvers = relatedRecordResolvers;
         _logger = logger;
         _meetings = meetingRepository;
+        _reviewMeetingGate = reviewMeetingGate;
         _teamResolver = teamResolver;
         _sla = sla;
         _fieldDefinitions = fieldDefinitions;
@@ -229,6 +241,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// Null ⇒ <c>scheduledAt</c> is simply omitted (the policy's <c>requirement</c>/<c>meetingId</c> still
     /// project from <see cref="_recordLinks"/> alone); every existing test predates this and passes neither.</summary>
     private readonly IMeetingRepository? _meetings;
+
+    /// <summary>MOD-0357 S9 — the shared review-meeting gate (see the constructor parameter's own doc comment).
+    /// Null ⇒ every task's gate resolves to "not unlocked" (fail-closed), which only bites a Required type.</summary>
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
     /// <summary>
     /// The configurable-field catalogue (Phase 5). Read ONCE per page — a stored value carries only its code, so
@@ -289,7 +305,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 theirs.AddRange(await _tasks.ListByAssigneeAsync(member, ct));
             }
 
-            tasks = theirs.DistinctBy(t => t.Id).ToList();
+            // BL-417 (a) — the list keeps exactly what TaskTeamScope.Covers admits. The task read rule asks the SAME
+            // predicate over the SAME resolver, so a row on this list is a task its reader may open by id
+            // (TaskTeamReadParityTests); there is no second definition of "my subordinate's task".
+            tasks = theirs.Where(team.Covers).DistinctBy(t => t.Id).ToList();
         }
         else
         {
@@ -334,6 +353,83 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 .ToList();
         }
 
+        return await ProjectAsync(tasks, initiatorOnly, actor, ct);
+    }
+
+    /// <summary>
+    /// BL-414 — ONE task by id, projected by the very batch <see cref="GetWorkItemsAsync"/> runs, over a page of
+    /// one. Called only for a task the caller has ALREADY been admitted to by <see cref="ITaskReadAccessPolicy"/>
+    /// (<c>GetTaskWorkItemByIdHandler</c>); this method decides nothing about visibility.
+    ///
+    /// <para><b>No second projection.</b> The list and this read differ only in how the task was FOUND — by id
+    /// here, by the three ownership reads there. The one fact those reads decide, BL-016's "initiator only", is
+    /// decided here from the same three conditions (<c>IsInitiatorOnlyAsync</c>); <c>TaskWorkItemSingleReadTests</c>
+    /// pins that the two answers are identical for every task on the list.</para>
+    ///
+    /// <para><b>The actions are the caller's.</b> BuildActions reads who the actor is to THIS task, so a watcher, a
+    /// scope reader or a read-all holder — holder of nothing, requester of nothing — gets what any non-holder gets
+    /// on the Ekibim list: no holder act. Being able to read a task never adds a button.</para>
+    ///
+    /// <para><see cref="WorkItemActor.Scope"/> is not read: a scope chooses WHICH tasks a list holds, and this read
+    /// is handed its task.</para>
+    /// </summary>
+    public async Task<WorkItemProjectionDto> GetWorkItemAsync(
+        TaskItem task,
+        WorkItemActor actor,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(actor);
+
+        var initiatorOnly = await IsInitiatorOnlyAsync(task, actor, ct)
+            ? new HashSet<Guid> { task.Id }
+            : new HashSet<Guid>();
+
+        var projected = await ProjectAsync([task], initiatorOnly, actor, ct);
+        return projected[0];
+    }
+
+    /// <summary>
+    /// BL-016's "initiator only" for ONE task — the answer the Self list reaches with its three reads
+    /// (<c>TaskItemRepository</c>), restated as the conditions those reads filter on:
+    /// <list type="bullet">
+    /// <item>OPENED it — <c>ListByCreatorAsync</c>: the creator, and not Done/Cancelled;</item>
+    /// <item>does not HOLD it — <c>ListByAssigneeAsync</c>: the assignee, any lifecycle;</item>
+    /// <item>is not OFFERED it — <c>ListUnclaimedByPositionsAsync</c>: an unclaimed pool task on a position the
+    /// actor holds (its not-Done/Cancelled filter is already implied by the first condition).</item>
+    /// </list>
+    /// </summary>
+    private async Task<bool> IsInitiatorOnlyAsync(TaskItem task, WorkItemActor actor, CancellationToken ct)
+    {
+        if (task.CreatedByUserId != actor.UserId
+            || task.Lifecycle is TaskLifecycle.Done or TaskLifecycle.Cancelled
+            || task.AssigneeUserId == actor.UserId)
+        {
+            return false;
+        }
+
+        if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool
+            && task.AssigneeUserId is null
+            && task.PoolPositionId is { } poolPositionId)
+        {
+            var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
+            return !positionIds.Contains(poolPositionId);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// The batched projection — every container read ONCE for the whole set, then <c>Project</c> per task. Shared
+    /// by the list (<see cref="GetWorkItemsAsync"/>) and the single read (<see cref="GetWorkItemAsync"/>), which is
+    /// what keeps a task fetched by id and the same task on the list the same item (BL-414).
+    /// </summary>
+    private async Task<IReadOnlyList<WorkItemProjectionDto>> ProjectAsync(
+        List<TaskItem> tasks,
+        HashSet<Guid> initiatorOnly,
+        WorkItemActor actor,
+        CancellationToken ct)
+    {
         // Phase 2 containers, both batched: one read for every task's checklist and one for every task's
         // children. Per-task reads here would be an N+1 over the whole page.
         var taskIds = tasks.Select(t => t.Id).ToList();
@@ -376,6 +472,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             .GroupBy(watcher => watcher.TaskItemId)
             .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskWatcher>)group.ToList());
 
+        // One read for the whole page's conversation, like every other container here — read BEFORE the display
+        // names for the same reason transitions/watchers are: a comment's @MENTIONS join the SAME batch, so
+        // resolving them afterwards would be a second directory round-trip per page (WP-PSS-MOD0024-FOLLOWUPS-02).
+        var commentsByTask = (await _comments.ListByTaskIdsAsync(taskIds, ct))
+            .GroupBy(comment => comment.TaskItemId)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
+
         // ONE batched resolve for the whole page — never one call per task, and cached between requests. It runs
         // after the children are known so subtask holders ride the SAME batch; resolving them per row would be an
         // N+1 across the page. Best effort: if AuthService is down this comes back empty and names are omitted.
@@ -391,6 +494,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // Whoever a parked task is waiting on. In the SAME batch for the same reason: a wait that says
             // "waiting on somebody" without saying who answers half the question it was asked.
             .Concat(tasks.Select(t => t.WaitingOnUserId))
+            // Whoever a comment @mentions — the edit dialog's "already tagged" chips need a name, not a GUID.
+            .Concat(commentsByTask.SelectMany(pair => pair.Value)
+                .SelectMany(comment => comment.MentionedUserIds).Select(id => (Guid?)id))
             .Where(id => id is not null && id != Guid.Empty)
             .Select(id => id!.Value)
             .Distinct()
@@ -421,10 +527,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * An edge whose far end cannot be read (another tenant's task, a deleted one) is dropped rather than
          * rendered as an unnamed blocker.
          */
-        // One read for the whole page's conversation, like every other container here.
-        var commentsByTask = (await _comments.ListByTaskIdsAsync(taskIds, ct))
-            .GroupBy(comment => comment.TaskItemId)
-            .ToDictionary(group => group.Key, group => (IReadOnlyList<TaskComment>)group.ToList());
+        // commentsByTask now read earlier (above, before the display-name batch) so its @mentions can ride the
+        // SAME resolve — see that comment for why.
 
         /*
          * Pool queue names, resolved in TWO reads for the whole page rather than one per task — the same batching
@@ -476,6 +580,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0357 S4 — the review-meeting policy's own data, batched the same way.
         var reviewMeetingByTask = await ResolveReviewMeetingLinksAsync(taskIds, ct);
 
+        /*
+         * MOD-0357 S9 (owner, 2026-09-13) — whether EACH task's review-meeting gate is already unlocked (any
+         * non-cancelled linked meeting has published minutes), batched for the whole page — never one read per
+         * row. Optional service: an absent reader (every caller/test that predates S9) resolves every task to
+         * "not unlocked", which only matters for a type whose requirement is Required — Optional/NotAllowed never
+         * consult this map at all (see BuildActions' own gate).
+         */
+        var reviewMeetingUnlockedByTask = _reviewMeetingGate is null
+            ? new Dictionary<Guid, bool>()
+            : await _reviewMeetingGate.ResolveUnlockedReviewMeetingsAsync(taskIds, ct);
+
         var edges = await _dependencies.ListByTaskIdsAsync(taskIds, ct);
         var edgeTaskIds = edges
             .SelectMany(edge => new[] { edge.TaskItemId, edge.DependsOnTaskItemId })
@@ -520,7 +635,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     attachmentsByTask.GetValueOrDefault(t.Id, []),
                     reviewMeetingByTask.TryGetValue(t.Id, out var reviewMeetingLink)
                         ? reviewMeetingLink
-                        : ((RecordLink Link, Meeting? Meeting)?)null);
+                        : ((RecordLink Link, Meeting? Meeting)?)null,
+                    reviewMeetingUnlockedByTask.GetValueOrDefault(t.Id));
             })
             .ToList();
     }
@@ -564,7 +680,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         // MOD-0357 S4 — this task's live "reviewMeeting" link, if any, plus the linked meeting (when the
         // repository seam is wired). Null means none is scheduled yet — the condition that keeps
         // scheduleReviewMeeting offered.
-        (RecordLink Link, Meeting? Meeting)? reviewMeetingLink = null)
+        (RecordLink Link, Meeting? Meeting)? reviewMeetingLink = null,
+        // MOD-0357 S9 (owner, 2026-09-13) — whether this task's review-meeting gate is already unlocked (see
+        // IReviewMeetingGateReader). Defaults to false (fail-closed): only consulted at all when the task's own
+        // TYPE says Required, so a caller/test that predates S9 sees no change for Optional/NotAllowed types.
+        bool reviewMeetingUnlocked = false)
     {
         var assignment = _assignmentResolver.Resolve(task);
         var normalized = _lifecycle.ToNormalizedStatus(
@@ -596,6 +716,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         var activity = ToActivity(
             comments ?? [], transitions ?? [], displayNames, actor.UserId, fieldDefinitions, _permissions,
             resolvedType);
+
+        /*
+         * MOD-0357 S9 (owner, 2026-09-13) — the review-meeting gate, computed ONCE from the type's own
+         * requirement and the batched unlock read, through the SAME rule the decision handlers re-check
+         * (ReviewMeetingDecisionGate). Optional/NotAllowed types are never blocked. It holds back only the
+         * DECISION actions (submitReview/complete) — never start/resume (CT fix-up F1).
+         */
+        var reviewMeetingBlocked = ReviewMeetingDecisionGate.Blocks(
+            resolvedType?.ReviewMeetingRequirement, reviewMeetingUnlocked);
 
         /*
          * THE FOUR CONDITIONAL CONTAINERS, DECIDED ONCE.
@@ -646,7 +775,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             ? ([], null, (IReadOnlyList<string>)[])
             : BuildActions(
                 task, actor, checklistBlocks, approvalOutstanding, reviewOutstanding, reviewRejected,
-                initiatorOnly);
+                initiatorOnly, reviewMeetingBlocked);
 
         /*
          * Apply the blocks LAST, as a rewrite over whatever was offered. Done here rather than inside BuildActions
@@ -699,9 +828,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
          * models]"). Read-gated: the server's own decisive gate is MeetingPermissions.Create on the receiving
          * endpoint, checked there, never here (this is a hint).
          *
-         * S9 note: "required" is not implemented this slice. When a review meeting's approval becomes
-         * mandatory rather than optional, and the approving party is not this task's own holder/requester, how
-         * that lock surfaces on THIS provider's projection needs its own look then — not assumed here.
+         * S9 (owner, 2026-09-13) — the requirement now reads the task's own TYPE instead of the "optional"
+         * constant this DTO emitted before any type carried the field. NotAllowed/Optional/Required map to their
+         * own lowercase literal, the same three the contract already names (fixture-contract.js).
          */
         WorkItemReviewMeetingPolicyDto? reviewMeetingPolicy = null;
         if (!terminal)
@@ -710,10 +839,19 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             var isHolderForReview = task.AssigneeUserId == actor.UserId;
             if (isHolderForReview || isRequesterForReview)
             {
+                var requirement = resolvedType?.ReviewMeetingRequirement ?? TaskReviewMeetingRequirement.Optional;
                 reviewMeetingPolicy = new WorkItemReviewMeetingPolicyDto(
-                    Requirement: "optional",
+                    Requirement: requirement switch
+                    {
+                        TaskReviewMeetingRequirement.NotAllowed => "notAllowed",
+                        TaskReviewMeetingRequirement.Required => "required",
+                        _ => "optional"
+                    },
                     MeetingId: reviewMeetingLink?.Link.SourceRecordId.ToString(),
-                    ScheduledAt: reviewMeetingLink?.Meeting?.StartAt);
+                    ScheduledAt: reviewMeetingLink?.Meeting?.StartAt,
+                    // MOD-0357 S9 (CT fix-up F1) — the unlock signal the executable contract reads; without it the
+                    // board drops a Required task whose minutes have published (see the DTO's doc comment).
+                    MinutesPublished: reviewMeetingUnlocked);
 
                 var reviewMeetingAction = reviewMeetingLink is not null
                     ? Disabled(
@@ -753,8 +891,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 ProviderContractVersion: ProviderContractVersion,
                 ObjectType: "task",
                 ObjectId: task.Id.ToString(),
-                // MOD-0024 owns its own detail surface, so it can supply a real deep link.
-                DeepLink: $"/Tasks/{task.Id}"),
+                // MOD-0024 owns its own record page, so it can supply a real deep link. It is the way OUT of the
+                // Task Center to that record ("open in source", the row's Edit) — the Record link, never Detail,
+                // which would point the door back at the page it sits on (BL-414).
+                DeepLink: TaskLinks.Record(task.Id)),
             // MOD-0024 IS the lifecycle owner here (unlike a workflow-gated business object).
             LifecycleOwner: TaskProviderCode,
             WorkItemCapabilities: ResolveCapabilities(
@@ -1830,6 +1970,26 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         return match is null ? null : OutcomeLabel(match);
     }
 
+    /// <summary>
+    /// WP-PSS-MOD0024-FOLLOWUPS-02 — a comment's @mentions, as named people. Absent (not empty) when the comment
+    /// names nobody, matching every other optional list on this contract. An id whose name never resolved is
+    /// omitted rather than shown as a raw GUID — the same rule the mention-candidates endpoint follows.
+    /// </summary>
+    private static IReadOnlyList<WorkItemPersonDto>? ToMentioned(
+        IReadOnlyList<Guid> mentionedUserIds, IReadOnlyDictionary<Guid, string> displayNames)
+    {
+        if (mentionedUserIds.Count == 0)
+        {
+            return null;
+        }
+
+        var people = mentionedUserIds
+            .Where(displayNames.ContainsKey)
+            .Select(id => new WorkItemPersonDto(id.ToString(), displayNames[id]))
+            .ToList();
+        return people.Count == 0 ? null : people;
+    }
+
     private static IReadOnlyList<WorkItemActivityEntryDto> ToActivity(
         IReadOnlyList<TaskComment> comments,
         IReadOnlyList<TaskTransition> transitions,
@@ -1856,7 +2016,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 // The AUTHORITY, decided here and only here. The client has the author's NAME and nothing else,
                 // so two people sharing a name would otherwise be handed each other's controls — and the handler
                 // would then refuse a button the screen had offered.
-                Editable: comment.AuthorUserId == actorUserId && comment.WithdrawnAt is null))
+                Editable: comment.AuthorUserId == actorUserId && comment.WithdrawnAt is null,
+                Mentioned: ToMentioned(comment.MentionedUserIds, displayNames)))
             .Concat(transitions.Select(transition => new WorkItemActivityEntryDto(
                 Id: transition.Id.ToString(),
                 Kind: "event",
@@ -1996,7 +2157,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             bool approvalOutstanding,
             bool reviewOutstanding,
             bool reviewRejected,
-            bool initiatorOnly = false)
+            bool initiatorOnly = false,
+            // MOD-0357 S9 (owner, 2026-09-13) — true when the task's TYPE requires a review meeting and no
+            // non-cancelled linked meeting has published minutes yet. See IReviewMeetingGateReader.
+            bool reviewMeetingBlocked = false)
     {
         var actions = new List<WorkItemActionDto>();
         string? primary = null;
@@ -2132,6 +2296,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * same condition that gates a first start. Disabling it here keeps the reason visible instead of
              * letting the user press a button that will 409.
              */
+            // MOD-0357 S9 (CT fix-up F1) — resume is NEVER held back by the review-meeting gate: holding the meeting
+            // is part of the work. Only the decision actions below (submitReview/complete) wait for the minutes.
             actions.Add(approvalOutstanding
                 ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey)
                 : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update)));
@@ -2141,6 +2307,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         {
             if (openOrPlanned)
             {
+                // MOD-0357 S9 (CT fix-up F1) — start is NEVER held back by the review-meeting gate (see resume above);
+                // the server's → InProgress path asks no such question either.
                 actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update)));
                 primary = "start";
             }
@@ -2156,30 +2324,38 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                  */
                 if (task.ReviewRequired && task.ReviewWorkflowInstanceId is null)
                 {
+                    // Precedence, same rule everywhere in this method: approval first, then the review-meeting
+                    // gate, then the checklist — each is its own reason, and only the first unmet one is shown.
                     actions.Add(approvalOutstanding
                         ? Disabled("submitReview", ActionSubmitReviewKey,
                             TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
-                        : checklistBlocks
+                        : reviewMeetingBlocked
                             ? Disabled("submitReview", ActionSubmitReviewKey,
-                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
-                            : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                                requiresConfirmation: true));
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            : checklistBlocks
+                                ? Disabled("submitReview", ActionSubmitReviewKey,
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
+                                    requiresConfirmation: true));
                     primary = "submitReview";
                 }
                 else
                 {
-                    // Approval is checked BEFORE the checklist: it is the gate the user cannot clear themselves, so
-                    // pointing them at unticked items they can complete without unblocking anything would be a lie.
-                    // The server refuses Done in both cases (409), so this is a hint about a real refusal, never the
-                    // enforcement.
+                    // Approval is checked BEFORE the review-meeting gate and the checklist: it is the gate the user
+                    // cannot clear themselves, so pointing them at something else they COULD clear without
+                    // unblocking anything would be a lie. The server refuses Done in every case (409), so this is
+                    // a hint about a real refusal, never the enforcement.
                     actions.Add(approvalOutstanding
                         ? Disabled("complete", ActionCompleteKey,
                             TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
-                        : checklistBlocks
+                        : reviewMeetingBlocked
                             ? Disabled("complete", ActionCompleteKey,
-                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
-                            : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                                requiresConfirmation: true));
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            : checklistBlocks
+                                ? Disabled("complete", ActionCompleteKey,
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                                    requiresConfirmation: true));
                     primary = "complete";
                 }
             }
@@ -2195,12 +2371,22 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * which kills the request — a refused review hands the WORK back to the person holding it, and work
              * that came back with nothing to press would be a trap.
              */
+            /*
+             * MOD-0357 S9 (CT fix-up F1) — the two decisions offered from here (a resubmission, a released
+             * completion) carry the review-meeting gate too. The server asks the same rule on EVERY → Done and
+             * EVERY submit-for-review, so without it a task whose type became Required while it sat with a reviewer
+             * would show an enabled button that answers 409 — and the executable contract would drop the row.
+             * An open review keeps REVIEW_PENDING first: the reviewer holds the work, whatever the meeting says.
+             */
             if (task.Lifecycle is TaskLifecycle.PendingReview)
             {
                 if (reviewRejected)
                 {
-                    actions.Add(Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                        requiresConfirmation: true));
+                    actions.Add(reviewMeetingBlocked
+                        ? Disabled("submitReview", ActionSubmitReviewKey,
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                        : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
+                            requiresConfirmation: true));
                     primary = "submitReview";
                 }
                 else if (reviewOutstanding)
@@ -2211,12 +2397,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 }
                 else
                 {
-                    // Released: the reviewer is done, so completion is the holder's again.
-                    actions.Add(checklistBlocks
+                    // Released: the reviewer is done, so completion is the holder's again — review meeting first,
+                    // then the checklist, the same order the InProgress branch above uses.
+                    actions.Add(reviewMeetingBlocked
                         ? Disabled("complete", ActionCompleteKey,
-                            TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
-                        : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                            requiresConfirmation: true));
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                        : checklistBlocks
+                            ? Disabled("complete", ActionCompleteKey,
+                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                            : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
+                                requiresConfirmation: true));
                     primary = "complete";
                 }
             }

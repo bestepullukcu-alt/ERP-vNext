@@ -237,4 +237,66 @@ describe("WorkCenterNext canonical fixture contract", () => {
     });
     expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
   });
+
+  /*
+   * MOD-0357 S9 · CT fix-up F1 — on a MOD-0024 task the review-meeting gate holds back the DECISION
+   * (submitReview/complete), never `start`: holding the meeting is part of the work. No showcase fixture carries a
+   * Required task (live TaskWorkItemProvider data does, and work-items-api.js DROPS whatever this rule rejects), so
+   * the items are cloned from the canonical task fixtures and given a Required policy here.
+   */
+  describe("review meeting gate on a MOD-0024 task (MOD-0357 S9)", () => {
+    const requiredTask = (id, minutesPublished) => {
+      const f = global.WorkCenterNextFixtureFactory;
+      const fixture = JSON.parse(JSON.stringify(
+        global.WorkCenterNextFixtures.canonical.find((item) => item.id === id)));
+      fixture.reviewMeetingPolicy = { requirement: "required", meetingId: null, scheduledAt: null, minutesPublished };
+      fixture.actions.push(f.action("scheduleReviewMeeting", { label: f.resource("ActReviewMeeting"), input: "meeting" }));
+      fixture.overflowActionCodes = [...(fixture.overflowActionCodes || []), "scheduleReviewMeeting"];
+      return fixture;
+    };
+    const withComplete = (fixture, complete) => {
+      fixture.actions = fixture.actions.map((action) => (action.code === "complete" ? complete : action));
+      return fixture;
+    };
+    const codes = (fixture) => global.WorkCenterNextContract.validateWorkItem(fixture).errors.map((e) => e.code);
+
+    it("accepts an ENABLED start while the minutes are unpublished — start is not a decision", () => {
+      const fixture = requiredTask("WC-TASK-PLANNED", false);
+      expect(fixture.actions.find((action) => action.code === "start")).toMatchObject({ enabled: true });
+      expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
+    });
+
+    it("accepts complete disabled with REVIEW_MEETING_REQUIRED while the minutes are unpublished", () => {
+      const f = global.WorkCenterNextFixtureFactory;
+      const fixture = withComplete(requiredTask("WC-TASK-ACTIVE-NO-TIMER", false),
+        f.disabledAction("complete", "REVIEW_MEETING_REQUIRED", "ActionDisabledReviewMeetingRequired", { requiresConfirmation: true }));
+      expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
+    });
+
+    it("accepts complete disabled for an EARLIER gate (approval wins the precedence)", () => {
+      const f = global.WorkCenterNextFixtureFactory;
+      const fixture = withComplete(requiredTask("WC-TASK-ACTIVE-NO-TIMER", false),
+        f.disabledAction("complete", "APPROVAL_PENDING", "ActionDisabledApprovalPending", { requiresConfirmation: true }));
+      expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
+    });
+
+    it("REJECTS an enabled complete while the minutes are unpublished", () => {
+      const fixture = requiredTask("WC-TASK-ACTIVE-NO-TIMER", false);
+      expect(fixture.actions.find((action) => action.code === "complete")).toMatchObject({ enabled: true });
+      expect(codes(fixture)).toContain("REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION");
+    });
+
+    it("REJECTS an enabled submitReview while the minutes are unpublished", () => {
+      const f = global.WorkCenterNextFixtureFactory;
+      const fixture = withComplete(requiredTask("WC-TASK-ACTIVE-NO-TIMER", false),
+        f.action("submitReview", { requiresConfirmation: true }));
+      fixture.primaryActionCode = "submitReview";
+      expect(codes(fixture)).toContain("REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION");
+    });
+
+    it("accepts an enabled complete once the minutes are published", () => {
+      const fixture = requiredTask("WC-TASK-ACTIVE-NO-TIMER", true);
+      expect(global.WorkCenterNextContract.validateWorkItem(fixture)).toMatchObject({ valid: true });
+    });
+  });
 });

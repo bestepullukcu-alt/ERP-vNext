@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>Une réunion de revue est déjà planifiée</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Cette décision reste verrouillée tant que le compte rendu de la réunion de revue liée n'est pas publié.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Liste de contrôle mise à jour.</value>
   </data>

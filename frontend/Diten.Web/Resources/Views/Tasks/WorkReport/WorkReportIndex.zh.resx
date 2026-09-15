@@ -112,4 +112,5 @@
   <data name="ExportTooManyRows" xml:space="preserve"><value>此报告包含的任务超过单次导出的上限。请缩小期间或筛选条件后重试。</value></data>
   <data name="ExportForbidden" xml:space="preserve"><value>您无权导出此报告。</value></data>
   <data name="ExportFailed" xml:space="preserve"><value>无法生成导出文件。</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>导出未能记入审计记录，因此文件未能提供。请稍后重试。</value></data>
 </root>

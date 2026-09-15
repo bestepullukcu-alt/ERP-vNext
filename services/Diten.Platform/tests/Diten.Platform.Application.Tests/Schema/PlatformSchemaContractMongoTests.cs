@@ -44,6 +44,10 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        // BL-395: this drops a fixed-name database. Another test process on this machine must not do that while
+        // this one is reading it back, so the machine-wide lock comes first.
+        await PlatformMongoTestLock.EnsureHeldAsync();
+
         var settings = MongoClientSettings.FromConnectionString(ConnectionString);
         settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
         /*
@@ -308,14 +312,14 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
         await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceEntries,
             "ix_document_reference_entries_tenant_version_code",
-            "DocumentReferenceListRepository.SearchAsync",
+            "document_reference_entries by version+code (NO live reader since WP-DM-DCP005-DEADCODE-01)",
             new BsonDocument { { "TenantId", tenant }, { "DeletedAt", BsonNull.Value }, { "ListVersionId", listVersion } },
             sort: new BsonDocument("DocumentCode", 1),
             forbidBlockingSort: true);
 
         await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceEntries,
             "ix_document_reference_entries_tenant_version_uid",
-            "DocumentReferenceListRepository.GetEntriesByUidsAsync",
+            "document_reference_entries by version+uid (NO live reader since WP-DM-DCP005-DEADCODE-01)",
             new BsonDocument
             {
                 { "TenantId", tenant }, { "DeletedAt", BsonNull.Value }, { "ListVersionId", listVersion },
@@ -324,7 +328,7 @@ public sealed class PlatformSchemaContractMongoTests : IAsyncLifetime
 
         await ExpectIndexScanAsync(failures, PlatformCollections.DocumentReferenceListVersions,
             "ix_document_reference_list_versions_tenant_hash",
-            "DocumentReferenceListRepository.FindLiveVersionByHashAsync",
+            "document_reference_list_versions by hash (NO live reader since WP-DM-DCP005-DEADCODE-01)",
             new BsonDocument { { "TenantId", tenant }, { "IsDeleted", false }, { "ContentHash", "h000" }, { "WithdrawnAt", BsonNull.Value } });
 
         await ExpectIndexScanAsync(failures, PlatformCollections.DocumentManagementCollectionProvisioningEvidence,

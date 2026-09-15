@@ -1,3 +1,4 @@
+using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Repositories;
 
 namespace Diten.Platform.Application.Features.Tasks.Services;
@@ -30,6 +31,17 @@ public interface ITaskTeamResolver
 public sealed record TaskTeamScope(bool HasTeam, IReadOnlyCollection<Guid> UserIds)
 {
     public static TaskTeamScope None { get; } = new(false, []);
+
+    /// <summary>
+    /// BL-417 (a) — is this task TEAM work, i.e. HELD by one of my subordinates? THE one definition: the Ekibim list
+    /// (<c>TaskWorkItemProvider</c>, <c>scope=team</c>) keeps a row by it and <see cref="ITaskReadAccessPolicy"/> admits
+    /// a reader by it, so "it is on my team list" and "I may open it" cannot give two answers.
+    ///
+    /// <para>Holder only, as the list has always been: an unclaimed pool task belongs to nobody yet, and a task a
+    /// subordinate merely created or watches is not their load.</para>
+    /// </summary>
+    public bool Covers(TaskItem task)
+        => task is { AssigneeUserId: { } assignee } && assignee != Guid.Empty && UserIds.Contains(assignee);
 }
 
 /// <inheritdoc cref="ITaskTeamResolver"/>

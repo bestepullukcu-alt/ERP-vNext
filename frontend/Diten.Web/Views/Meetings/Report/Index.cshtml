@@ -1,0 +1,141 @@
+@using Diten.Web.Views.Meetings.Report
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingReportIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["Title"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* MOD-0357 S12 (pack §23) — read-only reporting page under the existing Meetings list (§23.2): no create/edit/
+   details trio, so no golden-reference DataTable v2 contract on THIS file — only the Action Register grid
+   below is a DataTable v2 (owner decision, §23.13/4). *@
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@Localizer["Title"]</h5>
+        <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    </div>
+</div>
+
+<partial name="~/Views/Meetings/Report/_Filter.cshtml" />
+
+@* UAS-001 — nothing below is drawn until a successful report response says it may be. A caller without
+   platform.meetings.read never sees a tile, a table header or a skeleton — only this one sentence. *@
+<div class="alert alert-danger d-none" id="mrNoAccess" role="alert"></div>
+
+<div class="row g-4 mb-4" id="mrTiles" hidden>
+    <div class="col-12 col-sm-6 col-xl">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <p class="text-uppercase text-muted small mb-1">@Localizer["TileMeetingCount"]</p>
+                <p class="mb-0 fs-4 fw-semibold" id="mrTileMeetingCount">–</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-sm-6 col-xl">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <p class="text-uppercase text-muted small mb-1">@Localizer["TileAttendanceRate"]</p>
+                <p class="mb-0 fs-4 fw-semibold" id="mrTileAttendanceRate">–</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-sm-6 col-xl">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <p class="text-uppercase text-muted small mb-1">@Localizer["TileDecisionCount"]</p>
+                <p class="mb-0 fs-4 fw-semibold" id="mrTileDecisionCount">–</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-sm-6 col-xl">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <p class="text-uppercase text-muted small mb-1">@Localizer["TileOpenActions"]</p>
+                <p class="mb-0 fs-4 fw-semibold" id="mrTileOpenActions">–</p>
+            </div>
+        </section>
+    </div>
+    <div class="col-12 col-sm-6 col-xl">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <p class="text-uppercase text-muted small mb-1">@Localizer["TileOverdueActions"]</p>
+                <p class="mb-0 fs-4 fw-semibold text-danger" id="mrTileOverdueActions">–</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<section class="card mb-4" id="mrMeetingsCard" hidden>
+    <div class="card-body p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3" id="mrMeetingsTitle">@Localizer["MeetingListTitle"]</h6>
+        <div class="table-responsive">
+            <table class="table table-sm" id="mrMeetingsTable">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ColMeetingTitle"]</th>
+                        <th>@Localizer["ColMeetingType"]</th>
+                        <th>@Localizer["ColStartAt"]</th>
+                        <th>@Localizer["ColOrganizer"]</th>
+                        <th>@Localizer["ColAttendance"]</th>
+                    </tr>
+                </thead>
+                <tbody id="mrMeetingsBody"></tbody>
+            </table>
+        </div>
+        <p class="text-muted mb-0" id="mrMeetingsEmpty" hidden>@Localizer["EmptyMeetings"]</p>
+    </div>
+</section>
+
+<section class="card mb-4" id="mrDecisionsCard" hidden>
+    <div class="card-body p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["DecisionsTitle"]</h6>
+        <div class="table-responsive">
+            <table class="table table-sm" id="mrDecisionsTable">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ColDecisionMeeting"]</th>
+                        <th>@Localizer["ColDecisionCode"]</th>
+                        <th>@Localizer["ColDecisionText"]</th>
+                    </tr>
+                </thead>
+                <tbody id="mrDecisionsBody"></tbody>
+            </table>
+        </div>
+        <p class="text-muted mb-0" id="mrDecisionsEmpty" hidden>@Localizer["EmptyDecisions"]</p>
+    </div>
+</section>
+
+@* The Action Register — DataTable v2 (owner decision, pack §23.13/4). Golden Reference contract markers. *@
+<section class="card mb-4" id="mrActionsCard" hidden>
+    <div class="card-body p-4">
+        <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ActionsTitle"]</h6>
+        <div id="mrActionsSkeleton" class="backbone-skeleton">
+            <div class="shimmer skeleton-row"></div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm" data-dt-standard="v2" id="mrActionsTable">
+                <thead>
+                    <tr>
+                        <th>@Localizer["ColActionTitle"]</th>
+                        <th>@Localizer["ColActionLifecycle"]</th>
+                        <th>@Localizer["ColActionDueAt"]</th>
+                        <th>@Localizer["ColActionOrigin"]</th>
+                        <th>@Localizer["ColActionCurrent"]</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <p class="text-muted mb-0" id="mrActionsEmpty" hidden>@Localizer["EmptyActions"]</p>
+    </div>
+</section>
+
+<p class="text-muted small" id="mrSnapshotNote">@Localizer["ExportSnapshotNote"]</p>
+
+<partial name="~/Views/Meetings/Report/_IndexL10n.cshtml" />
+
+@section Scripts {
+    <script src="~/assets/js/Meetings/Report/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/Report/index.js" asp-append-version="true"></script>
+}

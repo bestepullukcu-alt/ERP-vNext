@@ -36,7 +36,8 @@ public sealed class TaskTypeReviewMeetingRequirementTests
     {
         var tenant = new TenantContext();
         tenant.SetTenant(TenantId);
-        return new CreateTaskTypeHandler(types, tenant, new Mock<ICurrentUserContext>().Object);
+        return new CreateTaskTypeHandler(
+            types, tenant, new Mock<ICurrentUserContext>().Object, new FakeControlledDocumentEffectivenessPort());
     }
 
     private static CreateTaskTypeRequest Create(TaskReviewMeetingRequirement? requirement) => new(
@@ -101,7 +102,7 @@ public sealed class TaskTypeReviewMeetingRequirementTests
         var type = Stored(TaskReviewMeetingRequirement.Required);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new UpdateTaskTypeHandler(types)
+        var result = await new UpdateTaskTypeHandler(types, new FakeControlledDocumentEffectivenessPort())
             .Handle(new UpdateTaskTypeCommand(type.Id, Update(null), "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
@@ -114,7 +115,7 @@ public sealed class TaskTypeReviewMeetingRequirementTests
         var type = Stored(TaskReviewMeetingRequirement.Optional);
         var types = new FakeTaskTypeRepository(type);
 
-        var result = await new UpdateTaskTypeHandler(types).Handle(
+        var result = await new UpdateTaskTypeHandler(types, new FakeControlledDocumentEffectivenessPort()).Handle(
             new UpdateTaskTypeCommand(type.Id, Update(TaskReviewMeetingRequirement.NotAllowed), "c"), CancellationToken.None);
 
         Assert.True(result.IsSuccessful);
@@ -134,7 +135,7 @@ public sealed class TaskTypeReviewMeetingRequirementTests
         Assert.Equal(TaskReasonCodes.TaskTypeReviewMeetingRequirementInvalid, created.ReasonCode);
 
         var type = Stored(TaskReviewMeetingRequirement.Required);
-        var updated = await new UpdateTaskTypeHandler(new FakeTaskTypeRepository(type))
+        var updated = await new UpdateTaskTypeHandler(new FakeTaskTypeRepository(type), new FakeControlledDocumentEffectivenessPort())
             .Handle(new UpdateTaskTypeCommand(type.Id, Update(undefined), "c"), CancellationToken.None);
         Assert.False(updated.IsSuccessful);
         Assert.Equal(TaskReasonCodes.TaskTypeReviewMeetingRequirementInvalid, updated.ReasonCode);
@@ -228,7 +229,7 @@ public sealed class TaskTypeReviewMeetingRequirementMongoTests
         ]);
         var before = await SnapshotAsync(tasks);
 
-        var result = await new UpdateTaskTypeHandler(repository).Handle(
+        var result = await new UpdateTaskTypeHandler(repository, new FakeControlledDocumentEffectivenessPort()).Handle(
             new UpdateTaskTypeCommand(
                 type.Id,
                 new UpdateTaskTypeRequest("REV", "Review", null, TaskRecordClass.NOT_A_RECORD, null, null, false, null, null, type.Version,

@@ -37,6 +37,7 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>添加</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>议程项</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>移除参会人员</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>邮件未送达</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>添加</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>更换组织者</value></data>
   <data name="Minutes" xml:space="preserve"><value>会议纪要</value></data>
@@ -106,6 +107,8 @@
   <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>请检查系列的开始时间、结束时间和提前天数——排期无效。</value></data>
   <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>间隔必须至少为 1。</value></data>
   <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>需要指定组织者。</value></data>
+  <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>报告期间的结束日期必须晚于开始日期。</value></data>
+  <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>此报告行数过多，无法导出。请缩小期间或筛选范围。</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>您无权执行此操作。</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>会议服务当前不可用。</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>请填写所有必填字段。</value></data>

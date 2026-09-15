@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>A review meeting is already scheduled</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>This decision is locked until the linked review meeting's minutes are published.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Checklist updated.</value>
   </data>

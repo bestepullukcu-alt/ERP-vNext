@@ -45,7 +45,7 @@ internal static class MeetingEligibility
         CancellationReason: meeting.CancellationReason,
         Version: meeting.Version,
         Attendees: attendees
-            .Select(a => new MeetingAttendeeDto(a.Id, a.UserId, null, a.InvitationResponse, a.AttendanceStatus))
+            .Select(a => new MeetingAttendeeDto(a.Id, a.UserId, null, a.InvitationResponse, a.AttendanceStatus, a.MailUndeliveredAt is not null))
             .ToList(),
         AgendaItems: agendaItems
             .OrderBy(a => a.SortOrder)

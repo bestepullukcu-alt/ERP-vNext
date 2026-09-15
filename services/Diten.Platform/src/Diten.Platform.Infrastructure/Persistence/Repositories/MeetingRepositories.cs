@@ -292,6 +292,18 @@ public sealed class MeetingAttendeeRepository : TenantRepository<MeetingAttendee
         var update = Builders<MeetingAttendee>.Update.Set(x => x.AttendanceStatus, status);
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
+
+    public async Task<bool> MarkMailUndeliveredAsync(
+        Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
+    {
+        var filter = Builders<MeetingAttendee>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingAttendee>.Filter.Eq(x => x.MeetingId, meetingId),
+            Builders<MeetingAttendee>.Filter.Eq(x => x.UserId, userId));
+        var update = Builders<MeetingAttendee>.Update.Set(x => x.MailUndeliveredAt, failedAt);
+        var result = await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
+        return result.MatchedCount > 0;
+    }
 }
 
 /// <summary>Raw storage for <see cref="AgendaItem"/>.</summary>
@@ -408,6 +420,21 @@ public sealed class MeetingMinutesVersionRepository
             ExecutionFilter,
             Builders<MeetingMinutesVersion>.Filter.Eq(x => x.MeetingId, meetingId));
         return await Collection.Find(filter).SortByDescending(x => x.VersionNumber).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+    {
+        if (meetingIds.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<MeetingMinutesVersion>.Filter.And(
+            ExecutionFilter,
+            Builders<MeetingMinutesVersion>.Filter.In(x => x.MeetingId, meetingIds),
+            Builders<MeetingMinutesVersion>.Filter.Eq(x => x.Status, MinutesStatus.Published));
+        return await Collection.Find(filter).ToListAsync(ct);
     }
 
     public async Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)

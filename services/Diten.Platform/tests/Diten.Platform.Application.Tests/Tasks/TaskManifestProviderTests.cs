@@ -64,8 +64,32 @@ public sealed class TaskManifestProviderTests
             .SelectMany(p => new[] { p.RequiredPermission }.Concat(p.Actions.Select(a => a.PermissionKey)))
             .ToHashSet(StringComparer.Ordinal);
 
-        var orphans = KnownPermissionKeys.Except(declared).ToList();
-        Assert.True(orphans.Count == 0, $"Permission keys with no manifest home: {string.Join(", ", orphans)}");
+        /*
+         * WP-DM-DCP005-RETIRE-CSV-01 (BL-369) — the ONLY two keys this manifest is now KNOWINGLY willing to
+         * leave orphaned. Their page (/Tasks/DocumentList, the CSV controlled-document list) was retired along
+         * with its view, controller actions and client JS; DocumentListRead/.Import were its sole manifest
+         * home. DocumentListRead is still ENFORCED — SearchDocumentCitations and GetTaskTypeGoverningDocuments
+         * still carry [HasPermission(TaskPermissions.DocumentListRead)] — but a controller attribute is not a
+         * manifest entry, and the two keys were left DELIBERATELY unassigned to a replacement page rather than
+         * given a second, artificial one just to keep this guard quiet.
+         *
+         * The consequence this test exists to catch (Module=platform, Scope=PlatformAdmin, permanently
+         * unassignable to a tenant role) is real and ACCEPTED for these two, not overlooked: removing them from
+         * the Auth permission catalog itself is called out in the backlog as a separate, Control-Tower-owned
+         * step (Faz 1.5, the same phase BL-340's neighbouring cleanup uses) — this WP's own scope, as given,
+         * is the manifest and the screen, not the catalog.
+         */
+        var knownOrphans = new HashSet<string>(StringComparer.Ordinal)
+        {
+            TaskPermissions.DocumentListRead,
+            TaskPermissions.DocumentListImport
+        };
+
+        var orphans = KnownPermissionKeys.Except(declared).ToHashSet(StringComparer.Ordinal);
+        // Exactly the two known ones — no more (a THIRD orphan must still fail here) and no fewer (if the
+        // backlog's Faz 1.5 catalog cleanup ever removes these constants, this line should go red and be
+        // deleted, not quietly keep passing on an empty accepted set).
+        Assert.Equal(knownOrphans, orphans);
     }
 
     [Fact]

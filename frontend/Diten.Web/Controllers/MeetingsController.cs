@@ -97,6 +97,11 @@ public sealed class MeetingsController : Controller
         return View("~/Views/Meetings/Series/Edit.cshtml");
     }
 
+    // ── S12 (pack §23) — the meeting report & action register ────────────────
+
+    [HttpGet("Report")]
+    public IActionResult ReportIndex() => View("~/Views/Meetings/Report/Index.cshtml");
+
     // ── Same-origin API proxy ────────────────────────────────────────────────
 
     [HttpGet("api/list")]
@@ -248,6 +253,25 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiSeriesDelete(Guid id)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: false);
 
+    // ── S12 (pack §23) — meeting report & its export. The whole query string is forwarded WHOLE
+    // (from/to/meetingTypeId/organizerUserId are Platform's contract, not this tier's) — re-listing them here
+    // is how a parameter gets dropped silently, the same lesson TasksController's own work-report proxy
+    // already states. ────────────────────────────────────────────────────────────────────────────────────
+
+    [HttpGet("api/report")]
+    public Task<IActionResult> ApiReport()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/report" + Request.QueryString.Value, readBody: false);
+
+    /// <summary>The report's own rows, as a file — <see cref="ProxyFileAsync"/> (the work report's own file-relay
+    /// pattern), with <c>locale</c> appended from <c>window.CurrentLanguage</c> if the caller did not already
+    /// send one (pack §23.13/5 — the one disclaimer sentence the export carries).</summary>
+    [HttpGet("api/report/export")]
+    public Task<IActionResult> ApiReportExport()
+        => ProxyFileAsync($"{_gatewayUrl}/api/v1/meetings/report/export" + Request.QueryString.Value, MeetingReportExportRowCountHeader);
+
+    /// <summary>How many rows the file carries — the work report's own <c>X-Work-Report-Export-Row-Count</c>, renamed.</summary>
+    public const string MeetingReportExportRowCountHeader = "X-Meeting-Report-Export-Row-Count";
+
     // ── Proxy plumbing (identical to TasksController's own) ──────────────────
 
     private static string Query(string? query) => string.IsNullOrWhiteSpace(query) ? string.Empty : $"?{query}";
@@ -298,6 +322,63 @@ public sealed class MeetingsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Meetings proxy failed for {Method} {TargetUrl}.", method, targetUrl);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Meetings dependency unavailable." });
+        }
+    }
+
+    /// <summary>S12 (pack §23.7) — the file-download relay, mirroring <c>TasksController.ProxyFileAsync</c>
+    /// (the work report's own pattern, itself following the audit export's) exactly: a non-success upstream
+    /// response (400/403/503) is relayed as JSON verbatim — including the 503
+    /// <c>DATA_EXPORT_AUDIT_NOT_RECORDED</c> the export handler answers when BL-347's audit write fails — never
+    /// wrapped into a file.</summary>
+    private async Task<IActionResult> ProxyFileAsync(string targetUrl, string rowCountHeaderName)
+    {
+        if (!TryCreateTenantRequest(HttpMethod.Get, targetUrl, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ContentResult
+                    {
+                        Content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted),
+                        ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                        StatusCode = (int)response.StatusCode
+                    };
+                }
+
+                var content = await response.Content.ReadAsByteArrayAsync(HttpContext.RequestAborted);
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+                var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                    ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                    ?? "export";
+
+                if (response.Headers.TryGetValues(rowCountHeaderName, out var rowCount))
+                {
+                    Response.Headers[rowCountHeaderName] = rowCount.FirstOrDefault();
+                }
+
+                return File(content, contentType, fileName);
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Meetings file proxy failed for {TargetUrl}.", targetUrl);
             return StatusCode(
                 StatusCodes.Status503ServiceUnavailable,
                 new { message = "Meetings dependency unavailable." });

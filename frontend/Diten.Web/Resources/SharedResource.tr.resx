@@ -859,6 +859,7 @@
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Toplantılar</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Toplantı Serileri</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Toplantı Raporu</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
 </root>

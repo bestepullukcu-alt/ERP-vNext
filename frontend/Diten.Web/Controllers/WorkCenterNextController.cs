@@ -72,6 +72,17 @@ public class WorkCenterNextController : Controller
         return ProxyGetAsync(upstream);
     }
 
+    /// <summary>
+    /// BL-414 — ONE work item by id, for the detail page when the item is not on the reader's own list (a watched
+    /// task, a subordinate's task opened from Ekibim, a link from a notification).
+    ///
+    /// <para>Same proxy, same verbatim status pass-through: Platform's 404 for a missing or unreadable task reaches
+    /// the browser unchanged. GUID-constrained, so nothing but an id is ever spliced into the upstream path.</para>
+    /// </summary>
+    [HttpGet("/WorkCenterNext/api/work-items/{itemId:guid}")]
+    public Task<IActionResult> WorkItem(Guid itemId)
+        => ProxyGetAsync($"{_gatewayUrl}/api/v1/work-items/{itemId:D}");
+
     /// <summary>BL-023 — does the caller have a team? Drives whether the scope option is enabled.</summary>
     [HttpGet("/WorkCenterNext/api/team-availability")]
     public Task<IActionResult> TeamAvailability()

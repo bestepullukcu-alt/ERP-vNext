@@ -19,6 +19,9 @@
 </div>
 
 @section Scripts {
+    @* DCP-004 amendment 2026-09-15 — the same permission snapshot the list page loads, because app.js renders both
+       surfaces from one bundle and must answer "may this user create?" the same way on each. UX only. *@
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
     @* app.js performs the SAME writes here as on the list page — transitions, checklist ticks, subtask creation —
        and every one of them goes through TasksApi/TaskForm. Omitting these made each write throw on an undefined

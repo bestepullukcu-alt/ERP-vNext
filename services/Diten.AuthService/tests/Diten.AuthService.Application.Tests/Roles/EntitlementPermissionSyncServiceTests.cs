@@ -63,6 +63,40 @@ public sealed class EntitlementPermissionSyncServiceTests
         Assert.DoesNotContain(rolePerms.Rows, rp => catalog.Single(p => p.Id == rp.PermissionId).Key.StartsWith("platform."));
     }
 
+    // BL-412 — entitlement sync is system-initiated: every Module grant it writes carries the actor its caller passed
+    // (the consumer's "entitlement-sync", provisioning's "tenant-provisioning"), never a person's id.
+    [Fact]
+    public async Task Module_grants_carry_the_sync_actor_never_a_person()
+    {
+        var (svc, _, rolePerms, _) = Build();
+
+        await svc.GrantModuleAsync(TenantA, "LEGAL-ENTITY", Actor, CancellationToken.None);
+
+        Assert.NotEmpty(rolePerms.Rows);
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(Actor, rp.AssignedBy));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(Actor, rp.CreatedBy));
+        Assert.All(rolePerms.Rows, rp => Assert.False(Guid.TryParse(rp.AssignedBy, out _), "a sync grant must not name a user id"));
+    }
+
+    // BL-412 — the second Module-grant write site (the product-abbreviation profile reconcile, incl. its dedicated
+    // roles) carries the same sync actor.
+    [Fact]
+    public async Task Product_abbreviation_profile_grants_carry_the_sync_actor_never_a_person()
+    {
+        var catalog = ProductItemSkuMasterCatalog();
+        var (svc, _, rolePerms) = BuildWith(catalog);
+
+        await svc.GrantModuleWithKeysAsync(
+            TenantA,
+            ProductAbbreviationEntitlementGrantProfile.ModuleCode,
+            catalog.Select(permission => permission.Key).ToArray(),
+            Actor);
+
+        Assert.NotEmpty(rolePerms.Rows);
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(Actor, rp.AssignedBy));
+        Assert.All(rolePerms.Rows, rp => Assert.Equal(Actor, rp.CreatedBy));
+    }
+
     [Fact]
     public async Task Disable_removes_only_that_modules_grants_and_preserves_system_and_manual()
     {
@@ -860,7 +894,7 @@ public sealed class EntitlementPermissionSyncServiceTests
             return Task.FromResult(role);
         }
         public Task<Role> UpdateAsync(Role role, CancellationToken ct) => throw new NotSupportedException();
-        public Task DeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task DeleteAsync(Guid id, Guid tenantId, string deletedBy, CancellationToken ct) => throw new NotSupportedException();
     }
 
     private sealed class FakePermissionRepository(List<Permission> catalog) : IPermissionRepository

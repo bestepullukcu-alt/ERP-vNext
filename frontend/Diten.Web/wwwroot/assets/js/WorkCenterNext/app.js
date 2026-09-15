@@ -917,6 +917,17 @@
 
     const delegatorByName = (name) => data.delegators.find((d) => d.name === name) || null;
 
+    /*
+     * DCP-004 amendment 2026-09-15 (UAS-001 §6) — may this user create a task? Read from the permission snapshot the
+     * host view loads (_PermissionBootstrap → window.Permissions). FAIL-CLOSED: a page without the snapshot reads as
+     * "not held", so a missing partial hides the entry rather than showing a button the server will refuse.
+     * UX only — POST api/v1/tasks is the authority.
+     */
+    const TASK_CREATE_PERMISSION = 'platform.tasks.create';
+    const canCreateSelfTask = () =>
+        !!(global.Permissions && typeof global.Permissions.has === 'function'
+            && global.Permissions.has(TASK_CREATE_PERMISSION));
+
     const buildHeader = () => {
         const urgent = ownUrgentCount();
         // Current scope → the person/delegation dropdown label.
@@ -950,6 +961,7 @@
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
             `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+        const canCreateTask = canCreateSelfTask();
 
         return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
@@ -981,7 +993,14 @@
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
-                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${/*
+                           * DCP-004 amendment 2026-09-15 (UAS-001 §6) — HIDDEN, not disabled, without
+                           * platform.tasks.create. Every tenant user opens this page now and most cannot create a
+                           * task; a button that can only fail sends them into a second error. The divider below goes
+                           * with it so the menu does not open on a dangling rule. UX only: POST api/v1/tasks still
+                           * demands the key.
+                           */ ''}
+                        ${canCreateTask ? createItem('task', 'bx-task', t('NewSelfTask')) : ''}
                         ${/*
                            * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
                            *
@@ -997,7 +1016,7 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        <li><hr class="dropdown-divider"></li>
+                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
                 </div>
@@ -7434,6 +7453,19 @@
             return;
         }
 
+        /*
+         * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — existing @mentions arrive PRE-FILLED, and a newly added one is
+         * sent alongside the text. Backend rule (already built and tested): the update carries the FULL
+         * replacement set, and the server notifies only whoever is NEW in it.
+         *
+         * The tray and its "@" trigger are built here, inside the shared confirm's own popup (`input.onOpen`),
+         * reusing `pickMentionAsync` — the SAME picker the compose box uses — rather than a second copy (the
+         * WP's own instruction). Local state, not `commentMentionState`: that map is the COMPOSE box's draft,
+         * and a task can have a comment being edited while an unrelated new comment is half-typed above it.
+         */
+        let mentions = (entry.mentioned || []).map((m) => ({ id: m.id, displayName: m.displayName }));
+        const originalMentionIds = mentions.map((m) => m.id).slice().sort();
+
         // The shared confirm's TEXTAREA, seeded with what the comment says now — an edit box that starts empty
         // asks the author to retype a sentence they only wanted to fix.
         sharedConfirm({
@@ -7443,13 +7475,60 @@
                 label: t('CommentEditLabel'),
                 placeholder: entry.text || '',
                 value: entry.text || '',
-                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid'))
+                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid')),
+                onOpen: (box, popup) => {
+                    if (!box || !popup) { return; }
+
+                    const tray = document.createElement('div');
+                    tray.className = 'wcn-mention-chips';
+                    box.insertAdjacentElement('afterend', tray);
+
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-outline-secondary wcn-composer-mention mt-2';
+                    addBtn.setAttribute('aria-label', t('MentionAdd'));
+                    addBtn.title = t('MentionAdd');
+                    addBtn.innerHTML = '<i class="bx bx-at" aria-hidden="true"></i>';
+                    tray.insertAdjacentElement('afterend', addBtn);
+
+                    const renderTray = () => {
+                        tray.innerHTML = mentions.map((m) => `<span class="wcn-mention-chip">`
+                            + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                            + `<button type="button" class="wcn-mention-chip-remove" data-wcn-edit-mention-remove="${esc(m.id)}" `
+                            + `aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                            + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('');
+                    };
+                    renderTray();
+
+                    tray.addEventListener('click', (event) => {
+                        const removeEl = event.target.closest('[data-wcn-edit-mention-remove]');
+                        if (!removeEl) { return; }
+                        const id = removeEl.getAttribute('data-wcn-edit-mention-remove');
+                        mentions = mentions.filter((m) => String(m.id) !== String(id));
+                        renderTray();
+                    });
+
+                    addBtn.addEventListener('click', async () => {
+                        if (mentions.length >= COMMENT_MAX_MENTIONS) {
+                            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+                            return;
+                        }
+                        const chosen = await pickMentionAsync(taskId, mentions.map((m) => m.id));
+                        if (!chosen) { return; }
+                        mentions = [...mentions, { id: chosen.id, displayName: chosen.displayName }];
+                        renderTray();
+                    });
+                }
             },
             onConfirm: async (value) => {
                 const text = String(value || '').trim();
-                if (!text || text === entry.text) { return; }
+                const mentionedUserIds = mentions.map((m) => m.id);
+                const mentionsChanged = JSON.stringify(mentionedUserIds.slice().sort())
+                    !== JSON.stringify(originalMentionIds);
+                if (!text || (text === entry.text && !mentionsChanged)) { return; }
                 await afterPhase2Write(
-                    await global.TasksApi.updateComment(taskId, commentId, { text }), 'ToastCommentEdited');
+                    await global.TasksApi.updateComment(taskId, commentId, { text, mentionedUserIds }),
+                    'ToastCommentEdited');
             }
         });
     };
@@ -7827,14 +7906,52 @@
     };
 
     /*
-     * WP-PSS-MOD0024-TASK-MENTIONS-01 — the @mention picker.
+     * WP-PSS-MOD0024-TASK-MENTIONS-01/FOLLOWUPS-02 — the @mention picker, ONE implementation for both the new
+     * comment composer and the edit dialog (BL-400 — do not write a second picker copy).
      *
      * Goes through `sharedConfirm`, NOT a raw `Swal.fire` — this screen already guards the exact count of raw
      * dialogs it allows (`wcn-dialog-*` test files), because each one it does not is a chance to re-diverge in
      * appearance from the rest of the product. One person per confirm; the trigger (button or "@") can be used
      * again to add another, up to the cap — a repeatable single-select stays inside the shared component's
      * existing `input: { type: 'select' }` shape rather than asking it to grow a multi-select nobody else needs.
+     *
+     * Returns the CHOSEN candidate (`{id, displayName}`) or `null` on cancel/nothing-to-offer — the caller (the
+     * composer or the edit dialog) decides what to do with it; this function knows nothing about either.
      */
+    const pickMentionAsync = async (taskId, alreadyMentionedIds) => {
+        const res = await global.TasksApi.mentionCandidates(taskId, '');
+        const candidates = res.ok ? (res.data || []) : [];
+        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return null; }
+
+        const already = new Set((alreadyMentionedIds || []).map(String));
+        const offered = candidates.filter((c) => !already.has(String(c.id)));
+        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return null; }
+
+        const options = {};
+        offered.forEach((c) => { options[c.id] = c.displayName; });
+
+        return new Promise((resolve) => {
+            sharedConfirm({
+                title: t('MentionPickerTitle'),
+                confirmText: t('MentionAddConfirm'),
+                input: {
+                    type: 'select',
+                    options,
+                    label: t('MentionPickerTitle'),
+                    placeholder: t('MentionNoneChosen'),
+                    validate: (value) => (value ? null : t('MentionNoneChosen')),
+                    onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
+                },
+                onConfirm: (value) => {
+                    const chosen = offered.find((c) => String(c.id) === String(value));
+                    resolve(chosen || null);
+                },
+                onCancel: () => resolve(null)
+            });
+        });
+    };
+
+    /** The compose-box trigger: adds to the DRAFT tray beside the "+ Yeni" composer. */
     const openMentionPicker = async (taskId) => {
         const item = itemById(taskId);
         if (!item || !isDispatchableItem(item)) { return; }
@@ -7850,37 +7967,13 @@
             return;
         }
 
-        const res = await global.TasksApi.mentionCandidates(taskId, '');
-        const candidates = res.ok ? (res.data || []) : [];
-        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return; }
+        const chosen = await pickMentionAsync(taskId, existing.map((m) => m.id));
+        if (!chosen) { return; }
 
-        const already = new Set(existing.map((m) => String(m.id)));
-        const offered = candidates.filter((c) => !already.has(String(c.id)));
-        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return; }
-
-        const options = {};
-        offered.forEach((c) => { options[c.id] = c.displayName; });
-
-        sharedConfirm({
-            title: t('MentionPickerTitle'),
-            confirmText: t('MentionAddConfirm'),
-            input: {
-                type: 'select',
-                options,
-                label: t('MentionPickerTitle'),
-                placeholder: t('MentionNoneChosen'),
-                validate: (value) => (value ? null : t('MentionNoneChosen')),
-                onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
-            },
-            onConfirm: (value) => {
-                const chosen = offered.find((c) => String(c.id) === String(value));
-                if (!chosen) { return; }
-                commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
-                render();
-                const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
-                if (refocus) { refocus.focus(); }
-            }
-        });
+        commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
+        render();
+        const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (refocus) { refocus.focus(); }
     };
 
     /// Drops one draft mention chip. Never touches the server — the mention is not yet part of any posted
@@ -8178,6 +8271,14 @@
             return;
         }
         confirm(options.title, options.onConfirm, {
+            /*
+             * WP-PSS-MOD0024-FOLLOWUPS-02 — passed straight through. `window.showConfirm` already supports a
+             * dismiss callback (`_GlobalConfirmation.cshtml`'s `Swal.fire(...).then`), but this wrapper never
+             * forwarded it, so no caller here could tell a cancel apart from doing nothing. A caller that needs
+             * to know (the @mention picker, reused for both compose and edit) can now ask for it without a
+             * second dialog implementation.
+             */
+            onCancel: options.onCancel,
             /*
              * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
              * and the wrapper renders `subtext` as HTML for exactly this.
@@ -9765,7 +9866,8 @@
         const newEl = event.target.closest('[data-wcn-new]');
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
-            if (kind === 'task') { openSelfTask(); }
+            // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
+            if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
             else if (kind === 'source') { openCreateInSource(); }
             return;
         }
@@ -10306,6 +10408,31 @@
      */
     let loadGeneration = 0;
 
+    /*
+     * BL-414 — the id the detail page was opened for, or '' on the list page. Read from the same server-rendered
+     * attribute (Details.cshtml) renderUnsafe resolves its item by.
+     */
+    const requestedDetailId = () => {
+        const root = document.getElementById('wcnApp');
+        return root && root.dataset.wcnPage === 'detail' ? (root.dataset.wcnItemId || '') : '';
+    };
+
+    /*
+     * BL-414 — the ONE item the detail page was opened for, when the list just read does not hold it.
+     *
+     * Null when there is nothing to ask (the list page; an item already on the list; an id the contract already
+     * rejected from the list, whose BL-379 sentence is the more specific one) and null when the server has no
+     * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
+     * the page's not-found answer exactly as it was.
+     */
+    const readDetailItemMissingFrom = async (api, result) => {
+        const id = requestedDetailId();
+        if (!id || result.items.some((item) => item.id === id)) { return null; }
+        if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
+        const single = await api.fetchWorkItem(id);
+        return single.status === api.STATUS.OK ? single : null;
+    };
+
     const loadWorkItems = async () => {
         const generation = ++loadGeneration;
         const isStale = () => generation !== loadGeneration;
@@ -10358,8 +10485,23 @@
         // A newer read has been issued while this one was in flight: its answer is the current one, and this
         // answer describes a state that no longer exists. Drop it without touching the screen.
         if (isStale()) { return; }
+        /*
+         * BL-414 — THE DETAIL PAGE IS THE TASK'S RECORD VIEW, NOT A WINDOW ONTO MY LIST.
+         *
+         * MEASURED: this page resolved its item ONLY out of the list above, and that list holds the reader's own
+         * work (assigned, own-pool, opened). Every other reader the task read rule admits — a watcher, a mentioned
+         * person, a manager with scope, a read-all holder — got "not found" here while /Tasks/{id} opened for them.
+         * So did a manager opening a subordinate's task from Ekibim: this page boots without the list's URL state
+         * (boot skips hydrateStateFromUrl, openDetailPage carries no scope), so it always reads the SELF list.
+         *
+         * So when the list does not hold the requested id, the page asks the server for that ONE item. The fetched
+         * item joins state.items on THIS page only — the detail page draws no list, so no tab and no scope gains a
+         * row, and a write's re-read (which comes back through here) fetches it again.
+         */
+        const detailRead = result.status === api.STATUS.OK ? await readDetailItemMissingFrom(api, result) : null;
+        if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
-            state.items = result.items;
+            state.items = detailRead && detailRead.item ? result.items.concat([detailRead.item]) : result.items;
             // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
             // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
             // very failure the backend change stopped doing.
@@ -10370,12 +10512,15 @@
              * the drop can no longer be silent: every rejection is named on the console (fixtureId + code, so a
              * specific row can be traced) and counted for a non-blocking on-screen note (buildContractRejectedNote).
              */
-            if (Array.isArray(result.errors) && result.errors.length > 0) {
-                result.errors.forEach((error) => {
+            // BL-414 — an item fetched by id that the contract refuses is reported on the SAME channel as a list row.
+            const rejected = (Array.isArray(result.errors) ? result.errors : [])
+                .concat((detailRead && detailRead.errors) || []);
+            if (rejected.length > 0) {
+                rejected.forEach((error) => {
                     console.warn(
                         `[WorkCenterNext] work item rejected by contract: fixtureId=${error.fixtureId} code=${error.code}`);
                 });
-                state.contractRejectedErrors = result.errors;
+                state.contractRejectedErrors = rejected;
             } else {
                 state.contractRejectedErrors = [];
             }

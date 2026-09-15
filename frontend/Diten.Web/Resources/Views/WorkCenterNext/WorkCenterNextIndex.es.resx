@@ -1947,6 +1947,9 @@
   <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
     <value>Ya hay una reunión de revisión programada</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Esta decisión permanece bloqueada hasta que se publique el acta de la reunión de revisión vinculada.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Lista de verificación actualizada.</value>
   </data>

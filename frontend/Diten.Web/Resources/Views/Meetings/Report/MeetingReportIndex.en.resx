@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve"><value>Meeting Report</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Meetings, attendance, decisions and the actions they produced, for a filtered period.</value></data>
+  <data name="From" xml:space="preserve"><value>From</value></data>
+  <data name="To" xml:space="preserve"><value>To</value></data>
+  <data name="FilterMeetingType" xml:space="preserve"><value>Meeting type</value></data>
+  <data name="FilterOrganizer" xml:space="preserve"><value>Organizer</value></data>
+  <data name="ExportButton" xml:space="preserve"><value>Export</value></data>
+  <data name="ExportCsv" xml:space="preserve"><value>CSV</value></data>
+  <data name="ExportJson" xml:space="preserve"><value>JSON</value></data>
+  <data name="ExportMeetingsHeader" xml:space="preserve"><value>Meetings</value></data>
+  <data name="ExportDecisionsHeader" xml:space="preserve"><value>Decisions</value></data>
+  <data name="ExportActionsHeader" xml:space="preserve"><value>Actions</value></data>
+  <data name="TileMeetingCount" xml:space="preserve"><value>Meetings</value></data>
+  <data name="TileAttendanceRate" xml:space="preserve"><value>Attendance rate</value></data>
+  <data name="TileDecisionCount" xml:space="preserve"><value>Decisions</value></data>
+  <data name="TileOpenActions" xml:space="preserve"><value>Open actions</value></data>
+  <data name="TileOverdueActions" xml:space="preserve"><value>Overdue actions</value></data>
+  <data name="MeetingListTitle" xml:space="preserve"><value>Meetings</value></data>
+  <data name="DecisionsTitle" xml:space="preserve"><value>Decisions</value></data>
+  <data name="ActionsTitle" xml:space="preserve"><value>Action register</value></data>
+  <data name="ColMeetingTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ColMeetingType" xml:space="preserve"><value>Type</value></data>
+  <data name="ColStartAt" xml:space="preserve"><value>Date</value></data>
+  <data name="ColOrganizer" xml:space="preserve"><value>Organizer</value></data>
+  <data name="ColAttendance" xml:space="preserve"><value>Attendance</value></data>
+  <data name="ColDecisionMeeting" xml:space="preserve"><value>Meeting</value></data>
+  <data name="ColDecisionCode" xml:space="preserve"><value>Code</value></data>
+  <data name="ColDecisionText" xml:space="preserve"><value>Decision</value></data>
+  <data name="ColDecisionBy" xml:space="preserve"><value>Decided by</value></data>
+  <data name="ColActionTitle" xml:space="preserve"><value>Action</value></data>
+  <data name="ColActionLifecycle" xml:space="preserve"><value>Status</value></data>
+  <data name="ColActionDueAt" xml:space="preserve"><value>Due</value></data>
+  <data name="ColActionOrigin" xml:space="preserve"><value>Origin meeting</value></data>
+  <data name="ColActionCurrent" xml:space="preserve"><value>Current meeting</value></data>
+  <data name="LifecycleOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="LifecyclePlanned" xml:space="preserve"><value>Planned</value></data>
+  <data name="LifecycleInProgress" xml:space="preserve"><value>In progress</value></data>
+  <data name="LifecycleWaiting" xml:space="preserve"><value>Waiting</value></data>
+  <data name="LifecyclePendingReview" xml:space="preserve"><value>Pending review</value></data>
+  <data name="LifecycleDone" xml:space="preserve"><value>Done</value></data>
+  <data name="LifecycleCancelled" xml:space="preserve"><value>Cancelled</value></data>
+  <data name="BadgeOverdue" xml:space="preserve"><value>Overdue</value></data>
+  <data name="EmptyMeetings" xml:space="preserve"><value>No meetings in this period.</value></data>
+  <data name="EmptyDecisions" xml:space="preserve"><value>No published decisions in this period.</value></data>
+  <data name="EmptyActions" xml:space="preserve"><value>No open or overdue actions in this period.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading…</value></data>
+  <data name="ExportAuditNotRecorded" xml:space="preserve"><value>The export could not be recorded in the audit trail, so the file was not issued. Try again later.</value></data>
+  <data name="ExportTooLarge" xml:space="preserve"><value>This report covers too many rows to export. Narrow the period or the filters.</value></data>
+  <data name="ExportSnapshotNote" xml:space="preserve"><value>Every downloaded file is a snapshot as of the moment of download; not a controlled copy. For reference only — verify the current state in the system.</value></data>
+  <data name="ScopeTenant" xml:space="preserve"><value>Whole tenant</value></data>
+  <data name="ScopeScoped" xml:space="preserve"><value>Your meetings</value></data>
+  <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this report.</value></data>
+</root>

@@ -36,6 +36,11 @@ internal static partial class BusinessReferenceDataMongoResidueSweeper
     {
         ArgumentNullException.ThrowIfNull(client);
 
+        // BL-395: this drops ANOTHER run's database once it is a minute old — a live one, if that run is still going
+        // in a second process. Holding the machine-wide lock means there is no second process to drop from.
+        // CreateDatabaseAsync reaches this before it creates anything.
+        await Persistence.PlatformMongoTestLock.EnsureHeldAsync();
+
         using var cursor = await client.ListDatabaseNamesAsync();
         var databaseNames = await cursor.ToListAsync();
         var dropped = new List<string>();

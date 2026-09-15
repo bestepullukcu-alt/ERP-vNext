@@ -12,6 +12,10 @@ public sealed class BusinessReferenceDataMongoResidueSweeperTests : IAsyncLifeti
 
     public async Task InitializeAsync()
     {
+        // BL-395: these tests plant marked databases and then sweep the whole server; a second test process must not
+        // sweep them first. The machine-wide lock comes before anything touches the shared mongod.
+        await Persistence.PlatformMongoTestLock.EnsureHeldAsync();
+
         await _client.GetDatabase("admin").RunCommandAsync<BsonDocument>(new BsonDocument("ping", 1));
     }
 
