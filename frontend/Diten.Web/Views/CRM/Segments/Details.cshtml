@@ -34,7 +34,7 @@
             <div class="segd-titlerow">
                 <h5 class="segd-title">@segment.SegmentName</h5>
                 <span class="badge bg-label-@statusClass">@segment.SegmentStatus</span>
-                <span class="badge bg-label-primary">v@segment.SegmentVersion</span>
+                <span class="badge bg-label-primary">v@(segment.SegmentVersion)</span>
             </div>
             <div class="segd-headerline">
                 @(isStatic ? Localizer["ReadsStatic"] : isHybrid ? Localizer["ReadsHybrid"] : Localizer["ReadsDynamic"])
@@ -76,7 +76,7 @@
         <div class="segd-stat">
             <div class="segd-stat-label">@Localizer["SegmentVersion"]</div>
             <div class="segd-stat-valrow">
-                <span class="segd-stat-value">v@segment.SegmentVersion</span>
+                <span class="segd-stat-value">v@(segment.SegmentVersion)</span>
                 <span class="segd-stat-unit">@(frozen ? Localizer["Frozen"] : Localizer["Editable"])</span>
             </div>
         </div>
@@ -197,9 +197,15 @@
                                             <span class="segd-tag segd-tag-op segd-mono">@node.Operator</span>
                                             @if (node.Values.Count > 0)
                                             {
+                                                @* A bare 36-char UUID is machine provenance, not a readable value: the human line
+                                                   (node.Label) already names it, so its badge is suppressed. Reference-set / enum
+                                                   values (e.g. "Cardiology") are not GUID-shaped and stay visible. *@
                                                 foreach (var value in node.Values)
                                                 {
-                                                    <span class="segd-tag segd-tag-val segd-mono">@value</span>
+                                                    if (!(value?.Length == 36 && Guid.TryParse(value, out _)))
+                                                    {
+                                                        <span class="segd-tag segd-tag-val segd-mono">@value</span>
+                                                    }
                                                 }
                                             }
                                             else
@@ -420,18 +426,28 @@
                     </div>
                 </section>
 
-                @* "Used as the audience by" (consumer reverse-lookup) is intentionally NOT rendered: no backend surface
-                   provides it, and the WP forbids a fabricated consumer count. It appears only once that data exists. *@
-
-                @* ------------------------------------------ how this is stored *@
+                @* ------------------------------------------ consumers (reverse-lookup placeholder)
+                   No backend surface returns who uses this segment as their audience yet, so this card is a static
+                   empty-state ONLY: it never shows a fabricated count. It fills in once that data exists (WP §7). *@
                 <section class="card mb-4">
                     <div class="card-body p-4">
-                        <div class="segd-stored">
-                            <div class="segd-stored-title">@(isStatic ? Localizer["StoredNoteTitleStatic"] : Localizer["StoredNoteTitleDynamic"])</div>
-                            <div class="segd-stored-body">@(isStatic ? Localizer["StoredNoteBodyStatic"] : Localizer["StoredNoteBodyDynamic"])</div>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2">
+                            <i class="bx bx-target-lock dt-card-icon"></i>@Localizer["ConsumersSection"]
+                        </h6>
+                        <div class="segd-empty">
+                            <div class="segd-empty-title">@Localizer["ConsumersNoneYet"]</div>
+                            <div class="segd-empty-help">@Localizer["ConsumersNote"]</div>
                         </div>
                     </div>
                 </section>
+
+                @* ------------------------------------------ how this is stored (single app card, no card-in-card) *@
+                <div class="card shadow-none bg-label-primary mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">@(isStatic ? Localizer["StoredNoteTitleStatic"] : Localizer["StoredNoteTitleDynamic"])</h5>
+                        <p class="card-text mb-0">@(isStatic ? Localizer["StoredNoteBodyStatic"] : Localizer["StoredNoteBodyDynamic"])</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

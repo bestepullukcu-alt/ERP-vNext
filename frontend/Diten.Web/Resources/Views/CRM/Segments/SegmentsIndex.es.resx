@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Solo se almacenan las filas escritas a mano y sus motivos. Los consumidores apuntan al segmento en lugar de copiar los nombres.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>El segmento almacena la regla, nunca una lista de miembros. Cada resolución vuelve a leer datos en vivo, por lo que el recuento cambia con los datos.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>El modo de coincidencia decide cómo se combinan los bloques de nivel superior de la regla.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Usado como audiencia por</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Ninguno todavía</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Todavía ninguna campaña o conjunto de contenido apunta a este segmento. Los consumidores se enumerarán aquí cuando lo referencien.</value></data>
 </root>

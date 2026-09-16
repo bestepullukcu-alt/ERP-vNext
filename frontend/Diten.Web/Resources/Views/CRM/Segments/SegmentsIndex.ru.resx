@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Хранятся только строки, введённые вручную, и их причины. Потребители ссылаются на сегмент, а не копируют имена.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Сегмент хранит правило, а не список участников. Каждое вычисление заново читает «живые» данные, поэтому число меняется вместе с данными.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>Режим сопоставления определяет, как объединяются блоки верхнего уровня правила.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Используется как аудитория в</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Пока нет</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Пока ни одна кампания или набор контента не ссылается на этот сегмент. Потребители появятся здесь, как только начнут его использовать.</value></data>
 </root>

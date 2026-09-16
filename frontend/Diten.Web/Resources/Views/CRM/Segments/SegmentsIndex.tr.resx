@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Yalnızca elle yazılmış satırlar ve nedenleri saklanır. Tüketiciler adları kopyalamak yerine segmente işaret eder.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Segment üye listesini değil kuralı saklar. Her çözümleme canlı veriyi yeniden okur, bu yüzden sayı veri değiştikçe değişir.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>Eşleşme kipi, kuralın en üst düzey bloklarının nasıl birleştirileceğini belirler.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Hedef kitle olarak kullanan</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Henüz yok</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Bu segmenti henüz hiçbir kampanya veya içerik kümesi hedeflemiyor. Referans veren tüketiciler, veri oluştuğunda burada listelenecek.</value></data>
 </root>

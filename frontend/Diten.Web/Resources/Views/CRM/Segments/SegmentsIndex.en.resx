@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Only the hand-written rows and their reasons are stored. Consumers point at the segment rather than copying the names.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>The segment stores the rule, never a member list. Every resolve re-reads live data, so the count moves as the data moves.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>Match mode decides how the top-level blocks of the rule are combined.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Used as the audience by</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>None yet</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>No campaign or content set points at this segment yet. Consumers will be listed here once they reference it.</value></data>
 </root>

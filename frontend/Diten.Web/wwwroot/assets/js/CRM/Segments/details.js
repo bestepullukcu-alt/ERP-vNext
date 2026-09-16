@@ -142,8 +142,10 @@
                 ${data.segmentEffective === false ? `<span class="segd-chip-stat"><span class="segd-chip-label">${esc((data.reasonCodes || []).join(', '))}</span></span>` : ''}
                 <span class="segd-resolvedat">${esc(new Date().toLocaleString())}</span>`;
 
+            // A genuine 0 is a result, not a failure: the summary chips still show "0 included" and this line names it
+            // (fetch/HTTP errors take the catch path below and render a visible segd-error-row instead).
             memberBody.innerHTML = members.length === 0
-                ? `<div class="segd-empty-row">${esc(L.EmptyState || '')}</div>`
+                ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
                 : members.map(m => `
                     <div class="segd-row">
                         ${personCell(m.subjectDisplayName, m.subjectId)}

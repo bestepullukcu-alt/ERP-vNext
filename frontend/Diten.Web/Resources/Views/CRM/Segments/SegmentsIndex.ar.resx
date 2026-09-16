@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>تُخزَّن فقط الصفوف المكتوبة يدويًا وأسبابها. تشير الجهات المستهلكة إلى الشريحة بدلاً من نسخ الأسماء.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>تخزّن الشريحة القاعدة وليس قائمة الأعضاء. كل عملية حل تعيد قراءة البيانات الحية، لذا يتغير العدد مع تغير البيانات.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>يحدد وضع المطابقة كيفية دمج الكتل العليا المستوى في القاعدة.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>مُستخدَم كجمهور بواسطة</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>لا يوجد بعد</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>لا توجد بعد أي حملة أو مجموعة محتوى تستهدف هذه الشريحة. سيتم إدراج المستهلكين هنا بمجرد الإشارة إليها.</value></data>
 </root>

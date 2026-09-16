@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Seules les lignes saisies à la main et leurs motifs sont stockés. Les consommateurs pointent vers le segment au lieu de copier les noms.</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Le segment stocke la règle, jamais une liste de membres. Chaque résolution relit les données en direct, donc le nombre évolue avec les données.</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>Le mode de correspondance détermine comment les blocs de premier niveau de la règle sont combinés.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Utilisé comme audience par</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Aucun pour l'instant</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Aucune campagne ni aucun ensemble de contenu ne cible encore ce segment. Les consommateurs seront répertoriés ici dès qu'ils y feront référence.</value></data>
 </root>

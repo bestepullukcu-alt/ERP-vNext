@@ -249,4 +249,7 @@
   <data name="StoredNoteBodyStatic" xml:space="preserve"><value>只存储手工编写的行及其原因。使用方指向该分群，而不是复制名称。</value></data>
   <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>分群存储规则，绝不存储成员列表。每次解析都会重新读取实时数据，因此数字会随数据变化。</value></data>
   <data name="ClassificationNote" xml:space="preserve"><value>匹配模式决定规则的顶层块如何组合。</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>作为受众使用于</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>暂无</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>目前尚无营销活动或内容集指向此细分。一旦有消费者引用，将在此处列出。</value></data>
 </root>

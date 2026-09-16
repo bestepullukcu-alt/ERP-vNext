@@ -216,7 +216,7 @@
     gap: 9px;
     align-items: center;
     padding: 10px 14px;
-    background: var(--bs-tertiary-bg);
+    background: var(--bs-body-bg);
     border-bottom: 1px solid var(--bs-border-color);
 }
 .segment-details-scope .segd-group-tag {
@@ -224,6 +224,7 @@
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--bs-secondary-color);
     background: var(--bs-secondary-bg);
     border-radius: 4px;
@@ -233,6 +234,7 @@
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--bs-primary);
     background: rgba(var(--bs-primary-rgb), 0.12);
     border-radius: 4px;
@@ -707,24 +709,6 @@
     line-height: 1.55;
     color: var(--bs-secondary-color);
 }
-.segment-details-scope .segd-stored {
-    background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 10px;
-    padding: 18px 20px;
-}
-.segment-details-scope .segd-stored-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--bs-heading-color);
-    margin-bottom: 7px;
-}
-.segment-details-scope .segd-stored-body {
-    font-size: 12.5px;
-    line-height: 1.6;
-    color: var(--bs-secondary-color);
-}
-
 /* utility */
 .segment-details-scope .segd-hidden {
     display: none !important;
