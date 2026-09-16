@@ -11,6 +11,7 @@ public sealed class TenantResolutionMiddleware
     // vs "sign in again"), NOT display text — it is deliberately not a reason code and is not bridged to resx.
     private const string HeaderSignal = "header";
     private const string SubdomainSignal = "subdomain";
+    private const string JwtClaimSignal = "jwt";
 
     private readonly RequestDelegate _next;
     private readonly ILogger<TenantResolutionMiddleware> _logger;
@@ -70,7 +71,16 @@ public sealed class TenantResolutionMiddleware
         var isAdminHost = IsAdminHost(host);
         var isTenantHost = IsTenantHost(host);
         var isAuthLifecyclePath = IsAuthLifecyclePath(context.Request.Path);
-        var jwtTenant = ReadJwtTenant(context.User);
+        var jwtResolution = ReadJwtTenant(context.User);
+        if (jwtResolution.IsConflict)
+        {
+            await WriteTenantMismatch(
+                context,
+                TenantResolution.Conflict([JwtClaimSignal], StatusCodes.Status400BadRequest));
+            return;
+        }
+
+        var jwtTenant = jwtResolution.TenantId;
         var headerTenant = ReadHeaderTenant(context.Request.Headers[TenantHeader]);
         var subdomainTenant = ReadSubdomainTenant(context.Request.Host.Host);
 
@@ -291,11 +301,66 @@ public sealed class TenantResolutionMiddleware
         public bool IsMissing => TenantId is null && !IsConflict;
     }
 
-    private static Guid? ReadJwtTenant(ClaimsPrincipal user)
+    private readonly record struct JwtTenantResolution(Guid? TenantId, bool IsConflict)
     {
-        var raw = FindClaimValue(user, "tenant_id");
-        return Guid.TryParse(raw, out var parsed) ? parsed : null;
+        public static JwtTenantResolution Resolved(Guid? tenantId) => new(tenantId, false);
+        public static JwtTenantResolution Conflict() => new(null, true);
     }
+
+    private static JwtTenantResolution ReadJwtTenant(ClaimsPrincipal user)
+    {
+        var canonicalClaims = user.Claims
+            .Where(claim => string.Equals(claim.Type, "tenant_id", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        // A token can carry this canonical identity only once. Even two equal values are ambiguous provenance and
+        // must not be reduced to a first-claim choice.
+        if (canonicalClaims.Length > 1)
+        {
+            return JwtTenantResolution.Conflict();
+        }
+
+        var canonicalTenant = ReadGuid(canonicalClaims.SingleOrDefault()?.Value);
+        var legacyClaims = user.Claims
+            .Where(claim => IsSupportedLegacyTenantAlias(claim.Type))
+            .ToArray();
+
+        // Each supported legacy spelling is a migration compatibility path, not a repeatable tenant identity.
+        // Multiple legacy claims are rejected even when their strings would parse to the same tenant.
+        if (legacyClaims.Length > 1)
+        {
+            return JwtTenantResolution.Conflict();
+        }
+
+        var legacyTenants = legacyClaims
+            .Select(claim => ReadGuid(claim.Value))
+            .Where(tenant => tenant.HasValue)
+            .Select(tenant => tenant!.Value)
+            .ToArray();
+
+        // A supported claim family can be dual-read for contradiction detection, but selection remains the
+        // established canonical tenant_id-only contract. A legacy-only claim therefore never becomes a new
+        // tenant source; when it is the only usable signal, the existing header/subdomain fallback still runs.
+        var distinctTenants = legacyTenants
+            .Select(tenant => (Guid?)tenant)
+            .Prepend(canonicalTenant)
+            .Where(tenant => tenant.HasValue)
+            .Select(tenant => tenant!.Value)
+            .Distinct()
+            .ToArray();
+        if (distinctTenants.Length > 1)
+        {
+            return JwtTenantResolution.Conflict();
+        }
+
+        return JwtTenantResolution.Resolved(canonicalTenant);
+    }
+
+    private static Guid? ReadGuid(string? value) => Guid.TryParse(value, out var parsed) ? parsed : null;
+
+    private static bool IsSupportedLegacyTenantAlias(string claimType) =>
+        string.Equals(claimType, "tenantId", StringComparison.OrdinalIgnoreCase)
+        || claimType.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase);
 
     private static string? ReadActorType(ClaimsPrincipal user)
     {

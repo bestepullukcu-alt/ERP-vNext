@@ -297,6 +297,207 @@ public sealed class TenantContradictionGuardTests
         Assert.False(string.IsNullOrWhiteSpace(run.Body.GetProperty("traceId").GetString()));
     }
 
+    // PRODUCT-FIVE-TENANT-BINDING-PROOF-01 — these cases deliberately exercise the real middleware, rather
+    // than its private claim helpers. Authentication is already complete at this seam; this is A-level tenant
+    // resolution evidence only, not a measurement of endpoint authorization or repository access.
+    [Fact]
+    public async Task Canonical_tenant_user_claim_and_matching_header_are_forwarded_to_the_next_pipeline_stage()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("tenant_id", tenant.ToString("D")), new Claim("actor_type", "tenant_user")], tenant);
+
+        Assert.True(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status200OK, run.StatusCode);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Header_only_tenant_selection_is_forwarded_when_the_principal_is_unauthenticated()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync([], tenant);
+
+        // This records current A-level middleware behaviour. It does not claim that an [Authorize] endpoint
+        // would admit this request after the downstream authentication/authorization pipeline runs.
+        Assert.True(run.HandlerRan);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Authenticated_tenant_claim_without_actor_type_is_forwarded_by_tenant_resolution()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync([new Claim("tenant_id", tenant.ToString("D"))], tenant);
+
+        // Current A-level middleware only refuses a non-empty non-tenant_user actor value. Whether endpoint
+        // authentication/authorization later rejects this principal is C-level and intentionally unmeasured here.
+        Assert.True(run.HandlerRan);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Invalid_actor_type_is_refused_before_the_next_pipeline_stage()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("tenant_id", tenant.ToString("D")), new Claim("actor_type", "service")], tenant);
+
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status403Forbidden, run.StatusCode);
+        Assert.Equal("Forbidden Actor", run.Title);
+    }
+
+    [Fact]
+    public async Task Conflicting_duplicate_canonical_tenant_claims_are_refused_without_forwarding()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenant_id", first.ToString("D")),
+                new Claim("tenant_id", second.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], first);
+
+        // A duplicated authenticated identity is ambiguous. Selecting the first claim would bind a request to
+        // an attacker-controlled ordering, so the requested tenant-binding contract is fail closed.
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+    }
+
+    [Fact]
+    public async Task Equal_duplicate_canonical_tenant_claims_are_refused_without_forwarding()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenant_id", tenant.ToString("D")),
+                new Claim("tenant_id", tenant.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], tenant);
+
+        // Cardinality is identity provenance: two equal canonical claims are still not a singular source.
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+        Assert.Null(run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Conflicting_canonical_and_legacy_tenant_aliases_are_refused_without_forwarding()
+    {
+        var canonical = Guid.NewGuid();
+        var legacy = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenant_id", canonical.ToString("D")),
+                new Claim("tenantId", legacy.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], canonical);
+
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+    }
+
+    [Fact]
+    public async Task Legacy_only_tenant_alias_and_matching_header_are_forwarded()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("tenantId", tenant.ToString("D")), new Claim("actor_type", "tenant_user")], tenant);
+
+        Assert.True(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status200OK, run.StatusCode);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Legacy_only_tenant_alias_without_a_header_remains_missing_and_is_not_forwarded()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("tenantId", tenant.ToString("D")), new Claim("actor_type", "tenant_user")], null);
+
+        // tenantId is a migration alias used for contradiction validation only. It must not become an
+        // independent selection source when no canonical tenant_id, header, or other existing fallback exists.
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+        Assert.Equal("Missing Tenant", run.Title);
+        Assert.Null(run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Equal_canonical_and_legacy_tenant_aliases_and_matching_header_are_forwarded()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenant_id", tenant.ToString("D")),
+                new Claim("tenantId", tenant.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], tenant);
+
+        Assert.True(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status200OK, run.StatusCode);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Uri_suffix_legacy_tenant_alias_and_matching_header_are_forwarded()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("https://issuer.example/tenantId", tenant.ToString("D")), new Claim("actor_type", "tenant_user")], tenant);
+
+        Assert.True(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status200OK, run.StatusCode);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
+    [Fact]
+    public async Task Duplicate_legacy_tenant_aliases_are_refused_without_forwarding()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenantId", tenant.ToString("D")),
+                new Claim("tenantId", tenant.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], tenant);
+
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+    }
+
+    [Fact]
+    public async Task Conflicting_legacy_tenant_aliases_are_refused_without_forwarding()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [
+                new Claim("tenantId", first.ToString("D")),
+                new Claim("https://issuer.example/tenantId", second.ToString("D")),
+                new Claim("actor_type", "tenant_user")
+            ], first);
+
+        Assert.False(run.HandlerRan);
+        Assert.Equal(StatusCodes.Status400BadRequest, run.StatusCode);
+    }
+
+    [Fact]
+    public async Task Malformed_jwt_tenant_claim_does_not_override_a_valid_header_only_selection()
+    {
+        var tenant = Guid.NewGuid();
+        var run = await RunWithClaimsAsync(
+            [new Claim("tenant_id", "not-a-guid"), new Claim("actor_type", "tenant_user")], tenant);
+
+        // Current resolver treats a malformed tenant_id as absent, then preserves header precedence. This is
+        // recorded separately from the fail-closed duplicate/alias expectations above.
+        Assert.True(run.HandlerRan);
+        Assert.Equal(tenant, run.ForwardedTenant);
+    }
+
     private static async Task<Run> RunAsync(
         string path,
         Guid? jwtTenant = null,
@@ -368,6 +569,35 @@ public sealed class TenantContradictionGuardTests
             body?.TryGetProperty("title", out var title) == true ? title.GetString() : null,
             signals,
             forwarded);
+    }
+
+    private static async Task<Run> RunWithClaimsAsync(IReadOnlyCollection<Claim> claims, Guid? headerTenant)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Path = MainPath;
+        context.Request.Host = new HostString(NeutralHost);
+        context.Response.Body = new MemoryStream();
+        context.RequestServices = BuildRequestServices();
+        if (claims.Count > 0)
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
+        if (headerTenant.HasValue)
+            context.Request.Headers[TenantHeader] = headerTenant.Value.ToString("D");
+
+        var ran = false;
+        var middleware = new TenantResolutionMiddleware(
+            _ => { ran = true; return Task.CompletedTask; },
+            NullLogger<TenantResolutionMiddleware>.Instance,
+            new ConfigurationBuilder().Build(),
+            new StubEnvironment(Environments.Production));
+        await middleware.InvokeAsync(context);
+
+        Guid? forwarded = context.Items.TryGetValue(TenantHeader, out var item) && item is Guid tenant ? tenant : null;
+        context.Response.Body.Position = 0;
+        var raw = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        var body = string.IsNullOrWhiteSpace(raw) ? default(JsonElement?) : JsonDocument.Parse(raw).RootElement;
+        return new Run(ran, context.Response.StatusCode, context.Response.ContentType, body ?? default,
+            body?.TryGetProperty("title", out var title) == true ? title.GetString() : null, null, forwarded);
     }
 
     private static IServiceProvider BuildRequestServices()

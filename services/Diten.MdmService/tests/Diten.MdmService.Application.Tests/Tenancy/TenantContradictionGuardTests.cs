@@ -180,6 +180,168 @@ public sealed class TenantContradictionGuardTests
         Assert.False(tenantContext.IsResolved);
     }
 
+    // PRODUCT-FIVE-TENANT-BINDING-PROOF-01. These are A-level middleware observations. MdmService's
+    // TenantResolutionMiddleware has no actor-type branch, so authorization and repository admission remain
+    // outside this direct middleware harness.
+    [Fact]
+    public async Task Canonical_tenant_user_claim_and_matching_header_bind_the_tenant_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenant_id", tenant.ToString("D")), new Claim("actor_type", "tenant_user")], tenant);
+
+        Assert.True(handlerRan());
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Header_only_tenant_selection_binds_the_tenant_context_without_an_authenticated_claim()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync([], tenant);
+
+        Assert.True(handlerRan());
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("service")]
+    public async Task Missing_or_invalid_actor_type_does_not_change_mdm_tenant_resolution(string? actorType)
+    {
+        var tenant = Guid.NewGuid();
+        var claims = new List<Claim> { new("tenant_id", tenant.ToString("D")) };
+        if (actorType is not null) claims.Add(new Claim("actor_type", actorType));
+
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(claims, tenant);
+
+        // MDM's current tenant-resolution middleware has no actor branch. This records that limited A-level
+        // fact; neither [Authorize] nor permission handlers are in this direct middleware harness.
+        Assert.True(handlerRan());
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Conflicting_duplicate_canonical_tenant_claims_are_refused_without_binding_the_context()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenant_id", first.ToString("D")), new Claim("tenant_id", second.ToString("D"))], first);
+
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Equal_duplicate_canonical_tenant_claims_are_refused_without_binding_the_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenant_id", tenant.ToString("D")), new Claim("tenant_id", tenant.ToString("D"))], tenant);
+
+        // Equal values do not make a repeated canonical identity singular; the middleware must reject before
+        // header fallback, next-pipeline execution, or TenantContext binding.
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Conflicting_canonical_and_legacy_tenant_aliases_are_refused_without_binding_the_context()
+    {
+        var canonical = Guid.NewGuid();
+        var legacy = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenant_id", canonical.ToString("D")), new Claim("tenantId", legacy.ToString("D"))], canonical);
+
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Legacy_only_tenant_alias_and_matching_header_bind_the_tenant_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync([new Claim("tenantId", tenant.ToString("D"))], tenant);
+
+        Assert.True(handlerRan());
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Legacy_only_tenant_alias_without_a_header_remains_missing_and_does_not_bind_the_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync([new Claim("tenantId", tenant.ToString("D"))], null);
+
+        // MDM reads tenantId only to reject conflicting identity evidence. The canonical tenant_id claim and
+        // existing header selection remain the only sources that can resolve the tenant context.
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.Equal("Missing Tenant", BodyOf(context).GetProperty("title").GetString());
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Equal_canonical_and_legacy_tenant_aliases_and_matching_header_bind_the_tenant_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenant_id", tenant.ToString("D")), new Claim("tenantId", tenant.ToString("D"))], tenant);
+
+        Assert.True(handlerRan());
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
+    [Fact]
+    public async Task Duplicate_legacy_tenant_aliases_are_refused_without_binding_the_context()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenantId", tenant.ToString("D")), new Claim("tenantId", tenant.ToString("D"))], tenant);
+
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Conflicting_legacy_tenant_aliases_are_refused_without_binding_the_context()
+    {
+        var first = Guid.NewGuid();
+        var second = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync(
+            [new Claim("tenantId", first.ToString("D")), new Claim("tenantId", second.ToString("D"))], first);
+
+        Assert.False(handlerRan());
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.False(tenantContext.IsResolved);
+    }
+
+    [Fact]
+    public async Task Malformed_tenant_claim_with_valid_header_records_header_only_resolution()
+    {
+        var tenant = Guid.NewGuid();
+        var (context, tenantContext, handlerRan) = await RunWithClaimsAsync([new Claim("tenant_id", "malformed")], tenant);
+
+        Assert.True(handlerRan());
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.True(tenantContext.IsResolved);
+        Assert.Equal(tenant, tenantContext.TenantId);
+    }
+
     // ── PLUMBING ─────────────────────────────────────────────────────────────────────────────────────────
 
     /// <summary>Runs the REAL middleware over a request carrying the given tenant claim and/or header.</summary>
@@ -226,5 +388,27 @@ public sealed class TenantContradictionGuardTests
 
         Assert.False(string.IsNullOrWhiteSpace(json), "the refusal carried no body");
         return JsonDocument.Parse(json).RootElement.Clone();
+    }
+
+    private static async Task<(HttpContext Context, TenantContext Tenant, Func<bool> HandlerRan)> RunWithClaimsAsync(
+        IReadOnlyCollection<Claim> claims,
+        Guid? headerTenant)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Path = TenantPath;
+        context.Response.Body = new MemoryStream();
+        if (claims.Count > 0)
+            context.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "test"));
+        if (headerTenant.HasValue)
+            context.Request.Headers[TenantHeader] = headerTenant.Value.ToString("D");
+
+        var ran = false;
+        var tenantContext = new TenantContext();
+        var middleware = new TenantResolutionMiddleware(
+            _ => { ran = true; return Task.CompletedTask; },
+            NullLogger<TenantResolutionMiddleware>.Instance);
+        await middleware.InvokeAsync(context, tenantContext);
+        return (context, tenantContext, () => ran);
     }
 }

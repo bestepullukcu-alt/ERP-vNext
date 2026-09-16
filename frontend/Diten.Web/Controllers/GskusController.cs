@@ -727,11 +727,36 @@ public sealed class GskusController : Controller
         if (!string.IsNullOrWhiteSpace(token))
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var tenantValue = User.Claims.FirstOrDefault(claim =>
-            claim.Type == "tenantId"
-            || claim.Type == "tenant_id"
-            || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))?.Value;
-        if (!Guid.TryParse(tenantValue, out var tenantId))
+        var canonicalTenantValues = User.Claims
+            .Where(claim => claim.Type == "tenant_id")
+            .Select(claim => claim.Value)
+            .ToArray();
+        var legacyTenantValues = User.Claims
+            .Where(claim => claim.Type == "tenantId"
+                || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))
+            .Select(claim => claim.Value)
+            .ToArray();
+        var supportedTenantValues = User.Claims
+            .Where(claim => claim.Type == "tenantId"
+                || claim.Type == "tenant_id"
+                || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))
+            .Select(claim => claim.Value)
+            .ToArray();
+        var tenantValue = supportedTenantValues.FirstOrDefault();
+        if (!Guid.TryParse(tenantValue, out var tenantId)
+            || canonicalTenantValues.Length > 1
+            || legacyTenantValues.Length > 1
+            || supportedTenantValues.Any(value => Guid.TryParse(value, out var supportedTenantId)
+                && supportedTenantId != tenantId)
+            || canonicalTenantValues.Length == 1
+                && (!Guid.TryParse(canonicalTenantValues[0], out var canonicalTenantId)
+                    || canonicalTenantId != tenantId
+                    || User.Claims
+                        .Where(claim => claim.Type == "tenantId"
+                            || claim.Type.EndsWith("/tenantId", StringComparison.OrdinalIgnoreCase))
+                        .Select(claim => claim.Value)
+                        .Any(value => !Guid.TryParse(value, out var legacyTenantId)
+                            || legacyTenantId != canonicalTenantId)))
         {
             request.Dispose();
             request = null!;
