@@ -921,4 +921,7 @@
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Satın Alma</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>RFx güncelleme desteklenmiyor; yeni bir RFx oluşturun veya yayınla/teklif/kazanan akışıyla yönetin.</value></data>
 </root>

@@ -861,4 +861,7 @@
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Compras</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Proveedores</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Proveedores</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Abastecimiento</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Abastecimiento</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>No se admite la actualización de un RFx; cree un RFx nuevo o gestiónelo mediante publicación, oferta y adjudicación.</value></data>
 </root>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SourcingTitle" xml:space="preserve"><value>寻源 (RFQ/RFP)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>RFx 事件（RFQ/RFP/RFI）：邀请供应商、收集报价、评估并授标。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增 RFx</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑 RFx</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增 RFx</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑 RFx</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx 编号</value></data>
+  <data name="RfxTitle" xml:space="preserve"><value>标题</value></data>
+  <data name="RfxTitlePlaceholder" xml:space="preserve"><value>例如：Q4 原材料补给</value></data>
+  <data name="Type" xml:space="preserve"><value>类型</value></data>
+  <data name="ClosesAt" xml:space="preserve"><value>截止时间</value></data>
+  <data name="TypeRFQ" xml:space="preserve"><value>询价单 (RFQ)</value></data>
+  <data name="TypeRFP" xml:space="preserve"><value>建议书请求 (RFP)</value></data>
+  <data name="TypeRFI" xml:space="preserve"><value>信息请求 (RFI)</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>已发布</value></data>
+  <data name="StatusEvaluating" xml:space="preserve"><value>评估中</value></data>
+  <data name="StatusAwarded" xml:space="preserve"><value>已授标</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="RfxSection" xml:space="preserve"><value>RFx 详情</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>RFx 明细</value></data>
+  <data name="InvitedSection" xml:space="preserve"><value>受邀供应商</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>集成</value></data>
+  <data name="AddLine" xml:space="preserve"><value>添加明细</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>物料编号</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>例如：b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>例如：100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>计量单位</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>例如：BOX</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>至少需要一条明细（物料、数量、计量单位）。</value></data>
+  <data name="InvitedSuppliers" xml:space="preserve"><value>受邀供应商</value></data>
+  <data name="InvitedSuppliersPlaceholder" xml:space="preserve"><value>选择或输入供应商编号</value></data>
+  <data name="InvitedSuppliersHint" xml:space="preserve"><value>供应商编号将根据供应商主数据校验（fail-closed）。</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>例如：SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>外部引用</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>例如：ERP-RFX-9001</value></data>
+  <data name="BidsSection" xml:space="preserve"><value>报价</value></data>
+  <data name="BidId" xml:space="preserve"><value>报价编号</value></data>
+  <data name="BidSupplierId" xml:space="preserve"><value>供应商</value></data>
+  <data name="BidLinesSummary" xml:space="preserve"><value>明细数</value></data>
+  <data name="BidEvaluationScore" xml:space="preserve"><value>评分</value></data>
+  <data name="ActionPublish" xml:space="preserve"><value>发布</value></data>
+  <data name="ActionSubmitBid" xml:space="preserve"><value>提交报价</value></data>
+  <data name="ActionAward" xml:space="preserve"><value>授标</value></data>
+  <data name="ConfirmPublish" xml:space="preserve"><value>要将此 RFx 发布给受邀供应商吗？</value></data>
+  <data name="PublishSuccess" xml:space="preserve"><value>RFx 已发布。</value></data>
+  <data name="BidSuccess" xml:space="preserve"><value>报价已提交。</value></data>
+  <data name="AwardSuccess" xml:space="preserve"><value>授标已记录。</value></data>
+  <data name="BidSupplierPlaceholder" xml:space="preserve"><value>选择供应商</value></data>
+  <data name="BidLines" xml:space="preserve"><value>报价明细</value></data>
+  <data name="BidUnitPrice" xml:space="preserve"><value>单价</value></data>
+  <data name="BidUnitPricePlaceholder" xml:space="preserve"><value>例如：12.5000</value></data>
+  <data name="BidLeadTimeDays" xml:space="preserve"><value>交货期（天）</value></data>
+  <data name="BidLeadTimeDaysPlaceholder" xml:space="preserve"><value>例如：14</value></data>
+  <data name="AwardedBid" xml:space="preserve"><value>中标报价</value></data>
+  <data name="AwardedBidPlaceholder" xml:space="preserve"><value>选择中标报价</value></data>
+  <data name="AwardRationale" xml:space="preserve"><value>理由</value></data>
+  <data name="AwardRationalePlaceholder" xml:space="preserve"><value>例如：最低总拥有成本</value></data>
+</root>

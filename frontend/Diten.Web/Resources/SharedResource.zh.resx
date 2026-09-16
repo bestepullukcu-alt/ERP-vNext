@@ -860,4 +860,7 @@
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>采购</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>不支持修改 RFx；请新建 RFx，或通过发布、报价和授标进行管理。</value></data>
 </root>
