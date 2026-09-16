@@ -43,6 +43,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T2) — lets the committable test project unit-test ControlChannel's strict
+// C7 parsing directly (both ends of a real Unix socket, in-process, no real host process spawn needed for the
+// 13 wire-protocol negative tests) via the test-only seam below. Never widens any OTHER internal member's
+// visibility beyond what these tests exercise.
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Diten.AuthService.AccountKindAcceptanceHost.Tests")]
+
 namespace Diten.AuthService.AccountKindAcceptanceHost;
 
 // P3 — fixed host exit codes.
@@ -116,7 +122,7 @@ internal static class Program
             try
             {
                 await Console.Error.WriteLineAsync($"[host] DIAG {DateTime.UtcNow:O} waiting for hello-ack (10s)...");
-                ack = await channel.ReceiveAsync(TimeSpan.FromSeconds(10));
+                ack = await channel.ReceiveAsync(TimeSpan.FromSeconds(10), "hello-ack");
             }
             catch (TimeoutException)
             {
@@ -136,9 +142,19 @@ internal static class Program
             }
 
             // ── seed (R6, reused not copied) — mongod's data directory is the supervisor-owned <root>/mongo (D5) ──
+            // T11(a) — mongo-start-failed (mongod/pre-flight/host-build) and seed-failed (fixture SeedAsync,
+            // including its read-back detection of a silently-swallowed production DataSeeder error) are now
+            // DISTINCT: AccountKindSeedFailedException is the only path that reports seed-failed here; anything
+            // else at this stage (mongod never came up, wrong target, host failed to build) is mongo-start-failed.
             try
             {
                 seedHost = await AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(mongoDataDir);
+            }
+            catch (AccountKindSeedFailedException seedDiagEx)
+            {
+                await Console.Error.WriteLineAsync("[host] DIAG seed-failed: " + seedDiagEx);
+                await channel.SendErrorAsync("seed-failed");
+                return ExitCodes.SeedFailed;
             }
             catch (Exception diagEx)
             {
@@ -148,8 +164,19 @@ internal static class Program
             }
 
             // C8's subjects list needs 4 more display-label subjects, seeded via the SAME in-process factory —
-            // must happen BEFORE the factory is disposed below.
-            var displayLabelSubjects = await AccountKindAcceptance.SeedDisplayLabelSubjectsAsync(seedHost);
+            // must happen BEFORE the factory is disposed below. T11(a) — its failure is ALSO seed-failed, not the
+            // generic top-level protocol-violation it used to fall through to.
+            AccountKindAcceptance.DisplayLabelSubjects displayLabelSubjects;
+            try
+            {
+                displayLabelSubjects = await AccountKindAcceptance.SeedDisplayLabelSubjectsAsync(seedHost);
+            }
+            catch (Exception displayLabelEx)
+            {
+                await Console.Error.WriteLineAsync("[host] DIAG seed-failed (display-label subjects): " + displayLabelEx);
+                await channel.SendErrorAsync("seed-failed");
+                return ExitCodes.SeedFailed;
+            }
 
             await seedHost.DisposeFactoryOnlyAsync();
 
@@ -277,13 +304,27 @@ internal static class Program
                 return ExitCodes.ApiStartFailed;
             }
 
+            // T12 — machine-readable labels so nothing about trust boundaries is left to a code comment only:
+            //   loginSettings: this run's ITenantLoginSettingsClient target is the in-process stub (D6), not
+            //     Platform — "provesPlatformIntegration": false is the honest claim; a consumer must not read
+            //     `ready` and assume Platform's own login-settings contract was exercised.
+            //   authLoginProof: "real" — P7's login DID go through the genuine Auth pipeline (Kestrel ->
+            //     TenantResolution -> LoginCommandHandler -> Mongo -> JWT mint) over api.sock; this is the
+            //     part that IS proven, kept in its own field so it is never confused with the stub label above.
             await channel.SendAsync("ready", new
             {
                 apiPid,
                 apiStartTime,
                 mongodPid,
                 mongodStartTime,
-                endpoint = new { kind = "unix", socket = "api.sock" }
+                endpoint = new { kind = "unix", socket = "api.sock" },
+                loginSettings = new
+                {
+                    source = "stub",
+                    boundaryEndpoint = "/api/internal/tenants/{tenantId}/login-settings",
+                    provesPlatformIntegration = false
+                },
+                authLoginProof = "real"
             });
 
             // ── C8 seed-ready shape: actors (4, with password) + subjects (10, userId only) + foreignTenantId ──
@@ -317,7 +358,7 @@ internal static class Program
             ControlMessage shutdown;
             try
             {
-                shutdown = await channel.ReceiveAsync(TimeSpan.FromMinutes(5));
+                shutdown = await channel.ReceiveAsync(TimeSpan.FromMinutes(5), "shutdown");
             }
             catch (IOException)
             {
@@ -552,6 +593,15 @@ internal sealed class ControlChannel : IAsyncDisposable
         return new ControlChannel(socket, runId);
     }
 
+    /// <summary>
+    /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T2) — TEST-ONLY seam. Wraps an ALREADY-CONNECTED socket (the "host"
+    /// end of an in-process Unix socket pair a test sets up itself) so C7's strict parsing/framing can be
+    /// unit-tested directly — a test writes malformed bytes on the OTHER end and asserts on what ReceiveAsync
+    /// does — without spawning a real host OS process for every one of the 13 wire-protocol negative cases.
+    /// Not part of the production entry point's own call graph (Main never calls this).
+    /// </summary>
+    internal static ControlChannel ForTestingFromConnectedSocket(Socket socket, string runId) => new(socket, runId);
+
     public async Task SendAsync(string type, object payload)
     {
         var merged = new Dictionary<string, object?> { ["type"] = type, ["runId"] = _runId };
@@ -567,7 +617,15 @@ internal sealed class ControlChannel : IAsyncDisposable
     public Task SendErrorAsync(string code) =>
         SendAsync("error", new { code, message = ProtocolErrors.Text[code] });
 
-    public async Task<ControlMessage> ReceiveAsync(TimeSpan timeout)
+    public async Task<ControlMessage> ReceiveAsync(TimeSpan timeout) => await ReceiveAsync(timeout, allowedTypes: null);
+
+    /// <summary>
+    /// C7 durum makinesi — <paramref name="allowedTypes"/> verildiğinde, gelen mesajın <c>type</c>'ı bu kümede
+    /// değilse "sıra dışı mesaj" protocol-violation olarak reddedilir (ör. hello-ack beklenirken bir başka tür
+    /// gelmesi, shutdown beklenirken ikinci bir ready gelmesi). <c>error</c> her zaman örtük olarak izinlidir —
+    /// R7/C7: "error her yönde her durumda gönderilebilir ve terminaldir".
+    /// </summary>
+    public async Task<ControlMessage> ReceiveAsync(TimeSpan timeout, params string[]? allowedTypes)
     {
         var readTask = ReadStrictLineAsync();
         var completed = await Task.WhenAny(readTask, Task.Delay(timeout));
@@ -577,7 +635,15 @@ internal sealed class ControlChannel : IAsyncDisposable
         }
 
         var lineBytes = await readTask;
-        return ParseAndValidate(lineBytes);
+        var message = ParseAndValidate(lineBytes);
+
+        if (allowedTypes is { Length: > 0 } && message.Type != "error" && !allowedTypes.Contains(message.Type))
+        {
+            throw new InvalidOperationException(
+                $"protocol-violation: unexpected message type '{message.Type}' (allowed: {string.Join(",", allowedTypes)}, error).");
+        }
+
+        return message;
     }
 
     /// <summary>Byte-level strict reader: LF-delimited, size-capped WHILE reading, per-line timeout.</summary>

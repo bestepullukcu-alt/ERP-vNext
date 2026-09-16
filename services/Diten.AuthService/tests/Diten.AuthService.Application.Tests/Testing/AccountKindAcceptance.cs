@@ -24,6 +24,9 @@ using MongoDB.Driver;
 // disposal split below) that must never become part of this class's PUBLIC contract — InternalsVisibleTo, not a
 // visibility change, keeps that boundary intact.
 [assembly: InternalsVisibleTo("Diten.AuthService.AccountKindAcceptanceHost")]
+// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — the committable test project needs AccountKindSeedFailedException and
+// BeforeSeedHookForTesting to test the seed-failure DETECTION mechanism directly, in-process.
+[assembly: InternalsVisibleTo("Diten.AuthService.AccountKindAcceptanceHost.Tests")]
 
 namespace Diten.AuthService.Application.Tests.Testing;
 
@@ -79,6 +82,20 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// then — see T3). <see cref="DisposeAsync"/> no longer touches the environment AT ALL: by the time any code can
 /// call it, restoration has already happened, inside Start.</para>
 /// </summary>
+/// <summary>
+/// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — thrown ONLY when the fixture's own <c>SeedAsync</c> (repository
+/// writes + the read-back checks that verify the production DataSeeder's catalog keys actually landed) fails,
+/// never when mongod itself fails to start. The out-of-process host (W2) catches this type specifically to
+/// report protocol error code <c>seed-failed</c> (exit 4), distinct from <c>mongo-start-failed</c> (exit 2) for
+/// every other failure in the same start sequence.
+/// </summary>
+internal sealed class AccountKindSeedFailedException : Exception
+{
+    public AccountKindSeedFailedException(string message, Exception inner) : base(message, inner)
+    {
+    }
+}
+
 public static class AccountKindAcceptance
 {
     /// <summary>Fixed per DB-010: dropped and recreated on every run, never suffixed with a Guid.</summary>
@@ -275,6 +292,18 @@ public static class AccountKindAcceptance
         internal Func<WebApplicationFactory<Program>, Task>? DisposeFactoryHookForTesting { get; set; }
 
         /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — TEST-ONLY seam. When set, invoked AFTER the real host is
+        /// built (the production DataSeeder has already run against it) but BEFORE this fixture's own
+        /// <c>SeedAsync</c> — including its read-back checks that verify the production seeder's catalog keys
+        /// actually landed. Lets a test simulate "the production seeder silently swallowed an error" (its own
+        /// try/catch in Persistence/DependencyInjection.cs never surfaces one) by directly removing something
+        /// the production seeder just wrote, WITHOUT touching production code: the read-back check that follows
+        /// is then exercised against a genuinely corrupted catalog, the same way a real silent failure would
+        /// leave it. Not part of the fixture's external contract.
+        /// </summary>
+        internal Func<AuthTestHost, Task>? BeforeSeedHookForTesting { get; set; }
+
+        /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
         /// exact client settings and Guid representation the production code writes with. (Measured: a second
         /// MongoClient with default settings read zero audit rows while the row was there — the Guid encoding differed.)
@@ -296,9 +325,10 @@ public static class AccountKindAcceptance
         /// requires a strictly parameterless InitializeAsync — see below) and never called by any existing
         /// in-process xunit test.
         /// </summary>
-        public static async Task<AuthTestHost> StartWithMongoDataDirectoryAsync(string mongoDataDirectory)
+        public static async Task<AuthTestHost> StartWithMongoDataDirectoryAsync(
+            string mongoDataDirectory, Func<AuthTestHost, Task>? beforeSeedHookForTesting = null)
         {
-            var host = new AuthTestHost();
+            var host = new AuthTestHost { BeforeSeedHookForTesting = beforeSeedHookForTesting };
             await host.InitializeCoreAsync(injectFailureForTesting: false, mongoDataDirectory);
             return host;
         }
@@ -452,9 +482,14 @@ public static class AccountKindAcceptance
             // here still cleans up the resources this Start() created (mirrors the pre-build catch above).
             try
             {
+                if (BeforeSeedHookForTesting is { } beforeSeedHook)
+                {
+                    await beforeSeedHook(this);
+                }
+
                 _seed = await SeedAsync(this);
             }
-            catch
+            catch (Exception seedEx)
             {
                 try
                 {
@@ -467,7 +502,13 @@ public static class AccountKindAcceptance
                         + $"(suppressed; the seed failure is what propagates): {cleanupEx}");
                 }
 
-                throw;
+                // WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — wrapped in a distinct exception TYPE so the
+                // out-of-process host (W2) can tell "mongod itself never came up" (mongo-start-failed) apart from
+                // "mongod is fine but seeding on top of it failed" (seed-failed) — including the case where the
+                // PRODUCTION DataSeeder silently swallowed its own error (Persistence/DependencyInjection.cs's
+                // catch) and this fixture's own read-back checks above (the two ExplicitGrantOnlyPermissions
+                // lookups) are what actually catches it. No production code changes; this is the detection.
+                throw new AccountKindSeedFailedException(seedEx.Message, seedEx);
             }
         }
 
