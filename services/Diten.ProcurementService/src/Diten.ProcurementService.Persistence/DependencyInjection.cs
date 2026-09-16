@@ -39,6 +39,12 @@ public static class DependencyInjection
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));
 
         services.AddScoped<ISupplierRepository, SupplierRepository>();
+        services.AddScoped<IRfxRepository, RfxRepository>();
+
+        // PRODUCT-MASTER (MOD-0290) consume seam — progressive integration (0290 bu dilimde bağlı değil).
+        // Varsayılan permissive (hard-fail etmez); gerçek 0290 gateway'i bağlanınca bu kayıt değiştirilir.
+        services.AddSingleton<IProductReferenceValidator, PermissiveProductReferenceValidator>();
+
         services.AddScoped<IModuleSeedDataInitializer, NoOpModuleSeedDataInitializer>();
 
         // Best-effort index bootstrap (idempotent; Mongo down ise startup'ı çökertmez).
