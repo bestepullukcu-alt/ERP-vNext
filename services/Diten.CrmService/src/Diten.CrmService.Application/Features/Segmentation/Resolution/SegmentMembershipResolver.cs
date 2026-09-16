@@ -93,12 +93,28 @@ public sealed class SegmentMembershipResolver
                 return new Outcome(true, null);
             }
 
-            var context = await _attributes.LoadAsync(
-                tenantId, segment, load.Candidates, effectiveAt, cancellationToken);
+            // WP-SEG-F: for a CONTACT resolution that will actually return members (a sample or a page — never the
+            // count-only funnel where limit == 0), read the active links ONCE in bulk and stamp each contact with the
+            // name of its primary linked account (its workplace) for the secondary label. The very same link set is then
+            // handed to the attribute reader, so the link source is still touched exactly once no matter how many rules
+            // consume it, and the member SET / ORDER / count / reasons are unchanged — this is display only.
+            var candidates = load.Candidates;
+            IReadOnlyList<SegmentLinkProjection>? links = null;
+            if (limit > 0 && candidates.Count > 0
+                && string.Equals(segment.SubjectType, SegmentSubjectTypes.Contact, StringComparison.Ordinal))
+            {
+                links = await _candidates.LoadLinksAsync(
+                    tenantId, segment.SubjectType,
+                    candidates.Select(c => c.SubjectId).ToList(), cancellationToken);
+                candidates = ApplyWorkplace(candidates, links);
+            }
 
-            EvaluateCandidates(segment, load.Candidates, context, manualExcludes, members, excluded);
+            var context = await _attributes.LoadAsync(
+                tenantId, segment, candidates, effectiveAt, cancellationToken, links);
+
+            EvaluateCandidates(segment, candidates, context, manualExcludes, members, excluded);
             AddManualIncludes(
-                segment, load.Candidates, manualIncludes, manualExcludes, manualNames, members, excluded);
+                segment, candidates, manualIncludes, manualExcludes, manualNames, members, excluded);
         }
 
         // Phase 4 — one total, deterministic ordering key. Never a DateTimeOffset field.
@@ -204,6 +220,34 @@ public sealed class SegmentMembershipResolver
         return Verdict(segment, subjectType, subjectId, snapshot.DisplayName, effectiveAt, verdict,
             outcome.Matched == true ? SegmentMembershipSources.Criteria : null,
             outcome.ReasonCodes.ToArray());
+    }
+
+    /// <summary>WP-SEG-F — stamp each contact snapshot with the name of its PRIMARY linked account (its workplace),
+    /// taken from the bulk link read the resolution already performed. It is display only: it feeds the secondary label
+    /// and no rule is evaluated against it, so the member set is untouched. A contact with no named link keeps a null
+    /// workplace and the label falls back to the contact's own city, exactly as before.</summary>
+    private static IReadOnlyList<SegmentSubjectSnapshot> ApplyWorkplace(
+        IReadOnlyList<SegmentSubjectSnapshot> candidates,
+        IReadOnlyList<SegmentLinkProjection> links)
+    {
+        var workplaceByContact = links
+            .Where(l => !string.IsNullOrWhiteSpace(l.AccountName))
+            .GroupBy(l => l.ContactId)
+            .ToDictionary(
+                g => g.Key,
+                g => (g.FirstOrDefault(l => l.IsPrimary) ?? g.First()).AccountName);
+
+        if (workplaceByContact.Count == 0)
+        {
+            return candidates;
+        }
+
+        return candidates
+            .Select(c => workplaceByContact.TryGetValue(c.SubjectId, out var workplace)
+                         && !string.IsNullOrWhiteSpace(workplace)
+                ? c with { Workplace = workplace }
+                : c)
+            .ToList();
     }
 
     private static void AddStaticMembers(

@@ -29,13 +29,23 @@ public sealed record SegmentSubjectSnapshot(
     string? PreferredLanguage)
 {
     /// <summary>
-    /// MOD-0167 FU02 (WP-SEG-D) — the SECONDARY display label a preview sample or a resolved member shows under the
-    /// name, in place of a raw id. It is derived purely from fields THIS projection already carries, so it costs no
-    /// extra read and no extra round-trip: a contact prefers <see cref="Specialty"/> then <see cref="ProfessionalTitle"/>,
-    /// an account prefers <see cref="Type"/> then <see cref="Category"/>; when a <see cref="City"/> is present it is
-    /// appended as <c>"core · city"</c>, and a bare city is used on its own when no role/type is known. Like
-    /// <see cref="DisplayName"/> it is a display label only — no rule is ever evaluated against it. Null when nothing
-    /// readable can be formed.
+    /// MOD-0167 FU02 (WP-SEG-F) — the linked account name (the contact's workplace), carried additively for the sample
+    /// label only. It is filled from the primary <see cref="SegmentLinkProjection"/> during resolution (from the SAME
+    /// bulk link+account read, no extra query), is null for an account subject and for any contact with no named link,
+    /// and — like <see cref="DisplayName"/> and <see cref="SecondaryLabel"/> — is a display value only: no rule is ever
+    /// evaluated against it.
+    /// </summary>
+    public string? Workplace { get; init; }
+
+    /// <summary>
+    /// MOD-0167 FU02 (WP-SEG-D + WP-SEG-F) — the SECONDARY display label a preview sample or a resolved member shows
+    /// under the name, in place of a raw id. It is derived purely from fields THIS projection already carries, so it
+    /// costs no extra read and no extra round-trip: a contact prefers <see cref="Specialty"/> then
+    /// <see cref="ProfessionalTitle"/>, an account prefers <see cref="Type"/> then <see cref="Category"/>. The secondary
+    /// segment is the contact's <see cref="Workplace"/> when known (WP-SEG-F), falling back to <see cref="City"/>; an
+    /// account always uses its <see cref="City"/>. When both are present the label reads <c>"core · secondary"</c>, and a
+    /// bare secondary is used on its own when no role/type is known. Like <see cref="DisplayName"/> it is a display label
+    /// only — no rule is ever evaluated against it. Null when nothing readable can be formed.
     /// </summary>
     public string? SecondaryLabel
     {
@@ -45,14 +55,16 @@ public sealed record SegmentSubjectSnapshot(
             var core = isContact
                 ? FirstNonBlank(Specialty, ProfessionalTitle)
                 : FirstNonBlank(Type, Category);
-            var city = string.IsNullOrWhiteSpace(City) ? null : City.Trim();
+            var secondary = isContact
+                ? FirstNonBlank(Workplace, City)
+                : (string.IsNullOrWhiteSpace(City) ? null : City.Trim());
 
-            if (core is not null && city is not null)
+            if (core is not null && secondary is not null)
             {
-                return $"{core} · {city}";
+                return $"{core} · {secondary}";
             }
 
-            return core ?? city;
+            return core ?? secondary;
         }
     }
 
