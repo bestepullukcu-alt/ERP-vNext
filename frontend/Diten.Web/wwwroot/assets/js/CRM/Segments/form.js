@@ -186,8 +186,13 @@
                 .map(x => ({
                     value: x.id || x.value || x.accountId || x.territoryModelId || x.territoryNodeId
                         || x.globalProductId || x.productId || x.brandId,
-                    text: x.name || x.text || x.accountName || x.modelName || x.territoryName || x.nodeName
-                        || x.globalProductName || x.productName || x.brandName || x.code || x.id
+                    // SEG-E: PascalCase eşleri de düşülür — endpoint PascalCase döndürürse text=id (GUID)
+                    // fallback'ine düşmesin, dropdown gerçek isim göstersin. Value/GUID gönderimi DEĞİŞMEZ.
+                    text: x.name || x.Name || x.text || x.accountName || x.AccountName
+                        || x.modelName || x.ModelName || x.territoryName || x.TerritoryName
+                        || x.nodeName || x.NodeName || x.globalProductName || x.GlobalProductName
+                        || x.productName || x.ProductName || x.brandName || x.BrandName
+                        || x.code || x.id
                 }))
                 .filter(x => x.value);
         } catch (e) {
@@ -215,6 +220,7 @@
         condition.valueType = definition.valueType;
         condition.operator = definition.operators.includes(condition.operator) ? condition.operator : definition.operators[0];
         condition.values = [];
+        condition.valueLabels = {}; // SEG-E: eski etiketler (UI-only) sıfırlanır; payload'a girmez
         const kept = {};
         (definition.requiredParameters || []).concat(definition.optionalParameters || []).forEach(p => {
             kept[p] = (condition.parameters || {})[p] || '';
@@ -639,6 +645,13 @@
             el.innerHTML = head + extras + options.map(o =>
                 `<option value="${esc(o.value)}"${chosen.includes(String(o.value)) ? ' selected' : ''}>${esc(o.text)}</option>`).join('');
 
+            // SEG-E: seçili picker GUID'lerinin etiketi option listesinden çözülür (edit restore dahil), reads-as
+            // GUID yerine isim göstersin. valueLabels salt UI-state — buildNodes payload'ına GİRMEZ.
+            condition.valueLabels = condition.valueLabels || {};
+            options.forEach(o => { if (chosen.includes(String(o.value))) condition.valueLabels[String(o.value)] = o.text; });
+            const readbackSpan = el.closest('.seg-cond')?.querySelector('.seg-readback');
+            if (readbackSpan) readbackSpan.textContent = conditionText(condition);
+
             if (window.jQuery?.fn?.select2 && !isFrozen) {
                 const $el = window.jQuery(el);
                 if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
@@ -679,6 +692,9 @@
             wrap.innerHTML = chips + free;
             if (isFrozen) wrap.querySelectorAll('button').forEach(b => { b.disabled = true; });
         }
+
+        // SEG-E: picker etiketleri asenkron çözüldükten sonra üst reads-as cümlesi de isimlerle tazelenir.
+        updateReadback();
     };
 
     const writeSelectValue = el => {
@@ -690,6 +706,14 @@
             condition.values = condition.values || [];
             condition.values[Number(el.dataset.index) || 0] = el.value;
         }
+        // SEG-E: seçilen option'ın etiketi UI-state olarak saklanır (value→label); reads-as GUID yerine isim
+        // gösterir. Salt görünüm — buildNodes value=GUID gönderir, valueLabels payload'a girmez.
+        condition.valueLabels = condition.valueLabels || {};
+        Array.from(el.selectedOptions).forEach(o => {
+            if (String(o.value).trim() !== '') condition.valueLabels[String(o.value)] = o.text;
+        });
+        const readbackSpan = el.closest('.seg-cond')?.querySelector('.seg-readback');
+        if (readbackSpan) readbackSpan.textContent = conditionText(condition);
         refreshDerived();
     };
 
@@ -700,7 +724,12 @@
         const op = operatorLabel(condition.operator);
         const arity = arityOf(condition.operator);
         if (arity.max === 0) return `${attr} ${op}`;
-        const values = (condition.values || []).filter(v => String(v ?? '').trim() !== '');
+        // SEG-E: entity-picker value'ları GUID; varsa saklı etiket (valueLabels) gösterilir, yoksa value.
+        // Reference-set/enum'da value=isim ve valueLabels boş olduğundan davranış AYNEN korunur.
+        const labels = condition.valueLabels || {};
+        const values = (condition.values || [])
+            .filter(v => String(v ?? '').trim() !== '')
+            .map(v => labels[String(v)] ?? v);
         const valueText = values.length ? values.join(', ') : (L.AnyValuePlaceholder || '…');
         return `${attr} ${op} ${valueText}`;
     };
