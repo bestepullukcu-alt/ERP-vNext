@@ -49,5 +49,15 @@ YAPMA: yeni CSS/vendor; backend/DTO/payload; catalog-güdümlülük; blok mantı
 DOĞRULA (E2): Diten.Web.Tests baseline-diff yeşil; numaralı section + subject pill + membership radio section1 + exceptions section3 + rail sadece reach + maxDepth/subjectId gizli + every/any toggle; payload+catalog+reach+static→manuel korundu; git diff yeni CSS yok. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: numaralı section/pill/radio mevcut class'la olmuyorsa (yeni CSS gerekiyorsa DUR+raporla); blok payload/catalog/reach korunamıyorsa; kapsam Segments dışına taşarsa → DUR+raporla.
 ```
-## §37 CT → (agent sonrası)
-- İzole worktree: Diten.Web.Tests baseline-diff; logic-read (numaralı section + subject pill + membership radio section1 + exceptions section3 + rail sadece reach + maxDepth/subjectId gizli + every/any toggle); payload/catalog/reach KORUNDU; yeni CSS yok.
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
+```text
+Commit: 134afdfe · Agent: PASS (137/0) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-sega2-verify @134afdfe
+```
+- ✅ **Scope:** 10 dosya, hepsi frontend (_Form.cshtml + form.js + _IndexL10n + 7 resx). 0 yeni .css, 0 backend sızıntı.
+- ✅ **7 fix:** numaralı badge (1/2/3 bg-primary rounded-pill) + iş-dili section başlıkları; subject pill (btn-check name=SubjectType + hidden asp-for, create-immutable) section 1'de; membership radio (name=SegmentType, kontrat-güdümlü dynamic/static/hybrid — hardcode değil, hybrid düşmesin) section 1'de; exceptions section 3'te; sağ ray SADECE reach (CLASSIFICATION+LIFECYCLE kaldırıldı, MatchMode hidden section 1'de); maxDepth/subjectId gizli (parameterFields required-only; opsiyoneller seeded '' → **payload byte-identical**); every/any segmented toggle (btn-check).
+- ✅ **KORU (dokunulmadı):** buildNodes blok→tree payload (diff'te yok); catalog optgroup/operatör/değer; chip+source badge+free-text; canlı reach (SEG-C /preview); read-back+"N match this alone"; show-stored-rule; empty-state; static→manuel; same-origin proxy. currentSubjectType/SegmentType artık radio'dan okuyor.
+- ✅ **L10n:** 7 resx 211 data, dup=0, tutarlı (18 yeni anahtar + BlockToggleEvery/Any köprüde).
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137** (baseline-diff temiz).
+- ⏳ **E4:** mockup'a görsel eşleşme (fleet + ALMIBA nefrolog canlı).
+
+**SEG REDESIGN KOMPLE — SEG-C (preview) + SEG-B (Domain) + SEG-A (blok editör) + SEG-A2 (iskelet) hepsi CT-E2.**
