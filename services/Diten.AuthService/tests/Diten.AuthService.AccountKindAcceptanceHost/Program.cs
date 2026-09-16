@@ -231,13 +231,16 @@ internal static class Program
 
             var mongodStartTime = ProcessTiming.GetStartTimeUnixMs(mongodPid);
 
-            // P1 — the login-settings stub replaces the old bind/close/rebind race: a real in-process Kestrel
-            // bound directly to 127.0.0.1:0, with the actually-bound address read AFTER start.
-            platformStub = await PlatformLoginSettingsStub.StartAsync();
-
+            // F8 — generated here (not after StartAsync, as before) so the stub can be given the SAME key it
+            // must require the real client to present — the header check below is only meaningful if the stub
+            // knows the expected value before it starts accepting requests.
             var apiDllPath = ResolveApiDllPath();
             var internalEventApiKey = GenerateDisposableKey();
             var platformInternalApiKey = GenerateDisposableKey();
+
+            // P1 — the login-settings stub replaces the old bind/close/rebind race: a real in-process Kestrel
+            // bound directly to 127.0.0.1:0, with the actually-bound address read AFTER start.
+            platformStub = await PlatformLoginSettingsStub.StartAsync(platformInternalApiKey);
 
             var psi = new ProcessStartInfo
             {
@@ -414,6 +417,17 @@ internal static class Program
             }
 
             return ExitCodes.Success;
+        }
+        // F7 — a framing/parsing/state-machine violation caught HERE (i.e. not already handled by a closer,
+        // more specific catch further up, such as the hello-ack/shutdown waits' own TimeoutException/IOException
+        // handling) must still map to exit 1, not fall through to the generic catch below and report 5. This is
+        // the SAME distinction the type ProtocolFramingViolationException exists to make: caught by its own
+        // type, never by re-parsing the exception's message string.
+        catch (ProtocolFramingViolationException framingEx)
+        {
+            await Console.Error.WriteLineAsync("[host] DIAG protocol-violation (framing): " + framingEx.Message);
+            try { await channel.SendErrorAsync("protocol-violation"); } catch { /* channel already gone */ }
+            return ExitCodes.ProtocolViolation;
         }
         catch (Exception diagEx)
         {
@@ -603,6 +617,21 @@ internal static class Program
 internal sealed record ControlMessage(string Type, string RunId, string? ProtocolVersion, JsonElement Root);
 
 /// <summary>
+/// F7 — thrown ONLY for a genuine C7 wire-level framing/parsing/state-machine violation: the 65536-byte cap, the
+/// inline 5s line timeout, BOM, CR, invalid UTF-8, a duplicate JSON key at any depth, a missing/empty field,
+/// runId mismatch, protocolVersion misplaced, or an unexpected message type per the `allowedTypes` state machine.
+/// This is the type/message-string distinction Main uses to map these to exit code 1 (protocol-violation, per the
+/// P3 table), keeping them separate from any other, genuinely unexpected failure (exit 5) — never a string match
+/// on the exception's own message.
+/// </summary>
+internal sealed class ProtocolFramingViolationException : Exception
+{
+    public ProtocolFramingViolationException(string message) : base(message)
+    {
+    }
+}
+
+/// <summary>
 /// C7 — the strict wire protocol: UTF-8 bytes + single LF, no BOM/CR, 65536-byte cap enforced WHILE reading
 /// (never after an unbounded ReadLine), a 5s cap on completing a line once it starts, strict UTF-8 decoding, and
 /// duplicate-JSON-key rejection at every depth (JsonDocument does not reject these — Utf8JsonReader is used to
@@ -677,7 +706,7 @@ internal sealed class ControlChannel : IAsyncDisposable
 
         if (allowedTypes is { Length: > 0 } && message.Type != "error" && !allowedTypes.Contains(message.Type))
         {
-            throw new InvalidOperationException(
+            throw new ProtocolFramingViolationException(
                 $"protocol-violation: unexpected message type '{message.Type}' (allowed: {string.Join(",", allowedTypes)}, error).");
         }
 
@@ -695,7 +724,7 @@ internal sealed class ControlChannel : IAsyncDisposable
         {
             if (firstByteAt is { } started && DateTime.UtcNow - started > LineTimeout)
             {
-                throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+                throw new ProtocolFramingViolationException("protocol-violation: line did not complete within 5s.");
             }
 
             var readTask = _stream.ReadAsync(single.AsMemory(0, 1));
@@ -719,15 +748,15 @@ internal sealed class ControlChannel : IAsyncDisposable
             buffer.Add(single[0]);
             if (buffer.Count > MaxLineBytes)
             {
-                throw new InvalidOperationException("protocol-violation: line exceeded 65536 bytes without LF.");
+                throw new ProtocolFramingViolationException("protocol-violation: line exceeded 65536 bytes without LF.");
             }
         }
 
         static async Task<int> WithTimeout(Task<int> task, TimeSpan timeout)
         {
-            if (timeout <= TimeSpan.Zero) throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+            if (timeout <= TimeSpan.Zero) throw new ProtocolFramingViolationException("protocol-violation: line did not complete within 5s.");
             var completed = await Task.WhenAny(task, Task.Delay(timeout));
-            if (completed != task) throw new InvalidOperationException("protocol-violation: line did not complete within 5s.");
+            if (completed != task) throw new ProtocolFramingViolationException("protocol-violation: line did not complete within 5s.");
             return await task;
         }
     }
@@ -736,19 +765,19 @@ internal sealed class ControlChannel : IAsyncDisposable
     {
         if (lineBytes.Length == 0)
         {
-            throw new InvalidOperationException("protocol-violation: empty line.");
+            throw new ProtocolFramingViolationException("protocol-violation: empty line.");
         }
 
         // No BOM: EF BB BF at the start is refused outright.
         if (lineBytes.Length >= 3 && lineBytes[0] == 0xEF && lineBytes[1] == 0xBB && lineBytes[2] == 0xBF)
         {
-            throw new InvalidOperationException("protocol-violation: UTF-8 BOM present.");
+            throw new ProtocolFramingViolationException("protocol-violation: UTF-8 BOM present.");
         }
 
         // No CR anywhere (a CRLF pair would otherwise silently leave a trailing \r in the "line").
         if (Array.IndexOf(lineBytes, (byte)'\r') >= 0)
         {
-            throw new InvalidOperationException("protocol-violation: CR present.");
+            throw new ProtocolFramingViolationException("protocol-violation: CR present.");
         }
 
         // Strict UTF-8: throws on any invalid byte sequence instead of substituting U+FFFD.
@@ -760,23 +789,35 @@ internal sealed class ControlChannel : IAsyncDisposable
         }
         catch (DecoderFallbackException)
         {
-            throw new InvalidOperationException("protocol-violation: invalid UTF-8 sequence.");
+            throw new ProtocolFramingViolationException("protocol-violation: invalid UTF-8 sequence.");
         }
 
-        EnsureNoDuplicateKeys(lineBytes);
-
-        using var doc = JsonDocument.Parse(text);
-        var root = doc.RootElement.Clone();
+        // CT (2026-09-16) — a syntactically broken line threw a raw JsonException and fell to the generic catch,
+        // reporting exit 5 while every OTHER C7 violation reported 1. Both readers of the raw bytes are inside the
+        // try: the duplicate-key walk reaches the malformed bytes FIRST (measured — classifying only the parse
+        // below left the test red at exit 5), and its own duplicate-key refusal already throws the framing type,
+        // so it passes through this catch untouched.
+        JsonElement root;
+        try
+        {
+            EnsureNoDuplicateKeys(lineBytes);
+            using var doc = JsonDocument.Parse(text);
+            root = doc.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            throw new ProtocolFramingViolationException("protocol-violation: malformed JSON.");
+        }
         if (root.ValueKind != JsonValueKind.Object)
         {
-            throw new InvalidOperationException("protocol-violation: message is not a JSON object.");
+            throw new ProtocolFramingViolationException("protocol-violation: message is not a JSON object.");
         }
 
         var type = RequireString(root, "type");
         var runId = RequireString(root, "runId");
         if (!string.Equals(runId, _runId, StringComparison.Ordinal))
         {
-            throw new InvalidOperationException("protocol-violation: runId mismatch.");
+            throw new ProtocolFramingViolationException("protocol-violation: runId mismatch.");
         }
 
         string? protocolVersion = null;
@@ -784,14 +825,14 @@ internal sealed class ControlChannel : IAsyncDisposable
         {
             if (type != "hello" && type != "hello-ack")
             {
-                throw new InvalidOperationException("protocol-violation: protocolVersion outside hello/hello-ack.");
+                throw new ProtocolFramingViolationException("protocol-violation: protocolVersion outside hello/hello-ack.");
             }
 
-            protocolVersion = pv.ValueKind == JsonValueKind.String ? pv.GetString() : throw new InvalidOperationException("protocol-violation: protocolVersion not a string.");
+            protocolVersion = pv.ValueKind == JsonValueKind.String ? pv.GetString() : throw new ProtocolFramingViolationException("protocol-violation: protocolVersion not a string.");
         }
         else if (type is "hello" or "hello-ack")
         {
-            throw new InvalidOperationException("protocol-violation: protocolVersion missing on hello/hello-ack.");
+            throw new ProtocolFramingViolationException("protocol-violation: protocolVersion missing on hello/hello-ack.");
         }
 
         return new ControlMessage(type, runId, protocolVersion, root);
@@ -801,7 +842,7 @@ internal sealed class ControlChannel : IAsyncDisposable
     {
         if (!obj.TryGetProperty(name, out var value) || value.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(value.GetString()))
         {
-            throw new InvalidOperationException($"protocol-violation: '{name}' missing, null, or not a non-empty string.");
+            throw new ProtocolFramingViolationException($"protocol-violation: '{name}' missing, null, or not a non-empty string.");
         }
 
         return value.GetString()!;
@@ -830,7 +871,7 @@ internal sealed class ControlChannel : IAsyncDisposable
                         var name = reader.GetString()!;
                         if (!stack.Peek().Add(name))
                         {
-                            throw new InvalidOperationException($"protocol-violation: duplicate JSON key '{name}'.");
+                            throw new ProtocolFramingViolationException($"protocol-violation: duplicate JSON key '{name}'.");
                         }
                     }
                     break;
@@ -849,12 +890,18 @@ internal sealed class ControlChannel : IAsyncDisposable
 /// <summary>
 /// P1 — real in-process Kestrel bound to 127.0.0.1:0; the actually-bound address is read from
 /// IServerAddressesFeature AFTER start, closing the old find-free-port/close/rebind race. Serves ONLY
-/// `GET /api/internal/tenants/{id}/login-settings` (D6) — the header name it checks (X-Internal-Api-Key) is the
-/// one measured from PlatformTenantLoginSettingsClient.cs. Every other path is 404. Never Platform's own code,
-/// data, or a second real service — and this endpoint's acceptance is NOT PPM's real entitlement provider (D6).
+/// `GET /api/internal/tenants/{id}/login-settings` (D6) — the header name it requires (X-Internal-Api-Key) is
+/// the one measured from PlatformTenantLoginSettingsClient.cs, and a missing or wrong value is a real 401 (F8 —
+/// this was previously a comment claim with no corresponding code; the header is now genuinely checked against
+/// the same disposable key this run's real API child was given via PlatformService__InternalApiKey, so a
+/// successful P7 login is also proof the real client actually presented the right key, not just that SOME
+/// request reached this endpoint). Every other path is 404. Never Platform's own code, data, or a second real
+/// service — and this endpoint's acceptance is NOT PPM's real entitlement provider (D6).
 /// </summary>
 internal sealed class PlatformLoginSettingsStub : IDisposable
 {
+    private const string InternalApiKeyHeader = "X-Internal-Api-Key"; // measured from PlatformTenantLoginSettingsClient.cs
+
     private readonly WebApplication _app;
     public string BaseUrl { get; }
 
@@ -864,15 +911,22 @@ internal sealed class PlatformLoginSettingsStub : IDisposable
         BaseUrl = baseUrl;
     }
 
-    public static async Task<PlatformLoginSettingsStub> StartAsync()
+    public static async Task<PlatformLoginSettingsStub> StartAsync(string expectedInternalApiKey)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Logging.ClearProviders();
         var app = builder.Build();
 
-        app.MapGet("/api/internal/tenants/{tenantId:guid}/login-settings", (Guid tenantId) =>
+        app.MapGet("/api/internal/tenants/{tenantId:guid}/login-settings", IResult (Guid tenantId, HttpRequest request) =>
         {
+            // F8 — genuinely checked, not just documented: a missing or wrong X-Internal-Api-Key is a real 401.
+            if (!request.Headers.TryGetValue(InternalApiKeyHeader, out var presented) ||
+                !string.Equals(presented.ToString(), expectedInternalApiKey, StringComparison.Ordinal))
+            {
+                return Results.Unauthorized();
+            }
+
             var snapshot = new
             {
                 tenantId,

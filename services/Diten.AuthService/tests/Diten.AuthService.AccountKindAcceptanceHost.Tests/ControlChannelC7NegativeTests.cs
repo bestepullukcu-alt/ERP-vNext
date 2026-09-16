@@ -23,6 +23,11 @@
 //
 // D2/mechanical rule: no real OS process is spawned or signaled by this file at all — everything here is two
 // ends of one Unix socket inside the SAME test process.
+//
+// F7 (Aşama E) — every ThrowsAsync assertion below expects ProtocolFramingViolationException, not
+// InvalidOperationException. ControlChannel's own framing/parsing/state-machine throw sites were changed to
+// this dedicated type so Main can map them to exit code 1 by TYPE (a catch clause), never by re-matching the
+// exception's own message string — see Program.cs's ProtocolFramingViolationException and its catch clause.
 
 using System.Net.Sockets;
 using System.Text;
@@ -76,7 +81,7 @@ public sealed class ControlChannelC7NegativeTests
             // before starting the receive deadlocks (writer waits on reader, reader never started). Race them:
             // ReadStrictLineAsync reads one byte at a time, which drains the writer as it goes.
             var sendTask = SendRaw(client, new byte[65537]); // no trailing LF — must be refused while reading
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(5)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(5)));
             Assert.Contains("protocol-violation", ex.Message);
             Assert.Contains("65536", ex.Message);
             try { await sendTask; } catch { /* the send may itself fault once the receiver rejects and disposes — fine */ }
@@ -93,7 +98,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             byte[] invalid = { 0xFF, 0xFE, (byte)'\n' }; // not valid UTF-8
             await SendRaw(client, invalid);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("UTF-8", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -109,7 +114,7 @@ public sealed class ControlChannelC7NegativeTests
             var json = Encoding.UTF8.GetBytes($"{{\"type\":\"hello-ack\",\"runId\":\"{RunId}\",\"protocolVersion\":\"1.2\"}}\n");
             var withBom = new byte[] { 0xEF, 0xBB, 0xBF }.Concat(json).ToArray();
             await SendRaw(client, withBom);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("BOM", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -124,7 +129,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes($"{{\"type\":\"hello-ack\",\r\"runId\":\"{RunId}\",\"protocolVersion\":\"1.2\"}}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("CR", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -140,7 +145,7 @@ public sealed class ControlChannelC7NegativeTests
             var json = Encoding.UTF8.GetBytes(
                 $"{{\"type\":\"hello-ack\",\"runId\":\"{RunId}\",\"protocolVersion\":\"1.2\",\"protocolVersion\":\"1.3\"}}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("duplicate", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -156,7 +161,7 @@ public sealed class ControlChannelC7NegativeTests
             var json = Encoding.UTF8.GetBytes(
                 $"{{\"type\":\"ready\",\"runId\":\"{RunId}\",\"endpoint\":{{\"kind\":\"unix\",\"kind\":\"tls\"}}}}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("duplicate", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -171,7 +176,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes("{\"type\":\"hello-ack\",\"protocolVersion\":\"1.2\"}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("runId", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -186,7 +191,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes("{\"type\":\"hello-ack\",\"runId\":\"not-the-expected-run-id\",\"protocolVersion\":\"1.2\"}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("runId mismatch", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -201,7 +206,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes($"{{\"type\":\"ready\",\"runId\":\"{RunId}\"}}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "hello-ack"));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "hello-ack"));
             Assert.Contains("unexpected message type", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -216,10 +221,10 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes($"{{\"type\":\"ready\",\"runId\":\"{RunId}\"}}\n");
             await SendRaw(client, json);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "shutdown"));
+            await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "shutdown"));
             // second attempt, same channel state expectation — still rejected, not "learned" as acceptable
             await SendRaw(client, json);
-            var ex2 = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "shutdown"));
+            var ex2 = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3), "shutdown"));
             Assert.Contains("unexpected message type", ex2.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -253,7 +258,7 @@ public sealed class ControlChannelC7NegativeTests
         {
             var json = Encoding.UTF8.GetBytes($"{{\"type\":\"ready\",\"runId\":\"{RunId}\",\"protocolVersion\":\"1.2\"}}\n");
             await SendRaw(client, json);
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.Contains("protocolVersion", ex.Message);
         }
         finally { client.Dispose(); Cleanup(dir); }
@@ -289,7 +294,7 @@ public sealed class ControlChannelC7NegativeTests
             // will never reach LF. The receive-level 10s test timeout must not fire first, so ReceiveAsync is
             // given a generous outer bound while the assertion is really about the channel's OWN 5s inline cap.
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(10)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(10)));
             sw.Stop();
             Assert.Contains("5s", ex.Message);
             Assert.InRange(sw.Elapsed.TotalSeconds, 4.5, 9.5);
@@ -311,7 +316,7 @@ public sealed class ControlChannelC7NegativeTests
             var prefix = Encoding.UTF8.GetBytes($"{{\"type\":\"hello-ack\",\"canaryField\":\"{canary}\"");
             var badTail = new byte[] { 0xFF, 0xFE };
             await SendRaw(client, prefix.Concat(badTail).Concat(new byte[] { (byte)'\n' }).ToArray());
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
+            var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
             Assert.DoesNotContain(canary, ex.Message);
             Assert.DoesNotContain(canary, ex.ToString());
         }
