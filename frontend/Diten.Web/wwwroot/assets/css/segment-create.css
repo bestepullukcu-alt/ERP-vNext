@@ -29,9 +29,22 @@
     --seg-danger: oklch(0.55 0.17 25);
     --seg-ok: oklch(0.72 0.14 150);
 
-    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    /* WP-SEG-A4 — the root NO LONGER sets the Inter font. "Kabuk app, içerik mockup": the card chrome
+       (.card / .card-body / h6.text-heading / .card-section-desc / .bx) has no `seg-*` class, so it inherits
+       the app font (Public Sans) from the shell — the sections read as part of the app. Inter is re-applied
+       BELOW, only to the inner mockup elements (every `seg-*` node), so the ported look is untouched. */
     -webkit-font-smoothing: antialiased;
     color: var(--seg-text);
+}
+
+/* WP-SEG-A4 — Inter is the mockup's font and belongs ONLY to the mockup content. Every inner element carries a
+   `seg-*` class; the app card chrome carries none, so this rule can never reach it (no `.card`/theme override —
+   WP §4). Specificity (0,3,0 via :not) beats the `.segment-create-scope .seg-* { font-family: inherit }` rules
+   below so the leaf controls resolve to Inter rather than the app font; `.seg-json-pre` is excluded so its
+   deliberate monospace survives, and `.bx` glyphs keep the boxicons font from their own rule. */
+.segment-create-scope [class^="seg-"]:not(.seg-json-pre),
+.segment-create-scope [class*=" seg-"]:not(.seg-json-pre) {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
 }
 
 /* ------------------------------------------------------------------ layout */
@@ -46,14 +59,17 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    /* WP-SEG-A4 — the sections now carry Bootstrap `mb-4` (Tasks standard) for their vertical rhythm, so the
+       flex `gap` that used to space the old `seg-card`s is dropped to avoid a double gap. */
+    gap: 0;
 }
 .segment-create-scope .seg-rail {
     flex: 0 1 340px;
     min-width: 260px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    /* WP-SEG-A4 — same as .seg-main: `mb-4` on the rail cards owns the vertical spacing now. */
+    gap: 0;
     position: sticky;
     top: 18px;
 }

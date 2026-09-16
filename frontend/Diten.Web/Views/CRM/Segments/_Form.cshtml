@@ -55,12 +55,10 @@
            membership radio-cards feed the same hidden contract fields the classification card used to carry.
            Description / Notes / Business unit / Status keep round-tripping as hidden fields (the mockup shows none of
            them), so no value is ever lost while the visible form matches the mockup one-to-one. *@
-        <section class="seg-card">
-            <div class="seg-section-head">
-                <span class="seg-section-no">1</span>
-                <span class="seg-section-title">@Localizer["Section1Title"]</span>
-            </div>
-            <div class="seg-section-help">@Localizer["Section1Help"]</div>
+        <section class="card mb-4">
+            <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["Section1Title"]</h6>
+            <p class="card-section-desc mb-4">@Localizer["Section1Help"]</p>
 
             <div class="seg-grid">
                 <div>
@@ -115,18 +113,17 @@
             @* Match mode is DERIVED, not chosen: the blocks carry EVERY/ANY and always combine with AND ALSO, so the
                root match mode is fixed to "all". It is posted as a hidden field, so the payload is unchanged. *@
             <input type="hidden" asp-for="MatchMode" id="MatchMode" value="all" />
+            </div>
         </section>
 
         @* SECTION 2 — the criteria block editor (D2 embedded). Hidden for a `static` segment (its membership IS the
            manual list) — form.js toggles it by segment type. Conditions inside a block combine with EVERY/ANY and the
            blocks always combine with AND ALSO. The block model maps to the exact stored tree the runtime persists
            (MatchMode=all + one group per block + predicates inside), so the posted payload is byte-identical. *@
-        <section class="seg-card" id="criteriaSection">
-            <div class="seg-section-head">
-                <span class="seg-section-no">2</span>
-                <span class="seg-section-title">@Localizer["Section2Title"]</span>
-            </div>
-            <div class="seg-section-help">@Localizer["Section2Help"]</div>
+        <section class="card mb-4" id="criteriaSection">
+            <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-filter-alt dt-card-icon" aria-hidden="true"></i>@Localizer["Section2Title"]</h6>
+            <p class="card-section-desc mb-4">@Localizer["Section2Help"]</p>
 
             @if (Model.IsCriteriaFrozen)
             {
@@ -181,18 +178,17 @@
 
             @* The tree is posted as JSON: the runtime assigns the real NodeIds and remaps the parents. *@
             <input type="hidden" asp-for="CriteriaJson" id="CriteriaJson" />
+            </div>
         </section>
 
         @* SECTION 3 — exceptions (always-include / never-include) and the validity window. The manual sub-editor is
            embedded here; only include/exclude ever live there. It is hidden for a `dynamic` segment (which refuses
            manual rows outright) — form.js toggles ONLY the manual block, so the validity window below always shows.
            For a `static` segment this IS the membership list. *@
-        <section class="seg-card">
-            <div class="seg-section-head">
-                <span class="seg-section-no">3</span>
-                <span class="seg-section-title">@Localizer["Section3Title"]</span>
-            </div>
-            <div class="seg-section-help">@Localizer["Section3Help"]</div>
+        <section class="card mb-4">
+            <div class="card-body p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar-event dt-card-icon" aria-hidden="true"></i>@Localizer["Section3Title"]</h6>
+            <p class="card-section-desc mb-4">@Localizer["Section3Help"]</p>
 
             <div id="manualMembershipSection">
                 <div class="seg-subhead">
@@ -231,6 +227,7 @@
                 </div>
             </div>
             <input type="hidden" asp-for="SegmentStatus" />
+            </div>
         </section>
     </div>
 
@@ -241,8 +238,9 @@
     <div class="seg-rail" id="reachSection">
         <div id="reachRail" data-endpoint="/CRM/Segments/api" class="seg-rail-inner">
 
-            <section class="seg-card">
-                <div class="seg-rail-kicker">@Localizer["ReachSection"]</div>
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-bar-chart-alt-2 dt-card-icon" aria-hidden="true"></i>@Localizer["ReachSection"]</h6>
                 <div id="reachIdle" class="seg-reach-idle">@Localizer["ReachIdleHelp"]</div>
                 <div id="reachContent" class="d-none">
                     <div class="seg-reach-big-row">
@@ -254,22 +252,29 @@
                 </div>
                 <div id="reachError" class="seg-reach-error d-none"></div>
                 <button type="button" id="btnPreviewSample" class="seg-preview-btn">@Localizer["PreviewSample50"]</button>
+                </div>
             </section>
 
-            <section class="seg-card">
-                <div class="seg-rail-kicker">@Localizer["ReachSampleLabel"]</div>
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-user dt-card-icon" aria-hidden="true"></i>@Localizer["ReachSampleLabel"]</h6>
                 <div id="reachSample" class="seg-samples"></div>
+                </div>
             </section>
 
-            <section class="seg-card seg-stored-card">
-                <div class="seg-stored-title">@Localizer["HowStoredTitle"]</div>
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-data dt-card-icon" aria-hidden="true"></i>@Localizer["HowStoredTitle"]</h6>
                 <div class="seg-stored-body">@Localizer["MembershipNeverStoredHelp"]</div>
+                </div>
             </section>
 
-            <section class="seg-card seg-checklist-card">
-                <div class="seg-rail-kicker">@Localizer["ActivationChecklist"]</div>
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-check-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ActivationChecklist"]</h6>
                 <ul class="seg-checklist" id="reachChecklistItems"></ul>
                 <div class="seg-checklist-note">@Localizer["ChecklistFreezeNote"]</div>
+                </div>
             </section>
         </div>
     </div>
