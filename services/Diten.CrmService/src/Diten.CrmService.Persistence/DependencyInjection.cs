@@ -637,6 +637,12 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);
             map.GetMemberMap(x => x.OrderedConceptTypes)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // SCMM-10 (WP-A) — the template-level for-whom AudienceProfile refs are a List<Guid> and need the enumerable
+            // string-Guid serializer (like OrderedConceptTypes), else they store binary and any by-ref filter compares
+            // string vs binary and silently matches nothing (the new-field class-map trap). ModeratorRoleType is a plain
+            // string — AutoMap handles it, and an old document without either element reads back as null / empty (additive).
+            map.GetMemberMap(x => x.ForWhomAudienceProfileIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
         // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
         // ConceptTypeId Guid falls through to the global Standard (binary sub-type 4) serializer and every branch-step
@@ -651,6 +657,11 @@ public static class DependencyInjection
             {
                 map.AutoMap();
                 map.GetMemberMap(s => s.ConceptTypeId).SetSerializer(stringGuid);
+                // SCMM-10 (WP-A, D-e) — the step-level AllowedRoleRefs / AudienceDimensionRefs were removed (moved to
+                // the template level). The CRM maps are otherwise STRICT, so a legacy branch document still carrying
+                // those elements would throw FormatException on read; ignoring extra elements is the read-time migration
+                // that lets pre-WP-A templates deserialize unchanged.
+                map.SetIgnoreExtraElements(true);
             });
         }
         Map<KnowledgeContentConceptLink>(map =>
