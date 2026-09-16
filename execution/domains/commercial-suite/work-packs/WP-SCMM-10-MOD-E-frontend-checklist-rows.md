@@ -61,11 +61,20 @@ DOĞRULA (E2): frontend/Diten.Web.Tests baseline-diff yeşil; dikey satır+Detai
 Durma: SortableJS/collapse mevcut class'la olmuyor + yeni CSS/dep gerekiyorsa DUR+raporla; backend sözleşmesi farklıysa; kapsam KnowledgeConcepts dışına taşarsa; CRM paralel dosya çakışması → DUR + raporla.
 ```
 
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 46796154 · Agent: PASS (owner dispatch) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-wpe-verify @46796154
 ```
-- İzole worktree → Diten.Web.Tests baseline-diff; template-form.js logic-read (dikey satır anatomisi, Details=Min/Max only + Moderator/Audience YOK, SortableJS+↑↓ reorder, branch number/step-count/paging, refs-free); TemplateCreate/Edit.cshtml sortable.js script; **yeni CSS/style/vendor yok** diff; template-level Moderator/ForWhom dokunulmadı.
+- ✅ **Scope:** yalnız KnowledgeConcepts frontend — template-form.js + TemplateCreate.cshtml + TemplateEdit.cshtml (sortable.js script) + _TemplateFormL10n.cshtml + 7 view-resx. Backend/başka modül sızıntısı YOK.
+- ✅ **Details = YALNIZ Min/Max** — moderator/audience alanı YOK (yalnız açıklama comment'i "Moderator/ForWhom remain template-level"). Çelişki doğru çözüldü.
+- ✅ **submit/payload dokunulmadı** — yalnız input render değişti (js-step-min/max Details'e taşındı); branchPayload builder diff'te yok → step refs-free `{conceptTypeId,minSelection,maxSelection}` + template-level Moderator/ForWhom korunuyor.
+- ✅ **Yeni CSS/vendor YOK** — 0 yeni .css/vendor; SortableJS repo'da mevcut, iki template view'e script eklendi; net +2 `style=` ama MEVCUT değer (`width:5.5rem`, yeni değer/class değil). Kaldırılan semboller (STEPS_PER_PAGE/stepPage/stepCard/addStepCard/arrow) sarkan ref yok.
+- ✅ **L10n:** 7 view-resx dupe=0, Details key mevcut.
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137, 0 fail** (baseline-diff temiz).
+- ⏳ **E4:** A2d manuel test + WP-F rötuşları (aşağıda) sonrası.
+
+## Kalan revizyon → WP-SCMM-10-MOD-F (owner rötuşu, 2026-09-16)
+Owner 3 rötuş istedi: (1) row butonları TaskCenter checklist stiline; (2) branch-name input kart genişliğinde (max-width:18rem kaldır); (3) "N steps" badge sil butonunun YANINA (sağa). → WP-SCMM-10-MOD-F-frontend-checklist-polish.md.
 
 ## Kalan (bu WP dışı)
 - A2d manuel test (yeni dikey-satır layout) → A3→A8 → sync/PR. · Faz-2 position lookup.
