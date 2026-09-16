@@ -59,11 +59,16 @@ DOĞRULA (E2): frontend/Diten.Web.Tests baseline-diff yeşil; step yan-yana kart
 Durma koşulları: paging mevcut class'larla yapılamıyorsa (yeni CSS gerekiyorsa DUR+raporla, yazma) · backend sözleşmesi beklenenden farklıysa · kapsam frontend/KnowledgeConcepts dışına taşarsa · CRM paralel işiyle dosya çakışması → DUR + raporla.
 ```
 
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 81f2bfdd · Agent: PASS (owner dispatch) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-wpd-verify @81f2bfdd
 ```
-- İzole worktree → dotnet test frontend/Diten.Web.Tests baseline-diff; template-form.js logic-read (yan-yana kart + step/branch paging + refs-free + compose/freeze); **git diff'te yeni CSS/style yok** doğrula; yalnız KnowledgeConcepts frontend değişti.
+- ✅ **Scope:** yalnız KnowledgeConcepts frontend — template-form.js + _TemplateFormL10n.cshtml + 7 view-resx. Backend/SharedResource/başka modül sızıntısı YOK.
+- ✅ **Yeni CSS/inline-style YOK (WP'nin kritik kısıtı):** değişen `.css` dosyası = 0; git diff eklenen `style=` (4) == silinen (4) → yeni inline style yok. Yalnız mevcut class'lar (card border shadow-none / pagination / page-item / page-link / btn-icon / badge / form-select-sm).
+- ✅ **Logic:** step'ler yan-yana `card border shadow-none` + `→` (bx-right-arrow-alt); `STEPS_PER_PAGE=4`; Bootstrap `.pagination` prev/info/next; step paging (slice) + branch paging (branchPage, 1 branch/sayfa); **overflow-x/flex-nowrap scroll YOK**; step refs-free {conceptTypeId,min,max}; move(←/→) + compose-then-add + publish-freeze korundu. Create+Edit paylaşılan renderer.
+- ✅ **L10n:** 7 view-resx dupe=0, yeni key Prev/Next/BranchLabel hepsinde; SharedResource'a dokunulmadı → NavGuard etkilenmez.
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137, 0 fail** (baseline-diff temiz).
+- ⏳ **E4:** A2d manuel test (nihai model + yeni layout, scroll yok/paging).
 
 ## Kalan (bu WP dışı)
 - A2d manuel test (nihai model + yeni layout) → A3→A8 → sync/PR. · Faz-2 ModeratorRoleType=position → MOD-0288 positions lookup.
