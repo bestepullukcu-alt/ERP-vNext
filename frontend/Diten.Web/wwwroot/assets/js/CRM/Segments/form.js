@@ -82,8 +82,11 @@
     };
     const getJson = path => fetch(`${endpoint}${path}`, { credentials: 'same-origin', headers: { Accept: 'application/json' } }).then(envelope);
 
-    const currentSubjectType = () => (subjectTypeEl?.value || editor.dataset.subjectType || 'contact').trim();
-    const currentSegmentType = () => (segmentTypeEl?.value || 'dynamic').trim();
+    // Subject is now a pill toggle and segment type a radio-card group (both post their value through a checked radio;
+    // for an immutable subject on edit the disabled-but-checked pill still answers here, and a hidden input posts it).
+    const checkedValue = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
+    const currentSubjectType = () => (checkedValue('SubjectType') || subjectTypeEl?.value || editor.dataset.subjectType || 'contact').trim();
+    const currentSegmentType = () => (checkedValue('SegmentType') || segmentTypeEl?.value || 'dynamic').trim();
 
     // ---------------------------------------------------------------- presentation labels (translation only)
 
@@ -421,15 +424,16 @@
     const parameterFields = condition => {
         const definition = attributeFor(condition.attributeCode);
         if (!definition) return '';
+        // Only REQUIRED parameters get a field. Optional parameters (the niche ones the mockup never shows, e.g.
+        // concept.affinity maxDepth or a subjectId hint) are hidden in Phase-1: their values stay seeded (empty) in
+        // the model by applyAttribute, so the posted payload is unchanged — the bare input is simply not rendered.
         const required = definition.requiredParameters || [];
-        const optional = definition.optionalParameters || [];
-        if (required.length === 0 && optional.length === 0) return '';
+        if (required.length === 0) return '';
 
-        const fields = required.concat(optional).map(name => {
-            const isRequired = required.includes(name);
+        const fields = required.map(name => {
             const value = (condition.parameters || {})[name] || '';
             return `<div class="col-6 col-md-3">
-                        <label class="form-label small mb-1">${esc(name)}${isRequired ? ' <span class="text-danger">*</span>' : ''}</label>
+                        <label class="form-label small mb-1">${esc(name)} <span class="text-danger">*</span></label>
                         <input type="text" class="form-control form-control-sm js-node-param"
                             data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />
                     </div>`;
@@ -511,10 +515,18 @@
     };
 
     const renderBlock = (block, index) => {
-        const matchOptions = [
-            `<option value="and"${block.match === 'and' ? ' selected' : ''}>${esc(L.BlockMatchEvery || 'ALL of these')}</option>`,
-            `<option value="or"${block.match === 'or' ? ' selected' : ''}>${esc(L.BlockMatchAny || 'ANY of these')}</option>`
-        ].join('');
+        // "Match [every|any] condition below" — a segmented toggle in place of the old dropdown. The stored value is
+        // unchanged (every=and, any=or); the change handler still reads it off the checked radio's data-block/value.
+        const toggleName = `blockmatch-${block.blockId}`;
+        const matchToggle = `
+            <div class="btn-group btn-group-sm" role="group" aria-label="${esc(L.BlockMatchLabel || 'match')}">
+                <input type="radio" class="btn-check js-block-match" name="${esc(toggleName)}" id="bm-and-${esc(block.blockId)}"
+                    data-block="${esc(block.blockId)}" value="and" autocomplete="off"${block.match === 'and' ? ' checked' : ''}>
+                <label class="btn btn-outline-primary" for="bm-and-${esc(block.blockId)}">${esc(L.BlockToggleEvery || 'every')}</label>
+                <input type="radio" class="btn-check js-block-match" name="${esc(toggleName)}" id="bm-or-${esc(block.blockId)}"
+                    data-block="${esc(block.blockId)}" value="or" autocomplete="off"${block.match === 'or' ? ' checked' : ''}>
+                <label class="btn btn-outline-primary" for="bm-or-${esc(block.blockId)}">${esc(L.BlockToggleAny || 'any')}</label>
+            </div>`;
 
         const conditions = block.conditions.map(c => renderCondition(c, block)).join('');
 
@@ -531,7 +543,7 @@
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <span class="badge bg-label-primary text-uppercase">${esc(L.BlockNode || 'Block')} ${index + 1}</span>
                     <span class="text-muted small">${esc(L.BlockMatchLabel || 'Match')}</span>
-                    <select class="form-select form-select-sm js-block-match" data-block="${esc(block.blockId)}" style="width: 11rem">${matchOptions}</select>
+                    ${matchToggle}
                 </div>
                 ${isFrozen ? '' : `<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-block" data-block="${esc(block.blockId)}"
                     title="${esc(L.RemoveBlock || 'Remove block')}"><i class="bx bx-trash"></i></button>`}
@@ -922,7 +934,8 @@
         }
 
         // The applicable attribute set depends on the subject type; the reach depends on both, and on the name/date.
-        if (event.target === subjectTypeEl || event.target === segmentTypeEl) {
+        // Subject is a pill toggle and segment type a radio-card group, so react to a change on either radio group.
+        if (event.target.name === 'SubjectType' || event.target.name === 'SegmentType') {
             editor.dataset.subjectType = currentSubjectType();
             applySegmentTypeVisibility();
             normalizeForSubject();

@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>الحسابات حسب النوع</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>يمكن الوصول إليهم حسب الموافقة</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>لديه تغطية إقليمية</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>ما هذا القطاع؟</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>سمِّه، واختر من يجمعهم وكيفية تحديد العضوية.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>من ينتمي إليه؟</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>أنشئ القاعدة. تُدمج الكتل دائمًا بـ «وأيضًا».</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>الاستثناءات والصلاحية</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>الأشخاص الذين يُضمَّنون دائمًا أو لا يُضمَّنون أبدًا، ومتى يكون القطاع قابلاً للاستخدام.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>من يجمع؟</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>الأطباء / جهات الاتصال</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>المؤسسات / الحسابات</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>كيف تُحدَّد العضوية؟</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>بقاعدة</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>يُحدَّد الأعضاء من قاعدة ويظلون محدَّثين تلقائيًا.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>بقائمة ثابتة</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>تختار الأشخاص بنفسك؛ لا تتغير القائمة إلا عندما تغيّرها.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>قاعدة، مع استثناءات</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>تحدد القاعدة الأساس، بالإضافة إلى أشخاص تُضمِّنهم دائمًا أو لا تُضمِّنهم أبدًا.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>الكل</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>أيّ</value></data>
 </root>

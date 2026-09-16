@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>Comptes par type</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>Joignables selon le consentement</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>Avec couverture de territoire</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>Qu'est-ce que ce segment ?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Nommez-le, choisissez qui il regroupe et comment l'appartenance est décidée.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>Qui en fait partie ?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Construisez la règle. Les blocs se combinent toujours avec ET AUSSI.</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Exceptions et validité</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Les personnes à toujours ou à ne jamais inclure, et quand le segment est utilisable.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>Qui regroupe-t-il ?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Médecins / contacts</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Établissements / comptes</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>Comment l'appartenance est-elle décidée ?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>Par une règle</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Les membres sont déterminés par une règle et restent à jour automatiquement.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>Par une liste fixe</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Vous choisissez vous-même les personnes ; la liste ne change que si vous la modifiez.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Une règle, avec des exceptions</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Une règle définit le noyau, plus les personnes à toujours ou jamais inclure.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>toutes</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>au moins une</value></data>
 </root>

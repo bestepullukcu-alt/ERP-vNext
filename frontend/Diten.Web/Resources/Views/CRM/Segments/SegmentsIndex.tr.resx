@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>Türe göre hesaplar</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>Onaya göre ulaşılabilir</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>Bölge kapsamı var</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>Bu segment nedir?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Ad verin, kimleri grupladığını ve üyeliğin nasıl belirlendiğini seçin.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>Kimler buna dahil?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Kuralı oluşturun. Bloklar her zaman VE AYRICA ile birleşir.</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>İstisnalar ve geçerlilik</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Her zaman dahil edilecek veya asla dahil edilmeyecek kişiler ve segmentin ne zaman kullanılabilir olduğu.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>Kimleri gruplar?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Doktorlar / kişiler</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Kurumlar / hesaplar</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>Üyelik nasıl belirlenir?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>Bir kuralla</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Üyeler bir kuraldan hesaplanır ve otomatik olarak güncel kalır.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>Sabit bir listeyle</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Kişileri kendiniz seçersiniz; liste yalnızca siz değiştirdiğinizde değişir.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Kural, istisnalarla</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Bir kural çekirdeği belirler, ayrıca her zaman veya asla dahil edeceğiniz kişiler.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>tümü</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>herhangi biri</value></data>
 </root>

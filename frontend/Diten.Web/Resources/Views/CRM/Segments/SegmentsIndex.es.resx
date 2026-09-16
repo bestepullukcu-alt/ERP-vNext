@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>Cuentas por tipo</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>Alcanzables por consentimiento</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>Con cobertura de territorio</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>¿Qué es este segmento?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Ponle nombre, elige a quién agrupa y cómo se decide la pertenencia.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>¿Quién pertenece a él?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Cree la regla. Los bloques se combinan siempre con Y ADEMÁS.</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Excepciones y validez</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Personas que siempre se incluyen o nunca se incluyen, y cuándo el segmento es utilizable.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>¿A quién agrupa?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Médicos / contactos</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Instituciones / cuentas</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>¿Cómo se decide la pertenencia?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>Por una regla</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Los miembros se determinan a partir de una regla y se mantienen actualizados automáticamente.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>Por una lista fija</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Usted elige a las personas; la lista solo cambia cuando usted la cambia.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Una regla, con excepciones</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Una regla decide el núcleo, más las personas que siempre o nunca se incluyen.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>todas</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>cualquiera</value></data>
 </root>

@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>Accounts by type</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>Reachable by consent</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>Has territory coverage</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>What is this segment?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Name it, choose who it groups, and how membership is decided.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>Who belongs in it?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Build the rule. Blocks always combine with AND ALSO.</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Exceptions &amp; validity</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>People to always include or never include, and when the segment is usable.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>Who does it group?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Doctors / contacts</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Institutions / accounts</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>How is membership decided?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>By a rule</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Members are worked out from a rule and stay up to date automatically.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>By a fixed list</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>You pick the people yourself; the list only changes when you change it.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>A rule, with exceptions</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>A rule decides the core, plus people you always or never include.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>every</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>any</value></data>
 </root>

@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>按类型筛选客户</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>依据同意可触达</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>有区域覆盖</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>这是什么细分？</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>为其命名，选择它分组的对象以及如何确定成员资格。</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>谁属于它？</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>构建规则。块之间始终以“并且”组合。</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>例外与有效期</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>始终包含或永不包含的人员，以及细分何时可用。</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>它对谁分组？</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>医生 / 联系人</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>机构 / 客户</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>如何确定成员资格？</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>按规则</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>成员根据规则计算得出，并自动保持最新。</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>按固定列表</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>由您自己挑选人员；列表仅在您更改时才变动。</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>规则加例外</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>规则决定核心，再加上您始终包含或永不包含的人员。</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>全部</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>任一</value></data>
 </root>

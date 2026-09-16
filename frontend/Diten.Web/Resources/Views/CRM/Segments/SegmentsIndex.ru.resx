@@ -197,4 +197,22 @@
   <data name="TplAccountType" xml:space="preserve"><value>Организации по типу</value></data>
   <data name="TplConsentReachable" xml:space="preserve"><value>Доступные по согласию</value></data>
   <data name="TplHasCoverage" xml:space="preserve"><value>Есть покрытие территории</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>Что это за сегмент?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Назовите его, выберите, кого он группирует и как определяется членство.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>Кто в него входит?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Создайте правило. Блоки всегда объединяются союзом «И ТАКЖЕ».</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Исключения и срок действия</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Кого всегда включать или никогда не включать, и когда сегмент действителен.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>Кого он группирует?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Врачи / контакты</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Учреждения / организации</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>Как определяется членство?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>По правилу</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Участники вычисляются по правилу и автоматически остаются актуальными.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>По фиксированному списку</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Вы сами выбираете людей; список меняется только когда вы его меняете.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Правило с исключениями</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Правило определяет основу, плюс люди, которых вы всегда или никогда не включаете.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>все</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>любое</value></data>
 </root>
