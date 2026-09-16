@@ -57,11 +57,18 @@ DOĞRULA (E2): frontend/Diten.Web.Tests baseline-diff yeşil; template Moderator
 Durma koşulları: published-values proxy content-moderator-role'ü döndürmüyorsa (WP-B seed kontrol) · AudienceProfile options endpoint yoksa · backend sözleşmesi beklenenden farklıysa · kapsam frontend dışına taşarsa → DUR + raporla.
 ```
 
-## §37 CT bağımsız doğrulama → (agent sonrası)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 67262f31 (CT adına; agent commit etmemişti) · Agent: PASS · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-wpc-verify
 ```
-- İzole worktree → dotnet test frontend/Diten.Web.Tests baseline-diff; template-form.js/_TemplateForm.cshtml logic-read (template-level Moderator/ForWhom, step refs yok, Branches checklist); L10n anahtar varlığı; yalnız frontend değişti.
+- ✅ **Scope:** yalnız frontend/Diten.Web — KnowledgeConceptsController + 7 view-resx (`KnowledgeConceptsIndex.*`) + 3 view + 2 JS. Backend/DTO/SharedResource/başka modül sızıntısı YOK.
+- ✅ **Sapma (kabul):** proxy KnowledgeController'da (`CRM/Knowledge` route) sayfadan erişilemezdi → agent aynı deseni **KnowledgeConceptsController**'a (`CRM/KnowledgeConcepts`) ekledi. `[HttpGet("api/reference-data/{setCode}/values")]` → `ProxyGetAsync(path, ReadPermission, ct, ReadFallback)`, **scope_key=JWT tenant (client'tan değil)**. Gate sağlam, yeni güvenlik açığı yok.
+- ✅ **Logic:** template-form.js template-seviyesi Moderator(content-moderator-role→ModeratorRoleType) + ForWhom(AudienceProfile[]→ForWhomAudienceProfileIds); step `{conceptTypeId,min,max}` refs-free; Branches `.diten-checkitem` compose-then-add (AUD-UI-6, up/down/remove). concept-slim.js quick-view template-seviyesi gösterir.
+- ✅ **L10n:** 7 view-resx geçerli XML, **dupe=0**, yeni key'ler (Moderator/ModeratorHint/ForWhomHint/ConceptType) hepsinde mevcut; SharedResource'a dokunulmadı → NavGuard etkilenmez.
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137, 0 fail** (baseline-diff temiz).
+- ⏳ **E4:** A2d manuel test (nihai model).
+
+**FAZ 1 (WP-A + WP-B + WP-C) TAMAM — hepsi CT-doğrulandı.**
 
 ## Kalan (bu WP dışı)
 - **A2d manuel test** (nihai model) → A3 içerik → A4 claim → A5 eligibility → A6 scope → A7 set → A8 evaluate → sync/PR. · **Faz 2:** ModeratorRoleType=position → Organization positions lookup (MOD-0288) → ModeratorPositionRef picker.
