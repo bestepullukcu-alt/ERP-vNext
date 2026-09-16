@@ -39,7 +39,7 @@
 WP: WP-SCMM-10-MOD-A · Prompt v1.0  (ChainTemplate Moderator/ForWhom template-seviyesine — MOD-0162, backend)
 
 Repository: C:\Users\user\Desktop\ERP-vNext
-Branch: feature/scmm-content-studio · Expected HEAD: 9764da6f · Worktree: ana checkout
+Branch: feature/scmm-content-studio · Expected HEAD: 13d24a62 (main-sync sonrası; kod dosyaları değişmedi) · Worktree: ana checkout
 
 Önce oku:
 1. execution/domains/commercial-suite/work-packs/WP-SCMM-10-MOD-A-backend-moderator-forwhom.md (bu WP) + DESIGN-SCMM-10-moderator-forwhom-template-level.md (kararlar D-a..f)
@@ -66,5 +66,15 @@ Ayrı commit. §22 raporu TÜRKÇE. Senin PASS'in kapanış değildir (K13) — 
 Durma koşulları: step-refs'i beklenenden fazla yer tüketiyorsa (raporla) · publish-freeze/ValidateSubject deseni uygulanamıyorsa · class-map GUID round-trip başarısızsa · kapsam ChainTemplate backend dışına taşarsa. DUR + raporla.
 ```
 
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
+```text
+Commit: 8e313911 (tek) · Agent: PASS · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-wpa-verify @8e313911
+```
+- ✅ **Scope:** 9 dosya, hepsi CrmService (Domain/Application/Api/Persistence + test). Frontend/reference-data/başka modül sızıntısı YOK.
+- ✅ **Logic (commit blob):** Domain `ModeratorRoleType`(string?)+`ForWhomAudienceProfileIds`(List<Guid>) eklendi, step `AllowedRoleRefs`/`AudienceDimensionRefs` kaldırıldı. Handler `NormalizeModerator`(blank→null) + `ValidateForWhomAsync`(her id var+non-archived, fail-closed 400, ValidateSubject deseni) + `ForWhomEqual`(order-insensitive set) + **D-f publish-freeze** (yayımlıda Moderator/ForWhom değişimi→409, no-op reorder=200).
+- ✅ **DI class-map (iki bilinen tuzak da kapatıldı):** `ForWhomAudienceProfileIds`→`EnumerableInterfaceImplementerSerializer` stringGuid (binary-vs-string silent-empty trap [[crm-new-aggregate-classmap-guid]]); `ConceptChainStep` map'e `SetIgnoreExtraElements(true)` (kaldırılan refs'li eski doc STRICT-map FormatException atmasın = read-time migration [[crm-classmap-rejects-unknown-elements]]).
+- ✅ **Build+test (CT izole, Release):** build 0-err; **CrmService.Application.Tests 1729 başarılı / 0 fail / 5 skip** (baseline-diff temiz, yeni fail yok, PII flake görülmedi). ConceptGraphRuntimeTests dahil.
+- ⏳ **E4:** WP-B ref set + WP-C frontend sonrası A2d manuel test.
+
 ## Kalan (bu WP dışı)
-- **WP-B** content-moderator-role reference set (CT/ops seed+publish) · **WP-C** frontend (Identity/Classification Moderator+ForWhom + Branches checklist). WP-A merge sonrası.
+- **WP-B** content-moderator-role reference set (CT/ops seed+publish) · **WP-C** frontend (Identity/Classification Moderator+ForWhom + Branches checklist). WP-A doğrulandı → sıradaki WP-B.
