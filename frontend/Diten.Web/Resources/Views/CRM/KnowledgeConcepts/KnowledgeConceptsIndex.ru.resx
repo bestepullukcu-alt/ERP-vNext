@@ -198,4 +198,7 @@
   <data name="RelTypeDesc_custom" xml:space="preserve"><value>Пользовательский тип связи</value></data>
   <data name="DirectionDesc_outbound" xml:space="preserve"><value>Направленное ребро (от источника к цели)</value></data>
   <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Двусторонняя / эквивалентная связь</value></data>
+  <data name="Prev" xml:space="preserve"><value>Назад</value></data>
+  <data name="Next" xml:space="preserve"><value>Вперёд</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Ветвь</value></data>
 </root>

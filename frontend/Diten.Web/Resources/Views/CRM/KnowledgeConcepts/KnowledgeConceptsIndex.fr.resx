@@ -198,4 +198,7 @@
   <data name="RelTypeDesc_custom" xml:space="preserve"><value>Un type de relation personnalisé</value></data>
   <data name="DirectionDesc_outbound" xml:space="preserve"><value>Arête dirigée (de la source vers la cible)</value></data>
   <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Lien bidirectionnel / équivalent</value></data>
+  <data name="Prev" xml:space="preserve"><value>Précédent</value></data>
+  <data name="Next" xml:space="preserve"><value>Suivant</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Branche</value></data>
 </root>

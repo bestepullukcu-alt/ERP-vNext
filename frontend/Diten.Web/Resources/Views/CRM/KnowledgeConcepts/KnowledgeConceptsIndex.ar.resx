@@ -198,4 +198,7 @@
   <data name="RelTypeDesc_custom" xml:space="preserve"><value>نوع علاقة مخصص</value></data>
   <data name="DirectionDesc_outbound" xml:space="preserve"><value>حافة موجّهة (من المصدر إلى الهدف)</value></data>
   <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>رابط ثنائي الاتجاه/مكافئ</value></data>
+  <data name="Prev" xml:space="preserve"><value>السابق</value></data>
+  <data name="Next" xml:space="preserve"><value>التالي</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>فرع</value></data>
 </root>

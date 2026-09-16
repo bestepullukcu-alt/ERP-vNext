@@ -198,4 +198,7 @@
   <data name="RelTypeDesc_custom" xml:space="preserve"><value>Özel bir ilişki türü</value></data>
   <data name="DirectionDesc_outbound" xml:space="preserve"><value>Yönlü kenar (kaynaktan hedefe)</value></data>
   <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Çift yönlü / eşdeğer bağ</value></data>
+  <data name="Prev" xml:space="preserve"><value>Önceki</value></data>
+  <data name="Next" xml:space="preserve"><value>Sonraki</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Dal</value></data>
 </root>

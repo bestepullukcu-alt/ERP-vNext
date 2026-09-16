@@ -198,4 +198,7 @@
   <data name="RelTypeDesc_custom" xml:space="preserve"><value>自定义关系类型</value></data>
   <data name="DirectionDesc_outbound" xml:space="preserve"><value>有向边（从源到目标）</value></data>
   <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>双向/等价连接</value></data>
+  <data name="Prev" xml:space="preserve"><value>上一页</value></data>
+  <data name="Next" xml:space="preserve"><value>下一页</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>分支</value></data>
 </root>

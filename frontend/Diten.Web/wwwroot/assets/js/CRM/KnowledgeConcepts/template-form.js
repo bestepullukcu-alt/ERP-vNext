@@ -74,6 +74,11 @@
     // ─── builder model + spine ──────────────────────────────────────────────────
     let branches = [];         // [{ name, steps:[{ conceptTypeId, min, max }] }]
     let templateReadOnly = false;
+    // SCMM-10-MOD-D: one branch shown per page + a fixed number of side-by-side step cards per page (Bootstrap
+    // .pagination, never a horizontal scroll). branchPage = the visible branch; stepPage[bi] = that branch's step page.
+    let branchPage = 0;
+    const stepPage = [];
+    const STEPS_PER_PAGE = 4;
     const spineFromBranches = () => {
         const seen = new Set(); const out = [];
         branches.forEach(b => b.steps.forEach(s => { const id = String(s.conceptTypeId || ''); if (id && !seen.has(id)) { seen.add(id); out.push(id); } }));
@@ -88,36 +93,46 @@
 
     const cardinality = s => `${s.min == null || s.min === '' ? 1 : s.min}–${s.max == null || s.max === '' ? '∞' : s.max}`;
 
-    // ─── Branches builder (AUD-UI-6 Tasks-checklist compose-then-add) ─────────────
-    // Each branch is a card: a branch-name input + a `.diten-checkitem` step list + a `.diten-checkitem` compose-row
-    // (Concept Type + Min/Max + Add). A step row is display-only (change = remove + re-add); the up/down move controls
-    // stay ACTIVE because a chain's step order is meaningful (unlike an AudienceProfile dimension set).
-    const stepRow = (bi, si, s, lastIndex, ro) => {
-        const up = `<button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-up"></i></button>`;
-        const down = `<button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-down"></i></button>`;
-        const rm = ro ? '' :
-            `<button type="button" class="diten-checkitem-btn diten-checkitem-remove js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
-        return `<li class="diten-checkitem">
-                <span class="diten-checkitem-grip diten-checkitem-withdrawn" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>
-                <span class="diten-checkitem-move">${up}${down}</span>
-                <span class="diten-checkitem-text"><span class="fw-medium me-2 text-truncate">${esc(labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(cardinality(s))}</span></span>
-                ${rm}
-            </li>`;
+    // ─── Branches builder (SCMM-10-MOD-D: side-by-side step cards + paging, no horizontal scroll) ─────────────────
+    // The visible branch (one per page) shows its steps as `card border shadow-none` cards laid left→right with a `→`
+    // between them; a fixed number of cards per page is shown with a Bootstrap `.pagination` control instead of a
+    // scroll. Steps are refs-free {conceptTypeId, min, max}; move (←/→) keeps the chain order editable. Moderator /
+    // ForWhom are template-level (Identity & Classification) and are not touched here.
+    const arrow = '<span class="mx-1 d-inline-flex align-items-center text-muted"><i class="bx bx-right-arrow-alt"></i></span>';
+    const stepCard = (bi, si, s, lastIndex, ro) => {
+        const left = `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" aria-label="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-left"></i></button>`;
+        const right = `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" aria-label="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-right"></i></button>`;
+        const rm = ro ? '' : `<button type="button" class="btn btn-icon btn-sm btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
+        return `<div class="card border shadow-none">
+                <div class="card-body p-2 text-center">
+                    <div class="fw-medium mb-1" title="${esc(labelType(s.conceptTypeId))}">${esc(labelType(s.conceptTypeId))}</div>
+                    <span class="badge bg-label-secondary">${esc(cardinality(s))}</span>
+                    <div class="d-flex justify-content-center gap-1 mt-2">${left}${right}${rm}</div>
+                </div>
+            </div>`;
+    };
+    // A Bootstrap .pagination prev/·info·/next (existing classes only). bi is carried for the step pager, omitted (null)
+    // for the branch pager.
+    const pager = (kindClass, page, pages, label, bi) => {
+        if (pages <= 1) return '';
+        const b = bi == null ? '' : ` data-b="${bi}"`;
+        const prev = `<li class="page-item ${page <= 0 ? 'disabled' : ''}"><button type="button" class="page-link ${kindClass}"${b} data-page="${page - 1}" aria-label="${esc(L.Prev || 'Previous')}"><i class="bx bx-chevron-left"></i></button></li>`;
+        const info = `<li class="page-item disabled"><span class="page-link">${esc(label)}</span></li>`;
+        const next = `<li class="page-item ${page >= pages - 1 ? 'disabled' : ''}"><button type="button" class="page-link ${kindClass}"${b} data-page="${page + 1}" aria-label="${esc(L.Next || 'Next')}"><i class="bx bx-chevron-right"></i></button></li>`;
+        return `<nav class="mt-2"><ul class="pagination pagination-sm mb-0 justify-content-center">${prev}${info}${next}</ul></nav>`;
     };
     const composeRow = (bi, opts, ro) => {
         if (ro) return '';
-        return `<div class="diten-checkitem flex-column align-items-stretch gap-2 mt-2">
-                <div class="d-flex gap-2 align-items-start flex-wrap">
-                    <span style="flex:2 1 12rem; min-width:0">
-                        <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" data-placeholder="${esc(L.ConceptType || L.SelectOption || '')}">
-                            <option value="">${esc(L.SelectOption || '')}</option>
-                            ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
-                        </select>
-                    </span>
-                    <span style="width:5.5rem"><input type="number" min="0" step="1" value="1" class="form-control form-control-sm js-compose-min" data-b="${bi}" aria-label="${esc(L.MinSelection || 'Min')}" placeholder="${esc(L.MinSelection || 'Min')}"></span>
-                    <span style="width:5.5rem"><input type="number" min="1" step="1" class="form-control form-control-sm js-compose-max" data-b="${bi}" aria-label="${esc(L.MaxSelection || 'Max')}" placeholder="${esc(L.MaxSelection || 'Max')}"></span>
-                </div>
-                <button type="button" class="btn btn-label-primary btn-sm align-self-start js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
+        return `<div class="d-flex gap-2 align-items-start flex-wrap mt-3 pt-2 border-top">
+                <span style="flex:2 1 12rem; min-width:0">
+                    <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" data-placeholder="${esc(L.ConceptType || L.SelectOption || '')}">
+                        <option value="">${esc(L.SelectOption || '')}</option>
+                        ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
+                    </select>
+                </span>
+                <span style="width:5.5rem"><input type="number" min="0" step="1" value="1" class="form-control form-control-sm js-compose-min" data-b="${bi}" aria-label="${esc(L.MinSelection || 'Min')}" placeholder="${esc(L.MinSelection || 'Min')}"></span>
+                <span style="width:5.5rem"><input type="number" min="1" step="1" class="form-control form-control-sm js-compose-max" data-b="${bi}" aria-label="${esc(L.MaxSelection || 'Max')}" placeholder="${esc(L.MaxSelection || 'Max')}"></span>
+                <button type="button" class="btn btn-label-primary btn-sm js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
             </div>`;
     };
     const renderBranches = () => {
@@ -126,23 +141,44 @@
         if (!host) return;
         const subjectId = val('tplSubjectId');
         const ro = templateReadOnly;
-        host.innerHTML = branches.map((b, bi) => {
-            const steps = b.steps.map((s, si) => stepRow(bi, si, s, b.steps.length - 1, ro)).join('');
-            const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
-            return `
-                <div class="card border shadow-none">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-                            <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
-                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
-                        </div>
-                        <ul class="list-unstyled mb-0">${steps || `<li class="diten-checkitem text-muted">${esc(L.BranchStepsEmpty || '')}</li>`}</ul>
-                        ${composeRow(bi, opts, ro)}
-                    </div>
-                </div>`;
-        }).join('');
-        empty?.classList.toggle('d-none', branches.length > 0);
+        const total = branches.length;
+        empty?.classList.toggle('d-none', total > 0);
         setVal('tplOrderedConceptTypes', spineFromBranches().join(','));
+        if (total === 0) { host.innerHTML = ''; return; }
+
+        branchPage = Math.min(Math.max(0, branchPage), total - 1);
+        const bi = branchPage;                                       // one branch per page
+        const b = branches[bi];
+        const lastIndex = b.steps.length - 1;
+        const stepPages = Math.max(1, Math.ceil(b.steps.length / STEPS_PER_PAGE));
+        const sp = stepPage[bi] = Math.min(Math.max(0, stepPage[bi] || 0), stepPages - 1);
+        const start = sp * STEPS_PER_PAGE;
+        const end = Math.min(start + STEPS_PER_PAGE, b.steps.length);
+
+        let seq;
+        if (b.steps.length === 0) {
+            seq = `<div class="text-muted small">${esc(L.BranchStepsEmpty || '')}</div>`;
+        } else {
+            const cards = [];
+            for (let si = start; si < end; si++) cards.push(stepCard(bi, si, b.steps[si], lastIndex, ro));
+            seq = `<div class="d-flex flex-wrap align-items-stretch">${cards.join(arrow)}</div>`;
+        }
+        const stepInfo = `${start + 1}–${end} / ${b.steps.length}`;   // "1–4 / 9" (numeric, locale-neutral)
+        const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
+
+        host.innerHTML = `
+            <div class="card border shadow-none">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                        <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
+                        <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
+                    </div>
+                    ${seq}
+                    ${pager('js-step-page', sp, stepPages, stepInfo, bi)}
+                    ${composeRow(bi, opts, ro)}
+                </div>
+            </div>
+            ${pager('js-branch-page', branchPage, total, `${L.BranchLabel || 'Branch'} ${branchPage + 1} / ${total}`, null)}`;
     };
 
     // ─── submit ─────────────────────────────────────────────────────────────────
@@ -321,16 +357,21 @@
         // Subject change (create) rebuilds the builder — types are subject-scoped. Moderator/ForWhom are template-level
         // and are deliberately left untouched.
         const subj = document.getElementById('tplSubjectId');
-        const onSubjectChange = () => { if (templateReadOnly) return; branches = [{ name: '', steps: [] }]; renderBranches(); };
+        const onSubjectChange = () => { if (templateReadOnly) return; branches = [{ name: '', steps: [] }]; branchPage = 0; stepPage.length = 0; renderBranches(); };
         subj?.addEventListener('change', () => { if (!subj.disabled) onSubjectChange(); });
         if ($) $(subj).on('change', () => { if (!subj.disabled) onSubjectChange(); });
 
         // Structural builder actions.
         document.addEventListener('click', event => {
-            if (event.target.closest('#btnTplAddBranch')) { event.preventDefault(); if (templateReadOnly) return; branches.push({ name: '', steps: [] }); renderBranches(); return; }
+            if (event.target.closest('#btnTplAddBranch')) { event.preventDefault(); if (templateReadOnly) return; branches.push({ name: '', steps: [] }); branchPage = branches.length - 1; renderBranches(); return; }
             if (event.target.closest('#btnTplNewVersion')) { event.preventDefault(); startNewVersion(); return; }
             const br = event.target.closest('.js-branch-remove');
-            if (br) { event.preventDefault(); if (templateReadOnly) return; branches.splice(Number(br.dataset.b), 1); renderBranches(); return; }
+            if (br) { event.preventDefault(); if (templateReadOnly) return; branches.splice(Number(br.dataset.b), 1); stepPage.length = 0; renderBranches(); return; }
+            // SCMM-10-MOD-D: step / branch pagers (Bootstrap .page-link; a .disabled .page-link swallows the click).
+            const sPage = event.target.closest('.js-step-page');
+            if (sPage) { event.preventDefault(); const bi = Number(sPage.dataset.b); stepPage[bi] = Number(sPage.dataset.page); renderBranches(); return; }
+            const bPage = event.target.closest('.js-branch-page');
+            if (bPage) { event.preventDefault(); branchPage = Number(bPage.dataset.page); renderBranches(); return; }
             const addStep = event.target.closest('.js-branch-add-step');
             if (addStep) {
                 event.preventDefault(); if (templateReadOnly) return;
@@ -347,6 +388,7 @@
                     min: minRaw === '' ? 1 : Math.max(0, Number(minRaw)),
                     max: maxRaw === '' ? null : Math.max(1, Number(maxRaw))
                 });
+                stepPage[bi] = Math.floor((branches[bi].steps.length - 1) / STEPS_PER_PAGE);   // show the page the new step landed on
                 renderBranches();
                 return;
             }
