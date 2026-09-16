@@ -48,8 +48,16 @@ KORU/YAPMA: /resolve member SET/ORDER/count/reason değişmez (yalnız additive 
 DOĞRULA (E2): TAM CrmService.Application.Tests + Diten.Web.Tests baseline-diff sıfır-yeni-fail; preview sample + /resolve member SubjectSecondaryLabel taşır (contact→specialty/account→type, +city); ekstra read yok; /resolve additive (mevcut alanlar değişmedi); frontend meta=ikincil etiket, ham GUID meta'da yok. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: snapshot secondary label türetilemiyorsa; /resolve additive tutulamıyorsa (şekil bozuluyorsa DUR); ekstra read gerekiyorsa (DUR+raporla); kapsam Segmentation+form.js meta dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 86b4232f · Agent: PASS (--no-build) · CT: ACCEPTED E2 (gerçek build) · izole worktree /c/tmp/ct-segd-verify @86b4232f
 ```
-- İzole worktree → CrmService.Application.Tests + Diten.Web.Tests baseline-diff; SubjectSecondaryLabel türetimi (contact→specialty/account→type, snapshot reuse ekstra-read yok); /resolve additive (member SET/ORDER/alan değişmedi, git diff); preview sample + frontend meta (GUID fallback kalktı); payload/reach/catalog korundu.
+- ✅ **Scope:** 6 dosya (WP md + form.js + 4 Segmentation backend: Snapshot/Resolver/PreviewHandler/SegmentModels). Başka modül/DTO sızıntısı yok.
+- ✅ **/resolve additive:** `SegmentMemberDto` + `SegmentReachSampleMemberDto`'ya `string? SubjectSecondaryLabel = null` **en sonda nullable** — mevcut alan/sıra/anlam değişmedi (git diff onaylı).
+- ✅ **Ekstra read YOK:** `SegmentSubjectSnapshot.SecondaryLabel` **computed property** — contact→Specialty(yoksa ProfessionalTitle), account→Type(yoksa Category), +City "core · city"; aynı candidate projection alanlarından türer, yeni Mongo read/round-trip yok. Salt görüntü (kural değerlendirmesine girmez).
+- ✅ **Resolver:** member+excluded+hybrid-promote yollarında snapshot'tan doldurulur; manuel/statik üyede snapshot yok → null (doğru). Member SET/ORDER/count/reason değişmedi.
+- ✅ **Frontend:** sample meta = `subjectSecondaryLabel` (GUID fallback kalktı); manuel üye ham `subjectId` satırı → secondaryLabel (boşsa gizli). Yeni CSS yok; buildNodes/reach/blok dokunulmadı.
+- ✅ **Build+test (CT izole, Release, GERÇEK build):** CrmService.Application.Tests **1740/0/5** + Diten.Web.Tests **137/0** (agent fleet DLL-kilidi yüzünden --no-build koşmuştu; CT gerçek rebuild ile teyit).
+- ⏳ **E4:** ALMIBA nefrolog preview sample → "Nephrology" (GUID değil); account → "University hospital · İstanbul".
+
+**SEG-C açık noktası kapandı: sample/üye artık specialty/type gösterir, ham GUID yok.**
