@@ -25,7 +25,7 @@
     --seg-accent-dark: var(--bs-primary);
     --seg-accent-ring: rgba(var(--bs-primary-rgb), 0.14);
     --seg-card-bg: var(--bs-card-bg);            /* A6: was oklch(1 0 0) — card/section surface */
-    --seg-control-bg: var(--bs-body-bg);         /* A6: control surface (input/pill/chip/toggle) — was oklch(1 0 0) */
+    --seg-control-bg: var(--bs-card-bg);         /* control surface (input/select/pill/chip/toggle) — clean white in light, dark-safe in dark; body-bg was too gray (mockup had white here) */
     --seg-card-border: var(--bs-border-color);   /* A6: was oklch(0.93 0.006 285) */
     --seg-heading: var(--bs-heading-color);      /* A6: was oklch(0.28 0.02 285) */
     --seg-text: var(--bs-body-color);            /* A6: was oklch(0.3 0.02 285) */
