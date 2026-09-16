@@ -88,8 +88,18 @@ YAPMA: segment-create.css'i global/başka sayfaya uygula (scope zorunlu); app sh
 DOĞRULA (E2): Diten.Web.Tests baseline-diff yeşil; segment-create.css yalnız _Form'da + scope-sarmalayıcılı (global sızıntı yok); 3 numaralı section + subject pill + membership radio-card + Reads-as + blok(every/any+AND ALSO) + koşul(optgroup/op/chip/source/free-text/readback/reach) + JSON toggle + static textarea + exceptions grid + sağ ray(big-number/funnel/sample/how-stored/checklist); token değerleri CSS'te birebir; payload byte-identical + catalog-driven + canlı reach(SEG-C) + static→manuel + same-origin proxy KORUNDU (form.js buildNodes/proxy/preview diff YOK). Ayrı commit. §22 TÜRKÇE. K13.
 Durma: mockup section yapısı mevcut form.js mantığıyla kurulamıyorsa; payload/catalog/reach korunamıyorsa; scope sızıntısız yapılamıyorsa; kapsam Segments dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 34fd0736 · Agent: PASS (137/0) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-sega3-verify @34fd0736
 ```
-- İzole worktree → Diten.Web.Tests baseline-diff; scope-sızıntı kontrolü (segment-create.css yalnız _Form'da link + .segment-create-scope sarmalayıcı; global .css/tema değişmemiş); görsel-yapı eşleşme (section/pill/radio/Reads-as/blok/koşul/reach/exceptions markup + token değerleri); **davranış korundu** (form.js buildNodes/proxy/preview diff yok, catalog-driven, static→manuel).
+- ✅ **Scope:** 12 dosya, hepsi frontend/Diten.Web (YENİ segment-create.css 1129 satır + _Form.cshtml 418± + form.js 308± + _IndexL10n + 7 resx + WP md). **Backend/DTO/API sızıntısı YOK.**
+- ✅ **Davranış byte-identical (KORU):** `buildNodes` gövdesi iki commit'te **birebir aynı** (diff boş) → blok→tree payload UNCHANGED; `getJson`/`runPreview`/`loadReferenceValues`/`loadEntityOptions`/`/preview` fetch **diff YOK** → catalog-güdümlü + canlı reach (SEG-C) + same-origin proxy korundu. Tek davranışsal-görünen değişiklik `control:'select'→'chips'`: aynı `loadReferenceValues` kaynağı, click handler **doğrudan `condition.values`'a yazıyor** (kontrat aynı), entity-picker büyük listeler select/taggable kaldı → payload etkilenmez.
+- ✅ **Görsel port (mockup birebir):** 3 numaralı section (seg-section-no); subject **pill toggle** (btn-check name=SubjectType, edit'te disabled + hidden asp-for = create-immutable); membership **radio-card** (`Model.SegmentTypes` kontrat-güdümlü — hardcode YOK, hybrid düşmez); **Reads-as** cümlesi (bloklar AND ALSO ile); **blok** every/any segmented toggle (every=and/any=or eşleme korundu) + **AND ALSO** ayraç yalnız bloklar arası; **koşul** optgroup(SEG-B Domain)/op/chip/**source badge**/free-text/readback/**reach chip** "N match this alone" (conditionCounts); JSON toggle; **exceptions grid**; sağ ray sticky (reach big-number + funnel + Preview50→gerçek runPreview + sample + how-stored + activation checklist).
+- ✅ **Scope-sızıntı YOK:** segment-create.css'in **165 kuralının tamamı `.segment-create-scope` altında** (scope-dışı top-level selektör=0); `<link>` yalnız `_Form.cshtml`'de; global tema/başka .css değişmedi.
+- ✅ **Token birebir:** `--seg-accent: oklch(0.55 0.19 285)`, `--seg-ok: oklch(0.72 0.14 150)`, Inter, card radius 10px, section no-badge bg `oklch(0.95 0.02 285)`, funnel fill `oklch(0.6 0.15 285)`, focus/radio-card ring `0 0 0 3px oklch(0.55 0.19 285/…)` — mockup değerleriyle eşleşiyor.
+- ✅ **L10n:** 10 anahtar × 7 dil + 5 JS köprü (_IndexL10n).
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137** (baseline-diff temiz; uyarılar önceden-var-olan Auth CS8767).
+- ⏳ **E4:** mockup'a piksel-yakın görsel eşleşme (fleet + ALMIBA nefrolog canlı reach) — owner test.
+- ℹ️ **Bilinçli sapma (kabul):** mockup'ın süsleme "Who is on the list?" statik textarea'sı yerine gerçek işlevsel manuel üyelik editörü korundu (static→manuel bozulmasın, sahte kontrol üretilmesin); mockup'ta editörsüz Description/Notes/BU/Status alanları hidden round-trip.
+
+**SEG-A3 birebir görsel port CT-E2 — SEG redesign (A/A2/A3 frontend + B/C backend) hepsi CT-doğrulandı; kalan yalnız E4 canlı test.**
