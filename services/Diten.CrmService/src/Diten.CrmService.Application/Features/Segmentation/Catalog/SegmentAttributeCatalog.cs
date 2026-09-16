@@ -170,6 +170,18 @@ public static class SegmentAttributeCatalog
             ConsentEligibilityStatus.Unknown,
             ConsentEligibilityStatus.NotApplicable);
 
+    /// <summary>WP-SEG-G — the consent.eligibility PARAMETERS (channel + purpose) are a closed in-domain vocabulary too,
+    /// so they ride on the catalog as enum value-sources exactly like the verdict does. The values are taken from the
+    /// MOD-0164 <see cref="ConsentChannel.All"/> / <see cref="ConsentPurpose.All"/> constants (never hardcoded here), so
+    /// the criteria editor offers the SAME list Consent &amp; Preferences authoring uses. Additive and descriptive: it
+    /// narrows nothing, and a free-typed value stays valid.</summary>
+    private static readonly IReadOnlyDictionary<string, SegmentAttributeValueSource> ConsentEligibilityParameterValueSources =
+        new Dictionary<string, SegmentAttributeValueSource>(StringComparer.OrdinalIgnoreCase)
+        {
+            [ParameterChannel] = SegmentAttributeValueSource.Enum(ConsentChannel.All.ToArray()),
+            [ParameterPurpose] = SegmentAttributeValueSource.Enum(ConsentPurpose.All.ToArray())
+        };
+
     private static readonly IReadOnlyList<SegmentAttributeDefinition> Definitions = new List<SegmentAttributeDefinition>
     {
         // ---- N: native Account attributes (Phase-1 pushdown) ----
@@ -242,7 +254,8 @@ public static class SegmentAttributeCatalog
         Derived(ConsentEligibility, DomainConsent, "MOD-0164 consent/preference evaluation (allowed|blocked|unknown|not_applicable)",
             SegmentValueTypes.String, MembershipOps, BothSubjects,
             requiredParameters: new[] { ParameterChannel, ParameterPurpose },
-            valueSource: ConsentEligibilityValues),
+            valueSource: ConsentEligibilityValues,
+            parameterValueSources: ConsentEligibilityParameterValueSources),
         Derived(ConsentScopeProduct, DomainConsent, "MOD-0164 consent scope (product); the VALUE is proven in MDM (fail-closed)",
             SegmentValueTypes.Guid, GuidRefOps, BothSubjects,
             referenceKind: ReferenceKindProduct,
@@ -292,8 +305,9 @@ public static class SegmentAttributeCatalog
         string code, string domain, string source, string valueType, IReadOnlyList<string> operators,
         IReadOnlyList<string> subjectTypes, IReadOnlyList<string>? requiredParameters = null,
         IReadOnlyList<string>? optionalParameters = null, string? referenceKind = null,
-        SegmentAttributeValueSource? valueSource = null)
+        SegmentAttributeValueSource? valueSource = null,
+        IReadOnlyDictionary<string, SegmentAttributeValueSource>? parameterValueSources = null)
         => new(code, domain, ClassDerived, source, valueType, operators, requiredParameters ?? Array.Empty<string>(),
             optionalParameters ?? Array.Empty<string>(), subjectTypes, referenceKind,
-            valueSource ?? SegmentAttributeValueSource.FreeText);
+            valueSource ?? SegmentAttributeValueSource.FreeText, parameterValueSources);
 }

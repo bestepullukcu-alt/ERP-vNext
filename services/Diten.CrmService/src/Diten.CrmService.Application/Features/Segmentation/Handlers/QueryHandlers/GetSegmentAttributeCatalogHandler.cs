@@ -49,7 +49,15 @@ public sealed class GetSegmentAttributeCatalogHandler
                     a.ValueSource.Kind,
                     a.ValueSource.ReferenceSetCode,
                     a.ValueSource.AllowedValues,
-                    a.ValueSource.EntityKind)))
+                    a.ValueSource.EntityKind),
+                a.ParameterValueSources?.ToDictionary(
+                    kv => kv.Key,
+                    kv => new SegmentAttributeValueSourceDto(
+                        kv.Value.Kind,
+                        kv.Value.ReferenceSetCode,
+                        kv.Value.AllowedValues,
+                        kv.Value.EntityKind),
+                    StringComparer.OrdinalIgnoreCase)))
             .OrderBy(a => a.AttributeCode, StringComparer.Ordinal)
             .ToList();
 

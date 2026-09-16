@@ -11,6 +11,11 @@ namespace Diten.CrmService.Application.Features.Segmentation.Catalog;
 /// <para><see cref="Domain"/> is a PRESENTATION-ONLY business grouping (the optgroup a criteria editor renders the
 /// attribute under, e.g. doctor-profile / consent / workplace). It is descriptive metadata: it is never read by
 /// validation or evaluation and narrows nothing the runtime accepts.</para>
+/// <para><see cref="ParameterValueSources"/> (WP-SEG-G) is an ADDITIVE per-parameter value-source map (parameter name →
+/// where a legitimate value comes from), so an editor can offer the right input for a PARAMETER just as
+/// <see cref="ValueSource"/> does for the main value. It is DESCRIPTIVE and OPTIONAL: it is null by default, the
+/// <see cref="RequiredParameters"/> / <see cref="OptionalParameters"/> name lists are unchanged, and a parameter with no
+/// entry keeps its plain-input behaviour. It narrows nothing the runtime accepts — free text stays valid.</para>
 /// </summary>
 public sealed record SegmentAttributeDefinition(
     string AttributeCode,
@@ -23,7 +28,8 @@ public sealed record SegmentAttributeDefinition(
     IReadOnlyList<string> OptionalParameters,
     IReadOnlyList<string> AllowedSubjectTypes,
     string? CrossServiceReferenceKind,
-    SegmentAttributeValueSource ValueSource)
+    SegmentAttributeValueSource ValueSource,
+    IReadOnlyDictionary<string, SegmentAttributeValueSource>? ParameterValueSources = null)
 {
     /// <summary>True when the VALUE crosses a process boundary for validation (class X on top of the evaluation class).</summary>
     public bool RequiresCrossServiceValueValidation => CrossServiceReferenceKind is not null;

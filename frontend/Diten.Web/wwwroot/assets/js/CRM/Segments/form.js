@@ -455,12 +455,33 @@
         const required = definition.requiredParameters || [];
         if (required.length === 0) return '';
 
+        // WP-SEG-G: a parameter can declare a value-source (parameterValueSources[name]) exactly as the main value does.
+        // When it is a closed enum (e.g. consent.eligibility channel/purpose, from ConsentChannel.All/ConsentPurpose.All),
+        // render a dropdown of the catalog's own values instead of a bare box; otherwise keep the plain input. Either way
+        // the chosen value is written to the SAME condition.parameters[name] slot (payload shape unchanged) and a value
+        // outside the list is still preserved as a selected option, so the source stays a hint, never a restriction.
+        const paramSources = definition.parameterValueSources || {};
         const fields = required.map(name => {
             const value = (condition.parameters || {})[name] || '';
+            const src = paramSources[name];
+            let control;
+            if (src && src.kind === 'enum') {
+                const opts = (src.allowedValues || []).map(String);
+                const extra = String(value).trim() !== '' && !opts.includes(String(value))
+                    ? `<option value="${esc(value)}" selected>${esc(value)}</option>` : '';
+                control = `<select class="seg-value-input js-node-param"
+                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}">
+                            <option value="">${esc(L.SelectOption || '')}</option>
+                            ${extra}
+                            ${opts.map(o => `<option value="${esc(o)}"${String(o) === String(value) ? ' selected' : ''}>${esc(o)}</option>`).join('')}
+                        </select>`;
+            } else {
+                control = `<input type="text" class="seg-value-input js-node-param"
+                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />`;
+            }
             return `<div class="seg-param">
                         <label class="seg-param-label">${esc(name)} <span class="seg-req">*</span></label>
-                        <input type="text" class="seg-value-input js-node-param"
-                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />
+                        ${control}
                     </div>`;
         }).join('');
 

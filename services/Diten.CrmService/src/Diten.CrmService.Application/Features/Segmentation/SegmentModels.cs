@@ -240,7 +240,8 @@ public sealed record SegmentAttributeDto(
     IReadOnlyList<string> SubjectTypes,
     bool RequiresCrossServiceValueValidation,
     string? CrossServiceReferenceKind,
-    SegmentAttributeValueSourceDto ValueSource);
+    SegmentAttributeValueSourceDto ValueSource,
+    IReadOnlyDictionary<string, SegmentAttributeValueSourceDto>? ParameterValueSources = null);
 
 /// <summary>Where an authored value legitimately comes from. <c>kind</c> is the discriminator the UI branches on;
 /// only the field matching that kind is populated.</summary>
