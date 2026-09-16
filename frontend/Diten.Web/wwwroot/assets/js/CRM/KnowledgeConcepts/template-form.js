@@ -42,8 +42,12 @@
     let audienceOptions = [];   // { value: audienceProfileId, text: "code — name" }
     let moderatorOptions = [];  // { value: ValueCode, text: label }  (content-moderator-role published values)
     const typeNameById = {};
+    const typeCodeById = {};       // conceptTypeId → conceptTypeCode (SCMM-10-MOD-D2 step-card code badge)
+    const typeNameOnlyById = {};   // conceptTypeId → conceptTypeName (title = name only)
     const subjectLabelById = {};
     const labelType = id => typeNameById[id] || id || '';
+    const codeOf = id => typeCodeById[id] || '';
+    const nameOf = id => typeNameOnlyById[id] || labelType(id);
     const moderatorLabel = code => moderatorOptions.find(o => String(o.value) === String(code))?.text || code || '';
     const typeOptionsFor = subjectId => types
         .filter(t => String(t.subjectId) === String(subjectId) && !t.isArchived)
@@ -99,15 +103,21 @@
     // scroll. Steps are refs-free {conceptTypeId, min, max}; move (←/→) keeps the chain order editable. Moderator /
     // ForWhom are template-level (Identity & Classification) and are not touched here.
     const arrow = '<span class="mx-1 d-inline-flex align-items-center text-muted"><i class="bx bx-right-arrow-alt"></i></span>';
+    // SCMM-10-MOD-D2 step card: header = Concept-Type CODE badge (top-left) + order/remove controls (top-right);
+    // body = Concept-Type NAME + the min–max cardinality badge. Buttons in the header so a wrapped row stays tidy.
     const stepCard = (bi, si, s, lastIndex, ro) => {
-        const left = `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" aria-label="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-left"></i></button>`;
-        const right = `<button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" aria-label="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-right"></i></button>`;
-        const rm = ro ? '' : `<button type="button" class="btn btn-icon btn-sm btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
+        const left = `<button type="button" class="btn btn-icon btn-xs btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" aria-label="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-left"></i></button>`;
+        const right = `<button type="button" class="btn btn-icon btn-xs btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" aria-label="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-right"></i></button>`;
+        const rm = ro ? '' : `<button type="button" class="btn btn-icon btn-xs btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
+        const controls = (left + right + rm) ? `<span class="d-flex gap-1 flex-shrink-0">${left}${right}${rm}</span>` : '';
         return `<div class="card border shadow-none">
-                <div class="card-body p-2 text-center">
-                    <div class="fw-medium mb-1" title="${esc(labelType(s.conceptTypeId))}">${esc(labelType(s.conceptTypeId))}</div>
+                <div class="card-body p-2">
+                    <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                        <span class="badge bg-label-primary">${esc(codeOf(s.conceptTypeId))}</span>
+                        ${controls}
+                    </div>
+                    <div class="fw-medium" title="${esc(nameOf(s.conceptTypeId))}">${esc(nameOf(s.conceptTypeId))}</div>
                     <span class="badge bg-label-secondary">${esc(cardinality(s))}</span>
-                    <div class="d-flex justify-content-center gap-1 mt-2">${left}${right}${rm}</div>
                 </div>
             </div>`;
     };
@@ -121,20 +131,22 @@
         const next = `<li class="page-item ${page >= pages - 1 ? 'disabled' : ''}"><button type="button" class="page-link ${kindClass}"${b} data-page="${page + 1}" aria-label="${esc(L.Next || 'Next')}"><i class="bx bx-chevron-right"></i></button></li>`;
         return `<nav class="mt-2"><ul class="pagination pagination-sm mb-0 justify-content-center">${prev}${info}${next}</ul></nav>`;
     };
-    const composeRow = (bi, opts, ro) => {
-        if (ro) return '';
-        return `<div class="d-flex gap-2 align-items-start flex-wrap mt-3 pt-2 border-top">
-                <span style="flex:2 1 12rem; min-width:0">
-                    <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" data-placeholder="${esc(L.ConceptType || L.SelectOption || '')}">
+    // SCMM-10-MOD-D2: add-step is an end-of-row card (same `card border shadow-none`), sitting after the step cards on
+    // the last step page — a heading + Concept Type + Min/Max + Append. Reuses the former compose-row inputs verbatim.
+    const addStepCard = (bi, opts) => `<div class="card border shadow-none">
+                <div class="card-body p-2">
+                    <div class="small fw-medium text-muted mb-1">${esc(L.AddStep || '')}</div>
+                    <select class="form-select form-select-sm js-branch-type-picker mb-2" data-b="${bi}" data-placeholder="${esc(L.ConceptType || L.SelectOption || '')}">
                         <option value="">${esc(L.SelectOption || '')}</option>
                         ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
                     </select>
-                </span>
-                <span style="width:5.5rem"><input type="number" min="0" step="1" value="1" class="form-control form-control-sm js-compose-min" data-b="${bi}" aria-label="${esc(L.MinSelection || 'Min')}" placeholder="${esc(L.MinSelection || 'Min')}"></span>
-                <span style="width:5.5rem"><input type="number" min="1" step="1" class="form-control form-control-sm js-compose-max" data-b="${bi}" aria-label="${esc(L.MaxSelection || 'Max')}" placeholder="${esc(L.MaxSelection || 'Max')}"></span>
-                <button type="button" class="btn btn-label-primary btn-sm js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
+                    <div class="d-flex gap-2 mb-2">
+                        <input type="number" min="0" step="1" value="1" class="form-control form-control-sm js-compose-min" data-b="${bi}" aria-label="${esc(L.MinSelection || 'Min')}" placeholder="${esc(L.MinSelection || 'Min')}" style="width:5.5rem">
+                        <input type="number" min="1" step="1" class="form-control form-control-sm js-compose-max" data-b="${bi}" aria-label="${esc(L.MaxSelection || 'Max')}" placeholder="${esc(L.MaxSelection || 'Max')}" style="width:5.5rem">
+                    </div>
+                    <button type="button" class="btn btn-label-primary btn-sm js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
+                </div>
             </div>`;
-    };
     const renderBranches = () => {
         const host = document.getElementById('tplBranches');
         const empty = document.getElementById('tplBranchesEmpty');
@@ -155,27 +167,31 @@
         const start = sp * STEPS_PER_PAGE;
         const end = Math.min(start + STEPS_PER_PAGE, b.steps.length);
 
-        let seq;
-        if (b.steps.length === 0) {
-            seq = `<div class="text-muted small">${esc(L.BranchStepsEmpty || '')}</div>`;
-        } else {
-            const cards = [];
-            for (let si = start; si < end; si++) cards.push(stepCard(bi, si, b.steps[si], lastIndex, ro));
-            seq = `<div class="d-flex flex-wrap align-items-stretch">${cards.join(arrow)}</div>`;
-        }
-        const stepInfo = `${start + 1}–${end} / ${b.steps.length}`;   // "1–4 / 9" (numeric, locale-neutral)
         const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
+        const onLastPage = sp === stepPages - 1;
+        const cards = [];
+        for (let si = start; si < end; si++) cards.push(stepCard(bi, si, b.steps[si], lastIndex, ro));
+        const stepHtml = cards.join(arrow);   // `→` only BETWEEN committed steps, never before the add-step card
+        // The add-step card lives at the end of the last page's row (Append to branch); read-only hides it.
+        const addHtml = (!ro && onLastPage) ? addStepCard(bi, opts) : '';
+        let seq;
+        if (!stepHtml && !addHtml) seq = `<div class="text-muted small">${esc(L.BranchStepsEmpty || '')}</div>`;
+        else seq = `<div class="d-flex flex-wrap align-items-stretch gap-2">${stepHtml}${addHtml}</div>`;
+        const stepInfo = `${start + 1}–${end} / ${b.steps.length}`;   // "1–4 / 9" (numeric, locale-neutral)
 
         host.innerHTML = `
             <div class="card border shadow-none">
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
-                        <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
+                        <div class="d-flex align-items-center gap-2 flex-grow-1">
+                            <span class="badge bg-primary rounded-pill">${bi + 1}</span>
+                            <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
+                            <span class="badge bg-label-secondary">${b.steps.length} ${esc(L.Steps || '')}</span>
+                        </div>
                         <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
                     </div>
                     ${seq}
                     ${pager('js-step-page', sp, stepPages, stepInfo, bi)}
-                    ${composeRow(bi, opts, ro)}
                 </div>
             </div>
             ${pager('js-branch-page', branchPage, total, `${L.BranchLabel || 'Branch'} ${branchPage + 1} / ${total}`, null)}`;
@@ -280,7 +296,11 @@
             getJson('/contract').catch(() => null)
         ]);
         types = (tps?.items || []).map(t => ({ conceptTypeId: t.conceptTypeId, subjectId: t.subjectId, conceptTypeCode: t.conceptTypeCode, conceptTypeName: t.conceptTypeName, isArchived: t.isArchived }));
-        types.forEach(t => { typeNameById[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`; });
+        types.forEach(t => {
+            typeNameById[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`;
+            typeCodeById[t.conceptTypeId] = t.conceptTypeCode;
+            typeNameOnlyById[t.conceptTypeId] = t.conceptTypeName;
+        });
         audienceOptions = (auds?.items || []).filter(a => !a.isArchived).map(a => ({ value: a.audienceProfileId, text: `${a.profileCode} — ${a.profileName}` }));
         (subs?.items || []).forEach(s => { subjectLabelById[s.subjectId] = `${s.subjectCode} — ${s.subjectName}`; });
         const subjectOptions = (subs?.items || []).filter(s => !s.isArchived).map(s => ({ value: s.subjectId, text: subjectLabelById[s.subjectId] }));

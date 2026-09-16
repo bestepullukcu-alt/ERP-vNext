@@ -201,4 +201,6 @@
   <data name="Prev" xml:space="preserve"><value>Önceki</value></data>
   <data name="Next" xml:space="preserve"><value>Sonraki</value></data>
   <data name="BranchLabel" xml:space="preserve"><value>Dal</value></data>
+  <data name="Steps" xml:space="preserve"><value>adım</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Yeni adım</value></data>
 </root>
