@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>تحدد القاعدة الأساس، بالإضافة إلى أشخاص تُضمِّنهم دائمًا أو لا تُضمِّنهم أبدًا.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>الكل</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>أيّ</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>أدرج الأشخاص حيث</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>يكون الشرط أدناه صحيحًا</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>اختر واحدًا أو أكثر</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>اضبط على</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>القيمة</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>كيفية التخزين</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>معاينة عينة من 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>التفعيل يجمّد هذه القاعدة كإصدار جديد. لا تؤثر تعديلات المسودة على الحملات النشطة.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>ابدأ من جمهور شائع، أو أضف أول شرط لك.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ أضف كتلة أخرى — يجب أن يستوفيها الأشخاص أيضًا</value></data>
 </root>

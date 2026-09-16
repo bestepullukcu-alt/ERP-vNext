@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>A rule decides the core, plus people you always or never include.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>every</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>any</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Include people where</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>condition below is true</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Pick one or more</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Set to</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Value</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>How this is stored</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Preview sample of 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Activating freezes this rule as a new version. Draft edits never affect live campaigns.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Start from a common audience, or add your first condition.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Add another block — people must also satisfy it</value></data>
 </root>

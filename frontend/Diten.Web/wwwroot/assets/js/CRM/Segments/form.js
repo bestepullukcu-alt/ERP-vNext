@@ -338,11 +338,15 @@
         const source = definition?.valueSource || { kind: 'free-text' };
         const multi = isMultiValue(condition.operator);
 
+        // WP-SEG-A3: catalog list values render as toggle CHIPS + a free-text input (the mockup look). The value source
+        // is unchanged — reference-set values still load from the tenant's PUBLISHED MOD-0048 set through the proxy, and
+        // enum values are still the catalog's own closed list. Chips accept a typed value too (the free-text field), so
+        // the source stays a hint, never a restriction.
         if (source.kind === 'reference-set') {
-            return { control: 'select', multi, async: () => loadReferenceValues(source.referenceSetCode), taggable: true };
+            return { control: 'chips', multi, async: () => loadReferenceValues(source.referenceSetCode) };
         }
         if (source.kind === 'enum') {
-            return { control: 'select', multi, options: (source.allowedValues || []).map(v => ({ value: v, text: v })) };
+            return { control: 'chips', multi, options: (source.allowedValues || []).map(v => ({ value: v, text: v })) };
         }
         if (source.kind === 'entity-picker') {
             if (!pickerAvailable(source.entityKind)) {
@@ -369,28 +373,43 @@
         return arity.min === 2 ? 2 : 1;
     };
 
+    /** One toggle chip. Selected chips carry a check; the click handler writes straight to condition.values, so the
+     *  posted payload is identical to the old Select2 selection. */
+    const chipHtml = (nodeId, value, text, on) =>
+        `<button type="button" class="seg-chip js-value-chip${on ? ' is-on' : ''}" data-node="${esc(nodeId)}" data-value="${esc(value)}">${on ? '<span class="seg-chip-check">✓</span>' : ''}${esc(text)}</button>`;
+
     const renderValueControl = (condition, index, spec) => {
         const values = condition.values || [];
         const single = values[index] ?? '';
 
+        // Boolean → two toggle chips (the catalog's declared bool). Single-valued, so picking one replaces the other.
         if (spec.control === 'bool') {
-            return `<select class="form-select form-select-sm js-node-value" data-node="${esc(condition.nodeId)}" data-index="${index}">
-                        <option value="true"${single === 'true' ? ' selected' : ''}>${esc(L.BoolTrue || 'true')}</option>
-                        <option value="false"${single === 'false' ? ' selected' : ''}>${esc(L.BoolFalse || 'false')}</option>
-                    </select>`;
+            const isTrue = String(single) === 'true';
+            return `<div class="seg-chip-wrap">
+                        ${chipHtml(condition.nodeId, 'true', L.BoolTrue || 'Yes', isTrue)}
+                        ${chipHtml(condition.nodeId, 'false', L.BoolFalse || 'No', String(single) === 'false')}
+                    </div>`;
+        }
+
+        // Catalog list (reference-set / enum) → chips + free-text. The chips are filled in hydrateControls, because a
+        // reference-set loads its published values asynchronously through the same-origin proxy.
+        if (spec.control === 'chips') {
+            return `<div class="seg-chip-wrap js-chips" data-node="${esc(condition.nodeId)}"></div>`;
         }
 
         if (spec.control === 'date') {
-            return `<input type="text" class="form-control form-control-sm flatpickr-date js-node-value"
+            return `<input type="text" class="seg-value-input flatpickr-date js-node-value"
                         data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}"
                         placeholder="YYYY-MM-DD" autocomplete="off" />`;
         }
 
         if (spec.control === 'number') {
-            return `<input type="number" step="any" class="form-control form-control-sm js-node-value"
+            return `<input type="number" step="any" class="seg-value-input seg-value-input-number js-node-value"
                         data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}" />`;
         }
 
+        // Entity picker (accounts / territory nodes / MDM products…) keeps Select2 — these lists can run to hundreds of
+        // rows, so chips would not scale. It stays catalog-driven and taggable, exactly as before.
         if (spec.control === 'select' || spec.control === 'cascade-select') {
             const seeded = spec.multi ? values : [single];
             const seedOptions = seeded.filter(v => String(v ?? '').trim() !== '')
@@ -412,11 +431,11 @@
         const disabledNote = spec.disabledReason
             ? `<small class="text-warning d-block">${esc(spec.disabledReason)}</small>` : '';
         if (spec.multi) {
-            return `<input type="text" class="form-control form-control-sm js-node-multitext"
+            return `<input type="text" class="seg-value-input js-node-multitext"
                         data-node="${esc(condition.nodeId)}" value="${esc(values.join(', '))}"
                         placeholder="${esc(L.CommaSeparated || '')}" />${disabledNote}`;
         }
-        return `<input type="text" class="form-control form-control-sm js-node-value"
+        return `<input type="text" class="seg-value-input js-node-value"
                     data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}" />${disabledNote}`;
     };
 
@@ -432,16 +451,14 @@
 
         const fields = required.map(name => {
             const value = (condition.parameters || {})[name] || '';
-            return `<div class="col-6 col-md-3">
-                        <label class="form-label small mb-1">${esc(name)} <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control form-control-sm js-node-param"
+            return `<div class="seg-param">
+                        <label class="seg-param-label">${esc(name)} <span class="seg-req">*</span></label>
+                        <input type="text" class="seg-value-input js-node-param"
                             data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />
                     </div>`;
         }).join('');
 
-        return `<div class="col-12">
-                    <div class="row g-2 align-items-end pt-1 mt-1 border-top">${fields}</div>
-                </div>`;
+        return `<div class="seg-param-row">${fields}</div>`;
     };
 
     // ---------------------------------------------------------------- rendering
@@ -464,7 +481,7 @@
         }).join('');
     };
 
-    const renderCondition = (condition, block) => {
+    const renderCondition = (condition, block, index) => {
         const definition = attributeFor(condition.attributeCode);
         const operators = (definition?.operators || []).map(op =>
             `<option value="${esc(op)}"${op === condition.operator ? ' selected' : ''}>${esc(operatorLabel(op))}</option>`).join('');
@@ -473,86 +490,105 @@
         const slots = valueSlotCount(condition);
         const badge = sourceBadge(definition);
 
-        const valueBody = slots === 0
-            ? `<div class="form-control form-control-sm bg-transparent border-0 px-0 text-muted small">${esc(L.NoValueNeeded || '—')}</div>`
-            : slots === 2
-                ? `<div class="row g-2">
-                       ${Array.from({ length: 2 }, (_, i) => `
-                       <div class="col-6">
-                           <span class="d-block small text-muted mb-1">${esc(i === 0 ? (L.From || 'From') : (L.To || 'To'))}</span>
-                           ${renderValueControl(condition, i, spec)}
-                       </div>`).join('')}
-                   </div>`
-                : renderValueControl(condition, 0, spec);
+        // Lead word mirrors the mockup: the first condition reads "WHERE", the rest read "AND" / "OR" from the block's
+        // own match mode.
+        const lead = index === 0
+            ? (L.ReadsWhere || 'where')
+            : (block.match === 'or' ? (L.JoinerOr || 'or') : (L.JoinerAnd || 'and'));
 
-        const typeHint = spec.taggable ? `<small class="text-muted d-block mt-1">${esc(L.OrTypeValue || '')}</small>` : '';
+        const isListLike = spec.control === 'chips' || spec.control === 'select' || spec.control === 'cascade-select';
+        const prompt = spec.control === 'chips' ? (L.ValuePick || 'Pick one or more')
+            : spec.control === 'bool' ? (L.ValueSet || 'Set to')
+                : (L.ValueLabel || 'Value');
+
+        let valueBox;
+        if (slots === 0) {
+            valueBox = `<div class="seg-value-box seg-value-inline"><span class="seg-value-prompt">${esc(L.NoValueNeeded || '—')}</span></div>`;
+        } else if (slots === 2) {
+            valueBox = `<div class="seg-value-box"><div class="seg-value-inline">
+                    ${Array.from({ length: 2 }, (_, i) => `<span class="seg-value-prompt">${esc(i === 0 ? (L.From || 'From') : (L.To || 'To'))}</span>${renderValueControl(condition, i, spec)}`).join('')}
+                </div></div>`;
+        } else if (isListLike) {
+            valueBox = `<div class="seg-value-box">
+                    <div class="seg-value-prompt-row">
+                        <span class="seg-value-prompt">${esc(prompt)}</span>
+                        <span class="seg-source-badge">${esc(badge.text)}</span>
+                    </div>
+                    ${renderValueControl(condition, 0, spec)}
+                </div>`;
+        } else {
+            valueBox = `<div class="seg-value-box seg-value-inline">
+                    <span class="seg-value-prompt">${esc(prompt)}</span>
+                    ${renderValueControl(condition, 0, spec)}
+                </div>`;
+        }
+
+        const removeBtn = isFrozen ? '' : `<button type="button" class="seg-remove-cond js-remove-condition"
+                    data-block="${esc(block.blockId)}" data-node="${esc(condition.nodeId)}" title="${esc(L.Remove || 'Remove')}">✕</button>`;
 
         return `
-        <div class="segment-condition border rounded-3 shadow-sm bg-body p-3 mb-2">
-            <div class="row g-3 align-items-end">
-                <div class="col-12 col-md-4">
-                    <label class="form-label small mb-1">${esc(L.Attribute || 'Attribute')}</label>
-                    <select class="form-select form-select-sm js-node-attribute" data-node="${esc(condition.nodeId)}">${attributeOptions(condition.attributeCode)}</select>
-                </div>
-                <div class="col-12 col-md-3">
-                    <label class="form-label small mb-1">${esc(L.Operator || 'Operator')}</label>
-                    <select class="form-select form-select-sm js-node-operator" data-node="${esc(condition.nodeId)}">${operators}</select>
-                </div>
-                <div class="col-12 col-md-5">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="badge bg-label-${badge.tone}">${esc(badge.text)}</span>
-                        ${isFrozen ? '' : `<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-condition"
-                            data-block="${esc(block.blockId)}" data-node="${esc(condition.nodeId)}"
-                            title="${esc(L.Remove || 'Remove')}"><i class="bx bx-trash"></i></button>`}
-                    </div>
-                    ${valueBody}
-                    ${typeHint}
-                </div>
-                ${parameterFields(condition)}
+        <div class="seg-cond">
+            <div class="seg-cond-top">
+                <span class="seg-cond-lead">${esc(lead)}</span>
+                <select class="seg-cond-attr js-node-attribute" data-node="${esc(condition.nodeId)}">${attributeOptions(condition.attributeCode)}</select>
+                <select class="seg-cond-op js-node-operator" data-node="${esc(condition.nodeId)}">${operators}</select>
+                ${removeBtn}
             </div>
-            <div class="mt-2 small text-muted js-cond-count-row" data-node="${esc(condition.nodeId)}"></div>
+            <div class="seg-cond-body">
+                ${valueBox}
+                ${parameterFields(condition)}
+                <div class="seg-cond-foot">
+                    <span class="seg-readback">${esc(conditionText(condition))}</span>
+                    <span class="seg-reach-chip js-cond-count-row seg-hidden" data-node="${esc(condition.nodeId)}"></span>
+                </div>
+            </div>
         </div>`;
     };
 
     const renderBlock = (block, index) => {
-        // "Match [every|any] condition below" — a segmented toggle in place of the old dropdown. The stored value is
-        // unchanged (every=and, any=or); the change handler still reads it off the checked radio's data-block/value.
+        // "Include people where [every|any] condition below is true" — a segmented toggle. The stored value is unchanged
+        // (every=and, any=or); the change handler still reads it off the checked radio's data-block/value.
         const toggleName = `blockmatch-${block.blockId}`;
+        const isEvery = block.match === 'and';
         const matchToggle = `
-            <div class="btn-group btn-group-sm" role="group" aria-label="${esc(L.BlockMatchLabel || 'match')}">
+            <span class="seg-toggle" role="group" aria-label="${esc(L.BlockMatchLabel || 'match')}">
                 <input type="radio" class="btn-check js-block-match" name="${esc(toggleName)}" id="bm-and-${esc(block.blockId)}"
-                    data-block="${esc(block.blockId)}" value="and" autocomplete="off"${block.match === 'and' ? ' checked' : ''}>
-                <label class="btn btn-outline-primary" for="bm-and-${esc(block.blockId)}">${esc(L.BlockToggleEvery || 'every')}</label>
+                    data-block="${esc(block.blockId)}" value="and" autocomplete="off"${isEvery ? ' checked' : ''}>
+                <label class="seg-toggle-btn" for="bm-and-${esc(block.blockId)}">${esc(L.BlockToggleEvery || 'every')}</label>
                 <input type="radio" class="btn-check js-block-match" name="${esc(toggleName)}" id="bm-or-${esc(block.blockId)}"
-                    data-block="${esc(block.blockId)}" value="or" autocomplete="off"${block.match === 'or' ? ' checked' : ''}>
-                <label class="btn btn-outline-primary" for="bm-or-${esc(block.blockId)}">${esc(L.BlockToggleAny || 'any')}</label>
-            </div>`;
+                    data-block="${esc(block.blockId)}" value="or" autocomplete="off"${!isEvery ? ' checked' : ''}>
+                <label class="seg-toggle-btn" for="bm-or-${esc(block.blockId)}">${esc(L.BlockToggleAny || 'any')}</label>
+            </span>`;
 
-        const conditions = block.conditions.map(c => renderCondition(c, block)).join('');
+        const conditions = block.conditions.map((c, i) => renderCondition(c, block, i)).join('');
 
+        // Blocks always combine with AND ALSO; the joiner only shows between blocks (mockup g.showJoiner = gi > 0).
         const andAlso = index > 0
-            ? `<div class="segment-and-also d-flex align-items-center gap-2 my-2">
-                   <span class="badge bg-label-dark text-uppercase">${esc(L.AndAlso || 'AND ALSO')}</span>
-                   <span class="text-muted small">${esc(L.AndAlsoHelp || '')}</span>
+            ? `<div class="seg-joiner">
+                   <span class="seg-joiner-line seg-joiner-line-short"></span>
+                   <span class="seg-joiner-pill">${esc(L.AndAlso || 'AND ALSO')}</span>
+                   <span class="seg-joiner-line"></span>
                </div>`
             : '';
 
+        // Remove-block only when there is more than one block (mockup g.canDelete = groups.length > 1).
+        const canDelete = blocks.length > 1;
+        const removeBlockBtn = (isFrozen || !canDelete) ? '' : `<button type="button" class="seg-remove-block js-remove-block"
+                    data-block="${esc(block.blockId)}" title="${esc(L.RemoveBlock || 'Remove block')}">${esc(L.RemoveBlock || 'Remove block')}</button>`;
+
+        const addCond = isFrozen ? '' : `<button type="button" class="seg-add-cond js-add-condition" data-block="${esc(block.blockId)}">+ ${esc(L.AddCondition || 'Add condition')}</button>`;
+
         return `${andAlso}
-        <div class="segment-block border rounded-3 p-3">
-            <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="badge bg-label-primary text-uppercase">${esc(L.BlockNode || 'Block')} ${index + 1}</span>
-                    <span class="text-muted small">${esc(L.BlockMatchLabel || 'Match')}</span>
-                    ${matchToggle}
-                </div>
-                ${isFrozen ? '' : `<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-block" data-block="${esc(block.blockId)}"
-                    title="${esc(L.RemoveBlock || 'Remove block')}"><i class="bx bx-trash"></i></button>`}
+        <div class="seg-block">
+            <div class="seg-block-head">
+                <span class="seg-block-head-text">${esc(L.BlockHeadLead || 'Include people where')}</span>
+                ${matchToggle}
+                <span class="seg-block-head-text seg-block-head-grow">${esc(L.BlockHeadTail || 'condition below is true')}</span>
+                ${removeBlockBtn}
             </div>
-            <div class="segment-block-body ps-3 border-start border-2">
+            <div class="seg-block-body">
                 ${conditions}
-                ${isFrozen ? '' : `
-                <button type="button" class="btn btn-sm btn-label-primary js-add-condition mt-1" data-block="${esc(block.blockId)}">
-                    <i class="bx bx-plus me-1"></i>${esc(L.AddCondition || 'Add condition')}</button>`}
+                ${addCond}
             </div>
         </div>`;
     };
@@ -623,6 +659,25 @@
             const current = el.value;
             el.innerHTML = `<option value="">${esc(L.SelectTerritoryModel || '')}</option>`
                 + models.map(m => `<option value="${esc(m.value)}"${m.value === current ? ' selected' : ''}>${esc(m.text)}</option>`).join('');
+        }
+
+        // Catalog-list chips (reference-set / enum). The options are the SAME published values as before (loaded through
+        // the proxy for a reference set, or the enum's own closed list); only the control is chips instead of a select.
+        // A value the author free-typed but the list does not carry is still shown as a selected chip, so nothing is lost.
+        for (const wrap of Array.from(listEl.querySelectorAll('.js-chips'))) {
+            const condition = findCondition(wrap.dataset.node);
+            if (!condition) continue;
+            const spec = controlFor(condition);
+            let options = spec.options || [];
+            if (spec.async) { try { options = await spec.async(); } catch (e) { options = []; } }
+            const values = (condition.values || []).map(v => String(v));
+            const known = new Set(options.map(o => String(o.value)));
+            const extras = values.filter(v => v.trim() !== '' && !known.has(v)).map(v => ({ value: v, text: v }));
+            const chips = options.concat(extras)
+                .map(o => chipHtml(condition.nodeId, o.value, o.text, values.includes(String(o.value)))).join('');
+            const free = `<input type="text" class="seg-freetext js-value-freetext" data-node="${esc(condition.nodeId)}" placeholder="${esc(L.OrTypeValue || '')}"${isFrozen ? ' disabled' : ''} />`;
+            wrap.innerHTML = chips + free;
+            if (isFrozen) wrap.querySelectorAll('button').forEach(b => { b.disabled = true; });
         }
     };
 
@@ -774,11 +829,11 @@
                 const label = attributeLabel(c.attributeCode);
                 const value = c.capExceeded ? `${c.count}+` : String(c.count ?? 0);
                 return `<div>
-                    <div class="d-flex justify-content-between small mb-1">
-                        <span class="text-truncate me-2">${esc(label)}</span>
-                        <span class="text-muted flex-shrink-0">${esc(value)} ${esc(L.MatchThisAlone || 'match this alone')}</span>
+                    <div class="seg-funnel-row-head">
+                        <span class="seg-funnel-label">${esc(label)}</span>
+                        <span class="seg-funnel-value">${esc(value)} ${esc(L.MatchThisAlone || 'match this alone')}</span>
                     </div>
-                    <div class="progress" style="height:.5rem;"><div class="progress-bar" role="progressbar" style="width:${pct}%"></div></div>
+                    <div class="seg-funnel-track"><div class="seg-funnel-fill" style="width:${pct}%"></div></div>
                 </div>`;
             }).join('');
         }
@@ -786,11 +841,19 @@
         if (reachSample) {
             const members = data.sampleMembers || [];
             reachSample.innerHTML = members.length
-                ? members.map(m => `<div class="d-flex align-items-center gap-2">
-                       <i class="bx bx-user text-muted"></i>
-                       <span class="text-truncate">${esc(m.displayName || m.subjectId)}</span>
-                   </div>`).join('')
-                : `<div class="text-muted small">${esc(L.ReachNoSample || '—')}</div>`;
+                ? members.map(m => {
+                    const name = m.displayName || m.subjectId || '';
+                    const initials = String(name).trim().split(/\s+/).map(w => w.charAt(0)).slice(0, 2).join('').toUpperCase() || '?';
+                    const meta = m.displayName ? (m.subjectId || '') : '';
+                    return `<div class="seg-sample">
+                       <span class="seg-avatar">${esc(initials)}</span>
+                       <span class="seg-sample-body">
+                           <span class="seg-sample-name">${esc(name)}</span>
+                           ${meta ? `<span class="seg-sample-meta">${esc(meta)}</span>` : ''}
+                       </span>
+                   </div>`;
+                }).join('')
+                : `<div class="seg-reach-idle">${esc(L.ReachNoSample || '—')}</div>`;
         }
 
         applyConditionCounts();
@@ -801,9 +864,10 @@
     const applyConditionCounts = () => {
         listEl?.querySelectorAll('.js-cond-count-row').forEach(row => {
             const info = lastConditionCounts[row.dataset.node];
-            if (!info) { row.textContent = ''; return; }
+            if (!info) { row.textContent = ''; row.classList.add('seg-hidden'); return; }
             const value = info.capExceeded ? `${info.count}+` : String(info.count);
-            row.innerHTML = `<i class="bx bx-target-lock me-1"></i>${esc(value)} ${esc(L.MatchThisAlone || 'match this alone')}`;
+            row.textContent = `${value} ${L.MatchThisAlone || 'match this alone'}`;
+            row.classList.remove('seg-hidden');
         });
     };
 
@@ -818,9 +882,9 @@
             { ok: !!(effFromEl?.value || '').trim(), text: L.ChecklistEffective || 'Effective-from set' }
         ];
         reachChecklistItems.innerHTML = items.map(i =>
-            `<li class="d-flex align-items-center gap-2 mb-1">
-                <i class="bx ${i.ok ? 'bx-check-circle text-success' : 'bx-circle text-muted'}"></i>
-                <span class="${i.ok ? '' : 'text-muted'}">${esc(i.text)}</span>
+            `<li class="seg-check ${i.ok ? 'is-ok' : 'is-pending'}">
+                <span class="seg-check-mark">${i.ok ? '✓' : ''}</span>
+                <span class="seg-check-text">${esc(i.text)}</span>
             </li>`).join('');
     };
 
@@ -845,8 +909,7 @@
         if (!templatesEl) return;
         const available = TEMPLATES.filter(templateApplies);
         templatesEl.innerHTML = available.map(tpl =>
-            `<button type="button" class="btn btn-sm btn-label-secondary js-template" data-template="${esc(tpl.key)}">
-                <i class="bx bx-bolt-circle me-1"></i>${esc(L[tpl.labelKey] || tpl.key)}</button>`).join('');
+            `<button type="button" class="seg-recipe js-template" data-template="${esc(tpl.key)}">${esc(L[tpl.labelKey] || tpl.key)}</button>`).join('');
         templatesEl.classList.toggle('d-none', available.length === 0);
     };
 
@@ -962,8 +1025,53 @@
         }
     });
 
+    // Free-text entry on a catalog-list chip field: Enter adds the typed value (mirrors the mockup's "type + Enter"),
+    // exactly as Select2 tagging did — the value source stays a hint, never a hard restriction.
+    document.addEventListener('keydown', event => {
+        const free = event.target.closest && event.target.closest('.js-value-freetext');
+        if (!free || event.key !== 'Enter' || isFrozen) return;
+        event.preventDefault();
+        const condition = findCondition(free.dataset.node);
+        if (!condition) return;
+        const v = (free.value || '').trim();
+        if (!v) return;
+        condition.values = condition.values || [];
+        if (isMultiValue(condition.operator)) {
+            if (!condition.values.map(String).includes(v)) condition.values.push(v);
+        } else {
+            condition.values = [v];
+        }
+        free.value = '';
+        render();
+    });
+
     document.addEventListener('click', event => {
         if (event.target.closest('#btnAddBlock')) { event.preventDefault(); if (addBlock()) render(); return; }
+
+        // A value chip toggles a catalog value in condition.values. Multi-value operators (in / not-in) toggle
+        // membership; single-value operators (eq, bool…) replace. Either way the write path is the same as the old
+        // Select2, so buildNodes / the posted payload are unchanged.
+        const valueChip = event.target.closest('.js-value-chip');
+        if (valueChip) {
+            event.preventDefault();
+            if (isFrozen) return;
+            const condition = findCondition(valueChip.dataset.node);
+            if (condition) {
+                const v = valueChip.dataset.value;
+                condition.values = condition.values || [];
+                if (isMultiValue(condition.operator)) {
+                    const at = condition.values.map(String).indexOf(String(v));
+                    if (at >= 0) condition.values.splice(at, 1); else condition.values.push(v);
+                } else {
+                    condition.values = [v];
+                }
+                render();
+            }
+            return;
+        }
+
+        // "Preview sample of 50" re-runs the same SEG-C /preview the rail already debounces — it fabricates nothing.
+        if (event.target.closest('#btnPreviewSample')) { event.preventDefault(); runPreview(); return; }
 
         const addCond = event.target.closest('.js-add-condition');
         if (addCond) { event.preventDefault(); if (addCondition(addCond.dataset.block)) render(); return; }
@@ -1004,20 +1112,20 @@
         if (!memberListEl) return;
         memberEmptyEl?.classList.toggle('d-none', members.length > 0);
         memberListEl.innerHTML = members.map(m => `
-            <div class="border rounded p-3 d-flex justify-content-between align-items-start ${m.isArchived ? 'opacity-50' : ''}">
+            <div class="seg-member ${m.isArchived ? 'is-archived' : ''}">
                 <div>
                     <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-label-${m.membershipMode === 'manual-include' ? 'success' : 'danger'}">${esc(m.membershipMode)}</span>
-                        <span class="fw-medium">${esc(m.subjectDisplayName || m.subjectId)}</span>
-                        ${m.isArchived ? `<span class="badge bg-label-secondary">${esc(L.Archived || 'archived')}</span>` : ''}
+                        <span class="seg-member-badge ${m.membershipMode === 'manual-include' ? 'is-include' : 'is-exclude'}">${esc(m.membershipMode)}</span>
+                        <span class="seg-member-name">${esc(m.subjectDisplayName || m.subjectId)}</span>
+                        ${m.isArchived ? `<span class="seg-member-badge">${esc(L.Archived || 'archived')}</span>` : ''}
                     </div>
-                    <div class="text-muted small">${esc(m.selectionReason)}</div>
-                    <div class="text-muted small">${esc(m.subjectId)}</div>
+                    <div class="seg-member-meta">${esc(m.selectionReason)}</div>
+                    <div class="seg-member-meta">${esc(m.subjectId)}</div>
                 </div>
                 ${m.isArchived ? '' : `
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-sm btn-label-secondary js-edit-member" data-id="${esc(m.targetCustomerId)}"><i class="bx bx-edit"></i></button>
-                    <button type="button" class="btn btn-sm btn-label-warning js-archive-member" data-id="${esc(m.targetCustomerId)}"><i class="bx bx-archive-in"></i></button>
+                <div class="seg-member-actions">
+                    <button type="button" class="seg-icon-btn js-edit-member" data-id="${esc(m.targetCustomerId)}"><i class="bx bx-edit"></i></button>
+                    <button type="button" class="seg-icon-btn js-archive-member" data-id="${esc(m.targetCustomerId)}"><i class="bx bx-archive-in"></i></button>
                 </div>`}
             </div>`).join('');
     };

@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>Bir kural çekirdeği belirler, ayrıca her zaman veya asla dahil edeceğiniz kişiler.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>tümü</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>herhangi biri</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Şu kişileri dahil et:</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>koşulu doğruysa</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Bir veya daha fazla seç</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Şuna ayarla</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Değer</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Nasıl saklanır</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>50 kişilik örneği önizle</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Etkinleştirmek bu kuralı yeni bir sürüm olarak dondurur. Taslak düzenlemeleri canlı kampanyaları etkilemez.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Yaygın bir kitleyle başla veya ilk koşulunu ekle.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Başka bir blok ekle — kişiler bunu da sağlamalı</value></data>
 </root>

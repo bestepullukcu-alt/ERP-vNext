@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>Правило определяет основу, плюс люди, которых вы всегда или никогда не включаете.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>все</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>любое</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Включить людей, где</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>условие ниже истинно</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Выберите одно или несколько</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Установить на</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Значение</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Как это хранится</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Предпросмотр выборки из 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Активация фиксирует это правило как новую версию. Изменения черновика не влияют на активные кампании.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Начните с типовой аудитории или добавьте первое условие.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Добавить ещё один блок — люди должны также ему соответствовать</value></data>
 </root>

@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>Une règle définit le noyau, plus les personnes à toujours ou jamais inclure.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>toutes</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>au moins une</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Inclure les personnes où</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>la condition ci-dessous est vraie</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Choisissez une ou plusieurs valeurs</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Définir sur</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Valeur</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Comment c'est stocké</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Aperçu d'un échantillon de 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>L'activation fige cette règle en une nouvelle version. Les modifications du brouillon n'affectent jamais les campagnes en cours.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Partez d'une audience courante, ou ajoutez votre première condition.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Ajouter un autre bloc — les personnes doivent aussi le satisfaire</value></data>
 </root>

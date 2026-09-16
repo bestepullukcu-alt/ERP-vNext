@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>规则决定核心，再加上您始终包含或永不包含的人员。</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>全部</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>任一</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>包含满足以下条件的人员：</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>条件为真</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>选择一个或多个</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>设置为</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>值</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>存储方式</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>预览 50 人样本</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>激活会将此规则冻结为新版本。草稿编辑绝不会影响正在运行的营销活动。</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>从常见受众开始，或添加你的第一个条件。</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ 添加另一个分组——人员还必须满足该条件</value></data>
 </root>

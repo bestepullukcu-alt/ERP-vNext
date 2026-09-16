@@ -215,4 +215,14 @@
   <data name="MembershipHybridHelp" xml:space="preserve"><value>Una regla decide el núcleo, más las personas que siempre o nunca se incluyen.</value></data>
   <data name="BlockToggleEvery" xml:space="preserve"><value>todas</value></data>
   <data name="BlockToggleAny" xml:space="preserve"><value>cualquiera</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Incluir personas donde</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>la condición siguiente sea verdadera</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Elige uno o varios</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Establecer en</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Valor</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Cómo se almacena</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Previsualizar muestra de 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Activar congela esta regla como una nueva versión. Los cambios del borrador nunca afectan a las campañas activas.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Empieza desde una audiencia común o añade tu primera condición.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Añadir otro bloque — las personas también deben cumplirlo</value></data>
 </root>
