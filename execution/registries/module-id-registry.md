@@ -306,7 +306,7 @@ MOD-0140–0145 Blueprint-canonical (`Blueprint_Data`, Suite = "Procurement Suit
 | MOD-0142 | Receiving (GRN) | receiving-grn | Module | reserved / planned |  |  | procurement | Blueprint W-2 (P2P). DCP-002 gate OK 2026-09-16. DCP-010. SoR = goods receipts, receiving exceptions, match artifacts. Posts movements to MOD-0173 via frozen INVENTORY contract (GOODS_RECEIPT_PO); no second balance (shadow stock forbidden). Min contract GRN-BUNDLE (`grn-event.openapi.yaml`, frozen). |
 | MOD-0143 | Invoice Capture & 3-Way Match | invoice-capture-3-way-match | Module | reserved / planned |  |  | procurement | Blueprint W-2 (P2P). DCP-002 gate OK 2026-09-16. DCP-010. SoR = match outcomes, invoice exceptions, approvals (invoice processing view). NOT AP/payment SoR (Finance/Treasury). Min contract MATCH-BUNDLE. |
 | MOD-0144 | Contracting & Clause Library | contracting-clause-library | Module | reserved / planned |  |  | procurement | Blueprint W-2 (P2P). DCP-002 gate OK 2026-09-16. DCP-010. SoR = sourcing/procurement contracts, clause deviations (reference). Min contract CLM-CONTRACT-BUNDLE. |
-| MOD-0145 | Sourcing (RFQ/RFP) | sourcing-rfq-rfp | Module | reserved / planned |  |  | procurement | Blueprint W-3 (P2P). DCP-002 gate OK 2026-09-16. DCP-010. SoR = RFx events, bids, evaluations, award decisions. Min contract SOURCING-BUNDLE. |
+| MOD-0145 | Sourcing (RFQ/RFP) | sourcing-rfq-rfp | Module | ready-for-dev |  |  | procurement | Blueprint W-3 (P2P). DCP-002 gate OK 2026-09-16. DCP-010 approved; pack ready-for-dev (Ali, 2026-09-16) → FAZ 2 slice 2 (Diten.ProcurementService). SoR = RFx events, bids, evaluations, award decisions. Min contract SOURCING-BUNDLE. |
 
 ---
 
