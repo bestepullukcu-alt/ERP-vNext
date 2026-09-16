@@ -101,34 +101,33 @@
     // (SortableJS handle) + ↑↓ + order # + name + Concept-Type code badge + min–max chip + Details (collapse → Min/Max
     // only) + remove. Steps stay refs-free {conceptTypeId, min, max}; Moderator/ForWhom remain template-level and are
     // not touched. No horizontal scroll (the list flows down).
+    // SCMM-10-MOD-G: step row = the shared `.diten-checkitem` checklist row (VisitPlanning vp-stop pattern), so its
+    // size/hover/grip/drag match the Tasks/WorkCenter checklist family. Grip = SortableJS handle; move = stacked ↑↓;
+    // then order # + Concept-Type name + code badge + cardinality chip + Details (collapse → ONLY Min/Max) + remove.
     const stepRow = (bi, si, s, lastIndex, ro) => {
         const detId = `stepDet-${bi}-${si}`;
-        const handle = ro ? '' : `<i class="bx bx-grid-vertical text-muted js-step-handle flex-shrink-0" role="button" aria-label="${esc(L.MoveUp || '')}"></i>`;
-        // SCMM-10-MOD-F: TaskCenter checklist button look — text buttons (btn-text-*) with icon-base/icon-sm glyphs.
-        const up = `<button type="button" class="btn btn-icon btn-text-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" aria-label="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="icon-base bx bx-chevron-up icon-sm"></i></button>`;
-        const down = `<button type="button" class="btn btn-icon btn-text-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" aria-label="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="icon-base bx bx-chevron-down icon-sm"></i></button>`;
-        const moves = ro ? '' : `<span class="d-flex flex-column flex-shrink-0">${up}${down}</span>`;
-        const details = `<button type="button" class="btn btn-icon btn-text-secondary flex-shrink-0" data-bs-toggle="collapse" data-bs-target="#${detId}" aria-expanded="false" aria-controls="${detId}" title="${esc(L.Details || '')}" aria-label="${esc(L.Details || '')}"><i class="icon-base bx bx-slider-alt icon-sm"></i></button>`;
-        const rm = ro ? '' : `<button type="button" class="btn btn-icon btn-text-danger js-step-remove flex-shrink-0" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="icon-base bx bx-trash icon-sm"></i></button>`;
-        const minmax = ro ? '' : `<div class="collapse" id="${detId}">
+        const grip = ro ? '' : `<span class="diten-checkitem-grip js-step-handle flex-shrink-0" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>`;
+        const moves = ro ? '' : `<span class="diten-checkitem-move flex-shrink-0">
+                    <button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" aria-label="${esc(L.MoveUp || '')}" ${si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-up"></i></button>
+                    <button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" aria-label="${esc(L.MoveDown || '')}" ${si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-down"></i></button>
+                </span>`;
+        const details = `<button type="button" class="diten-checkitem-btn flex-shrink-0" data-bs-toggle="collapse" data-bs-target="#${detId}" aria-expanded="false" aria-controls="${detId}" title="${esc(L.Details || '')}" aria-label="${esc(L.Details || '')}"><i class="bx bx-slider-alt"></i></button>`;
+        const rm = ro ? '' : `<button type="button" class="diten-checkitem-btn diten-checkitem-remove js-step-remove flex-shrink-0" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
+        const minmax = ro ? '' : `<div class="collapse w-100" id="${detId}">
                     <div class="d-flex gap-2 align-items-end mt-2">
                         <div><label class="form-label small mb-0">${esc(L.MinSelection || 'Min')}</label><input type="number" min="0" step="1" class="form-control form-control-sm js-step-min" data-b="${bi}" data-s="${si}" value="${esc(String(s.min == null || s.min === '' ? 1 : s.min))}" style="width:5.5rem"></div>
                         <div><label class="form-label small mb-0">${esc(L.MaxSelection || 'Max')}</label><input type="number" min="1" step="1" class="form-control form-control-sm js-step-max" data-b="${bi}" data-s="${si}" value="${s.max == null || s.max === '' ? '' : esc(String(s.max))}" style="width:5.5rem"></div>
                     </div>
                 </div>`;
-        return `<div class="card border shadow-none js-step-row" data-b="${bi}" data-s="${si}" data-ct="${esc(String(s.conceptTypeId))}">
-                <div class="card-body p-2">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        ${handle}${moves}
-                        <span class="badge bg-label-secondary rounded-pill flex-shrink-0">${si + 1}</span>
-                        <span class="fw-medium text-truncate flex-grow-1" title="${esc(nameOf(s.conceptTypeId))}">${esc(nameOf(s.conceptTypeId))}</span>
-                        <span class="badge bg-label-primary flex-shrink-0">${esc(codeOf(s.conceptTypeId))}</span>
-                        <span class="badge bg-label-secondary flex-shrink-0 js-step-chip" data-chip-b="${bi}" data-chip-s="${si}">${esc(cardinality(s))}</span>
-                        ${details}${rm}
-                    </div>
-                    ${minmax}
-                </div>
-            </div>`;
+        return `<li class="diten-checkitem flex-wrap js-step-row" data-b="${bi}" data-s="${si}" data-ct="${esc(String(s.conceptTypeId))}">
+                ${grip}${moves}
+                <span class="badge bg-label-secondary rounded-pill flex-shrink-0">${si + 1}</span>
+                <span class="diten-checkitem-text text-truncate" title="${esc(nameOf(s.conceptTypeId))}">${esc(nameOf(s.conceptTypeId))}</span>
+                <span class="badge bg-label-primary flex-shrink-0">${esc(codeOf(s.conceptTypeId))}</span>
+                <span class="badge bg-label-secondary flex-shrink-0 js-step-chip" data-chip-b="${bi}" data-chip-s="${si}">${esc(cardinality(s))}</span>
+                ${details}${rm}
+                ${minmax}
+            </li>`;
     };
     // A Bootstrap .pagination prev/·info·/next (existing classes only) — used for the branch pager.
     const pager = (kindClass, page, pages, label, bi) => {
@@ -162,7 +161,8 @@
         const list = document.getElementById('tplStepList');
         if (!list) return;
         sortable = window.Sortable.create(list, {
-            handle: '.js-step-handle',
+            handle: '.diten-checkitem-grip',
+            ghostClass: 'diten-checkitem-ghost',
             animation: 150,
             onEnd: () => {
                 const bi = branchPage;
@@ -190,7 +190,7 @@
         const lastIndex = b.steps.length - 1;
         const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
         const rows = b.steps.map((s, si) => stepRow(bi, si, s, lastIndex, ro)).join('');
-        const listInner = rows || `<div class="text-muted small">${esc(L.BranchStepsEmpty || '')}</div>`;
+        const listInner = rows || `<li class="text-muted small">${esc(L.BranchStepsEmpty || '')}</li>`;
 
         host.innerHTML = `
             <div class="card border shadow-none">
@@ -201,7 +201,7 @@
                         <span class="badge bg-label-secondary flex-shrink-0">${b.steps.length} ${esc(L.Steps || '')}</span>
                         <button type="button" class="btn btn-icon btn-text-danger js-branch-remove flex-shrink-0" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="icon-base bx bx-trash icon-sm"></i></button>
                     </div>
-                    <div id="tplStepList" class="d-flex flex-column gap-2 mb-2">${listInner}</div>
+                    <ul id="tplStepList" class="list-unstyled d-flex flex-column gap-2 mb-2">${listInner}</ul>
                     ${ro ? '' : addStepRow(bi, opts)}
                 </div>
             </div>
