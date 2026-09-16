@@ -1,27 +1,35 @@
 /**
- * MOD-0167-FU02 Segments — Create/Edit page: the EMBEDDED criteria tree editor and the EMBEDDED manual membership
- * sub-editor. Both live inside this one Compact page; neither is a second golden-reference surface.
+ * MOD-0167-FU02 Segments — Create/Edit page: the EMBEDDED criteria BLOCK editor, the live reach rail and the EMBEDDED
+ * manual membership sub-editor. All three live inside this one Compact page; none is a second golden-reference surface.
  *
- * The editor is CATALOG-DRIVEN end to end. The attribute list, the operators allowed for each attribute, the value
- * type, the value arity, the required/optional parameters AND (P1a) where a legitimate value comes from all arrive
- * from /attribute-catalog at runtime. There is no hardcoded attribute, operator or value list in this file, on
- * purpose — a hardcoded copy is a second source of truth and it drifts silently until the UI offers a rule the
- * runtime refuses.
+ * BLOCK MODEL (WP-SEG-A). The rule is authored as two FIXED layers, never a free tree:
+ *   - a BLOCK groups conditions that combine with EVERY (all) or ANY (one) — the block's own toggle;
+ *   - the blocks themselves ALWAYS combine with AND ALSO.
+ * There is no nesting control, no move control and no NOT toggle. "is none of" is the `not-in` operator, so negation
+ * lives in the operator, not in a separate switch. This maps to the EXACT stored tree the runtime persists:
+ *   MatchMode = all  ·  one GROUP node per block (groupOperator every=and / any=or)  ·  one PREDICATE node per condition.
+ * The posted payload (buildNodes) is byte-identical to the old tree editor's — the runtime still assigns the real
+ * NodeIds and remaps the parents. Depth is 2 by construction, so the depth limit can never be breached here.
  *
- * P1a — the value control follows the attribute's declared value source:
+ * CATALOG-DRIVEN end to end. The attribute list, its presentation DOMAIN (SEG-B — the optgroup a criterion renders
+ * under), the operators allowed for each attribute, the value type/arity, the required/optional parameters AND (P1a)
+ * where a legitimate value comes from all arrive from /attribute-catalog at runtime. There is NO hardcoded attribute,
+ * operator, domain or value list in this file — only presentation LABELS (a code → business-language phrase), which are
+ * translation, not a second source of truth. The operator business language: is any of=in, is none of=not-in,
+ * is at least=gte (+ the rest), all rendered from the catalog's own operator set.
+ *
+ * P1a — the value control follows the attribute's declared value source, with a SOURCE BADGE beside it:
  *   reference-set  -> Select2 over the tenant's PUBLISHED MOD-0048 values (empty when unpublished, never a local list)
  *   enum           -> the closed value list the catalog itself carries
  *   entity-picker  -> the aggregate's existing selector (account / territory model+node / MDM product / brand)
  *   free-text      -> by value type: date picker, number input, bool toggle, plain text
- * Every one of them still ACCEPTS A TYPED VALUE (Select2 tags), because the value source is a hint about what is
- * offered, never a restriction on what the runtime takes. `in` / `not-in` render as ONE multi-select that fills the
- * SAME values[] array — the persisted predicate shape is byte-identical to before.
+ * Every one still ACCEPTS A TYPED VALUE (Select2 tags / free text), because the value source is a hint about what is
+ * offered, never a restriction on what the runtime takes.
  *
- * P1b — the tree is drawn as real nesting: each group is a bordered rail with its own operator badge and its own
- * "add inside" buttons, so the parent of a new node is decided by WHERE you click. The parent dropdown survives only
- * as a move-fallback. A new group is born with one predicate inside it, so an empty group cannot happen by accident.
- *
- * All traffic goes through the same-origin MVC proxy. The browser never builds a bearer token or touches a cookie.
+ * REACH (SEG-C). A debounced POST to /preview answers "who would this rule reach right now?" — a total, a per-condition
+ * funnel ("N match this alone"), a bounded member sample and an activation checklist. It PERSISTS NOTHING and membership
+ * is never stored; the sample carries only a display name. All traffic goes through the same-origin MVC proxy: the
+ * browser never builds a bearer token or touches a cookie.
  */
 (function (window, document) {
     'use strict';
@@ -36,12 +44,17 @@
     const isFrozen = editor.dataset.frozen === 'true';
     const maxNodes = parseInt(editor.dataset.maxNodes || '100', 10);
     const maxChildren = parseInt(editor.dataset.maxChildren || '20', 10);
-    const maxDepth = parseInt(editor.dataset.maxDepth || '5', 10);
 
     const listEl = document.getElementById('criteriaList');
     const emptyEl = document.getElementById('criteriaEmpty');
+    const templatesEl = document.getElementById('criteriaTemplates');
+    const readbackEl = document.getElementById('criteriaReadback');
+    const readbackTextEl = document.getElementById('criteriaReadbackText');
+    const storedRuleEl = document.getElementById('storedRule');
+    const storedRuleJsonEl = document.getElementById('storedRuleJson');
     const subjectTypeEl = document.getElementById('SubjectType');
     const segmentTypeEl = document.getElementById('SegmentType');
+    const matchModeEl = document.getElementById('MatchMode');
 
     let bootstrap = {};
     try { bootstrap = JSON.parse(document.getElementById('segmentFormBootstrap')?.textContent || '{}'); }
@@ -50,9 +63,10 @@
 
     let catalog = null;
     let contract = null;
-    let nodes = [];
+    let blocks = [];              // the authored block model — the single in-memory source of truth
+    let lastConditionCounts = {}; // nodeId -> { count, capExceeded } from the most recent /preview
 
-    // One cache per option source, so re-rendering the tree never re-fetches a list.
+    // One cache per option source, so re-rendering never re-fetches a list.
     const optionCache = new Map();
 
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
@@ -71,17 +85,56 @@
     const currentSubjectType = () => (subjectTypeEl?.value || editor.dataset.subjectType || 'contact').trim();
     const currentSegmentType = () => (segmentTypeEl?.value || 'dynamic').trim();
 
+    // ---------------------------------------------------------------- presentation labels (translation only)
+
+    // Operator code -> business-language L10n key. The SET of operators is still the catalog's; this only translates.
+    const OPERATOR_LABEL_KEY = {
+        'eq': 'OpIs', 'ne': 'OpIsNot', 'in': 'OpIsAnyOf', 'not-in': 'OpIsNoneOf', 'contains': 'OpContains',
+        'gt': 'OpMoreThan', 'gte': 'OpAtLeast', 'lt': 'OpLessThan', 'lte': 'OpAtMost', 'between': 'OpBetween',
+        'is-null': 'OpIsEmpty', 'is-not-null': 'OpIsSet'
+    };
+    const operatorLabel = op => L[OPERATOR_LABEL_KEY[op]] || op;
+
+    // Presentation domain (SEG-B) -> optgroup label + stable render order.
+    const DOMAIN_LABEL_KEY = {
+        'doctor-profile': 'DomainDoctorProfile', 'consent': 'DomainConsent', 'workplace': 'DomainWorkplace',
+        'commercial': 'DomainCommercial', 'activity': 'DomainActivity', 'institution': 'DomainInstitution'
+    };
+    const DOMAIN_ORDER = ['doctor-profile', 'consent', 'workplace', 'commercial', 'activity', 'institution'];
+    const domainLabel = d => L[DOMAIN_LABEL_KEY[d]] || d || (L.DomainOther || 'Other');
+
+    // Human label for an attribute code: the last dotted segment, dashes to spaces, capitalised. Derived from the code
+    // (never a hardcoded list); the optgroup already carries the domain context.
+    const attributeLabel = code => {
+        const raw = String(code || '').split('.').pop().replace(/-/g, ' ').trim();
+        return raw ? raw.charAt(0).toUpperCase() + raw.slice(1) : code;
+    };
+
+    const entityLabel = kind => attributeLabel(kind);
+
+    /** The value-source badge: where a legitimate value comes from. Derived from the catalog's declared kind. */
+    const sourceBadge = definition => {
+        const src = definition?.valueSource || { kind: 'free-text' };
+        switch (src.kind) {
+            case 'reference-set': return { text: L.SourceReferenceSet || 'Reference set', tone: 'info' };
+            case 'enum': return { text: L.SourceCatalogList || 'Catalog list', tone: 'info' };
+            case 'entity-picker': return { text: `${L.SourcePicker || 'Picker'} · ${entityLabel(src.entityKind)}`, tone: 'primary' };
+            default: return { text: L.SourceFreeText || 'Free text', tone: 'secondary' };
+        }
+    };
+
     /**
      * Shows only the sections the chosen segment type can actually use, mirroring what the runtime already enforces:
-     *   static  -> membership IS the manual list, so the criteria tree is not just empty but forbidden
+     *   static  -> membership IS the manual list, so the criteria block editor and the reach rail are hidden
      *   dynamic -> the rule decides everything, so a manual row is refused with a 400
-     *   hybrid  -> both, which is the entire point of hybrid
-     * Hiding beats disabling here: an author never has to wonder why a section they can see does nothing.
+     *   hybrid  -> both.
      */
     const applySegmentTypeVisibility = () => {
         const type = currentSegmentType();
         document.getElementById('criteriaSection')?.classList.toggle('d-none', type === 'static');
         document.getElementById('manualMembershipSection')?.classList.toggle('d-none', type === 'dynamic');
+        // The reach rail previews a rule, so a static segment (no rule) does not get one.
+        document.getElementById('reachSection')?.classList.toggle('d-none', type === 'static');
     };
 
     const attributeFor = code => (catalog?.attributes || []).find(a => a.attributeCode === code) || null;
@@ -143,143 +196,128 @@
 
     const pickerAvailable = entityKind => availablePickers.has(entityKind);
 
-    // ---------------------------------------------------------------- criteria model
+    // ---------------------------------------------------------------- block model
 
-    const childrenOf = parentId => nodes
-        .filter(n => (n.parentNodeId || '') === (parentId || ''))
-        .sort((a, b) => a.sortOrder - b.sortOrder);
+    const allConditions = () => blocks.flatMap(b => b.conditions);
+    const totalNodeCount = () => blocks.length + allConditions().length;
+    const findBlock = id => blocks.find(b => b.blockId === id);
+    const findCondition = id => allConditions().find(c => c.nodeId === id);
 
-    const depthOf = node => {
-        let depth = 1;
-        let cursor = node.parentNodeId;
-        let guard = 0;
-        while (cursor && guard++ < 16) {
-            depth++;
-            cursor = (nodes.find(n => n.nodeId === cursor) || {}).parentNodeId;
+    /** Re-shapes a condition around a newly chosen attribute: operator, value type and parameter set all come from the
+     *  catalog, so an attribute change can never leave an operator the runtime would reject. */
+    const applyAttribute = (condition, attributeCode) => {
+        const definition = attributeFor(attributeCode);
+        if (!definition) return;
+        condition.attributeCode = definition.attributeCode;
+        condition.valueType = definition.valueType;
+        condition.operator = definition.operators.includes(condition.operator) ? condition.operator : definition.operators[0];
+        condition.values = [];
+        const kept = {};
+        (definition.requiredParameters || []).concat(definition.optionalParameters || []).forEach(p => {
+            kept[p] = (condition.parameters || {})[p] || '';
+        });
+        condition.parameters = kept;
+    };
+
+    const makeCondition = () => {
+        const condition = { nodeId: uid(), attributeCode: null, operator: null, values: [], valueType: null, parameters: {} };
+        const first = applicableAttributes()[0];
+        if (first) applyAttribute(condition, first.attributeCode);
+        return condition;
+    };
+
+    const makeBlock = () => ({ blockId: uid(), match: 'and', conditions: [makeCondition()] });
+
+    const addBlock = () => {
+        if (isFrozen) return false;
+        if (totalNodeCount() + 2 > maxNodes) {
+            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxNodes})`, 'error');
+            return false;
         }
-        return depth;
+        if (!applicableAttributes()[0]) {
+            window.showToast?.(L.SegmentContractUnavailable || 'No attribute available', 'error');
+            return false;
+        }
+        blocks.push(makeBlock());
+        return true;
+    };
+
+    const addCondition = blockId => {
+        if (isFrozen) return false;
+        const block = findBlock(blockId);
+        if (!block) return false;
+        if (block.conditions.length >= maxChildren) {
+            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxChildren})`, 'error');
+            return false;
+        }
+        if (totalNodeCount() + 1 > maxNodes) {
+            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxNodes})`, 'error');
+            return false;
+        }
+        block.conditions.push(makeCondition());
+        return true;
+    };
+
+    const removeCondition = (blockId, nodeId) => {
+        const block = findBlock(blockId);
+        if (!block) return;
+        block.conditions = block.conditions.filter(c => c.nodeId !== nodeId);
+        // A block with no conditions is a 400 nobody meant to author, so it goes with its last condition.
+        if (block.conditions.length === 0) removeBlock(blockId);
+    };
+
+    const removeBlock = blockId => { blocks = blocks.filter(b => b.blockId !== blockId); };
+
+    /** Any condition pointing at an attribute the current subject type cannot use is re-pointed at the first one that
+     *  applies (subject type is immutable after create, so this only ever runs while authoring a new segment). */
+    const normalizeForSubject = () => {
+        const applicable = new Set(applicableAttributes().map(a => a.attributeCode));
+        const first = applicableAttributes()[0];
+        allConditions().forEach(c => {
+            if (!applicable.has(c.attributeCode) && first) applyAttribute(c, first.attributeCode);
+        });
+    };
+
+    // ---------------------------------------------------------------- block -> stored tree (payload UNCHANGED)
+
+    const buildNodes = () => {
+        const nodes = [];
+        blocks.forEach((block, bi) => {
+            nodes.push({
+                nodeId: block.blockId, parentNodeId: null, nodeKind: 'group',
+                groupOperator: block.match, attributeCode: null, operator: null, values: [],
+                valueType: null, parameters: {}, negate: false, sortOrder: bi, label: null
+            });
+            block.conditions.forEach((c, ci) => {
+                nodes.push({
+                    nodeId: c.nodeId, parentNodeId: block.blockId, nodeKind: 'predicate',
+                    groupOperator: null, attributeCode: c.attributeCode || null, operator: c.operator || null,
+                    values: (c.values || []).filter(v => String(v ?? '').trim() !== ''),
+                    valueType: c.valueType || null, parameters: c.parameters || {}, negate: false,
+                    sortOrder: ci, label: null
+                });
+            });
+        });
+        return nodes;
     };
 
     const syncHidden = () => {
         // A static segment must POST an EMPTY tree: the runtime refuses one that carries criteria, and hiding the
-        // section does not stop a hidden input from submitting. The in-memory tree is left intact, so switching back
-        // to hybrid restores the rule instead of silently destroying the author's work.
+        // section does not stop a hidden input from submitting. The in-memory blocks are left intact, so switching back
+        // to hybrid restores the rule instead of silently destroying the author's work. MatchMode is fixed to all.
+        if (matchModeEl) matchModeEl.value = 'all';
         if (currentSegmentType() === 'static') {
             hidden.value = '[]';
-            return;
+        } else {
+            hidden.value = JSON.stringify(buildNodes());
         }
-
-        // Exactly the shape the runtime persists. The value source changed how a value is CHOSEN, never how it is stored.
-        hidden.value = JSON.stringify(nodes.map(n => ({
-            nodeId: n.nodeId,
-            parentNodeId: n.parentNodeId || null,
-            nodeKind: n.nodeKind,
-            groupOperator: n.nodeKind === 'group' ? (n.groupOperator || null) : null,
-            attributeCode: n.nodeKind === 'predicate' ? (n.attributeCode || null) : null,
-            operator: n.nodeKind === 'predicate' ? (n.operator || null) : null,
-            values: n.nodeKind === 'predicate' ? (n.values || []).filter(v => String(v ?? '').trim() !== '') : [],
-            valueType: n.nodeKind === 'predicate' ? (n.valueType || null) : null,
-            parameters: n.parameters || {},
-            negate: !!n.negate,
-            sortOrder: n.sortOrder,
-            label: n.label || null
-        })));
-    };
-
-    const nextSortOrder = parentId => {
-        const siblings = childrenOf(parentId);
-        return siblings.length === 0 ? 0 : Math.max(...siblings.map(s => s.sortOrder)) + 1;
-    };
-
-    const makeNode = (kind, parentId) => ({
-        nodeId: uid(),
-        parentNodeId: parentId || null,
-        nodeKind: kind,
-        groupOperator: kind === 'group' ? (contract?.vocabularies?.groupOperators || ['and'])[0] : null,
-        attributeCode: null,
-        operator: null,
-        values: [],
-        valueType: null,
-        parameters: {},
-        negate: false,
-        sortOrder: nextSortOrder(parentId),
-        label: null
-    });
-
-    /** Re-shapes a predicate around a newly chosen attribute: operator, value type and parameter set all come from
-     *  the catalog, so an attribute change can never leave an operator the runtime would reject. */
-    const applyAttribute = (node, attributeCode) => {
-        const definition = attributeFor(attributeCode);
-        if (!definition) return;
-        node.attributeCode = definition.attributeCode;
-        node.valueType = definition.valueType;
-        node.operator = definition.operators.includes(node.operator) ? node.operator : definition.operators[0];
-        node.values = [];
-        const kept = {};
-        (definition.requiredParameters || []).concat(definition.optionalParameters || []).forEach(p => {
-            kept[p] = (node.parameters || {})[p] || '';
-        });
-        node.parameters = kept;
-    };
-
-    const addNode = (kind, parentId) => {
-        if (isFrozen) return null;
-        if (nodes.length >= maxNodes) {
-            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxNodes})`, 'error');
-            return null;
-        }
-        if (parentId && childrenOf(parentId).length >= maxChildren) {
-            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxChildren})`, 'error');
-            return null;
-        }
-
-        const node = makeNode(kind, parentId);
-        if (depthOf(node) > maxDepth) {
-            window.showToast?.(`${L.LimitReached || 'Limit'} (${maxDepth})`, 'error');
-            return null;
-        }
-
-        if (kind === 'predicate') {
-            const first = applicableAttributes()[0];
-            if (!first) {
-                window.showToast?.(L.SegmentContractUnavailable || 'No attribute available', 'error');
-                return null;
-            }
-            applyAttribute(node, first.attributeCode);
-        }
-
-        nodes.push(node);
-
-        // A group is born with one predicate inside it: an empty group is a 400 nobody meant to author.
-        if (kind === 'group' && depthOf(node) < maxDepth) {
-            const child = makeNode('predicate', node.nodeId);
-            const first = applicableAttributes()[0];
-            if (first) {
-                applyAttribute(child, first.attributeCode);
-                nodes.push(child);
-            }
-        }
-
-        return node;
-    };
-
-    const removeNode = nodeId => {
-        // Removing a group takes its subtree with it: an orphaned child would be a parent reference the runtime rejects.
-        const doomed = new Set([nodeId]);
-        let grew = true;
-        while (grew) {
-            grew = false;
-            nodes.forEach(n => {
-                if (n.parentNodeId && doomed.has(n.parentNodeId) && !doomed.has(n.nodeId)) {
-                    doomed.add(n.nodeId);
-                    grew = true;
-                }
-            });
-        }
-        nodes = nodes.filter(n => !doomed.has(n.nodeId));
+        if (storedRuleJsonEl) storedRuleJsonEl.textContent = JSON.stringify(JSON.parse(hidden.value || '[]'), null, 2);
+        storedRuleEl?.classList.toggle('d-none', blocks.length === 0 || currentSegmentType() === 'static');
     };
 
     // ---------------------------------------------------------------- value controls (P1a)
+
+    const isMultiValue = operator => operator === 'in' || operator === 'not-in';
 
     const arityOf = operator => {
         switch (operator) {
@@ -292,16 +330,10 @@
         }
     };
 
-    const isMultiValue = operator => operator === 'in' || operator === 'not-in';
-
-    /**
-     * Describes the control a predicate needs, without touching the DOM. Kept separate so the rendering stays dumb
-     * and the DECISION (which is the interesting part) is readable in one place.
-     */
-    const controlFor = node => {
-        const definition = attributeFor(node.attributeCode);
+    const controlFor = condition => {
+        const definition = attributeFor(condition.attributeCode);
         const source = definition?.valueSource || { kind: 'free-text' };
-        const multi = isMultiValue(node.operator);
+        const multi = isMultiValue(condition.operator);
 
         if (source.kind === 'reference-set') {
             return { control: 'select', multi, async: () => loadReferenceValues(source.referenceSetCode), taggable: true };
@@ -311,7 +343,6 @@
         }
         if (source.kind === 'entity-picker') {
             if (!pickerAvailable(source.entityKind)) {
-                // No permission to browse that master: a plain id field plus the reason, never an always-empty list.
                 return { control: 'text', multi: false, disabledReason: L.PickerUnavailable };
             }
             if (source.entityKind === 'territory-node') {
@@ -320,8 +351,7 @@
             return { control: 'select', multi, async: () => loadEntityOptions(source.entityKind), taggable: true };
         }
 
-        // free-text: the value TYPE is the whole instruction.
-        switch (node.valueType) {
+        switch (condition.valueType) {
             case 'date': return { control: 'date', multi: false };
             case 'number': return { control: 'number', multi: false };
             case 'bool': return { control: 'bool', multi: false };
@@ -329,48 +359,46 @@
         }
     };
 
-    const valueSlotCount = node => {
-        const arity = arityOf(node.operator);
+    const valueSlotCount = condition => {
+        const arity = arityOf(condition.operator);
         if (arity.max === 0) return 0;
-        if (isMultiValue(node.operator)) return 1;      // one multi-select control
-        return arity.min === 2 ? 2 : 1;                  // between = two bounds
+        if (isMultiValue(condition.operator)) return 1;
+        return arity.min === 2 ? 2 : 1;
     };
 
-    const renderValueControl = (node, index, spec) => {
-        const values = node.values || [];
+    const renderValueControl = (condition, index, spec) => {
+        const values = condition.values || [];
         const single = values[index] ?? '';
 
         if (spec.control === 'bool') {
-            return `<select class="form-select form-select-sm js-node-value" data-node="${esc(node.nodeId)}" data-index="${index}">
-                        <option value="true"${single === 'true' ? ' selected' : ''}>true</option>
-                        <option value="false"${single === 'false' ? ' selected' : ''}>false</option>
+            return `<select class="form-select form-select-sm js-node-value" data-node="${esc(condition.nodeId)}" data-index="${index}">
+                        <option value="true"${single === 'true' ? ' selected' : ''}>${esc(L.BoolTrue || 'true')}</option>
+                        <option value="false"${single === 'false' ? ' selected' : ''}>${esc(L.BoolFalse || 'false')}</option>
                     </select>`;
         }
 
         if (spec.control === 'date') {
             return `<input type="text" class="form-control form-control-sm flatpickr-date js-node-value"
-                        data-node="${esc(node.nodeId)}" data-index="${index}" value="${esc(single)}"
+                        data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}"
                         placeholder="YYYY-MM-DD" autocomplete="off" />`;
         }
 
         if (spec.control === 'number') {
             return `<input type="number" step="any" class="form-control form-control-sm js-node-value"
-                        data-node="${esc(node.nodeId)}" data-index="${index}" value="${esc(single)}" />`;
+                        data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}" />`;
         }
 
         if (spec.control === 'select' || spec.control === 'cascade-select') {
-            // Options are filled asynchronously after the render pass; the current value is pre-seeded so an
-            // already-authored criterion never loses its value while the list is still loading.
             const seeded = spec.multi ? values : [single];
             const seedOptions = seeded.filter(v => String(v ?? '').trim() !== '')
                 .map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`).join('');
             const cascade = spec.control === 'cascade-select'
-                ? `<select class="form-select form-select-sm mb-1 js-node-cascade" data-node="${esc(node.nodeId)}">
+                ? `<select class="form-select form-select-sm mb-1 js-node-cascade" data-node="${esc(condition.nodeId)}">
                        <option value="">${esc(L.SelectTerritoryModel || '')}</option>
                    </select>`
                 : '';
             return cascade + `<select class="form-select form-select-sm js-node-select"
-                        data-node="${esc(node.nodeId)}" data-index="${index}"
+                        data-node="${esc(condition.nodeId)}" data-index="${index}"
                         data-taggable="${spec.taggable ? '1' : '0'}"
                         ${spec.multi ? 'multiple="multiple"' : ''}>
                         ${spec.multi ? '' : `<option value="">${esc(L.SelectOption || '')}</option>`}
@@ -378,21 +406,20 @@
                     </select>`;
         }
 
-        // plain text (free text, or a picker the actor may not browse)
         const disabledNote = spec.disabledReason
             ? `<small class="text-warning d-block">${esc(spec.disabledReason)}</small>` : '';
         if (spec.multi) {
             return `<input type="text" class="form-control form-control-sm js-node-multitext"
-                        data-node="${esc(node.nodeId)}" value="${esc(values.join(', '))}"
+                        data-node="${esc(condition.nodeId)}" value="${esc(values.join(', '))}"
                         placeholder="${esc(L.CommaSeparated || '')}" />${disabledNote}`;
         }
         return `<input type="text" class="form-control form-control-sm js-node-value"
-                    data-node="${esc(node.nodeId)}" data-index="${index}" value="${esc(single)}" />${disabledNote}`;
+                    data-node="${esc(condition.nodeId)}" data-index="${index}" value="${esc(single)}" />${disabledNote}`;
     };
 
     /** Parameters get their OWN row under the three main controls, so they never squeeze the value field. */
-    const parameterFields = node => {
-        const definition = attributeFor(node.attributeCode);
+    const parameterFields = condition => {
+        const definition = attributeFor(condition.attributeCode);
         if (!definition) return '';
         const required = definition.requiredParameters || [];
         const optional = definition.optionalParameters || [];
@@ -400,11 +427,11 @@
 
         const fields = required.concat(optional).map(name => {
             const isRequired = required.includes(name);
-            const value = (node.parameters || {})[name] || '';
+            const value = (condition.parameters || {})[name] || '';
             return `<div class="col-6 col-md-3">
                         <label class="form-label small mb-1">${esc(name)}${isRequired ? ' <span class="text-danger">*</span>' : ''}</label>
                         <input type="text" class="form-control form-control-sm js-node-param"
-                            data-node="${esc(node.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />
+                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />
                     </div>`;
         }).join('');
 
@@ -413,59 +440,35 @@
                 </div>`;
     };
 
-    // ---------------------------------------------------------------- tree rendering (P1b)
+    // ---------------------------------------------------------------- rendering
 
-    const moveTargets = node => {
-        const forbidden = new Set([node.nodeId]);
-        let grew = true;
-        while (grew) {
-            grew = false;
-            nodes.forEach(n => {
-                if (n.parentNodeId && forbidden.has(n.parentNodeId) && !forbidden.has(n.nodeId)) {
-                    forbidden.add(n.nodeId);
-                    grew = true;
-                }
-            });
-        }
-
-        const options = [`<option value=""${node.parentNodeId ? '' : ' selected'}>${esc(L.RootLevel || 'Root')}</option>`];
-        nodes.filter(n => n.nodeKind === 'group' && !forbidden.has(n.nodeId)).forEach(g => {
-            const selected = (node.parentNodeId || '') === g.nodeId ? ' selected' : '';
-            options.push(`<option value="${esc(g.nodeId)}"${selected}>${esc(g.groupOperator)} · ${esc(g.nodeId.slice(0, 6))}</option>`);
+    /** The attribute <select> as SEG-B optgroups: one per presentation domain, in a stable order, humanised labels. */
+    const attributeOptions = selectedCode => {
+        const byDomain = new Map();
+        applicableAttributes().forEach(a => {
+            const domain = a.domain || 'other';
+            if (!byDomain.has(domain)) byDomain.set(domain, []);
+            byDomain.get(domain).push(a);
         });
-        return options.join('');
+        const domains = [...DOMAIN_ORDER.filter(d => byDomain.has(d)), ...[...byDomain.keys()].filter(d => !DOMAIN_ORDER.includes(d))];
+        return domains.map(domain => {
+            const opts = byDomain.get(domain)
+                .sort((a, b) => attributeLabel(a.attributeCode).localeCompare(attributeLabel(b.attributeCode)))
+                .map(a => `<option value="${esc(a.attributeCode)}"${a.attributeCode === selectedCode ? ' selected' : ''}>${esc(attributeLabel(a.attributeCode))}</option>`)
+                .join('');
+            return `<optgroup label="${esc(domainLabel(domain))}">${opts}</optgroup>`;
+        }).join('');
     };
 
-    const nodeToolbar = node => `
-        <div class="d-flex align-items-center gap-3 flex-shrink-0">
-            <div class="form-check form-switch mb-0 d-flex align-items-center gap-1">
-                <input class="form-check-input mt-0 js-node-negate" type="checkbox" role="switch"
-                    data-node="${esc(node.nodeId)}" ${node.negate ? 'checked' : ''} id="negate-${esc(node.nodeId)}" />
-                <label class="form-check-label small mb-0" for="negate-${esc(node.nodeId)}">NOT</label>
-            </div>
-            <details class="position-relative">
-                <summary class="btn btn-sm btn-label-secondary">${esc(L.Move || 'Move')}</summary>
-                <select class="form-select form-select-sm mt-1 js-node-parent" data-node="${esc(node.nodeId)}"
-                    style="min-width: 12rem">${moveTargets(node)}</select>
-            </details>
-            <button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-node" data-node="${esc(node.nodeId)}"
-                title="${esc(L.Remove || 'Remove')}"><i class="bx bx-trash"></i></button>
-        </div>`;
-
-    const renderPredicate = node => {
-        const definition = attributeFor(node.attributeCode);
-        const attributes = applicableAttributes().map(a =>
-            `<option value="${esc(a.attributeCode)}"${a.attributeCode === node.attributeCode ? ' selected' : ''}>${esc(a.attributeCode)}</option>`).join('');
+    const renderCondition = (condition, block) => {
+        const definition = attributeFor(condition.attributeCode);
         const operators = (definition?.operators || []).map(op =>
-            `<option value="${esc(op)}"${op === node.operator ? ' selected' : ''}>${esc(op)}</option>`).join('');
+            `<option value="${esc(op)}"${op === condition.operator ? ' selected' : ''}>${esc(operatorLabel(op))}</option>`).join('');
 
-        const spec = controlFor(node);
-        const slots = valueSlotCount(node);
+        const spec = controlFor(condition);
+        const slots = valueSlotCount(condition);
+        const badge = sourceBadge(definition);
 
-        // The value ALWAYS occupies one column of the same width (4 / 3 / 5 adds up to 12). A two-bound `between`
-        // splits inside that column instead of adding a fourth one, which is what used to overflow the row.
-        // The value column carries an invisible spacer label rather than a caption: it keeps the control on the same
-        // baseline as Attribute and Operator without inventing an untranslated word (no new RESX key).
         const valueBody = slots === 0
             ? `<div class="form-control form-control-sm bg-transparent border-0 px-0 text-muted small">${esc(L.NoValueNeeded || '—')}</div>`
             : slots === 2
@@ -473,96 +476,89 @@
                        ${Array.from({ length: 2 }, (_, i) => `
                        <div class="col-6">
                            <span class="d-block small text-muted mb-1">${esc(i === 0 ? (L.From || 'From') : (L.To || 'To'))}</span>
-                           ${renderValueControl(node, i, spec)}
+                           ${renderValueControl(condition, i, spec)}
                        </div>`).join('')}
                    </div>`
-                : renderValueControl(node, 0, spec);
+                : renderValueControl(condition, 0, spec);
 
-        // Plain utility classes rather than .card: this sits inside the page's own section card, and a nested theme
-        // card would stack a third shadow. A light border plus shadow-sm is the whole treatment.
+        const typeHint = spec.taggable ? `<small class="text-muted d-block mt-1">${esc(L.OrTypeValue || '')}</small>` : '';
+
         return `
-        <div class="segment-predicate border rounded-3 shadow-sm bg-body p-3">
-            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
-                <span class="badge bg-label-primary text-uppercase">${esc(L.PredicateNode || 'condition')}</span>
-                ${nodeToolbar(node)}
-            </div>
+        <div class="segment-condition border rounded-3 shadow-sm bg-body p-3 mb-2">
             <div class="row g-3 align-items-end">
                 <div class="col-12 col-md-4">
                     <label class="form-label small mb-1">${esc(L.Attribute || 'Attribute')}</label>
-                    <select class="form-select form-select-sm js-node-attribute" data-node="${esc(node.nodeId)}">${attributes}</select>
+                    <select class="form-select form-select-sm js-node-attribute" data-node="${esc(condition.nodeId)}">${attributeOptions(condition.attributeCode)}</select>
                 </div>
                 <div class="col-12 col-md-3">
                     <label class="form-label small mb-1">${esc(L.Operator || 'Operator')}</label>
-                    <select class="form-select form-select-sm js-node-operator" data-node="${esc(node.nodeId)}">${operators}</select>
+                    <select class="form-select form-select-sm js-node-operator" data-node="${esc(condition.nodeId)}">${operators}</select>
                 </div>
                 <div class="col-12 col-md-5">
-                    <label class="form-label small mb-1 invisible d-none d-md-block" aria-hidden="true">&nbsp;</label>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge bg-label-${badge.tone}">${esc(badge.text)}</span>
+                        ${isFrozen ? '' : `<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-condition"
+                            data-block="${esc(block.blockId)}" data-node="${esc(condition.nodeId)}"
+                            title="${esc(L.Remove || 'Remove')}"><i class="bx bx-trash"></i></button>`}
+                    </div>
                     ${valueBody}
+                    ${typeHint}
                 </div>
-                ${parameterFields(node)}
+                ${parameterFields(condition)}
             </div>
+            <div class="mt-2 small text-muted js-cond-count-row" data-node="${esc(condition.nodeId)}"></div>
         </div>`;
     };
 
-    const renderGroup = node => {
-        const operators = (contract?.vocabularies?.groupOperators || []).map(op =>
-            `<option value="${esc(op)}"${op === node.groupOperator ? ' selected' : ''}>${esc(op).toUpperCase()}</option>`).join('');
-        const children = childrenOf(node.nodeId);
-        const isNot = node.groupOperator === 'not';
+    const renderBlock = (block, index) => {
+        const matchOptions = [
+            `<option value="and"${block.match === 'and' ? ' selected' : ''}>${esc(L.BlockMatchEvery || 'ALL of these')}</option>`,
+            `<option value="or"${block.match === 'or' ? ' selected' : ''}>${esc(L.BlockMatchAny || 'ANY of these')}</option>`
+        ].join('');
 
-        // The rail is what makes AND / OR visible: everything inside this border is combined by the operator above it.
-        // The group is the CONTAINER, so it takes the border and skips the shadow: only the condition cards inside it
-        // lift off the surface, which is what makes the nesting readable instead of noisy.
-        return `
-        <div class="segment-group border rounded-3 p-3">
-            <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
+        const conditions = block.conditions.map(c => renderCondition(c, block)).join('');
+
+        const andAlso = index > 0
+            ? `<div class="segment-and-also d-flex align-items-center gap-2 my-2">
+                   <span class="badge bg-label-dark text-uppercase">${esc(L.AndAlso || 'AND ALSO')}</span>
+                   <span class="text-muted small">${esc(L.AndAlsoHelp || '')}</span>
+               </div>`
+            : '';
+
+        return `${andAlso}
+        <div class="segment-block border rounded-3 p-3">
+            <div class="d-flex justify-content-between align-items-center gap-2 mb-3 flex-wrap">
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="badge bg-label-secondary text-uppercase">${esc(L.GroupNode || 'group')}</span>
-                    <select class="form-select form-select-sm js-node-group-operator" data-node="${esc(node.nodeId)}"
-                        style="width: 7.5rem">${operators}</select>
-                    <small class="text-muted">${esc(isNot ? (L.NotGroupHelp || '') : (L.GroupHelp || ''))}</small>
+                    <span class="badge bg-label-primary text-uppercase">${esc(L.BlockNode || 'Block')} ${index + 1}</span>
+                    <span class="text-muted small">${esc(L.BlockMatchLabel || 'Match')}</span>
+                    <select class="form-select form-select-sm js-block-match" data-block="${esc(block.blockId)}" style="width: 11rem">${matchOptions}</select>
                 </div>
-                ${nodeToolbar(node)}
+                ${isFrozen ? '' : `<button type="button" class="btn btn-sm btn-icon btn-label-danger js-remove-block" data-block="${esc(block.blockId)}"
+                    title="${esc(L.RemoveBlock || 'Remove block')}"><i class="bx bx-trash"></i></button>`}
             </div>
-
-            <div class="segment-group-body ps-3 border-start border-2">
-                ${children.length === 0
-                    ? `<div class="alert alert-warning py-2 px-3 mb-0 small"><i class="bx bx-info-circle me-1"></i>${esc(L.EmptyGroupHelp || '')}</div>`
-                    : children.map(renderNode).join('')}
+            <div class="segment-block-body ps-3 border-start border-2">
+                ${conditions}
                 ${isFrozen ? '' : `
-                <div class="d-flex gap-2 flex-wrap mt-3">
-                    <button type="button" class="btn btn-sm btn-label-primary js-add-inside" data-parent="${esc(node.nodeId)}" data-kind="predicate">
-                        <i class="bx bx-plus me-1"></i>${esc(L.AddPredicateInside || '')}</button>
-                    <button type="button" class="btn btn-sm btn-label-secondary js-add-inside" data-parent="${esc(node.nodeId)}" data-kind="group">
-                        <i class="bx bx-folder-plus me-1"></i>${esc(L.AddGroupInside || '')}</button>
-                </div>`}
+                <button type="button" class="btn btn-sm btn-label-primary js-add-condition mt-1" data-block="${esc(block.blockId)}">
+                    <i class="bx bx-plus me-1"></i>${esc(L.AddCondition || 'Add condition')}</button>`}
             </div>
         </div>`;
     };
-
-    const renderNode = node => `<div class="mb-3">${node.nodeKind === 'group' ? renderGroup(node) : renderPredicate(node)}</div>`;
 
     const render = () => {
         if (!listEl) return;
 
-        const roots = childrenOf(null);
-        emptyEl?.classList.toggle('d-none', roots.length > 0);
+        const hasBlocks = blocks.length > 0;
+        emptyEl?.classList.toggle('d-none', hasBlocks);
+        listEl.innerHTML = blocks.map((b, i) => renderBlock(b, i)).join('');
 
-        const rootCombinator = (document.getElementById('MatchMode')?.value || 'all') === 'any' ? 'OR' : 'AND';
-        listEl.innerHTML = roots.length === 0 ? '' : `
-            <div class="mb-2">
-                <span class="badge bg-label-dark text-uppercase">${esc(rootCombinator)}</span>
-                <span class="text-muted small">${esc(L.RootCombinatorHelp || '')}</span>
-            </div>
-            ${roots.map(renderNode).join('')}`;
-
-        // Disabling every control is what makes the freeze visible instead of merely enforced server-side.
         if (isFrozen) {
             listEl.querySelectorAll('select, input, button').forEach(el => { el.disabled = true; });
         }
 
-        syncHidden();
+        refreshDerived();
         void hydrateControls();
+        applyConditionCounts();
     };
 
     /** Fills the async option lists and upgrades the selects to Select2 after a render pass. */
@@ -575,9 +571,9 @@
 
         const selects = Array.from(listEl.querySelectorAll('.js-node-select'));
         for (const el of selects) {
-            const node = findNode(el.dataset.node);
-            if (!node) continue;
-            const spec = controlFor(node);
+            const condition = findCondition(el.dataset.node);
+            if (!condition) continue;
+            const spec = controlFor(condition);
 
             let options = spec.options || [];
             if (spec.async) {
@@ -587,11 +583,9 @@
                 options = modelId ? await loadEntityOptions('territory-node', modelId) : [];
             }
 
-            const chosen = spec.multi ? (node.values || []) : [(node.values || [])[Number(el.dataset.index) || 0] ?? ''];
+            const chosen = spec.multi ? (condition.values || []) : [(condition.values || [])[Number(el.dataset.index) || 0] ?? ''];
             const known = new Set(options.map(o => String(o.value)));
             const head = spec.multi ? '' : `<option value="">${esc(L.SelectOption || '')}</option>`;
-            // An already-authored value that the set no longer publishes stays visible and selected rather than
-            // silently disappearing from the rule.
             const extras = chosen.filter(v => String(v ?? '').trim() !== '' && !known.has(String(v)))
                 .map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`).join('');
             el.innerHTML = head + extras + options.map(o =>
@@ -602,11 +596,8 @@
                 if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
                 $el.select2({
                     dropdownParent: window.jQuery(document.body),
-                    // The panel is appended to <body>, so it needs its own class hook to be sized like the small
-                    // control it belongs to; #criteriaList scoping cannot reach it.
                     dropdownCssClass: 'segment-criteria-dropdown',
                     width: '100%',
-                    // tags:true keeps the free-text escape hatch: the list is what is OFFERED, not a restriction.
                     tags: el.dataset.taggable === '1',
                     placeholder: L.SelectOption || '',
                     allowClear: !el.multiple
@@ -615,7 +606,6 @@
             }
         }
 
-        // Territory node needs its model first: fill the cascade heads.
         for (const el of Array.from(listEl.querySelectorAll('.js-node-cascade'))) {
             const models = await loadEntityOptions('territory-model');
             const current = el.value;
@@ -625,62 +615,275 @@
     };
 
     const writeSelectValue = el => {
-        const node = findNode(el.dataset.node);
-        if (!node) return;
+        const condition = findCondition(el.dataset.node);
+        if (!condition) return;
         if (el.multiple) {
-            node.values = Array.from(el.selectedOptions).map(o => o.value).filter(v => String(v).trim() !== '');
+            condition.values = Array.from(el.selectedOptions).map(o => o.value).filter(v => String(v).trim() !== '');
         } else {
-            node.values = node.values || [];
-            node.values[Number(el.dataset.index) || 0] = el.value;
+            condition.values = condition.values || [];
+            condition.values[Number(el.dataset.index) || 0] = el.value;
         }
+        refreshDerived();
+    };
+
+    // ---------------------------------------------------------------- read-back sentence
+
+    const conditionText = condition => {
+        const attr = attributeLabel(condition.attributeCode);
+        const op = operatorLabel(condition.operator);
+        const arity = arityOf(condition.operator);
+        if (arity.max === 0) return `${attr} ${op}`;
+        const values = (condition.values || []).filter(v => String(v ?? '').trim() !== '');
+        const valueText = values.length ? values.join(', ') : (L.AnyValuePlaceholder || '…');
+        return `${attr} ${op} ${valueText}`;
+    };
+
+    const blockText = block => {
+        const joiner = block.match === 'or' ? ` ${L.JoinerOr || 'or'} ` : ` ${L.JoinerAnd || 'and'} `;
+        const parts = block.conditions.map(conditionText);
+        return parts.length > 1 ? `(${parts.join(joiner)})` : (parts[0] || '');
+    };
+
+    const updateReadback = () => {
+        if (!readbackEl || !readbackTextEl) return;
+        if (blocks.length === 0 || currentSegmentType() === 'static') {
+            readbackEl.classList.add('d-none');
+            return;
+        }
+        const subjectNoun = currentSubjectType() === 'account'
+            ? (L.SubjectNounAccount || 'Accounts')
+            : (L.SubjectNounContact || 'Contacts');
+        const sentence = blocks.map(blockText).filter(Boolean).join(` ${L.AndAlso || 'AND ALSO'} `);
+        readbackTextEl.textContent = `${subjectNoun} ${L.ReadsWhere || 'where'} ${sentence}`;
+        readbackEl.classList.remove('d-none');
+    };
+
+    // ---------------------------------------------------------------- live reach rail (SEG-C)
+
+    const reachSection = document.getElementById('reachSection');
+    const reachIdle = document.getElementById('reachIdle');
+    const reachContent = document.getElementById('reachContent');
+    const reachError = document.getElementById('reachError');
+    const reachCap = document.getElementById('reachCap');
+    const reachTotalEl = document.getElementById('reachTotal');
+    const reachFunnel = document.getElementById('reachFunnel');
+    const reachSample = document.getElementById('reachSample');
+    const reachChecklistItems = document.getElementById('reachChecklistItems');
+    let previewTimer = null;
+    let previewSeq = 0;
+
+    const predicateNodes = () => buildNodes().filter(n => n.nodeKind === 'predicate' && n.attributeCode && n.operator);
+
+    /** A predicate is "ready" only when it carries enough values for its operator's arity and every required
+     *  parameter — firing /preview on an incomplete predicate would just earn a 400 and a scary banner. */
+    const predicateComplete = node => {
+        const definition = attributeFor(node.attributeCode);
+        if (!definition || !node.operator) return false;
+        const arity = arityOf(node.operator);
+        const values = (node.values || []).filter(v => String(v ?? '').trim() !== '');
+        if (arity.max > 0 && values.length < arity.min) return false;
+        return !(definition.requiredParameters || []).some(p => !String((node.parameters || {})[p] ?? '').trim());
+    };
+
+    const readyForPreview = () => {
+        const preds = predicateNodes();
+        return preds.length > 0 && preds.every(predicateComplete);
+    };
+
+    const schedulePreview = () => {
+        if (!reachSection || currentSegmentType() === 'static') return;
+        if (previewTimer) clearTimeout(previewTimer);
+        previewTimer = setTimeout(runPreview, 500);
+    };
+
+    const showReachState = state => {
+        reachIdle?.classList.toggle('d-none', state !== 'idle');
+        reachContent?.classList.toggle('d-none', state !== 'ready');
+        reachError?.classList.toggle('d-none', state !== 'error' && state !== 'cap');
+    };
+
+    const runPreview = async () => {
+        if (!reachSection || currentSegmentType() === 'static') return;
+        const nodes = buildNodes();
+        if (!readyForPreview()) {
+            showReachState('idle');
+            lastConditionCounts = {};
+            applyConditionCounts();
+            updateChecklist(null);
+            return;
+        }
+
+        const seq = ++previewSeq;
+        const body = { subjectType: currentSubjectType(), matchMode: 'all', criteria: nodes, effectiveAt: null };
+        try {
+            const response = await fetch(`${endpoint}/preview`, {
+                method: 'POST', credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (seq !== previewSeq) return; // a newer edit already fired; drop this stale answer
+
+            if (response.status === 422) {
+                showReachState('cap');
+                if (reachError) {
+                    reachError.classList.remove('d-none');
+                    reachError.textContent = L.ReachTooWide || (payload.errors || []).join(' · ') || 'Too wide';
+                }
+                return;
+            }
+            if (!response.ok) {
+                showReachState('error');
+                if (reachError) reachError.textContent = (payload.errors || [L.ErrorState]).join(' · ');
+                return;
+            }
+            renderReach(payload.data || {});
+        } catch (e) {
+            if (seq !== previewSeq) return;
+            showReachState('error');
+            if (reachError) reachError.textContent = L.ErrorState || 'Error';
+        }
+    };
+
+    const renderReach = data => {
+        showReachState('ready');
+        const counts = data.conditionCounts || [];
+        lastConditionCounts = {};
+        counts.forEach(c => { lastConditionCounts[c.nodeId] = { count: c.count, capExceeded: c.capExceeded }; });
+
+        if (reachTotalEl) reachTotalEl.textContent = String(data.totalCount ?? 0);
+        reachCap?.classList.add('d-none');
+
+        // Funnel: each condition counted alone, longest bar = the widest single condition.
+        const max = Math.max(1, ...counts.map(c => c.count || 0));
+        if (reachFunnel) {
+            reachFunnel.innerHTML = counts.map(c => {
+                const pct = Math.round(((c.count || 0) / max) * 100);
+                const label = attributeLabel(c.attributeCode);
+                const value = c.capExceeded ? `${c.count}+` : String(c.count ?? 0);
+                return `<div>
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-truncate me-2">${esc(label)}</span>
+                        <span class="text-muted flex-shrink-0">${esc(value)} ${esc(L.MatchThisAlone || 'match this alone')}</span>
+                    </div>
+                    <div class="progress" style="height:.5rem;"><div class="progress-bar" role="progressbar" style="width:${pct}%"></div></div>
+                </div>`;
+            }).join('');
+        }
+
+        if (reachSample) {
+            const members = data.sampleMembers || [];
+            reachSample.innerHTML = members.length
+                ? members.map(m => `<div class="d-flex align-items-center gap-2">
+                       <i class="bx bx-user text-muted"></i>
+                       <span class="text-truncate">${esc(m.displayName || m.subjectId)}</span>
+                   </div>`).join('')
+                : `<div class="text-muted small">${esc(L.ReachNoSample || '—')}</div>`;
+        }
+
+        applyConditionCounts();
+        updateChecklist(data);
+    };
+
+    /** Patches each condition's "N match this alone" line without a full re-render (keeps Select2 focus intact). */
+    const applyConditionCounts = () => {
+        listEl?.querySelectorAll('.js-cond-count-row').forEach(row => {
+            const info = lastConditionCounts[row.dataset.node];
+            if (!info) { row.textContent = ''; return; }
+            const value = info.capExceeded ? `${info.count}+` : String(info.count);
+            row.innerHTML = `<i class="bx bx-target-lock me-1"></i>${esc(value)} ${esc(L.MatchThisAlone || 'match this alone')}`;
+        });
+    };
+
+    const updateChecklist = data => {
+        if (!reachChecklistItems) return;
+        const nameEl = document.getElementById('SegmentName');
+        const effFromEl = document.getElementById('EffectiveFrom');
+        const items = [
+            { ok: !!(nameEl?.value || '').trim(), text: L.ChecklistName || 'Name set' },
+            { ok: predicateNodes().length > 0, text: L.ChecklistRule || 'At least one condition' },
+            { ok: (data?.totalCount ?? 0) > 0, text: L.ChecklistReach || 'Reaches at least one member' },
+            { ok: !!(effFromEl?.value || '').trim(), text: L.ChecklistEffective || 'Effective-from set' }
+        ];
+        reachChecklistItems.innerHTML = items.map(i =>
+            `<li class="d-flex align-items-center gap-2 mb-1">
+                <i class="bx ${i.ok ? 'bx-check-circle text-success' : 'bx-circle text-muted'}"></i>
+                <span class="${i.ok ? '' : 'text-muted'}">${esc(i.text)}</span>
+            </li>`).join('');
+    };
+
+    // ---------------------------------------------------------------- empty-state templates
+
+    // A template is a STARTING POINT: it references attribute codes the catalog must declare for the current subject
+    // type (checked below), and it leaves the values for the author to pick from the catalog. It never hardcodes a
+    // value. A template whose attributes are not applicable is simply not offered.
+    const TEMPLATES = [
+        { key: 'tplSpecialty', labelKey: 'TplSpecialty', specs: [{ attributeCode: 'contact.specialty', operator: 'in' }] },
+        { key: 'tplAccountType', labelKey: 'TplAccountType', specs: [{ attributeCode: 'account.type', operator: 'in' }] },
+        { key: 'tplConsentReachable', labelKey: 'TplConsentReachable', specs: [{ attributeCode: 'consent.eligibility', operator: 'eq' }] },
+        { key: 'tplHasCoverage', labelKey: 'TplHasCoverage', specs: [{ attributeCode: 'territory.has-coverage', operator: 'eq', values: ['true'] }] }
+    ];
+
+    const templateApplies = tpl => {
+        const applicable = new Set(applicableAttributes().map(a => a.attributeCode));
+        return tpl.specs.every(s => applicable.has(s.attributeCode));
+    };
+
+    const renderTemplates = () => {
+        if (!templatesEl) return;
+        const available = TEMPLATES.filter(templateApplies);
+        templatesEl.innerHTML = available.map(tpl =>
+            `<button type="button" class="btn btn-sm btn-label-secondary js-template" data-template="${esc(tpl.key)}">
+                <i class="bx bx-bolt-circle me-1"></i>${esc(L[tpl.labelKey] || tpl.key)}</button>`).join('');
+        templatesEl.classList.toggle('d-none', available.length === 0);
+    };
+
+    const applyTemplate = key => {
+        if (isFrozen) return;
+        const tpl = TEMPLATES.find(t => t.key === key);
+        if (!tpl || !templateApplies(tpl)) return;
+        const block = { blockId: uid(), match: 'and', conditions: [] };
+        tpl.specs.forEach(spec => {
+            const condition = { nodeId: uid(), attributeCode: null, operator: null, values: [], valueType: null, parameters: {} };
+            applyAttribute(condition, spec.attributeCode);
+            if (spec.operator && attributeFor(spec.attributeCode)?.operators.includes(spec.operator)) {
+                condition.operator = spec.operator;
+            }
+            if (spec.values) condition.values = spec.values.slice();
+            block.conditions.push(condition);
+        });
+        if (block.conditions.length) { blocks.push(block); render(); }
+    };
+
+    // ---------------------------------------------------------------- one place that fans a model change out
+
+    const refreshDerived = () => {
         syncHidden();
+        updateReadback();
+        schedulePreview();
     };
 
     // ---------------------------------------------------------------- events
 
-    const findNode = id => nodes.find(n => n.nodeId === id);
-
     document.addEventListener('change', event => {
         const attribute = event.target.closest('.js-node-attribute');
         if (attribute) {
-            const node = findNode(attribute.dataset.node);
-            if (node) { applyAttribute(node, attribute.value); render(); }
+            const condition = findCondition(attribute.dataset.node);
+            if (condition) { applyAttribute(condition, attribute.value); render(); }
             return;
         }
 
         const operator = event.target.closest('.js-node-operator');
         if (operator) {
-            const node = findNode(operator.dataset.node);
-            // The value control depends on the operator (single / two bounds / multi), so this is a structural change.
-            if (node) { node.operator = operator.value; node.values = []; render(); }
+            const condition = findCondition(operator.dataset.node);
+            if (condition) { condition.operator = operator.value; condition.values = []; render(); }
             return;
         }
 
-        const groupOperator = event.target.closest('.js-node-group-operator');
-        if (groupOperator) {
-            const node = findNode(groupOperator.dataset.node);
-            if (node) { node.groupOperator = groupOperator.value; render(); }
-            return;
-        }
-
-        const parent = event.target.closest('.js-node-parent');
-        if (parent) {
-            const node = findNode(parent.dataset.node);
-            if (!node) return;
-            const target = parent.value || null;
-            if (target && childrenOf(target).length >= maxChildren) {
-                window.showToast?.(`${L.LimitReached || 'Limit'} (${maxChildren})`, 'error');
-                render();
-                return;
-            }
-            const previous = node.parentNodeId;
-            node.parentNodeId = target;
-            node.sortOrder = nextSortOrder(target);
-            if (depthOf(node) > maxDepth) {
-                window.showToast?.(`${L.LimitReached || 'Limit'} (${maxDepth})`, 'error');
-                node.parentNodeId = previous;
-            }
-            render();
+        const blockMatch = event.target.closest('.js-block-match');
+        if (blockMatch) {
+            const block = findBlock(blockMatch.dataset.block);
+            if (block) { block.match = blockMatch.value; refreshDerived(); }
             return;
         }
 
@@ -692,44 +895,38 @@
 
         const value = event.target.closest('.js-node-value');
         if (value) {
-            const node = findNode(value.dataset.node);
-            if (node) {
-                node.values = node.values || [];
-                node.values[Number(value.dataset.index) || 0] = value.value;
-                syncHidden();
+            const condition = findCondition(value.dataset.node);
+            if (condition) {
+                condition.values = condition.values || [];
+                condition.values[Number(value.dataset.index) || 0] = value.value;
+                refreshDerived();
             }
             return;
         }
 
         const multiText = event.target.closest('.js-node-multitext');
         if (multiText) {
-            const node = findNode(multiText.dataset.node);
-            if (node) {
-                node.values = multiText.value.split(',').map(v => v.trim()).filter(Boolean);
-                syncHidden();
+            const condition = findCondition(multiText.dataset.node);
+            if (condition) {
+                condition.values = multiText.value.split(',').map(v => v.trim()).filter(Boolean);
+                refreshDerived();
             }
             return;
         }
 
         const parameter = event.target.closest('.js-node-param');
         if (parameter) {
-            const node = findNode(parameter.dataset.node);
-            if (node) { node.parameters[parameter.dataset.param] = parameter.value; syncHidden(); }
+            const condition = findCondition(parameter.dataset.node);
+            if (condition) { condition.parameters[parameter.dataset.param] = parameter.value; refreshDerived(); }
             return;
         }
 
-        const negate = event.target.closest('.js-node-negate');
-        if (negate) {
-            const node = findNode(negate.dataset.node);
-            if (node) { node.negate = negate.checked; syncHidden(); }
-            return;
-        }
-
-        // The applicable attribute set depends on the subject type, and the root badge on the match mode.
-        if (event.target === subjectTypeEl || event.target === segmentTypeEl
-            || event.target.id === 'MatchMode') {
+        // The applicable attribute set depends on the subject type; the reach depends on both, and on the name/date.
+        if (event.target === subjectTypeEl || event.target === segmentTypeEl) {
             editor.dataset.subjectType = currentSubjectType();
             applySegmentTypeVisibility();
+            normalizeForSubject();
+            renderTemplates();
             refreshMemberAvailability();
             render();
         }
@@ -738,29 +935,34 @@
     document.addEventListener('input', event => {
         const value = event.target.closest('.js-node-value');
         if (value && value.type === 'text') {
-            const node = findNode(value.dataset.node);
-            if (node) {
-                node.values = node.values || [];
-                node.values[Number(value.dataset.index) || 0] = value.value;
-                syncHidden();
+            const condition = findCondition(value.dataset.node);
+            if (condition) {
+                condition.values = condition.values || [];
+                condition.values[Number(value.dataset.index) || 0] = value.value;
+                refreshDerived();
             }
+            return;
+        }
+        // A name / effective-from edit changes the activation checklist (but not the reach itself).
+        if (event.target.id === 'SegmentName' || event.target.id === 'EffectiveFrom') {
+            updateChecklist(null);
         }
     });
 
     document.addEventListener('click', event => {
-        if (event.target.closest('#btnAddGroup')) { event.preventDefault(); if (addNode('group', null)) render(); return; }
-        if (event.target.closest('#btnAddPredicate')) { event.preventDefault(); if (addNode('predicate', null)) render(); return; }
+        if (event.target.closest('#btnAddBlock')) { event.preventDefault(); if (addBlock()) render(); return; }
 
-        // P1b: the parent is WHERE you clicked, not something you pick from a dropdown afterwards.
-        const inside = event.target.closest('.js-add-inside');
-        if (inside) {
-            event.preventDefault();
-            if (addNode(inside.dataset.kind, inside.dataset.parent)) render();
-            return;
-        }
+        const addCond = event.target.closest('.js-add-condition');
+        if (addCond) { event.preventDefault(); if (addCondition(addCond.dataset.block)) render(); return; }
 
-        const remove = event.target.closest('.js-remove-node');
-        if (remove) { event.preventDefault(); removeNode(remove.dataset.node); render(); return; }
+        const template = event.target.closest('.js-template');
+        if (template) { event.preventDefault(); applyTemplate(template.dataset.template); return; }
+
+        const removeCond = event.target.closest('.js-remove-condition');
+        if (removeCond) { event.preventDefault(); removeCondition(removeCond.dataset.block, removeCond.dataset.node); render(); return; }
+
+        const removeBlk = event.target.closest('.js-remove-block');
+        if (removeBlk) { event.preventDefault(); removeBlock(removeBlk.dataset.block); render(); return; }
 
         const newVersion = event.target.closest('#btnNewVersionFromForm');
         if (newVersion) {
@@ -781,8 +983,6 @@
 
     const refreshMemberAvailability = () => {
         if (!memberEditor) return;
-        // A dynamic segment refuses manual rows outright. The whole section is hidden for it
-        // (applySegmentTypeVisibility), so this only keeps the button honest if the section is ever revealed.
         const addBtn = document.getElementById('btnAddMember');
         if (addBtn) addBtn.disabled = currentSegmentType() === 'dynamic';
     };
@@ -822,17 +1022,6 @@
 
     const memberCanvas = () => window.bootstrap?.Offcanvas.getOrCreateInstance(document.getElementById('memberCanvas'));
 
-    /**
-     * The subject picker: choose an Account or a Contact from the list that already exists, instead of pasting a GUID.
-     * Which list depends on the segment's own SubjectType, so a contact segment can never be handed an account.
-     *
-     * It is a CONVENIENCE, not a contract change. Selecting one fills the id and display-name fields below; the id
-     * field stays authoritative and hand-typed ids keep working, and the runtime still stores the id exactly as given
-     * without reading the referenced master (D-TC).
-     *
-     * dropdownParent is the offcanvas itself: a Select2 parented to <body> renders behind the offcanvas backdrop and
-     * the list becomes unusable (the Working Calendar imports lesson).
-     */
     const setupSubjectPicker = (member) => {
         const block = document.getElementById('memberPickerBlock');
         const picker = document.getElementById('memberSubjectPicker');
@@ -843,7 +1032,6 @@
         const isContact = currentSubjectType() === 'contact';
         const entityKind = isContact ? 'contact' : 'account';
 
-        // No permission to browse that master: the picker is hidden and the raw id field carries the whole job.
         if (!pickerAvailable(entityKind)) {
             block.classList.add('d-none');
             return;
@@ -859,7 +1047,6 @@
         }
         picker.innerHTML = '';
 
-        // Editing an existing row: the subject is immutable, so the picker is disabled exactly like the id field.
         if (member) {
             picker.disabled = true;
             return;
@@ -920,7 +1107,6 @@
         document.getElementById('memberEffectiveFrom').value = (member?.effectiveFrom || new Date().toISOString()).slice(0, 10);
         document.getElementById('memberEffectiveTo').value = member?.effectiveTo ? String(member.effectiveTo).slice(0, 10) : '';
 
-        // Modes come from the contract vocabulary: exactly two, and never a derived third.
         const modeEl = document.getElementById('memberMode');
         modeEl.innerHTML = (contract?.vocabularies?.membershipModes || []).map(m =>
             `<option value="${esc(m)}"${member?.membershipMode === m ? ' selected' : ''}>${esc(m)}</option>`).join('');
@@ -987,12 +1173,55 @@
         }, { type: 'warning' });
     });
 
+    // ---------------------------------------------------------------- load: stored tree -> blocks
+
+    const toCondition = node => ({
+        nodeId: node.nodeId || uid(),
+        attributeCode: node.attributeCode || null,
+        operator: node.operator || null,
+        values: node.values || [],
+        valueType: node.valueType || null,
+        parameters: node.parameters || {}
+    });
+
+    const nodesToBlocks = loaded => {
+        const bySort = arr => arr.slice().sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+        const result = [];
+        const placed = new Set();
+
+        // A legacy tree could carry root-level predicates or nesting deeper than two; the block model is exactly two
+        // layers, so those are folded flat rather than lost. Fresh segments authored here are always well-formed.
+        const rootGroups = bySort(loaded.filter(n => n.nodeKind === 'group' && !n.parentNodeId));
+        rootGroups.forEach(group => {
+            const conds = bySort(loaded.filter(n => n.nodeKind === 'predicate' && n.parentNodeId === group.nodeId)).map(toCondition);
+            conds.forEach(c => placed.add(c.nodeId));
+            result.push({
+                blockId: group.nodeId || uid(),
+                match: group.groupOperator === 'or' ? 'or' : 'and',
+                conditions: conds.length ? conds : [makeCondition()]
+            });
+        });
+
+        const rootPreds = bySort(loaded.filter(n => n.nodeKind === 'predicate' && !n.parentNodeId)).map(toCondition);
+        if (rootPreds.length) {
+            rootPreds.forEach(c => placed.add(c.nodeId));
+            result.unshift({ blockId: uid(), match: 'and', conditions: rootPreds });
+        }
+
+        const leftover = bySort(loaded.filter(n => n.nodeKind === 'predicate' && !placed.has(n.nodeId))).map(toCondition);
+        if (leftover.length) {
+            if (result.length) result[result.length - 1].conditions.push(...leftover);
+            else result.push({ blockId: uid(), match: 'and', conditions: leftover });
+        }
+
+        return result;
+    };
+
     // ---------------------------------------------------------------- bootstrap
 
     const init = async () => {
-        // Section visibility depends only on the select's own value, so it is settled BEFORE the contract call: a
-        // catalog outage must not leave a static segment showing a criteria editor it can never save.
         applySegmentTypeVisibility();
+        if (isFrozen) { const b = document.getElementById('btnAddBlock'); if (b) b.disabled = true; }
 
         try {
             [catalog, contract] = await Promise.all([getJson('/attribute-catalog'), getJson('/contract')]);
@@ -1001,23 +1230,12 @@
             return;
         }
 
-        try { nodes = JSON.parse(hidden.value || '[]') || []; }
-        catch (error) { nodes = []; }
-        nodes = nodes.map(n => ({
-            nodeId: n.nodeId || uid(),
-            parentNodeId: n.parentNodeId || null,
-            nodeKind: n.nodeKind,
-            groupOperator: n.groupOperator || null,
-            attributeCode: n.attributeCode || null,
-            operator: n.operator || null,
-            values: n.values || [],
-            valueType: n.valueType || null,
-            parameters: n.parameters || {},
-            negate: !!n.negate,
-            sortOrder: typeof n.sortOrder === 'number' ? n.sortOrder : 0,
-            label: n.label || null
-        }));
+        let loaded = [];
+        try { loaded = JSON.parse(hidden.value || '[]') || []; }
+        catch (error) { loaded = []; }
+        blocks = nodesToBlocks(loaded);
 
+        renderTemplates();
         render();
         refreshMemberAvailability();
         await loadMembers();

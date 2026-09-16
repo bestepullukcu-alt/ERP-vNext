@@ -206,6 +206,17 @@ public sealed class SegmentsController : Controller
             HttpMethod.Post, $"/api/crm/segments/{segmentId}/membership/evaluate", body,
             ResolvePermission, ct, ReadPermission, ReadFallback);
 
+    /// <summary>The DRAFT-rule reach preview (SEG-C). A POST that writes NOTHING and carries no segmentId — the
+    /// unsaved criteria travel in the body, and the response is the live "who this reaches now" report (total,
+    /// per-condition funnel and a bounded member sample). It runs on the same <c>crm.segment.resolve</c> key as
+    /// <c>/resolve</c> because a member sample is member identity (PII); under the documented DEV-ONLY fallback that
+    /// collapses onto read.</summary>
+    [HttpPost("api/preview")]
+    public Task<IActionResult> Preview([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(
+            HttpMethod.Post, "/api/crm/segments/preview", body,
+            ResolvePermission, ct, ReadPermission, ReadFallback);
+
     [HttpGet("api/segments/{segmentId:guid}/targets")]
     public Task<IActionResult> TargetList(Guid segmentId, CancellationToken ct) =>
         ProxyGetAsync(

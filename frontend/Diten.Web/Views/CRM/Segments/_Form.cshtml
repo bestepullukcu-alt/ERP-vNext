@@ -43,17 +43,18 @@
             </div>
         </section>
 
-        @* The criteria tree editor lives INSIDE this Compact page (D2 embedded). It is not a second surface.
-           Hidden for a `static` segment, whose membership IS the manual list - form.js toggles it by segment type. *@
+        @* The criteria block editor lives INSIDE this Compact page (D2 embedded). It is not a second surface, and it is
+           hidden for a `static` segment (membership IS the manual list) — form.js toggles it by segment type.
+           The criteria are authored as BLOCKS, not a free tree: two fixed layers — the conditions inside a block
+           combine with EVERY/ANY, and the blocks themselves always combine with AND ALSO. The block model maps to the
+           exact stored tree the runtime persists (MatchMode=all + one group per block + predicates inside), so the
+           posted payload is byte-identical to the old tree editor. form.js owns the mapping. *@
         <section class="card mb-4" id="criteriaSection">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["CriteriaSection"]</h6>
                     <div class="d-flex gap-2">
-                        @* Root-level adds. Adding INSIDE a group is done by that group's own buttons, so the parent is
-                           chosen by where you click rather than by a dropdown you have to get right. *@
-                        <button type="button" id="btnAddGroup" class="btn btn-sm btn-label-secondary"><i class="bx bx-folder-plus me-1"></i>@Localizer["AddGroupAtRoot"]</button>
-                        <button type="button" id="btnAddPredicate" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddPredicateAtRoot"]</button>
+                        <button type="button" id="btnAddBlock" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddBlock"]</button>
                     </div>
                 </div>
 
@@ -72,6 +73,12 @@
                     <small class="text-muted d-block mb-3">@Localizer["CriteriaHelp"]</small>
                 }
 
+                @* Continuous read-back: the rule stated as a plain sentence, rebuilt on every edit. *@
+                <div id="criteriaReadback" class="segment-readback border rounded-3 bg-label-secondary p-3 mb-3 d-none">
+                    <div class="small text-uppercase text-muted fw-semibold mb-1">@Localizer["ReadsAs"]</div>
+                    <div id="criteriaReadbackText" class="text-heading"></div>
+                </div>
+
                 <div id="criteriaEditor"
                      data-segment-id="@Model.SegmentId"
                      data-endpoint="/CRM/Segments/api"
@@ -81,9 +88,21 @@
                      data-max-nodes="@Model.MaxCriteriaNodes"
                      data-max-depth="@Model.MaxCriteriaDepth"
                      data-max-children="@Model.MaxChildrenPerGroup">
-                    <div id="criteriaList" class="d-flex flex-column gap-2"></div>
-                    <div id="criteriaEmpty" class="text-muted d-none">@Localizer["NoCriteria"]</div>
+                    <div id="criteriaList" class="d-flex flex-column gap-0"></div>
+                    <div id="criteriaEmpty" class="d-none">
+                        <p class="text-muted">@Localizer["NoCriteria"]</p>
+                        @* One-click starting points. form.js only shows a template whose attributes apply to the
+                           chosen subject type; the values are still picked from the catalog by the author. *@
+                        <div class="small text-uppercase text-muted fw-semibold mb-2">@Localizer["TemplatesTitle"]</div>
+                        <div id="criteriaTemplates" class="d-flex flex-wrap gap-2"></div>
+                    </div>
                 </div>
+
+                @* Escape hatch: the exact typed predicate tree that will be posted. Hidden by default. *@
+                <details id="storedRule" class="mt-3 d-none">
+                    <summary class="small text-muted">@Localizer["ShowStoredRule"]</summary>
+                    <pre id="storedRuleJson" class="small bg-label-secondary rounded-3 p-3 mt-2 mb-0" style="max-height: 20rem; overflow:auto;"></pre>
+                </details>
 
                 @* The tree is posted as JSON: the runtime assigns the real NodeIds and remaps the parents. *@
                 <input type="hidden" asp-for="CriteriaJson" id="CriteriaJson" />
@@ -121,6 +140,39 @@
     </div>
 
     <div class="col-12 col-lg-4">
+        @* Live reach rail (SEG-C). A debounced POST to /preview answers "who would this rule reach right now?" — the
+           total, a per-condition funnel, a bounded member sample and an activation checklist. It is a REPORT: it
+           persists nothing, and membership is never stored. Hidden for a static segment, whose reach is just its
+           manual list. *@
+        <section class="card mb-4" id="reachSection">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReachSection"]</h6>
+                <div id="reachRail" data-endpoint="/CRM/Segments/api">
+                    <div id="reachIdle" class="text-muted small">@Localizer["ReachIdleHelp"]</div>
+                    <div id="reachContent" class="d-none">
+                        <div class="d-flex align-items-baseline gap-2 mb-1">
+                            <span id="reachTotal" class="display-6 fw-semibold text-heading mb-0">0</span>
+                            <span class="text-muted small text-uppercase">@Localizer["ReachTotalLabel"]</span>
+                        </div>
+                        <div id="reachCap" class="text-warning small mb-2 d-none"></div>
+                        <div id="reachFunnel" class="d-flex flex-column gap-2 mt-3"></div>
+                        <div class="mt-3">
+                            <div class="small text-uppercase text-muted fw-semibold mb-2">@Localizer["ReachSampleLabel"]</div>
+                            <div id="reachSample" class="d-flex flex-column gap-1"></div>
+                        </div>
+                    </div>
+                    <div id="reachError" class="alert alert-warning py-2 px-3 small mb-0 d-none"></div>
+                    <div id="reachChecklist" class="mt-3 pt-3 border-top">
+                        <div class="small text-uppercase text-muted fw-semibold mb-2">@Localizer["ActivationChecklist"]</div>
+                        <ul class="list-unstyled mb-0 small" id="reachChecklistItems"></ul>
+                    </div>
+                    <div class="alert alert-secondary mt-3 mb-0 py-2 small">
+                        <i class="bx bx-info-circle me-1"></i>@Localizer["MembershipNeverStoredHelp"]
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section class="card mb-4">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
@@ -146,12 +198,13 @@
                         <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
                         <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
                     </div>
+                    @* Match mode is DERIVED, not chosen: the blocks carry EVERY/ANY and always combine with AND ALSO,
+                       so the root match mode is fixed to "all". It is posted as a hidden field, so the payload keeps
+                       carrying it exactly as before. *@
                     <div class="col-12">
-                        <label asp-for="MatchMode" class="form-label fw-medium">@Localizer["MatchMode"] <span class="text-danger">*</span></label>
-                        <select asp-for="MatchMode" class="select2 form-select" required>
-                            @foreach (var x in Model.MatchModes) { <option value="@x">@x</option> }
-                        </select>
-                        <span asp-validation-for="MatchMode" class="text-danger small mt-1"></span>
+                        <label class="form-label fw-medium">@Localizer["MatchMode"]</label>
+                        <input type="hidden" asp-for="MatchMode" id="MatchMode" value="all" />
+                        <div class="form-control-plaintext text-muted small py-0">@Localizer["MatchModeDerivedHelp"]</div>
                     </div>
                     <div class="col-12">
                         <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>

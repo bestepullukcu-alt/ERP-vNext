@@ -136,4 +136,65 @@
   <data name="Verdict" xml:space="preserve"><value>Sonuç</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="OpIs" xml:space="preserve"><value>eşittir</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>eşit değil</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>şunlardan biri</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>hiçbiri değil</value></data>
+  <data name="OpContains" xml:space="preserve"><value>içerir</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>şundan büyük</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>en az</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>şundan küçük</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>en çok</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>şu aralıkta</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>boş</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>dolu</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>Doktor profili</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>Onay</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>İş yeri</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>Ticari</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>Etkinlik</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>Kurum</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>Diğer</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>Referans kümesi</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>Katalog listesi</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>Seçici</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>Serbest metin</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>Evet</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>Hayır</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>veya bir değer yazın</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>TÜMÜ</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>HERHANGİ BİRİ</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>Blok</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>eşleşme</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Koşul ekle</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>Bloğu kaldır</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>Blok ekle</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>VE AYRICA</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>her blok da eşleşmeli</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>Hesaplar</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>Kişiler</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>şu koşulda</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>Şöyle okunur</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>ve</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>veya</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>herhangi bir değer</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>bu koşulu tek başına karşılıyor</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>Şu an kime ulaşıyor</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>Kime ulaştığını görmek için bir koşul ekleyin.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>şu an ulaşılan</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>Örnek üyeler</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>Kural önizleme için çok geniş — daraltın.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>Henüz örneklenecek üye yok.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>Etkinleştirme kontrol listesi</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>Ad girildi</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>En az bir koşul</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>En az bir üyeye ulaşıyor</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>Başlangıç tarihi girildi</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>Bir şablonla başla</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>Saklanan kuralı göster</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>Bloklar her zaman VE AYRICA ile birleşir.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>Uzmanlığa göre doktorlar</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>Türe göre hesaplar</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>Onaya göre ulaşılabilir</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>Bölge kapsamı var</value></data>
 </root>

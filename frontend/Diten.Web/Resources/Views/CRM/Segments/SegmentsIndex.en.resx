@@ -136,4 +136,65 @@
   <data name="Verdict" xml:space="preserve"><value>Verdict</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="OpIs" xml:space="preserve"><value>is</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>is not</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>is any of</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>is none of</value></data>
+  <data name="OpContains" xml:space="preserve"><value>contains</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>is more than</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>is at least</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>is less than</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>is at most</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>is between</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>is empty</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>is set</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>Doctor profile</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>Consent</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>Workplace</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>Commercial</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>Activity</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>Institution</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>Other</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>Reference set</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>Catalog list</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>Picker</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>Free text</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>Yes</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>No</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>or type a value</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>ALL of these</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>ANY of these</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>Block</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>match</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Add condition</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>Remove block</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>Add block</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>AND ALSO</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>every block must also match</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>Accounts</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>Contacts</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>where</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>Reads as</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>and</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>or</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>any value</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>match this alone</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>Who this reaches now</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>Add a condition to see who this reaches.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>reached now</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>Sample members</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>The rule is too wide to preview — narrow it.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>No members to sample yet.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>Activation checklist</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>Name set</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>At least one condition</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>Reaches at least one member</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>Effective-from set</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>Start from a template</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>Show the stored rule</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>Blocks always combine with AND ALSO.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>Doctors by specialty</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>Accounts by type</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>Reachable by consent</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>Has territory coverage</value></data>
 </root>

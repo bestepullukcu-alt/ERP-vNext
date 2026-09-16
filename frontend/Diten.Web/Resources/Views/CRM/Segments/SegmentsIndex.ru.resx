@@ -136,4 +136,65 @@
   <data name="Verdict" xml:space="preserve"><value>Результат</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="OpIs" xml:space="preserve"><value>равно</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>не равно</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>любое из</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>ни одно из</value></data>
+  <data name="OpContains" xml:space="preserve"><value>содержит</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>больше чем</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>не менее</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>меньше чем</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>не более</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>между</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>пусто</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>задано</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>Профиль врача</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>Согласие</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>Место работы</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>Коммерция</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>Активность</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>Учреждение</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>Прочее</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>Справочный набор</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>Список каталога</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>Выбор</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>Свободный текст</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>Да</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>Нет</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>или введите значение</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>ВСЕ из них</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>ЛЮБОЕ из них</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>Блок</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>совпадение</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>Удалить блок</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>Добавить блок</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>И ТАКЖЕ</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>каждый блок также должен совпадать</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>Организации</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>Контакты</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>где</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>Читается как</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>и</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>или</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>любое значение</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>соответствуют этому одному</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>Кого это охватывает сейчас</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>Добавьте условие, чтобы увидеть охват.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>охвачено сейчас</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>Примеры участников</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>Правило слишком широкое для предпросмотра — сузьте его.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>Пока нет участников для выборки.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>Чек-лист активации</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>Имя указано</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>Хотя бы одно условие</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>Охватывает хотя бы одного участника</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>Дата начала указана</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>Начать с шаблона</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>Показать сохранённое правило</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>Блоки всегда объединяются через И ТАКЖЕ.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>Врачи по специальности</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>Организации по типу</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>Доступные по согласию</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>Есть покрытие территории</value></data>
 </root>
