@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.CompensationBenefits
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CompensationBenefitsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["CompensationBenefitsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("hcm.compensation-benefits.manage");
+    var canEvaluate = Perms.Has("hcm.compensation-benefits.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["CompensationBenefitsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="compensation-benefits-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-compensation-benefits" data-dt-standard="v2"> *@
+    <partial name="~/Views/HumanCapital/CompensationBenefits/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/CompensationBenefits/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/CompensationBenefits/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/CompensationBenefits/index.js" asp-append-version="true"></script>
+}

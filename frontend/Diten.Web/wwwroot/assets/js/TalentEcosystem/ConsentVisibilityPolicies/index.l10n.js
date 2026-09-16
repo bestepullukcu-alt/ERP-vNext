@@ -1,0 +1,42 @@
+'use strict';
+
+(function () {
+    const source = document.getElementById('consent-visibility-policies-l10n');
+    const requiredKeys = [
+        'Actions', 'ColumnVisibility', 'ErrorOccurred', 'Export', 'EvaluateDisabled',
+        'Loading', 'ManageDisabled', 'NotAvailable', 'ViewDetails', 'Code',
+        'DisplayName', 'PolicyState', 'ConsentRequirementState', 'VisibilityScope',
+        'DataScopeState', 'AccessPolicyState', 'AssociationConsumptionState',
+        'PolicyUnavailableBehavior', 'PolicyVersion'
+    ];
+
+    const logMissingKeys = (dictionary) => {
+        requiredKeys.forEach((key) => {
+            if (!dictionary[key]) {
+                console.warn(`[L10N WARNING] Missing localization key: ${key}`);
+            }
+        });
+    };
+
+    if (!source) {
+        window.L10n = window.L10n || {};
+        logMissingKeys(window.L10n);
+        return;
+    }
+
+    const toPascalCase = (key) => key.charAt(0).toUpperCase() + key.slice(1);
+
+    try {
+        const parsed = JSON.parse(source.textContent || '{}');
+        const normalized = {};
+        for (const key of Object.keys(parsed)) {
+            normalized[toPascalCase(key)] = parsed[key];
+        }
+        window.L10n = Object.assign({}, window.L10n || {}, normalized);
+        logMissingKeys(window.L10n);
+    } catch (error) {
+        console.error('[ConsentVisibilityPolicies] Localization content could not be parsed.', error);
+        window.L10n = window.L10n || {};
+        logMissingKeys(window.L10n);
+    }
+})();

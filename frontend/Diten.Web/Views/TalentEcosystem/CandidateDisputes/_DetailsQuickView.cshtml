@@ -1,0 +1,86 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateDisputes
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateDisputesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCandidateDisputesDetails" aria-labelledby="candidateDisputesDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="candidateDisputesDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="candidateDisputesDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="candidateDisputesDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["CandidateProfileReference"]</dt>
+            <dd class="col-7 text-break" data-field="candidateProfileReference"></dd>
+            <dt class="col-5">@Localizer["ExitReferenceRecordReference"]</dt>
+            <dd class="col-7 text-break" data-field="exitReferenceRecordReference"></dd>
+            <dt class="col-5">@Localizer["ReferenceExchangeReference"]</dt>
+            <dd class="col-7 text-break" data-field="referenceExchangeReference"></dd>
+            <dt class="col-5">@Localizer["RehireRecommendationReference"]</dt>
+            <dd class="col-7 text-break" data-field="rehireRecommendationReference"></dd>
+            <dt class="col-5">@Localizer["DisputeReadinessState"]</dt>
+            <dd class="col-7" data-field="disputeReadinessState"></dd>
+            <dt class="col-5">@Localizer["ResponseBoundaryState"]</dt>
+            <dd class="col-7" data-field="responseBoundaryState"></dd>
+            <dt class="col-5">@Localizer["DisputeIntakeState"]</dt>
+            <dd class="col-7" data-field="disputeIntakeState"></dd>
+            <dt class="col-5">@Localizer["DisputeReviewState"]</dt>
+            <dd class="col-7" data-field="disputeReviewState"></dd>
+            <dt class="col-5">@Localizer["ResolutionLifecycleState"]</dt>
+            <dd class="col-7" data-field="resolutionLifecycleState"></dd>
+            <dt class="col-5">@Localizer["ContestabilityState"]</dt>
+            <dd class="col-7" data-field="contestabilityState"></dd>
+            <dt class="col-5">@Localizer["HumanReviewState"]</dt>
+            <dd class="col-7" data-field="humanReviewState"></dd>
+            <dt class="col-5">@Localizer["ConsentPreconditionState"]</dt>
+            <dd class="col-7" data-field="consentPreconditionState"></dd>
+            <dt class="col-5">@Localizer["VisibilityApprovalState"]</dt>
+            <dd class="col-7" data-field="visibilityApprovalState"></dd>
+            <dt class="col-5">@Localizer["DataScopeState"]</dt>
+            <dd class="col-7" data-field="dataScopeState"></dd>
+            <dt class="col-5">@Localizer["EvidenceRetentionState"]</dt>
+            <dd class="col-7" data-field="evidenceRetentionState"></dd>
+            <dt class="col-5">@Localizer["AuditReadinessState"]</dt>
+            <dd class="col-7" data-field="auditReadinessState"></dd>
+            <dt class="col-5">@Localizer["LegalHoldState"]</dt>
+            <dd class="col-7" data-field="legalHoldState"></dd>
+            <dt class="col-5">@Localizer["DeletionPolicyState"]</dt>
+            <dd class="col-7" data-field="deletionPolicyState"></dd>
+            <dt class="col-5">@Localizer["SelfServiceBoundaryState"]</dt>
+            <dd class="col-7" data-field="selfServiceBoundaryState"></dd>
+            <dt class="col-5">@Localizer["NotificationDependencyState"]</dt>
+            <dd class="col-7" data-field="notificationDependencyState"></dd>
+            <dt class="col-5">@Localizer["ExternalDependencyState"]</dt>
+            <dd class="col-7" data-field="externalDependencyState"></dd>
+            <dt class="col-5">@Localizer["AutomatedDecisionBoundaryState"]</dt>
+            <dd class="col-7" data-field="automatedDecisionBoundaryState"></dd>
+            <dt class="col-5">@Localizer["MarketplaceBoundaryState"]</dt>
+            <dd class="col-7" data-field="marketplaceBoundaryState"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["DisputeReadinessVersion"]</dt>
+            <dd class="col-7" data-field="disputeReadinessVersion"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7 text-break" data-field="deferredReason"></dd>
+            <dt class="col-5" data-audit-field>@Localizer["AuditMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="auditMetadata" data-audit-field></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-candidate-disputes-action="evaluate" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-candidate-disputes-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

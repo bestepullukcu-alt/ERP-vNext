@@ -862,4 +862,62 @@
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Meeting Report</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>You don't have access to {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Ask your administrator to grant you permission for this page.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>Human Capital</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>Employee Master</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>Talent Ecosystem</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>Human Capital</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>Talent Ecosystem</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>Applicant Intake</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>Candidate Pipeline</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>Compensation &amp; Benefits</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>Competency &amp; Skills</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>Development Plans</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>Employee Onboarding</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>Employee Projections</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>Employment Changes</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>Headcount Budget</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>HR Case Management</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>HR Compliance</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>HR Documentation</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>HR KPI Analytics</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>Learning &amp; Training</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>Offboarding Cases</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>Offer Management</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>Performance Reviews</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>Self Service</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>Sensitive Access</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>Succession</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>Time, Attendance &amp; Leave</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>Workforce Planning</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>Employee Master</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>Association Memberships</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>Association Operations</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>Candidate Career Passport</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>Candidate Disputes</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>Candidate Profiles</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>Consent Visibility Policies</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>Early Warning Signals</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>Exit Reference Records</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>Hiring Risk Indicators</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>Industry Knowledge Network</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>Industry Skill Passport</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>Industry Succession Pool</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>Industry Talent Pool</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>Mentorship Recommendation Network</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>Pay Benchmarking</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>Professional Reputation Ledger</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>Reference Exchange</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>Rehire Recommendations</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>Restricted Integrity Registry</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>Review Board</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>Sector Mobility Intelligence</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>Sector Talent Trends</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>Skills Gap Heatmap</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>Talent Data Foundation</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>Talent Development Network</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>Talent Supply Demand Forecasting</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>Trust Levels</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Verified Certification Registry</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Verified Participants</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Workforce Analytics</value></data>
 </root>

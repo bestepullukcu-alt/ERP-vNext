@@ -1,0 +1,116 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Diten.Web.Models.HumanCapital.OfferManagement;
+
+// Enum field values map 1:1 to the backend OfferReadinessState ordinals:
+// Draft=0, Ready=1, Deferred=2, Blocked=3, NotRequired=4, Archived=5.
+// Enums are serialized as integers by the service (no JsonStringEnumConverter), so the
+// save payload carries integers and the gateway binds them to the enum.
+
+public sealed class OfferManagementEditViewModel
+{
+    public Guid? Id { get; set; }
+
+    [Required]
+    [StringLength(64)]
+    public string Code { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(128)]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(32)]
+    public string SourceContractVersion { get; set; } = string.Empty;
+
+    [Range(1, long.MaxValue)]
+    public long OfferReadinessVersion { get; set; } = 1;
+
+    // Readiness & workflow
+    public int OfferReadinessState { get; set; } = 0;               // Draft
+    public int OfferWorkflowBoundaryState { get; set; } = 3;        // Blocked
+    public int ApprovalWorkflowBoundaryState { get; set; } = 3;     // Blocked
+    public int CandidateAcceptanceBoundaryState { get; set; } = 3;  // Blocked
+    public int OfferDocumentBoundaryState { get; set; } = 3;        // Blocked
+    public int CompensationDataBoundaryState { get; set; } = 2;     // Deferred
+    public int BenefitsDataBoundaryState { get; set; } = 2;         // Deferred
+    public int PayrollDataBoundaryState { get; set; } = 2;          // Deferred
+
+    // Dependencies
+    public int NotificationDependencyState { get; set; } = 2;       // Deferred
+    public int DocumentDependencyState { get; set; } = 2;           // Deferred
+
+    // Governance / policy
+    public int ConsentPreconditionState { get; set; } = 2; // Deferred
+    public int DataMinimizationState { get; set; } = 2;    // Deferred
+    public int RetentionPolicyState { get; set; } = 2;     // Deferred
+    public int EvidencePolicyState { get; set; } = 2;      // Deferred
+
+    public string? DeferredReason { get; set; }
+}
+
+public sealed class OfferManagementDetailViewModel
+{
+    public Guid Id { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public int OfferReadinessState { get; set; }
+    public int OfferWorkflowBoundaryState { get; set; }
+    public int ApprovalWorkflowBoundaryState { get; set; }
+    public int CandidateAcceptanceBoundaryState { get; set; }
+    public int OfferDocumentBoundaryState { get; set; }
+    public int CompensationDataBoundaryState { get; set; }
+    public int BenefitsDataBoundaryState { get; set; }
+    public int PayrollDataBoundaryState { get; set; }
+    public int ConsentPreconditionState { get; set; }
+    public int DataMinimizationState { get; set; }
+    public int RetentionPolicyState { get; set; }
+    public int EvidencePolicyState { get; set; }
+    public int NotificationDependencyState { get; set; }
+    public int DocumentDependencyState { get; set; }
+    public string SourceContractVersion { get; set; } = string.Empty;
+    public long OfferReadinessVersion { get; set; }
+    public DateTimeOffset? LastEvaluatedAt { get; set; }
+    public string? DeferredReason { get; set; }
+
+    // Ordinal → canonical state name, mirroring OfferReadinessState.
+    private static readonly string[] StateNames =
+        ["Draft", "Ready", "Deferred", "Blocked", "NotRequired", "Archived"];
+
+    public static string StateName(int value) =>
+        value >= 0 && value < StateNames.Length ? StateNames[value] : value.ToString();
+}
+
+// Sent to the gateway create endpoint. Property names match OfferReadinessCreateRequest.
+// The DependencyStates dictionary is intentionally NOT sent from the compact form;
+// the service applies its own default (empty dictionary).
+public sealed class OfferManagementSavePayload
+{
+    public string Code { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public int OfferReadinessState { get; set; }
+    public int OfferWorkflowBoundaryState { get; set; }
+    public int ApprovalWorkflowBoundaryState { get; set; }
+    public int CandidateAcceptanceBoundaryState { get; set; }
+    public int OfferDocumentBoundaryState { get; set; }
+    public int CompensationDataBoundaryState { get; set; }
+    public int BenefitsDataBoundaryState { get; set; }
+    public int PayrollDataBoundaryState { get; set; }
+    public int ConsentPreconditionState { get; set; }
+    public int DataMinimizationState { get; set; }
+    public int RetentionPolicyState { get; set; }
+    public int EvidencePolicyState { get; set; }
+    public int NotificationDependencyState { get; set; }
+    public int DocumentDependencyState { get; set; }
+    public string SourceContractVersion { get; set; } = string.Empty;
+    public long OfferReadinessVersion { get; set; } = 1;
+    public string? DeferredReason { get; set; }
+}
+
+public sealed class GatewayResponse<T>
+{
+    public T? Data { get; set; }
+    public bool IsSuccessful { get; set; }
+    public int StatusCode { get; set; }
+    public List<string> Errors { get; set; } = [];
+}

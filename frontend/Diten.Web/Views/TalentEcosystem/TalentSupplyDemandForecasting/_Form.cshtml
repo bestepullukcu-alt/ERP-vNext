@@ -1,0 +1,176 @@
+@model Diten.Web.Models.TalentEcosystem.TalentSupplyDemandForecasting.TalentSupplyDemandForecastingEditViewModel
+@using Diten.Web.Views.TalentEcosystem.TalentSupplyDemandForecasting
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TalentSupplyDemandForecastingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var title = Localizer["FormTitleCreate"].Value;
+    // Readiness states offered in the form: Draft, Ready, Deferred, Blocked, NotRequired.
+    // Archived is excluded (it is controlled by the delete operation server-side).
+    var states = new (int Value, string Label)[]
+    {
+        (0, Localizer["StateDraft"].Value),
+        (1, Localizer["StateReady"].Value),
+        (2, Localizer["StateDeferred"].Value),
+        (3, Localizer["StateBlocked"].Value),
+        (4, Localizer["StateNotRequired"].Value)
+    };
+    Func<string, int, IHtmlContent> stateSelect = (name, selected) =>
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"<select id=\"{name}\" name=\"{name}\" class=\"select2 form-select\">");
+        foreach (var s in states)
+        {
+            var sel = s.Value == selected ? " selected" : string.Empty;
+            sb.Append($"<option value=\"{s.Value}\"{sel}>{System.Net.WebUtility.HtmlEncode(s.Label)}</option>");
+        }
+        sb.Append("</select>");
+        return Html.Raw(sb.ToString());
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/TalentEcosystem/TalentSupplyDemandForecasting">@Localizer["TalentSupplyDemandForecastingTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/TalentEcosystem/TalentSupplyDemandForecasting" class="btn btn-label-secondary">@SharedLocalizer["Cancel"]</a>
+        <button type="submit" form="talentSupplyDemandForecastingForm" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>
+
+<form id="talentSupplyDemandForecastingForm" asp-controller="TalentSupplyDemandForecasting" asp-action="Create" method="post" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column -->
+        <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["IdentitySection"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
+                        <input asp-for="Code" class="form-control" maxlength="64" placeholder="@Localizer["CodePlaceholder"]" required />
+                        <span asp-validation-for="Code" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="SourceContractVersion" class="form-label fw-medium">@Localizer["SourceContractVersion"] <span class="text-danger">*</span></label>
+                        <input asp-for="SourceContractVersion" class="form-control" maxlength="32" placeholder="1.0.0" required />
+                        <span asp-validation-for="SourceContractVersion" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="DisplayName" class="form-label fw-medium">@Localizer["DisplayName"] <span class="text-danger">*</span></label>
+                        <input asp-for="DisplayName" class="form-control" maxlength="128" placeholder="@Localizer["DisplayNamePlaceholder"]" required />
+                        <span asp-validation-for="DisplayName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="TalentSupplyDemandForecastingReadinessVersion" class="form-label fw-medium">@Localizer["TalentSupplyDemandForecastingReadinessVersion"]</label>
+                        <input asp-for="TalentSupplyDemandForecastingReadinessVersion" type="number" min="1" class="form-control" />
+                        <span asp-validation-for="TalentSupplyDemandForecastingReadinessVersion" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="TalentSupplyDemandForecastingReadinessState" class="form-label fw-medium">@Localizer["TalentSupplyDemandForecastingReadinessState"]</label>
+                        @stateSelect("TalentSupplyDemandForecastingReadinessState", Model.TalentSupplyDemandForecastingReadinessState)
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["WorkflowSection"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12 col-md-6">
+                        <label for="ForecastCatalogBoundaryState" class="form-label fw-medium">@Localizer["ForecastCatalogBoundaryState"]</label>
+                        @stateSelect("ForecastCatalogBoundaryState", Model.ForecastCatalogBoundaryState)
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="ModelBindingIntakeBoundaryState" class="form-label fw-medium">@Localizer["ModelBindingIntakeBoundaryState"]</label>
+                        @stateSelect("ModelBindingIntakeBoundaryState", Model.ModelBindingIntakeBoundaryState)
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="HorizonScopeBoundaryState" class="form-label fw-medium">@Localizer["HorizonScopeBoundaryState"]</label>
+                        @stateSelect("HorizonScopeBoundaryState", Model.HorizonScopeBoundaryState)
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="VisibilityControlBoundaryState" class="form-label fw-medium">@Localizer["VisibilityControlBoundaryState"]</label>
+                        @stateSelect("VisibilityControlBoundaryState", Model.VisibilityControlBoundaryState)
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="ForecastReviewBoundaryState" class="form-label fw-medium">@Localizer["ForecastReviewBoundaryState"]</label>
+                        @stateSelect("ForecastReviewBoundaryState", Model.ForecastReviewBoundaryState)
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label for="AutomatedDecisionBoundaryState" class="form-label fw-medium">@Localizer["AutomatedDecisionBoundaryState"]</label>
+                        @stateSelect("AutomatedDecisionBoundaryState", Model.AutomatedDecisionBoundaryState)
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["DeferralSection"]</h5></div>
+                <div class="card-body">
+                    <label asp-for="DeferredReason" class="form-label fw-medium">@Localizer["DeferredReason"]</label>
+                    <textarea asp-for="DeferredReason" class="form-control" rows="3" maxlength="512"></textarea>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column -->
+        <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+            <section class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["DependencySection"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label for="TalentDataSourceDependencyState" class="form-label fw-medium">@Localizer["TalentDataSourceDependencyState"]</label>
+                        @stateSelect("TalentDataSourceDependencyState", Model.TalentDataSourceDependencyState)
+                    </div>
+                    <div class="col-12">
+                        <label for="WorkforceAnalyticsSourceDependencyState" class="form-label fw-medium">@Localizer["WorkforceAnalyticsSourceDependencyState"]</label>
+                        @stateSelect("WorkforceAnalyticsSourceDependencyState", Model.WorkforceAnalyticsSourceDependencyState)
+                    </div>
+                    <div class="col-12">
+                        <label for="SectorTrendSourceDependencyState" class="form-label fw-medium">@Localizer["SectorTrendSourceDependencyState"]</label>
+                        @stateSelect("SectorTrendSourceDependencyState", Model.SectorTrendSourceDependencyState)
+                    </div>
+                    <div class="col-12">
+                        <label for="NotificationDependencyState" class="form-label fw-medium">@Localizer["NotificationDependencyState"]</label>
+                        @stateSelect("NotificationDependencyState", Model.NotificationDependencyState)
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="card-header"><h5 class="card-title mb-0">@Localizer["GovernanceSection"]</h5></div>
+                <div class="card-body row g-3">
+                    <div class="col-12">
+                        <label for="ConsentPreconditionState" class="form-label fw-medium">@Localizer["ConsentPreconditionState"]</label>
+                        @stateSelect("ConsentPreconditionState", Model.ConsentPreconditionState)
+                    </div>
+                    <div class="col-12">
+                        <label for="DataMinimizationState" class="form-label fw-medium">@Localizer["DataMinimizationState"]</label>
+                        @stateSelect("DataMinimizationState", Model.DataMinimizationState)
+                    </div>
+                    <div class="col-12">
+                        <label for="RetentionPolicyState" class="form-label fw-medium">@Localizer["RetentionPolicyState"]</label>
+                        @stateSelect("RetentionPolicyState", Model.RetentionPolicyState)
+                    </div>
+                    <div class="col-12">
+                        <label for="PublicationPolicyState" class="form-label fw-medium">@Localizer["PublicationPolicyState"]</label>
+                        @stateSelect("PublicationPolicyState", Model.PublicationPolicyState)
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</form>

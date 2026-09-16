@@ -1,0 +1,32 @@
+@using Diten.Web.Views.TalentEcosystem.ConsentVisibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentVisibilityPoliciesIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-consent-visibility-policies" data-dt-standard="v2" class="datatables-consent-visibility-policies table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th>@Localizer["DisplayName"]</th>
+                    <th>@Localizer["PolicyState"]</th>
+                    <th>@Localizer["ConsentRequirementState"]</th>
+                    <th>@Localizer["VisibilityScope"]</th>
+                    <th>@Localizer["DataScopeState"]</th>
+                    <th>@Localizer["AssociationConsumptionState"]</th>
+                    <th>@Localizer["PolicyVersion"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+@using Diten.Web.Views.HumanCapital.OffboardingCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OffboardingCasesIndex> Localizer
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-4 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-1">@Localizer["ServiceHealth"]</h6>
+                        <p class="mb-0 text-muted small" data-offboarding-field="healthOwnerKey"></p>
+                    </div>
+                    <span class="badge bg-label-secondary" data-offboarding-field="healthStatus">@Localizer["Loading"]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="mb-1">@Localizer["ReadonlyBoundary"]</h6>
+                <p class="mb-0 text-muted small">@Localizer["ReadonlyBoundaryDescription"]</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-12">
+        <div class="card h-100">
+            <div class="card-body">
+                <h6 class="mb-1">@Localizer["HandoffBoundary"]</h6>
+                <p class="mb-0 text-muted small">@Localizer["HandoffBoundaryDescription"]</p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -801,4 +801,62 @@
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>تقرير الاجتماعات</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>رأس المال البشري</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>البيانات الرئيسية للموظفين</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>منظومة المواهب</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>رأس المال البشري</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>منظومة المواهب</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>استقبال المتقدمين</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>مسار المرشحين</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>التعويضات والمزايا</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>الكفاءات والمهارات</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>خطط التطوير</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>تأهيل الموظفين</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>توقعات الموظفين</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>تغييرات التوظيف</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>موازنة القوى العاملة</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>إدارة حالات الموارد البشرية</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>امتثال الموارد البشرية</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>توثيق الموارد البشرية</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>تحليلات مؤشرات أداء الموارد البشرية</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>التعلم والتدريب</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>حالات إنهاء الخدمة</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>إدارة العروض</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>تقييمات الأداء</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>الخدمة الذاتية</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>الوصول الحساس</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>التعاقب الوظيفي</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>الوقت والحضور والإجازات</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>تخطيط القوى العاملة</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>البيانات الرئيسية للموظفين</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>عضويات الجمعيات</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>عمليات الجمعيات</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>جواز المسار المهني للمرشح</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>نزاعات المرشحين</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>ملفات المرشحين</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>سياسات ظهور الموافقة</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>إشارات الإنذار المبكر</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>سجلات مراجع المغادرة</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>مؤشرات مخاطر التوظيف</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>شبكة المعرفة القطاعية</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>جواز المهارات القطاعية</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>مجمع التعاقب القطاعي</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>مجمع المواهب القطاعي</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>شبكة توصيات الإرشاد</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>المقارنة المرجعية للأجور</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>سجل السمعة المهنية</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>تبادل المراجع</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>توصيات إعادة التوظيف</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>سجل النزاهة المقيد</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>لجنة المراجعة</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>معلومات التنقل القطاعي</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>اتجاهات المواهب القطاعية</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>خريطة حرارية لفجوة المهارات</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>أساس بيانات المواهب</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>شبكة تطوير المواهب</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>التنبؤ بعرض وطلب المواهب</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>مستويات الثقة</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>سجل الشهادات الموثقة</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>المشاركون الموثقون</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>تحليلات القوى العاملة</value></data>
 </root>
