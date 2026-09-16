@@ -11,10 +11,10 @@
 
 .segment-create-scope {
     /* palette — every value is straight from the mockup / WP token table */
-    --seg-accent: oklch(0.55 0.19 285);
-    --seg-accent-hover: oklch(0.49 0.19 285);
-    --seg-accent-dark: oklch(0.45 0.13 285);
-    --seg-accent-ring: oklch(0.55 0.19 285 / 0.14);
+    --seg-accent: var(--bs-primary);
+    --seg-accent-hover: color-mix(in srgb, var(--bs-primary), #000 12%);
+    --seg-accent-dark: var(--bs-primary);
+    --seg-accent-ring: rgba(var(--bs-primary-rgb), 0.14);
     --seg-card-bg: oklch(1 0 0);
     --seg-card-border: oklch(0.93 0.006 285);
     --seg-heading: oklch(0.28 0.02 285);
@@ -22,12 +22,12 @@
     --seg-muted: oklch(0.55 0.015 285);
     --seg-muted-soft: oklch(0.58 0.015 285);
     --seg-label: oklch(0.35 0.02 285);
-    --seg-required: oklch(0.58 0.2 25);
+    --seg-required: var(--bs-danger);
     --seg-input-border: oklch(0.87 0.008 285);
     --seg-input-border-soft: oklch(0.89 0.008 285);
     --seg-readonly-bg: oklch(0.975 0.004 285);
-    --seg-danger: oklch(0.55 0.17 25);
-    --seg-ok: oklch(0.72 0.14 150);
+    --seg-danger: var(--bs-danger);
+    --seg-ok: var(--bs-success);
 
     /* WP-SEG-A4 — the root NO LONGER sets the Inter font. "Kabuk app, içerik mockup": the card chrome
        (.card / .card-body / h6.text-heading / .card-section-desc / .bx) has no `seg-*` class, so it inherits
@@ -193,7 +193,7 @@
     font-family: inherit;
 }
 .segment-create-scope .seg-pill:hover {
-    border-color: oklch(0.72 0.1 285);
+    border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
 /* the sibling label lit up by its checked radio (btn-check pattern) */
@@ -225,7 +225,7 @@
     margin: 0;
 }
 .segment-create-scope .seg-radio-card:hover {
-    border-color: oklch(0.78 0.08 285);
+    border-color: var(--bs-primary);
 }
 .segment-create-scope .seg-radio-title {
     display: flex;
@@ -253,12 +253,12 @@
 }
 /* checked state driven by the wrapped radio input */
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) {
-    background: oklch(0.985 0.012 285);
+    background: rgba(var(--bs-primary-rgb), 0.04);
     border-color: var(--seg-accent);
-    box-shadow: 0 0 0 3px oklch(0.55 0.19 285 / 0.1);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
 }
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) .seg-radio-title {
-    color: oklch(0.35 0.14 285);
+    color: var(--bs-primary);
 }
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) .seg-radio-help {
     color: oklch(0.5 0.03 285);
@@ -299,7 +299,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: oklch(0.52 0.08 285);
+    color: var(--bs-primary);
     margin-bottom: 6px;
 }
 .segment-create-scope .seg-reads-as-text {
@@ -337,14 +337,14 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--seg-accent-dark);
-    background: oklch(0.96 0.018 285);
+    background: rgba(var(--bs-primary-rgb), 0.08);
     border: none;
     border-radius: 999px;
     cursor: pointer;
     font-family: inherit;
 }
 .segment-create-scope .seg-recipe:hover {
-    background: oklch(0.92 0.035 285);
+    background: rgba(var(--bs-primary-rgb), 0.16);
 }
 
 /* ------------------------------------------------------------------ blocks */
@@ -375,7 +375,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     color: var(--seg-accent-dark);
-    background: oklch(0.955 0.02 285);
+    background: rgba(var(--bs-primary-rgb), 0.1);
     border-radius: 999px;
 }
 .segment-create-scope .seg-block {
@@ -445,7 +445,7 @@
 }
 .segment-create-scope .seg-remove-block:hover {
     color: var(--seg-danger);
-    background: oklch(0.965 0.02 25);
+    background: rgba(var(--bs-danger-rgb), 0.08);
 }
 .segment-create-scope .seg-remove-cond {
     flex: none;
@@ -464,7 +464,7 @@
 }
 .segment-create-scope .seg-remove-cond:hover {
     color: var(--seg-danger);
-    background: oklch(0.965 0.02 25);
+    background: rgba(var(--bs-danger-rgb), 0.08);
 }
 
 /* ------------------------------------------------------------------ condition rows */
@@ -578,7 +578,7 @@
     gap: 6px;
 }
 .segment-create-scope .seg-chip:hover {
-    border-color: oklch(0.72 0.1 285);
+    border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
 .segment-create-scope .seg-chip.is-on {
@@ -659,7 +659,7 @@
     font-size: 12px;
     font-weight: 500;
     color: var(--seg-accent-dark);
-    background: oklch(0.96 0.018 285);
+    background: rgba(var(--bs-primary-rgb), 0.08);
     border-radius: 999px;
     white-space: nowrap;
 }
@@ -690,7 +690,7 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--seg-accent-dark);
-    background: oklch(0.96 0.018 285);
+    background: rgba(var(--bs-primary-rgb), 0.08);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -698,7 +698,7 @@
     align-self: flex-start;
 }
 .segment-create-scope .seg-add-cond:hover {
-    background: oklch(0.92 0.035 285);
+    background: rgba(var(--bs-primary-rgb), 0.16);
 }
 .segment-create-scope .seg-add-block {
     margin-top: 10px;
@@ -715,7 +715,7 @@
     font-family: inherit;
 }
 .segment-create-scope .seg-add-block:hover {
-    border-color: oklch(0.72 0.1 285);
+    border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
 
@@ -745,7 +745,7 @@
     font-family: inherit;
 }
 .segment-create-scope .seg-json-toggle:hover {
-    border-color: oklch(0.72 0.1 285);
+    border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
 .segment-create-scope .seg-json-pre {
@@ -827,12 +827,12 @@
     border-radius: 999px;
 }
 .segment-create-scope .seg-member-badge.is-include {
-    color: oklch(0.4 0.12 150);
-    background: oklch(0.94 0.05 150);
+    color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.16);
 }
 .segment-create-scope .seg-member-badge.is-exclude {
     color: var(--seg-danger);
-    background: oklch(0.96 0.03 25);
+    background: rgba(var(--bs-danger-rgb), 0.12);
 }
 .segment-create-scope .seg-member-name {
     font-weight: 500;
@@ -861,7 +861,7 @@
     cursor: pointer;
 }
 .segment-create-scope .seg-icon-btn:hover {
-    border-color: oklch(0.72 0.1 285);
+    border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
 .segment-create-scope .seg-btn-primary {
@@ -994,7 +994,7 @@
 }
 .segment-create-scope .seg-funnel-fill {
     height: 100%;
-    background: oklch(0.6 0.15 285);
+    background: var(--bs-primary);
     border-radius: 999px;
 }
 .segment-create-scope .seg-preview-btn {
@@ -1004,14 +1004,14 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--seg-accent-dark);
-    background: oklch(0.96 0.018 285);
+    background: rgba(var(--bs-primary-rgb), 0.08);
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
 }
 .segment-create-scope .seg-preview-btn:hover {
-    background: oklch(0.92 0.035 285);
+    background: rgba(var(--bs-primary-rgb), 0.16);
 }
 
 /* sample members */
@@ -1033,7 +1033,7 @@
     width: 30px;
     height: 30px;
     border-radius: 999px;
-    background: oklch(0.955 0.02 285);
+    background: rgba(var(--bs-primary-rgb), 0.1);
     color: var(--seg-accent-dark);
     font-size: 11.5px;
     font-weight: 600;
