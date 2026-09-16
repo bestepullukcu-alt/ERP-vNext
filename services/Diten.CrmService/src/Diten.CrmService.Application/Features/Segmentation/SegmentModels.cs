@@ -270,6 +270,49 @@ public sealed record SegmentResolutionResult(
     int TotalMemberCount,
     IReadOnlyList<SegmentMemberDto> Members);
 
+/// <summary>
+/// The output of the DRAFT-rule <c>preview</c> — the live reach rail. It is a REPORT that persists nothing, produced by
+/// the same resolver <c>/resolve</c> uses, only aimed at an in-memory rule instead of a stored one.
+/// <para><see cref="TotalCount"/> is what the saved rule would resolve to (the resolver's matched count), so a draft
+/// preview and the eventual <c>/resolve</c> of the same rule agree by construction. <see cref="ConditionCounts"/> counts
+/// each predicate on its OWN (a one-condition rule): the funnel of "N match this alone" that a matchMode=all rule then
+/// narrows. <see cref="SampleMembers"/> is a bounded sample (never the whole list — that is what <c>/resolve</c> paging
+/// is for). When the rule is so wide it breaches the candidate ceiling the endpoint answers <b>422</b>, never a partial
+/// number, exactly as <c>/resolve</c> does.</para>
+/// </summary>
+public sealed record SegmentReachPreviewDto(
+    string SubjectType,
+    string MatchMode,
+    DateTimeOffset EffectiveAt,
+    int TotalCount,
+    int SampleLimit,
+    int MaxCandidateSet,
+    IReadOnlyList<SegmentReachConditionDto> ConditionCounts,
+    IReadOnlyList<SegmentReachSampleMemberDto> SampleMembers,
+    DateTimeOffset ResolvedAt,
+    string ResolverVersion);
+
+/// <summary>One predicate of the draft rule, counted as if it were the ONLY condition. <see cref="NodeId"/> echoes the
+/// id the caller sent for that node (or the runtime-assigned one when the caller omitted it), so the reach rail can line
+/// each count up with the editor row it came from.
+/// <para><see cref="CapExceeded"/> is true when THIS predicate alone is wider than the candidate ceiling: the honest
+/// answer is "more than <see cref="SegmentReachPreviewDto.MaxCandidateSet"/>", and <see cref="Count"/> then carries that
+/// ceiling as a floor rather than a precise, and false, total.</para></summary>
+public sealed record SegmentReachConditionDto(
+    Guid NodeId,
+    string? AttributeCode,
+    string? Label,
+    int Count,
+    bool CapExceeded);
+
+/// <summary>One sampled member of the draft rule's reach. It carries only what the resolver already projects onto a
+/// member at no extra read — the id and a display label. It is a preview sample, not a member export: the real member
+/// list (with paging) is a saved segment's <c>/resolve</c>.</summary>
+public sealed record SegmentReachSampleMemberDto(
+    Guid SubjectId,
+    string SubjectType,
+    string? DisplayName);
+
 /// <summary>List envelope for the segment grid. Total is the count BEFORE paging, so a UI never has to guess.</summary>
 public sealed record SegmentListDto(IReadOnlyList<SegmentListItemDto> Items, int Total);
 
