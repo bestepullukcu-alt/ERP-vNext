@@ -1,0 +1,32 @@
+@using Diten.Web.Views.HumanCapital.SelfService
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SelfServiceIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="self-service-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AddNew = Localizer["AddNew"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        Evaluate = Localizer["Evaluate"].Value,
+        EvaluateConfirm = Localizer["EvaluateConfirm"].Value,
+        RecordEvaluated = Localizer["RecordEvaluated"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        AreYouSure = SharedLocalizer["AreYouSure"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Cancel = SharedLocalizer["Cancel"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        StateDraft = Localizer["StateDraft"].Value,
+        StateReady = Localizer["StateReady"].Value,
+        StateDeferred = Localizer["StateDeferred"].Value,
+        StateBlocked = Localizer["StateBlocked"].Value,
+        StateNotRequired = Localizer["StateNotRequired"].Value,
+        StateArchived = Localizer["StateArchived"].Value
+    })
+</script>

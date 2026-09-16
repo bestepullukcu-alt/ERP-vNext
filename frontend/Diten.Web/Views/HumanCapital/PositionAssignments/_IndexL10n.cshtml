@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="position-assignments-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        ArchiveDisabled = Localizer["ArchiveDisabled"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ReferenceLinkDisabled = Localizer["ReferenceLinkDisabled"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        EmployeeProjectionId = Localizer["EmployeeProjectionId"].Value,
+        OrganizationUnitId = Localizer["OrganizationUnitId"].Value,
+        PositionId = Localizer["PositionId"].Value,
+        AssignmentState = Localizer["AssignmentState"].Value,
+        ReferenceValidationState = Localizer["ReferenceValidationState"].Value,
+        SensitiveAccessDecisionState = Localizer["SensitiveAccessDecisionState"].Value,
+        EffectiveFrom = Localizer["EffectiveFrom"].Value
+    })
+</script>

@@ -1,0 +1,50 @@
+@using Diten.Web.Views.HumanCapital.EmployeeProjections
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeProjectionsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasEmployeeProjectionDetails" aria-labelledby="employeeProjectionDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="employeeProjectionDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="employeeProjectionDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="employeeProjectionDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["HrisSourceProfileId"]</dt>
+            <dd class="col-7 text-break" data-field="hrisSourceProfileId"></dd>
+            <dt class="col-5">@Localizer["PersonReferenceId"]</dt>
+            <dd class="col-7 text-break" data-field="personReferenceId"></dd>
+            <dt class="col-5">@Localizer["ExternalEmployeeReference"]</dt>
+            <dd class="col-7 text-break" data-field="externalEmployeeReference"></dd>
+            <dt class="col-5">@Localizer["EmploymentRecordReferenceKey"]</dt>
+            <dd class="col-7 text-break" data-field="employmentRecordReferenceKey"></dd>
+            <dt class="col-5">@Localizer["EmploymentStatusCode"]</dt>
+            <dd class="col-7" data-field="employmentStatusCode"></dd>
+            <dt class="col-5">@Localizer["WorkerTypeCode"]</dt>
+            <dd class="col-7" data-field="workerTypeCode"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["ProjectionState"]</dt>
+            <dd class="col-7" data-field="projectionState"></dd>
+            <dt class="col-5">@Localizer["VisibilityClassification"]</dt>
+            <dd class="col-7" data-field="visibilityClassification"></dd>
+            <dt class="col-5">@Localizer["SourceLastSyncedAt"]</dt>
+            <dd class="col-7" data-field="sourceLastSyncedAt"></dd>
+            <dt class="col-5">@Localizer["ProjectionVersion"]</dt>
+            <dd class="col-7" data-field="projectionVersion"></dd>
+            <dt class="col-5">@Localizer["LastValidatedAt"]</dt>
+            <dd class="col-7" data-field="lastValidatedAt"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7" data-field="deferredReason"></dd>
+            <dt class="col-5">@Localizer["CreatedAt"]</dt>
+            <dd class="col-7" data-field="createdAt"></dd>
+            <dt class="col-5">@Localizer["UpdatedAt"]</dt>
+            <dd class="col-7" data-field="updatedAt"></dd>
+        </dl>
+    </div>
+</div>

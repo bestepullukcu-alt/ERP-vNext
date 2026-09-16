@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.EmployeeOnboarding
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeOnboardingIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["EmployeeOnboardingTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("hcm.employee-onboarding.manage");
+    var canEvaluate = Perms.Has("hcm.employee-onboarding.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["EmployeeOnboardingTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="employee-onboarding-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-employee-onboarding" data-dt-standard="v2"> *@
+    <partial name="~/Views/HumanCapital/EmployeeOnboarding/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/EmployeeOnboarding/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/EmployeeOnboarding/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/EmployeeOnboarding/index.js" asp-append-version="true"></script>
+}

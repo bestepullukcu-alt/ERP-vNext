@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.HiringRiskIndicators
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<HiringRiskIndicatorsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["HiringRiskIndicatorsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.hiring-risk-indicators.manage");
+    var canEvaluate = Perms.Has("tep.hiring-risk-indicators.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["HiringRiskIndicatorsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="hiring-risk-indicators-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-hiring-risk-indicators" data-dt-standard="v2"> *@
+    <partial name="~/Views/TalentEcosystem/HiringRiskIndicators/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/HiringRiskIndicators/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/HiringRiskIndicators/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/HiringRiskIndicators/index.js" asp-append-version="true"></script>
+}

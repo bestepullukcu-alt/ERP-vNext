@@ -801,4 +801,62 @@
   <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Отчёт по совещаниям</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>Человеческий капитал</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>Мастер-данные сотрудников</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>Экосистема талантов</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>Человеческий капитал</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>Экосистема талантов</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>Приём заявителей</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>Воронка кандидатов</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>Вознаграждение и льготы</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>Компетенции и навыки</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>Планы развития</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>Адаптация сотрудников</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>Прогнозы по сотрудникам</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>Изменения занятости</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>Бюджет численности</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>Управление HR-обращениями</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>HR-комплаенс</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>HR-документация</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>Аналитика HR-KPI</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>Обучение и подготовка</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>Случаи увольнения</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>Управление предложениями</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>Оценка эффективности</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>Самообслуживание</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>Чувствительный доступ</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>Преемственность</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>Время, посещаемость и отпуска</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>Планирование персонала</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>Мастер-данные сотрудников</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>Членство в ассоциациях</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>Операции ассоциаций</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>Карьерный паспорт кандидата</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>Споры кандидатов</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>Профили кандидатов</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>Политики видимости согласия</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>Сигналы раннего предупреждения</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>Записи рекомендаций при увольнении</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>Индикаторы рисков найма</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>Отраслевая сеть знаний</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>Отраслевой паспорт навыков</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>Отраслевой резерв преемников</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>Отраслевой кадровый резерв</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>Сеть рекомендаций по наставничеству</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>Бенчмаркинг оплаты труда</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>Реестр профессиональной репутации</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>Обмен рекомендациями</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>Рекомендации по повторному найму</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>Реестр ограниченной добросовестности</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>Наблюдательный совет</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>Аналитика отраслевой мобильности</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>Отраслевые тренды талантов</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>Тепловая карта дефицита навыков</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>Основа данных о талантах</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>Сеть развития талантов</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>Прогноз спроса и предложения талантов</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>Уровни доверия</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Реестр подтверждённых сертификаций</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Подтверждённые участники</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Аналитика персонала</value></data>
 </root>

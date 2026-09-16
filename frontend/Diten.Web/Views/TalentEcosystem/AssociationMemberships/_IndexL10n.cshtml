@@ -1,0 +1,29 @@
+@using Diten.Web.Views.TalentEcosystem.AssociationMemberships
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AssociationMembershipsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="association-memberships-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        ArchiveDisabled = Localizer["ArchiveDisabled"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        EvaluateDisabled = Localizer["EvaluateDisabled"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        MemberCompanyDisabled = Localizer["MemberCompanyDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        AssociationMembershipState = Localizer["AssociationMembershipState"].Value,
+        MemberCompanyState = Localizer["MemberCompanyState"].Value,
+        PolicyEvaluationState = Localizer["PolicyEvaluationState"].Value,
+        VisibilityApprovalState = Localizer["VisibilityApprovalState"].Value,
+        AssociationActivationState = Localizer["AssociationActivationState"].Value,
+        RegistryVersion = Localizer["RegistryVersion"].Value
+    })
+</script>
