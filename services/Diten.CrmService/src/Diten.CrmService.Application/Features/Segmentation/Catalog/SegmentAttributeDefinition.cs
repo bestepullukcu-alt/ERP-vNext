@@ -8,9 +8,13 @@ namespace Diten.CrmService.Application.Features.Segmentation.Catalog;
 /// authoring time — that validation never derives membership, it only decides whether the rule is authorable.
 /// <para><see cref="ValueSource"/> (P1a) says where a legitimate VALUE comes from, so an editor can offer the right
 /// input. It is DESCRIPTIVE: it narrows nothing the runtime accepts, and free text stays valid everywhere.</para>
+/// <para><see cref="Domain"/> is a PRESENTATION-ONLY business grouping (the optgroup a criteria editor renders the
+/// attribute under, e.g. doctor-profile / consent / workplace). It is descriptive metadata: it is never read by
+/// validation or evaluation and narrows nothing the runtime accepts.</para>
 /// </summary>
 public sealed record SegmentAttributeDefinition(
     string AttributeCode,
+    string Domain,
     string AttributeClass,
     string Source,
     string ValueType,

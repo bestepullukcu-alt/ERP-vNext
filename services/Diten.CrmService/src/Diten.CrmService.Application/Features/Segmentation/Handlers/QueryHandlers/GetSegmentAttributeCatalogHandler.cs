@@ -34,6 +34,7 @@ public sealed class GetSegmentAttributeCatalogHandler
         var attributes = SegmentAttributeCatalog.All
             .Select(a => new SegmentAttributeDto(
                 a.AttributeCode,
+                a.Domain,
                 a.AttributeClass,
                 a.DeclaredClass,
                 a.Source,

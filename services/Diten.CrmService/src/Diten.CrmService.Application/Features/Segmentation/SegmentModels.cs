@@ -216,11 +216,15 @@ public sealed record SegmentAttributeCatalogDto(
 
 /// <summary>One published attribute. <c>Class</c> is the evaluation class (N/J/D); <c>DeclaredClass</c> adds the "+X"
 /// marker when the VALUE is additionally proven cross-service.
+/// <para><c>Domain</c> is the presentation-only business grouping (the optgroup a criteria editor renders the attribute
+/// under, e.g. doctor-profile / consent / workplace). It is descriptive metadata only — it never affects validation or
+/// evaluation, so an older UI that ignores it behaves exactly as before.</para>
 /// <para><c>ValueSource</c> (P1a) tells an editor where a legitimate value comes from — a published MOD-0048 set, a
 /// closed enum, another aggregate's picker, or genuinely free text. It is descriptive: the runtime still accepts any
 /// value the validator allows, so an older UI that ignores it behaves exactly as before.</para></summary>
 public sealed record SegmentAttributeDto(
     string AttributeCode,
+    string Domain,
     string Class,
     string DeclaredClass,
     string Source,
