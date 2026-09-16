@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.TimeAttendanceLeave
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TimeAttendanceLeaveIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["TimeAttendanceLeaveTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("hcm.time-attendance-leave.manage");
+    var canEvaluate = Perms.Has("hcm.time-attendance-leave.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["TimeAttendanceLeaveTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="time-attendance-leave-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-time-attendance-leave" data-dt-standard="v2"> *@
+    <partial name="~/Views/HumanCapital/TimeAttendanceLeave/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/TimeAttendanceLeave/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/TimeAttendanceLeave/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/TimeAttendanceLeave/index.js" asp-append-version="true"></script>
+}

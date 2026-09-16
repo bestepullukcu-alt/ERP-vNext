@@ -1,0 +1,26 @@
+@using Diten.Web.Views.HumanCapital.SensitiveAccess
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SensitiveAccessIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+    </div>
+    <div class="card-datatable table-responsive">
+        <table id="dt-sensitive-access" data-dt-standard="v2" class="datatables-sensitive-access table border-top">
+            <thead>
+                <tr>
+                    <th>@Localizer["EmployeeProjectionId"]</th>
+                    <th>@Localizer["VisibilityClassification"]</th>
+                    <th>@Localizer["RequestedAction"]</th>
+                    <th>@Localizer["Decision"]</th>
+                    <th>@Localizer["ReasonCode"]</th>
+                    <th>@Localizer["DataScope"]</th>
+                    <th>@Localizer["EvaluatedAt"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

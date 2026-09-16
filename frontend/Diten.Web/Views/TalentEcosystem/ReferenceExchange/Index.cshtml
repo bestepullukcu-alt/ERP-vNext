@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.ReferenceExchange
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReferenceExchangeIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ReferenceExchangeTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.reference-exchange.evaluate");
+    var canAudit = Perms.Has("tep.reference-exchange.audit.read");
+    var canManage = Perms.Has("tep.reference-exchange.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ReferenceExchangeTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="reference-exchange-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/ReferenceExchange/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ReferenceExchange/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ReferenceExchange/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/ReferenceExchange/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/ReferenceExchange/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/ReferenceExchange/index.js" asp-append-version="true"></script>
+}

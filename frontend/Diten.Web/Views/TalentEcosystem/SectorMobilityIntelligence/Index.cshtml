@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.SectorMobilityIntelligence
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SectorMobilityIntelligenceIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SectorMobilityIntelligenceTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.sector-mobility-intelligence.manage");
+    var canEvaluate = Perms.Has("tep.sector-mobility-intelligence.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SectorMobilityIntelligenceTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="sector-mobility-intelligence-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-sector-mobility-intelligence" data-dt-standard="v2"> *@
+    <partial name="~/Views/TalentEcosystem/SectorMobilityIntelligence/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/SectorMobilityIntelligence/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/SectorMobilityIntelligence/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/SectorMobilityIntelligence/index.js" asp-append-version="true"></script>
+}

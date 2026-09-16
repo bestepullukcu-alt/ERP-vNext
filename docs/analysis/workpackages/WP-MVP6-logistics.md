@@ -5,8 +5,12 @@
 ## OWNED (SoR)
 **S&OPPlan/SignOff(0190) · CapacityPlan(0192)** · Shipment/POD(0183) · Carrier(0184) · Routing/Load(0185) · Reverse Logistics(0186) · Claims(0187) · SupplierPerformance(0147) · SupplierPortal(0148).
 
-## CONSUMED (frozen/mock)
-Warehouse (MVP-5 shipment tetiği) · INVENTORY (stok) · Supplier (MVP-2). Event Bus (Platform) — shipment lifecycle event'leri.
+## CONSUMED (frozen contract → mock)
+Hepsi frozen; sahibi olmadığın seam'leri MERKEZ üretti, sen sadece tüketirsin (uydurma/dondurma yok):
+- **INVENTORY** `contracts/inventory-bundle.openapi.yaml` (stok) — frozen v1
+- **WAREHOUSE-OUTBOUND** `contracts/warehouse-outbound.openapi.yaml` (shipment tetiği, sahibi MVP-5) — merkez öne çekti, frozen v1
+- **SUPPLIER** `contracts/supplier.openapi.yaml` (base supplier identity, sahibi MVP-2) — merkez öne çekti, frozen v1
+- **Event Bus** (Platform) — shipment lifecycle event'leri.
 
 ## GOLDEN FLOW
 warehouse shipment → carrier/load → POD → exception/return/claim; supplier performance feedback döngüyü kapatır. Internal: 0183 → {0185 ∥ 0186 ∥ 0187} paralel.

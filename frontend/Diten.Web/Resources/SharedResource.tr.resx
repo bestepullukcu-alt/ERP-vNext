@@ -860,4 +860,62 @@
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Toplantı Türleri</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>{0} için erişim yetkiniz yok</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Bu sayfaya erişim için yöneticinizden yetki isteyin.</value></data>
+  <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>İnsan Sermayesi</value></data>
+  <data name="Nav.Module.HCMEMPLOYEEMASTER" xml:space="preserve"><value>Çalışan Ana Verisi</value></data>
+  <data name="Nav.Module.TALENTECOSYSTEM" xml:space="preserve"><value>Yetenek Ekosistemi</value></data>
+  <data name="Nav.Domain.HUMANCAPITAL" xml:space="preserve"><value>İnsan Sermayesi</value></data>
+  <data name="Nav.Domain.TALENTECOSYSTEM" xml:space="preserve"><value>Yetenek Ekosistemi</value></data>
+  <data name="Nav.Page.APPLICANTINTAKE" xml:space="preserve"><value>Aday Başvuru Alımı</value></data>
+  <data name="Nav.Page.CANDIDATEPIPELINE" xml:space="preserve"><value>Aday Hattı</value></data>
+  <data name="Nav.Page.COMPENSATIONBENEFITS" xml:space="preserve"><value>Ücret ve Yan Haklar</value></data>
+  <data name="Nav.Page.COMPETENCYSKILLS" xml:space="preserve"><value>Yetkinlik ve Beceriler</value></data>
+  <data name="Nav.Page.DEVELOPMENTPLANS" xml:space="preserve"><value>Gelişim Planları</value></data>
+  <data name="Nav.Page.EMPLOYEEONBOARDING" xml:space="preserve"><value>Çalışan Oryantasyonu</value></data>
+  <data name="Nav.Page.EMPLOYEEPROJECTIONS" xml:space="preserve"><value>Çalışan Projeksiyonları</value></data>
+  <data name="Nav.Page.EMPLOYMENTCHANGES" xml:space="preserve"><value>İstihdam Değişiklikleri</value></data>
+  <data name="Nav.Page.HEADCOUNTBUDGET" xml:space="preserve"><value>Kadro Bütçesi</value></data>
+  <data name="Nav.Page.HRCASEMANAGEMENT" xml:space="preserve"><value>İK Vaka Yönetimi</value></data>
+  <data name="Nav.Page.HRCOMPLIANCE" xml:space="preserve"><value>İK Uyumu</value></data>
+  <data name="Nav.Page.HRDOCUMENTATION" xml:space="preserve"><value>İK Dokümantasyonu</value></data>
+  <data name="Nav.Page.HRKPIANALYTICS" xml:space="preserve"><value>İK KPI Analitiği</value></data>
+  <data name="Nav.Page.LEARNINGTRAINING" xml:space="preserve"><value>Öğrenme ve Eğitim</value></data>
+  <data name="Nav.Page.OFFBOARDINGCASES" xml:space="preserve"><value>İşten Ayrılış Vakaları</value></data>
+  <data name="Nav.Page.OFFERMANAGEMENT" xml:space="preserve"><value>Teklif Yönetimi</value></data>
+  <data name="Nav.Page.PERFORMANCEREVIEWS" xml:space="preserve"><value>Performans Değerlendirmeleri</value></data>
+  <data name="Nav.Page.SELFSERVICE" xml:space="preserve"><value>Self Servis</value></data>
+  <data name="Nav.Page.SENSITIVEACCESS" xml:space="preserve"><value>Hassas Erişim</value></data>
+  <data name="Nav.Page.SUCCESSION" xml:space="preserve"><value>Yedekleme Planlaması</value></data>
+  <data name="Nav.Page.TIMEATTENDANCELEAVE" xml:space="preserve"><value>Zaman, Devam ve İzin</value></data>
+  <data name="Nav.Page.WORKFORCEPLANNING" xml:space="preserve"><value>İş Gücü Planlaması</value></data>
+  <data name="Nav.Page.EMPLOYEEMASTER" xml:space="preserve"><value>Çalışan Ana Verisi</value></data>
+  <data name="Nav.Page.ASSOCIATIONMEMBERSHIPS" xml:space="preserve"><value>Dernek Üyelikleri</value></data>
+  <data name="Nav.Page.ASSOCIATIONOPERATIONS" xml:space="preserve"><value>Dernek Operasyonları</value></data>
+  <data name="Nav.Page.CANDIDATECAREERPASSPORT" xml:space="preserve"><value>Aday Kariyer Pasaportu</value></data>
+  <data name="Nav.Page.CANDIDATEDISPUTES" xml:space="preserve"><value>Aday İtirazları</value></data>
+  <data name="Nav.Page.CANDIDATEPROFILES" xml:space="preserve"><value>Aday Profilleri</value></data>
+  <data name="Nav.Page.CONSENTVISIBILITYPOLICIES" xml:space="preserve"><value>Onay Görünürlük Politikaları</value></data>
+  <data name="Nav.Page.EARLYWARNINGSIGNALS" xml:space="preserve"><value>Erken Uyarı Sinyalleri</value></data>
+  <data name="Nav.Page.EXITREFERENCERECORDS" xml:space="preserve"><value>Çıkış Referans Kayıtları</value></data>
+  <data name="Nav.Page.HIRINGRISKINDICATORS" xml:space="preserve"><value>İşe Alım Risk Göstergeleri</value></data>
+  <data name="Nav.Page.INDUSTRYKNOWLEDGENETWORK" xml:space="preserve"><value>Sektör Bilgi Ağı</value></data>
+  <data name="Nav.Page.INDUSTRYSKILLPASSPORT" xml:space="preserve"><value>Sektör Beceri Pasaportu</value></data>
+  <data name="Nav.Page.INDUSTRYSUCCESSIONPOOL" xml:space="preserve"><value>Sektör Yedekleme Havuzu</value></data>
+  <data name="Nav.Page.INDUSTRYTALENTPOOL" xml:space="preserve"><value>Sektör Yetenek Havuzu</value></data>
+  <data name="Nav.Page.MENTORSHIPRECOMMENDATIONNETWORK" xml:space="preserve"><value>Mentorluk Öneri Ağı</value></data>
+  <data name="Nav.Page.PAYBENCHMARKING" xml:space="preserve"><value>Ücret Kıyaslama</value></data>
+  <data name="Nav.Page.PROFESSIONALREPUTATIONLEDGER" xml:space="preserve"><value>Profesyonel İtibar Defteri</value></data>
+  <data name="Nav.Page.REFERENCEEXCHANGE" xml:space="preserve"><value>Referans Değişimi</value></data>
+  <data name="Nav.Page.REHIRERECOMMENDATIONS" xml:space="preserve"><value>Yeniden İşe Alım Önerileri</value></data>
+  <data name="Nav.Page.RESTRICTEDINTEGRITYREGISTRY" xml:space="preserve"><value>Kısıtlı Bütünlük Sicili</value></data>
+  <data name="Nav.Page.REVIEWBOARD" xml:space="preserve"><value>Değerlendirme Kurulu</value></data>
+  <data name="Nav.Page.SECTORMOBILITYINTELLIGENCE" xml:space="preserve"><value>Sektör Hareketlilik İstihbaratı</value></data>
+  <data name="Nav.Page.SECTORTALENTTRENDS" xml:space="preserve"><value>Sektör Yetenek Trendleri</value></data>
+  <data name="Nav.Page.SKILLSGAPHEATMAP" xml:space="preserve"><value>Beceri Açığı Isı Haritası</value></data>
+  <data name="Nav.Page.TALENTDATAFOUNDATION" xml:space="preserve"><value>Yetenek Veri Temeli</value></data>
+  <data name="Nav.Page.TALENTDEVELOPMENTNETWORK" xml:space="preserve"><value>Yetenek Geliştirme Ağı</value></data>
+  <data name="Nav.Page.TALENTSUPPLYDEMANDFORECASTING" xml:space="preserve"><value>Yetenek Arz Talep Tahmini</value></data>
+  <data name="Nav.Page.TRUSTLEVELS" xml:space="preserve"><value>Güven Düzeyleri</value></data>
+  <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Doğrulanmış Sertifika Sicili</value></data>
+  <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
+  <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>İş Gücü Analitiği</value></data>
 </root>

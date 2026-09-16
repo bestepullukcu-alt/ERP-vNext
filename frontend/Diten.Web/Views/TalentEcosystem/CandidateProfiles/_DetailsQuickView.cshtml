@@ -1,0 +1,92 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateProfilesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCandidateProfileDetails" aria-labelledby="candidateProfileDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="candidateProfileDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="candidateProfileDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="candidateProfileDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["CandidateReference"]</dt>
+            <dd class="col-7 text-break" data-field="candidateReference"></dd>
+            <dt class="col-5">@Localizer["TalentProfileReference"]</dt>
+            <dd class="col-7 text-break" data-field="talentProfileReference"></dd>
+            <dt class="col-5">@Localizer["AssociationMembershipId"]</dt>
+            <dd class="col-7 text-break" data-field="associationMembershipId"></dd>
+            <dt class="col-5">@Localizer["VerifiedParticipantId"]</dt>
+            <dd class="col-7 text-break" data-field="verifiedParticipantId"></dd>
+            <dt class="col-5">@Localizer["ConsentVisibilityPolicyId"]</dt>
+            <dd class="col-7 text-break" data-field="consentVisibilityPolicyId"></dd>
+            <dt class="col-5">@Localizer["TrustLevelPolicyId"]</dt>
+            <dd class="col-7 text-break" data-field="trustLevelPolicyId"></dd>
+            <dt class="col-5">@Localizer["HcmFoundationReference"]</dt>
+            <dd class="col-7 text-break" data-field="hcmFoundationReference"></dd>
+            <dt class="col-5">@Localizer["CandidateIdentityState"]</dt>
+            <dd class="col-7" data-field="candidateIdentityState"></dd>
+            <dt class="col-5">@Localizer["ConsentBasisState"]</dt>
+            <dd class="col-7" data-field="consentBasisState"></dd>
+            <dt class="col-5">@Localizer["VisibilityApprovalState"]</dt>
+            <dd class="col-7" data-field="visibilityApprovalState"></dd>
+            <dt class="col-5">@Localizer["DataScopeState"]</dt>
+            <dd class="col-7" data-field="dataScopeState"></dd>
+            <dt class="col-5">@Localizer["ProfileState"]</dt>
+            <dd class="col-7" data-field="profileState"></dd>
+            <dt class="col-5">@Localizer["ProfileCompletenessState"]</dt>
+            <dd class="col-7" data-field="profileCompletenessState"></dd>
+            <dt class="col-5">@Localizer["SkillSummaryMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="skillSummaryMetadata"></dd>
+            <dt class="col-5">@Localizer["QualificationSummaryMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="qualificationSummaryMetadata"></dd>
+            <dt class="col-5">@Localizer["ExperienceSummaryMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="experienceSummaryMetadata"></dd>
+            <dt class="col-5">@Localizer["VisibilityClassification"]</dt>
+            <dd class="col-7" data-field="visibilityClassification"></dd>
+            <dt class="col-5">@Localizer["PolicyEvaluationState"]</dt>
+            <dd class="col-7" data-field="policyEvaluationState"></dd>
+            <dt class="col-5">@Localizer["ProfilePolicyEvaluationState"]</dt>
+            <dd class="col-7" data-field="profilePolicyEvaluationState"></dd>
+            <dt class="col-5">@Localizer["DataMinimizationState"]</dt>
+            <dd class="col-7" data-field="dataMinimizationState"></dd>
+            <dt class="col-5">@Localizer["AssociationValidationState"]</dt>
+            <dd class="col-7" data-field="associationValidationState"></dd>
+            <dt class="col-5">@Localizer["VerifiedAccessValidationState"]</dt>
+            <dd class="col-7" data-field="verifiedAccessValidationState"></dd>
+            <dt class="col-5">@Localizer["ReviewBoardValidationState"]</dt>
+            <dd class="col-7" data-field="reviewBoardValidationState"></dd>
+            <dt class="col-5">@Localizer["TrustLevelValidationState"]</dt>
+            <dd class="col-7" data-field="trustLevelValidationState"></dd>
+            <dt class="col-5">@Localizer["HcmValidationState"]</dt>
+            <dd class="col-7" data-field="hcmValidationState"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["CandidateVersion"]</dt>
+            <dd class="col-7" data-field="candidateVersion"></dd>
+            <dt class="col-5">@Localizer["LocalAuditEvidenceRetentionState"]</dt>
+            <dd class="col-7" data-field="localAuditEvidenceRetentionState"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7 text-break" data-field="deferredReason"></dd>
+            <dt class="col-5" data-audit-field>@Localizer["AuditMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="auditMetadata" data-audit-field></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-candidate-profile-action="evaluate" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-candidate-profile-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.SkillsGapHeatmap
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SkillsGapHeatmapIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["SkillsGapHeatmapTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("tep.skills-gap-heatmap.manage");
+    var canEvaluate = Perms.Has("tep.skills-gap-heatmap.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["SkillsGapHeatmapTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="skills-gap-heatmap-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-skills-gap-heatmap" data-dt-standard="v2"> *@
+    <partial name="~/Views/TalentEcosystem/SkillsGapHeatmap/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/SkillsGapHeatmap/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/SkillsGapHeatmap/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/SkillsGapHeatmap/index.js" asp-append-version="true"></script>
+}

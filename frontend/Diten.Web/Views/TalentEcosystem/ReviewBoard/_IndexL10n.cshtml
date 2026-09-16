@@ -1,0 +1,28 @@
+@using Diten.Web.Views.TalentEcosystem.ReviewBoard
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReviewBoardIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="review-board-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AuditMetadata = Localizer["AuditMetadata"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ReviewDisabled = Localizer["ReviewDisabled"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        ReviewBoardCaseState = Localizer["ReviewBoardCaseState"].Value,
+        ReviewDecisionState = Localizer["ReviewDecisionState"].Value,
+        ReviewerEligibilityState = Localizer["ReviewerEligibilityState"].Value,
+        SegregationOfDutiesState = Localizer["SegregationOfDutiesState"].Value,
+        LegalSecurityDecisionState = Localizer["LegalSecurityDecisionState"].Value,
+        ReviewBoardVersion = Localizer["ReviewBoardVersion"].Value
+    })
+</script>

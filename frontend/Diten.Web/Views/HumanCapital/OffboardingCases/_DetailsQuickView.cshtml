@@ -1,0 +1,68 @@
+@using Diten.Web.Views.HumanCapital.OffboardingCases
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<OffboardingCasesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasOffboardingCaseDetails" aria-labelledby="offboardingCaseDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="offboardingCaseDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="offboardingCaseDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="offboardingCaseDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["EmployeeProjectionId"]</dt>
+            <dd class="col-7 text-break" data-field="employeeProjectionId"></dd>
+            <dt class="col-5">@Localizer["AssignmentOverlayId"]</dt>
+            <dd class="col-7 text-break" data-field="assignmentOverlayId"></dd>
+            <dt class="col-5">@Localizer["ExitReasonCode"]</dt>
+            <dd class="col-7" data-field="exitReasonCode"></dd>
+            <dt class="col-5">@Localizer["ExitTypeCode"]</dt>
+            <dd class="col-7" data-field="exitTypeCode"></dd>
+            <dt class="col-5">@Localizer["NoticeDate"]</dt>
+            <dd class="col-7" data-field="noticeDate"></dd>
+            <dt class="col-5">@Localizer["PlannedExitDate"]</dt>
+            <dd class="col-7" data-field="plannedExitDate"></dd>
+            <dt class="col-5">@Localizer["ActualExitDate"]</dt>
+            <dd class="col-7" data-field="actualExitDate"></dd>
+            <dt class="col-5">@Localizer["OffboardingState"]</dt>
+            <dd class="col-7" data-field="offboardingState"></dd>
+            <dt class="col-5">@Localizer["ChecklistState"]</dt>
+            <dd class="col-7" data-field="checklistState"></dd>
+            <dt class="col-5">@Localizer["SensitiveAccessDecisionState"]</dt>
+            <dd class="col-7" data-field="sensitiveAccessDecisionState"></dd>
+            <dt class="col-5">@Localizer["DependencyDecisionState"]</dt>
+            <dd class="col-7" data-field="dependencyDecisionState"></dd>
+            <dt class="col-5">@Localizer["TepHandoffState"]</dt>
+            <dd class="col-7" data-field="tepHandoffState"></dd>
+            <dt class="col-5">@Localizer["TepHandoffReferenceKey"]</dt>
+            <dd class="col-7 text-break" data-field="tepHandoffReferenceKey"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["OffboardingVersion"]</dt>
+            <dd class="col-7" data-field="offboardingVersion"></dd>
+            <dt class="col-5">@Localizer["LastDependencyEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastDependencyEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["LastHandoffPlannedAt"]</dt>
+            <dd class="col-7" data-field="lastHandoffPlannedAt"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7" data-field="deferredReason"></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-offboarding-action="review" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["ReviewDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-offboarding-action="handoff" disabled>
+                <i class="bx bx-send me-1"></i>@Localizer["HandoffDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-offboarding-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-offboarding-action="archive" disabled>
+                <i class="bx bx-archive me-1"></i>@Localizer["ArchiveDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

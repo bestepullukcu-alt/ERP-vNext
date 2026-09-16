@@ -1,0 +1,21 @@
+@using Diten.Web.Views.HumanCapital.EmployeeProjections
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmployeeProjectionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EmployeeProjectionsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["EmployeeProjectionsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<partial name="~/Views/HumanCapital/EmployeeProjections/_DataTable.cshtml" />
+<partial name="~/Views/HumanCapital/EmployeeProjections/_DetailsQuickView.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/EmployeeProjections/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/EmployeeProjections/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/EmployeeProjections/index.js" asp-append-version="true"></script>
+}
