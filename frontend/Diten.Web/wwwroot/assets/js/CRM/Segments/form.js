@@ -384,6 +384,11 @@
     const chipHtml = (nodeId, value, text, on) =>
         `<button type="button" class="seg-chip js-value-chip${on ? ' is-on' : ''}" data-node="${esc(nodeId)}" data-value="${esc(value)}">${on ? '<span class="seg-chip-check">✓</span>' : ''}${esc(text)}</button>`;
 
+    /** One SINGLE-SELECT parameter chip (WP-SEG-H). Same look as a value chip; the click handler writes the chosen
+     *  value straight to condition.parameters[name], so the posted payload is byte-identical to the old select. */
+    const paramChipHtml = (nodeId, name, value, text, on) =>
+        `<button type="button" class="seg-chip js-param-chip${on ? ' is-on' : ''}" data-node="${esc(nodeId)}" data-param="${esc(name)}" data-value="${esc(value)}">${on ? '<span class="seg-chip-check">✓</span>' : ''}${esc(text)}</button>`;
+
     const renderValueControl = (condition, index, spec) => {
         const values = condition.values || [];
         const single = values[index] ?? '';
@@ -455,26 +460,36 @@
         const required = definition.requiredParameters || [];
         if (required.length === 0) return '';
 
-        // WP-SEG-G: a parameter can declare a value-source (parameterValueSources[name]) exactly as the main value does.
-        // When it is a closed enum (e.g. consent.eligibility channel/purpose, from ConsentChannel.All/ConsentPurpose.All),
-        // render a dropdown of the catalog's own values instead of a bare box; otherwise keep the plain input. Either way
-        // the chosen value is written to the SAME condition.parameters[name] slot (payload shape unchanged) and a value
-        // outside the list is still preserved as a selected option, so the source stays a hint, never a restriction.
+        // WP-SEG-G/H: a parameter can declare a value-source (parameterValueSources[name]) exactly as the main value
+        // does. When it is a closed enum (e.g. consent.eligibility channel/purpose, from ConsentChannel.All/
+        // ConsentPurpose.All), render the SAME value-box chip look as the eligibility main value — "Pick one · Catalog
+        // list" (source badge from valueSource.kind) + SINGLE-SELECT chips + "or type a value" free-text — instead of a
+        // bare box; otherwise keep the plain input. Either way the chosen value is written to the SAME
+        // condition.parameters[name] slot (payload shape unchanged) and a value outside the list is still preserved as a
+        // selected chip, so the source stays a hint, never a restriction.
         const paramSources = definition.parameterValueSources || {};
         const fields = required.map(name => {
             const value = (condition.parameters || {})[name] || '';
             const src = paramSources[name];
             let control;
             if (src && src.kind === 'enum') {
+                // allowedValues are the catalog's own closed list (synchronous), so the chips are filled here directly
+                // (no async hydrate). A free-typed value outside the list survives as a selected chip.
                 const opts = (src.allowedValues || []).map(String);
-                const extra = String(value).trim() !== '' && !opts.includes(String(value))
-                    ? `<option value="${esc(value)}" selected>${esc(value)}</option>` : '';
-                control = `<select class="seg-value-input js-node-param"
-                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}">
-                            <option value="">${esc(L.SelectOption || '')}</option>
-                            ${extra}
-                            ${opts.map(o => `<option value="${esc(o)}"${String(o) === String(value) ? ' selected' : ''}>${esc(o)}</option>`).join('')}
-                        </select>`;
+                const selected = String(value);
+                const extras = selected.trim() !== '' && !opts.includes(selected) ? [selected] : [];
+                const chips = opts.concat(extras)
+                    .map(o => paramChipHtml(condition.nodeId, name, o, o, o === selected)).join('');
+                const free = `<input type="text" class="seg-freetext js-param-freetext"
+                            data-node="${esc(condition.nodeId)}" data-param="${esc(name)}"
+                            placeholder="${esc(L.OrTypeValue || '')}"${isFrozen ? ' disabled' : ''} />`;
+                control = `<div class="seg-value-box">
+                            <div class="seg-value-prompt-row">
+                                <span class="seg-value-prompt">${esc(L.ValuePick || 'Pick one')}</span>
+                                <span class="seg-source-badge">${esc(sourceBadge({ valueSource: src }).text)}</span>
+                            </div>
+                            <div class="seg-chip-wrap">${chips}${free}</div>
+                        </div>`;
             } else {
                 control = `<input type="text" class="seg-value-input js-node-param"
                             data-node="${esc(condition.nodeId)}" data-param="${esc(name)}" value="${esc(value)}" />`;
@@ -1095,6 +1110,23 @@
         render();
     });
 
+    // WP-SEG-H: free-text on an enum PARAMETER chip field: Enter sets the typed value (single-select, mirrors the main
+    // value's "type + Enter"). Written to condition.parameters[name], so the source stays a hint and the payload shape
+    // is unchanged.
+    document.addEventListener('keydown', event => {
+        const free = event.target.closest && event.target.closest('.js-param-freetext');
+        if (!free || event.key !== 'Enter' || isFrozen) return;
+        event.preventDefault();
+        const condition = findCondition(free.dataset.node);
+        if (!condition) return;
+        const v = (free.value || '').trim();
+        if (!v) return;
+        condition.parameters = condition.parameters || {};
+        condition.parameters[free.dataset.param] = v;
+        free.value = '';
+        render();
+    });
+
     document.addEventListener('click', event => {
         if (event.target.closest('#btnAddBlock')) { event.preventDefault(); if (addBlock()) render(); return; }
 
@@ -1115,6 +1147,24 @@
                 } else {
                     condition.values = [v];
                 }
+                render();
+            }
+            return;
+        }
+
+        // WP-SEG-H: a parameter chip is SINGLE-SELECT. Clicking a chip writes its value to condition.parameters[name];
+        // clicking the already-selected chip clears it. The write path is condition.parameters[name] exactly as the old
+        // select's change handler, so buildNodes / the posted payload are unchanged.
+        const paramChip = event.target.closest('.js-param-chip');
+        if (paramChip) {
+            event.preventDefault();
+            if (isFrozen) return;
+            const condition = findCondition(paramChip.dataset.node);
+            if (condition) {
+                const name = paramChip.dataset.param;
+                const v = paramChip.dataset.value;
+                condition.parameters = condition.parameters || {};
+                condition.parameters[name] = String(condition.parameters[name] ?? '') === String(v) ? '' : v;
                 render();
             }
             return;
