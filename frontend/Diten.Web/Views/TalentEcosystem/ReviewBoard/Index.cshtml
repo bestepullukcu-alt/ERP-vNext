@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.ReviewBoard
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReviewBoardIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["ReviewBoardTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canReview = Perms.Has("tep.review-board.review");
+    var canAudit = Perms.Has("tep.review-board.audit.read");
+    var canManage = Perms.Has("tep.review-board.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["ReviewBoardTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="review-board-shell"
+     data-can-review="@canReview.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/ReviewBoard/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ReviewBoard/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/ReviewBoard/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/ReviewBoard/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/ReviewBoard/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/ReviewBoard/index.js" asp-append-version="true"></script>
+}

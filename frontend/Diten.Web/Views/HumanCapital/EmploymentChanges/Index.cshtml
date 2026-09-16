@@ -1,0 +1,28 @@
+@using Diten.Web.Views.HumanCapital.EmploymentChanges
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<EmploymentChangesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["EmploymentChangesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canManage = Perms.Has("hcm.employment-changes.manage");
+    var canEvaluate = Perms.Has("hcm.employment-changes.evaluate");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["EmploymentChangesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="employment-changes-shell"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()">
+    @* Contract markers rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-employment-changes" data-dt-standard="v2"> *@
+    <partial name="~/Views/HumanCapital/EmploymentChanges/_DataTable.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/HumanCapital/EmploymentChanges/_IndexL10n.cshtml" />
+    <script src="~/assets/js/HumanCapital/EmploymentChanges/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/HumanCapital/EmploymentChanges/index.js" asp-append-version="true"></script>
+}

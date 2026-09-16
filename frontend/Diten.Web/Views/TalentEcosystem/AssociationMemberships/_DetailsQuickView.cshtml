@@ -1,0 +1,58 @@
+@using Diten.Web.Views.TalentEcosystem.AssociationMemberships
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<AssociationMembershipsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasAssociationMembershipDetails" aria-labelledby="associationMembershipDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="associationMembershipDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="associationMembershipDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="associationMembershipDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["AssociationMembershipState"]</dt>
+            <dd class="col-7" data-field="associationMembershipState"></dd>
+            <dt class="col-5">@Localizer["MemberCompanyState"]</dt>
+            <dd class="col-7" data-field="memberCompanyState"></dd>
+            <dt class="col-5">@Localizer["MemberCompanyReference"]</dt>
+            <dd class="col-7 text-break" data-field="memberCompanyReference"></dd>
+            <dt class="col-5">@Localizer["HcmFoundationReference"]</dt>
+            <dd class="col-7 text-break" data-field="hcmFoundationReference"></dd>
+            <dt class="col-5">@Localizer["ConsentVisibilityPolicyId"]</dt>
+            <dd class="col-7 text-break" data-field="consentVisibilityPolicyId"></dd>
+            <dt class="col-5">@Localizer["PolicyEvaluationState"]</dt>
+            <dd class="col-7" data-field="policyEvaluationState"></dd>
+            <dt class="col-5">@Localizer["VisibilityApprovalState"]</dt>
+            <dd class="col-7" data-field="visibilityApprovalState"></dd>
+            <dt class="col-5">@Localizer["AssociationActivationState"]</dt>
+            <dd class="col-7" data-field="associationActivationState"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["RegistryVersion"]</dt>
+            <dd class="col-7" data-field="registryVersion"></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-association-action="evaluate" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-association-action="memberCompany" disabled>
+                <i class="bx bx-buildings me-1"></i>@Localizer["MemberCompanyDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-association-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-association-action="archive" disabled>
+                <i class="bx bx-archive me-1"></i>@Localizer["ArchiveDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,136 @@
+openapi: 3.1.0
+info:
+  title: WAREHOUSE-OUTBOUND
+  description: >
+    MOD-0178 Warehouse (MVP-5) — outbound shipment-trigger seam.
+    MVP-6 Logistics (MOD-0183 Shipment) için MERKEZİ CT tarafından öne çekilmiş
+    (front-loaded) frozen consumer-facing slice. Yalnız MVP-6'nın tükettiği yüzey:
+    depo pick/pack bitince "sevke hazır" outbound shipment + OutboundShipmentReady
+    event'i. POD/dispatch geri-akışı MVP-6'nın KENDİ Shipment contract'ının event'idir
+    (bu contract'ta değil). Producer (MVP-5) bu frozen sözleşmeye UYARAK implemente
+    eder; genişletme yalnız additive (K16). Tenant+LegalEntity scoped, read-only.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0178
+  x-authored-by: control-tower
+  x-front-loaded-for: MOD-0183
+  x-consumes: [PRODUCT-MASTER, LOCATION]
+servers: [{ url: /api/warehouse }]
+security: [{ bearerAuth: [] }]
+paths:
+  /outbound-shipments:
+    get:
+      operationId: listOutboundShipments
+      summary: Sevke hazır (veya duruma göre) outbound shipment listesi — event'e alternatif polling
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/OutboundStatus' } }
+        - { name: warehouseId, in: query, required: false, schema: { type: string } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Outbound shipment sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/OutboundShipment' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+              example:
+                items:
+                  - outboundId: OUT-9001
+                    warehouseId: wh-01
+                    orderRef: SO-7788
+                    status: ReadyToShip
+                    shipTo: { name: "Acme Pharma Depo", country: tr, city: Istanbul, postalCode: "34000", line1: "Org. San. Böl. 5" }
+                    lines:
+                      - { orderLineId: "1", itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, skuLevel: Lsku, lotNumber: "L2026-0455", quantity: "100.000", uomId: BOX }
+                    packages:
+                      - { packageId: PKG-1, weightKg: "12.500", dimensionsCm: "40x30x20" }
+                    readyAt: "2026-09-15T08:00:00Z"
+                nextCursor: null
+                contractVersion: v1
+  /outbound-shipments/{outboundId}:
+    get:
+      operationId: getOutboundShipment
+      summary: Tek outbound shipment detayı (0183 Shipment bunu okuyup Shipment yaratır)
+      parameters:
+        - { name: outboundId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Outbound shipment
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutboundShipment' }
+        '404': { $ref: '#/components/responses/UnknownOutbound' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    SkuLevel: { type: string, enum: [Gsku, Lsku, FinishedGood] }
+    OutboundStatus:
+      type: string
+      description: "Allocated→Picked→Packed→ReadyToShip = MVP-6 tetiği; Shipped/Cancelled = terminal (MVP-6 yazmaz)"
+      enum: [Allocated, Picked, Packed, ReadyToShip, Shipped, Cancelled]
+    Address:
+      type: object
+      required: [name, country]
+      properties:
+        name: { type: string }
+        country: { type: string, description: "lowercase country code (Territory ile uyumlu)" }
+        city: { type: string, nullable: true }
+        postalCode: { type: string, nullable: true }
+        line1: { type: string, nullable: true }
+        line2: { type: string, nullable: true }
+    OutboundLine:
+      type: object
+      required: [itemId, skuId, skuLevel, quantity, uomId]
+      properties:
+        orderLineId: { type: string, nullable: true }
+        itemId: { type: string, format: uuid, description: "PRODUCT-MASTER GlobalProduct" }
+        skuId: { type: string, format: uuid }
+        skuLevel: { $ref: '#/components/schemas/SkuLevel' }
+        lotNumber: { type: string, nullable: true }
+        serialIds: { type: array, items: { type: string }, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+    Package:
+      type: object
+      required: [packageId]
+      properties:
+        packageId: { type: string }
+        weightKg: { $ref: '#/components/schemas/Decimal' }
+        dimensionsCm: { type: string, nullable: true, description: "LxWxH" }
+    OutboundShipment:
+      type: object
+      required: [outboundId, warehouseId, status, shipTo, lines]
+      properties:
+        outboundId: { type: string }
+        warehouseId: { type: string, description: "LOCATION master" }
+        orderRef: { type: string, nullable: true, description: "kaynak sipariş referansı (SoR MVP-6 dışı)" }
+        status: { $ref: '#/components/schemas/OutboundStatus' }
+        shipTo: { $ref: '#/components/schemas/Address' }
+        lines: { type: array, items: { $ref: '#/components/schemas/OutboundLine' } }
+        packages: { type: array, items: { $ref: '#/components/schemas/Package' }, nullable: true }
+        readyAt: { type: string, format: date-time, nullable: true }
+        contractVersion: { type: string }
+    OutboundShipmentReadyEvent:
+      description: "Event — MOD-0183 Shipment dinler; status=ReadyToShip'e geçince yayınlanır. correlationId shipment lifecycle boyunca taşınır."
+      type: object
+      required: [outboundId, warehouseId, readyAt]
+      properties:
+        outboundId: { type: string }
+        warehouseId: { type: string }
+        orderRef: { type: string, nullable: true }
+        readyAt: { type: string, format: date-time }
+        correlationId: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    UnknownOutbound:
+      description: Outbound shipment bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_OUTBOUND, message: "outbound shipment bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }

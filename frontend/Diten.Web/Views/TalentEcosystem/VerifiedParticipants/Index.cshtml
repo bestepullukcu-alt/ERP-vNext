@@ -1,0 +1,33 @@
+@using Diten.Web.Views.TalentEcosystem.VerifiedParticipants
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VerifiedParticipantsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["VerifiedParticipantsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canVerify = Perms.Has("tep.verified-participants.verify");
+    var canEvaluate = Perms.Has("tep.verified-participants.evaluate");
+    var canAudit = Perms.Has("tep.verified-participants.audit.read");
+    var canManage = Perms.Has("tep.verified-participants.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["VerifiedParticipantsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="verified-participants-shell"
+     data-can-verify="@canVerify.ToString().ToLowerInvariant()"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/VerifiedParticipants/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/VerifiedParticipants/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/VerifiedParticipants/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/VerifiedParticipants/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/VerifiedParticipants/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/VerifiedParticipants/index.js" asp-append-version="true"></script>
+}
