@@ -7,25 +7,35 @@
  *
  * Behaviour is untouched: form.js still owns buildNodes / catalog / reach / the same-origin proxy — this file only
  * changes how the existing markup looks. Token values are the WP token table, verbatim from the mockup.
+ *
+ * WP-SEG-A6 — dark-mode neutrals. The mockup's neutral oklch values were FIXED light-mode colours (white surfaces +
+ * dark text), so `data-bs-theme=dark` left seg-* sections with white backgrounds and unreadable dark text. Every
+ * low-chroma (hue-285) neutral + white below is now bound to the app's light/dark-aware Bootstrap variables
+ * (`--bs-card-bg` / `--bs-body-bg` / `--bs-heading-color` / `--bs-body-color` / `--bs-secondary-color` /
+ * `--bs-border-color` / `--bs-secondary-bg` / `--bs-tertiary-bg`), and the amber/blue note boxes to the Bootstrap
+ * subtle/emphasis pairs, so both themes resolve correctly. Accent (--bs-primary, A5), success and danger are already
+ * dark-aware and are NOT touched. The only literal `oklch(1 0 0)` left are white FOREGROUNDS on an accent/success
+ * FILL (text/checkmarks) — part of the protected accent system, correct white in both themes.
  */
 
 .segment-create-scope {
-    /* palette — every value is straight from the mockup / WP token table */
+    /* palette — accent/success/danger already theme-bound (A5); neutrals bound to theme-aware bs vars (A6) */
     --seg-accent: var(--bs-primary);
     --seg-accent-hover: color-mix(in srgb, var(--bs-primary), #000 12%);
     --seg-accent-dark: var(--bs-primary);
     --seg-accent-ring: rgba(var(--bs-primary-rgb), 0.14);
-    --seg-card-bg: oklch(1 0 0);
-    --seg-card-border: oklch(0.93 0.006 285);
-    --seg-heading: oklch(0.28 0.02 285);
-    --seg-text: oklch(0.3 0.02 285);
-    --seg-muted: oklch(0.55 0.015 285);
-    --seg-muted-soft: oklch(0.58 0.015 285);
-    --seg-label: oklch(0.35 0.02 285);
+    --seg-card-bg: var(--bs-card-bg);            /* A6: was oklch(1 0 0) — card/section surface */
+    --seg-control-bg: var(--bs-body-bg);         /* A6: control surface (input/pill/chip/toggle) — was oklch(1 0 0) */
+    --seg-card-border: var(--bs-border-color);   /* A6: was oklch(0.93 0.006 285) */
+    --seg-heading: var(--bs-heading-color);      /* A6: was oklch(0.28 0.02 285) */
+    --seg-text: var(--bs-body-color);            /* A6: was oklch(0.3 0.02 285) */
+    --seg-muted: var(--bs-secondary-color);      /* A6: was oklch(0.55 0.015 285) */
+    --seg-muted-soft: var(--bs-secondary-color); /* A6: was oklch(0.58 0.015 285) */
+    --seg-label: var(--bs-body-color);           /* A6: was oklch(0.35 0.02 285) */
     --seg-required: var(--bs-danger);
-    --seg-input-border: oklch(0.87 0.008 285);
-    --seg-input-border-soft: oklch(0.89 0.008 285);
-    --seg-readonly-bg: oklch(0.975 0.004 285);
+    --seg-input-border: var(--bs-border-color);      /* A6: was oklch(0.87 0.008 285) */
+    --seg-input-border-soft: var(--bs-border-color); /* A6: was oklch(0.89 0.008 285) */
+    --seg-readonly-bg: var(--bs-secondary-bg);       /* A6: was oklch(0.975 0.004 285) */
     --seg-danger: var(--bs-danger);
     --seg-ok: var(--bs-success);
 
@@ -98,7 +108,7 @@
     height: 22px;
     flex: none;
     border-radius: 999px;
-    background: oklch(0.95 0.02 285);
+    background: var(--bs-secondary-bg);
     color: var(--seg-accent-dark);
     font-size: 12px;
     font-weight: 600;
@@ -148,7 +158,7 @@
     padding: 10px 12px;
     font-size: 14px;
     color: var(--seg-text);
-    background: var(--seg-card-bg);
+    background: var(--seg-control-bg);
     border: 1px solid var(--seg-input-border);
     border-radius: 6px;
     outline: none;
@@ -166,13 +176,13 @@
     box-shadow: 0 0 0 3px var(--seg-accent-ring);
 }
 .segment-create-scope .seg-input[readonly] {
-    color: oklch(0.45 0.015 285);
+    color: var(--bs-secondary-color);
     background: var(--seg-readonly-bg);
     border-color: var(--seg-input-border-soft);
 }
 .segment-create-scope .seg-input::placeholder,
 .segment-create-scope .seg-textarea::placeholder {
-    color: oklch(0.72 0.012 285);
+    color: var(--bs-secondary-color);
 }
 
 /* ------------------------------------------------------------------ subject pill toggle */
@@ -185,8 +195,8 @@
     padding: 8px 16px;
     font-size: 13.5px;
     font-weight: 500;
-    color: oklch(0.42 0.015 285);
-    background: var(--seg-card-bg);
+    color: var(--bs-body-color);
+    background: var(--seg-control-bg);
     border: 1px solid var(--seg-input-border-soft);
     border-radius: 999px;
     cursor: pointer;
@@ -196,7 +206,7 @@
     border-color: var(--bs-primary);
     color: var(--seg-accent-dark);
 }
-/* the sibling label lit up by its checked radio (btn-check pattern) */
+/* the sibling label lit up by its checked radio (btn-check pattern) — white FG on accent fill (accent system) */
 .segment-create-scope .btn-check:checked + .seg-pill {
     color: oklch(1 0 0);
     background: var(--seg-accent);
@@ -218,8 +228,8 @@
     display: block;
     text-align: left;
     padding: 14px 16px;
-    background: var(--seg-card-bg);
-    border: 1.5px solid oklch(0.91 0.006 285);
+    background: var(--seg-control-bg);
+    border: 1.5px solid var(--bs-border-color);
     border-radius: 9px;
     cursor: pointer;
     margin: 0;
@@ -233,7 +243,7 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 600;
-    color: oklch(0.32 0.02 285);
+    color: var(--bs-body-color);
     margin-bottom: 5px;
 }
 .segment-create-scope .seg-radio-help {
@@ -248,12 +258,12 @@
     height: 16px;
     flex: none;
     border-radius: 999px;
-    border: 1.5px solid oklch(0.82 0.01 285);
+    border: 1.5px solid var(--bs-border-color);
     box-sizing: border-box;
 }
 /* checked state driven by the wrapped radio input */
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) {
-    background: rgba(var(--bs-primary-rgb), 0.04);
+    background: rgba(var(--bs-primary-rgb), 0.08);
     border-color: var(--seg-accent);
     box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
 }
@@ -261,7 +271,7 @@
     color: var(--bs-primary);
 }
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) .seg-radio-help {
-    color: oklch(0.5 0.03 285);
+    color: var(--bs-secondary-color);
 }
 .segment-create-scope .seg-radio-card:has(> .seg-radio-input:checked) .seg-radio-mark {
     border: none;
@@ -289,8 +299,8 @@
 /* ------------------------------------------------------------------ reads-as box */
 .segment-create-scope .seg-reads-as {
     padding: 14px 16px;
-    background: oklch(0.975 0.012 285);
-    border: 1px solid oklch(0.91 0.02 285);
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
     border-radius: 9px;
     margin-bottom: 18px;
 }
@@ -305,20 +315,20 @@
 .segment-create-scope .seg-reads-as-text {
     font-size: 14.5px;
     line-height: 1.6;
-    color: oklch(0.3 0.04 285);
+    color: var(--bs-body-color);
 }
 
 /* ------------------------------------------------------------------ empty-state recipes */
 .segment-create-scope .seg-empty {
     padding: 22px;
-    border: 1px dashed oklch(0.87 0.01 285);
+    border: 1px dashed var(--bs-border-color);
     border-radius: 9px;
     text-align: center;
 }
 .segment-create-scope .seg-empty-title {
     font-size: 14px;
     font-weight: 600;
-    color: oklch(0.34 0.02 285);
+    color: var(--bs-body-color);
     margin-bottom: 4px;
 }
 .segment-create-scope .seg-empty-help {
@@ -361,13 +371,13 @@
 }
 .segment-create-scope .seg-joiner-line {
     height: 1px;
-    background: oklch(0.94 0.006 285);
+    background: var(--bs-border-color);
     flex: 1;
 }
 .segment-create-scope .seg-joiner-line.seg-joiner-line-short {
     width: 24px;
     flex: none;
-    background: oklch(0.9 0.008 285);
+    background: var(--bs-border-color);
 }
 .segment-create-scope .seg-joiner-pill {
     padding: 4px 12px;
@@ -379,7 +389,7 @@
     border-radius: 999px;
 }
 .segment-create-scope .seg-block {
-    border: 1px solid oklch(0.92 0.006 285);
+    border: 1px solid var(--bs-border-color);
     border-radius: 10px;
     overflow: hidden;
 }
@@ -389,12 +399,12 @@
     gap: 10px;
     align-items: center;
     padding: 11px 14px;
-    background: oklch(0.985 0.003 285);
-    border-bottom: 1px solid oklch(0.95 0.005 285);
+    background: var(--bs-tertiary-bg);
+    border-bottom: 1px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-block-head-text {
     font-size: 13px;
-    color: oklch(0.42 0.015 285);
+    color: var(--bs-body-color);
 }
 .segment-create-scope .seg-block-head-grow {
     flex: 1 1 120px;
@@ -410,14 +420,14 @@
 .segment-create-scope .seg-toggle {
     display: inline-flex;
     padding: 2px;
-    background: oklch(0.94 0.006 285);
+    background: var(--bs-secondary-bg);
     border-radius: 7px;
 }
 .segment-create-scope .seg-toggle-btn {
     padding: 5px 12px;
     font-size: 12.5px;
     font-weight: 500;
-    color: oklch(0.5 0.015 285);
+    color: var(--bs-secondary-color);
     background: transparent;
     border: none;
     border-radius: 5px;
@@ -426,8 +436,8 @@
 }
 .segment-create-scope .seg-toggle-btn.is-active {
     font-weight: 600;
-    color: oklch(0.32 0.02 285);
-    background: oklch(1 0 0);
+    color: var(--bs-body-color);
+    background: var(--seg-control-bg);
     box-shadow: 0 1px 2px oklch(0.3 0.02 285 / 0.1);
 }
 
@@ -455,7 +465,7 @@
     align-items: center;
     justify-content: center;
     font-size: 12px;
-    color: oklch(0.62 0.015 285);
+    color: var(--bs-secondary-color);
     background: transparent;
     border: none;
     border-radius: 6px;
@@ -469,7 +479,7 @@
 
 /* ------------------------------------------------------------------ condition rows */
 .segment-create-scope .seg-cond {
-    border: 1px solid oklch(0.94 0.005 285);
+    border: 1px solid var(--bs-border-color);
     border-radius: 9px;
     background: var(--seg-card-bg);
 }
@@ -487,7 +497,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: oklch(0.62 0.02 285);
+    color: var(--bs-secondary-color);
 }
 .segment-create-scope .seg-cond-attr,
 .segment-create-scope .seg-cond-op {
@@ -506,14 +516,14 @@
     flex: 1 1 210px;
     font-weight: 500;
     color: var(--seg-heading);
-    background-color: var(--seg-card-bg);
+    background-color: var(--seg-control-bg);
     border: 1px solid var(--seg-input-border-soft);
 }
 .segment-create-scope .seg-cond-op {
     flex: 1 1 150px;
-    color: oklch(0.34 0.02 285);
-    background-color: oklch(0.985 0.003 285);
-    border: 1px solid oklch(0.9 0.008 285);
+    color: var(--bs-body-color);
+    background-color: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-cond-attr:focus,
 .segment-create-scope .seg-cond-op:focus {
@@ -527,8 +537,8 @@
 /* value container */
 .segment-create-scope .seg-value-box {
     padding: 11px 12px;
-    background: oklch(0.982 0.003 285);
-    border: 1px solid oklch(0.95 0.005 285);
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
     border-radius: 8px;
 }
 .segment-create-scope .seg-value-inline {
@@ -546,13 +556,13 @@
 }
 .segment-create-scope .seg-value-prompt {
     font-size: 12.5px;
-    color: oklch(0.5 0.015 285);
+    color: var(--bs-secondary-color);
 }
 .segment-create-scope .seg-source-badge {
     padding: 3px 9px;
     font-size: 11.5px;
-    color: oklch(0.48 0.015 285);
-    background: oklch(0.945 0.005 285);
+    color: var(--bs-secondary-color);
+    background: var(--bs-secondary-bg);
     border-radius: 999px;
     white-space: nowrap;
 }
@@ -567,8 +577,8 @@
 .segment-create-scope .seg-chip {
     padding: 6px 12px;
     font-size: 13px;
-    color: oklch(0.38 0.015 285);
-    background: var(--seg-card-bg);
+    color: var(--bs-body-color);
+    background: var(--seg-control-bg);
     border: 1px solid var(--seg-input-border-soft);
     border-radius: 999px;
     cursor: pointer;
@@ -602,8 +612,8 @@
     padding: 6px 11px;
     font-size: 12.5px;
     color: var(--seg-text);
-    background: var(--seg-card-bg);
-    border: 1px dashed oklch(0.85 0.01 285);
+    background: var(--seg-control-bg);
+    border: 1px dashed var(--bs-border-color);
     border-radius: 999px;
     outline: none;
     font-family: inherit;
@@ -618,7 +628,7 @@
     padding: 8px 11px;
     font-size: 13.5px;
     color: var(--seg-text);
-    background: var(--seg-card-bg);
+    background: var(--seg-control-bg);
     border: 1px solid var(--seg-input-border);
     border-radius: 6px;
     outline: none;
@@ -652,7 +662,7 @@
 }
 .segment-create-scope .seg-readback {
     font-size: 12.5px;
-    color: oklch(0.5 0.015 285);
+    color: var(--bs-secondary-color);
 }
 .segment-create-scope .seg-reach-chip {
     padding: 3px 10px;
@@ -672,7 +682,7 @@
     align-items: flex-end;
     padding-top: 10px;
     margin-top: 10px;
-    border-top: 1px solid oklch(0.95 0.005 285);
+    border-top: 1px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-param {
     display: flex;
@@ -707,9 +717,9 @@
     font-weight: 500;
     text-align: left;
     width: 100%;
-    color: oklch(0.45 0.015 285);
+    color: var(--bs-secondary-color);
     background: var(--seg-card-bg);
-    border: 1px dashed oklch(0.87 0.01 285);
+    border: 1px dashed var(--bs-border-color);
     border-radius: 9px;
     cursor: pointer;
     font-family: inherit;
@@ -723,7 +733,7 @@
 .segment-create-scope .seg-criteria-foot {
     margin-top: 18px;
     padding-top: 16px;
-    border-top: 1px solid oklch(0.95 0.005 285);
+    border-top: 1px solid var(--bs-border-color);
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -737,9 +747,9 @@
 .segment-create-scope .seg-json-toggle {
     padding: 6px 12px;
     font-size: 12.5px;
-    color: oklch(0.48 0.015 285);
+    color: var(--bs-secondary-color);
     background: var(--seg-card-bg);
-    border: 1px solid oklch(0.9 0.008 285);
+    border: 1px solid var(--bs-border-color);
     border-radius: 6px;
     cursor: pointer;
     font-family: inherit;
@@ -754,7 +764,7 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12px;
     line-height: 1.6;
-    color: oklch(0.42 0.02 285);
+    color: var(--bs-body-color);
     background: var(--seg-readonly-bg);
     border: 1px solid var(--seg-card-border);
     border-radius: 8px;
@@ -767,7 +777,7 @@
     color: var(--seg-muted-soft);
 }
 
-/* frozen banner */
+/* frozen banner — amber note; bound to Bootstrap warning subtle/emphasis so it stays readable in dark (A6) */
 .segment-create-scope .seg-frozen {
     display: flex;
     flex-wrap: wrap;
@@ -776,17 +786,17 @@
     padding: 12px 14px;
     margin-bottom: 16px;
     font-size: 13px;
-    color: oklch(0.42 0.09 70);
-    background: oklch(0.97 0.03 85);
-    border: 1px solid oklch(0.86 0.07 80);
+    color: var(--bs-warning-text-emphasis);
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
     border-radius: 9px;
 }
 .segment-create-scope .seg-frozen-btn {
     padding: 6px 12px;
     font-size: 12.5px;
     font-weight: 500;
-    color: oklch(0.42 0.09 70);
-    background: oklch(0.94 0.05 85);
+    color: var(--bs-warning-text-emphasis);
+    background: var(--bs-warning-border-subtle);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -813,7 +823,7 @@
     align-items: flex-start;
     gap: 12px;
     padding: 12px 14px;
-    border: 1px solid oklch(0.94 0.005 285);
+    border: 1px solid var(--bs-border-color);
     border-radius: 9px;
     background: var(--seg-card-bg);
 }
@@ -882,13 +892,14 @@
     opacity: 0.5;
     cursor: default;
 }
+/* info note — blue; bound to Bootstrap info subtle/emphasis so it stays readable in dark (A6) */
 .segment-create-scope .seg-inline-note {
     padding: 11px 13px;
     border-radius: 8px;
     font-size: 13px;
-    background: oklch(0.97 0.02 250);
-    color: oklch(0.4 0.06 260);
-    border: 1px solid oklch(0.9 0.03 250);
+    background: var(--bs-info-bg-subtle);
+    color: var(--bs-info-text-emphasis);
+    border: 1px solid var(--bs-info-border-subtle);
 }
 .segment-create-scope .seg-subhead {
     display: flex;
@@ -908,7 +919,7 @@
     gap: 14px;
     padding-top: 16px;
     margin-top: 4px;
-    border-top: 1px solid oklch(0.95 0.005 285);
+    border-top: 1px solid var(--bs-border-color);
 }
 
 /* the inner wrapper carries the endpoint attribute; it must not break the rail's flex gap */
@@ -922,7 +933,7 @@
     font-weight: 600;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: oklch(0.5 0.015 285);
+    color: var(--bs-secondary-color);
     margin-bottom: 10px;
 }
 .segment-create-scope .seg-reach-big-row {
@@ -934,7 +945,7 @@
     font-size: 34px;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: oklch(0.32 0.04 285);
+    color: var(--bs-body-color);
     line-height: 1.1;
 }
 .segment-create-scope .seg-reach-unit {
@@ -955,15 +966,15 @@
     margin-top: 10px;
     padding: 9px 12px;
     font-size: 12.5px;
-    color: oklch(0.45 0.12 70);
-    background: oklch(0.97 0.03 85);
-    border: 1px solid oklch(0.88 0.06 80);
+    color: var(--bs-warning-text-emphasis);
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
     border-radius: 8px;
 }
 .segment-create-scope .seg-funnel {
     margin-top: 14px;
     padding-top: 14px;
-    border-top: 1px solid oklch(0.95 0.005 285);
+    border-top: 1px solid var(--bs-border-color);
     display: flex;
     flex-direction: column;
     gap: 9px;
@@ -976,7 +987,7 @@
     margin-bottom: 5px;
 }
 .segment-create-scope .seg-funnel-label {
-    color: oklch(0.42 0.015 285);
+    color: var(--bs-body-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -984,11 +995,11 @@
 .segment-create-scope .seg-funnel-value {
     flex: none;
     font-weight: 600;
-    color: oklch(0.35 0.02 285);
+    color: var(--bs-body-color);
 }
 .segment-create-scope .seg-funnel-track {
     height: 5px;
-    background: oklch(0.945 0.005 285);
+    background: var(--bs-secondary-bg);
     border-radius: 999px;
     overflow: hidden;
 }
@@ -1054,7 +1065,7 @@
 .segment-create-scope .seg-sample-meta {
     display: block;
     font-size: 12px;
-    color: oklch(0.57 0.015 285);
+    color: var(--bs-secondary-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1062,20 +1073,20 @@
 
 /* how-this-is-stored card */
 .segment-create-scope .seg-stored-card {
-    background: oklch(0.985 0.008 285);
-    border-color: oklch(0.93 0.012 285);
+    background: var(--bs-tertiary-bg);
+    border-color: var(--bs-border-color);
     padding: 18px 20px;
 }
 .segment-create-scope .seg-stored-title {
     font-size: 13px;
     font-weight: 600;
-    color: oklch(0.33 0.03 285);
+    color: var(--bs-body-color);
     margin-bottom: 7px;
 }
 .segment-create-scope .seg-stored-body {
     font-size: 12.5px;
     line-height: 1.6;
-    color: oklch(0.5 0.02 285);
+    color: var(--bs-secondary-color);
 }
 
 /* activation checklist */
@@ -1114,10 +1125,10 @@
     color: oklch(1 0 0);
 }
 .segment-create-scope .seg-check.is-pending .seg-check-mark {
-    border: 1.5px solid oklch(0.85 0.01 285);
+    border: 1.5px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-check.is-ok .seg-check-text {
-    color: oklch(0.45 0.015 285);
+    color: var(--bs-secondary-color);
 }
 .segment-create-scope .seg-check.is-pending .seg-check-text {
     color: var(--seg-muted-soft);
