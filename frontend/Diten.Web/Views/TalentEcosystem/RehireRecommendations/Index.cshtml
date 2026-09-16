@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.RehireRecommendations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RehireRecommendationsIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["RehireRecommendationsTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var canEvaluate = Perms.Has("tep.rehire-recommendations.evaluate");
+    var canAudit = Perms.Has("tep.rehire-recommendations.audit.read");
+    var canManage = Perms.Has("tep.rehire-recommendations.manage");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["RehireRecommendationsTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+<div id="rehire-recommendations-shell"
+     data-can-evaluate="@canEvaluate.ToString().ToLowerInvariant()"
+     data-can-audit="@canAudit.ToString().ToLowerInvariant()"
+     data-can-manage="@canManage.ToString().ToLowerInvariant()">
+    <partial name="~/Views/TalentEcosystem/RehireRecommendations/_Summary.cshtml" />
+    <partial name="~/Views/TalentEcosystem/RehireRecommendations/_DataTable.cshtml" />
+    <partial name="~/Views/TalentEcosystem/RehireRecommendations/_DetailsQuickView.cshtml" />
+</div>
+
+@section Scripts {
+    <partial name="~/Views/TalentEcosystem/RehireRecommendations/_IndexL10n.cshtml" />
+    <script src="~/assets/js/TalentEcosystem/RehireRecommendations/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/TalentEcosystem/RehireRecommendations/index.js" asp-append-version="true"></script>
+}

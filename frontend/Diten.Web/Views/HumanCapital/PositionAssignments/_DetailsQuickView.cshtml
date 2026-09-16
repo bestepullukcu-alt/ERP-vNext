@@ -1,0 +1,57 @@
+@using Diten.Web.Views.HumanCapital.PositionAssignments
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PositionAssignmentsIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasPositionAssignmentDetails" aria-labelledby="positionAssignmentDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="positionAssignmentDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="positionAssignmentDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="positionAssignmentDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["EmployeeProjectionId"]</dt>
+            <dd class="col-7 text-break" data-field="employeeProjectionId"></dd>
+            <dt class="col-5">@Localizer["PersonReferenceId"]</dt>
+            <dd class="col-7 text-break" data-field="personReferenceId"></dd>
+            <dt class="col-5">@Localizer["OrganizationUnitId"]</dt>
+            <dd class="col-7 text-break" data-field="organizationUnitId"></dd>
+            <dt class="col-5">@Localizer["PositionId"]</dt>
+            <dd class="col-7 text-break" data-field="positionId"></dd>
+            <dt class="col-5">@Localizer["ManagerEmployeeProjectionId"]</dt>
+            <dd class="col-7 text-break" data-field="managerEmployeeProjectionId"></dd>
+            <dt class="col-5">@Localizer["EffectiveFrom"]</dt>
+            <dd class="col-7" data-field="effectiveFrom"></dd>
+            <dt class="col-5">@Localizer["EffectiveTo"]</dt>
+            <dd class="col-7" data-field="effectiveTo"></dd>
+            <dt class="col-5">@Localizer["AssignmentState"]</dt>
+            <dd class="col-7" data-field="assignmentState"></dd>
+            <dt class="col-5">@Localizer["ReferenceValidationState"]</dt>
+            <dd class="col-7" data-field="referenceValidationState"></dd>
+            <dt class="col-5">@Localizer["SensitiveAccessDecisionState"]</dt>
+            <dd class="col-7" data-field="sensitiveAccessDecisionState"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["AssignmentVersion"]</dt>
+            <dd class="col-7" data-field="assignmentVersion"></dd>
+            <dt class="col-5">@Localizer["LastReferenceValidatedAt"]</dt>
+            <dd class="col-7" data-field="lastReferenceValidatedAt"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7" data-field="deferredReason"></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-position-action="reference-link" disabled>
+                <i class="bx bx-link-alt me-1"></i>@Localizer["ReferenceLinkDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-position-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-position-action="archive" disabled>
+                <i class="bx bx-archive me-1"></i>@Localizer["ArchiveDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

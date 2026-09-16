@@ -1,0 +1,62 @@
+@using Diten.Web.Views.TalentEcosystem.ReviewBoard
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ReviewBoardIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasReviewBoardDetails" aria-labelledby="reviewBoardDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="reviewBoardDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="reviewBoardDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="reviewBoardDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["ReviewBoardCaseState"]</dt>
+            <dd class="col-7" data-field="reviewBoardCaseState"></dd>
+            <dt class="col-5">@Localizer["ReviewDecisionState"]</dt>
+            <dd class="col-7" data-field="reviewDecisionState"></dd>
+            <dt class="col-5">@Localizer["AssociationMembershipRegistryId"]</dt>
+            <dd class="col-7 text-break" data-field="associationMembershipRegistryId"></dd>
+            <dt class="col-5">@Localizer["ConsentVisibilityPolicyId"]</dt>
+            <dd class="col-7 text-break" data-field="consentVisibilityPolicyId"></dd>
+            <dt class="col-5">@Localizer["VerifiedParticipantAccessId"]</dt>
+            <dd class="col-7 text-break" data-field="verifiedParticipantAccessId"></dd>
+            <dt class="col-5">@Localizer["ReviewerEligibilityState"]</dt>
+            <dd class="col-7" data-field="reviewerEligibilityState"></dd>
+            <dt class="col-5">@Localizer["SegregationOfDutiesState"]</dt>
+            <dd class="col-7" data-field="segregationOfDutiesState"></dd>
+            <dt class="col-5">@Localizer["LegalSecurityDecisionState"]</dt>
+            <dd class="col-7" data-field="legalSecurityDecisionState"></dd>
+            <dt class="col-5">@Localizer["ExternalReviewBoardState"]</dt>
+            <dd class="col-7" data-field="externalReviewBoardState"></dd>
+            <dt class="col-5">@Localizer["AuditEvidenceState"]</dt>
+            <dd class="col-7" data-field="auditEvidenceState"></dd>
+            <dt class="col-5">@Localizer["RetentionState"]</dt>
+            <dd class="col-7" data-field="retentionState"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["ReviewBoardVersion"]</dt>
+            <dd class="col-7" data-field="reviewBoardVersion"></dd>
+            <dt class="col-5">@Localizer["DeferredReason"]</dt>
+            <dd class="col-7 text-break" data-field="deferredReason"></dd>
+            <dt class="col-5" data-audit-field>@Localizer["AuditMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="auditMetadata" data-audit-field></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-review-board-action="review" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["ReviewDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-review-board-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

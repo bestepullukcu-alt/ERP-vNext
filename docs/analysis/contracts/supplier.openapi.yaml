@@ -1,0 +1,128 @@
+openapi: 3.1.0
+info:
+  title: SUPPLIER
+  description: >
+    MOD-0140 Supplier Master (MVP-2 Procurement) — supplier identity seam.
+    MVP-6'nın Supplier Performance (0147) + Supplier Portal (0148) modülleri için
+    MERKEZİ CT tarafından öne çekilmiş frozen consumer-facing slice. Yalnız MVP-6'nın
+    tükettiği yüzey: supplier kimliği + durum + iletişim (read-only lookup + validate).
+    Performance skoru / risk / portal içeriği MVP-6'nın KENDİ contract'ıdır (burada YOK).
+    Producer (MVP-2) bu frozen sözleşmeye uyarak implemente eder; genişletme additive (K16).
+    Tenant scoped.
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: MOD-0140
+  x-authored-by: control-tower
+  x-front-loaded-for: [MOD-0147, MOD-0148]
+  x-consumes: []
+servers: [{ url: /api/suppliers }]
+security: [{ bearerAuth: [] }]
+paths:
+  /:
+    get:
+      operationId: listSuppliers
+      summary: Supplier listesi (aktif/duruma göre)
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/SupplierStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Supplier sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Supplier' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+              example:
+                items:
+                  - supplierId: SUP-2001
+                    name: "Medip-Kim İlaç Ham. A.Ş."
+                    status: Active
+                    country: tr
+                    taxId: "1234567890"
+                    contacts: [{ type: primary, email: "satis@medipkim.example", phone: "+90 212 000 0000" }]
+                nextCursor: null
+                contractVersion: v1
+  /{supplierId}:
+    get:
+      operationId: getSupplier
+      summary: Tek supplier (0147 performance / 0148 portal bunu okur)
+      parameters:
+        - { name: supplierId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Supplier
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Supplier' }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+  /validate:
+    post:
+      operationId: validateSuppliers
+      summary: Toplu supplier id doğrulama (fail-closed consumer için)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [supplierIds]
+              properties:
+                supplierIds: { type: array, items: { type: string } }
+            example: { supplierIds: [SUP-2001, SUP-9999] }
+      responses:
+        '200':
+          description: Doğrulama sonucu (bilinmeyen id'ler işaretli)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        supplierId: { type: string }
+                        known: { type: boolean }
+                        status: { $ref: '#/components/schemas/SupplierStatus' }
+                  contractVersion: { type: string }
+              example:
+                results:
+                  - { supplierId: SUP-2001, known: true, status: Active }
+                  - { supplierId: SUP-9999, known: false, status: null }
+                contractVersion: v1
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  schemas:
+    SupplierStatus: { type: string, enum: [Active, OnHold, Blocked, Inactive] }
+    Contact:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [primary, billing, quality, logistics] }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+    Supplier:
+      type: object
+      required: [supplierId, name, status]
+      properties:
+        supplierId: { type: string }
+        name: { type: string }
+        status: { $ref: '#/components/schemas/SupplierStatus' }
+        country: { type: string, nullable: true, description: "lowercase country code" }
+        taxId: { type: string, nullable: true }
+        contacts: { type: array, items: { $ref: '#/components/schemas/Contact' }, nullable: true }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    UnknownSupplier:
+      description: Supplier bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SUPPLIER, message: "supplier bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }

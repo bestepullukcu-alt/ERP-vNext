@@ -1,0 +1,31 @@
+@using Diten.Web.Views.TalentEcosystem.RehireRecommendations
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RehireRecommendationsIndex> Localizer
+
+<div class="card">
+    <div id="skeleton-loader" class="backbone-skeleton p-4">
+        <div class="shimmer skeleton-row skeleton-row-lg"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row"></div>
+        <div class="shimmer skeleton-row skeleton-row-last"></div>
+    </div>
+
+    <div class="card-datatable table-responsive">
+        <table id="dt-rehire-recommendations" data-dt-standard="v2" class="datatables-rehire-recommendations table border-top">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>@Localizer["Code"]</th>
+                    <th>@Localizer["DisplayName"]</th>
+                    <th>@Localizer["RecommendationReadinessState"]</th>
+                    <th>@Localizer["RecommendationPolicyState"]</th>
+                    <th>@Localizer["RecommendationEvaluationState"]</th>
+                    <th>@Localizer["ConsentPreconditionState"]</th>
+                    <th>@Localizer["RecommendationNetworkVersion"]</th>
+                    <th class="cell-fit text-end pe-3 all">@Localizer["Actions"]</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
