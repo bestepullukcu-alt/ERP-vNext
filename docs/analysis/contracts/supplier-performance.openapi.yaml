@@ -1,0 +1,662 @@
+openapi: 3.1.0
+info:
+  title: SUPPLIER-PERFORMANCE
+  description: >
+    MOD-0147 Supplier Performance & Risk ve MOD-0148 Supplier Portal — MVP-6
+    frozen mock contract (v1). Tenant ve LegalEntity kapsamı sunucu tarafından JWT
+    bağlamından çözülür. Portal supplier identity authenticated actor'dan çözülür;
+    mutation body ile override edilemez. ASSUMPTION: scorecard dönemleri ISO tarih
+    aralığıdır ve skorlar 0..100 string decimal olarak taşınır.
+    CONSUMES: SUPPLIER-BASE (merkez üretecek). GAP: merkez CT, MOD-0140 base Supplier
+    frozen mock contract'ını üretmeli; bu contract Supplier SoR alanlarını tanımlamaz.
+  version: 1.0.0
+  x-status: FROZEN
+  x-contract-version: v1
+  x-owner: [MOD-0147, MOD-0148]
+  x-consumes:
+    - "CONSUMES: SUPPLIER-BASE (merkez üretecek)"
+    - RISK-REGISTER
+    - METRIC-REGISTRY
+    - API-GATEWAY
+servers:
+  - url: /api/supplier-performance
+security:
+  - bearerAuth: []
+paths:
+  /evaluations:
+    get:
+      operationId: listSupplierEvaluations
+      summary: Supplier performans değerlendirmelerini sorgula
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - { name: supplierId, in: query, schema: { type: string }, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/EvaluationStatus' } }
+        - { name: periodFrom, in: query, schema: { type: string, format: date } }
+        - { name: periodTo, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Sayfalı değerlendirme listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvaluationList' }
+              example:
+                items:
+                  - { evaluationId: eval-2026-q3-001, supplierId: sup-0140-8821, periodStart: '2026-07-01', periodEnd: '2026-09-30', status: DRAFT, overallScore: '86.50', riskLevel: MEDIUM, version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+                page: 1
+                pageSize: 50
+                total: 1
+                correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5
+                contractVersion: v1
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      operationId: createSupplierEvaluation
+      summary: Supplier performans değerlendirmesi başlat
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEvaluationRequest' }
+            example:
+              supplierId: sup-0140-8821
+              periodStart: '2026-07-01'
+              periodEnd: '2026-09-30'
+              metrics:
+                - { metricCode: ON_TIME_DELIVERY, measuredValue: '94.00', weight: '60.00' }
+                - { metricCode: QUALITY_ACCEPTANCE, measuredValue: '98.00', weight: '40.00' }
+              notes: Quarterly supplier evaluation
+      responses:
+        '201':
+          description: Değerlendirme oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evaluation' }
+              example: { evaluationId: eval-2026-q3-001, supplierId: sup-0140-8821, periodStart: '2026-07-01', periodEnd: '2026-09-30', status: DRAFT, overallScore: '95.60', riskLevel: LOW, version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '200':
+          description: Idempotent replay — özgün sonuç
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evaluation' }
+              example: { evaluationId: eval-2026-q3-001, supplierId: sup-0140-8821, periodStart: '2026-07-01', periodEnd: '2026-09-30', status: DRAFT, overallScore: '95.60', riskLevel: LOW, version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+        '503': { $ref: '#/components/responses/SupplierBaseUnavailable' }
+  /evaluations/{evaluationId}:
+    get:
+      operationId: getSupplierEvaluation
+      summary: Tek değerlendirmeyi getir
+      parameters:
+        - $ref: '#/components/parameters/EvaluationId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Değerlendirme
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Evaluation' }
+              example: { evaluationId: eval-2026-q3-001, supplierId: sup-0140-8821, periodStart: '2026-07-01', periodEnd: '2026-09-30', status: DRAFT, overallScore: '95.60', riskLevel: LOW, version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownEvaluation' }
+  /evaluations/{evaluationId}/submit:
+    post:
+      operationId: submitSupplierEvaluation
+      summary: Değerlendirmeyi scorecard yayınına gönder
+      parameters:
+        - $ref: '#/components/parameters/EvaluationId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitEvaluationRequest' }
+            example: { submittedAt: '2026-10-02T09:00:00Z', comment: Approved for publication }
+      responses:
+        '200':
+          description: Değerlendirme gönderildi ve scorecard üretildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EvaluationSubmissionResult' }
+              example: { evaluationId: eval-2026-q3-001, scorecardId: sc-2026-q3-001, status: PUBLISHED, version: 2, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownEvaluation' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+  /scorecards:
+    get:
+      operationId: listSupplierScorecards
+      summary: Yayınlanmış supplier scorecard'larını sorgula
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - { name: supplierId, in: query, schema: { type: string }, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        - { name: periodFrom, in: query, schema: { type: string, format: date } }
+        - { name: periodTo, in: query, schema: { type: string, format: date } }
+        - { name: riskLevel, in: query, schema: { $ref: '#/components/schemas/RiskLevel' } }
+      responses:
+        '200':
+          description: Scorecard listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScorecardList' }
+              example:
+                items:
+                  - { scorecardId: sc-2026-q3-001, evaluationId: eval-2026-q3-001, supplierId: sup-0140-8821, periodStart: '2026-07-01', periodEnd: '2026-09-30', metrics: [{ metricCode: ON_TIME_DELIVERY, score: '94.00', weight: '60.00' }], overallScore: '95.60', riskLevel: LOW, publishedAt: '2026-10-02T09:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+                total: 1
+                correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5
+                contractVersion: v1
+  /scorecards/{scorecardId}:
+    get:
+      operationId: getSupplierScorecard
+      summary: Scorecard ayrıntısını getir
+      parameters:
+        - { name: scorecardId, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Scorecard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Scorecard' }
+              example:
+                scorecardId: sc-2026-q3-001
+                evaluationId: eval-2026-q3-001
+                supplierId: sup-0140-8821
+                periodStart: '2026-07-01'
+                periodEnd: '2026-09-30'
+                metrics: [{ metricCode: ON_TIME_DELIVERY, score: '94.00', weight: '60.00' }, { metricCode: QUALITY_ACCEPTANCE, score: '98.00', weight: '40.00' }]
+                overallScore: '95.60'
+                riskLevel: LOW
+                publishedAt: '2026-10-02T09:00:00Z'
+                correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/UnknownScorecard' }
+  /risks:
+    get:
+      operationId: listSupplierRisks
+      summary: Supplier risk kayıtlarını sorgula
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - { name: supplierId, in: query, schema: { type: string }, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/RiskStatus' } }
+        - { name: level, in: query, schema: { $ref: '#/components/schemas/RiskLevel' } }
+      responses:
+        '200':
+          description: Risk kayıtları
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiskList' }
+              example:
+                items: [{ riskId: risk-4501, supplierId: sup-0140-8821, category: DELIVERY, level: HIGH, status: OPEN, sourceType: SCORECARD, sourceId: sc-2026-q3-001, summary: On-time delivery threshold breached, detectedAt: '2026-10-02T10:00:00Z', version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }]
+                total: 1
+                correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5
+                contractVersion: v1
+    post:
+      operationId: registerSupplierRisk
+      summary: Supplier risk kaydı oluştur
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRiskRequest' }
+            example: { supplierId: sup-0140-8821, category: DELIVERY, level: HIGH, sourceType: SCORECARD, sourceId: sc-2026-q3-001, summary: On-time delivery threshold breached }
+      responses:
+        '201':
+          description: Risk oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierRisk' }
+              example: { riskId: risk-4501, supplierId: sup-0140-8821, category: DELIVERY, level: HIGH, status: OPEN, sourceType: SCORECARD, sourceId: sc-2026-q3-001, summary: On-time delivery threshold breached, detectedAt: '2026-10-02T10:00:00Z', version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '200':
+          description: Idempotent replay — özgün sonuç
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierRisk' }
+              example: { riskId: risk-4501, supplierId: sup-0140-8821, category: DELIVERY, level: HIGH, status: OPEN, detectedAt: '2026-10-02T10:00:00Z', version: 1, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+        '503': { $ref: '#/components/responses/SupplierBaseUnavailable' }
+  /risks/{riskId}/status:
+    post:
+      operationId: changeSupplierRiskStatus
+      summary: Supplier risk lifecycle durumunu değiştir
+      parameters:
+        - { name: riskId, in: path, required: true, schema: { type: string } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangeRiskStatusRequest' }
+            example: { targetStatus: MITIGATED, resolutionNote: Corrective action verified }
+      responses:
+        '200':
+          description: Risk durumu değiştirildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierRisk' }
+              example: { riskId: risk-4501, supplierId: sup-0140-8821, category: DELIVERY, level: HIGH, status: MITIGATED, detectedAt: '2026-10-02T10:00:00Z', resolvedAt: '2026-10-05T11:00:00Z', version: 2, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownRisk' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+        '422': { $ref: '#/components/responses/InvalidTransition' }
+  /portal/status:
+    get:
+      operationId: getSupplierPortalStatus
+      summary: Authenticated supplier actor için portal erişim ve durum özeti
+      description: supplierId JWT actor mapping'inden çözülür; query veya body override kabul edilmez.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Portal durumu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalStatus' }
+              example: { supplierId: sup-0140-8821, accessStatus: ACTIVE, openSubmissionCount: 2, lastSubmissionAt: '2026-10-04T08:30:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '403': { $ref: '#/components/responses/PortalIdentityUnresolved' }
+        '503': { $ref: '#/components/responses/SupplierBaseUnavailable' }
+  /portal/submissions:
+    get:
+      operationId: listOwnPortalSubmissions
+      summary: Authenticated supplier actor'ın gönderilerini sorgula
+      description: supplierId authenticated actor'dan server-side çözülür.
+      parameters:
+        - $ref: '#/components/parameters/CorrelationId'
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/PortalSubmissionStatus' } }
+        - { name: submissionType, in: query, schema: { $ref: '#/components/schemas/PortalSubmissionType' } }
+      responses:
+        '200':
+          description: Portal gönderileri
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSubmissionList' }
+              example:
+                items: [{ submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: DRAFT, subject: Delivery corrective action, payload: { action: Add secondary carrier }, version: 1, createdAt: '2026-10-04T08:30:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }]
+                total: 1
+                correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5
+                contractVersion: v1
+        '403': { $ref: '#/components/responses/PortalIdentityUnresolved' }
+    post:
+      operationId: createOwnPortalSubmission
+      summary: Authenticated supplier actor için portal gönderisi oluştur
+      description: supplierId body'de yoktur; authenticated actor'dan server-side çözülür.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePortalSubmissionRequest' }
+            example: { submissionType: CORRECTIVE_ACTION, subject: Delivery corrective action, referenceType: SUPPLIER_RISK, referenceId: risk-4501, payload: { action: Add secondary carrier, dueDate: '2026-10-20' } }
+      responses:
+        '201':
+          description: Portal gönderisi oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSubmission' }
+              example: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: DRAFT, subject: Delivery corrective action, referenceType: SUPPLIER_RISK, referenceId: risk-4501, payload: { action: Add secondary carrier, dueDate: '2026-10-20' }, version: 1, createdAt: '2026-10-04T08:30:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '200':
+          description: Idempotent replay — özgün sonuç
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSubmission' }
+              example: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: DRAFT, subject: Delivery corrective action, payload: { action: Add secondary carrier, dueDate: '2026-10-20' }, version: 1, createdAt: '2026-10-04T08:30:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '403': { $ref: '#/components/responses/PortalIdentityUnresolved' }
+        '422': { $ref: '#/components/responses/BusinessRuleViolation' }
+  /portal/submissions/{submissionId}:
+    get:
+      operationId: getOwnPortalSubmission
+      summary: Authenticated supplier actor'ın tek gönderisini getir
+      description: Başka supplier'a ait kayıt cross-tenant davranışıyla 404 döner.
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - $ref: '#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Portal gönderisi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSubmission' }
+              example: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: DRAFT, subject: Delivery corrective action, referenceType: SUPPLIER_RISK, referenceId: risk-4501, payload: { action: Add secondary carrier, dueDate: '2026-10-20' }, version: 1, createdAt: '2026-10-04T08:30:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownSubmission' }
+  /portal/submissions/{submissionId}/submit:
+    post:
+      operationId: submitOwnPortalSubmission
+      summary: Authenticated supplier actor'ın taslak gönderisini submit et
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/IfMatch'
+        - $ref: '#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitPortalSubmissionRequest' }
+            example: { submittedAt: '2026-10-04T09:00:00Z' }
+      responses:
+        '200':
+          description: Portal gönderisi submit edildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalSubmission' }
+              example: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: SUBMITTED, subject: Delivery corrective action, payload: { action: Add secondary carrier, dueDate: '2026-10-20' }, version: 2, createdAt: '2026-10-04T08:30:00Z', submittedAt: '2026-10-04T09:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/UnknownSubmission' }
+        '409': { $ref: '#/components/responses/VersionConflict' }
+        '422': { $ref: '#/components/responses/InvalidTransition' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 200 }
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: true
+      description: Request ve lifecycle event zinciri boyunca değişmeden taşınan UUID.
+      schema: { type: string, format: uuid }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Optimistic concurrency version etiketi.
+      schema: { type: string }
+    EvaluationId: { name: evaluationId, in: path, required: true, schema: { type: string } }
+    SubmissionId: { name: submissionId, in: path, required: true, schema: { type: string } }
+  schemas:
+    Decimal:
+      type: string
+      pattern: '^-?\d+(\.\d+)?$'
+    EvaluationStatus: { type: string, enum: [DRAFT, PUBLISHED, CANCELLED] }
+    RiskLevel: { type: string, enum: [LOW, MEDIUM, HIGH, CRITICAL] }
+    RiskStatus: { type: string, enum: [OPEN, ACKNOWLEDGED, MITIGATED, CLOSED] }
+    PortalSubmissionType: { type: string, enum: [CORRECTIVE_ACTION, EVIDENCE, CERTIFICATE, RESPONSE] }
+    PortalSubmissionStatus: { type: string, enum: [DRAFT, SUBMITTED, UNDER_REVIEW, ACCEPTED, REJECTED] }
+    EvaluationMetricInput:
+      type: object
+      required: [metricCode, measuredValue, weight]
+      properties:
+        metricCode: { type: string, description: Metric Registry code }
+        measuredValue: { $ref: '#/components/schemas/Decimal' }
+        weight: { $ref: '#/components/schemas/Decimal' }
+    EvaluationMetricResult:
+      type: object
+      required: [metricCode, score, weight]
+      properties:
+        metricCode: { type: string }
+        score: { $ref: '#/components/schemas/Decimal' }
+        weight: { $ref: '#/components/schemas/Decimal' }
+    CreateEvaluationRequest:
+      type: object
+      required: [supplierId, periodStart, periodEnd, metrics]
+      properties:
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+        metrics: { type: array, minItems: 1, items: { $ref: '#/components/schemas/EvaluationMetricInput' } }
+        notes: { type: string, maxLength: 2000, nullable: true }
+    Evaluation:
+      type: object
+      required: [evaluationId, supplierId, periodStart, periodEnd, status, overallScore, riskLevel, version, correlationId, contractVersion]
+      properties:
+        evaluationId: { type: string }
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+        status: { $ref: '#/components/schemas/EvaluationStatus' }
+        metrics: { type: array, items: { $ref: '#/components/schemas/EvaluationMetricResult' } }
+        overallScore: { $ref: '#/components/schemas/Decimal' }
+        riskLevel: { $ref: '#/components/schemas/RiskLevel' }
+        version: { type: integer, minimum: 1 }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    EvaluationList:
+      type: object
+      required: [items, page, pageSize, total, correlationId, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Evaluation' } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    SubmitEvaluationRequest:
+      type: object
+      required: [submittedAt]
+      properties:
+        submittedAt: { type: string, format: date-time }
+        comment: { type: string, maxLength: 1000, nullable: true }
+    EvaluationSubmissionResult:
+      type: object
+      required: [evaluationId, scorecardId, status, version, correlationId, contractVersion]
+      properties:
+        evaluationId: { type: string }
+        scorecardId: { type: string }
+        status: { type: string, const: PUBLISHED }
+        version: { type: integer }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    Scorecard:
+      type: object
+      required: [scorecardId, evaluationId, supplierId, periodStart, periodEnd, metrics, overallScore, riskLevel, publishedAt, correlationId, contractVersion]
+      properties:
+        scorecardId: { type: string }
+        evaluationId: { type: string }
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+        metrics: { type: array, items: { $ref: '#/components/schemas/EvaluationMetricResult' } }
+        overallScore: { $ref: '#/components/schemas/Decimal' }
+        riskLevel: { $ref: '#/components/schemas/RiskLevel' }
+        publishedAt: { type: string, format: date-time }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    ScorecardList:
+      type: object
+      required: [items, total, correlationId, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Scorecard' } }
+        total: { type: integer }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    CreateRiskRequest:
+      type: object
+      required: [supplierId, category, level, sourceType, sourceId, summary]
+      properties:
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        category: { type: string, enum: [DELIVERY, QUALITY, COMPLIANCE, FINANCIAL, CONTINUITY, OTHER] }
+        level: { $ref: '#/components/schemas/RiskLevel' }
+        sourceType: { type: string, enum: [SCORECARD, PORTAL_SUBMISSION, EXTERNAL_SIGNAL, MANUAL] }
+        sourceId: { type: string }
+        summary: { type: string, minLength: 1, maxLength: 1000 }
+    SupplierRisk:
+      type: object
+      required: [riskId, supplierId, category, level, status, detectedAt, version, correlationId, contractVersion]
+      properties:
+        riskId: { type: string }
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        category: { type: string, enum: [DELIVERY, QUALITY, COMPLIANCE, FINANCIAL, CONTINUITY, OTHER] }
+        level: { $ref: '#/components/schemas/RiskLevel' }
+        status: { $ref: '#/components/schemas/RiskStatus' }
+        sourceType: { type: string }
+        sourceId: { type: string }
+        summary: { type: string }
+        detectedAt: { type: string, format: date-time }
+        resolvedAt: { type: string, format: date-time, nullable: true }
+        version: { type: integer, minimum: 1 }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    RiskList:
+      type: object
+      required: [items, total, correlationId, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/SupplierRisk' } }
+        total: { type: integer }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    ChangeRiskStatusRequest:
+      type: object
+      required: [targetStatus]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/RiskStatus' }
+        resolutionNote: { type: string, maxLength: 2000, nullable: true }
+    PortalStatus:
+      type: object
+      required: [supplierId, accessStatus, openSubmissionCount, correlationId, contractVersion]
+      properties:
+        supplierId: { type: string, description: "Resolved from authenticated actor. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        accessStatus: { type: string, enum: [ACTIVE, SUSPENDED, PENDING] }
+        openSubmissionCount: { type: integer, minimum: 0 }
+        lastSubmissionAt: { type: string, format: date-time, nullable: true }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    CreatePortalSubmissionRequest:
+      type: object
+      description: supplierId, tenantId ve legalEntityId yasaktır; authenticated server context'ten çözülür.
+      required: [submissionType, subject, payload]
+      properties:
+        submissionType: { $ref: '#/components/schemas/PortalSubmissionType' }
+        subject: { type: string, minLength: 1, maxLength: 250 }
+        referenceType: { type: string, enum: [SUPPLIER_RISK, SCORECARD, GENERAL], nullable: true }
+        referenceId: { type: string, nullable: true }
+        payload: { type: object, additionalProperties: true }
+      additionalProperties: false
+    PortalSubmission:
+      type: object
+      required: [submissionId, supplierId, submissionType, status, subject, payload, version, createdAt, correlationId, contractVersion]
+      properties:
+        submissionId: { type: string }
+        supplierId: { type: string, description: "Resolved from authenticated actor. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        submissionType: { $ref: '#/components/schemas/PortalSubmissionType' }
+        status: { $ref: '#/components/schemas/PortalSubmissionStatus' }
+        subject: { type: string }
+        referenceType: { type: string, nullable: true }
+        referenceId: { type: string, nullable: true }
+        payload: { type: object, additionalProperties: true }
+        version: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        submittedAt: { type: string, format: date-time, nullable: true }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    PortalSubmissionList:
+      type: object
+      required: [items, total, correlationId, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/PortalSubmission' } }
+        total: { type: integer }
+        correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+    SubmitPortalSubmissionRequest:
+      type: object
+      required: [submittedAt]
+      properties:
+        submittedAt: { type: string, format: date-time }
+      additionalProperties: false
+    SupplierPerformanceEvent:
+      type: object
+      description: MOD-0147/MOD-0148 lifecycle event envelope; Event Bus'a publish edilir.
+      required: [eventId, eventType, occurredAt, correlationId, tenantId, legalEntityId, payload, contractVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        eventType: { type: string, enum: [SupplierEvaluationPublished, SupplierRiskRaised, SupplierRiskStatusChanged, SupplierPortalSubmissionSubmitted, SupplierPortalSubmissionReviewed] }
+        occurredAt: { type: string, format: date-time }
+        correlationId: { type: string, format: uuid }
+        tenantId: { type: string, description: Server-resolved; event metadata only. }
+        legalEntityId: { type: string, description: Server-resolved; event metadata only. }
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/EvaluationPublishedPayload'
+            - $ref: '#/components/schemas/RiskLifecyclePayload'
+            - $ref: '#/components/schemas/PortalSubmissionLifecyclePayload'
+        contractVersion: { type: string, const: v1 }
+      examples:
+        - { eventId: 799f709e-9860-4e9a-b2a8-8f1f969077b4, eventType: SupplierEvaluationPublished, occurredAt: '2026-10-02T09:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, tenantId: tenant-01, legalEntityId: le-tr, payload: { evaluationId: eval-2026-q3-001, scorecardId: sc-2026-q3-001, supplierId: sup-0140-8821, overallScore: '95.60', riskLevel: LOW }, contractVersion: v1 }
+        - { eventId: 37572ea2-88b2-4cab-95be-7d942897044a, eventType: SupplierRiskRaised, occurredAt: '2026-10-02T10:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, tenantId: tenant-01, legalEntityId: le-tr, payload: { riskId: risk-4501, supplierId: sup-0140-8821, level: HIGH, status: OPEN }, contractVersion: v1 }
+        - { eventId: 0cb8c00f-99f7-4077-920b-9c8b8795c82e, eventType: SupplierRiskStatusChanged, occurredAt: '2026-10-05T11:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, tenantId: tenant-01, legalEntityId: le-tr, payload: { riskId: risk-4501, supplierId: sup-0140-8821, level: HIGH, status: MITIGATED }, contractVersion: v1 }
+        - { eventId: 929c17fa-2898-49ef-8f3a-9f5a8714a313, eventType: SupplierPortalSubmissionSubmitted, occurredAt: '2026-10-04T09:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, tenantId: tenant-01, legalEntityId: le-tr, payload: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: SUBMITTED }, contractVersion: v1 }
+        - { eventId: d1c645d6-799e-4c6c-b518-cc01105c8e66, eventType: SupplierPortalSubmissionReviewed, occurredAt: '2026-10-06T14:00:00Z', correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5, tenantId: tenant-01, legalEntityId: le-tr, payload: { submissionId: psub-7701, supplierId: sup-0140-8821, submissionType: CORRECTIVE_ACTION, status: ACCEPTED }, contractVersion: v1 }
+    EvaluationPublishedPayload:
+      type: object
+      required: [evaluationId, scorecardId, supplierId, overallScore, riskLevel]
+      properties:
+        evaluationId: { type: string }
+        scorecardId: { type: string }
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        overallScore: { $ref: '#/components/schemas/Decimal' }
+        riskLevel: { $ref: '#/components/schemas/RiskLevel' }
+    RiskLifecyclePayload:
+      type: object
+      required: [riskId, supplierId, level, status]
+      properties:
+        riskId: { type: string }
+        supplierId: { type: string, description: "Opaque MOD-0140 reference. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        level: { $ref: '#/components/schemas/RiskLevel' }
+        status: { $ref: '#/components/schemas/RiskStatus' }
+    PortalSubmissionLifecyclePayload:
+      type: object
+      required: [submissionId, supplierId, submissionType, status]
+      properties:
+        submissionId: { type: string }
+        supplierId: { type: string, description: "Resolved from authenticated actor. CONSUMES: SUPPLIER-BASE (merkez üretecek)" }
+        submissionType: { $ref: '#/components/schemas/PortalSubmissionType' }
+        status: { $ref: '#/components/schemas/PortalSubmissionStatus' }
+    Error:
+      type: object
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlationId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string, format: uuid }
+        contractVersion: { type: string, const: v1 }
+  responses:
+    BadRequest:
+      description: Geçersiz parametre veya payload
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_REQUEST, message: İstek alanları geçersiz, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    UnknownSupplier:
+      description: Supplier referansı MOD-0140 tüketici contract'ında bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SUPPLIER, message: Supplier bulunamadı, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    UnknownEvaluation:
+      description: Değerlendirme bulunamadı veya tenant/legal-entity kapsamı dışındadır
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_EVALUATION, message: Değerlendirme bulunamadı, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    UnknownScorecard:
+      description: Scorecard bulunamadı veya tenant/legal-entity kapsamı dışındadır
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SCORECARD, message: Scorecard bulunamadı, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    UnknownRisk:
+      description: Risk bulunamadı veya tenant/legal-entity kapsamı dışındadır
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_RISK, message: Risk bulunamadı, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    UnknownSubmission:
+      description: Portal gönderisi bulunamadı veya authenticated supplier'a ait değildir
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SUBMISSION, message: Portal gönderisi bulunamadı, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    PortalIdentityUnresolved:
+      description: Authenticated actor için supplier identity çözülemedi
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: PORTAL_SUPPLIER_IDENTITY_UNRESOLVED, message: Supplier portal kimliği çözülemedi, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    VersionConflict:
+      description: If-Match ile güncel version uyuşmadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VERSION_CONFLICT, message: Kayıt başka bir işlem tarafından değiştirildi, details: { currentVersion: 2 }, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    InvalidTransition:
+      description: Lifecycle geçişi geçersiz
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATUS_TRANSITION, message: İstenen lifecycle geçişi geçersiz, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    BusinessRuleViolation:
+      description: Metric, dönem veya gönderi iş kuralı ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: BUSINESS_RULE_VIOLATION, message: İş kuralı doğrulaması başarısız, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }
+    SupplierBaseUnavailable:
+      description: "CONSUMES: SUPPLIER-BASE (merkez üretecek). Fail-closed; supplier doğrulaması atlanmaz."
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: SUPPLIER_BASE_UNAVAILABLE, message: Supplier base contract mock erişilemiyor, correlationId: 4ea6d5f2-5ffc-4ad2-93d4-5fc6bf696fc5 }, contractVersion: v1 } } }

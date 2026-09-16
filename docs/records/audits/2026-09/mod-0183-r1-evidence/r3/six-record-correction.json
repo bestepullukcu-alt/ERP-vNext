@@ -1,0 +1,44 @@
+[
+  {
+    "case": "r2-quantity-0",
+    "status": 400,
+    "field": "quantity",
+    "oldIncorrect": "30.000",
+    "newCorrect": "٣٠.٠٠٠"
+  },
+  {
+    "case": "r2-quantity-1",
+    "status": 400,
+    "field": "quantity",
+    "oldIncorrect": "30.000",
+    "newCorrect": "۳۰.۰۰۰"
+  },
+  {
+    "case": "r2-quantity-2",
+    "status": 400,
+    "field": "quantity",
+    "oldIncorrect": "30.000",
+    "newCorrect": "３０.０００"
+  },
+  {
+    "case": "r2-quantity-3",
+    "status": 400,
+    "field": "quantity",
+    "oldIncorrect": "30.000",
+    "newCorrect": "3٠.000"
+  },
+  {
+    "case": "r2-plan",
+    "status": 400,
+    "field": "noteCodePoints",
+    "oldIncorrect": 1000,
+    "newCorrect": 1001
+  },
+  {
+    "case": "r2-pod",
+    "status": 400,
+    "field": "noteCodePoints",
+    "oldIncorrect": 1000,
+    "newCorrect": 1001
+  }
+]

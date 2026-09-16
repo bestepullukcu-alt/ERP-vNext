@@ -1,0 +1,390 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="2df828f3-64a9-4b91-9a4d-f0b89eb3cf4e" name="@Natig-Erens-MacBook-Pro 2026-09-16 14:14:37" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-09-16T14:14:37.3470130+05:00" queuing="2026-09-16T14:14:37.3470130+05:00" start="2026-09-16T14:14:36.5782790+05:00" finish="2026-09-16T14:14:37.3695950+05:00" />
+  <TestSettings name="default" id="6867c1f4-708e-41f1-a0a8-2be6d5b22d1e">
+    <Deployment runDeploymentRoot="_Natig-Erens-MacBook-Pro_2026-09-16_14_14_37" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c3e514cf-4ac0-4c2b-a879-9376be286a92" testId="9b90073b-c4e7-4097-f539-972849ee746a" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001992" startTime="2026-09-16T14:14:37.3125470+05:00" endTime="2026-09-16T14:14:37.3125470+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c3e514cf-4ac0-4c2b-a879-9376be286a92">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 47
+   at InvokeStub_ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="b9f3959c-ca07-42cb-bc7a-ba9c51961ba2" testId="54616bb9-18d0-8130-d8a1-a9ee12b719ed" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;1e3&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000407" startTime="2026-09-16T14:14:37.3104760+05:00" endTime="2026-09-16T14:14:37.3104760+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b9f3959c-ca07-42cb-bc7a-ba9c51961ba2" />
+    <UnitTestResult executionId="12c262ee-11d2-4036-bc9f-d031a132bd60" testId="e1c0386a-d23f-7325-1e72-fcd240f41fee" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000569" startTime="2026-09-16T14:14:37.3125790+05:00" endTime="2026-09-16T14:14:37.3125790+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="12c262ee-11d2-4036-bc9f-d031a132bd60" />
+    <UnitTestResult executionId="f9240ab9-bfb1-4153-8bec-22aa5d36fe47" testId="04685b07-6664-18f5-d1dc-c35b9f0be4dd" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0004249" startTime="2026-09-16T14:14:37.2884000+05:00" endTime="2026-09-16T14:14:37.2884000+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f9240ab9-bfb1-4153-8bec-22aa5d36fe47">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 55
+   at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="050d7a94-65dd-43f2-9224-07af2ce8c30a" testId="c762da01-d53f-ed04-b6e6-374882822d6e" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;+30&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000393" startTime="2026-09-16T14:14:37.3112130+05:00" endTime="2026-09-16T14:14:37.3112130+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="050d7a94-65dd-43f2-9224-07af2ce8c30a" />
+    <UnitTestResult executionId="76f38496-bc42-4974-b12d-31de2efa9fe3" testId="8f46ff3b-0805-0b94-1e23-ac499458b329" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000457" startTime="2026-09-16T14:14:37.3120430+05:00" endTime="2026-09-16T14:14:37.3120430+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="76f38496-bc42-4974-b12d-31de2efa9fe3" />
+    <UnitTestResult executionId="6ca46db5-f27a-4159-9f69-751045a061bc" testId="d074e9fa-7d31-c224-dda3-5a943eabcbc7" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;-30.000&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000353" startTime="2026-09-16T14:14:37.3112400+05:00" endTime="2026-09-16T14:14:37.3112400+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6ca46db5-f27a-4159-9f69-751045a061bc" />
+    <UnitTestResult executionId="7fb2f194-c7d8-4f6f-8321-c3942214734b" testId="133fa90b-e7d2-dcea-4fc5-404fc5ba28d8" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001216" startTime="2026-09-16T14:14:37.2881490+05:00" endTime="2026-09-16T14:14:37.2881490+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7fb2f194-c7d8-4f6f-8321-c3942214734b" />
+    <UnitTestResult executionId="b2ca3b67-3c4e-42df-a672-7d322960fd13" testId="e37b2099-6b92-032c-09f1-c948661278cf" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000830" startTime="2026-09-16T14:14:37.3097110+05:00" endTime="2026-09-16T14:14:37.3097110+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b2ca3b67-3c4e-42df-a672-7d322960fd13" />
+    <UnitTestResult executionId="03d41939-7dab-4fe4-adad-849914fbeef1" testId="759a02a3-4603-ff3c-ee6d-465bdd4891eb" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;30.&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000509" startTime="2026-09-16T14:14:37.3104270+05:00" endTime="2026-09-16T14:14:37.3104270+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="03d41939-7dab-4fe4-adad-849914fbeef1" />
+    <UnitTestResult executionId="297fb9dd-4589-49b4-93eb-d7aca9384360" testId="8040da71-1b97-3b05-d0bf-992bebbceeb2" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0002314" startTime="2026-09-16T14:14:37.3119670+05:00" endTime="2026-09-16T14:14:37.3119670+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="297fb9dd-4589-49b4-93eb-d7aca9384360" />
+    <UnitTestResult executionId="1ee521a9-a801-43a5-88c6-d91cbbbc6920" testId="5c5a3777-fe1a-0de5-36e1-fd77b3f59439" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;0&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0002287" startTime="2026-09-16T14:14:37.3101480+05:00" endTime="2026-09-16T14:14:37.3101480+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1ee521a9-a801-43a5-88c6-d91cbbbc6920" />
+    <UnitTestResult executionId="67093bcc-756d-4279-a60d-80f05f914d5b" testId="fd879e63-7516-4d3d-ea3e-a8bc2999870e" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;۳۰.۰۰۰&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001803" startTime="2026-09-16T14:14:37.3114390+05:00" endTime="2026-09-16T14:14:37.3114390+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67093bcc-756d-4279-a60d-80f05f914d5b">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="44d3db1f-81d7-4e0d-8e57-699b95fe0147" testId="00bc045b-7bae-455d-43f9-2e6bc74a1bee" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;30.000&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000371" startTime="2026-09-16T14:14:37.3104520+05:00" endTime="2026-09-16T14:14:37.3104520+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="44d3db1f-81d7-4e0d-8e57-699b95fe0147" />
+    <UnitTestResult executionId="e7dd6225-23c8-4fd4-b616-5893e5e8e8c6" testId="bf09648a-fd3e-c02f-790f-9ef75b0e3fc8" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001224" startTime="2026-09-16T14:14:37.2884360+05:00" endTime="2026-09-16T14:14:37.2884360+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7dd6225-23c8-4fd4-b616-5893e5e8e8c6" />
+    <UnitTestResult executionId="5b21aba5-9cf8-478f-85ed-688847f35015" testId="b857b4a6-ad54-aaaa-4f18-5f68ee23097c" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0017915" startTime="2026-09-16T14:14:37.2879700+05:00" endTime="2026-09-16T14:14:37.2879710+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5b21aba5-9cf8-478f-85ed-688847f35015">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 55
+   at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6c14ca79-bd23-441d-bce8-3a43c755685f" testId="5f01060f-fc8b-594d-f81b-e841d1a31b8f" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0135113" startTime="2026-09-16T14:14:37.2755790+05:00" endTime="2026-09-16T14:14:37.2755790+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c14ca79-bd23-441d-bce8-3a43c755685f" />
+    <UnitTestResult executionId="f7ee1cff-01c1-429e-8962-82299bd9e69b" testId="06f60ad1-7d1b-07fd-0872-a8559de0232d" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0004085" startTime="2026-09-16T14:14:37.2881190+05:00" endTime="2026-09-16T14:14:37.2881190+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7ee1cff-01c1-429e-8962-82299bd9e69b" />
+    <UnitTestResult executionId="a4d66435-5a43-44f8-9c63-cc525aa2ec34" testId="dcfd0fa6-a3f6-b81d-bbab-5453851523fe" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000675" startTime="2026-09-16T14:14:37.3119930+05:00" endTime="2026-09-16T14:14:37.3119930+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a4d66435-5a43-44f8-9c63-cc525aa2ec34" />
+    <UnitTestResult executionId="b29b5062-32b4-413f-b433-572a13e5238a" testId="56afec80-891c-8c56-0876-bad4364620ab" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: null, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0457616" startTime="2026-09-16T14:14:37.2619500+05:00" endTime="2026-09-16T14:14:37.2619750+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b29b5062-32b4-413f-b433-572a13e5238a" />
+    <UnitTestResult executionId="a3181a04-a98c-404c-aedc-a52ea9cc19dc" testId="6a275655-9d38-824d-1236-60aa0ac646a3" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;3٠.000&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001766" startTime="2026-09-16T14:14:37.3117140+05:00" endTime="2026-09-16T14:14:37.3117140+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3181a04-a98c-404c-aedc-a52ea9cc19dc">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="0a6d6ba5-e42c-49d1-aa16-823d29f1f580" testId="98e39800-3584-8c08-2a83-bab8fd1843d2" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;٣٠.٠٠٠&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001940" startTime="2026-09-16T14:14:37.3103700+05:00" endTime="2026-09-16T14:14:37.3103700+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a6d6ba5-e42c-49d1-aa16-823d29f1f580">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="a664a007-a5d2-45cd-b3a8-5a5455593e5c" testId="1b2af614-be3b-3276-4ba8-458a7cadd2a7" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0064652" startTime="2026-09-16T14:14:37.3119320+05:00" endTime="2026-09-16T14:14:37.3119320+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a664a007-a5d2-45cd-b3a8-5a5455593e5c">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: True
+Actual:   False</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 47
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6d19ee5f-b84b-49a3-9a47-faf3b80a7f78" testId="b399e2c6-ff6b-6a69-45e4-76311e9c4b34" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: null, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000402" startTime="2026-09-16T14:14:37.3123590+05:00" endTime="2026-09-16T14:14:37.3123590+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6d19ee5f-b84b-49a3-9a47-faf3b80a7f78" />
+    <UnitTestResult executionId="80a1b2c1-0cc8-40b2-bc7b-d262249ea3e5" testId="ae2c4b0f-40c6-4047-85c3-9cd52757a5da" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000505" startTime="2026-09-16T14:14:37.3120180+05:00" endTime="2026-09-16T14:14:37.3120180+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="80a1b2c1-0cc8-40b2-bc7b-d262249ea3e5" />
+    <UnitTestResult executionId="f1c90e0c-ddfd-420f-b597-8092dd4ec0a8" testId="08872131-6451-dc27-729b-db16047f411d" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000522" startTime="2026-09-16T14:14:37.3126280+05:00" endTime="2026-09-16T14:14:37.3126280+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f1c90e0c-ddfd-420f-b597-8092dd4ec0a8" />
+    <UnitTestResult executionId="5739edd8-e1e6-44d4-8a02-5cc1daab9e5a" testId="97d026ee-528c-472c-1447-c64dbbc4f2dd" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;３０.０００&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0026919" startTime="2026-09-16T14:14:37.3101100+05:00" endTime="2026-09-16T14:14:37.3101100+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5739edd8-e1e6-44d4-8a02-5cc1daab9e5a">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ
+Expected: False
+Actual:   True</Message>
+          <StackTrace>   at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected) in /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs:line 26
+   at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="1959a462-e063-47ab-adc3-78424d55fa80" testId="2a1f0f78-af13-5be6-1a83-aee9e1d2cf12" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001662" startTime="2026-09-16T14:14:37.2757950+05:00" endTime="2026-09-16T14:14:37.2757950+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1959a462-e063-47ab-adc3-78424d55fa80" />
+    <UnitTestResult executionId="b4df2456-3bce-430a-b2ed-ec6d49d29d0c" testId="8327b4c9-a597-5f51-279a-0b80f37cb7be" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;000.010&quot;, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000490" startTime="2026-09-16T14:14:37.3104020+05:00" endTime="2026-09-16T14:14:37.3104020+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4df2456-3bce-430a-b2ed-ec6d49d29d0c" />
+    <UnitTestResult executionId="7b606b74-eb3c-4007-935c-9c9f27abc577" testId="e7f85312-36e1-8e91-410e-e604736032b3" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;.5&quot;, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0001209" startTime="2026-09-16T14:14:37.3101740+05:00" endTime="2026-09-16T14:14:37.3101740+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7b606b74-eb3c-4007-935c-9c9f27abc577" />
+    <UnitTestResult executionId="d1691dfc-0d30-47ac-9c32-56db275c680c" testId="6a33ec69-0192-a952-0e20-c8519d737781" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: False)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0000575" startTime="2026-09-16T14:14:37.3126030+05:00" endTime="2026-09-16T14:14:37.3126030+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1691dfc-0d30-47ac-9c32-56db275c680c" />
+    <UnitTestResult executionId="0d986b60-2116-4d0a-8906-d146b20fc3bc" testId="652d61ff-a2e6-6c47-cdf3-40a5dfcaaa49" testName="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: True)" computerName="Natig-Erens-MacBook-Pro" duration="00:00:00.0006370" startTime="2026-09-16T14:14:37.2644890+05:00" endTime="2026-09-16T14:14:37.2644890+05:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d986b60-2116-4d0a-8906-d146b20fc3bc" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="8040da71-1b97-3b05-d0bf-992bebbceeb2">
+      <Execution id="297fb9dd-4589-49b4-93eb-d7aca9384360" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;+30&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="c762da01-d53f-ed04-b6e6-374882822d6e">
+      <Execution id="050d7a94-65dd-43f2-9224-07af2ce8c30a" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="ae2c4b0f-40c6-4047-85c3-9cd52757a5da">
+      <Execution id="80a1b2c1-0cc8-40b2-bc7b-d262249ea3e5" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="08872131-6451-dc27-729b-db16047f411d">
+      <Execution id="f1c90e0c-ddfd-420f-b597-8092dd4ec0a8" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="06f60ad1-7d1b-07fd-0872-a8559de0232d">
+      <Execution id="f7ee1cff-01c1-429e-8962-82299bd9e69b" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="bf09648a-fd3e-c02f-790f-9ef75b0e3fc8">
+      <Execution id="e7dd6225-23c8-4fd4-b616-5893e5e8e8c6" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;۳۰.۰۰۰&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="fd879e63-7516-4d3d-ea3e-a8bc2999870e">
+      <Execution id="67093bcc-756d-4279-a60d-80f05f914d5b" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: null, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="56afec80-891c-8c56-0876-bad4364620ab">
+      <Execution id="b29b5062-32b4-413f-b433-572a13e5238a" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="dcfd0fa6-a3f6-b81d-bbab-5453851523fe">
+      <Execution id="a4d66435-5a43-44f8-9c63-cc525aa2ec34" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="6a33ec69-0192-a952-0e20-c8519d737781">
+      <Execution id="d1691dfc-0d30-47ac-9c32-56db275c680c" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="04685b07-6664-18f5-d1dc-c35b9f0be4dd">
+      <Execution id="f9240ab9-bfb1-4153-8bec-22aa5d36fe47" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;٣٠.٠٠٠&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="98e39800-3584-8c08-2a83-bab8fd1843d2">
+      <Execution id="0a6d6ba5-e42c-49d1-aa16-823d29f1f580" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="5f01060f-fc8b-594d-f81b-e841d1a31b8f">
+      <Execution id="6c14ca79-bd23-441d-bce8-3a43c755685f" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="9b90073b-c4e7-4097-f539-972849ee746a">
+      <Execution id="c3e514cf-4ac0-4c2b-a879-9376be286a92" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;3٠.000&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="6a275655-9d38-824d-1236-60aa0ac646a3">
+      <Execution id="a3181a04-a98c-404c-aedc-a52ea9cc19dc" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;-30.000&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="d074e9fa-7d31-c224-dda3-5a943eabcbc7">
+      <Execution id="6ca46db5-f27a-4159-9f69-751045a061bc" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="b857b4a6-ad54-aaaa-4f18-5f68ee23097c">
+      <Execution id="5b21aba5-9cf8-478f-85ed-688847f35015" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="652d61ff-a2e6-6c47-cdf3-40a5dfcaaa49">
+      <Execution id="0d986b60-2116-4d0a-8906-d146b20fc3bc" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;３０.０００&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="97d026ee-528c-472c-1447-c64dbbc4f2dd">
+      <Execution id="5739edd8-e1e6-44d4-8a02-5cc1daab9e5a" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;0&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="5c5a3777-fe1a-0de5-36e1-fd77b3f59439">
+      <Execution id="1ee521a9-a801-43a5-88c6-d91cbbbc6920" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="8f46ff3b-0805-0b94-1e23-ac499458b329">
+      <Execution id="76f38496-bc42-4974-b12d-31de2efa9fe3" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="e37b2099-6b92-032c-09f1-c948661278cf">
+      <Execution id="b2ca3b67-3c4e-42df-a672-7d322960fd13" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="2a1f0f78-af13-5be6-1a83-aee9e1d2cf12">
+      <Execution id="1959a462-e063-47ab-adc3-78424d55fa80" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;.5&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="e7f85312-36e1-8e91-410e-e604736032b3">
+      <Execution id="7b606b74-eb3c-4007-935c-9c9f27abc577" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&quot;···, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="e1c0386a-d23f-7325-1e72-fcd240f41fee">
+      <Execution id="12c262ee-11d2-4036-bc9f-d031a132bd60" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: &quot;ééééééééééééééééééééééééé&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="133fa90b-e7d2-dcea-4fc5-404fc5ba28d8">
+      <Execution id="7fb2f194-c7d8-4f6f-8321-c3942214734b" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="PodNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;000.010&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="8327b4c9-a597-5f51-279a-0b80f37cb7be">
+      <Execution id="b4df2456-3bce-430a-b2ed-ec6d49d29d0c" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;1e3&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="54616bb9-18d0-8130-d8a1-a9ee12b719ed">
+      <Execution id="b9f3959c-ca07-42cb-bc7a-ba9c51961ba2" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: null, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="b399e2c6-ff6b-6a69-45e4-76311e9c4b34">
+      <Execution id="6d19ee5f-b84b-49a3-9a47-faf3b80a7f78" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;30.&quot;, expected: False)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="759a02a3-4603-ff3c-ee6d-465bdd4891eb">
+      <Execution id="03d41939-7dab-4fe4-adad-849914fbeef1" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: &quot;30.000&quot;, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="00bc045b-7bae-455d-43f9-2e6bc74a1bee">
+      <Execution id="44d3db1f-81d7-4e0d-8e57-699b95fe0147" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="QuantityMatchesFrozenAsciiDecimal" />
+    </UnitTest>
+    <UnitTest name="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: &quot;\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00&quot;···, expected: True)" storage="/users/natig/projects/erp-vnext-recovery/services/diten.supplychainservice/tests/diten.supplychainservice.tests/bin/debug/net8.0/diten.supplychainservice.tests.dll" id="1b2af614-be3b-3276-4ba8-458a7cadd2a7">
+      <Execution id="a664a007-a5d2-45cd-b3a8-5a5455593e5c" />
+      <TestMethod codeBase="/Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/bin/Debug/net8.0/Diten.SupplyChainService.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner2/netcoreapp" className="Diten.SupplyChainService.Tests.ShipmentValidatorContractTests" name="TransitionNoteUsesUnicodeCodePoints" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9b90073b-c4e7-4097-f539-972849ee746a" executionId="c3e514cf-4ac0-4c2b-a879-9376be286a92" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="54616bb9-18d0-8130-d8a1-a9ee12b719ed" executionId="b9f3959c-ca07-42cb-bc7a-ba9c51961ba2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e1c0386a-d23f-7325-1e72-fcd240f41fee" executionId="12c262ee-11d2-4036-bc9f-d031a132bd60" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04685b07-6664-18f5-d1dc-c35b9f0be4dd" executionId="f9240ab9-bfb1-4153-8bec-22aa5d36fe47" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c762da01-d53f-ed04-b6e6-374882822d6e" executionId="050d7a94-65dd-43f2-9224-07af2ce8c30a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8f46ff3b-0805-0b94-1e23-ac499458b329" executionId="76f38496-bc42-4974-b12d-31de2efa9fe3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d074e9fa-7d31-c224-dda3-5a943eabcbc7" executionId="6ca46db5-f27a-4159-9f69-751045a061bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="133fa90b-e7d2-dcea-4fc5-404fc5ba28d8" executionId="7fb2f194-c7d8-4f6f-8321-c3942214734b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e37b2099-6b92-032c-09f1-c948661278cf" executionId="b2ca3b67-3c4e-42df-a672-7d322960fd13" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="759a02a3-4603-ff3c-ee6d-465bdd4891eb" executionId="03d41939-7dab-4fe4-adad-849914fbeef1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8040da71-1b97-3b05-d0bf-992bebbceeb2" executionId="297fb9dd-4589-49b4-93eb-d7aca9384360" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5c5a3777-fe1a-0de5-36e1-fd77b3f59439" executionId="1ee521a9-a801-43a5-88c6-d91cbbbc6920" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fd879e63-7516-4d3d-ea3e-a8bc2999870e" executionId="67093bcc-756d-4279-a60d-80f05f914d5b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="00bc045b-7bae-455d-43f9-2e6bc74a1bee" executionId="44d3db1f-81d7-4e0d-8e57-699b95fe0147" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf09648a-fd3e-c02f-790f-9ef75b0e3fc8" executionId="e7dd6225-23c8-4fd4-b616-5893e5e8e8c6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b857b4a6-ad54-aaaa-4f18-5f68ee23097c" executionId="5b21aba5-9cf8-478f-85ed-688847f35015" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="5f01060f-fc8b-594d-f81b-e841d1a31b8f" executionId="6c14ca79-bd23-441d-bce8-3a43c755685f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="06f60ad1-7d1b-07fd-0872-a8559de0232d" executionId="f7ee1cff-01c1-429e-8962-82299bd9e69b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dcfd0fa6-a3f6-b81d-bbab-5453851523fe" executionId="a4d66435-5a43-44f8-9c63-cc525aa2ec34" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56afec80-891c-8c56-0876-bad4364620ab" executionId="b29b5062-32b4-413f-b433-572a13e5238a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6a275655-9d38-824d-1236-60aa0ac646a3" executionId="a3181a04-a98c-404c-aedc-a52ea9cc19dc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="98e39800-3584-8c08-2a83-bab8fd1843d2" executionId="0a6d6ba5-e42c-49d1-aa16-823d29f1f580" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b2af614-be3b-3276-4ba8-458a7cadd2a7" executionId="a664a007-a5d2-45cd-b3a8-5a5455593e5c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b399e2c6-ff6b-6a69-45e4-76311e9c4b34" executionId="6d19ee5f-b84b-49a3-9a47-faf3b80a7f78" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae2c4b0f-40c6-4047-85c3-9cd52757a5da" executionId="80a1b2c1-0cc8-40b2-bc7b-d262249ea3e5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="08872131-6451-dc27-729b-db16047f411d" executionId="f1c90e0c-ddfd-420f-b597-8092dd4ec0a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="97d026ee-528c-472c-1447-c64dbbc4f2dd" executionId="5739edd8-e1e6-44d4-8a02-5cc1daab9e5a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2a1f0f78-af13-5be6-1a83-aee9e1d2cf12" executionId="1959a462-e063-47ab-adc3-78424d55fa80" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8327b4c9-a597-5f51-279a-0b80f37cb7be" executionId="b4df2456-3bce-430a-b2ed-ec6d49d29d0c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e7f85312-36e1-8e91-410e-e604736032b3" executionId="7b606b74-eb3c-4007-935c-9c9f27abc577" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6a33ec69-0192-a952-0e20-c8519d737781" executionId="d1691dfc-0d30-47ac-9c32-56db275c680c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="652d61ff-a2e6-6c47-cdf3-40a5dfcaaa49" executionId="0d986b60-2116-4d0a-8906-d146b20fc3bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="32" executed="32" passed="24" failed="8" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.23)
+[xUnit.net 00:00:00.08]   Discovering: Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.13]   Discovered:  Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.13]   Starting:    Diten.SupplyChainService.Tests
+[xUnit.net 00:00:00.24]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.24]       Expected: True
+[xUnit.net 00:00:00.24]       Actual:   False
+[xUnit.net 00:00:00.24]       Stack Trace:
+[xUnit.net 00:00:00.24]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(55,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected)
+[xUnit.net 00:00:00.24]            at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+[xUnit.net 00:00:00.24]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.24]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.24]       Expected: True
+[xUnit.net 00:00:00.24]       Actual:   False
+[xUnit.net 00:00:00.24]       Stack Trace:
+[xUnit.net 00:00:00.24]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(55,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(String note, Boolean expected)
+[xUnit.net 00:00:00.24]            at InvokeStub_ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(Object, Span`1)
+[xUnit.net 00:00:00.24]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: False
+[xUnit.net 00:00:00.26]       Actual:   True
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(26,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected)
+[xUnit.net 00:00:00.26]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: False
+[xUnit.net 00:00:00.26]       Actual:   True
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(26,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected)
+[xUnit.net 00:00:00.26]            at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: False
+[xUnit.net 00:00:00.26]       Actual:   True
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(26,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected)
+[xUnit.net 00:00:00.26]            at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: False
+[xUnit.net 00:00:00.26]       Actual:   True
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(26,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(String quantity, Boolean expected)
+[xUnit.net 00:00:00.26]            at InvokeStub_ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(Object, Span`1)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: True
+[xUnit.net 00:00:00.26]       Actual:   False
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(47,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected)
+[xUnit.net 00:00:00.26]            at System.RuntimeMethodHandle.InvokeMethod(Object target, Void** arguments, Signature sig, Boolean isConstructor)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.26]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:00.26]       Expected: True
+[xUnit.net 00:00:00.26]       Actual:   False
+[xUnit.net 00:00:00.26]       Stack Trace:
+[xUnit.net 00:00:00.26]         /Users/natig/Projects/ERP-vNext-recovery/services/Diten.SupplyChainService/tests/Diten.SupplyChainService.Tests/ShipmentValidatorContractTests.cs(47,0): at Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(String note, Boolean expected)
+[xUnit.net 00:00:00.26]            at InvokeStub_ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(Object, Span`1)
+[xUnit.net 00:00:00.26]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:00.27]   Finished:    Diten.SupplyChainService.Tests
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.2873250+05:00">
+        <Text>[xUnit.net 00:00:00.24]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.2883490+05:00">
+        <Text>[xUnit.net 00:00:00.24]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.PodNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3545030+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "３０.０００", expected: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3545390+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "٣٠.٠٠٠", expected: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3549050+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "۳۰.۰۰۰", expected: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3549350+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.QuantityMatchesFrozenAsciiDecimal(quantity: "3٠.000", expected: False) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3549580+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00\ud83d\ude00"···, expected: True) [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="Natig-Erens-MacBook-Pro" outcome="Error" timestamp="2026-09-16T14:14:37.3554110+05:00">
+        <Text>[xUnit.net 00:00:00.26]     Diten.SupplyChainService.Tests.ShipmentValidatorContractTests.TransitionNoteUsesUnicodeCodePoints(note: "\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00a\ud83d\ude00"···, expected: True) [FAIL]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,404 @@
+{
+  "sce_shipments": [
+    {
+      "_id": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "IsDeleted": false,
+      "DeletedAt": null,
+      "CreatedAt": "2026-09-16T10:54:22.737033+00:00",
+      "UpdatedAt": "2026-09-16T10:54:23.503072+00:00",
+      "Version": 5,
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "CreatedBy": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "UpdatedBy": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "ShipmentNumber": "SHP-edbe820a62904f5d821ebfe68d0c62c9",
+      "SourceModule": "MOD-0141",
+      "SourceType": "SALES_ORDER",
+      "SourceDocumentId": "SO-900",
+      "SourceSystem": null,
+      "ExternalRef": null,
+      "WarehouseReferenceId": "wh-01",
+      "ShipToReference": "CUST-100/ADDR-2",
+      "CarrierId": null,
+      "LoadPlanId": null,
+      "Lines": [
+        {
+          "LineNumber": "1",
+          "ItemId": "b1f2c3d4-0000-0000-0000-000000000001",
+          "SkuId": "c3d4e5f6-0000-0000-0000-000000000002",
+          "Quantity": "30.000",
+          "UomId": "EA",
+          "InventoryReferenceId": "rsv-4001"
+        }
+      ],
+      "PlannedShipAt": "2026-09-20T08:00:00+00:00",
+      "PlannedDeliverAt": "2026-09-21T16:00:00+00:00",
+      "ActualDeliverAt": "2026-09-21T15:42:00+00:00",
+      "DispatchedAt": "2026-09-20T08:15:00+00:00",
+      "Status": "Closed",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "Pod": {
+        "_id": "e8986c4e-c9b2-4a45-88b1-856fc7b64c80",
+        "ReceivedAt": "2026-09-21T15:42:00+00:00",
+        "RecipientName": "Runtime Test Recipient",
+        "EvidenceReferenceIds": [
+          "test-only-evidence"
+        ],
+        "Note": "Isolated verification",
+        "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474"
+      }
+    }
+  ],
+  "sce_shipment_receipts": [
+    {
+      "_id": "2d320820-bfc4-48a2-aa57-fd2b46ad45e7",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "Operation": "transition",
+      "Key": "dispatch",
+      "Fingerprint": "C144C89572A029E2C8FFD629B926E5D9CF8BE31433023B7B957A50F60DB8560E",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"75a7cad5-a51f-4117-9cf9-445d4ba709fe\",\"CreatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"UpdatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"ShipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":2,\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"Pod\":null,\"Id\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"TenantId\":\"6ee5c303-faf0-48bc-b360-426ebbb1f10d\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T10:54:22.737033+00:00\",\"UpdatedAt\":\"2026-09-16T10:54:23.268767+00:00\",\"Version\":3}",
+      "CommandId": "c71064e3-b71e-4737-a782-8598e89eb4e9"
+    },
+    {
+      "_id": "900e041d-d40b-403d-862b-e3b834285551",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "Operation": "transition",
+      "Key": "plan",
+      "Fingerprint": "0AB39C6A5E136BCD12E5D0093E9AA99D6BBE5ACC912FC7F59F515E68A1F53B48",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"75a7cad5-a51f-4117-9cf9-445d4ba709fe\",\"CreatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"UpdatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"ShipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":1,\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"Pod\":null,\"Id\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"TenantId\":\"6ee5c303-faf0-48bc-b360-426ebbb1f10d\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T10:54:22.737033+00:00\",\"UpdatedAt\":\"2026-09-16T10:54:23.191778+00:00\",\"Version\":2}",
+      "CommandId": "31360d50-14ff-4fef-a26e-d5211f62075f"
+    },
+    {
+      "_id": "96a762b2-261f-4f0f-affc-f8db2a5176de",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "Operation": "create",
+      "Key": "create",
+      "Fingerprint": "B2A5C60EB5C8B1949A940C3B2160E2146A0E20EF164C48D716DFB4D9480F8824",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"75a7cad5-a51f-4117-9cf9-445d4ba709fe\",\"CreatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"UpdatedBy\":null,\"ShipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":null,\"DispatchedAt\":null,\"Status\":0,\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"Pod\":null,\"Id\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"TenantId\":\"6ee5c303-faf0-48bc-b360-426ebbb1f10d\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T10:54:22.737033+00:00\",\"UpdatedAt\":null,\"Version\":1}",
+      "CommandId": "19e9113d-18ff-4bc1-becb-b1e0071da6b3"
+    },
+    {
+      "_id": "9dc64eae-7525-4353-ba7c-35a7cdc894f3",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "Operation": "transition",
+      "Key": "close",
+      "Fingerprint": "A59585B8F0864161ACE761384C889D112FDBFFE3F12AF782C06135A69D6569B4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "StatusCode": 200,
+      "Snapshot": "{\"LegalEntityId\":\"75a7cad5-a51f-4117-9cf9-445d4ba709fe\",\"CreatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"UpdatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"ShipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":\"2026-09-21T15:42:00+00:00\",\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":6,\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"Pod\":{\"Id\":\"e8986c4e-c9b2-4a45-88b1-856fc7b64c80\",\"ReceivedAt\":\"2026-09-21T15:42:00+00:00\",\"RecipientName\":\"Runtime Test Recipient\",\"EvidenceReferenceIds\":[\"test-only-evidence\"],\"Note\":\"Isolated verification\",\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\"},\"Id\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"TenantId\":\"6ee5c303-faf0-48bc-b360-426ebbb1f10d\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T10:54:22.737033+00:00\",\"UpdatedAt\":\"2026-09-16T10:54:23.503072+00:00\",\"Version\":5}",
+      "CommandId": "057c0be5-be44-4197-b769-c42a315ce977"
+    },
+    {
+      "_id": "bf2d526c-f9e1-4708-a2ad-1c0c8c04b239",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "Operation": "pod",
+      "Key": "pod",
+      "Fingerprint": "9481E1046059982C06C727B88A21FF07DB97F16B0AA4A96A05C673A13520320E",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "StatusCode": 201,
+      "Snapshot": "{\"LegalEntityId\":\"75a7cad5-a51f-4117-9cf9-445d4ba709fe\",\"CreatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"UpdatedBy\":\"fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4\",\"ShipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"SourceModule\":\"MOD-0141\",\"SourceType\":\"SALES_ORDER\",\"SourceDocumentId\":\"SO-900\",\"SourceSystem\":null,\"ExternalRef\":null,\"WarehouseReferenceId\":\"wh-01\",\"ShipToReference\":\"CUST-100/ADDR-2\",\"CarrierId\":null,\"LoadPlanId\":null,\"Lines\":[{\"LineNumber\":\"1\",\"ItemId\":\"b1f2c3d4-0000-0000-0000-000000000001\",\"SkuId\":\"c3d4e5f6-0000-0000-0000-000000000002\",\"Quantity\":\"30.000\",\"UomId\":\"EA\",\"InventoryReferenceId\":\"rsv-4001\"}],\"PlannedShipAt\":\"2026-09-20T08:00:00+00:00\",\"PlannedDeliverAt\":\"2026-09-21T16:00:00+00:00\",\"ActualDeliverAt\":\"2026-09-21T15:42:00+00:00\",\"DispatchedAt\":\"2026-09-20T08:15:00+00:00\",\"Status\":4,\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"Pod\":{\"Id\":\"e8986c4e-c9b2-4a45-88b1-856fc7b64c80\",\"ReceivedAt\":\"2026-09-21T15:42:00+00:00\",\"RecipientName\":\"Runtime Test Recipient\",\"EvidenceReferenceIds\":[\"test-only-evidence\"],\"Note\":\"Isolated verification\",\"CorrelationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\"},\"Id\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"TenantId\":\"6ee5c303-faf0-48bc-b360-426ebbb1f10d\",\"IsDeleted\":false,\"DeletedAt\":null,\"CreatedAt\":\"2026-09-16T10:54:22.737033+00:00\",\"UpdatedAt\":\"2026-09-16T10:54:23.336041+00:00\",\"Version\":4}",
+      "CommandId": "5fc4db39-36bc-4030-8ed2-5ff1621f4160"
+    }
+  ],
+  "sce_shipment_history": [
+    {
+      "_id": "226aca68-8506-4e5d-80a3-2e4b0787c906",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "c71064e3-b71e-4737-a782-8598e89eb4e9",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "47874646-11ab-4776-a895-a5898277f3a0",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 5,
+      "FromStatus": "Delivered",
+      "ToStatus": "Closed",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "057c0be5-be44-4197-b769-c42a315ce977",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "6626ef01-7e6e-4658-afa1-42a0d00dcace",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T10:54:22.737Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "19e9113d-18ff-4bc1-becb-b1e0071da6b3",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "9d40933a-8a27-4e2f-8f73-90ae91df087e",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "31360d50-14ff-4fef-a26e-d5211f62075f",
+      "ReasonCode": null,
+      "Note": null
+    },
+    {
+      "_id": "b7ae29a2-cc3c-4d31-a729-1a53f4b7394a",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "5fc4db39-36bc-4030-8ed2-5ff1621f4160",
+      "ReasonCode": null,
+      "Note": "Isolated verification"
+    }
+  ],
+  "sce_shipment_audit": [
+    {
+      "_id": "12f2dc40-eef6-422c-a129-4e0969ce1a43",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 5,
+      "FromStatus": "Delivered",
+      "ToStatus": "Closed",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "057c0be5-be44-4197-b769-c42a315ce977",
+      "Operation": "transition"
+    },
+    {
+      "_id": "2a001ba0-fc0c-4c86-aabe-e9710cb8d224",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 4,
+      "FromStatus": "Dispatched",
+      "ToStatus": "Delivered",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "5fc4db39-36bc-4030-8ed2-5ff1621f4160",
+      "Operation": "pod"
+    },
+    {
+      "_id": "4bc0e2a8-bed8-4a4f-80a6-67b5d7c12031",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 1,
+      "FromStatus": null,
+      "ToStatus": "Draft",
+      "OccurredAt": {
+        "$date": "2026-09-16T10:54:22.737Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "19e9113d-18ff-4bc1-becb-b1e0071da6b3",
+      "Operation": "create"
+    },
+    {
+      "_id": "58ea4709-c3aa-4f77-8f6e-1df85c7ab0f6",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 2,
+      "FromStatus": "Draft",
+      "ToStatus": "Planned",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "31360d50-14ff-4fef-a26e-d5211f62075f",
+      "Operation": "transition"
+    },
+    {
+      "_id": "5da502a7-0d20-40ab-a017-52a640563bd7",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "Sequence": 3,
+      "FromStatus": "Planned",
+      "ToStatus": "Dispatched",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "ActorId": "fe3bd5b2-bbfc-49ce-8d75-10a0a899cdc4",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CommandId": "c71064e3-b71e-4737-a782-8598e89eb4e9",
+      "Operation": "transition"
+    }
+  ],
+  "sce_shipment_outbox": [
+    {
+      "_id": "192d1904-8f81-457b-9f88-b685613e47fe",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "PodCaptured",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "5fc4db39-36bc-4030-8ed2-5ff1621f4160",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"192d1904-8f81-457b-9f88-b685613e47fe\",\"eventType\":\"PodCaptured\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"5fc4db39-36bc-4030-8ed2-5ff1621f4160\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"e8986c4e-c9b2-4a45-88b1-856fc7b64c80\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:23.354Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "53798f8a-df51-47b9-9888-a11dd29ad8c8",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "ShipmentPlanned",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "31360d50-14ff-4fef-a26e-d5211f62075f",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"53798f8a-df51-47b9-9888-a11dd29ad8c8\",\"eventType\":\"ShipmentPlanned\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"31360d50-14ff-4fef-a26e-d5211f62075f\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Planned\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:23.216Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "54e84312-a021-41d3-a17e-2cf01908934d",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "ShipmentDispatched",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "c71064e3-b71e-4737-a782-8598e89eb4e9",
+      "OccurredAt": {
+        "$date": "2026-09-20T08:15:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"54e84312-a021-41d3-a17e-2cf01908934d\",\"eventType\":\"ShipmentDispatched\",\"occurredAt\":\"2026-09-20T08:15:00+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"c71064e3-b71e-4737-a782-8598e89eb4e9\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Dispatched\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:23.278Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "7af10088-bd38-4ab9-ac8b-291c35ba683b",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "ShipmentDelivered",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "5fc4db39-36bc-4030-8ed2-5ff1621f4160",
+      "OccurredAt": {
+        "$date": "2026-09-21T15:42:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"7af10088-bd38-4ab9-ac8b-291c35ba683b\",\"eventType\":\"ShipmentDelivered\",\"occurredAt\":\"2026-09-21T15:42:00+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"5fc4db39-36bc-4030-8ed2-5ff1621f4160\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Delivered\",\"carrierId\":null,\"loadId\":null,\"podId\":\"e8986c4e-c9b2-4a45-88b1-856fc7b64c80\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:23.351Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "97e2eca9-a7c3-4b4c-ad42-3bdc2353a120",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "ShipmentClosed",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "057c0be5-be44-4197-b769-c42a315ce977",
+      "OccurredAt": {
+        "$date": "2026-09-21T16:00:00Z"
+      },
+      "PayloadJson": "{\"eventId\":\"97e2eca9-a7c3-4b4c-ad42-3bdc2353a120\",\"eventType\":\"ShipmentClosed\",\"occurredAt\":\"2026-09-21T16:00:00+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"057c0be5-be44-4197-b769-c42a315ce977\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Closed\",\"carrierId\":null,\"loadId\":null,\"podId\":\"e8986c4e-c9b2-4a45-88b1-856fc7b64c80\",\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:23.519Z"
+      },
+      "ClaimedAt": null
+    },
+    {
+      "_id": "ca41e3da-fd37-4d7e-9686-3b9c07ad0aa2",
+      "TenantId": "6ee5c303-faf0-48bc-b360-426ebbb1f10d",
+      "LegalEntityId": "75a7cad5-a51f-4117-9cf9-445d4ba709fe",
+      "ShipmentId": "edbe820a-6290-4f5d-821e-bfe68d0c62c9",
+      "EventType": "ShipmentCreated",
+      "CorrelationId": "aefbfc63-30ad-4f09-9992-1098e86d6474",
+      "CausationId": "19e9113d-18ff-4bc1-becb-b1e0071da6b3",
+      "OccurredAt": {
+        "$date": "2026-09-16T10:54:22.737Z"
+      },
+      "PayloadJson": "{\"eventId\":\"ca41e3da-fd37-4d7e-9686-3b9c07ad0aa2\",\"eventType\":\"ShipmentCreated\",\"occurredAt\":\"2026-09-16T10:54:22.737033+00:00\",\"correlationId\":\"aefbfc63-30ad-4f09-9992-1098e86d6474\",\"causationId\":\"19e9113d-18ff-4bc1-becb-b1e0071da6b3\",\"aggregateType\":\"Shipment\",\"aggregateId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"payload\":{\"shipmentId\":\"edbe820a-6290-4f5d-821e-bfe68d0c62c9\",\"shipmentNumber\":\"SHP-edbe820a62904f5d821ebfe68d0c62c9\",\"status\":\"Draft\",\"carrierId\":null,\"loadId\":null,\"podId\":null,\"reasonCode\":null},\"contractVersion\":\"v1\"}",
+      "Status": "Pending",
+      "AttemptCount": 0,
+      "NextAttemptAt": {
+        "$date": "2026-09-16T10:54:22.879Z"
+      },
+      "ClaimedAt": null
+    }
+  ]
+}

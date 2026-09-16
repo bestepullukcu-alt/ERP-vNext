@@ -1,0 +1,958 @@
+openapi: 3.1.0
+info:
+  title: SHIPMENT-BUNDLE
+  description: >
+    MOD-0183 Shipment Tracking & POD, MOD-0184 Carrier Management, MOD-0185 Routing &
+    Load Planning, MOD-0186 Reverse Logistics ve MOD-0187 Claims Management icin MVP-6
+    owned, mock-ready frozen contract (v1). TenantId ve LegalEntityId sunucuda JWT
+    baglamindan resolve edilir; request body icinde kabul edilmez. INVENTORY yalniz
+    frozen INVENTORY contract'indan reference/availability olarak okunur; bu bundle
+    shadow stock balance tutmaz. ASSUMPTION: lifecycle gecisleri optimistic concurrency
+    yerine idempotent command + mevcut durum kontroluyle korunur. CONSUMES:
+    WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)
+  version: 1.0.0
+  x-status: FROZEN
+  x-owner: [MOD-0183, MOD-0184, MOD-0185, MOD-0186, MOD-0187]
+  x-consumes:
+    - INVENTORY
+    - "CONSUMES: WAREHOUSE-SHIPMENT-TRIGGER (merkez üretecek)"
+  x-contract-version: v1
+servers:
+  - url: /api/shipment-bundle
+security:
+  - bearerAuth: []
+tags:
+  - { name: Shipments, description: MOD-0183 Shipment/POD SoR }
+  - { name: Carriers, description: MOD-0184 Carrier SoR }
+  - { name: Loads, description: MOD-0185 Routing/Load SoR }
+  - { name: Returns, description: MOD-0186 Reverse Logistics SoR }
+  - { name: Claims, description: MOD-0187 Claims SoR }
+paths:
+  /shipments:
+    get:
+      tags: [Shipments]
+      operationId: queryShipments
+      summary: Shipment listesi sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ShipmentStatus' } }
+        - { name: sourceDocumentId, in: query, schema: { type: string } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Shipment listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentListResponse' }
+              example:
+                items:
+                  - shipmentId: 18300000-0000-0000-0000-000000000001
+                    shipmentNumber: SHP-2026-000001
+                    sourceDocumentId: SO-900
+                    status: Dispatched
+                    carrierId: 18400000-0000-0000-0000-000000000001
+                    loadId: 18500000-0000-0000-0000-000000000001
+                    plannedShipAt: '2026-09-20T08:00:00Z'
+                    plannedDeliverAt: '2026-09-21T16:00:00Z'
+                    actualDeliverAt: null
+                page: 1
+                pageSize: 50
+                total: 1
+                contractVersion: v1
+        '400': { $ref: '#/components/responses/BadRequest' }
+    post:
+      tags: [Shipments]
+      operationId: createShipment
+      summary: Shipment olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateShipmentCommand' }
+            example:
+              sourceModule: MOD-0141
+              sourceType: SALES_ORDER
+              sourceDocumentId: SO-900
+              warehouseReferenceId: wh-01
+              shipToReference: CUST-100/ADDR-2
+              plannedShipAt: '2026-09-20T08:00:00Z'
+              plannedDeliverAt: '2026-09-21T16:00:00Z'
+              lines:
+                - lineNumber: '1'
+                  itemId: b1f2c3d4-0000-0000-0000-000000000001
+                  skuId: c3d4e5f6-0000-0000-0000-000000000002
+                  quantity: '30.000'
+                  uomId: EA
+                  inventoryReferenceId: rsv-4001
+      responses:
+        '201':
+          description: Shipment Draft durumunda olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example:
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                shipmentNumber: SHP-2026-000001
+                status: Draft
+                idempotentReplay: false
+                contractVersion: v1
+        '200':
+          description: Ayni Idempotency-Key icin orijinal sonuc
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Draft, idempotentReplay: true, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '503': { $ref: '#/components/responses/DependencyUnavailable' }
+  /shipments/{shipmentId}:
+    get:
+      tags: [Shipments]
+      operationId: getShipment
+      summary: Shipment ve POD gorunumunu getir
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+      responses:
+        '200':
+          description: Shipment detayi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentDetail' }
+              example:
+                shipmentId: 18300000-0000-0000-0000-000000000001
+                shipmentNumber: SHP-2026-000001
+                sourceModule: MOD-0141
+                sourceType: SALES_ORDER
+                sourceDocumentId: SO-900
+                warehouseReferenceId: wh-01
+                shipToReference: CUST-100/ADDR-2
+                carrierId: 18400000-0000-0000-0000-000000000001
+                loadId: 18500000-0000-0000-0000-000000000001
+                status: Delivered
+                plannedShipAt: '2026-09-20T08:00:00Z'
+                plannedDeliverAt: '2026-09-21T16:00:00Z'
+                actualDeliverAt: '2026-09-21T15:42:00Z'
+                lines:
+                  - { lineNumber: '1', itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, quantity: '30.000', uomId: EA, inventoryReferenceId: rsv-4001 }
+                pod: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
+                contractVersion: v1
+        '404': { $ref: '#/components/responses/NotFound' }
+  /shipments/{shipmentId}/transition:
+    post:
+      tags: [Shipments]
+      operationId: transitionShipment
+      summary: Shipment lifecycle durumunu ilerlet
+      description: >
+        Izinli gecisler: Draft->Planned|Cancelled; Planned->Dispatched|Cancelled;
+        Dispatched->InTransit|Delivered|Exception; InTransit->Delivered|Exception;
+        Exception->InTransit|Cancelled; Delivered->Closed. Diger gecisler
+        INVALID_SHIPMENT_TRANSITION ile deterministik reddedilir.
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionShipmentCommand' }
+            example: { targetStatus: Dispatched, occurredAt: '2026-09-20T08:15:00Z', reasonCode: CARRIER_HANDOFF, note: Carrier scan alindi }
+      responses:
+        '200':
+          description: Lifecycle gecisi uygulandi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShipmentResponse' }
+              example: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Dispatched, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /shipments/{shipmentId}/pod:
+    post:
+      tags: [Shipments]
+      operationId: captureProofOfDelivery
+      summary: Teslim kanitini kaydet ve shipment'i Delivered yap
+      description: Yalniz Dispatched veya InTransit durumundan kabul edilir.
+      parameters:
+        - { $ref: '#/components/parameters/ShipmentId' }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CapturePodCommand' }
+            example: { recipientName: Ada Yilmaz, receivedAt: '2026-09-21T15:42:00Z', evidenceReferenceIds: [doc-pod-9001], note: Eksiksiz teslim }
+      responses:
+        '201':
+          description: POD kaydedildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PodResponse' }
+              example: { podId: 18300000-0000-0000-0000-000000000099, shipmentId: 18300000-0000-0000-0000-000000000001, shipmentStatus: Delivered, receivedAt: '2026-09-21T15:42:00Z', idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /carriers:
+    get:
+      tags: [Carriers]
+      operationId: queryCarriers
+      summary: Carrier listesi sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/CarrierStatus' } }
+      responses:
+        '200':
+          description: Carrier listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CarrierListResponse' }
+              example: { items: [{ carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, displayName: North Star Logistics, status: Active, supportedModes: [Road] }], total: 1, contractVersion: v1 }
+    post:
+      tags: [Carriers]
+      operationId: createCarrier
+      summary: Carrier olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCarrierCommand' }
+            example: { carrierCode: CARR-01, displayName: North Star Logistics, supportedModes: [Road], externalReference: EXT-CARR-88 }
+      responses:
+        '201':
+          description: Carrier olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CarrierResponse' }
+              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Active, idempotentReplay: false, contractVersion: v1 }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /carriers/{carrierId}/status:
+    post:
+      tags: [Carriers]
+      operationId: changeCarrierStatus
+      summary: Carrier durumunu degistir
+      description: Active<->Suspended; Retired terminal durumdur.
+      parameters:
+        - { name: carrierId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangeCarrierStatusCommand' }
+            example: { targetStatus: Suspended, reasonCode: COMPLIANCE_HOLD }
+      responses:
+        '200':
+          description: Carrier durumu degisti
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CarrierResponse' }
+              example: { carrierId: 18400000-0000-0000-0000-000000000001, carrierCode: CARR-01, status: Suspended, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /loads:
+    get:
+      tags: [Loads]
+      operationId: queryLoads
+      summary: Load planlarini sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/LoadStatus' } }
+        - { name: carrierId, in: query, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Load listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoadListResponse' }
+              example: { items: [{ loadId: 18500000-0000-0000-0000-000000000001, loadNumber: LOAD-2026-001, carrierId: 18400000-0000-0000-0000-000000000001, shipmentIds: [18300000-0000-0000-0000-000000000001], status: Planned }], total: 1, contractVersion: v1 }
+    post:
+      tags: [Loads]
+      operationId: createLoadPlan
+      summary: Route ve load plan olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateLoadCommand' }
+            example:
+              carrierId: 18400000-0000-0000-0000-000000000001
+              shipmentIds: [18300000-0000-0000-0000-000000000001]
+              mode: Road
+              plannedDepartAt: '2026-09-20T08:00:00Z'
+              stops:
+                - { sequence: 1, locationReferenceId: wh-01, action: Pickup }
+                - { sequence: 2, locationReferenceId: CUST-100/ADDR-2, action: Delivery }
+      responses:
+        '201':
+          description: Load Draft durumunda olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoadResponse' }
+              example: { loadId: 18500000-0000-0000-0000-000000000001, loadNumber: LOAD-2026-001, status: Draft, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /loads/{loadId}/transition:
+    post:
+      tags: [Loads]
+      operationId: transitionLoad
+      summary: Load lifecycle durumunu ilerlet
+      description: >
+        Izinli gecisler: Draft->Planned|Cancelled; Planned->Tendered|Cancelled;
+        Tendered->Accepted|Cancelled; Accepted->Dispatched|Cancelled;
+        Dispatched->Completed. Diger gecisler INVALID_LOAD_TRANSITION ile reddedilir.
+      parameters:
+        - { name: loadId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionLoadCommand' }
+            example: { targetStatus: Dispatched, occurredAt: '2026-09-20T08:10:00Z', note: Gate cikisi kaydedildi }
+      responses:
+        '200':
+          description: Load gecisi uygulandi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoadResponse' }
+              example: { loadId: 18500000-0000-0000-0000-000000000001, loadNumber: LOAD-2026-001, status: Dispatched, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /returns:
+    get:
+      tags: [Returns]
+      operationId: queryReturns
+      summary: Return/RMA listesi sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: shipmentId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ReturnStatus' } }
+      responses:
+        '200':
+          description: Return listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnListResponse' }
+              example: { items: [{ returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Authorized }], total: 1, contractVersion: v1 }
+    post:
+      tags: [Returns]
+      operationId: createReturn
+      summary: Shipment icin Return/RMA talebi olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateReturnCommand' }
+            example:
+              shipmentId: 18300000-0000-0000-0000-000000000001
+              reasonCode: DAMAGED_IN_TRANSIT
+              lines: [{ shipmentLineNumber: '1', quantity: '2.000', uomId: EA }]
+              evidenceReferenceIds: [photo-damage-22]
+      responses:
+        '201':
+          description: Return Requested durumunda olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+              example: { returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Requested, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /returns/{returnId}/transition:
+    post:
+      tags: [Returns]
+      operationId: transitionReturn
+      summary: Return/RMA lifecycle durumunu ilerlet
+      description: >
+        Izinli gecisler: Requested->Authorized|Rejected; Authorized->InTransit|Cancelled;
+        InTransit->Received; Received->Dispositioned; Dispositioned->Closed. Diger
+        gecisler INVALID_RETURN_TRANSITION ile reddedilir. INVENTORY posting bu API'nin
+        disindadir ve frozen INVENTORY contract'ina korele referansla yapilir.
+      parameters:
+        - { name: returnId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionReturnCommand' }
+            example: { targetStatus: Received, occurredAt: '2026-09-25T12:10:00Z', inventoryTransactionReferenceId: txn-8801, dispositionCode: INSPECTION_REQUIRED }
+      responses:
+        '200':
+          description: Return gecisi uygulandi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReturnResponse' }
+              example: { returnId: 18600000-0000-0000-0000-000000000001, rmaNumber: RMA-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Received, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /claims:
+    get:
+      tags: [Claims]
+      operationId: queryClaims
+      summary: Claim listesi sorgula
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { name: shipmentId, in: query, schema: { type: string, format: uuid } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/ClaimStatus' } }
+      responses:
+        '200':
+          description: Claim listesi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClaimListResponse' }
+              example: { items: [{ claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Investigating, claimedAmount: '250.00', currency: USD }], total: 1, contractVersion: v1 }
+    post:
+      tags: [Claims]
+      operationId: createClaim
+      summary: Shipment claim'i olustur
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateClaimCommand' }
+            example: { shipmentId: 18300000-0000-0000-0000-000000000001, carrierId: 18400000-0000-0000-0000-000000000001, reasonCode: DAMAGE, claimedAmount: '250.00', currency: USD, evidenceReferenceIds: [photo-damage-22, pod-9001] }
+      responses:
+        '201':
+          description: Claim Open durumunda olusturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClaimResponse' }
+              example: { claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Open, approvedAmount: null, idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /claims/{claimId}/transition:
+    post:
+      tags: [Claims]
+      operationId: transitionClaim
+      summary: Claim lifecycle durumunu ilerlet
+      description: >
+        Izinli gecisler: Open->Investigating|Withdrawn; Investigating->Approved|Rejected;
+        Approved->Settled; Rejected->Closed; Settled->Closed. Diger gecisler
+        INVALID_CLAIM_TRANSITION ile reddedilir.
+      parameters:
+        - { name: claimId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransitionClaimCommand' }
+            example: { targetStatus: Approved, occurredAt: '2026-09-27T09:00:00Z', resolutionCode: CARRIER_ACCEPTED, approvedAmount: '200.00', note: Evidence accepted }
+      responses:
+        '200':
+          description: Claim gecisi uygulandi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClaimResponse' }
+              example: { claimId: 18700000-0000-0000-0000-000000000001, claimNumber: CLM-2026-001, shipmentId: 18300000-0000-0000-0000-000000000001, status: Approved, approvedAmount: '200.00', idempotentReplay: false, contractVersion: v1 }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+webhooks:
+  shipmentLifecycleEvent:
+    post:
+      operationId: receiveShipmentLifecycleEvent
+      summary: Event Bus'a yayilan shipment-bundle lifecycle event'i
+      description: >
+        correlationId ilk HTTP X-Correlation-Id degeriyle ayni UUID olmalidir ve
+        shipment->load->POD->return/claim zincirindeki tum turetilmis event'lerde
+        degistirilmeden tasinir.
+      parameters:
+        - { $ref: '#/components/parameters/CorrelationId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LifecycleEventEnvelope' }
+            example:
+              eventId: 90000000-0000-0000-0000-000000000001
+              eventType: ShipmentDelivered
+              occurredAt: '2026-09-21T15:42:00Z'
+              correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa
+              causationId: 90000000-0000-0000-0000-000000000000
+              aggregateType: Shipment
+              aggregateId: 18300000-0000-0000-0000-000000000001
+              payload: { shipmentId: 18300000-0000-0000-0000-000000000001, shipmentNumber: SHP-2026-000001, status: Delivered, podId: 18300000-0000-0000-0000-000000000099 }
+              contractVersion: v1
+      responses:
+        '202':
+          description: Event kabul edildi
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventAcceptedResponse' }
+              example: { eventId: 90000000-0000-0000-0000-000000000001, accepted: true, contractVersion: v1 }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: true
+      description: UUID; uretilen lifecycle event envelope'indaki correlationId ile birebir ayni tasinir.
+      schema: { type: string, format: uuid }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 128 }
+    ShipmentId:
+      name: shipmentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+  schemas:
+    Decimal:
+      type: string
+      pattern: '^-?\d+(\.\d+)?$'
+    ContractVersion:
+      type: string
+      const: v1
+    ShipmentStatus: { type: string, enum: [Draft, Planned, Dispatched, InTransit, Delivered, Exception, Closed, Cancelled] }
+    CarrierStatus: { type: string, enum: [Active, Suspended, Retired] }
+    TransportMode: { type: string, enum: [Road, Air, Sea, Rail, Parcel] }
+    LoadStatus: { type: string, enum: [Draft, Planned, Tendered, Accepted, Dispatched, Completed, Cancelled] }
+    ReturnStatus: { type: string, enum: [Requested, Authorized, Rejected, InTransit, Received, Dispositioned, Closed, Cancelled] }
+    ClaimStatus: { type: string, enum: [Open, Investigating, Approved, Rejected, Settled, Closed, Withdrawn] }
+    ShipmentLine:
+      type: object
+      additionalProperties: false
+      required: [lineNumber, itemId, skuId, quantity, uomId]
+      properties:
+        lineNumber: { type: string }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        inventoryReferenceId: { type: [string, 'null'], description: Frozen INVENTORY reservation/transaction reference; balance degildir. }
+    CreateShipmentCommand:
+      type: object
+      additionalProperties: false
+      required: [sourceModule, sourceType, sourceDocumentId, warehouseReferenceId, shipToReference, plannedShipAt, lines]
+      properties:
+        sourceModule: { type: string }
+        sourceType: { type: string }
+        sourceDocumentId: { type: string }
+        warehouseReferenceId: { type: string, description: WAREHOUSE-SHIPMENT-TRIGGER contract'i gelene kadar opaque reference. }
+        shipToReference: { type: string }
+        plannedShipAt: { type: string, format: date-time }
+        plannedDeliverAt: { type: [string, 'null'], format: date-time }
+        lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ShipmentLine' } }
+    TransitionShipmentCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ShipmentStatus' }
+        occurredAt: { type: string, format: date-time }
+        reasonCode: { type: [string, 'null'] }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    CapturePodCommand:
+      type: object
+      additionalProperties: false
+      required: [recipientName, receivedAt, evidenceReferenceIds]
+      properties:
+        recipientName: { type: string, minLength: 1 }
+        receivedAt: { type: string, format: date-time }
+        evidenceReferenceIds: { type: array, minItems: 1, items: { type: string } }
+        note: { type: [string, 'null'], maxLength: 1000 }
+    PodView:
+      type: object
+      required: [recipientName, receivedAt, evidenceReferenceIds]
+      properties:
+        recipientName: { type: string }
+        receivedAt: { type: string, format: date-time }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+        note: { type: [string, 'null'] }
+    ShipmentResponse:
+      type: object
+      required: [shipmentId, shipmentNumber, status, idempotentReplay, contractVersion]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentSummary:
+      type: object
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        sourceDocumentId: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        carrierId: { type: [string, 'null'], format: uuid }
+        loadId: { type: [string, 'null'], format: uuid }
+        plannedShipAt: { type: string, format: date-time }
+        plannedDeliverAt: { type: [string, 'null'], format: date-time }
+        actualDeliverAt: { type: [string, 'null'], format: date-time }
+    ShipmentDetail:
+      allOf:
+        - { $ref: '#/components/schemas/ShipmentSummary' }
+        - type: object
+          required: [sourceModule, sourceType, warehouseReferenceId, shipToReference, lines, contractVersion]
+          properties:
+            sourceModule: { type: string }
+            sourceType: { type: string }
+            warehouseReferenceId: { type: string }
+            shipToReference: { type: string }
+            lines: { type: array, items: { $ref: '#/components/schemas/ShipmentLine' } }
+            pod: { anyOf: [{ $ref: '#/components/schemas/PodView' }, { type: 'null' }] }
+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentListResponse:
+      type: object
+      required: [items, page, pageSize, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ShipmentSummary' } }
+        page: { type: integer }
+        pageSize: { type: integer }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    PodResponse:
+      type: object
+      required: [podId, shipmentId, shipmentStatus, receivedAt, idempotentReplay, contractVersion]
+      properties:
+        podId: { type: string, format: uuid }
+        shipmentId: { type: string, format: uuid }
+        shipmentStatus: { $ref: '#/components/schemas/ShipmentStatus' }
+        receivedAt: { type: string, format: date-time }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CreateCarrierCommand:
+      type: object
+      additionalProperties: false
+      required: [carrierCode, displayName, supportedModes]
+      properties:
+        carrierCode: { type: string, minLength: 1 }
+        displayName: { type: string, minLength: 1 }
+        supportedModes: { type: array, minItems: 1, items: { $ref: '#/components/schemas/TransportMode' } }
+        externalReference: { type: [string, 'null'] }
+    ChangeCarrierStatusCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, reasonCode]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/CarrierStatus' }
+        reasonCode: { type: string }
+    CarrierSummary:
+      type: object
+      required: [carrierId, carrierCode, displayName, status, supportedModes]
+      properties:
+        carrierId: { type: string, format: uuid }
+        carrierCode: { type: string }
+        displayName: { type: string }
+        status: { $ref: '#/components/schemas/CarrierStatus' }
+        supportedModes: { type: array, items: { $ref: '#/components/schemas/TransportMode' } }
+    CarrierResponse:
+      type: object
+      required: [carrierId, carrierCode, status, idempotentReplay, contractVersion]
+      properties:
+        carrierId: { type: string, format: uuid }
+        carrierCode: { type: string }
+        status: { $ref: '#/components/schemas/CarrierStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CarrierListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/CarrierSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    LoadStop:
+      type: object
+      additionalProperties: false
+      required: [sequence, locationReferenceId, action]
+      properties:
+        sequence: { type: integer, minimum: 1 }
+        locationReferenceId: { type: string }
+        action: { type: string, enum: [Pickup, Delivery, Return] }
+    CreateLoadCommand:
+      type: object
+      additionalProperties: false
+      required: [carrierId, shipmentIds, mode, plannedDepartAt, stops]
+      properties:
+        carrierId: { type: string, format: uuid }
+        shipmentIds: { type: array, minItems: 1, items: { type: string, format: uuid } }
+        mode: { $ref: '#/components/schemas/TransportMode' }
+        plannedDepartAt: { type: string, format: date-time }
+        stops: { type: array, minItems: 2, items: { $ref: '#/components/schemas/LoadStop' } }
+    TransitionLoadCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/LoadStatus' }
+        occurredAt: { type: string, format: date-time }
+        note: { type: [string, 'null'] }
+    LoadSummary:
+      type: object
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        carrierId: { type: string, format: uuid }
+        shipmentIds: { type: array, items: { type: string, format: uuid } }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+    LoadResponse:
+      type: object
+      required: [loadId, loadNumber, status, idempotentReplay, contractVersion]
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    LoadListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LoadSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ReturnLine:
+      type: object
+      additionalProperties: false
+      required: [shipmentLineNumber, quantity, uomId]
+      properties:
+        shipmentLineNumber: { type: string }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+    CreateReturnCommand:
+      type: object
+      additionalProperties: false
+      required: [shipmentId, reasonCode, lines]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        reasonCode: { type: string }
+        lines: { type: array, minItems: 1, items: { $ref: '#/components/schemas/ReturnLine' } }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+    TransitionReturnCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ReturnStatus' }
+        occurredAt: { type: string, format: date-time }
+        inventoryTransactionReferenceId: { type: [string, 'null'], description: Frozen INVENTORY movement reference; stok bakiyesi degildir. }
+        dispositionCode: { type: [string, 'null'] }
+    ReturnSummary:
+      type: object
+      properties:
+        returnId: { type: string, format: uuid }
+        rmaNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ReturnStatus' }
+    ReturnResponse:
+      allOf:
+        - { $ref: '#/components/schemas/ReturnSummary' }
+        - type: object
+          required: [idempotentReplay, contractVersion]
+          properties:
+            idempotentReplay: { type: boolean }
+            contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ReturnListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ReturnSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    CreateClaimCommand:
+      type: object
+      additionalProperties: false
+      required: [shipmentId, reasonCode, claimedAmount, currency]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        carrierId: { type: [string, 'null'], format: uuid }
+        reasonCode: { type: string }
+        claimedAmount: { $ref: '#/components/schemas/Decimal' }
+        currency: { type: string, pattern: '^[A-Z]{3}$' }
+        evidenceReferenceIds: { type: array, items: { type: string } }
+    TransitionClaimCommand:
+      type: object
+      additionalProperties: false
+      required: [targetStatus, occurredAt]
+      properties:
+        targetStatus: { $ref: '#/components/schemas/ClaimStatus' }
+        occurredAt: { type: string, format: date-time }
+        resolutionCode: { type: [string, 'null'] }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        note: { type: [string, 'null'] }
+    ClaimSummary:
+      type: object
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        claimedAmount: { $ref: '#/components/schemas/Decimal' }
+        currency: { type: string }
+    ClaimResponse:
+      type: object
+      required: [claimId, claimNumber, shipmentId, status, idempotentReplay, contractVersion]
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+        idempotentReplay: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ClaimListResponse:
+      type: object
+      required: [items, total, contractVersion]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/ClaimSummary' } }
+        total: { type: integer }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    ShipmentEventPayload:
+      type: object
+      required: [shipmentId, shipmentNumber, status]
+      properties:
+        shipmentId: { type: string, format: uuid }
+        shipmentNumber: { type: string }
+        status: { $ref: '#/components/schemas/ShipmentStatus' }
+        carrierId: { type: [string, 'null'], format: uuid }
+        loadId: { type: [string, 'null'], format: uuid }
+        podId: { type: [string, 'null'], format: uuid }
+        reasonCode: { type: [string, 'null'] }
+    LoadEventPayload:
+      type: object
+      required: [loadId, loadNumber, status, shipmentIds]
+      properties:
+        loadId: { type: string, format: uuid }
+        loadNumber: { type: string }
+        status: { $ref: '#/components/schemas/LoadStatus' }
+        shipmentIds: { type: array, items: { type: string, format: uuid } }
+    ReturnEventPayload:
+      type: object
+      required: [returnId, rmaNumber, shipmentId, status]
+      properties:
+        returnId: { type: string, format: uuid }
+        rmaNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ReturnStatus' }
+        inventoryTransactionReferenceId: { type: [string, 'null'] }
+    ClaimEventPayload:
+      type: object
+      required: [claimId, claimNumber, shipmentId, status]
+      properties:
+        claimId: { type: string, format: uuid }
+        claimNumber: { type: string }
+        shipmentId: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/ClaimStatus' }
+        approvedAmount: { anyOf: [{ $ref: '#/components/schemas/Decimal' }, { type: 'null' }] }
+    LifecycleEventEnvelope:
+      type: object
+      additionalProperties: false
+      required: [eventId, eventType, occurredAt, correlationId, aggregateType, aggregateId, payload, contractVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        eventType:
+          type: string
+          enum: [ShipmentCreated, ShipmentPlanned, ShipmentDispatched, ShipmentInTransit, ShipmentDelivered, ShipmentException, ShipmentClosed, ShipmentCancelled, PodCaptured, LoadCreated, LoadPlanned, LoadTendered, LoadAccepted, LoadDispatched, LoadCompleted, LoadCancelled, ReturnRequested, ReturnAuthorized, ReturnRejected, ReturnInTransit, ReturnReceived, ReturnDispositioned, ReturnClosed, ReturnCancelled, ClaimOpened, ClaimInvestigating, ClaimApproved, ClaimRejected, ClaimSettled, ClaimClosed, ClaimWithdrawn]
+        occurredAt: { type: string, format: date-time }
+        correlationId: { type: string, format: uuid, description: Ilk command X-Correlation-Id degeri; zincir boyunca degistirilemez. }
+        causationId: { type: [string, 'null'], format: uuid }
+        aggregateType: { type: string, enum: [Shipment, Load, Return, Claim] }
+        aggregateId: { type: string, format: uuid }
+        payload:
+          oneOf:
+            - { $ref: '#/components/schemas/ShipmentEventPayload' }
+            - { $ref: '#/components/schemas/LoadEventPayload' }
+            - { $ref: '#/components/schemas/ReturnEventPayload' }
+            - { $ref: '#/components/schemas/ClaimEventPayload' }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    EventAcceptedResponse:
+      type: object
+      required: [eventId, accepted, contractVersion]
+      properties:
+        eventId: { type: string, format: uuid }
+        accepted: { type: boolean }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+    Error:
+      type: object
+      required: [error, contractVersion]
+      properties:
+        error:
+          type: object
+          required: [code, message, correlationId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+            correlationId: { type: string, format: uuid }
+        contractVersion: { $ref: '#/components/schemas/ContractVersion' }
+  responses:
+    BadRequest:
+      description: Request semasi veya header gecersiz
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          example: { error: { code: INVALID_REQUEST, message: Request schema validation failed, details: { field: plannedShipAt }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 }
+    NotFound:
+      description: Kayit tenant/legal-entity scope'unda bulunamadi
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            shipment: { value: { error: { code: SHIPMENT_NOT_FOUND, message: Shipment bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            carrier: { value: { error: { code: CARRIER_NOT_FOUND, message: Carrier bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            load: { value: { error: { code: LOAD_NOT_FOUND, message: Load bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            return: { value: { error: { code: RETURN_NOT_FOUND, message: Return bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            claim: { value: { error: { code: CLAIM_NOT_FOUND, message: Claim bulunamadi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    Conflict:
+      description: Idempotency veya tekillik cakismasi
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            idempotency: { value: { error: { code: IDEMPOTENCY_KEY_REUSED, message: Idempotency-Key farkli payload ile kullanildi, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            duplicatePod: { value: { error: { code: POD_ALREADY_CAPTURED, message: Shipment icin POD zaten kayitli, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    Unprocessable:
+      description: Is kurali veya lifecycle gecisi gecersiz
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            shipmentTransition: { value: { error: { code: INVALID_SHIPMENT_TRANSITION, message: Shipment lifecycle gecisi gecersiz, details: { from: Draft, to: Delivered }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            loadTransition: { value: { error: { code: INVALID_LOAD_TRANSITION, message: Load lifecycle gecisi gecersiz, details: { from: Draft, to: Dispatched }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            returnTransition: { value: { error: { code: INVALID_RETURN_TRANSITION, message: Return lifecycle gecisi gecersiz, details: { from: Requested, to: Received }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            claimTransition: { value: { error: { code: INVALID_CLAIM_TRANSITION, message: Claim lifecycle gecisi gecersiz, details: { from: Open, to: Settled }, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            inventory: { value: { error: { code: INVENTORY_REFERENCE_INVALID, message: Frozen INVENTORY reference gecersiz veya availability yetersiz, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+    DependencyUnavailable:
+      description: Frozen consumed contract mock'u erisilemez
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+          examples:
+            inventory: { value: { error: { code: INVENTORY_UNAVAILABLE, message: Frozen INVENTORY mock erisilemez, correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
+            warehouseGap: { value: { error: { code: WAREHOUSE_SHIPMENT_TRIGGER_UNAVAILABLE, message: 'GAP: merkez CT WAREHOUSE-SHIPMENT-TRIGGER uretmeli', correlationId: aaaaaaaa-1111-4111-8111-aaaaaaaaaaaa }, contractVersion: v1 } }
