@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>التفعيل يجمّد هذه القاعدة كإصدار جديد. لا تؤثر تعديلات المسودة على الحملات النشطة.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>ابدأ من جمهور شائع، أو أضف أول شرط لك.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ أضف كتلة أخرى — يجب أن يستوفيها الأشخاص أيضًا</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>ما الذي تجيب عنه هذه الشريحة</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>العضوية هي القائمة الثابتة المكتوبة يدويًا أدناه — لا شيء مشتق من البيانات.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>الأعضاء هم من تختارهم القاعدة المحفوظة من البيانات الحية — ولا تُخزَّن القائمة أبدًا.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>الأعضاء هم من تختارهم القاعدة، إضافةً إلى من أُبقي عليهم يدويًا وناقص من استُبعدوا يدويًا.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>إخفاء القاعدة المحفوظة</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>لم يتم حل العضوية في هذه الجلسة</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>يقرأ الحل البيانات الحية وفق القاعدة المحفوظة ولا يخزّن شيئًا. تُدرَج المرشحون المستبعدون مع السبب.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>جارٍ حل العضوية مقابل البيانات الحية…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>المرشحون المستبعدون</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>سبب عدم اجتياز كل مرشح</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>التخصص · مكان العمل</value></data>
+  <data name="FromManual" xml:space="preserve"><value>من الصفوف اليدوية</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>مُضمَّن</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>مُستبعَد</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>تم الإنشاء</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>لم يُفعَّل بعد</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>قابل للاستخدام</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>يحل محل الإصدار السابق</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>بلا تاريخ انتهاء</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>ما الذي يُخزَّن</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>لماذا يتغير العدد</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>تُخزَّن فقط الصفوف المكتوبة يدويًا وأسبابها. تشير الجهات المستهلكة إلى الشريحة بدلاً من نسخ الأسماء.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>تخزّن الشريحة القاعدة وليس قائمة الأعضاء. كل عملية حل تعيد قراءة البيانات الحية، لذا يتغير العدد مع تغير البيانات.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>يحدد وضع المطابقة كيفية دمج الكتل العليا المستوى في القاعدة.</value></data>
 </root>

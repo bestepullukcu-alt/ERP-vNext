@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>Activar congela esta regla como una nueva versión. Los cambios del borrador nunca afectan a las campañas activas.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>Empieza desde una audiencia común o añade tu primera condición.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ Añadir otro bloque — las personas también deben cumplirlo</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>Qué responde este segmento</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>La pertenencia es la lista fija escrita a mano de abajo: nada se deriva de los datos.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Los miembros son quienes la regla guardada selecciona de los datos en vivo: la lista nunca se almacena.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Los miembros son quienes la regla selecciona, más las personas incluidas a mano y menos las excluidas a mano.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Ocultar la regla guardada</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>La pertenencia no se ha resuelto en esta sesión</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>La resolución lee datos en vivo según la regla guardada y no almacena nada. Los candidatos descartados se listan con el motivo.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Resolviendo la pertenencia con datos en vivo…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Candidatos descartados</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Por qué no entró cada candidato</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Especialidad · lugar de trabajo</value></data>
+  <data name="FromManual" xml:space="preserve"><value>de filas manuales</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>incluidos</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>excluidos</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Creado</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Aún no activado</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Utilizable</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Reemplaza la versión anterior</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>sin fecha de fin</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Qué se almacena</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Por qué cambia el número</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Solo se almacenan las filas escritas a mano y sus motivos. Los consumidores apuntan al segmento en lugar de copiar los nombres.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>El segmento almacena la regla, nunca una lista de miembros. Cada resolución vuelve a leer datos en vivo, por lo que el recuento cambia con los datos.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>El modo de coincidencia decide cómo se combinan los bloques de nivel superior de la regla.</value></data>
 </root>

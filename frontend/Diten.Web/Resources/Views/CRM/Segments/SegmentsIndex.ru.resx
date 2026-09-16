@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>Активация фиксирует это правило как новую версию. Изменения черновика не влияют на активные кампании.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>Начните с типовой аудитории или добавьте первое условие.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ Добавить ещё один блок — люди должны также ему соответствовать</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>На что отвечает этот сегмент</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>Членство — это фиксированный список, введённый вручную ниже: ничего не выводится из данных.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Участники — те, кого сохранённое правило выбирает из «живых» данных; список никогда не хранится.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Участники — те, кого выбирает правило, плюс включённые вручную и минус исключённые вручную.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Скрыть сохранённое правило</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>Членство в этой сессии ещё не вычислено</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>Вычисление читает «живые» данные по сохранённому правилу и ничего не хранит. Отклонённые кандидаты перечислены с причиной.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Вычисление членства по «живым» данным…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Отклонённые кандидаты</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Почему каждый кандидат не прошёл</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Специальность · место работы</value></data>
+  <data name="FromManual" xml:space="preserve"><value>из ручных строк</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>включены</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>исключены</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Создан</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Ещё не активирован</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Доступен</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Заменяет предыдущую версию</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>без даты окончания</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Что хранится</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Почему число меняется</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Хранятся только строки, введённые вручную, и их причины. Потребители ссылаются на сегмент, а не копируют имена.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Сегмент хранит правило, а не список участников. Каждое вычисление заново читает «живые» данные, поэтому число меняется вместе с данными.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>Режим сопоставления определяет, как объединяются блоки верхнего уровня правила.</value></data>
 </root>

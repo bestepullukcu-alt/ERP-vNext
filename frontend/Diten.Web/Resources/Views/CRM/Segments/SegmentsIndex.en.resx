@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>Activating freezes this rule as a new version. Draft edits never affect live campaigns.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>Start from a common audience, or add your first condition.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ Add another block — people must also satisfy it</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>What this segment answers</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>Membership is the fixed hand-written list below — nothing is derived from data.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Members are whoever the saved rule below selects from live data — the list is never stored.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Members are whoever the rule selects, plus people kept in by hand and minus people kept out.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Hide the stored rule</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>Membership has not been resolved in this session</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>Resolve reads live data against the saved rule and stores nothing. Dropped candidates are listed with the reason.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Resolving membership against live data…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Dropped candidates</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Why each candidate did not make it</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Specialty · workplace</value></data>
+  <data name="FromManual" xml:space="preserve"><value>from manual rows</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>kept in</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>kept out</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Created</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Not activated yet</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Usable</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Supersedes previous version</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>no end date</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>What is stored</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Why the number changes</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Only the hand-written rows and their reasons are stored. Consumers point at the segment rather than copying the names.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>The segment stores the rule, never a member list. Every resolve re-reads live data, so the count moves as the data moves.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>Match mode decides how the top-level blocks of the rule are combined.</value></data>
 </root>

@@ -41,7 +41,9 @@
         // Details resolve-preview labels.
         "CandidateCount", "MatchedCount", "ExcludedCount", "MembershipNeverStoredHelp", "ResolvePreviewHelp",
         "SubjectId", "SubjectDisplayName", "Verdict", "MembershipSource", "ReasonCodes", "MembershipMode",
-        "SelectionReason"
+        "SelectionReason",
+        // WP-SEG-DETAILS: labels details.js writes into the ported resolve/manual rows and summary chips.
+        "FromManual", "KeptIn", "KeptOut", "NoMembers"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

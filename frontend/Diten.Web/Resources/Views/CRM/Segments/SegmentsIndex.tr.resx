@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>Etkinleştirmek bu kuralı yeni bir sürüm olarak dondurur. Taslak düzenlemeleri canlı kampanyaları etkilemez.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>Yaygın bir kitleyle başla veya ilk koşulunu ekle.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ Başka bir blok ekle — kişiler bunu da sağlamalı</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>Bu segment neyi yanıtlar</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>Üyelik aşağıdaki sabit, elle yazılmış listedir — hiçbir şey veriden türetilmez.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Üyeler, aşağıdaki kayıtlı kuralın canlı veriden seçtiği kişilerdir — liste hiçbir zaman saklanmaz.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Üyeler, kuralın seçtiği kişiler artı elle dahil edilenler eksi elle çıkarılanlardır.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Kayıtlı kuralı gizle</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>Üyelik bu oturumda henüz çözümlenmedi</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>Çözümleme, kayıtlı kurala göre canlı veriyi okur ve hiçbir şey saklamaz. Elenen adaylar nedeniyle birlikte listelenir.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Üyelik canlı veriye göre çözümleniyor…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Elenen adaylar</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Her adayın neden eklenmediği</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Uzmanlık · çalışma yeri</value></data>
+  <data name="FromManual" xml:space="preserve"><value>elle eklenen satırlardan</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>dahil</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>hariç</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Henüz etkinleştirilmedi</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Kullanılabilir</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Önceki sürümün yerini alır</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>bitiş tarihi yok</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Ne saklanır</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Sayı neden değişir</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Yalnızca elle yazılmış satırlar ve nedenleri saklanır. Tüketiciler adları kopyalamak yerine segmente işaret eder.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Segment üye listesini değil kuralı saklar. Her çözümleme canlı veriyi yeniden okur, bu yüzden sayı veri değiştikçe değişir.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>Eşleşme kipi, kuralın en üst düzey bloklarının nasıl birleştirileceğini belirler.</value></data>
 </root>

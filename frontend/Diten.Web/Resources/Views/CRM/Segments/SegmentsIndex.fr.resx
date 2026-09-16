@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>L'activation fige cette règle en une nouvelle version. Les modifications du brouillon n'affectent jamais les campagnes en cours.</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>Partez d'une audience courante, ou ajoutez votre première condition.</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ Ajouter un autre bloc — les personnes doivent aussi le satisfaire</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>Ce à quoi ce segment répond</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>L'appartenance est la liste fixe saisie à la main ci-dessous — rien n'est dérivé des données.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Les membres sont ceux que la règle enregistrée sélectionne dans les données en direct — la liste n'est jamais stockée.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Les membres sont ceux que la règle sélectionne, plus les personnes incluses à la main et moins celles exclues à la main.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Masquer la règle enregistrée</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>L'appartenance n'a pas été résolue dans cette session</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>La résolution lit les données en direct selon la règle enregistrée et ne stocke rien. Les candidats écartés sont listés avec le motif.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Résolution de l'appartenance sur les données en direct…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Candidats écartés</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Pourquoi chaque candidat n'a pas été retenu</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Spécialité · lieu de travail</value></data>
+  <data name="FromManual" xml:space="preserve"><value>depuis les lignes manuelles</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>inclus</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>exclus</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Créé</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Pas encore activé</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Utilisable</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Remplace la version précédente</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>sans date de fin</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Ce qui est stocké</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Pourquoi le nombre change</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Seules les lignes saisies à la main et leurs motifs sont stockés. Les consommateurs pointent vers le segment au lieu de copier les noms.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>Le segment stocke la règle, jamais une liste de membres. Chaque résolution relit les données en direct, donc le nombre évolue avec les données.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>Le mode de correspondance détermine comment les blocs de premier niveau de la règle sont combinés.</value></data>
 </root>

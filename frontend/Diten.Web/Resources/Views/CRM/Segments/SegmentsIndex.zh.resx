@@ -225,4 +225,28 @@
   <data name="ChecklistFreezeNote" xml:space="preserve"><value>激活会将此规则冻结为新版本。草稿编辑绝不会影响正在运行的营销活动。</value></data>
   <data name="EmptyRuleHelp" xml:space="preserve"><value>从常见受众开始，或添加你的第一个条件。</value></data>
   <data name="AddBlockLong" xml:space="preserve"><value>+ 添加另一个分组——人员还必须满足该条件</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>该分群回答什么</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>成员就是下方手工编写的固定列表——不从数据派生任何内容。</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>成员是已保存规则从实时数据中选出的人——列表从不存储。</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>成员是规则选出的人，加上手工保留的人，减去手工排除的人。</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>隐藏已存储规则</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>本次会话尚未解析成员</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>解析会按已保存规则读取实时数据且不存储任何内容。被剔除的候选人会连同原因一并列出。</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>正在根据实时数据解析成员…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>被剔除的候选人</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>每位候选人未入选的原因</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>专科 · 工作单位</value></data>
+  <data name="FromManual" xml:space="preserve"><value>来自手工行</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>保留</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>排除</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>尚未激活</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>可用</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>取代上一版本</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>无结束日期</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>存储了什么</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>数字为何变化</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>只存储手工编写的行及其原因。使用方指向该分群，而不是复制名称。</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>分群存储规则，绝不存储成员列表。每次解析都会重新读取实时数据，因此数字会随数据变化。</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>匹配模式决定规则的顶层块如何组合。</value></data>
 </root>
