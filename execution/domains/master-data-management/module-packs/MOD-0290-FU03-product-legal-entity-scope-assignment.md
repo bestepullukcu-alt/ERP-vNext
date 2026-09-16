@@ -1178,6 +1178,36 @@ Code truth reconciled on 2026-08-26:
   localization keys, one forbidden direct-Gateway expectation and seven intentionally absent checkbox/bulk/delete
   contracts. No unexpected verifier failure exists and no inert/forbidden surface was added to satisfy the generic
   tool.
+- **Bounded proxy-profile verifier contract alignment (2026-09-16):** control
+  `personalization-proxy-server-propagation` applies only to this tenant page's shared Save View call. Its explicit
+  pack basis is Section 11's rule that JavaScript uses only same-origin MVC endpoints and never sends tenant IDs or
+  bearer tokens, while MVC alone proxies to Gateway. The proof gate is two-part:
+  `frontend/Diten.Web/wwwroot/assets/js/personalization-client.js` must retain a relative cookie-authenticated call
+  without browser-created tenant/bearer headers, and
+  `frontend/Diten.Web/Controllers/PersonalizationProxyController.cs` must be authenticated and propagate bearer plus
+  tenant server-side. The focused proof path is
+  `frontend/Diten.Web/tests/personalization-client.test.js`; the verifier control is
+  `.antigravity/scripts/verify_datatable_page.py` under `--api-profile proxy`. This is a controlled correction of the
+  browser-header false expectation, not a blanket waiver: default/direct profiles, browser header/direct-service
+  negatives and all reset, quick-view, selection, bulk, lifecycle and L10n findings remain independently required.
+  The preceding `74/17` record is historical evidence and is neither overwritten nor reclassified by this addendum.
+
+- **Final named Golden disposition (2026-09-16, `PRODUCT-FIVE-GOLDEN-DISPOSITION-FINAL`):** the current
+  proxy-profile raw verifier output is **`84 pass / 15 fail`, exit `1`**. It does not replace the preceding
+  historical `74/17` evidence and is not a green result, live acceptance, or blanket waiver. Every remaining line
+  meets the already-approved conditions: **(1)** Section 5 G expressly defines the nav-hidden, policy UI as
+  non-bulk/non-delete with its localized vocabulary, **(2)** recorded Scope focused frontend/controller proof
+  implements the same-origin policy read/create surface, and **(3)** the absent generic/bulk names neither hide a
+  required function nor weaken tenant isolation or browser authority.
+
+  | Exact remaining verifier controls | Intended function or expressly prohibited surface | Pack/code/test proof and conclusion |
+  |---|---|---|
+  | `L10n Active`, `L10n Passive`, `L10n Edit`, `L10n BulkDelete`, `L10n BulkDeleteConfirm`, `L10n AreYouSure`, `L10n Import`, `L10n ShowAll` | Scope exposes only approved policy create/replace/end/read and its own localized vocabulary; generic edit, import, bulk-delete and lifecycle labels would advertise unapproved operations. | **(1)** Section 5 G and the previously recorded eight unused generic keys expressly define the surface. **(2)** recorded Scope focused frontend tests (`11/11`) and controller/integration proof cover the allowed UI. **(3)** no required operation is missing; adding names/actions would conflict with policy scope. **Mevcut onayla kabul** (8/8); no next action. |
+  | `select-all checkbox`, `bulk config`, `bulk selection`, `/bulk endpoint`, `bulk trigger`, `reloadWithToast`, `clear selection` | Checkbox/select-all and all bulk mutation/lifecycle paths are expressly absent; fake endpoint/selection/destructive UI is prohibited. | **(1)** Section 5 G records the seven intentionally absent checkbox/bulk/delete contracts. **(2)** existing Scope focused tests cover the non-bulk policy UI and same-origin proxy. **(3)** the absence preserves the approved policy surface and hides no required function. **Mevcut onayla kabul** (7/7); no next action. |
+
+  **Reconciliation:** Scope `15 = 8 + 7`; named accepted `15`, real defect `0`, evidence gap `0`, next action
+  `none`. This is a controlled disposition of exact static differences only. It does not change the raw exit-`1`
+  result, authorize `ActivateEnforced` or provisioning, permit browser tenant/bearer headers, or add bulk/delete.
 - **Section 5 H1a implemented and independently hardened:** one Development-only/default-disabled CLI exposes only
   `Inspect` and idempotent `BootstrapPreparation`. Its bounded read model reports completeness, seven descendant
   chains and valid-versus-malformed audit facts; malformed rollout/audit state fails closed, a concurrent exact

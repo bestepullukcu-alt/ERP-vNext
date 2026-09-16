@@ -63,6 +63,94 @@ def check_not_contains(path: Path, text: str, pattern: Pattern[str], label: str,
     return Check(label, True)
 
 
+def check_personalization_proxy_contract(root: Path, api_profile: str) -> List[Check]:
+    """Verify the shared personalization boundary for the selected API profile.
+
+    The proxy profile deliberately keeps tenant and bearer authority out of browser
+    JavaScript.  The MVC proxy derives those headers from the authenticated server
+    context before forwarding to the Gateway.  Direct-gateway profiles keep the
+    historical browser-header check because they are not covered by this proxy
+    contract.
+    """
+    personalization_client = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "personalization-client.js"
+    personalization_text = read_text(personalization_client)
+
+    if api_profile != "proxy":
+        return [
+            check_contains(
+                personalization_client,
+                personalization_text,
+                re.compile(r"actorType[\s\S]*tenant_user[\s\S]*X-Tenant-Id", re.IGNORECASE),
+                "personalizationClient sends tenant header only for tenant users",
+                "Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors",
+            )
+        ]
+
+    personalization_proxy = root / "frontend" / "Diten.Web" / "Controllers" / "PersonalizationProxyController.cs"
+    proxy_text = read_text(personalization_proxy)
+    return [
+        check_contains(
+            personalization_client,
+            personalization_text,
+            re.compile(r"viewsEndpoint\s*=\s*['\"]/api/personalization/views['\"]", re.IGNORECASE),
+            "personalizationClient uses same-origin MVC proxy endpoint",
+            "Expected shared personalizationClient to call the relative /api/personalization/views MVC proxy endpoint",
+        ),
+        check_contains(
+            personalization_client,
+            personalization_text,
+            re.compile(r"credentials\s*:\s*['\"]include['\"]", re.IGNORECASE),
+            "personalizationClient includes same-origin credentials",
+            "Expected shared personalizationClient to use cookie credentials with the MVC proxy",
+        ),
+        check_not_contains(
+            personalization_client,
+            personalization_text,
+            re.compile(
+                r"(?:['\"](?:X-Tenant-Id|Authorization)['\"]|\bAuthorization)\s*:|\[\s*['\"](?:X-Tenant-Id|Authorization)['\"]\s*\]\s*=|document\.cookie|access_token",
+                re.IGNORECASE,
+            ),
+            "personalizationClient keeps tenant and bearer authority out of the browser",
+            "Browser personalization code must not create tenant or bearer headers or read cookie tokens",
+        ),
+        check_not_contains(
+            personalization_client,
+            personalization_text,
+            re.compile(r"(?:https?:)?//[^'\"\s]+/api/personalization/views|window\.API", re.IGNORECASE),
+            "personalizationClient does not call Gateway or a service directly",
+            "Browser personalization code must use the same-origin MVC proxy rather than a direct Gateway or service endpoint",
+        ),
+        check_contains(
+            personalization_proxy,
+            proxy_text,
+            re.compile(r"\[Authorize\][\s\S]*\[Route\(['\"]api/personalization/views['\"]\)", re.IGNORECASE),
+            "Personalization MVC proxy requires authentication",
+            "Expected an authorized MVC proxy route for /api/personalization/views",
+        ),
+        check_contains(
+            personalization_proxy,
+            proxy_text,
+            re.compile(r"AuthTokenCookies\.GetAccessToken\(Request\)[\s\S]*AuthenticationHeaderValue\(['\"]Bearer['\"],\s*token\)", re.IGNORECASE),
+            "Personalization MVC proxy forwards the server-side bearer token",
+            "Expected the MVC proxy to read the server-side cookie token and forward it as Bearer",
+        ),
+        check_contains(
+            personalization_proxy,
+            proxy_text,
+            re.compile(r"actor_type[\s\S]*tenant_user[\s\S]*FindFirstValue\(['\"]tenant_id['\"]\)[\s\S]*X-Tenant-Id", re.IGNORECASE),
+            "Personalization MVC proxy derives tenant header from authenticated tenant_user claims",
+            "Expected the MVC proxy to derive X-Tenant-Id only from the authenticated tenant_user principal",
+        ),
+        check_contains(
+            personalization_proxy,
+            proxy_text,
+            re.compile(r"\{_gatewayUrl\}/api/personalization/views", re.IGNORECASE),
+            "Personalization MVC proxy forwards to Gateway",
+            "Expected the MVC proxy to forward personalization requests to the configured Gateway",
+        ),
+    ]
+
+
 def check_shared_css_not_embedded(index_path: Path, index_html: str) -> List[Check]:
     checks: List[Check] = []
     checks.append(
@@ -627,8 +715,6 @@ def main() -> int:
     # - Reset must take effect immediately (no "Reset then Apply" behavior) -> prevent native form reset conflicts.
     # - Save View visibility is based on applied/effective state: filter selections alone must not toggle Save View.
     if is_v2 and re.search(r"\bdt-save-filter-btn\b", js_text):
-        personalization_client = root / "frontend" / "Diten.Web" / "wwwroot" / "assets" / "js" / "personalization-client.js"
-        personalization_text = read_text(personalization_client)
         checks.append(
             check_contains(
                 index_js,
@@ -665,15 +751,7 @@ def main() -> int:
                 "Expected saveDefaultView payload viewName to fall back to 'Default' when no saved/localized name is available",
             )
         )
-        checks.append(
-            check_contains(
-                personalization_client,
-                personalization_text,
-                re.compile(r"actorType[\s\S]*tenant_user[\s\S]*X-Tenant-Id", re.IGNORECASE),
-                "personalizationClient sends tenant header only for tenant users",
-                "Expected shared personalizationClient to send X-Tenant-Id for tenant_user Save View requests while omitting it for platform actors",
-            )
-        )
+        checks.extend(check_personalization_proxy_contract(root, api_profile))
         checks.append(
             check_contains(
                 index_js,

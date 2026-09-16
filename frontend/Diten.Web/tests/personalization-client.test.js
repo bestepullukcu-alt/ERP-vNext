@@ -3,6 +3,17 @@ const fs = require('fs');
 const path = require('path');
 
 describe('shared personalization client', () => {
+    const expectBrowserSafeProxyRequest = (options, contentType = null) => {
+        expect(options).toEqual(expect.objectContaining({ credentials: 'include' }));
+        expect(options.headers).not.toHaveProperty('X-Tenant-Id');
+        expect(options.headers).not.toHaveProperty('Authorization');
+        expect(options.headers).not.toHaveProperty('authorization');
+        expect(Object.keys(options.headers)).toEqual(contentType ? ['Content-Type'] : []);
+        if (contentType) {
+            expect(options.headers).toEqual({ 'Content-Type': contentType });
+        }
+    };
+
     beforeEach(() => {
         document.body.innerHTML = '';
         window.history.replaceState({}, '', '/MasterDataManagement/FinishedGoods');
@@ -24,9 +35,10 @@ describe('shared personalization client', () => {
     it('loads views through the same-origin MVC proxy without browser tenant headers', async () => {
         await window.personalizationClient.getViews('MasterDataManagement', 'FinishedGoods');
 
-        expect(window.fetch).toHaveBeenCalledWith(
-            '/api/personalization/views?moduleKey=MasterDataManagement&pageKey=FinishedGoods',
-            expect.objectContaining({ method: 'GET', credentials: 'include', headers: {} }));
+        const [url, options] = window.fetch.mock.calls[0];
+        expect(url).toBe('/api/personalization/views?moduleKey=MasterDataManagement&pageKey=FinishedGoods');
+        expect(options.method).toBe('GET');
+        expectBrowserSafeProxyRequest(options);
     });
 
     it('writes through the same-origin MVC proxy and keeps scope in the query string', async () => {
@@ -49,9 +61,7 @@ describe('shared personalization client', () => {
         const [url, options] = window.fetch.mock.calls[0];
         expect(url).toBe('/api/personalization/views?moduleKey=MasterDataManagement&pageKey=Gskus');
         expect(options.method).toBe('POST');
-        expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
-        expect(options.headers).not.toHaveProperty('X-Tenant-Id');
-        expect(options.headers).not.toHaveProperty('Authorization');
+        expectBrowserSafeProxyRequest(options, 'application/json');
     });
 
     it('updates and deletes by relative catch-all URLs', async () => {
@@ -69,7 +79,10 @@ describe('shared personalization client', () => {
             '/api/personalization/views/view%2Fwith%20spaces?moduleKey=MasterDataManagement&pageKey=Lskus');
         expect(window.fetch.mock.calls[1][0]).toBe(
             '/api/personalization/views/view-1?moduleKey=MasterDataManagement&pageKey=GlobalProducts');
+        expect(window.fetch.mock.calls[0][1].method).toBe('PUT');
+        expectBrowserSafeProxyRequest(window.fetch.mock.calls[0][1], 'application/json');
         expect(window.fetch.mock.calls[1][1].method).toBe('DELETE');
+        expectBrowserSafeProxyRequest(window.fetch.mock.calls[1][1]);
     });
 
     it('keeps bearer and tenant propagation inside the MVC proxy', () => {
@@ -78,12 +91,23 @@ describe('shared personalization client', () => {
             'utf8');
 
         expect(source).toContain('[Route("api/personalization/views")]');
+        expect(source).toContain('[Authorize]');
         expect(source).toContain('AuthTokenCookies.GetAccessToken(Request)');
         expect(source).toContain('request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token)');
         expect(source).toContain('request.Headers.Add("X-Tenant-Id", tenantId.ToString("D"))');
         expect(source).toContain('$"{_gatewayUrl}/api/personalization/views"');
         expect(source).not.toContain('localhost:5057');
         expect(source).not.toContain('localhost:5059');
+
+        const actorGate = source.indexOf('!string.Equals(actorType, "tenant_user", StringComparison.OrdinalIgnoreCase)');
+        const canonicalTenantClaim = source.indexOf('User.FindFirstValue("tenant_id")');
+        const parseGate = source.indexOf('!Guid.TryParse(tenantValue, out var tenantId)');
+        const tenantHeader = source.indexOf('request.Headers.Add("X-Tenant-Id", tenantId.ToString("D"))');
+        expect(actorGate).toBeGreaterThan(-1);
+        expect(canonicalTenantClaim).toBeGreaterThan(actorGate);
+        expect(parseGate).toBeGreaterThan(canonicalTenantClaim);
+        expect(tenantHeader).toBeGreaterThan(parseGate);
+        expect(source.slice(parseGate, tenantHeader)).toContain('return false;');
     });
 
     it('does not parse a successful proxy fallback HTML response as JSON when loading views', async () => {

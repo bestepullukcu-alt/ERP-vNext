@@ -970,3 +970,42 @@ The explicit CRUD prohibitions are pre-existing owner/pack decisions, not inferr
 Live browser rendering/WorkCenter dispatch, intended-user grants, provider configuration and actual worker durable delivery
 remain unperformed. No activation, provisioning, application-data mutation, operational migration or service restart occurred.
 Existing GSKU concurrency flakiness evidence is not closed by any ABB run.
+
+#### Bounded proxy-profile verifier contract alignment — 2026-09-16
+
+**Control identity:** `personalization-proxy-server-propagation`, applicable only to the ABB tenant page's shared Save
+View call. Its pack basis is the same-origin, server-owned bearer/tenant/CSRF transport contract in this subsection
+(especially the decision at lines 923–925), together with the required proxy profile in the recorded verifier command.
+
+**Code and test proof gate:** the browser source
+`frontend/Diten.Web/wwwroot/assets/js/personalization-client.js` must retain a relative same-origin personalization
+call with cookie credentials and must not construct tenant or bearer headers. Independently,
+`frontend/Diten.Web/Controllers/PersonalizationProxyController.cs` must be authenticated and apply bearer and
+tenant propagation only on the server before its Gateway request. The focused proof path is
+`frontend/Diten.Web/tests/personalization-client.test.js`; `.antigravity/scripts/verify_datatable_page.py` must check
+both sides only for `--api-profile proxy`.
+
+**Scope limit:** this replaces only the obsolete browser-header verifier expectation with the actual proxy contract.
+It is not a blanket verifier waiver, does not allow browser authority, direct-service calls, or weaker default/direct
+profiles, and does not accept any reset, quick-view, selection, lifecycle, bulk or L10n finding. The finding table
+above remains individually reviewable; this addendum changes none of its other dispositions or the WorkCenter
+checker/own-cancel contract.
+
+#### Final named Golden disposition — 2026-09-16 (`PRODUCT-FIVE-GOLDEN-DISPOSITION-FINAL`)
+
+The ABB proxy-profile raw result remains `85 pass / 14 fail`, exit `1`: it is neither green nor live acceptance.
+Each line below satisfies the already-approved three conditions: **(1)** this pack expressly defines the behavior or
+prohibition, **(2)** current source and recorded focused frontend/controller proof implement it, and **(3)** the
+static verifier difference hides neither a tenant/security defect nor a required user operation. The preceding
+`personalization-proxy-server-propagation` alignment is not counted again.
+
+| Exact remaining verifier controls | Intended function or expressly prohibited surface | Pack/code/test proof and conclusion |
+|---|---|---|
+| `full-reset` | Reset restores applied saved-table state; delegation is valid implementation. | **(1)** the existing ABB finding disposition requires full-state restoration. **(2)** `reloadAppliedTableState` delegates to `applySavedTableState`, proved by the recorded full-state restore frontend test. **(3)** the required user function is present without a security change. **Mevcut onayla kabul** (1/1); no next action. |
+| `L10n Active`, `L10n Passive`, `L10n Edit`, `L10n QuickView`, `L10n BulkDelete`, `L10n BulkDeleteConfirm`, `L10n Import`, `L10n Status` | ABB uses explicit immutable lifecycle and `ViewDetails`/`DetailsTitle`; generic edit/import/bulk-delete actions are not authorized. | **(1)** the ABB lifecycle and request-only protected-surface decisions explicitly set this vocabulary/prohibition. **(2)** recorded ABB focused frontend proof covers localized lifecycle/detail behavior and source uses `Lifecycle*`/`ViewDetails`. **(3)** no required action is absent; adding generic destructive/import UI would violate the contract. **Mevcut onayla kabul** (8/8); no next action. |
+| `.js-quick-view selector`, `closest('.js-quick-view')` | Detail action/delegation are supplied by the shared `data-row-action=details` dispatcher, not a duplicate legacy listener. | **(1)** the pack requires the detail action, not a CSS selector. **(2)** the existing evidence identifies `bindActionDispatcher` and `closest('[data-row-action]')`; focused detail tests cover it. **(3)** equivalent behavior is present; an added listener risks double-dispatch. **Mevcut onayla kabul** (2/2); no next action. |
+| `bulk selection wiring`, `bulk endpoint`, `bulk delete trigger` | Non-mutating count/clear support may be shared, but bulk mutation/endpoint/delete trigger are prohibited. | **(1)** the request-only protected surface prohibits bulk delete and fake endpoints. **(2)** `bindBulkSelection` supplies the permitted count/clear behavior; ABB tests cover the non-mutating/WorkCenter contract. **(3)** no required bulk mutation is hidden; adding it would alter the checker/own-cancel boundary. **Mevcut onayla kabul** (3/3); no next action. |
+
+**Reconciliation:** ABB `14 = 1 + 8 + 2 + 3`; named accepted `14`, real defect `0`, evidence gap `0`, next
+action `none`. This is a disposition of exact static differences only: raw exit-`1` remains, and neither the
+WorkCenter checker/own-cancel contract nor any browser-authority/bulk/delete surface changes.

@@ -1575,6 +1575,53 @@ No fake endpoint, unused localization bridge, inert checkbox or non-functional U
 This variance is local to the MOD-0290 Global Product read-only/no-bulk slice; it changes no global standard and creates
 no precedent for future CRUD modules. Any verifier failure outside these ten named checks blocks completion.
 
+##### Bounded proxy-profile verifier contract alignment — 2026-09-16
+
+**Control identity:** `personalization-proxy-server-propagation`. This is the sole shared-personalization alignment for
+the Global Product, GSKU and LSKU tenant pages under this pack. Its pack basis is this subsection's required
+`--api-profile proxy` invocation and the tenant-frontend rule that browser requests use the canonical same-origin MVC
+surface rather than a service port.
+
+**Code and test proof gate:**
+`frontend/Diten.Web/wwwroot/assets/js/personalization-client.js` must call only the relative personalization endpoint
+with cookie credentials and must not construct `X-Tenant-Id` or bearer headers. The separate
+`frontend/Diten.Web/Controllers/PersonalizationProxyController.cs` proof must show authenticated server-side bearer
+and tenant propagation to Gateway. The focused proof is
+`frontend/Diten.Web/tests/personalization-client.test.js`; the proxy-profile verifier control is
+`.antigravity/scripts/verify_datatable_page.py`. Both browser and MVC conditions are required—passing only a
+same-origin browser string check is insufficient.
+
+**Scope limit:** this records the former browser-tenant-header expectation as a controlled verifier-contract
+alignment, not a product/UI variance or a blanket waiver. It accepts neither a browser tenant/bearer header nor a
+direct service call, and it does not relax default/direct-Gateway profiles. Reset, quick-view, selection, bulk,
+lifecycle and L10n findings remain outside this named control and retain their existing individual disposition; they
+are not accepted by this addendum. The ten read-only/no-bulk variances above remain the complete list for that slice.
+
+##### Final named Golden disposition — 2026-09-16 (`PRODUCT-FIVE-GOLDEN-DISPOSITION-FINAL`)
+
+The remaining proxy-profile raw results are Global Product `90 pass / 9 fail`, GSKU `82 pass / 17 fail`, and
+LSKU `83 pass / 16 fail` (each exit `1`). They are not green results, live acceptance, or a blanket waiver.
+For every line below, the already-approved three-condition rule is satisfied: **(1)** this pack explicitly defines
+the surface, **(2)** the current page/controller and recorded focused frontend proof implement that definition, and
+**(3)** the static-name difference hides neither a security/tenant defect nor a required user function.
+`personalization-proxy-server-propagation` is already disposed by the preceding addendum and is not re-counted.
+
+| Module / exact remaining verifier controls | Intended function or expressly prohibited surface | Pack basis and current code/test proof | Decision |
+|---|---|---|---|
+| Global Product (2): `L10n BulkDelete`, `L10n BulkDeleteConfirm` | Bulk delete and its confirmation are prohibited; no inert label/action is allowed. | **(1)** Subwork D's named no-bulk contract lists both. **(2)** the current Global Product page/controller and focused list/create tests expose no delete/bulk action. **(3)** an absent destructive action is not a missing required capability and preserves tenant safety. | **Mevcut onayla kabul** (2/2); no next action. |
+| Global Product (7): `select-all checkbox`, `bulk config`, `bulk selection`, `/bulk endpoint`, `bulk trigger`, `reloadWithToast`, `clear selection` | Select-all and all bulk lifecycle/mutation paths are prohibited. | **(1)** Subwork D names all seven accepted no-bulk differences. **(2)** current DataTable/controller tests cover the read/create-only flow. **(3)** adding any of these would contradict the approved slice, not restore a required function. | **Mevcut onayla kabul** (7/7); no next action. |
+| GSKU (1): `Save View default` | Save View exists through the shared same-origin MVC proxy; only the verifier default/static expectation differs. | **(1)** the locked GSKU transport is same-origin MVC/BFF under the proxy profile. **(2)** `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/Gskus/index.js:124-128` and `frontend/Diten.Web/tests/gsku-register.test.js:126-132` prove the page's Save View integration; `frontend/Diten.Web/tests/personalization-client.test.js` proves relative client/server propagation. **(3)** browser tenant/bearer authority is absent and the function is present. | **Mevcut onayla kabul** (1/1); no next action. |
+| GSKU (9): `L10n Active`, `L10n Passive`, `L10n Edit`, `L10n BulkDelete`, `L10n BulkDeleteConfirm`, `L10n AreYouSure`, `L10n Import`, `L10n ShowAll`, `L10n Status` | Generic verifier aliases are absent because the existing UI uses localized action-specific labels and fences (`EditDraft`/`UpdateDraft` and lifecycle-specific action names), while generic bulk/import/destructive surfaces are not authorized. | **(1)** the pack's action-specific product-identity contract distinguishes its real draft/lifecycle actions from generic aliases and prohibits bulk/delete/import/select-all. **(2)** current `Gskus/index.js` and recorded GSKU frontend/controller proof exercise those action-specific labels/fences. **(3)** no required operation is omitted: accepted aliases do not remove the actual edit/draft or lifecycle functions, and no generic destructive/bulk/import UI may be invented. | **Mevcut onayla kabul** (9/9); no next action. |
+| GSKU (7): `select-all checkbox`, `bulk config`, `bulk selection`, `/bulk endpoint`, `bulk trigger`, `reloadWithToast`, `clear selection` | Select-all and bulk mutation/reload/clear are prohibited. | **(1)** “Locked visible scope” expressly excludes bulk and checkbox/select-all. **(2)** current GSKU tests exercise the approved non-bulk surface. **(3)** no equivalent required behavior is missing. | **Mevcut onayla kabul** (7/7); no next action. |
+| LSKU (1): `Save View default` | The shared Save View proxy is present; only the default-name/static verifier shape differs. | **(1)** the tenant-page same-origin MVC/BFF transport applies to LSKU. **(2)** `frontend/Diten.Web/wwwroot/assets/js/MasterDataManagement/Lskus/index.js:106-115` and `frontend/Diten.Web/tests/lsku-register.test.js:47-56,212-218` prove Save View integration; `frontend/Diten.Web/tests/personalization-client.test.js` proves the shared client/proxy boundary. **(3)** no browser authority and no required Save View function are lost. | **Mevcut onayla kabul** (1/1); no next action. |
+| LSKU (8): `L10n Active`, `L10n Passive`, `L10n Edit`, `L10n BulkDelete`, `L10n BulkDeleteConfirm`, `L10n AreYouSure`, `L10n Import`, `L10n ShowAll` | The approved LSKU surface is create/read/submit/withdraw/retirement-request; no edit/correction UI is approved or implemented. Generic bulk/import/destructive surfaces are likewise not authorized. | **(1)** the product-identity action contract defines the action-specific create/read/submit/withdraw/retirement-request surface and prohibits bulk/delete/import/select-all. **(2)** current `Lskus/index.js` and recorded LSKU frontend/controller proof exercise those approved action-specific fences. **(3)** no required operation is omitted: `L10n Edit` is absent because there is no approved edit surface, while generic destructive/bulk/import UI may not be invented. | **Mevcut onayla kabul** (8/8); no next action. |
+| LSKU (7): `select-all checkbox`, `bulk config`, `bulk selection`, `/bulk endpoint`, `bulk trigger`, `reloadWithToast`, `clear selection` | Select-all and bulk lifecycle/mutation paths are prohibited. | **(1)** the locked product-identity contract expressly excludes bulk and checkbox/select-all. **(2)** current LSKU tests cover the non-bulk surface. **(3)** a surrogate bulk control would violate the contract. | **Mevcut onayla kabul** (7/7); no next action. |
+
+**Reconciliation:** Global Product `9 = 2 + 7`; GSKU `17 = 1 + 9 + 7`; LSKU `16 = 1 + 8 + 7`.
+All 42 remaining lines in this pack are **mevcut onayla kabul**; real defect `0`, evidence gap `0`, next action
+`none`. This accepts only the named static verifier differences; raw exit-`1` outputs and the prohibition on new
+destructive, bulk or browser-authority functions remain unchanged.
+
 ### Ordered named step - `Product Definition Revision + First GSKU Register Exposure`
 
 This is an additive named step inside canonical `MOD-0290`; it is not a new MOD, FU or DCP. The user approved the
