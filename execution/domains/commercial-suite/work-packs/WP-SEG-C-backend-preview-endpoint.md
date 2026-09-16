@@ -33,5 +33,12 @@ YAPMA: /resolve /evaluate /create değiştir; persist; criteria model/limit değ
 DOĞRULA (E2): build temiz; unit totalCount=kayıtlı /resolve count, conditionCounts, sample PII-gated (403 izinsiz), geçersiz→400, persist yok; TAM CrmService.Application.Tests baseline-diff sıfır-yeni-fail. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: resolver draft rule kabul etmiyorsa · PII gate uygulanamıyorsa · performans count-only yapılamıyorsa · kapsam Segmentation dışına taşarsa → DUR+raporla.
 ```
-## §37 CT → (agent sonrası)
-- İzole worktree: build + CrmService.Application.Tests baseline-diff; preview count = /resolve count; PII gate; persist yok.
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
+```text
+Commit: 7243c893 · Agent: PASS (1739/0/5) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-segc-verify @7243c893
+```
+- ✅ **Scope:** 6 dosya, hepsi Segmentation backend (Controller Preview action + SegmentRequests + PreviewSegmentReachQuery + Handler + SegmentModels 3 DTO + test). **`/resolve` yanıt şekli / SegmentMemberDto / resolver DEĞİŞMEDİ.**
+- ✅ **Logic:** handler'da **repository YOK → persist yapısal imkânsız**; draft rule geçici `dynamic+Active` Segment'e sarılıp `SegmentMembershipResolver` reuse; totalCount = resolve MatchedCount (kayıtlı /resolve ile eşit); conditionCounts = tek-koşul count (nodeId 1:1); sampleMembers limit 50; CapExceeded honest. Write-path structural validation (cross-service proof HARİÇ — preview persist etmez, debounce; doğru).
+- ✅ **PII gate:** `[HasPermission(Perms.ReadFallback)]` = `/resolve` ile birebir (canonical crm.segment.resolve).
+- ✅ **Build+test (CT izole, Release):** build 0-err; CrmService.Application.Tests **1738/1/5** → tek fail `ContactWorkbookExportTests.ReferenceData_Sheet_Flags_Deprecated_Values` (SEG-C ile ALAKASIZ; izole rerun'da GEÇTİ = env/sıra flake). **SEG-C baseline-diff temiz.**
+- ⚠️ **SEG-A notu:** `sampleMembers` yalnız displayName taşır (specialty/workplace YOK — `/resolve` şeklini bozmamak için). SEG-A sample kartı isim-only; zenginleştirme opsiyonel ayrı WP (resolver member-projection).
