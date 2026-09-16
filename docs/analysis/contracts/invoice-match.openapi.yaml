@@ -1,0 +1,201 @@
+openapi: 3.1.0
+info:
+  title: INVOICE-MATCH
+  description: >
+    MOD-0143 Invoice Capture & 3-Way Match — MVP-2 Procurement SoR.
+    SoR: match outcomes, invoice exceptions, approvals (invoice processing view).
+    3-yönlü eşleştirme: PurchaseOrder (MOD-0141) ↔ GoodsReceipt (MOD-0142 GRN) ↔ Invoice.
+    Eşleşme SONUCUNU üretir; ödeme/AP YÜRÜTMEZ (AP/payment SoR = Finance/Treasury; MOD-0146 kapsam dışı).
+    Tenant + Legal-Entity scoped; server-resolved. Parasal alanlar Decimal (string); float YASAK.
+    ASSUMPTION-P2P-01: tolerans POLICY-DRIVEN (toleranceProfileId + qty/price/amount toleransı);
+    mismatch → exception queue. Sabit sayısal varsayılan GÖMÜLMEZ (EA/Finance-TBD).
+  version: 1.0.0
+  x-status: REVIEW
+  x-owner: MOD-0143
+  x-authored-by: control-tower
+  x-min-contract: MATCH-BUNDLE
+  x-consumes: [REQUISITION-PO, GRN-EVENT, PRODUCT-MASTER]
+  x-open-decision: "ASSUMPTION-P2P-01 — 3-way match tolerance owner/value EA/Finance-TBD; contract policy-driven, no baked default."
+servers: [{ url: /api/invoice-match }]
+security: [{ bearerAuth: [] }]
+paths:
+  /invoices:
+    post:
+      operationId: captureInvoice
+      summary: Fatura yakala (supplier faturası; PO'ya referanslı)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InvoiceUpsert' }
+            example:
+              supplierId: SUP-2001
+              poId: PO-5001
+              invoiceNumber: "INV-2026-771"
+              currency: TRY
+              lines: [{ poLineId: "3", itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000", unitPrice: "12.5000", lineAmount: "1250.0000" }]
+      responses:
+        '201': { description: Fatura yakalandı (henüz eşleşmemiş), content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+        '404': { $ref: '#/components/responses/UnknownReference' }
+        '409': { $ref: '#/components/responses/DuplicateInvoice' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+  /invoices/{invoiceId}:
+    get:
+      operationId: getInvoice
+      parameters: [{ name: invoiceId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Fatura, content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /invoices/{invoiceId}/match:
+    post:
+      operationId: runThreeWayMatch
+      summary: 3-yönlü eşleştirme çalıştır (PO ↔ GRN ↔ Invoice; tolerance policy'ye göre)
+      parameters:
+        - { name: invoiceId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                toleranceProfileId: { type: string, nullable: true, description: "policy-driven; verilmezse LE/tenant default profil (uygulama çözer, contract sayı gömmez)" }
+            example: { toleranceProfileId: "TOL-STD" }
+      responses:
+        '200':
+          description: Eşleştirme sonucu (Matched | MatchedWithinTolerance | Exception)
+          content: { application/json: { schema: { $ref: '#/components/schemas/MatchOutcome' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /exceptions:
+    get:
+      operationId: listMatchExceptions
+      summary: Eşleşmeyen fatura exception kuyruğu
+      parameters:
+        - { name: reasonCode, in: query, required: false, schema: { $ref: '#/components/schemas/ExceptionReason' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Exception sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/MatchException' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+  /exceptions/{exceptionId}/resolve:
+    post:
+      operationId: resolveMatchException
+      summary: Exception çöz (onay/ret/tolerans override; approval trail)
+      parameters:
+        - { name: exceptionId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: { type: string, enum: [approve, reject, tolerance-override] }
+                note: { type: string, nullable: true }
+            example: { decision: approve, note: "fiyat farkı sözleşme ekiyle onaylandı" }
+      responses:
+        '200': { description: Çözüldü, content: { application/json: { schema: { $ref: '#/components/schemas/MatchOutcome' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    InvoiceStatus: { type: string, enum: [Captured, Matched, MatchedWithinTolerance, Exception, Rejected, ClearedForPayment] }
+    ExceptionReason: { type: string, enum: [QtyMismatch, PriceMismatch, AmountMismatch, NoReceipt, NoPo, DuplicateInvoice, CurrencyMismatch] }
+    InvoiceLine:
+      type: object
+      required: [itemId, quantity, unitPrice]
+      properties:
+        poLineId: { type: string, nullable: true, description: "MOD-0141 PO satırı" }
+        itemId: { type: string, format: uuid, description: "MOD-0290 consume" }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        unitPrice: { $ref: '#/components/schemas/Decimal' }
+        lineAmount: { $ref: '#/components/schemas/Decimal' }
+    InvoiceUpsert:
+      type: object
+      required: [supplierId, poId, invoiceNumber, currency, lines]
+      properties:
+        supplierId: { type: string, description: "MOD-0140 consume" }
+        poId: { type: string, description: "MOD-0141 consume" }
+        invoiceNumber: { type: string }
+        currency: { type: string, description: "LE base currency; PO currency ile uyumlu olmalı" }
+        lines: { type: array, items: { $ref: '#/components/schemas/InvoiceLine' } }
+        sourceSystem: { type: string, nullable: true }
+        externalRef: { type: string, nullable: true }
+    Invoice:
+      type: object
+      properties:
+        invoiceId: { type: string }
+        supplierId: { type: string }
+        poId: { type: string }
+        invoiceNumber: { type: string }
+        status: { $ref: '#/components/schemas/InvoiceStatus' }
+        currency: { type: string }
+        lines: { type: array, items: { $ref: '#/components/schemas/InvoiceLine' } }
+        totalAmount: { $ref: '#/components/schemas/Decimal' }
+        contractVersion: { type: string }
+    MatchOutcome:
+      type: object
+      properties:
+        invoiceId: { type: string }
+        poId: { type: string }
+        grnIds: { type: array, items: { type: string }, description: "eşleşen GRN(ler) — MOD-0142" }
+        result: { type: string, enum: [Matched, MatchedWithinTolerance, Exception] }
+        toleranceProfileId: { type: string, nullable: true }
+        variances:
+          type: array
+          items:
+            type: object
+            properties:
+              poLineId: { type: string, nullable: true }
+              field: { type: string, enum: [quantity, price, amount] }
+              expected: { $ref: '#/components/schemas/Decimal' }
+              actual: { $ref: '#/components/schemas/Decimal' }
+              withinTolerance: { type: boolean }
+        exceptionId: { type: string, nullable: true, description: "result=Exception ise" }
+        contractVersion: { type: string }
+    MatchException:
+      type: object
+      properties:
+        exceptionId: { type: string }
+        invoiceId: { type: string }
+        poId: { type: string }
+        reasonCode: { $ref: '#/components/schemas/ExceptionReason' }
+        status: { type: string, enum: [Open, Resolved] }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    NotFound:
+      description: Kayıt bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: NOT_FOUND, message: "fatura bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownReference:
+      description: supplier (0140) / PO (0141) / item (0290) bilinmiyor (fail-closed)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_REFERENCE, message: "PO/supplier bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }
+    DuplicateInvoice:
+      description: Aynı supplier+invoiceNumber zaten yakalanmış
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: DUPLICATE_INVOICE, message: "fatura zaten var", correlationId: req-3 }, contractVersion: v1 } } }
+    StateConflict:
+      description: Geçersiz durum geçişi (ör. zaten Matched faturaya tekrar match; kapalı exception)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATE, message: "geçersiz durum geçişi", correlationId: req-4 }, contractVersion: v1 } } }
+    Unprocessable:
+      description: İş kuralı/validation ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "currency PO ile uyumsuz", correlationId: req-5 }, contractVersion: v1 } } }

@@ -2,22 +2,27 @@ openapi: 3.1.0
 info:
   title: SUPPLIER
   description: >
-    MOD-0140 Supplier Master (MVP-2 Procurement) — supplier identity seam.
-    MVP-6'nın Supplier Performance (0147) + Supplier Portal (0148) modülleri için
-    MERKEZİ CT tarafından öne çekilmiş frozen consumer-facing slice. Yalnız MVP-6'nın
-    tükettiği yüzey: supplier kimliği + durum + iletişim (read-only lookup + validate).
-    Performance skoru / risk / portal içeriği MVP-6'nın KENDİ contract'ıdır (burada YOK).
-    Producer (MVP-2) bu frozen sözleşmeye uyarak implemente eder; genişletme additive (K16).
-    Tenant scoped.
-  version: 1.0.0
+    MOD-0140 Supplier Onboarding (KYC/Sanctions/Docs) — MVP-2 Procurement producer contract.
+    Bu dosya İKİ yüzey taşır:
+    (A) MVP-6'nın tükettiği FROZEN consumer-facing slice (supplier kimliği + durum + iletişim:
+        listSuppliers · getSupplier · validateSuppliers) — MOD-0147 Supplier Performance ve
+        MOD-0148 Supplier Portal bunu okur; ŞEKLİ DEĞİŞMEZ (x-front-loaded-for kırılmaz).
+    (B) MVP-2 producer yüzeyi (ADDITIVE, review-pending): supplier CRUD + onboarding case
+        (KYC/sanctions/docs/approvals). (B), (A)'nın SUPERSET'idir; (A) daraltılmamıştır (K16, README §29).
+    Tenant + Legal-Entity scoped; TenantId/LegalEntityId server-resolved (payload'da yok).
+  version: 1.1.0
   x-status: FROZEN
+  x-slice-status: FROZEN            # (A) consumer slice — şekil dondurulmuş, MVP-6 buna bağlı
+  x-producer-status: REVIEW         # (B) producer additive surface — owner+consumer freeze review pending
   x-owner: MOD-0140
   x-authored-by: control-tower
   x-front-loaded-for: [MOD-0147, MOD-0148]
   x-consumes: []
+  x-min-contract: P2P-BUNDLE
 servers: [{ url: /api/suppliers }]
 security: [{ bearerAuth: [] }]
 paths:
+  # ---- (A) FROZEN consumer slice (şekil değişmedi) ----
   /:
     get:
       operationId: listSuppliers
@@ -46,6 +51,27 @@ paths:
                     contacts: [{ type: primary, email: "satis@medipkim.example", phone: "+90 212 000 0000" }]
                 nextCursor: null
                 contractVersion: v1
+    # ---- (B) producer additive: create supplier ----
+    post:
+      operationId: createSupplier
+      summary: Yeni supplier oluştur (draft; onboarding case tetiklenebilir)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierUpsert' }
+            example:
+              name: "Medip-Kim İlaç Ham. A.Ş."
+              country: tr
+              taxId: "1234567890"
+              contacts: [{ type: primary, email: "satis@medipkim.example", phone: "+90 212 000 0000" }]
+      responses:
+        '201':
+          description: Supplier oluşturuldu
+          content: { application/json: { schema: { $ref: '#/components/schemas/Supplier' } } }
+        '409': { $ref: '#/components/responses/DuplicateSupplier' }
+        '422': { $ref: '#/components/responses/SupplierUnprocessable' }
   /{supplierId}:
     get:
       operationId: getSupplier
@@ -59,6 +85,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Supplier' }
         '404': { $ref: '#/components/responses/UnknownSupplier' }
+    # ---- (B) producer additive: update supplier ----
+    patch:
+      operationId: updateSupplier
+      summary: Supplier güncelle (optimistic concurrency; ETag/rowVersion)
+      parameters:
+        - { name: supplierId, in: path, required: true, schema: { type: string } }
+        - { name: If-Match, in: header, required: false, schema: { type: string }, description: "rowVersion (concurrency)" }
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/SupplierUpsert' } } }
+      responses:
+        '200': { description: Güncellendi, content: { application/json: { schema: { $ref: '#/components/schemas/Supplier' } } } }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '409': { $ref: '#/components/responses/ConcurrencyConflict' }
+        '422': { $ref: '#/components/responses/SupplierUnprocessable' }
   /validate:
     post:
       operationId: validateSuppliers
@@ -95,8 +136,40 @@ paths:
                   - { supplierId: SUP-2001, known: true, status: Active }
                   - { supplierId: SUP-9999, known: false, status: null }
                 contractVersion: v1
+  # ---- (B) producer additive: onboarding case (KYC / sanctions / docs / approvals) ----
+  /{supplierId}/onboarding:
+    get:
+      operationId: getOnboardingCase
+      summary: Supplier onboarding case durumu (KYC + sanctions + docs + approval)
+      parameters: [{ name: supplierId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Onboarding case, content: { application/json: { schema: { $ref: '#/components/schemas/OnboardingCase' } } } }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+    post:
+      operationId: submitOnboardingCase
+      summary: Onboarding case başlat/güncelle (KYC/sanctions çalıştır, doc ekle, onaya gönder)
+      parameters:
+        - { name: supplierId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OnboardingSubmit' }
+            example:
+              kyc: { legalName: "Medip-Kim İlaç Ham. A.Ş.", registrationNo: "TR-00099", beneficialOwners: ["A. Yılmaz"] }
+              documents: [{ type: tax-certificate, evidenceRef: "doc-EV-771" }]
+              submitForApproval: true
+      responses:
+        '200':
+          description: Onboarding case işlendi
+          content: { application/json: { schema: { $ref: '#/components/schemas/OnboardingCase' } } }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '422': { $ref: '#/components/responses/SupplierUnprocessable' }
 components:
   securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
   schemas:
     SupplierStatus: { type: string, enum: [Active, OnHold, Blocked, Inactive] }
     Contact:
@@ -106,6 +179,7 @@ components:
         type: { type: string, enum: [primary, billing, quality, logistics] }
         email: { type: string, nullable: true }
         phone: { type: string, nullable: true }
+    # (A) FROZEN slice schema — şekil değişmedi
     Supplier:
       type: object
       required: [supplierId, name, status]
@@ -117,6 +191,62 @@ components:
         taxId: { type: string, nullable: true }
         contacts: { type: array, items: { $ref: '#/components/schemas/Contact' }, nullable: true }
         contractVersion: { type: string }
+    # (B) producer additive schemas
+    SupplierUpsert:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        country: { type: string, nullable: true, description: "lowercase country code" }
+        taxId: { type: string, nullable: true }
+        contacts: { type: array, items: { $ref: '#/components/schemas/Contact' }, nullable: true }
+        sourceSystem: { type: string, nullable: true, description: "dış ERP beslemesi (DEC-INV-19)" }
+        externalRef: { type: string, nullable: true }
+    KycOutcome: { type: string, enum: [Pending, Passed, Failed, ManualReview] }
+    SanctionsOutcome: { type: string, enum: [Pending, Clear, Hit, Override] }
+    OnboardingStatus: { type: string, enum: [Draft, InReview, Approved, Rejected] }
+    OnboardingSubmit:
+      type: object
+      properties:
+        kyc:
+          type: object
+          nullable: true
+          properties:
+            legalName: { type: string }
+            registrationNo: { type: string, nullable: true }
+            beneficialOwners: { type: array, items: { type: string }, nullable: true }
+        documents:
+          type: array
+          nullable: true
+          items:
+            type: object
+            required: [type, evidenceRef]
+            properties:
+              type: { type: string, description: "tax-certificate | quality-cert | bank-letter | gmp-cert | other" }
+              evidenceRef: { type: string, description: "MOD-0029/0031 Evidence referansı; binary burada tutulmaz" }
+        submitForApproval: { type: boolean, nullable: true }
+    OnboardingCase:
+      type: object
+      properties:
+        supplierId: { type: string }
+        onboardingStatus: { $ref: '#/components/schemas/OnboardingStatus' }
+        kycOutcome: { $ref: '#/components/schemas/KycOutcome' }
+        sanctionsOutcome: { $ref: '#/components/schemas/SanctionsOutcome' }
+        documents:
+          type: array
+          items:
+            type: object
+            properties:
+              type: { type: string }
+              evidenceRef: { type: string }
+        approval:
+          type: object
+          nullable: true
+          properties:
+            workflowInstanceId: { type: string, nullable: true, description: "MOD-0023 Workflow/Approvals" }
+            decidedBy: { type: string, nullable: true }
+            decidedAt: { type: string, format: date-time, nullable: true }
+        contractVersion: { type: string }
     Error:
       type: object
       properties:
@@ -126,3 +256,12 @@ components:
     UnknownSupplier:
       description: Supplier bulunamadı
       content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_SUPPLIER, message: "supplier bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    DuplicateSupplier:
+      description: Aynı taxId/name ile aktif supplier zaten var
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: DUPLICATE_SUPPLIER, message: "aktif supplier zaten var", correlationId: req-2 }, contractVersion: v1 } } }
+    ConcurrencyConflict:
+      description: rowVersion uyuşmuyor (sessiz overwrite yok)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: CONCURRENCY_CONFLICT, message: "kayıt değişti, yeniden yükleyin", correlationId: req-3 }, contractVersion: v1 } } }
+    SupplierUnprocessable:
+      description: İş kuralı/validation ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "name zorunlu", correlationId: req-4 }, contractVersion: v1 } } }
