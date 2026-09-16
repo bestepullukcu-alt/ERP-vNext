@@ -61,8 +61,17 @@ KORU/YAPMA: mockup sc-*/{{}}/DCLogic runtime kopyalama (yalnız görünüm); sah
 DOĞRULA (E2): Diten.Web.Tests baseline-diff yeşil (137/0); segment-details.css yalnız Details + .segment-details-scope (global sızıntı 0, .card override 0); light+dark okunur (sabit beyaz bg=0); accent→--bs-primary, badge bs subtle/emphasis; app-card+font ayrımı; 3-durum toggle + kayıtlı /resolve (sahte değil) + lifecycle + criteria ağaç + secondary label + proxy korundu; consumer yoksa gizli. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: mockup davranışı gerçek /resolve+toggle ile kurulamıyorsa; consumer verisi için backend gerekiyorsa (GİZLE, DUR değil); scope/font ayrımı yapılamıyorsa; kapsam Details+details.js+segment-details.css dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 18f89e55 · Agent: PASS · CT: ACCEPTED E2 (gerçek build) · izole worktree /c/tmp/ct-segdet-verify @18f89e55
 ```
-- İzole worktree → Diten.Web.Tests baseline-diff; segment-details.css scope-izole (yalnız Details link + .segment-details-scope; sabit beyaz bg=0; .card override yok); accent→--bs-primary + badge bs subtle/emphasis; app-card kabuk + font ayrımı; **davranış korundu** (3-durum toggle + KAYITLI /resolve [mockup sahtesi yok] + lifecycle eylemleri + criteria ağaç + secondary label + proxy); consumer uydurma yok.
+- ✅ **Scope:** segment-details.css (YENİ) + Details.cshtml + details.js + _IndexL10n + 7 resx. Backend/segment-create.css DOKUNULMADI.
+- ✅ **Scope izole + tema-duyarlı:** scope-dışı selektör=0, `.card` override=0, sabit beyaz background=0; `<link>` yalnız Details.cshtml'de. accent→`var(--bs-primary)` ×12, badge'ler `--bs-success`/`--bs-danger`/`--bs-warning` subtle+emphasis (light+dark okunur).
+- ✅ **Davranış korundu (mockup sahtesi KULLANILMADI):** kayıtlı `/segments/{id}/resolve` fetch (satır 123); mockup `setTimeout 900`/sabit `1284` = **0**; 3-durum toggle (static→resolve gizli / dynamic→manual gizli / hybrid→ikisi); `subjectSecondaryLabel` (SEG-D/F) resolve+manual+excluded tablolarında; activate/newVersion lifecycle handler; criteria ağaç + Show stored JSON; same-origin proxy.
+- ✅ **Uydurma yok:** consumer reverse-lookup backend'i olmadığından "Used as audience by" + "Used by" stat render EDİLMEDİ; timeline yalnız gerçek lifecycle verisinden (created/activated/updated); members stat kayıtlı /resolve'dan (static'te manuel kept-in).
+- ✅ **app-card + font ayrımı:** section'lar `card mb-4 + card-body p-4 + h6.text-heading + bx dt-card-icon`; Inter yalnız `[class^="segd-"]:not(.segd-mono)`; mono→ui-monospace.
+- ✅ **L10n:** 24 anahtar × 7 dil + JS köprü (FromManual/KeptIn/KeptOut/NoMembers).
+- ✅ **Build+test (CT izole, Release, GERÇEK build):** Diten.Web.Tests **137/0**.
+- ⏳ **E4:** ALMIBA static/dynamic/hybrid Details canlı; resolve gerçek sayı; dark + tema rengi.
+
+**Segment Details tema-duyarlı mockup port'u KOMPLE — Create/Edit ile görsel tutarlı.**
