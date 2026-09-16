@@ -47,11 +47,12 @@ DOĞRULA (E2): frontend/Diten.Web.Tests baseline-diff yeşil; 3 rötuş uyguland
 Durma: TaskCenter buton/flex mevcut class'la olmuyor + yeni CSS gerekiyorsa DUR+raporla; backend sözleşmesi farklıysa; kapsam KnowledgeConcepts dışına taşarsa; CRM paralel dosya çakışması → DUR + raporla.
 ```
 
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2, hafif) · satır-buton kısmı WP-G ile superseded**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: 6691791f · Agent: PASS (owner dispatch, 137/137) · CT: kapsam=template-form.js tek dosya (doğrulandı); branch-header rötuşları (name flex-grow + N-steps sağda) taşınır; satır-buton stili WP-G'de .diten-checkitem'e devrolur → tam build-doğrulama WP-G'ye katlandı.
 ```
-- İzole worktree → Diten.Web.Tests baseline-diff; logic-read (butonlar btn-text-*, branch-name flex-grow/max-width yok, N-steps badge delete yanında); **yeni CSS/style-değeri yok** diff; WP-E yapısı + refs-free + template-level korunmuş.
+- ✅ Scope: yalnız `template-form.js` (git show --stat). Backend/başka modül yok.
+- ↪ Satırlar WP-G'de paylaşılan `.diten-checkitem` bileşenine geçecek (owner "aynı checklistteki gibi olsun" — boyut/hover/drag) → WP-F row-buton tweakleri orada yenilenecek; branch-header (name flex-grow, N-steps sağ) korunur.
 
 ## Kalan (bu WP dışı)
 - A2d manuel test → A3→A8 → sync/PR. · Faz-2 position lookup.
