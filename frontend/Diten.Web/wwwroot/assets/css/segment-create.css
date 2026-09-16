@@ -228,7 +228,6 @@
     display: block;
     text-align: left;
     padding: 14px 16px;
-    background: var(--seg-control-bg);
     border: 1.5px solid var(--bs-border-color);
     border-radius: 9px;
     cursor: pointer;
@@ -299,8 +298,8 @@
 /* ------------------------------------------------------------------ reads-as box */
 .segment-create-scope .seg-reads-as {
     padding: 14px 16px;
-    background: var(--bs-tertiary-bg);
-    border: 1px solid var(--bs-border-color);
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--bs-primary-border-subtle);
     border-radius: 9px;
     margin-bottom: 18px;
 }
@@ -315,7 +314,7 @@
 .segment-create-scope .seg-reads-as-text {
     font-size: 14.5px;
     line-height: 1.6;
-    color: var(--bs-body-color);
+    color: var(--bs-primary-text-emphasis);
 }
 
 /* ------------------------------------------------------------------ empty-state recipes */
@@ -399,7 +398,7 @@
     gap: 10px;
     align-items: center;
     padding: 11px 14px;
-    background: var(--bs-tertiary-bg);
+    background: var(--bs-body-bg);
     border-bottom: 1px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-block-head-text {
@@ -522,7 +521,7 @@
 .segment-create-scope .seg-cond-op {
     flex: 1 1 150px;
     color: var(--bs-body-color);
-    background-color: var(--bs-tertiary-bg);
+    background-color: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
 }
 .segment-create-scope .seg-cond-attr:focus,
@@ -537,7 +536,7 @@
 /* value container */
 .segment-create-scope .seg-value-box {
     padding: 11px 12px;
-    background: var(--bs-tertiary-bg);
+    background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 8px;
 }
