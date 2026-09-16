@@ -43,7 +43,9 @@
         "SubjectId", "SubjectDisplayName", "Verdict", "MembershipSource", "ReasonCodes", "MembershipMode",
         "SelectionReason",
         // WP-SEG-DETAILS: labels details.js writes into the ported resolve/manual rows and summary chips.
-        "FromManual", "KeptIn", "KeptOut", "NoMembers"
+        "FromManual", "KeptIn", "KeptOut", "NoMembers",
+        // WP-SEG-DETAILS3: caveat details.js writes under a DRAFT segment's /preview result.
+        "DraftPreviewNote"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

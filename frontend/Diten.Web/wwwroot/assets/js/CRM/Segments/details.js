@@ -20,6 +20,17 @@
     const segmentId = (memberHost || previewHost)?.dataset.segmentId;
     if (!segmentId) return;
 
+    // WP-SEG-DETAILS3: an ACTIVE segment resolves saved membership (/resolve — full verdict + excluded). A DRAFT segment
+    // is refused by /resolve ("segment_not_active"), so it previews its RULE instead (SEG-C /preview — no segmentId and
+    // no active state needed). The subject/match-mode/criteria travel from the server-rendered attributes + JSON below,
+    // exactly the stored rule, never fabricated. /preview carries only a count + a member sample (no verdict/excluded).
+    const segmentStatus = (previewHost?.dataset.segmentStatus || '').trim();
+    const previewSubjectType = (previewHost?.dataset.subjectType || 'contact').trim();
+    const previewMatchMode = (previewHost?.dataset.matchMode || 'all').trim();
+    let previewCriteria = [];
+    try { previewCriteria = JSON.parse(document.getElementById('segmentPreviewCriteria')?.textContent || '[]'); }
+    catch (e) { previewCriteria = []; }
+
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
 
     /** Two-letter avatar from a display name, honorifics dropped, falling back to the id when the name is absent. */
@@ -177,6 +188,69 @@
         }
     };
 
+    // ---- Draft reach preview (draft dynamic/hybrid) — SEG-C /preview, no active state, persists nothing ---------
+    // The active /resolve path above is UNCHANGED. This is its draft twin: /preview accepts the unsaved rule directly,
+    // so a draft shows a real reach ("N members" + a member sample) instead of the /resolve "segment_not_active" wall.
+    const runDraftPreview = async () => {
+        const summary = document.getElementById('resolveSummary');
+        const memberBody = document.getElementById('resolveMembersBody');
+        const excludedWrap = document.getElementById('resolveExcluded');
+        const btn = document.getElementById('btnResolve');
+        if (!summary || !memberBody) return;
+
+        setResolveState('running');
+        if (btn) btn.disabled = true;
+        // /preview has no verdict/excluded surface (count + sample only), so the dropped-candidates block stays hidden.
+        excludedWrap?.classList.add('segd-hidden');
+
+        try {
+            const response = await fetch(`${endpoint}/preview`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectType: previewSubjectType,
+                    matchMode: previewMatchMode || 'all',
+                    criteria: previewCriteria,
+                    effectiveAt: null
+                })
+            });
+
+            const data = await envelope(response);
+            const total = Number(data.totalCount ?? 0);
+            const sample = data.sampleMembers || [];
+
+            setStatMembers(total.toLocaleString());
+
+            // Included count + resolved-at + the draft caveat: this is today's data and not an audience until activated.
+            summary.innerHTML = `
+                <span class="segd-chip-stat segd-chip-included"><span class="segd-chip-value">${esc(total.toLocaleString())}</span><span class="segd-chip-label">${esc(L.MatchedCount || 'Members')}</span></span>
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString())}</span>
+                <span class="segd-draft-note">${esc(L.DraftPreviewNote || '')}</span>`;
+
+            // A genuine 0 is a result, not a failure (fetch/HTTP errors take the catch path and render an error row).
+            memberBody.innerHTML = sample.length === 0
+                ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
+                : sample.map(m => `
+                    <div class="segd-row">
+                        ${personCell(m.displayName, m.subjectId)}
+                        <span class="segd-col-secondary">${esc(m.subjectSecondaryLabel || '—')}</span>
+                        <span class="segd-col-verdict"></span>
+                        <span class="segd-col-source"></span>
+                        <span class="segd-col-reasons"></span>
+                    </div>`).join('');
+
+            setResolveState('done');
+        } catch (error) {
+            summary.innerHTML = `<div class="segd-error-row">${esc(error.message || L.ErrorState)}</div>`;
+            memberBody.innerHTML = '';
+            excludedWrap?.classList.add('segd-hidden');
+            setResolveState('done');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    };
+
     // ---- Stored-rule JSON toggle -------------------------------------------------------------------------------
     const toggleStoredJson = btn => {
         const pre = document.getElementById('storedJson');
@@ -186,7 +260,7 @@
     };
 
     document.addEventListener('click', event => {
-        if (event.target.closest('#btnResolve')) { event.preventDefault(); void runResolve(); return; }
+        if (event.target.closest('#btnResolve')) { event.preventDefault(); void (segmentStatus === 'active' ? runResolve() : runDraftPreview()); return; }
 
         const jsonBtn = event.target.closest('#btnToggleJson');
         if (jsonBtn) { event.preventDefault(); toggleStoredJson(jsonBtn); return; }

@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>Вычисление членства по «живым» данным…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>Отклонённые кандидаты</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Почему каждый кандидат не прошёл</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Этот сегмент всё ещё черновик: число отражает сегодняшние данные и не может использоваться как аудитория до активации.</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>Специальность · место работы</value></data>
   <data name="FromManual" xml:space="preserve"><value>из ручных строк</value></data>
   <data name="KeptIn" xml:space="preserve"><value>включены</value></data>

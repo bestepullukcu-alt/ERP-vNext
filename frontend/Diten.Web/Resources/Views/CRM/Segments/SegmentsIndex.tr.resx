@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>Üyelik canlı veriye göre çözümleniyor…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>Elenen adaylar</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Her adayın neden eklenmediği</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Bu segment hâlâ taslak: sayı bugünkü veriyi yansıtır ve aktive edilene kadar audience olarak kullanılamaz.</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>Uzmanlık · çalışma yeri</value></data>
   <data name="FromManual" xml:space="preserve"><value>elle eklenen satırlardan</value></data>
   <data name="KeptIn" xml:space="preserve"><value>dahil</value></data>

@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>正在根据实时数据解析成员…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>被剔除的候选人</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>每位候选人未入选的原因</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>该细分仍为草稿：计数反映今日数据，激活前不能用作受众。</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>专科 · 工作单位</value></data>
   <data name="FromManual" xml:space="preserve"><value>来自手工行</value></data>
   <data name="KeptIn" xml:space="preserve"><value>保留</value></data>

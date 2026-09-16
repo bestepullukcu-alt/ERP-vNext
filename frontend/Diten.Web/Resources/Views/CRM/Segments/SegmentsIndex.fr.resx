@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>Résolution de l'appartenance sur les données en direct…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>Candidats écartés</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Pourquoi chaque candidat n'a pas été retenu</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Ce segment est encore un brouillon : le nombre reflète les données d'aujourd'hui et ne peut pas servir d'audience tant qu'il n'est pas activé.</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>Spécialité · lieu de travail</value></data>
   <data name="FromManual" xml:space="preserve"><value>depuis les lignes manuelles</value></data>
   <data name="KeptIn" xml:space="preserve"><value>inclus</value></data>

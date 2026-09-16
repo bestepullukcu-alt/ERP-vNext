@@ -16,6 +16,13 @@
     // The stored rule, exactly as the runtime persists it — served for the "Show stored JSON" toggle, never fabricated.
     var criteriaJson = System.Text.Json.JsonSerializer.Serialize(
         segment.Criteria, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+    // WP-SEG-DETAILS3: the same stored criteria, camelCase, in the exact node shape the SEG-C /preview endpoint accepts.
+    // details.js posts this for a DRAFT segment, where /resolve refuses with "segment_not_active"; an active segment
+    // keeps /resolve. This is the machine body (criteriaJson above stays the human-readable toggle text) — both are
+    // serialized from the one segment.Criteria, so nothing is fabricated.
+    var previewCriteriaJson = System.Text.Json.JsonSerializer.Serialize(
+        segment.Criteria, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase });
 }
 
 @* .segment-details-scope keeps the ported segd-* palette + Inter font off the app shell (WP §5).
@@ -239,7 +246,11 @@
                         <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2">
                             <i class="bx bx-user-check dt-card-icon"></i>@Localizer["ResolvePreviewSection"]
                         </h6>
-                        <div id="resolvePreview" data-segment-id="@segment.SegmentId" data-endpoint="/CRM/Segments/api">
+                        @* data-segment-status routes details.js: active -> /resolve (verdict/excluded); draft -> /preview
+                           (SEG-C, no active state) using the subject/match-mode/criteria below. *@
+                        <div id="resolvePreview" data-segment-id="@segment.SegmentId" data-endpoint="/CRM/Segments/api"
+                             data-segment-status="@segment.SegmentStatus" data-subject-type="@segment.SubjectType" data-match-mode="@segment.MatchMode">
+                            <script type="application/json" id="segmentPreviewCriteria">@Html.Raw(previewCriteriaJson)</script>
                             <div class="segd-resolve-head">
                                 <span class="segd-resolve-headtext">
                                     <span class="segd-resolve-desc">@Localizer["ResolvePreviewHelp"]</span>

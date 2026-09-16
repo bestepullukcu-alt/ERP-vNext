@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>Resolviendo la pertenencia con datos en vivo…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>Candidatos descartados</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Por qué no entró cada candidato</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Este segmento sigue siendo un borrador: el recuento refleja los datos de hoy y no puede usarse como audiencia hasta que se active.</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>Especialidad · lugar de trabajo</value></data>
   <data name="FromManual" xml:space="preserve"><value>de filas manuales</value></data>
   <data name="KeptIn" xml:space="preserve"><value>incluidos</value></data>

@@ -235,6 +235,7 @@
   <data name="ResolveRunning" xml:space="preserve"><value>جارٍ حل العضوية مقابل البيانات الحية…</value></data>
   <data name="DroppedCandidates" xml:space="preserve"><value>المرشحون المستبعدون</value></data>
   <data name="DroppedCandidatesIntro" xml:space="preserve"><value>سبب عدم اجتياز كل مرشح</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>لا تزال هذه الشريحة مسودة: يعكس العدد بيانات اليوم ولا يمكن استخدامها كجمهور حتى يتم تفعيلها.</value></data>
   <data name="SecondaryLabel" xml:space="preserve"><value>التخصص · مكان العمل</value></data>
   <data name="FromManual" xml:space="preserve"><value>من الصفوف اليدوية</value></data>
   <data name="KeptIn" xml:space="preserve"><value>مُضمَّن</value></data>
