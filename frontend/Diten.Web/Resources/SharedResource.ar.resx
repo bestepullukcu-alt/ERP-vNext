@@ -857,4 +857,7 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>سجل الشهادات الموثقة</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>المشاركون الموثقون</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>تحليلات القوى العاملة</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>المشتريات</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>الموردون</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>الموردون</value></data>
 </root>

@@ -918,4 +918,7 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Doğrulanmış Sertifika Sicili</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>İş Gücü Analitiği</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Satın Alma</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
 </root>

@@ -99,7 +99,8 @@
             mdm: window.ApiBaseUrl,
             deven: window.ApiBaseUrl,
             auth: window.ApiBaseUrl,
-            platform: window.ApiBaseUrl
+            platform: window.ApiBaseUrl,
+            procurement: window.ApiBaseUrl
         };
         window.CurrentLanguage = "@currentCulture";
         window.CurrentUser = @Html.Raw(currentUserJson);
@@ -287,6 +288,23 @@
                             </a>
                         </li>
                     @* ══ LEGACY-NAV-END ═══════════════════════════════════════════════════════════════════ *@
+                    }
+
+                    @* MOD-0140 — Procurement / Suppliers (tenant shell). Shown only with the supplier read
+                       permission (UAS-001: no link, no skeleton, for users without it). Active-state via
+                       ViewContext.RouteData controller name. Ctrl+K entry is data-driven from the module
+                       self-registration manifest (real RoutePath /Suppliers), not a static JSON edit. *@
+                    @if (Perms.Has("procurement.suppliers.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["Nav.Domain.PROCUREMENT"]</span>
+                        </li>
+                        <li class="menu-item @(activeController == "Suppliers" ? "active" : "")">
+                            <a href="/Suppliers" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-store"></i>
+                                <div>@SharedLocalizer["Nav.Module.SUPPLIERS"]</div>
+                            </a>
+                        </li>
                     }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page

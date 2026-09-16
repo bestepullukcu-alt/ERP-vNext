@@ -26,7 +26,7 @@ public sealed class SupplierOnboardingManifestProvider : IModuleManifestProvider
                 new ModuleManifestPage(
                     PageCode: "SUPPLIERS",
                     DisplayName: "Suppliers",
-                    RoutePath: "/Procurement/Suppliers",
+                    RoutePath: "/Suppliers",
                     RequiredPermission: "procurement.suppliers.read",
                     ParentPageCode: null,
                     IsNavigationVisible: true,

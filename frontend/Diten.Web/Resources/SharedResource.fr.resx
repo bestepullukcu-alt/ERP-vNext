@@ -858,4 +858,7 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Registre des certifications vérifiées</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Participants vérifiés</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Analytique des effectifs</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Achats</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
 </root>

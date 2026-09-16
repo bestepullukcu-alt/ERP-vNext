@@ -857,4 +857,7 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>已验证认证登记册</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>已验证参与者</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>劳动力分析</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>采购</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
 </root>
