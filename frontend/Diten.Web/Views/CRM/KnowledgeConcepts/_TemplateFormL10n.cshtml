@@ -11,7 +11,7 @@
         "ModeratorHint", "ForWhomHint", "ConceptType",
         "SequenceMinTwo", "PublishedSequenceFrozen", "NewVersion", "SelectOption", "ImmutableAfterCreate",
         "RecordCreated", "RecordUpdated", "ErrorState", "AddToSequence",
-        "Prev", "Next", "BranchLabel", "Steps", "AddStep" };
+        "Prev", "Next", "BranchLabel", "Steps", "AddStep", "Details" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>
