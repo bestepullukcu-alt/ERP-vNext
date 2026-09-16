@@ -61,8 +61,18 @@ YAPMA: ana kartta yeni CSS; backend/DTO/payload değiştir; katalog-güdümlül�
 DOĞRULA (E2): Diten.Web.Tests baseline-diff yeşil; blok editörü + iş-dili + optgroup + chip/source/free-text + read-back + canlı reach (SEG-C) + static→manuel + show-stored-rule + empty-state; ana kartlar standart; blok→tree payload doğru (MatchMode=All+groups+predicates, none-of=not-in); catalog-driven + same-origin proxy korundu. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: SEG-B Domain / SEG-C preview yoksa (önce onlar) · blok→tree map limiti aşıyorsa · katalog-güdümlülük korunamıyorsa · kapsam Segments dışına taşarsa → DUR+raporla.
 ```
-## §37 CT → (agent sonrası)
-- İzole worktree: Diten.Web.Tests baseline-diff; logic-read (blok→tree map MatchMode=All+groups+predicates none-of=not-in; catalog-driven optgroup; canlı reach SEG-C; static→manuel; show-stored-rule); ana kartlar standart Tasks/Create; iç editör mockup; same-origin proxy + payload UNCHANGED.
+## §37 CT bağımsız doğrulama (2026-09-16) → **ACCEPTED (E2)**
+```text
+Commit: 33307d18 · Agent: PASS (137/0) · CT: ACCEPTED E2 · izole worktree /c/tmp/ct-sega-verify @33307d18
+```
+- ✅ **Scope:** 11 dosya, hepsi frontend/Diten.Web (SegmentsController preview proxy + _Form.cshtml + _IndexL10n + form.js + 7 resx). Backend sızıntısı YOK.
+- ✅ **Blok→tree payload byte-identical:** buildNodes → MatchMode=all + blok başına 1 GROUP node (every=and/any=or) + koşul başına 1 PREDICATE; nesting/move/NOT toggle kaldırıldı; none-of=not-in, at-least=gte. Payload UNCHANGED.
+- ✅ **Catalog-driven:** optgroup = katalog Domain (SEG-B); operatör/attribute/değer katalogdan (kod→etiket çevirisi, hardcode YOK); value chip + source badge (valueSource.kind'den; MOD-numarası kullanılmadı = ikinci SoT olmasın) + free-text.
+- ✅ **Canlı reach (SEG-C):** debounced 500ms /preview proxy → toplam + koşul funnel (progress bar) + sample (displayName-only) + activation checklist + "üyelik saklanmaz"; 422/eksik-koşul guard + stale-sequence guard. static→blok+reach gizli+manuel liste; show-stored-rule (details, tree JSON); empty-state şablonlar.
+- ✅ **Ana kartlar standart Tasks/Create** (section.card + card-body p-4 + text-uppercase text-heading); yeni .css=0; iç editör 4 işlevsel inline (width:${pct}% funnel + height:.5rem + max-height:20rem overflow + width:11rem — yeni tema/class değil).
+- ✅ **L10n:** 61 anahtar × 7 dil (resx 193 data, dup=0, tutarlı).
+- ✅ **Build+test (CT izole, Release):** build 0-err; **Diten.Web.Tests 137/137** (baseline-diff temiz). same-origin proxy korundu (ocelot değişikliği yok).
+- ⏳ **E4:** ALMIBA nefrolog segment + canlı reach manuel test (fleet).
 
 ## Kalan (bu WP dışı)
 - A2d ALMIBA manuel test (bu segment akışı dahil) → sync/PR.
