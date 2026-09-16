@@ -31,6 +31,20 @@ using MongoDB.Driver;
 namespace Diten.AuthService.Application.Tests.Testing;
 
 /// <summary>
+/// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — thrown ONLY when the fixture's own <c>SeedAsync</c> (repository
+/// writes + the read-back checks that verify the production DataSeeder's catalog keys actually landed) fails,
+/// never when mongod itself fails to start. The out-of-process host (W2) catches this type specifically to
+/// report protocol error code <c>seed-failed</c> (exit 4), distinct from <c>mongo-start-failed</c> (exit 2) for
+/// every other failure in the same start sequence.
+/// </summary>
+internal sealed class AccountKindSeedFailedException : Exception
+{
+    public AccountKindSeedFailedException(string message, Exception inner) : base(message, inner)
+    {
+    }
+}
+
+/// <summary>
 /// WP-INFRA-AUTH-ACCOUNT-KIND-01 — the ISOLATED real-provider acceptance fixture.
 ///
 /// <para>WHAT IT IS. A test-owned, throwaway <c>mongod</c> (EphemeralMongo: its own process, its own random port,
@@ -82,20 +96,6 @@ namespace Diten.AuthService.Application.Tests.Testing;
 /// then — see T3). <see cref="DisposeAsync"/> no longer touches the environment AT ALL: by the time any code can
 /// call it, restoration has already happened, inside Start.</para>
 /// </summary>
-/// <summary>
-/// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — thrown ONLY when the fixture's own <c>SeedAsync</c> (repository
-/// writes + the read-back checks that verify the production DataSeeder's catalog keys actually landed) fails,
-/// never when mongod itself fails to start. The out-of-process host (W2) catches this type specifically to
-/// report protocol error code <c>seed-failed</c> (exit 4), distinct from <c>mongo-start-failed</c> (exit 2) for
-/// every other failure in the same start sequence.
-/// </summary>
-internal sealed class AccountKindSeedFailedException : Exception
-{
-    public AccountKindSeedFailedException(string message, Exception inner) : base(message, inner)
-    {
-    }
-}
-
 public static class AccountKindAcceptance
 {
     /// <summary>Fixed per DB-010: dropped and recreated on every run, never suffixed with a Guid.</summary>

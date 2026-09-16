@@ -421,7 +421,7 @@ internal sealed class SupervisorTestHarness
         return listener;
     }
 
-    public int SpawnHost(string root, string runId, string? dotnetPathOverrideForApiChild = null)
+    public int SpawnHost(string root, string runId, string? dotnetPathOverrideForApiChild = null, string[]? extraEnv = null)
     {
         var dotnetPath = "/usr/local/share/dotnet/dotnet";
         var hostDll = Path.Combine(AppContext.BaseDirectory, "Diten.AuthService.AccountKindAcceptanceHost.dll");
@@ -432,17 +432,40 @@ internal sealed class SupervisorTestHarness
                 "— expected the ProjectReference to copy it here.", hostDll);
         }
 
-        return SpawnWithNewProcessGroup(
-            dotnetPath,
-            new[] { dotnetPath, hostDll },
-            new[]
+        var env = new List<string>
+        {
+            $"DITEN_ACCEPTANCE_ROOT={root}",
+            $"DITEN_ACCEPTANCE_RUN_ID={runId}",
+            $"DITEN_ACCEPTANCE_DOTNET_PATH={dotnetPathOverrideForApiChild ?? dotnetPath}",
+            $"PATH={Environment.GetEnvironmentVariable("PATH")}",
+            $"HOME={Environment.GetEnvironmentVariable("HOME")}"
+        };
+        if (extraEnv is not null) env.AddRange(extraEnv);
+
+        return SpawnWithNewProcessGroup(dotnetPath, new[] { dotnetPath, hostDll }, env.ToArray());
+    }
+
+    /// <summary>Reaps the host via waitpid and returns its real POSIX exit code (WEXITSTATUS), or -1 if it did
+    /// not exit within the timeout (still alive) or died from a signal instead of exiting normally.</summary>
+    public async Task<int> WaitForExitAsync(int pid, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            var result = waitpid(pid, out var status, 1 /* WNOHANG */);
+            if (result == pid)
             {
-                $"DITEN_ACCEPTANCE_ROOT={root}",
-                $"DITEN_ACCEPTANCE_RUN_ID={runId}",
-                $"DITEN_ACCEPTANCE_DOTNET_PATH={dotnetPathOverrideForApiChild ?? dotnetPath}",
-                $"PATH={Environment.GetEnvironmentVariable("PATH")}",
-                $"HOME={Environment.GetEnvironmentVariable("HOME")}"
-            });
+                var exitedNormally = (status & 0x7f) == 0;
+                return exitedNormally ? (status >> 8) & 0xFF : -1;
+            }
+
+            await Task.Delay(100);
+        }
+
+        return -1;
+
+        [System.Runtime.InteropServices.DllImport("libc", SetLastError = true)]
+        static extern int waitpid(int pid, out int status, int options);
     }
 
     public async Task SendAsync(NetworkStream stream, string runId, string type, bool includeProtocolVersion = false)

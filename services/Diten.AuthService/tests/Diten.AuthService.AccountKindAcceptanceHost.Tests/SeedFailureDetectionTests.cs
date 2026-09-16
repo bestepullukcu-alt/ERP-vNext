@@ -53,19 +53,26 @@ public sealed class SeedFailureDetectionTests
         }
     }
 
-    // ── T11(d) — a non-isolated Mongo target is refused BEFORE any seeding starts, never ready ──────────────
+    // ── F3 CORRECTION — this test measures mongod's own inability to start against an unusable data directory
+    // (ENOENT on a nonexistent parent path), NOT the C1 §1(c) effective-config isolated-target guard
+    // (EnsureEffectiveConfigurationTargetsTheIsolatedDatabase). Renamed to say exactly that. CT's own finding:
+    // "ölçtüğü şey mongod'un başlayamaması." Honest gap: the §1(c) guard's comparison runs against the SAME
+    // override dictionary InitializeCoreAsync itself just set (by design — see C1/C3 in the class remarks
+    // above), so nothing a CALLING test does can make effective-config disagree with the runner's real target
+    // without either modifying production-adjacent test internals (InitializeCoreAsync's own override
+    // construction) or a filesystem mutation — both out of this test's reach. NO SEPARATE TEST currently proves
+    // the §1(c) guard's comparison itself fires on a genuine mismatch; only that a bad mongod data directory is
+    // refused before seeding starts (which IS proven, below).
     [Fact]
-    public async Task NonIsolated_mongo_target_is_refused_before_seeding_starts()
+    public async Task BadMongoDataDirectory_FailsBeforeSeedingStarts_NeverReachesTheSeedHook()
     {
-        // Deliberately point at the shared default port/db shape the guard exists to catch (C1 §1(c) from
-        // Stage 1) — this must throw during pre-flight, never reach BeforeSeedHookForTesting/SeedAsync at all.
         var hookCalled = false;
         var ex = await Record.ExceptionAsync(() => AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
             "/nonexistent-on-purpose-not-a-real-isolated-root/mongo",
             beforeSeedHookForTesting: _ => { hookCalled = true; return Task.CompletedTask; }));
 
         Assert.NotNull(ex);
-        Assert.False(hookCalled, "seeding must never even start when the mongo target/pre-flight is not isolated");
+        Assert.False(hookCalled, "seeding must never even start when mongod itself could not start");
         Assert.IsNotType<Diten.AuthService.Application.Tests.Testing.AccountKindSeedFailedException>(ex);
     }
 }

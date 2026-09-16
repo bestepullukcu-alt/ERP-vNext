@@ -137,6 +137,10 @@ internal static class Program
 
             if (ack.Type != "hello-ack" || ack.ProtocolVersion != ProtocolVersion)
             {
+                // F2 — CT correction 2026-09-16: the prompt asked for exit 5, which contradicts this host's own
+                // P3 table ("1 — protocol-violation or unsupported-version") that PPM/Codex already accepted. A
+                // delivered protocol is not re-numbered by a later instruction, so the table wins and the CT
+                // prompt was wrong. The deviation the previous round reported is resolved here, not shipped.
                 await channel.SendErrorAsync("unsupported-version");
                 return ExitCodes.ProtocolViolation;
             }
@@ -146,9 +150,32 @@ internal static class Program
             // including its read-back detection of a silently-swallowed production DataSeeder error) are now
             // DISTINCT: AccountKindSeedFailedException is the only path that reports seed-failed here; anything
             // else at this stage (mongod never came up, wrong target, host failed to build) is mongo-start-failed.
+            //
+            // F1 — TEST-ONLY seam (protocol v1.2 Ek-D): DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY. When
+            // this env var is UNSET (every normal/production run, always), corruptPermissionKey is null and
+            // BeforeSeedHookForTesting below is null — IDENTICAL to no seam existing at all. When a test sets it
+            // to a permission key, the fixture's own repository deletes that key right after the production
+            // DataSeeder ran but BEFORE the fixture's read-back check — reproducing exactly what a silently-
+            // swallowed production seeding error would leave behind, WITHOUT touching production code or the
+            // filesystem. This is what closes the gap a sabotage test found: no existing test drove a genuine
+            // seed-failure through the FULL wire protocol (only the in-process fixture was tested directly).
+            var corruptPermissionKey = Environment.GetEnvironmentVariable("DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY");
             try
             {
-                seedHost = await AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(mongoDataDir);
+                seedHost = await AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
+                    mongoDataDir,
+                    beforeSeedHookForTesting: string.IsNullOrEmpty(corruptPermissionKey)
+                        ? null
+                        : async host =>
+                        {
+                            using var scope = host.Factory.Services.CreateScope();
+                            var permissions = scope.ServiceProvider.GetRequiredService<Diten.AuthService.Application.Common.Interfaces.IPermissionRepository>();
+                            var permission = await permissions.GetByKeyAsync(corruptPermissionKey, CancellationToken.None);
+                            if (permission is not null)
+                            {
+                                await permissions.DeleteAsync(permission.Id, CancellationToken.None);
+                            }
+                        });
             }
             catch (AccountKindSeedFailedException seedDiagEx)
             {
@@ -311,48 +338,59 @@ internal static class Program
             //   authLoginProof: "real" — P7's login DID go through the genuine Auth pipeline (Kestrel ->
             //     TenantResolution -> LoginCommandHandler -> Mongo -> JWT mint) over api.sock; this is the
             //     part that IS proven, kept in its own field so it is never confused with the stub label above.
-            await channel.SendAsync("ready", new
+            // F4 — a supervisor that closes the channel DURING seed/launch (before this point) is only ever
+            // observed by the host at its NEXT socket operation — this send. A broken pipe here (NetworkStream
+            // wraps the underlying SocketException as IOException) is supervisor-lost/exit 6, exactly as if the
+            // same EOF had been seen on a read — NOT the generic top-level catch (which would report exit 5).
+            try
             {
-                apiPid,
-                apiStartTime,
-                mongodPid,
-                mongodStartTime,
-                endpoint = new { kind = "unix", socket = "api.sock" },
-                loginSettings = new
+                await channel.SendAsync("ready", new
                 {
-                    source = "stub",
-                    boundaryEndpoint = "/api/internal/tenants/{tenantId}/login-settings",
-                    provesPlatformIntegration = false
-                },
-                authLoginProof = "real"
-            });
+                    apiPid,
+                    apiStartTime,
+                    mongodPid,
+                    mongodStartTime,
+                    endpoint = new { kind = "unix", socket = "api.sock" },
+                    loginSettings = new
+                    {
+                        source = "stub",
+                        boundaryEndpoint = "/api/internal/tenants/{tenantId}/login-settings",
+                        provesPlatformIntegration = false
+                    },
+                    authLoginProof = "real"
+                });
 
-            // ── C8 seed-ready shape: actors (4, with password) + subjects (10, userId only) + foreignTenantId ──
-            await channel.SendAsync("seed-ready", new
+                // ── C8 seed-ready shape: actors (4, with password) + subjects (10, userId only) + foreignTenantId ──
+                await channel.SendAsync("seed-ready", new
+                {
+                    tenantId = seed.TenantId,
+                    foreignTenantId = seed.ForeignTenantId,
+                    actors = new Dictionary<string, object>
+                    {
+                        ["kindAdmin"] = new { userId = seed.KindAdmin.Id, email = seed.KindAdmin.Email, password = seedHost.ActorPassword },
+                        ["pmo"] = new { userId = seed.Pmo.Id, email = seed.Pmo.Email, password = seedHost.ActorPassword },
+                        ["creator"] = new { userId = seed.Creator.Id, email = seed.Creator.Email, password = seedHost.ActorPassword },
+                        ["noPermission"] = new { userId = seed.NoPermission.Id, email = seed.NoPermission.Email, password = seedHost.ActorPassword },
+                    },
+                    subjects = new Dictionary<string, object>
+                    {
+                        ["human"] = new { userId = seed.Human.Id },
+                        ["unknown"] = new { userId = seed.Unknown.Id },
+                        ["service"] = new { userId = seed.Service.Id },
+                        ["passive"] = new { userId = seed.Passive.Id },
+                        ["foreign"] = new { userId = seed.Foreign.Id },
+                        ["mutable"] = new { userId = seed.Mutable.Id },
+                        ["unnamed"] = new { userId = displayLabelSubjects.Unnamed.Id },
+                        ["whitespace"] = new { userId = displayLabelSubjects.Whitespace.Id },
+                        ["emailUserName"] = new { userId = displayLabelSubjects.EmailUserName.Id },
+                        ["longName"] = new { userId = displayLabelSubjects.LongName.Id },
+                    }
+                });
+            }
+            catch (IOException)
             {
-                tenantId = seed.TenantId,
-                foreignTenantId = seed.ForeignTenantId,
-                actors = new Dictionary<string, object>
-                {
-                    ["kindAdmin"] = new { userId = seed.KindAdmin.Id, email = seed.KindAdmin.Email, password = seedHost.ActorPassword },
-                    ["pmo"] = new { userId = seed.Pmo.Id, email = seed.Pmo.Email, password = seedHost.ActorPassword },
-                    ["creator"] = new { userId = seed.Creator.Id, email = seed.Creator.Email, password = seedHost.ActorPassword },
-                    ["noPermission"] = new { userId = seed.NoPermission.Id, email = seed.NoPermission.Email, password = seedHost.ActorPassword },
-                },
-                subjects = new Dictionary<string, object>
-                {
-                    ["human"] = new { userId = seed.Human.Id },
-                    ["unknown"] = new { userId = seed.Unknown.Id },
-                    ["service"] = new { userId = seed.Service.Id },
-                    ["passive"] = new { userId = seed.Passive.Id },
-                    ["foreign"] = new { userId = seed.Foreign.Id },
-                    ["mutable"] = new { userId = seed.Mutable.Id },
-                    ["unnamed"] = new { userId = displayLabelSubjects.Unnamed.Id },
-                    ["whitespace"] = new { userId = displayLabelSubjects.Whitespace.Id },
-                    ["emailUserName"] = new { userId = displayLabelSubjects.EmailUserName.Id },
-                    ["longName"] = new { userId = displayLabelSubjects.LongName.Id },
-                }
-            });
+                return ExitCodes.SupervisorLost;
+            }
 
             // ── wait for shutdown; EOF before it => supervisor-lost (P3, exit 6); a timeout => exit 7 ────────
             ControlMessage shutdown;
