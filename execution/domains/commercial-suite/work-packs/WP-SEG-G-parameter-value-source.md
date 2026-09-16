@@ -47,8 +47,13 @@ KORU/YAPMA: attribute code/operatör/ana value-source/subject-type değişmez; R
 DOĞRULA (E2): TAM CrmService.Application.Tests + Diten.Web.Tests baseline-diff sıfır-yeni-fail; katalog consent.eligibility channel/purpose value-source (ConsentChannel.All/ConsentPurpose.All) taşır; frontend chip/dropdown; value-source'suz parametre bare kalır; payload parameters map + buildNodes byte-identical. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: parametre value-source katalog contract'a eklenemiyorsa; ConsentChannel/Purpose.All erişilemiyorsa; payload parameters şekli değişmek zorundaysa (DUR); frontend parametre render value-source reuse edilemiyorsa; kapsam Segmentation+form.js dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
 ```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+Commit: eee823e7 · Agent: PASS (--no-build) · CT: ACCEPTED E2 (gerçek build) · izole worktree /c/tmp/ct-segg-verify @eee823e7
 ```
-- İzole worktree → CrmService.Application.Tests + Diten.Web.Tests baseline-diff; ParameterValueSources additive (RequiredParameters listesi değişmedi); consent.eligibility channel/purpose = ConsentChannel.All/ConsentPurpose.All (hardcode yok); frontend chip/dropdown, value-source'suz bare; payload parameters map + buildNodes byte-identical (git diff); consent domain'e yazma yok.
+- ✅ **Scope:** 4 backend katalog dosyası (SegmentAttributeDefinition/Catalog/GetSegmentAttributeCatalogHandler/SegmentModels) + form.js. Segmentation dışına taşma yok; consent domain'e YAZMA yok (yalnız vocabulary okundu).
+- ✅ **Additive:** `ParameterValueSources` `IReadOnlyDictionary<…>? = null` — `RequiredParameters`/`OptionalParameters` isim listeleri değişmedi. Response DTO'ya additive `SegmentAttributeValueSourceDto` map.
+- ✅ **Katalog-güdümlü (hardcode YOK):** consent.eligibility channel→`Enum(ConsentChannel.All.ToArray())`, purpose→`Enum(ConsentPurpose.All.ToArray())` (MOD-0164 sabitleri, ConsentPreferences ile aynı vocabulary). maxDepth/subjectId value-source'suz (bare kalır).
+- ✅ **Payload byte-identical:** buildNodes'ta kod diff yok; seçilen değer aynı `condition.parameters[name]` slotuna yazılır (yalnız giriş kontrolü chip/dropdown). Frontend value-source'suz parametre → bare input (mevcut davranış), yeni CSS yok.
+- ✅ **Build+test (CT izole, Release, GERÇEK build):** Diten.Web.Tests **137/0**; CrmService.Application.Tests ilk run 1739/1 → **rerun 1740/0/5** (tek fail env/sıra flake — SEG-C'deki ContactWorkbookExport flake deseni; değişiklikler additive/payload-safe, kalıcı kırık değil). Baseline-diff temiz.
+- ⏳ **E4:** Eligibility koşulunda channel + purpose dropdown (Consent & Preferences ile aynı vocabulary).
