@@ -3,4 +3,5 @@ using MediatR;
 
 namespace Diten.ProcurementService.Application.Features.Supplier.Queries;
 
-public sealed record GetSupplierByIdQuery(Guid Id) : IRequest<Response<SupplierDetailDto>>;
+/// <summary>getSupplier (contract GET /{supplierId}). Public SupplierId ile; cross-tenant/LE → 404.</summary>
+public sealed record GetSupplierByIdQuery(string SupplierId) : IRequest<Response<SupplierDetailDto>>;

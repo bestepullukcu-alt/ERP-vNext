@@ -91,10 +91,22 @@ public sealed class TenantResolutionMiddleware
         if (resolvedLe is null && TryGetDevBypassGuid("TenantResolution:DevBypassLegalEntityId", out var bypassLe))
         {
             resolvedLe = bypassLe;
+            _logger.LogWarning("TenantResolution dev bypass applied (legal-entity). Path={Path} LegalEntityId={LegalEntityId}",
+                context.Request.Path, bypassLe);
         }
 
-        // LE zorunlu alan; scaffold aşamasında eksikse Guid.Empty ile tutarlı izolasyon (FAZ 2 fail-closed 400 sertleştirir).
-        tenantContext.SetTenant(resolvedTenant.Value, resolvedLe ?? Guid.Empty);
+        // FAIL-CLOSED (FAZ 2): Legal-Entity tenant-scoped her istekte ZORUNLU. Eksikse Guid.Empty'ye düşmek
+        // farklı LE'lerin kayıtlarını tek "boş" LE altında birbirine karıştırır (sessiz cross-LE sızıntısı).
+        // Bu yüzden LE claim/header (veya dev bypass) yoksa istek 400 ile reddedilir — Missing Tenant deseniyle aynı.
+        if (resolvedLe is null)
+        {
+            _logger.LogWarning("Legal-entity context missing. Path={Path}", context.Request.Path);
+            await WriteProblemDetails(context, StatusCodes.Status400BadRequest, "Missing Legal-Entity",
+                $"'{LegalEntityHeader}' header or JWT '{LegalEntityClaim}' claim is required.");
+            return;
+        }
+
+        tenantContext.SetTenant(resolvedTenant.Value, resolvedLe.Value);
         await _next(context);
     }
 

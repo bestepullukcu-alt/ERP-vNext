@@ -5,27 +5,27 @@ using MediatR;
 
 namespace Diten.ProcurementService.Application.Features.Supplier.Handlers.QueryHandlers;
 
-public sealed class GetSupplierByIdHandler
-    : IRequestHandler<GetSupplierByIdQuery, Response<SupplierDetailDto>>
+public sealed class GetOnboardingCaseHandler
+    : IRequestHandler<GetOnboardingCaseQuery, Response<OnboardingCaseDto>>
 {
     private readonly ISupplierRepository _repository;
 
-    public GetSupplierByIdHandler(ISupplierRepository repository)
+    public GetOnboardingCaseHandler(ISupplierRepository repository)
     {
         _repository = repository;
     }
 
-    public async Task<Response<SupplierDetailDto>> Handle(
-        GetSupplierByIdQuery request,
+    public async Task<Response<OnboardingCaseDto>> Handle(
+        GetOnboardingCaseQuery request,
         CancellationToken cancellationToken)
     {
-        // Cross-tenant / cross-LE erişim → repository null döner → 404 (UNKNOWN_SUPPLIER; sızıntı yok).
+        // Cross-tenant / cross-LE → null → 404 (UNKNOWN_SUPPLIER; sızıntı yok).
         var entity = await _repository.GetBySupplierIdAsync(request.SupplierId, cancellationToken);
         if (entity is null)
         {
-            return Response<SupplierDetailDto>.Fail("UNKNOWN_SUPPLIER", 404);
+            return Response<OnboardingCaseDto>.Fail("UNKNOWN_SUPPLIER", 404);
         }
 
-        return Response<SupplierDetailDto>.Success(SupplierMapping.ToDetail(entity));
+        return Response<OnboardingCaseDto>.Success(SupplierMapping.ToOnboardingCase(entity));
     }
 }

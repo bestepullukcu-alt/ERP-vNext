@@ -70,6 +70,18 @@ public sealed class OnboardingCase
 }
 
 /// <summary>
+/// Onboarding onay bağlantısı (MOD-0140 §4 / contract OnboardingCase.approval). Onay motoru MOD-0023'tür;
+/// burada yalnız workflow instance referansı + karar metadatası tutulur (SoR onay motorunda).
+/// </summary>
+public sealed class OnboardingApproval
+{
+    /// <summary>MOD-0023 Workflow/Approvals instance id (referans).</summary>
+    public string? WorkflowInstanceId { get; set; }
+    public string? DecidedBy { get; set; }
+    public DateTimeOffset? DecidedAt { get; set; }
+}
+
+/// <summary>
 /// Supplier master + onboarding SoR entity (MOD-0140). Tenant-owned; her sorgu TenantId + LegalEntityId + IsDeleted=false
 /// ile filtrelenir. Alanlar MOD-0140 §4 tablosundan türetilmiştir. Stok/envanter bakiyesi TUTMAZ (shadow stock yasak).
 /// </summary>
@@ -97,7 +109,17 @@ public sealed class Supplier : EntityBase
     public List<SupplierDocument> Documents { get; set; } = new();
     public OnboardingCase? OnboardingCase { get; set; }
 
+    /// <summary>Onboarding onay bağlantısı (MOD-0023 workflow instance + karar metadatası).</summary>
+    public OnboardingApproval? Approval { get; set; }
+
     // ── Dış besleme (DEC-INV-19) ────────────────────────────────────────────────
     public string? SourceSystem { get; set; }
     public string? ExternalRef { get; set; }
+
+    // ── Idempotency (MOD-0140 §8 idempotent create/onboarding) — internal, DTO'da yok ──
+    /// <summary>Create idempotency anahtarı (Idempotency-Key header). Aynı key ile replay → yan etki yok.</summary>
+    public string? IdempotencyKey { get; set; }
+
+    /// <summary>Onboarding submit idempotency anahtarı. Aynı key ile replay → yeniden işlenmez.</summary>
+    public string? OnboardingIdempotencyKey { get; set; }
 }

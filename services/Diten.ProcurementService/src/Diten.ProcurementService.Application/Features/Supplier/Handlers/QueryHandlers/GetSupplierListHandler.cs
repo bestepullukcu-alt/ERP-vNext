@@ -6,8 +6,11 @@ using MediatR;
 namespace Diten.ProcurementService.Application.Features.Supplier.Handlers.QueryHandlers;
 
 public sealed class GetSupplierListHandler
-    : IRequestHandler<GetSupplierListQuery, Response<IReadOnlyList<SupplierListItemDto>>>
+    : IRequestHandler<GetSupplierListQuery, Response<SupplierListResultDto>>
 {
+    // Cursor sayfa boyutu (contract listSuppliers cursor). Sabit; policy netleşince config'e taşınır.
+    private const int PageSize = 50;
+
     private readonly ISupplierRepository _repository;
 
     public GetSupplierListHandler(ISupplierRepository repository)
@@ -15,23 +18,31 @@ public sealed class GetSupplierListHandler
         _repository = repository;
     }
 
-    public async Task<Response<IReadOnlyList<SupplierListItemDto>>> Handle(
+    public async Task<Response<SupplierListResultDto>> Handle(
         GetSupplierListQuery request,
         CancellationToken cancellationToken)
     {
-        // Repository, Tenant + LegalEntity + IsDeleted=false ile filtreler; boş liste dönebilir (FAZ 1).
-        var entities = await _repository.GetAllAsync(cancellationToken);
-        var list = entities
-            .Select(x => new SupplierListItemDto(
-                x.Id,
-                x.SupplierId,
-                x.Name,
-                x.Status,
-                x.Country,
-                x.TaxId,
-                x.OnboardingStatus))
+        // Repository, Tenant + LegalEntity + IsDeleted=false ile filtreler (cross-LE/tenant sızıntısı yok).
+        var entities = await _repository.GetAllAsync(request.Status, cancellationToken);
+
+        // Cursor = son dönen SupplierId (opaque). Kararlı sıralama Name (repo) → SupplierId ikincil.
+        var ordered = entities
+            .OrderBy(x => x.Name, StringComparer.Ordinal)
+            .ThenBy(x => x.SupplierId, StringComparer.Ordinal)
             .ToList();
 
-        return Response<IReadOnlyList<SupplierListItemDto>>.Success(list);
+        IEnumerable<Domain.Entities.Supplier> page = ordered;
+        if (!string.IsNullOrWhiteSpace(request.Cursor))
+        {
+            page = ordered.Where(x => string.CompareOrdinal(x.SupplierId, request.Cursor) > 0);
+        }
+
+        var pageList = page.Take(PageSize + 1).ToList();
+        var hasMore = pageList.Count > PageSize;
+        var items = pageList.Take(PageSize).Select(SupplierMapping.ToListItem).ToList();
+        var nextCursor = hasMore ? pageList[PageSize - 1].SupplierId : null;
+
+        var result = new SupplierListResultDto(items, nextCursor, SupplierContract.Version);
+        return Response<SupplierListResultDto>.Success(result);
     }
 }
