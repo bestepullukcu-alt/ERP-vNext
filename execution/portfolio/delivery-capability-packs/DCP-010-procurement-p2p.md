@@ -15,7 +15,7 @@ authoring_branch: feature/procurement-mvp-2
 canonical_source: "docs/reference/blueprint/System Capability & Implementation Blueprint - master 8.1.xlsx#Blueprint_Data (Procurement Suite / Procure-to-Pay (P2P), MOD-0140..0148)"
 canonical_modules: [MOD-0140, MOD-0141, MOD-0142, MOD-0143, MOD-0144, MOD-0145]
 runtime_code_allowed: true
-runtime_code_scope: "MOD-0140 + MOD-0145 (2026-09-16). MOD-0140 done (FAZ 2 slice 1: backend 18/18 + frontend, service scaffolded on 5062). MOD-0145 Sourcing ready-for-dev → FAZ 2 slice 2 authorized (implements sourcing.openapi.yaml in Diten.ProcurementService). 0141/0142/0143/0144 remain draft and NOT code-authorized until each reaches its own ready-for-dev gate (CAP-001 §7)."
+runtime_code_scope: "MOD-0140 + MOD-0145 + MOD-0141 (2026-09-16). MOD-0140 done (slice 1: 18 tests + frontend, service on 5062). MOD-0145 done (slice 2: backend 26 tests + frontend + /api/sourcing route). MOD-0141 Requisition & Purchase Orders ready-for-dev → FAZ 2 slice 3 authorized (implements requisition-po.openapi.yaml). 0142/0143/0144 remain draft and NOT code-authorized until each reaches its own ready-for-dev gate (CAP-001 §7)."
 inputs:
   - "docs/analysis/inventory-capability-scope-and-dependency-report.md (§13.1/§14.6/§15.1/§20.2/§21 Procurement lane)"
   - "docs/analysis/contracts/*.openapi.yaml (frozen INVENTORY-BUNDLE, PRODUCT-MASTER-BUNDLE, LOCATION consumed; GRN-EVENT owned-frozen; SUPPLIER front-loaded slice owned)"
@@ -29,7 +29,7 @@ inputs:
 # DCP-010 — Procurement (Procure-to-Pay) (Delivery Capability Pack)
 
 > **Artifact guard.** CAP-001 Delivery Capability Pack — governance/orchestration contract. **NOT** a runtime entity, **NOT** a Module Pack, **NOT** a Capability Group.
-> **`status: approved`** (product owner Ali via CT, 2026-09-16). Kararlar (scope/service/port/ayrı domain) onaylandı. **`runtime_code_allowed: true` — MOD-0140 (done) + MOD-0145** (ready-for-dev). Diğer üyeler (0141/0142/0143/0144) hâlâ `draft` ve kod-yetkisiz; her biri kendi `ready-for-dev` kapısından geçmeli (CAP-001 §7).
+> **`status: approved`** (product owner Ali via CT, 2026-09-16). Kararlar (scope/service/port/ayrı domain) onaylandı. **`runtime_code_allowed: true` — MOD-0140, MOD-0145 (done) + MOD-0141** (ready-for-dev). Diğer üyeler (0142/0143/0144) hâlâ `draft` ve kod-yetkisiz; her biri kendi `ready-for-dev` kapısından geçmeli (CAP-001 §7).
 > **Identity guard.** Yeni `MOD-xxxx` basmaz. Üyeler Blueprint-canonical MOD'lardır (0140-0145); her biri DCP-002 preflight'ından geçti (exit 0, 2026-09-16).
 > **No shadow stock.** Envanter yalnız MOD-0173'e (frozen INVENTORY contract, `POST /movements`); ikinci balance/ledger YASAK.
 
@@ -42,7 +42,7 @@ inputs:
 | Owner domain | procurement |
 | Canonical source | Blueprint 8.1 (Procurement Suite / Procure-to-Pay (P2P)) |
 | Service | `Diten.ProcurementService` · port **5062** |
-| runtime_code_allowed | **true — MOD-0140 (done) + MOD-0145** (ready-for-dev; FAZ 2 slices 1-2) |
+| runtime_code_allowed | **true — MOD-0140, MOD-0145 (done) + MOD-0141** (ready-for-dev; FAZ 2 slices 1-3) |
 
 ## 2. Business outcome
 Denetlenebilir, uçtan uca satın alma: tedarikçi onboarding (KYC/sanctions) → sourcing/RFx → requisition/PO → mal kabul (GRN) → fatura 3-yönlü eşleştirme → sözleşme/clause yönetimi. GxP/pharma-uyumlu, çok-tüzel-kişilikli, audit/evidence'lı, envanter gerçeğini bozmadan (post via INVENTORY contract) çalışan P2P platformu.

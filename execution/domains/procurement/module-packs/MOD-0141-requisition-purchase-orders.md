@@ -6,7 +6,7 @@ service: Diten.ProcurementService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: procurement / control-tower
 branch: feature/procurement-mvp-2
 started: 2026-09-16
@@ -16,7 +16,7 @@ form_field_count: 16
 
 # MOD-0141 — Requisition & Purchase Orders
 
-> **Status guard.** `draft` — DCP-010 `approved`/`ready-for-execution` + bu pack `ready-for-dev` olmadan kod YOK (CAP-001 §7). Bu pack ready-for-dev **hedefli** yazılmıştır; Ali DCP-010'u onaylayınca `ready-for-dev`'e alınır. DCP-010 §8 sırasında **üçüncü** dilim (0140→0145→**0141**→0142→0143→0144).
+> **Status guard.** `ready-for-dev` — DCP-010 `approved` (Ali, 2026-09-16) + bu pack `ready-for-dev` (Ali, 2026-09-16) → kod yetkili (CAP-001 §7). runtime_code_allowed bu modül için AÇIK. DCP-010 §8 sırasında **üçüncü** dilim (0140 done → 0145 done → **0141 aktif** → 0142 → 0143 → 0144).
 > **Contract authority.** Entity alanları `docs/analysis/contracts/requisition-po.openapi.yaml`'dan türetilir; uydurma yasak (K12). Ürün kimliği (0290) ve tedarikçi (0140) consume edilir, yaratılmaz; bilinmeyen referans fail-closed (404 `UNKNOWN_REFERENCE`).
 
 ## 1. Module Summary
@@ -181,7 +181,7 @@ Compact seti — **her iki modül için ayrı**: `Index.cshtml`, `_Filter.cshtml
 - [ ] Gateway routing kararı (integration-agent task)
 - [ ] Acceptance test edilebilir + G2A golden flow'da PO'nun upstream rolü
 - [ ] Test expectations build/verifier/RESX/smoke/contract-mock kapsıyor
-- [ ] DCP-010 approved + bu pack ready-for-dev onayı (kod kapısı)
+- [x] DCP-010 approved (Ali, 2026-09-16) + bu pack ready-for-dev onayı (Ali, 2026-09-16; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
 DCP-010 §8 sırasında üçüncü dilim (0140 Supplier → 0145 Sourcing → **0141 Req/PO** → 0142 GRN → 0143 Invoice → 0144 Contracting). Servis scaffold MOD-0140 ile doğmuş olur (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5062); bu pack o servise iki yeni feature (Requisition, PurchaseOrder) ekler. REQUISITION-PO contract `x-status: REVIEW` — freeze owner+consumer review sonrası; PO downstream slice (`poId/poLineId/status`) superset korunur. MRP (MOD-0189) yalnız requirement önerir, PO SoR burada kalır — seam tek-yazıcı (K15). Update/delete/bulk-delete additive (ASSUMPTION-P2P-0141-02); freeze kapısında additive-safe sunulur.
