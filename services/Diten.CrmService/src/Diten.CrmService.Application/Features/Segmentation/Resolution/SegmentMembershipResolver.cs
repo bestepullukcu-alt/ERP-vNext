@@ -261,13 +261,15 @@ public sealed class SegmentMembershipResolver
                     excluded.Add(new SegmentMemberDto(candidate.SubjectId, segment.SubjectType,
                         candidate.DisplayName,
                         SegmentMembershipVerdicts.NotMember, SegmentMembershipSources.ManualExclude,
-                        new[] { SegmentReasonCodes.ManualExclude }));
+                        new[] { SegmentReasonCodes.ManualExclude },
+                        candidate.SecondaryLabel));
                     continue;
                 }
 
                 members.Add(new SegmentMemberDto(candidate.SubjectId, segment.SubjectType,
                     candidate.DisplayName,
-                    SegmentMembershipVerdicts.Member, SegmentMembershipSources.Criteria, outcome.ReasonCodes));
+                    SegmentMembershipVerdicts.Member, SegmentMembershipSources.Criteria, outcome.ReasonCodes,
+                    candidate.SecondaryLabel));
                 continue;
             }
 
@@ -278,7 +280,8 @@ public sealed class SegmentMembershipResolver
                 SegmentMembershipSources.Criteria,
                 outcome.ReasonCodes.Count > 0
                     ? outcome.ReasonCodes
-                    : new[] { SegmentReasonCodes.CriteriaNotMatched }));
+                    : new[] { SegmentReasonCodes.CriteriaNotMatched },
+                candidate.SecondaryLabel));
         }
     }
 
@@ -333,7 +336,8 @@ public sealed class SegmentMembershipResolver
             members.Add(new SegmentMemberDto(subjectId, segment.SubjectType,
                 rejected.SubjectDisplayName ?? manualNames.GetValueOrDefault(subjectId),
                 SegmentMembershipVerdicts.Member, SegmentMembershipSources.ManualInclude,
-                new[] { SegmentReasonCodes.ManualInclude }));
+                new[] { SegmentReasonCodes.ManualInclude },
+                rejected.SubjectSecondaryLabel));
         }
     }
 

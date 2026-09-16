@@ -132,7 +132,8 @@ public sealed class PreviewSegmentReachHandler
         }
 
         var sampleMembers = full.Members
-            .Select(m => new SegmentReachSampleMemberDto(m.SubjectId, m.SubjectType, m.SubjectDisplayName))
+            .Select(m => new SegmentReachSampleMemberDto(
+                m.SubjectId, m.SubjectType, m.SubjectDisplayName, m.SubjectSecondaryLabel))
             .ToList();
 
         return Response<SegmentReachPreviewDto>.Success(new SegmentReachPreviewDto(

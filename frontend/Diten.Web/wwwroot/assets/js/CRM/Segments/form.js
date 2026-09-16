@@ -844,7 +844,7 @@
                 ? members.map(m => {
                     const name = m.displayName || m.subjectId || '';
                     const initials = String(name).trim().split(/\s+/).map(w => w.charAt(0)).slice(0, 2).join('').toUpperCase() || '?';
-                    const meta = m.displayName ? (m.subjectId || '') : '';
+                    const meta = m.subjectSecondaryLabel || '';
                     return `<div class="seg-sample">
                        <span class="seg-avatar">${esc(initials)}</span>
                        <span class="seg-sample-body">
@@ -1120,7 +1120,7 @@
                         ${m.isArchived ? `<span class="seg-member-badge">${esc(L.Archived || 'archived')}</span>` : ''}
                     </div>
                     <div class="seg-member-meta">${esc(m.selectionReason)}</div>
-                    <div class="seg-member-meta">${esc(m.subjectId)}</div>
+                    ${(m.subjectSecondaryLabel || '') ? `<div class="seg-member-meta">${esc(m.subjectSecondaryLabel)}</div>` : ''}
                 </div>
                 ${m.isArchived ? '' : `
                 <div class="seg-member-actions">

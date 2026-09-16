@@ -26,4 +26,43 @@ public sealed record SegmentSubjectSnapshot(
     string? ProfessionalTitle,
     string? Department,
     string? Gender,
-    string? PreferredLanguage);
+    string? PreferredLanguage)
+{
+    /// <summary>
+    /// MOD-0167 FU02 (WP-SEG-D) — the SECONDARY display label a preview sample or a resolved member shows under the
+    /// name, in place of a raw id. It is derived purely from fields THIS projection already carries, so it costs no
+    /// extra read and no extra round-trip: a contact prefers <see cref="Specialty"/> then <see cref="ProfessionalTitle"/>,
+    /// an account prefers <see cref="Type"/> then <see cref="Category"/>; when a <see cref="City"/> is present it is
+    /// appended as <c>"core · city"</c>, and a bare city is used on its own when no role/type is known. Like
+    /// <see cref="DisplayName"/> it is a display label only — no rule is ever evaluated against it. Null when nothing
+    /// readable can be formed.
+    /// </summary>
+    public string? SecondaryLabel
+    {
+        get
+        {
+            var isContact = string.Equals(SubjectType, "contact", StringComparison.OrdinalIgnoreCase);
+            var core = isContact
+                ? FirstNonBlank(Specialty, ProfessionalTitle)
+                : FirstNonBlank(Type, Category);
+            var city = string.IsNullOrWhiteSpace(City) ? null : City.Trim();
+
+            if (core is not null && city is not null)
+            {
+                return $"{core} · {city}";
+            }
+
+            return core ?? city;
+        }
+    }
+
+    private static string? FirstNonBlank(string? primary, string? secondary)
+    {
+        if (!string.IsNullOrWhiteSpace(primary))
+        {
+            return primary.Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(secondary) ? null : secondary.Trim();
+    }
+}

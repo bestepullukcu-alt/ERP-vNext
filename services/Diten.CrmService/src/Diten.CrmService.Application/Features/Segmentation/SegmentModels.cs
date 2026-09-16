@@ -134,14 +134,19 @@ public static class SegmentMembershipSources
 /// less visible than an acceptance.
 /// <para><see cref="SubjectDisplayName"/> is a display label carried on the candidate projection (no extra read). It
 /// is never a source of truth and no rule is evaluated against it — a consumer that needs the real name resolves it
-/// from the owning master, exactly as <c>TargetCustomer.SubjectDisplayName</c> already documents.</para></summary>
+/// from the owning master, exactly as <c>TargetCustomer.SubjectDisplayName</c> already documents.</para>
+/// <para><see cref="SubjectSecondaryLabel"/> (WP-SEG-D) is an ADDITIVE, nullable second display line derived from the
+/// SAME candidate projection (contact → specialty, account → type, optionally " · city") at no extra read. It is a
+/// display label only; it is null for a manual/static member that never passed through the candidate projection. It is
+/// appended LAST so the existing positional fields, their order and their meaning are unchanged.</para></summary>
 public sealed record SegmentMemberDto(
     Guid SubjectId,
     string SubjectType,
     string? SubjectDisplayName,
     string Verdict,
     string MembershipSource,
-    IReadOnlyList<string> ReasonCodes);
+    IReadOnlyList<string> ReasonCodes,
+    string? SubjectSecondaryLabel = null);
 
 /// <summary>
 /// The output of <c>resolve</c>. Deterministic for an unchanged source data set: same member set, same order
@@ -311,11 +316,15 @@ public sealed record SegmentReachConditionDto(
 
 /// <summary>One sampled member of the draft rule's reach. It carries only what the resolver already projects onto a
 /// member at no extra read — the id and a display label. It is a preview sample, not a member export: the real member
-/// list (with paging) is a saved segment's <c>/resolve</c>.</summary>
+/// list (with paging) is a saved segment's <c>/resolve</c>.
+/// <para><see cref="SubjectSecondaryLabel"/> (WP-SEG-D) is the ADDITIVE, nullable second display line copied verbatim
+/// from the resolved member (contact → specialty, account → type, optionally " · city"), so the sample can show it
+/// under the name instead of a raw id. Appended last; existing fields are unchanged.</para></summary>
 public sealed record SegmentReachSampleMemberDto(
     Guid SubjectId,
     string SubjectType,
-    string? DisplayName);
+    string? DisplayName,
+    string? SubjectSecondaryLabel = null);
 
 /// <summary>List envelope for the segment grid. Total is the count BEFORE paging, so a UI never has to guess.</summary>
 public sealed record SegmentListDto(IReadOnlyList<SegmentListItemDto> Items, int Total);
