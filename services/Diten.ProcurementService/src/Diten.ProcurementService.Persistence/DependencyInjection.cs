@@ -40,6 +40,8 @@ public static class DependencyInjection
 
         services.AddScoped<ISupplierRepository, SupplierRepository>();
         services.AddScoped<IRfxRepository, RfxRepository>();
+        services.AddScoped<IRequisitionRepository, RequisitionRepository>();
+        services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
 
         // PRODUCT-MASTER (MOD-0290) consume seam — progressive integration (0290 bu dilimde bağlı değil).
         // Varsayılan permissive (hard-fail etmez); gerçek 0290 gateway'i bağlanınca bu kayıt değiştirilir.
