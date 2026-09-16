@@ -177,11 +177,14 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>В этой ветви пока нет шагов.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>Мин</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>Макс</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Роли модератора</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Модератор</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Аудитория</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Ссылки через запятую</value></data>
-  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Введите ссылку на роль и нажмите Enter</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Выберите роль модератора</value></data>
   <data name="ForWhomPlaceholder" xml:space="preserve"><value>Выберите профили аудитории</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Кто представляет эту цепочку.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Целевые профили аудитории для этой цепочки.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Тип концепта</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>ветв(и)</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>

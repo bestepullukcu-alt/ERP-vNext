@@ -177,11 +177,14 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>Aucune étape dans cette branche.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>Min</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>Max</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Rôles de modérateur</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Modérateur</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Audience</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Références séparées par des virgules</value></data>
-  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Saisissez une référence de rôle et appuyez sur Entrée</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Sélectionnez un rôle de modérateur</value></data>
   <data name="ForWhomPlaceholder" xml:space="preserve"><value>Sélectionnez des profils d'audience</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Qui présente cette chaîne.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Profils d'audience cibles de cette chaîne.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Type de concept</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>branche(s)</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>Élevée</value></data>

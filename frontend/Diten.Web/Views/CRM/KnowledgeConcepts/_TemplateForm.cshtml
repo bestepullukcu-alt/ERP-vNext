@@ -38,6 +38,19 @@
                             <label for="tplChainName" class="form-label fw-medium">@Localizer["ChainName"] <span class="text-danger">*</span></label>
                             <input type="text" id="tplChainName" class="form-control" maxlength="240" required />
                         </div>
+                        @* SCMM-10-MOD-C: Moderator + ForWhom are TEMPLATE-level (delivery identity), not step-level.
+                           Moderator = content-moderator-role published value (who presents the chain); ForWhom =
+                           AudienceProfile refs (the chain's target audience). Both optional. *@
+                        <div class="col-12 col-md-6">
+                            <label for="tplModeratorRoleType" class="form-label fw-medium">@Localizer["Moderator"]</label>
+                            <select id="tplModeratorRoleType" class="form-select tpl-select2" data-placeholder="@Localizer["ModeratorPlaceholder"]"></select>
+                            <div class="form-text">@Localizer["ModeratorHint"]</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="tplForWhom" class="form-label fw-medium">@Localizer["ForWhom"]</label>
+                            <select id="tplForWhom" class="form-select tpl-select2" multiple data-placeholder="@Localizer["ForWhomPlaceholder"]"></select>
+                            <div class="form-text">@Localizer["ForWhomHint"]</div>
+                        </div>
                         <div class="col-12">
                             <label for="tplDescription" class="form-label fw-medium">@Localizer["Description"]</label>
                             <textarea id="tplDescription" class="form-control" rows="3" maxlength="2000"></textarea>

@@ -78,10 +78,15 @@
     // SCMM-09-UI-refine-fix (Not 3): the concept-type NAME alone (no "code — " prefix), kept beside typeMap so the
     // auto-filled connection name reads as prose ("Hasta Profili → Fayda"), not a code label.
     const typeNameMap = {};
+    // SCMM-10-MOD-C: template-level Moderator (content-moderator-role ValueCode) + ForWhom (AudienceProfile id) label
+    // resolution for the read-only Chain Template quick view.
+    const audienceMap = {}, moderatorMap = {};
     const subjectOptions = [], nodeRows = [];
     const labelSubject = id => subjectMap[id] || id || '';
     const labelType = id => typeMap[id] || id || '';
     const labelNode = id => nodeMap[id]?.label || id || '';
+    const labelAudience = id => audienceMap[id] || id || '';
+    const labelModerator = code => moderatorMap[code] || code || '';
     // A node's concept-type display name, or '' when it cannot be resolved (never fall back to the node label — a
     // wrong auto-name is worse than none).
     const nodeTypeName = nodeId => typeNameMap[nodeMap[nodeId]?.conceptTypeId] || '';
@@ -138,6 +143,22 @@
                 nodeRows.push(n);
             });
         } catch (e) { /* the From/To pickers stay empty; the backend still rejects an unresolved node */ }
+    };
+    // SCMM-10-MOD-C: read-only label sources for the Chain Template quick view's template-level Moderator / ForWhom.
+    const loadAudiences = async () => {
+        try {
+            const data = await envelope(await fetch(`${base}/audience-profiles?includeArchived=true`, { credentials: 'same-origin', headers }));
+            (data?.items || []).forEach(a => { audienceMap[a.audienceProfileId] = `${a.profileCode} — ${a.profileName}`; });
+        } catch (e) { /* the quick view falls back to the raw id */ }
+    };
+    const loadModeratorRoles = async () => {
+        try {
+            const data = await envelope(await fetch(`${base}/reference-data/content-moderator-role/values`, { credentials: 'same-origin', headers }));
+            (data?.items || []).forEach(v => {
+                const code = norm(v.code || v.valueCode || v.value);
+                if (code) moderatorMap[code] = norm(v.label || v.displayName || v.text) || code;
+            });
+        } catch (e) { /* the quick view falls back to the raw ValueCode */ }
     };
 
     // ─── Per-tab specification ───────────────────────────────────────────────
@@ -1068,16 +1089,23 @@
                     || `<li class="list-group-item text-muted">${esc(L.SequenceEmpty || '')}</li>`;
             }
             document.getElementById('pv-tpl-frozen')?.classList.toggle('d-none', norm(row.status) !== 'published');
-            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality + moderator/for-whom.
+            // SCMM-10-MOD-C — Moderator/ForWhom are TEMPLATE-level (delivery identity), no longer per step.
+            setText('pv-tpl-moderator', norm(row.moderatorRoleType) ? labelModerator(row.moderatorRoleType) : '');
+            const fwHost = document.getElementById('pv-tpl-forwhom');
+            if (fwHost) {
+                const ids = Array.isArray(row.forWhomAudienceProfileIds) ? row.forWhomAudienceProfileIds : [];
+                fwHost.innerHTML = ids.length
+                    ? ids.map(id => `<span class="badge bg-label-secondary me-1">${esc(labelAudience(id))}</span>`).join('')
+                    : `<span class="text-muted">—</span>`;
+            }
+            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality.
             const brHost = document.getElementById('pv-tpl-branches');
             if (brHost) {
                 const list = Array.isArray(row.branches) ? row.branches : [];
                 brHost.innerHTML = list.length ? list.map(b => {
                     const steps = (b.steps || []).map(s => {
                         const card = `${s.minSelection ?? 1}–${s.maxSelection == null ? '∞' : s.maxSelection}`;
-                        const roles = (s.allowedRoleRefs || []).length ? ` · ${esc(L.Moderator || '')}: ${esc((s.allowedRoleRefs || []).join(', '))}` : '';
-                        const aud = (s.audienceDimensionRefs || []).length ? ` · ${esc(L.ForWhom || '')}: ${esc((s.audienceDimensionRefs || []).join(', '))}` : '';
-                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})${roles}${aud}</span></li>`;
+                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})</span></li>`;
                     }).join('');
                     return `<div class="card border shadow-none"><div class="card-body p-3">
                         <div class="fw-medium mb-2">${esc(b.branchName || b.branchCode || '')}</div>
@@ -1264,7 +1292,7 @@
         // The contract first (it supplies every vocabulary the filters and forms pick from), then the read-only
         // references, then the types — the other two tabs label their columns with type and node names.
         await loadContract();
-        await Promise.all([loadSubjects(), loadNodes()]);
+        await Promise.all([loadSubjects(), loadNodes(), loadAudiences(), loadModeratorRoles()]);
         await load('concept-types');
         await Promise.all([load('concept-relationships'), load('concept-chain-templates')]);
     })();

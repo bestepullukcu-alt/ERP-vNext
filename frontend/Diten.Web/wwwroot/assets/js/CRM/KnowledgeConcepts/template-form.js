@@ -1,14 +1,20 @@
 /**
  * SCMM-10-UI-refine (MOD-0162) Chain Template — Golden Compact full-page create/edit (Not 5), replacing the Slim
  * offcanvas. Ports the SCMM-10 branched builder onto a route-based page and submits through the same-origin
- * concept-chain-templates proxy (no backend change; the Branches[].Steps[] shape is unchanged). Not 6: a step's
- * Moderator is a free select2 TAGS field (allowedRoleRefs — no position service yet, MOD-0288; repoint later) and
- * ForWhom is a multi-select2 sourced from audience-profiles (audienceDimensionRefs — search by name, no raw id).
+ * concept-chain-templates proxy.
+ *
+ * SCMM-10-MOD-C (template-level Moderator/ForWhom): Moderator and ForWhom moved OFF the step and ONTO the template
+ * (Identity & Classification). Moderator = a single content-moderator-role published value (store ValueCode →
+ * ModeratorRoleType; who presents the chain). ForWhom = an AudienceProfile multi-select (store id[] →
+ * ForWhomAudienceProfileIds; the chain's target audience). The step-level AllowedRoleRefs / AudienceDimensionRefs are
+ * gone (backend WP-A removed them). Branches are a Tasks-checklist compose-then-add builder (AUD-UI-6 pattern):
+ * `.diten-checkitem` step rows + a compose-row (Concept Type + Min/Max + Add).
  */
 (function (window, document) {
     'use strict';
     const $ = window.jQuery;
     const base = '/CRM/KnowledgeConcepts/api';
+    const MODERATOR_SET_CODE = 'content-moderator-role';
     const headers = { Accept: 'application/json' };
     const jsonHeaders = { Accept: 'application/json', 'Content-Type': 'application/json' };
 
@@ -32,11 +38,13 @@
     const getJson = async path => envelope(await fetch(`${base}${path}`, { credentials: 'same-origin', headers }));
 
     // ─── reference data ─────────────────────────────────────────────────────────
-    let types = [];            // { conceptTypeId, subjectId, conceptTypeCode, conceptTypeName, isArchived }
-    let audienceOptions = [];  // { value: audienceProfileId, text: "code — name" }
+    let types = [];             // { conceptTypeId, subjectId, conceptTypeCode, conceptTypeName, isArchived }
+    let audienceOptions = [];   // { value: audienceProfileId, text: "code — name" }
+    let moderatorOptions = [];  // { value: ValueCode, text: label }  (content-moderator-role published values)
     const typeNameById = {};
     const subjectLabelById = {};
     const labelType = id => typeNameById[id] || id || '';
+    const moderatorLabel = code => moderatorOptions.find(o => String(o.value) === String(code))?.text || code || '';
     const typeOptionsFor = subjectId => types
         .filter(t => String(t.subjectId) === String(subjectId) && !t.isArchived)
         .map(t => ({ value: t.conceptTypeId, text: `${t.conceptTypeCode} — ${t.conceptTypeName}` }));
@@ -50,10 +58,21 @@
         if (current && !list.some(o => String(o.value) === String(current))) list.unshift({ value: current, text: currentLabel || current });
         el.innerHTML = (withEmpty ? '<option value=""></option>' : '') + list.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('');
     };
+    // ForWhom multi-select: mark selected audience-profile ids, preserving any stored ref that is no longer offered.
+    const fillForWhom = selectedIds => {
+        const el = document.getElementById('tplForWhom');
+        if (!el) return;
+        const sel = (selectedIds || []).map(String);
+        const known = audienceOptions.map(o =>
+            `<option value="${esc(o.value)}"${sel.includes(String(o.value)) ? ' selected' : ''}>${esc(o.text)}</option>`);
+        const extra = sel.filter(v => !audienceOptions.some(o => String(o.value) === v))
+            .map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`);
+        el.innerHTML = known.concat(extra).join('');
+    };
     const initSelect2 = (sel) => { if ($ && $.fn.select2) $(sel).each(function () { if (!$(this).hasClass('select2-hidden-accessible')) $(this).select2({ width: '100%', placeholder: this.getAttribute('data-placeholder') || '' }); }); };
 
     // ─── builder model + spine ──────────────────────────────────────────────────
-    let branches = [];         // [{ name, steps:[{ conceptTypeId, min, max, roles:[], audiences:[] }] }]
+    let branches = [];         // [{ name, steps:[{ conceptTypeId, min, max }] }]
     let templateReadOnly = false;
     const spineFromBranches = () => {
         const seen = new Set(); const out = [];
@@ -67,16 +86,40 @@
         return m[2] != null ? `v${major}.${parseInt(m[2], 10) + 1}` : `v${major + 1}`;
     };
 
-    const audienceOptionsMarkup = selected => {
-        const sel = (selected || []).map(String);
-        const known = audienceOptions.map(o =>
-            `<option value="${esc(o.value)}"${sel.includes(String(o.value)) ? ' selected' : ''}>${esc(o.text)}</option>`);
-        // Ensure any stored ref that is not a known profile still round-trips (legacy free value).
-        const extra = sel.filter(v => !audienceOptions.some(o => String(o.value) === v))
-            .map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`);
-        return known.concat(extra).join('');
-    };
+    const cardinality = s => `${s.min == null || s.min === '' ? 1 : s.min}–${s.max == null || s.max === '' ? '∞' : s.max}`;
 
+    // ─── Branches builder (AUD-UI-6 Tasks-checklist compose-then-add) ─────────────
+    // Each branch is a card: a branch-name input + a `.diten-checkitem` step list + a `.diten-checkitem` compose-row
+    // (Concept Type + Min/Max + Add). A step row is display-only (change = remove + re-add); the up/down move controls
+    // stay ACTIVE because a chain's step order is meaningful (unlike an AudienceProfile dimension set).
+    const stepRow = (bi, si, s, lastIndex, ro) => {
+        const up = `<button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-chevron-up"></i></button>`;
+        const down = `<button type="button" class="diten-checkitem-btn js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" ${ro || si === lastIndex ? 'disabled' : ''}><i class="bx bx-chevron-down"></i></button>`;
+        const rm = ro ? '' :
+            `<button type="button" class="diten-checkitem-btn diten-checkitem-remove js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" aria-label="${esc(L.RemoveStep || '')}"><i class="bx bx-x"></i></button>`;
+        return `<li class="diten-checkitem">
+                <span class="diten-checkitem-grip diten-checkitem-withdrawn" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>
+                <span class="diten-checkitem-move">${up}${down}</span>
+                <span class="diten-checkitem-text"><span class="fw-medium me-2 text-truncate">${esc(labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(cardinality(s))}</span></span>
+                ${rm}
+            </li>`;
+    };
+    const composeRow = (bi, opts, ro) => {
+        if (ro) return '';
+        return `<div class="diten-checkitem flex-column align-items-stretch gap-2 mt-2">
+                <div class="d-flex gap-2 align-items-start flex-wrap">
+                    <span style="flex:2 1 12rem; min-width:0">
+                        <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" data-placeholder="${esc(L.ConceptType || L.SelectOption || '')}">
+                            <option value="">${esc(L.SelectOption || '')}</option>
+                            ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
+                        </select>
+                    </span>
+                    <span style="width:5.5rem"><input type="number" min="0" step="1" value="1" class="form-control form-control-sm js-compose-min" data-b="${bi}" aria-label="${esc(L.MinSelection || 'Min')}" placeholder="${esc(L.MinSelection || 'Min')}"></span>
+                    <span style="width:5.5rem"><input type="number" min="1" step="1" class="form-control form-control-sm js-compose-max" data-b="${bi}" aria-label="${esc(L.MaxSelection || 'Max')}" placeholder="${esc(L.MaxSelection || 'Max')}"></span>
+                </div>
+                <button type="button" class="btn btn-label-primary btn-sm align-self-start js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
+            </div>`;
+    };
     const renderBranches = () => {
         const host = document.getElementById('tplBranches');
         const empty = document.getElementById('tplBranchesEmpty');
@@ -84,25 +127,7 @@
         const subjectId = val('tplSubjectId');
         const ro = templateReadOnly;
         host.innerHTML = branches.map((b, bi) => {
-            const steps = b.steps.map((s, si) => `
-                <li class="list-group-item">
-                    <div class="d-flex justify-content-between align-items-center gap-2">
-                        <span class="fw-medium text-truncate">${esc(labelType(s.conceptTypeId))}</span>
-                        <span class="d-flex gap-1 flex-shrink-0">
-                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="-1" title="${esc(L.MoveUp || '')}" ${ro || si === 0 ? 'disabled' : ''}><i class="bx bx-up-arrow-alt"></i></button>
-                            <button type="button" class="btn btn-icon btn-sm btn-label-secondary js-step-move" data-b="${bi}" data-s="${si}" data-delta="1" title="${esc(L.MoveDown || '')}" ${ro || si === b.steps.length - 1 ? 'disabled' : ''}><i class="bx bx-down-arrow-alt"></i></button>
-                            <button type="button" class="btn btn-icon btn-sm btn-label-danger js-step-remove" data-b="${bi}" data-s="${si}" title="${esc(L.RemoveStep || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-x"></i></button>
-                        </span>
-                    </div>
-                    <div class="row g-2 mt-1">
-                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MinSelection || 'Min')}</label><input type="number" min="0" step="1" class="form-control form-control-sm js-step-min" data-b="${bi}" data-s="${si}" value="${esc(String(s.min ?? 1))}" ${ro ? 'disabled' : ''}></div>
-                        <div class="col-6 col-md-3"><label class="form-label small mb-0">${esc(L.MaxSelection || 'Max')}</label><input type="number" min="1" step="1" class="form-control form-control-sm js-step-max" data-b="${bi}" data-s="${si}" value="${s.max == null ? '' : esc(String(s.max))}" ${ro ? 'disabled' : ''}></div>
-                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.Moderator || '')}</label>
-                            <select multiple class="form-select form-select-sm js-step-roles" data-b="${bi}" data-s="${si}" data-placeholder="${esc(L.ModeratorPlaceholder || '')}" ${ro ? 'disabled' : ''}>${(s.roles || []).map(r => `<option value="${esc(r)}" selected>${esc(r)}</option>`).join('')}</select></div>
-                        <div class="col-12 col-md-3"><label class="form-label small mb-0">${esc(L.ForWhom || '')}</label>
-                            <select multiple class="form-select form-select-sm js-step-aud" data-b="${bi}" data-s="${si}" data-placeholder="${esc(L.ForWhomPlaceholder || '')}" ${ro ? 'disabled' : ''}>${audienceOptionsMarkup(s.audiences)}</select></div>
-                    </div>
-                </li>`).join('');
+            const steps = b.steps.map((s, si) => stepRow(bi, si, s, b.steps.length - 1, ro)).join('');
             const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
             return `
                 <div class="card border shadow-none">
@@ -111,38 +136,14 @@
                             <input type="text" class="form-control form-control-sm js-branch-name" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''} style="max-width:18rem">
                             <button type="button" class="btn btn-icon btn-sm btn-label-danger js-branch-remove" data-b="${bi}" title="${esc(L.RemoveBranch || '')}" ${ro ? 'disabled' : ''}><i class="bx bx-trash"></i></button>
                         </div>
-                        <ol class="list-group list-group-numbered mb-2">${steps || `<li class="list-group-item text-muted">${esc(L.BranchStepsEmpty || '')}</li>`}</ol>
-                        <div class="d-flex gap-2">
-                            <select class="form-select form-select-sm js-branch-type-picker" data-b="${bi}" ${ro ? 'disabled' : ''}>
-                                <option value=""></option>
-                                ${opts.map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('')}
-                            </select>
-                            <button type="button" class="btn btn-sm btn-label-primary js-branch-add-step" data-b="${bi}" ${ro ? 'disabled' : ''}><i class="bx bx-plus"></i></button>
-                        </div>
+                        <ul class="list-unstyled mb-0">${steps || `<li class="diten-checkitem text-muted">${esc(L.BranchStepsEmpty || '')}</li>`}</ul>
+                        ${composeRow(bi, opts, ro)}
                     </div>
                 </div>`;
         }).join('');
         empty?.classList.toggle('d-none', branches.length > 0);
         setVal('tplOrderedConceptTypes', spineFromBranches().join(','));
-        initStepWidgets();
     };
-
-    // Moderator = free tags; ForWhom = audience-profile multi-select2. Change → update the model (no re-render, so
-    // the widgets keep focus). Structural edits (add/remove/move) re-render and re-init.
-    const initStepWidgets = () => {
-        if (!($ && $.fn.select2)) return;
-        document.querySelectorAll('#tplBranches .js-step-roles').forEach(el => {
-            const $s = $(el);
-            if (!$s.hasClass('select2-hidden-accessible')) $s.select2({ width: '100%', tags: true, tokenSeparators: [','], placeholder: el.getAttribute('data-placeholder') || '' });
-            $s.off('change.tpl').on('change.tpl', function () { const st = stepOf(el); if (st) st.roles = $(this).val() || []; });
-        });
-        document.querySelectorAll('#tplBranches .js-step-aud').forEach(el => {
-            const $s = $(el);
-            if (!$s.hasClass('select2-hidden-accessible')) $s.select2({ width: '100%', placeholder: el.getAttribute('data-placeholder') || '' });
-            $s.off('change.tpl').on('change.tpl', function () { const st = stepOf(el); if (st) st.audiences = $(this).val() || []; });
-        });
-    };
-    const stepOf = el => { const b = branches[Number(el.dataset.b)]; return b ? b.steps[Number(el.dataset.s)] : null; };
 
     // ─── submit ─────────────────────────────────────────────────────────────────
     const submit = async () => {
@@ -162,16 +163,20 @@
             steps: b.steps.map(s => ({
                 conceptTypeId: String(s.conceptTypeId),
                 minSelection: Number.isFinite(Number(s.min)) ? Number(s.min) : 1,
-                maxSelection: (s.max === '' || s.max == null) ? null : Number(s.max),
-                allowedRoleRefs: s.roles || [],
-                audienceDimensionRefs: s.audiences || []
+                maxSelection: (s.max === '' || s.max == null) ? null : Number(s.max)
             }))
         }));
+
+        // SCMM-10-MOD-C: template-level Moderator (single ValueCode, blank = unspecified) + ForWhom (audience ids).
+        const moderator = val('tplModeratorRoleType');
+        const forWhom = $ ? ($('#tplForWhom').val() || []) : [];
 
         const payload = {
             chainName: val('tplChainName'),
             orderedConceptTypes: spine,
             branches: branchPayload,
+            moderatorRoleType: moderator || null,
+            forWhomAudienceProfileIds: forWhom,
             effectiveFrom: fromDateInput(val('tplEffectiveFrom')),
             description: val('tplDescription') || null,
             status: val('tplStatus') || null,
@@ -187,6 +192,15 @@
         window.location.href = '/CRM/KnowledgeConcepts';
     };
 
+    const setIdentityDisabled = disabled => {
+        ['tplModeratorRoleType', 'tplForWhom'].forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.disabled = !!disabled;
+            if ($ && $(el).hasClass('select2-hidden-accessible')) $(el).trigger('change.select2');
+        });
+    };
+
     const startNewVersion = () => {
         templateReadOnly = false;
         setVal('templateFormId', '');
@@ -199,19 +213,34 @@
         document.getElementById('conceptTemplateFrozenNote')?.classList.add('d-none');
         document.getElementById('btnTplNewVersion')?.classList.add('d-none');
         document.getElementById('btnSaveConceptTemplate')?.classList.remove('d-none');
-        [...document.querySelectorAll('#tplBranches .js-branch-name, #tplBranches input, #tplBranches select, #tplBranches button')].forEach(el => { el.disabled = false; });
+        setIdentityDisabled(false);
         document.getElementById('btnTplAddBranch')?.removeAttribute('disabled');
         renderBranches();
     };
 
     // ─── load ───────────────────────────────────────────────────────────────────
+    const loadModeratorOptions = async () => {
+        try {
+            const data = await getJson(`/reference-data/${encodeURIComponent(MODERATOR_SET_CODE)}/values`);
+            moderatorOptions = (data?.items || []).map(v => {
+                const code = norm(v.code || v.valueCode || v.value);
+                return {
+                    value: code,
+                    text: norm(v.label || v.displayName || v.text) || code,
+                    isDeprecated: v.isDeprecated === true || v.isActive === false,
+                    sortOrder: Number(v.sortOrder || 0)
+                };
+            }).filter(o => o.value).sort((a, b) => a.sortOrder - b.sortOrder || a.text.localeCompare(b.text));
+        } catch { moderatorOptions = []; }
+    };
     const loadRefs = async () => {
         // Subjects come back with archived ones so a disabled edit field still resolves a friendly label; the create
-        // dropdown offers only live subjects. Audience profiles feed the ForWhom picker (Not 6, no raw id).
-        const [subs, tps, auds, contract] = await Promise.all([
+        // dropdown offers only live subjects. Audience profiles feed the ForWhom picker; moderator roles the Moderator.
+        const [subs, tps, auds, , contract] = await Promise.all([
             getJson('/subjects?includeArchived=true').catch(() => ({ items: [] })),
             getJson('/concept-types?includeArchived=true').catch(() => ({ items: [] })),
             getJson('/audience-profiles?includeArchived=false').catch(() => ({ items: [] })),
+            loadModeratorOptions(),
             getJson('/contract').catch(() => null)
         ]);
         types = (tps?.items || []).map(t => ({ conceptTypeId: t.conceptTypeId, subjectId: t.subjectId, conceptTypeCode: t.conceptTypeCode, conceptTypeName: t.conceptTypeName, isArchived: t.isArchived }));
@@ -238,7 +267,10 @@
         if (editId && !row) { showAlert(L.ErrorState); document.getElementById('btnSaveConceptTemplate')?.setAttribute('disabled', 'disabled'); return; }
         fillSelect('tplSubjectId', refs.subjectOptions, true, row?.subjectId, subjectLabelById[row?.subjectId]);
         fillSelect('tplStatus', refs.statuses, false, row?.status, row?.status);
-        initSelect2('#tplSubjectId,#tplStatus');
+        // SCMM-10-MOD-C: Moderator (single, blank = unspecified) + ForWhom (audience-profile multi).
+        fillSelect('tplModeratorRoleType', moderatorOptions, true, row?.moderatorRoleType, moderatorLabel(row?.moderatorRoleType));
+        fillForWhom(row?.forWhomAudienceProfileIds);
+        initSelect2('#tplSubjectId,#tplStatus,#tplModeratorRoleType,#tplForWhom');
 
         setVal('templateFormId', row?.conceptChainTemplateId || '');
         setVal('tplSubjectId', row?.subjectId || ''); if ($) $('#tplSubjectId').trigger('change');
@@ -246,6 +278,8 @@
         setVal('tplChainName', row?.chainName || '');
         setVal('tplDescription', row?.description || '');
         setVal('tplChainVersion', row?.chainVersion || '');
+        setVal('tplModeratorRoleType', row?.moderatorRoleType || ''); if ($) $('#tplModeratorRoleType').trigger('change.select2');
+        if ($) $('#tplForWhom').trigger('change.select2');
         setVal('tplStatus', row?.status || 'draft'); if ($) $('#tplStatus').trigger('change');
         setVal('tplEffectiveFrom', row ? toDateInput(row.effectiveFrom) : todayInput());
         setVal('tplEffectiveTo', toDateInput(row?.effectiveTo));
@@ -255,9 +289,7 @@
             steps: (b.steps || []).map(s => ({
                 conceptTypeId: s.conceptTypeId,
                 min: s.minSelection ?? 1,
-                max: s.maxSelection ?? null,
-                roles: (s.allowedRoleRefs || []).slice(),
-                audiences: (s.audienceDimensionRefs || []).slice()
+                max: s.maxSelection ?? null
             }))
         }));
         if (!row && branches.length === 0) branches = [{ name: '', steps: [] }];
@@ -268,6 +300,8 @@
         document.getElementById('btnTplNewVersion')?.classList.toggle('d-none', !frozen);
         document.getElementById('btnSaveConceptTemplate')?.classList.toggle('d-none', frozen);
         document.getElementById('btnTplAddBranch').disabled = frozen;
+        // SCMM-10-MOD-C (D-f): a published template's Moderator/ForWhom freeze with the rest (edit → new version).
+        setIdentityDisabled(frozen);
 
         // Subject + code are stable across versions (update contract carries neither); the code hint hides on edit.
         document.getElementById('tplSubjectId').disabled = !!row;
@@ -284,7 +318,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         void init();
 
-        // Subject change (create) rebuilds the builder — types are subject-scoped.
+        // Subject change (create) rebuilds the builder — types are subject-scoped. Moderator/ForWhom are template-level
+        // and are deliberately left untouched.
         const subj = document.getElementById('tplSubjectId');
         const onSubjectChange = () => { if (templateReadOnly) return; branches = [{ name: '', steps: [] }]; renderBranches(); };
         subj?.addEventListener('change', () => { if (!subj.disabled) onSubjectChange(); });
@@ -303,7 +338,15 @@
                 const picker = document.querySelector(`.js-branch-type-picker[data-b="${bi}"]`);
                 const v = norm(picker?.value);
                 if (!v || branches[bi].steps.some(s => String(s.conceptTypeId) === v)) return;
-                branches[bi].steps.push({ conceptTypeId: v, min: 1, max: null, roles: [], audiences: [] });
+                const minEl = document.querySelector(`.js-compose-min[data-b="${bi}"]`);
+                const maxEl = document.querySelector(`.js-compose-max[data-b="${bi}"]`);
+                const minRaw = norm(minEl?.value);
+                const maxRaw = norm(maxEl?.value);
+                branches[bi].steps.push({
+                    conceptTypeId: v,
+                    min: minRaw === '' ? 1 : Math.max(0, Number(minRaw)),
+                    max: maxRaw === '' ? null : Math.max(1, Number(maxRaw))
+                });
                 renderBranches();
                 return;
             }
@@ -320,18 +363,14 @@
             if (rm) { event.preventDefault(); if (templateReadOnly) return; branches[Number(rm.dataset.b)].steps.splice(Number(rm.dataset.s), 1); renderBranches(); return; }
         });
 
-        // min / max / branch-name update the model without re-render (keeps focus).
+        // branch-name updates the model without re-render (keeps focus). Min/Max live in the compose-row and are read
+        // at Add time, so they need no per-keystroke model sync.
         document.getElementById('tplBranches')?.addEventListener('input', event => {
             const el = event.target;
             if (!el?.dataset || el.dataset.b == null) return;
             const bi = Number(el.dataset.b);
             if (!branches[bi]) return;
-            if (el.classList.contains('js-branch-name')) { branches[bi].name = el.value; return; }
-            if (el.dataset.s == null) return;
-            const step = branches[bi].steps[Number(el.dataset.s)];
-            if (!step) return;
-            if (el.classList.contains('js-step-min')) step.min = el.value;
-            else if (el.classList.contains('js-step-max')) step.max = el.value;
+            if (el.classList.contains('js-branch-name')) branches[bi].name = el.value;
         });
 
         // Save (JS submit; the button is a form submit but we own the flow).

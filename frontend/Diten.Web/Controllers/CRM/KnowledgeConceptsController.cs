@@ -244,11 +244,27 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/concept-chain-templates/{templateId}", ReadPermission, ct, ReadFallback);
 
-    // ForWhom / audience picker source for the Chain Template step builder (SCMM-10-UI-refine Not 6) — read-only FU02
-    // reference, same allowlist pattern as subjects / concept-types.
+    // ForWhom / audience picker source for the Chain Template Identity & Classification section (SCMM-10-MOD-C:
+    // template-level ForWhom = AudienceProfile refs) — read-only FU02 reference, same allowlist pattern as subjects /
+    // concept-types.
     [HttpGet("api/audience-profiles")]
     public Task<IActionResult> AudienceProfileList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/audience-profiles{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
+    // SCMM-10-MOD-C: Moderator picker source for the Chain Template Identity & Classification section. Read-only MOD-0048
+    // published values for the content-moderator-role reference set (WP-B seed: position / client / system-auto); the
+    // browser stores the stable ValueCode → ModeratorRoleType and resolves the display name live. scope_key is the JWT
+    // tenant, never taken from the client. Same read gate as the other allowlisted references on this controller, so any
+    // user who can open the template form can populate the moderator dropdown. Mirrors KnowledgeController.ReferenceValues
+    // (that proxy lives under CRM/Knowledge; the template page is CRM/KnowledgeConcepts, so it needs its own same-base
+    // allowlist entry).
+    [HttpGet("api/reference-data/{setCode}/values")]
+    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    {
+        var tenantId = GetTenantId() ?? string.Empty;
+        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
+        return ProxyGetAsync(path, ReadPermission, ct, ReadFallback);
+    }
 
     [HttpPost("api/concept-chain-templates")]
     public Task<IActionResult> CreateTemplate([FromBody] JsonElement body, CancellationToken ct) =>

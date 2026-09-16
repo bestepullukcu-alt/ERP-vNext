@@ -177,11 +177,14 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>لا توجد خطوات في هذا الفرع بعد.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>الحد الأدنى</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>الحد الأقصى</value></data>
-  <data name="Moderator" xml:space="preserve"><value>أدوار المشرف</value></data>
+  <data name="Moderator" xml:space="preserve"><value>المشرف</value></data>
   <data name="ForWhom" xml:space="preserve"><value>الجمهور</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>مراجع مفصولة بفواصل</value></data>
-  <data name="ModeratorPlaceholder" xml:space="preserve"><value>اكتب مرجع دور واضغط Enter</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>اختر دور المشرف</value></data>
   <data name="ForWhomPlaceholder" xml:space="preserve"><value>اختر ملفات تعريف الجمهور</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>من يقدّم هذه السلسلة.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>ملفات الجمهور المستهدفة لهذه السلسلة.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>نوع المفهوم</value></data>
   <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>فرع</value></data>
   <data name="PriorityHigh" xml:space="preserve"><value>عالية</value></data>
