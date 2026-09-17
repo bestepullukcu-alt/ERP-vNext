@@ -859,6 +859,7 @@
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Аналитика персонала</value></data>
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Закупки</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Поставщики</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Поставщики</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Поставщики</value></data>
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Источники</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Источники</value></data>

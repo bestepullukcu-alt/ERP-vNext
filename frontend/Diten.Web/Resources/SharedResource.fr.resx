@@ -860,6 +860,7 @@
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Analytique des effectifs</value></data>
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Achats</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Fournisseurs</value></data>
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Sourcing</value></data>

@@ -920,6 +920,7 @@
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Workforce Analytics</value></data>
   <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Procurement</value></data>
   <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Suppliers</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Suppliers</value></data>
   <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Suppliers</value></data>
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
