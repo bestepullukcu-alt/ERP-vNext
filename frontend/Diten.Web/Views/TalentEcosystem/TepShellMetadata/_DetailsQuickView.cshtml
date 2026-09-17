@@ -1,0 +1,43 @@
+@using Diten.Web.Views.TalentEcosystem.TepShellMetadata
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<TepShellMetadataIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasTepShellMetadataDetails" aria-labelledby="tepShellMetadataDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="tepShellMetadataDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="tepShellMetadataDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="tepShellMetadataDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["ShellState"]</dt>
+            <dd class="col-7" data-field="shellState"></dd>
+            <dt class="col-5">@Localizer["HcmFoundationState"]</dt>
+            <dd class="col-7" data-field="hcmFoundationState"></dd>
+            <dt class="col-5">@Localizer["PrivacyLegalState"]</dt>
+            <dd class="col-7" data-field="privacyLegalState"></dd>
+            <dt class="col-5">@Localizer["ConsentBoundaryState"]</dt>
+            <dd class="col-7" data-field="consentBoundaryState"></dd>
+            <dt class="col-5">@Localizer["VisibilityBoundaryState"]</dt>
+            <dd class="col-7" data-field="visibilityBoundaryState"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["ShellVersion"]</dt>
+            <dd class="col-7" data-field="shellVersion"></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-tep-shell-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

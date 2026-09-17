@@ -90,7 +90,15 @@ public class MongoTestDatabaseGuardTests
         // isolated safely by TenantId alone. The shared harness owns a marker-scoped residue sweeper; this
         // infrastructure pair replaces the three former per-test call-site exceptions above.
         "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeper.cs",
-        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs"
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/BusinessReferenceData/BusinessReferenceDataMongoResidueSweeperTests.cs",
+        // Neither of these touches the shared mongod this guard protects. Each starts its OWN mongod process on a
+        // free port in a temp directory, names a database inside that private process, and kills the process and
+        // deletes the directory on dispose, so no file-descriptor pressure or leftover database reaches the shared
+        // instance. The standalone one exists to prove transactions fail closed on a NON-replica-set server, which
+        // the shared replica set cannot stand in for. Both entered main on 2026-08-31 and left this guard red in
+        // CI; recorded as BL-393 (CONTROL TOWER, 2026-09-13).
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Audit/PpmAuditRetentionPolicySeedMongoTests.cs",
+        "services/Diten.Platform/tests/Diten.Platform.Application.Tests/Persistence/DisposableStandaloneMongo.cs"
     };
 
     private static readonly string[] KnownTestSideIndexBuild =

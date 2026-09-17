@@ -1,0 +1,54 @@
+@using Diten.Web.Views.TalentEcosystem.ConsentVisibilityPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ConsentVisibilityPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasConsentVisibilityPolicyDetails" aria-labelledby="consentVisibilityPolicyDetailsTitle">
+    <div class="offcanvas-header border-bottom">
+        <h5 id="consentVisibilityPolicyDetailsTitle" class="offcanvas-title">@Localizer["DetailsTitle"]</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Close"].Value"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div id="consentVisibilityPolicyDetailsEmpty" class="text-muted small">@Localizer["SelectRecord"]</div>
+        <dl id="consentVisibilityPolicyDetailsList" class="row g-3 d-none">
+            <dt class="col-5">@Localizer["Code"]</dt>
+            <dd class="col-7" data-field="code"></dd>
+            <dt class="col-5">@Localizer["DisplayName"]</dt>
+            <dd class="col-7" data-field="displayName"></dd>
+            <dt class="col-5">@Localizer["PolicyState"]</dt>
+            <dd class="col-7" data-field="policyState"></dd>
+            <dt class="col-5">@Localizer["ConsentRequirementState"]</dt>
+            <dd class="col-7" data-field="consentRequirementState"></dd>
+            <dt class="col-5">@Localizer["VisibilityScope"]</dt>
+            <dd class="col-7" data-field="visibilityScope"></dd>
+            <dt class="col-5">@Localizer["DataScopeState"]</dt>
+            <dd class="col-7" data-field="dataScopeState"></dd>
+            <dt class="col-5">@Localizer["AccessPolicyState"]</dt>
+            <dd class="col-7" data-field="accessPolicyState"></dd>
+            <dt class="col-5">@Localizer["AssociationConsumptionState"]</dt>
+            <dd class="col-7" data-field="associationConsumptionState"></dd>
+            <dt class="col-5">@Localizer["PolicyUnavailableBehavior"]</dt>
+            <dd class="col-7" data-field="policyUnavailableBehavior"></dd>
+            <dt class="col-5">@Localizer["SourceContractVersion"]</dt>
+            <dd class="col-7" data-field="sourceContractVersion"></dd>
+            <dt class="col-5">@Localizer["DependencyStates"]</dt>
+            <dd class="col-7 text-break" data-field="dependencyStates"></dd>
+            <dt class="col-5">@Localizer["LocalAuditEvidenceRetentionState"]</dt>
+            <dd class="col-7" data-field="localAuditEvidenceRetentionState"></dd>
+            <dt class="col-5">@Localizer["LastEvaluatedAt"]</dt>
+            <dd class="col-7" data-field="lastEvaluatedAt"></dd>
+            <dt class="col-5">@Localizer["PolicyVersion"]</dt>
+            <dd class="col-7" data-field="policyVersion"></dd>
+            <dt class="col-5" data-audit-field>@Localizer["AuditMetadata"]</dt>
+            <dd class="col-7 text-break" data-field="auditMetadata" data-audit-field></dd>
+        </dl>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <button type="button" class="btn btn-label-secondary" data-consent-policy-action="evaluate" disabled>
+                <i class="bx bx-check-shield me-1"></i>@Localizer["EvaluateDisabled"]
+            </button>
+            <button type="button" class="btn btn-label-secondary" data-consent-policy-action="manage" disabled>
+                <i class="bx bx-edit-alt me-1"></i>@Localizer["ManageDisabled"]
+            </button>
+        </div>
+    </div>
+</div>

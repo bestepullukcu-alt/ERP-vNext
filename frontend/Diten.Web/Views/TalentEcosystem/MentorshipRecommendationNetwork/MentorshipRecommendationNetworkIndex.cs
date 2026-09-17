@@ -1,0 +1,3 @@
+namespace Diten.Web.Views.TalentEcosystem.MentorshipRecommendationNetwork;
+
+public sealed class MentorshipRecommendationNetworkIndex;

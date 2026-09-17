@@ -1,0 +1,27 @@
+@using Diten.Web.Views.TalentEcosystem.CandidateProfiles
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<CandidateProfilesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<script id="candidate-profiles-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        Actions = Localizer["Actions"].Value,
+        AuditMetadata = Localizer["AuditMetadata"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+        EvaluateDisabled = Localizer["EvaluateDisabled"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        ManageDisabled = Localizer["ManageDisabled"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        ViewDetails = SharedLocalizer["ViewDetails"].Value,
+        Code = Localizer["Code"].Value,
+        DisplayName = Localizer["DisplayName"].Value,
+        CandidateIdentityState = Localizer["CandidateIdentityState"].Value,
+        ProfileState = Localizer["ProfileState"].Value,
+        ProfileCompletenessState = Localizer["ProfileCompletenessState"].Value,
+        VisibilityClassification = Localizer["VisibilityClassification"].Value,
+        CandidateVersion = Localizer["CandidateVersion"].Value
+    })
+</script>
