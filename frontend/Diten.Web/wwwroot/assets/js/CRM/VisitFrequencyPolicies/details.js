@@ -101,6 +101,25 @@
         const options = await loadOptions(kind);
         return (options.find(o => String(o.value) === s) || {}).text || '';
     };
+
+    // Territory nodes have no flat sibling list to page (they live under a parent model), so a bare TerritoryNodeId is
+    // resolved to its name through the F19 `nodes/by-ids` reverse-lookup proxy — the SAME proxy the editor's edit-restore
+    // uses. Cached per id; degrades to a short id (never a fabricated name) when it cannot resolve.
+    const territoryNodeCache = new Map();
+    const territoryNodeName = async id => {
+        const s = norm(id);
+        if (!s) return '';
+        if (territoryNodeCache.has(s)) return territoryNodeCache.get(s);
+        let name = '';
+        try {
+            const rows = await getJson(`/territory-models/nodes/by-ids?ids=${encodeURIComponent(s)}`);
+            const list = Array.isArray(rows) ? rows : (rows?.items || rows?.nodes || []);
+            const hit = list.find(r => String(r.id ?? r.Id ?? r.nodeId ?? r.NodeId) === s) || list[0];
+            name = hit ? (hit.name || hit.Name || '') : '';
+        } catch (e) { name = ''; }
+        territoryNodeCache.set(s, name);
+        return name;
+    };
     const TARGET_KIND = {
         segment: 'segment', account: 'account', contact: 'contact',
         'campaign-target': 'campaign', 'concept-node': 'concept-node', 'audience-profile': 'audience-profile'
@@ -189,8 +208,14 @@
     const chip = (label, value) => `<span class="vfp-det-chip"><span class="vfp-det-chip-k">${esc(label)}</span><span class="vfp-det-chip-v">${value}</span></span>`;
     const renderContext = async p => {
         const rows = [];
-        if (norm(p.businessUnit)) rows.push(chip(t('FieldBusinessUnit', 'Business unit'), `<span class="vfp-mono">${esc(p.businessUnit)}</span>`));
-        if (norm(p.territoryNodeId)) rows.push(chip(t('FieldTerritory', 'Territory'), nameValue('', p.territoryNodeId)));
+        if (norm(p.businessUnit)) {
+            // BusinessUnit is a MOD-0048 value CODE (a human-readable string, not a GUID): resolve it to the published
+            // label when possible, else keep the raw code as-is (a code is readable — never truncate it to a short id).
+            const buName = await nameOf('business-unit', p.businessUnit);
+            rows.push(chip(t('FieldBusinessUnit', 'Business unit'),
+                norm(buName) ? esc(buName) : `<span class="vfp-mono">${esc(p.businessUnit)}</span>`));
+        }
+        if (norm(p.territoryNodeId)) rows.push(chip(t('FieldTerritory', 'Territory'), nameValue(await territoryNodeName(p.territoryNodeId), p.territoryNodeId)));
         if (norm(p.segmentId)) rows.push(chip(t('FieldSegment', 'Segment'), nameValue(await nameOf('segment', p.segmentId), p.segmentId)));
         if (norm(p.campaignId)) rows.push(chip(t('FieldCampaign', 'Campaign'), nameValue(await nameOf('campaign', p.campaignId), p.campaignId)));
         if (norm(p.brandId)) rows.push(chip(t('FieldBrand', 'Brand'), nameValue(await nameOf('brand', p.brandId), p.brandId)));
@@ -249,14 +274,22 @@
 
     const renderImpact = impact => {
         const computable = !!(impact && impact.targetCountComputable && impact.targetCount != null);
-        const targetVal = computable ? String(impact.targetCount) : dash();
-        const visitsVal = (impact && impact.plannedVisitsPerQuarter != null) ? String(impact.plannedVisitsPerQuarter) : dash();
-        const parts = [
-            `<div class="vfp-det-impact-line">${esc(fmt(t('ImpactTargetsLine', '{0} targets'), targetVal))}</div>`,
-            `<div class="vfp-det-impact-line">${esc(fmt(t('ImpactVisitsLine', '{0} visits / quarter'), visitsVal))}</div>`
-        ];
         const note = norm(impact && impact.projectionNote);
-        if (note) parts.push(`<div class="vfp-meta mt-2">${esc(note)}</div>`);
+        const parts = [];
+        if (computable) {
+            // A computable count (real membership, or a draft preview) shows the two figures; any caveat (draft/period)
+            // rides below as a note.
+            const visitsVal = (impact && impact.plannedVisitsPerQuarter != null) ? String(impact.plannedVisitsPerQuarter) : dash();
+            parts.push(`<div class="vfp-det-impact-line">${esc(fmt(t('ImpactTargetsLine', '{0} targets'), String(impact.targetCount)))}</div>`);
+            parts.push(`<div class="vfp-det-impact-line">${esc(fmt(t('ImpactVisitsLine', '{0} visits / quarter'), visitsVal))}</div>`);
+            if (note) parts.push(`<div class="vfp-meta mt-2">${esc(note)}</div>`);
+        } else {
+            // Genuinely uncomputable (candidate cap exceeded, or a target type with no counting path): show the backend's
+            // honest reason IN PLACE OF a fabricated "—".
+            parts.push(note
+                ? `<div class="vfp-meta">${esc(note)}</div>`
+                : `<div class="vfp-det-impact-line">${esc(fmt(t('ImpactTargetsLine', '{0} targets'), dash()))}</div>`);
+        }
         el('vfpDetImpact').innerHTML = parts.join('');
     };
 

@@ -10,6 +10,10 @@ public sealed record VisitFrequencyTargetImpact(int? Count, bool Computable, str
 {
     public static VisitFrequencyTargetImpact Countable(int count) => new(count, true, null);
 
+    /// <summary>A real, computable count that still carries a caveat — e.g. a DRAFT segment counted through a preview
+    /// wrapper, whose reach reflects today's data rather than a frozen, in-effect definition.</summary>
+    public static VisitFrequencyTargetImpact CountableWithNote(int count, string note) => new(count, true, note);
+
     public static VisitFrequencyTargetImpact NotCountable(string note) => new(null, false, note);
 }
 

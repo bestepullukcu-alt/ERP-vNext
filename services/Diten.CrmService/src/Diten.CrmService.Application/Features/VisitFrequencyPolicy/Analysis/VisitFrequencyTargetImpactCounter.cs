@@ -82,19 +82,58 @@ public sealed class VisitFrequencyTargetImpactCounter : IVisitFrequencyTargetImp
             return VisitFrequencyTargetImpact.NotCountable("segment bulunamadı");
         }
 
-        // Count-only funnel: limit 0 returns no member page but the exact TotalMemberCount, and skips the display-only
-        // workplace enrichment. The resolver persists nothing.
-        var outcome = await _segmentMembership.ResolveAsync(
-            tenantId, segment, at, limit: 0, offset: 0, includeExcluded: false, cancellationToken);
+        // An active + in-effect segment is counted exactly as it resolves right now (its real, live membership). A DRAFT
+        // (or otherwise not-in-effect) segment would fall into the resolver's "not in effect" branch and report an empty
+        // result — which is why the ETKİ card read "Mevcut Değil" while the segment's OWN page shows its reach (e.g. 38).
+        // Instead we count it through a transient, NEVER persisted preview clone — the same trick
+        // PreviewSegmentReachHandler uses for an unsaved rule: the clone keeps the segment's identity, type, subject,
+        // match mode and criteria but is forced active + open-ended, so the resolver returns the number the segment WOULD
+        // reach if it were live now. The count is flagged as a draft preview, never presented as the frozen definition.
+        var inEffect = segment.IsActive() && segment.IsEffectiveAt(at);
+        var toResolve = inEffect ? segment : PreviewClone(segment);
 
-        if (outcome.CandidateCapExceeded || outcome.Result is null)
+        // Count-only funnel: limit 0 returns no member page but the exact TotalMemberCount, and skips the display-only
+        // workplace enrichment. The resolver persists nothing — this is a read.
+        var outcome = await _segmentMembership.ResolveAsync(
+            tenantId, toResolve, at, limit: 0, offset: 0, includeExcluded: false, cancellationToken);
+
+        if (outcome.CandidateCapExceeded)
         {
-            return VisitFrequencyTargetImpact.NotCountable(
-                "segment aday tavanı aşıldı; üye sayısı hesaplanamadı");
+            // A genuinely too-wide rule is reported honestly rather than as a wrong or partial number.
+            return VisitFrequencyTargetImpact.NotCountable("10.000+ aday — sayım kapsam dışı");
         }
 
-        return VisitFrequencyTargetImpact.Countable(outcome.Result.TotalMemberCount);
+        if (outcome.Result is null)
+        {
+            return VisitFrequencyTargetImpact.NotCountable("segment üye sayısı hesaplanamadı");
+        }
+
+        return inEffect
+            ? VisitFrequencyTargetImpact.Countable(outcome.Result.TotalMemberCount)
+            : VisitFrequencyTargetImpact.CountableWithNote(
+                outcome.Result.TotalMemberCount, "taslak — bugünkü veriyi yansıtır");
     }
+
+    /// <summary>A transient, NEVER persisted preview of a segment that is not currently in effect (draft, or outside its
+    /// effective window). It keeps the segment's identity, type, subject, match mode and criteria but is forced active
+    /// and open-ended, so <see cref="SegmentMembershipResolver"/> counts what the segment WOULD reach if it were live
+    /// now — the same reach preview the segment's own page shows. This mirrors PreviewSegmentReachHandler's DraftSegment
+    /// wrapper; keeping the id lets a STATIC segment's manual list still resolve by segment id. Nothing is written.</summary>
+    private static Segment PreviewClone(Segment segment) => new()
+    {
+        Id = segment.Id,
+        TenantId = segment.TenantId,
+        SegmentCode = segment.SegmentCode,
+        SegmentName = segment.SegmentName,
+        SegmentType = segment.SegmentType,
+        SubjectType = segment.SubjectType,
+        SegmentStatus = SegmentStatuses.Active,
+        SegmentVersion = segment.SegmentVersion,
+        MatchMode = segment.MatchMode,
+        EffectiveFrom = DateTimeOffset.MinValue,
+        EffectiveTo = null,
+        Criteria = segment.Criteria
+    };
 
     private async Task<VisitFrequencyTargetImpact> CountCampaignTargetsAsync(
         Guid tenantId, Guid campaignId, CancellationToken cancellationToken)

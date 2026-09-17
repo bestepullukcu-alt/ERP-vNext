@@ -117,75 +117,84 @@
     <div id="vfpDetError" class="vfp-dv-state text-danger d-none"></div>
 
     <div id="vfpDetBody" class="d-none">
-        @* ── Header app-card: name + status + code + description + actions ── *@
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <div class="vfp-det-header">
-                    <div class="min-w-0">
-                        <div class="vfp-det-title-row">
-                            <h5 class="vfp-det-name mb-0" id="vfpDetName">-</h5>
-                            <span id="vfpDetStatus"></span>
-                        </div>
-                        <div class="vfp-mono vfp-det-code" id="vfpDetCode"></div>
-                        <p class="vfp-det-desc mb-0" id="vfpDetDesc"></p>
-                    </div>
-                    @if (canManage)
-                    {
-                        <div class="vfp-det-actions">
-                            <a href="/CRM/VisitFrequencyPolicies/Edit/@policyId" class="btn btn-primary">
-                                <i class="bx bx-edit me-1"></i>@Localizer["EditAction"]
-                            </a>
-                            <button type="button" class="btn btn-label-danger d-none" id="vfpDetArchive">
-                                <i class="bx bx-archive-in me-1"></i>@Localizer["Archive"]
-                            </button>
-                        </div>
-                    }
-                </div>
-            </div>
-        </section>
-
         <div class="row g-4">
-            @* ── LEFT: stats + context + notes ── *@
+            @* ── LEFT: main policy card (header + stat strip + context + notes) then conflicting policies ── *@
             <div class="col-12 col-lg-8">
-                <div class="vfp-det-stats">
-                    <div class="card"><div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-repeat dt-card-icon" aria-hidden="true"></i>@Localizer["Frequency"]</h6>
-                        <div class="vfp-det-stat-value" id="vfpStatFreqValue">—</div>
-                        <div class="vfp-det-stat-sub" id="vfpStatFreqSub"></div>
-                    </div></div>
-                    <div class="card"><div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-target-lock dt-card-icon" aria-hidden="true"></i>@Localizer["Target"]</h6>
-                        <div class="vfp-det-stat-value" id="vfpStatTargetValue">—</div>
-                        <div class="vfp-det-stat-sub" id="vfpStatTargetSub"></div>
-                    </div></div>
-                    <div class="card"><div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-calendar dt-card-icon" aria-hidden="true"></i>@Localizer["Validity"]</h6>
-                        <div class="vfp-det-stat-value" id="vfpStatValidityValue">—</div>
-                        <div class="vfp-det-stat-sub" id="vfpStatValiditySub"></div>
-                    </div></div>
-                    <div class="card"><div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-sort dt-card-icon" aria-hidden="true"></i>@Localizer["Weight"]</h6>
-                        <div class="vfp-det-stat-value" id="vfpStatWeightValue">—</div>
-                        <div class="vfp-det-stat-sub" id="vfpStatWeightSub"></div>
-                    </div></div>
-                </div>
+                @* Main policy card — everything about THIS policy lives inside one card (mockup): header, the 4-cell
+                   stat strip, the BAĞLAM section and the NOTES section, separated by in-card dividers. *@
+                <section class="card">
+                    <div class="card-body p-4">
+                        @* header: name + status + code + description + actions *@
+                        <div class="vfp-det-header">
+                            <div class="min-w-0">
+                                <div class="vfp-det-title-row">
+                                    <h5 class="vfp-det-name mb-0" id="vfpDetName">-</h5>
+                                    <span id="vfpDetStatus"></span>
+                                </div>
+                                <div class="vfp-mono vfp-det-code" id="vfpDetCode"></div>
+                                <p class="vfp-det-desc mb-0" id="vfpDetDesc"></p>
+                            </div>
+                            @if (canManage)
+                            {
+                                <div class="vfp-det-actions">
+                                    <a href="/CRM/VisitFrequencyPolicies/Edit/@policyId" class="btn btn-primary">
+                                        <i class="bx bx-edit me-1"></i>@Localizer["EditAction"]
+                                    </a>
+                                    <button type="button" class="btn btn-label-danger d-none" id="vfpDetArchive">
+                                        <i class="bx bx-archive-in me-1"></i>@Localizer["Archive"]
+                                    </button>
+                                </div>
+                            }
+                        </div>
 
+                        @* 4-cell bordered stat strip (in-card cells, NOT separate cards) *@
+                        <div class="vfp-det-stat-strip">
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-repeat" aria-hidden="true"></i>@Localizer["Frequency"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatFreqValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatFreqSub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-target-lock" aria-hidden="true"></i>@Localizer["Target"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatTargetValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatTargetSub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-calendar" aria-hidden="true"></i>@Localizer["Validity"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatValidityValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatValiditySub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-sort" aria-hidden="true"></i>@Localizer["Weight"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatWeightValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatWeightSub"></div>
+                            </div>
+                        </div>
+
+                        @* BAĞLAM section (in-card) *@
+                        <div class="vfp-det-inner-section">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionContext"]</h6>
+                            <div class="vfp-det-chips" id="vfpDetContext"></div>
+                        </div>
+
+                        @* NOTES section (in-card; hidden until the policy carries notes) *@
+                        <div class="vfp-det-inner-section d-none" id="vfpDetNotesCard">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-note dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionNotes"]</h6>
+                            <p class="vfp-det-notes mb-0" id="vfpDetNotes"></p>
+                        </div>
+                    </div>
+                </section>
+
+                @* ÇAKIŞAN POLİTİKALAR — separate card below the main policy card *@
                 <section class="card mt-4">
                     <div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionContext"]</h6>
-                        <div class="vfp-det-chips" id="vfpDetContext"></div>
-                    </div>
-                </section>
-
-                <section class="card mt-4 d-none" id="vfpDetNotesCard">
-                    <div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-note dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionNotes"]</h6>
-                        <p class="vfp-det-notes mb-0" id="vfpDetNotes"></p>
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["ConflictsTitle"]<span class="vfp-det-cand-count ms-auto" id="vfpDetConflictsCount"></span></h6>
+                        <div id="vfpDetConflicts"></div>
                     </div>
                 </section>
             </div>
 
-            @* ── RIGHT: status flow + impact + conflicting policies ── *@
+            @* ── RIGHT: status flow + impact ── *@
             <div class="col-12 col-lg-4">
                 <section class="card">
                     <div class="card-body p-4">
@@ -198,13 +207,6 @@
                     <div class="card-body p-4">
                         <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bar-chart-alt-2 dt-card-icon" aria-hidden="true"></i>@Localizer["ImpactTitle"]</h6>
                         <div id="vfpDetImpact"></div>
-                    </div>
-                </section>
-
-                <section class="card mt-4">
-                    <div class="card-body p-4">
-                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["ConflictsTitle"]<span class="vfp-det-cand-count ms-auto" id="vfpDetConflictsCount"></span></h6>
-                        <div id="vfpDetConflicts"></div>
                     </div>
                 </section>
             </div>

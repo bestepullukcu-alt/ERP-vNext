@@ -371,6 +371,37 @@ public sealed class VisitFrequencyPolicyAnalysisTests
     }
 
     [Fact]
+    public async Task Counter_Draft_Segment_Previews_Reach_Through_Wrapper()
+    {
+        // GERÇEK KÖK NEDEN — a DRAFT (not-in-effect) segment would resolve to an empty "not in effect" result and the
+        // ETKİ card would read "Mevcut Değil". The counter now counts it through the preview wrapper, so it returns the
+        // reach the segment WOULD have if live (the same number the segment's own page shows), flagged as a draft.
+        var segments = new FakeSegmentRepository();
+        var candidates = new FakeCandidateSource();
+        var counter = RealCounter(out _, out _, segments, candidates);
+
+        var segment = SegmentTestBuilders.Segment(
+            TenantA, type: SegmentTypes.Dynamic, status: SegmentStatuses.Draft,
+            criteria: SegmentTestBuilders.Criteria(SegmentTestBuilders.Predicate(
+                SegmentAttributeCatalog.ContactSpecialty, SegmentOperators.Eq, SegmentValueTypes.String,
+                new[] { "cardiology" })));
+        segments.Rows.Add(segment);
+        for (var i = 0; i < 5; i++)
+        {
+            candidates.Candidates.Add(SegmentTestBuilders.Contact(Guid.NewGuid(), specialty: "cardiology"));
+        }
+
+        var impact = await counter.CountAsync(
+            TenantA,
+            Policy(TenantA, FrequencyTargetType.Segment, segment.Id, segmentId: segment.Id),
+            SegmentTestDoubles.Now, default);
+
+        Assert.True(impact.Computable);
+        Assert.Equal(5, impact.Count);
+        Assert.False(string.IsNullOrWhiteSpace(impact.Note)); // draft preview caveat is carried, not a silent number
+    }
+
+    [Fact]
     public async Task Counter_Segment_Cap_Exceeded_Is_Uncomputable()
     {
         var segments = new FakeSegmentRepository();
