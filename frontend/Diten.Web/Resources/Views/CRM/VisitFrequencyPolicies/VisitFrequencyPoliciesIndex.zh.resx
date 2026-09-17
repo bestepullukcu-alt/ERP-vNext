@@ -230,4 +230,12 @@
   <data name="ScopeAllBrands" xml:space="preserve"><value>所有品牌</value></data>
   <data name="ScopeAllProducts" xml:space="preserve"><value>所有产品</value></data>
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>所有周期段</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>目标 — 适用对象</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>选择记录</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>更改…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>业务单元与区域 — 留空表示不限制</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>细分与活动 — 留空表示不限制</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>品牌与产品 — 先选品牌，再选产品</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>周期段 — 基于周期的频率时必填</value></data>
 </root>

@@ -230,4 +230,12 @@
   <data name="ScopeAllBrands" xml:space="preserve"><value>Todas las marcas</value></data>
   <data name="ScopeAllProducts" xml:space="preserve"><value>Todos los productos</value></data>
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Todos los períodos de ciclo</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>OBJETIVO — A QUIÉN SE APLICA</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Qué registro</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Cambiar…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Unidad de negocio y territorio — dejar vacío para no restringir</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segmento y campaña — dejar vacío para no restringir</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marca y producto — elija primero una marca, luego un producto</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Período de ciclo — obligatorio para frecuencia basada en ciclo</value></data>
 </root>

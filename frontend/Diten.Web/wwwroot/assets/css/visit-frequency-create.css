@@ -190,6 +190,9 @@
     flex-direction: column;
     justify-content: center;
     gap: 1px;
+    /* WP-FREQ-F7 — chips share the row equally and fill it (flex:1 1 0); they wrap when the min-width no longer
+       fits, and each wrapped line stays fully filled. */
+    flex: 1 1 0;
     min-width: 70px;
     padding: 8px 12px;
     border: 1px solid var(--bs-border-color);
@@ -293,6 +296,104 @@
     display: block;
 }
 
+/* ------------------------------------------------------------------ WP-FREQ-F7 target section (mockup + app field/font)
+   The HEDEF section's mockup-content (`.vfp-*`) nodes go back to the shell font (WP-FREQ-F5 already reset the app card
+   chrome; this extends that to the section's inner vfp-* nodes so the whole card reads in the app font like
+   /Tasks/Create). Only the code badges stay monospace. */
+.vfp-create-scope .vfp-target-section [class^="vfp-"],
+.vfp-create-scope .vfp-target-section [class*=" vfp-"] {
+    font-family: var(--bs-body-font-family);
+}
+.vfp-create-scope .vfp-target-section .vfp-picked-code,
+.vfp-create-scope .vfp-target-section .vfp-picked-ext,
+.vfp-create-scope .vfp-target-section .vfp-code-hint {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* a plain <select class="form-select"> inside .diten-field is not covered by backbone-custom's
+   `.diten-field .form-control` padding rule (that rule targets .form-control + select2's rendered box, not a bare
+   .form-select), so make room for the leading icon here. */
+.vfp-create-scope .diten-field .form-select {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+
+/* "Hangi kayıt" dashed box — empty shows the app select; picked shows the chip (select hidden via .vfp-hidden). */
+.vfp-create-scope .vfp-picked-box {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-tertiary-bg);
+}
+.vfp-create-scope .vfp-picked-box-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.vfp-create-scope .vfp-picked-box-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+.vfp-create-scope .vfp-picked-box-hint {
+    font-size: 11px;
+    color: var(--bs-secondary-color);
+}
+.vfp-create-scope .vfp-picked-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+}
+.vfp-create-scope .vfp-picked-code {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-picked-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+}
+.vfp-create-scope .vfp-picked-ext {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-picked-change {
+    margin-left: auto;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--bs-body-color);
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}
+/* when an external code is shown it already carries the margin-left:auto, so the button sits right after it */
+.vfp-create-scope .vfp-picked-ext + .vfp-picked-change {
+    margin-left: 0;
+}
+.vfp-create-scope .vfp-picked-change:hover {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-picked-change:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* ------------------------------------------------------------------ footer actions */
 .vfp-offcanvas .vfp-footer {
     gap: 8px;
@@ -335,15 +436,13 @@
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
-/* section aside note (right of the section title) — sits inside the uppercase app-card h6, so
-   reset the inherited transform/weight/spacing back to a plain muted note. */
-.vfp-create-scope .vfp-section-aside {
-    margin-left: auto;
-    font-size: 12px;
-    font-weight: 400;
+/* WP-FREQ-F7 — the HEDEF section aside note now carries the app `.wcn-act-outcome` class (size + muted colour from
+   backbone-custom.css). It still sits inside the uppercase app-card h6, so the inherited transform/spacing/weight are
+   reset back to a plain note (the old `.vfp-section-aside` shell is retired). */
+.vfp-create-scope h6 .wcn-act-outcome {
     text-transform: none;
     letter-spacing: normal;
-    color: var(--vfp-muted);
+    font-weight: 400;
 }
 
 /* -------------------------------------------------------- collapsible scope block */
@@ -391,7 +490,20 @@
     letter-spacing: 0.05em;
     text-transform: uppercase;
     color: var(--vfp-muted);
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+}
+/* WP-FREQ-F7 — a plain-language line under each uppercase scope sub-heading. */
+.vfp-create-scope .vfp-scope-group-desc {
+    font-size: 11.5px;
+    line-height: 1.45;
+    color: var(--vfp-muted);
+    margin-bottom: 10px;
+}
+/* WP-FREQ-F7 — the payload field-name hint beside each scope field label (monospace via the target-section rule). */
+.vfp-create-scope .vfp-code-hint {
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    opacity: 0.8;
 }
 .vfp-create-scope .vfp-product-hint {
     color: var(--bs-warning-text-emphasis, var(--vfp-muted));

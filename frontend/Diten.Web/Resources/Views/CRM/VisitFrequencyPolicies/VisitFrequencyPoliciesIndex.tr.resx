@@ -230,4 +230,12 @@
   <data name="ScopeAllBrands" xml:space="preserve"><value>Tüm markalar</value></data>
   <data name="ScopeAllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Tüm cycle dönemleri</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>HEDEF — KİME UYGULANIYOR</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Hangi kayıt</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Değiştir…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>İş birimi ve saha alanı — boş bırakılırsa kısıt yok</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment ve kampanya — boş bırakılırsa kısıt yok</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marka ve ürün — önce marka, sonra ürün</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Cycle dönemi — cycle tabanlı sıklıkta zorunludur</value></data>
 </root>

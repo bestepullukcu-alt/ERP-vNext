@@ -230,4 +230,12 @@
   <data name="ScopeAllBrands" xml:space="preserve"><value>Все бренды</value></data>
   <data name="ScopeAllProducts" xml:space="preserve"><value>Все продукты</value></data>
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Все периоды цикла</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>ЦЕЛЬ — К КОМУ ПРИМЕНЯЕТСЯ</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Какая запись</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Изменить…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Бизнес-единица и территория — пусто = без ограничений</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Сегмент и кампания — пусто = без ограничений</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Бренд и продукт — сначала бренд, затем продукт</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Период цикла — обязателен для частоты на основе цикла</value></data>
 </root>

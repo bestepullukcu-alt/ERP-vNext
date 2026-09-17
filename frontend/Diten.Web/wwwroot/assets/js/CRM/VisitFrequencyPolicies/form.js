@@ -225,9 +225,11 @@
         const kind = TARGET_KIND[targetType];
 
         if (targetType === 'territory-node') {
+            // WP-FREQ-F7 — app field pattern (diten-field icon + form-select), matching /Tasks/Create. The two select
+            // ids and data-role="targetId" (form.js's payload source) are unchanged.
             host.innerHTML = `
-                <select class="vfp-select mb-2" id="vfpTargetTerModel"><option value="">${esc(t('SelectTerritoryModel', 'Select model'))}</option></select>
-                <select class="vfp-select" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select>`;
+                <div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpTargetTerModel"><option value="">${esc(t('SelectTerritoryModel', 'Select model'))}</option></select></div>
+                <div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select></div>`;
             const models = await loadOptions('territory-model');
             fillSelect(el('vfpTargetTerModel'), models, t('SelectTerritoryModel', 'Select model'));
             if (seedId) seedSelect(el('vfpTargetTerNode'), seedId, seedName);
@@ -236,11 +238,11 @@
 
         if (!kind) {
             // account-contact-link (no picker in the mockup) — a manual id keeps it authorable, contract-driven.
-            host.innerHTML = `<input type="text" class="vfp-input" data-role="targetId" placeholder="${esc(t('TargetIdManual', 'Enter id (GUID)'))}" value="${esc(seedId || '')}">`;
+            host.innerHTML = `<div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" data-role="targetId" placeholder="${esc(t('TargetIdManual', 'Enter id (GUID)'))}" value="${esc(seedId || '')}"></div>`;
             return;
         }
 
-        host.innerHTML = `<select class="vfp-select" data-role="targetId"><option value="">${esc(t('SelectOption', '—'))}</option></select>`;
+        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select" data-role="targetId"><option value="">${esc(t('SelectOption', '—'))}</option></select></div>`;
         const control = host.querySelector('[data-role="targetId"]');
         const options = await loadOptions(kind);
         fillSelect(control, options, t('SelectOption', '—'));
@@ -265,10 +267,38 @@
         }
         select.value = String(id);
     };
+    // WP-FREQ-F7 — the picked target renders as the mockup "Hangi kayıt" chip (code badge + name + optional external
+    // code + "Değiştir…"). Empty → the app select in #vfpTargetPicker is shown; picked → the select is hidden and the
+    // chip is shown. The select stays in the DOM with its value, so [data-role="targetId"] / currentTargetId() and the
+    // payload are unchanged; "Değiştir…" simply re-reveals it. isGuid is declared below and only used here at runtime.
     const showPicked = (host, name) => {
         if (!host) return;
-        host.textContent = name ? `${t('Selected', 'Selected')}: ${name}` : '';
-        host.classList.toggle('is-shown', !!name);
+        const picker = el('vfpTargetPicker');
+        if (!name) {
+            host.innerHTML = '';
+            host.classList.remove('is-shown');
+            picker?.classList.remove('vfp-hidden');
+            return;
+        }
+        const type = norm(checkedValue('vfpTargetType'));
+        const ctrl = FORM.querySelector('#vfpTargetPicker [data-role="targetId"]');
+        const val = norm(ctrl?.value);
+        const ext = (val && !isGuid(val) && val !== name) ? val : '';
+        host.innerHTML = `
+            <div class="vfp-picked-chip">
+                ${type ? `<span class="vfp-picked-code">${esc(type)}</span>` : ''}
+                <span class="vfp-picked-name">${esc(name)}</span>
+                ${ext ? `<span class="vfp-picked-ext">${esc(ext)}</span>` : ''}
+                <button type="button" class="vfp-picked-change">${esc(t('TargetChange', 'Change…'))}</button>
+            </div>`;
+        host.classList.add('is-shown');
+        picker?.classList.add('vfp-hidden');
+        const change = host.querySelector('.vfp-picked-change');
+        if (change) change.addEventListener('click', () => {
+            picker?.classList.remove('vfp-hidden');
+            host.classList.remove('is-shown');
+            host.innerHTML = '';
+        });
     };
 
     const currentTargetId = () => norm(FORM.querySelector('#vfpTargetPicker [data-role="targetId"]')?.value);
@@ -618,6 +648,8 @@
         el('vfpTargetLockNote')?.classList.toggle('vfp-hidden', !ro);
         FORM.querySelectorAll('input[name="vfpTargetType"]').forEach(i => { i.disabled = ro; });
         el('vfpTargetPicker')?.querySelectorAll('select,input').forEach(i => { i.disabled = ro; });
+        // WP-FREQ-F7 — the picked chip's "Değiştir…" must also lock when the target is immutable (edit mode).
+        el('vfpTargetPicked')?.querySelectorAll('button').forEach(i => { i.disabled = ro; });
     };
     const suggestCode = () => `vfp-${new Date().getFullYear()}-${Math.random().toString(36).slice(2, 8)}`;
 

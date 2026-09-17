@@ -230,4 +230,12 @@
   <data name="ScopeAllBrands" xml:space="preserve"><value>جميع العلامات التجارية</value></data>
   <data name="ScopeAllProducts" xml:space="preserve"><value>جميع المنتجات</value></data>
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>جميع فترات الدورة</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>الهدف — على من ينطبق</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>أي سجل</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>تغيير…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>وحدة العمل والمنطقة — اتركه فارغًا لعدم التقييد</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>الشريحة والحملة — اتركه فارغًا لعدم التقييد</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>العلامة والمنتج — اختر العلامة أولاً ثم المنتج</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>فترة الدورة — مطلوبة للتكرار القائم على الدورة</value></data>
 </root>
