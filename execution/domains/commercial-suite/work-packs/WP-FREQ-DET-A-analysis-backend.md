@@ -52,9 +52,15 @@ KORU/YAPMA: resolve/CRUD/archive/soft-delete/validation DEĞİŞMEZ; resolver/co
 DOĞRULA (E2): CrmService.Application.Tests baseline-diff sıfır-yeni-fail + Diten.Web.Tests 137/0 (Release); GET {id}/analysis impact+conflicts; git diff yeni analysis + endpoint + proxy + test; resolve/CRUD diff yok. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: bir hedef tipi sayımı KOCA yeni cross-service matching gerektiriyorsa (audience/concept); gateway {id}/analysis route eklenmesi gerekiyorsa; resolve reuse edilemiyorsa; kapsam VisitFrequencyPolicy dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
 ```
-- İzole worktree → CrmService.Application.Tests + Diten.Web.Tests baseline-diff; analysis query/handler/dto/endpoint/proxy; per-type count (segment/tekil/campaign/territory feasible, audience/concept computable=false), projeksiyon çeyrek-normalize, conflicts resolve reuse; resolve/CRUD davranışı değişmedi; tenant izolasyonu; git diff kapsam içi.
+Commit: f36f4930 · Agent: PASS · CT: ACCEPTED E2 (izole temiz build) · /c/tmp/ct-deta-verify @f36f4930
+```
+- ✅ **Kapsam (additive, 10 dosya):** yeni Analysis/{IVisitFrequencyTargetImpactCounter, VisitFrequencyTargetImpactCounter} + GetVisitFrequencyPolicyAnalysisHandler + analysis Query + AnalysisDto + DI kaydı + CrmService endpoint + Web proxy + test. **resolve/CRUD/archive/soft-delete/validation/Segment/başka modül DAVRANIŞ = 0** (grep 0).
+- ✅ **Impact (tip bazlı, mevcut reader reuse — yeni matching engine yok):** account/contact/link=1; segment→SegmentMembershipResolver TotalMemberCount (cap→computable=false); campaign-target→ICampaignTargetRepository canlı snapshot; territory-node→AccountCurrentCoverageResolver coverage; audience-profile/concept-node→computable=false+not (count=null, uydurma yok). PlannedVisitsPerQuarter = count×requiredVisitCount çeyreğe normalize (month×3/week×13/quarter×1/day×91; cycle/campaign-period→ham+not).
+- ✅ **Conflicts:** politikanın kendi hedefi+context'i için `IVisitFrequencyPolicyResolver.ResolveAsync` (EffectiveAt=now) → SelectedPolicyId/Verdict/Candidates (selected+reason) — resolve engine REUSE, yeni mantık yok.
+- ✅ **Build+test (CT izole, Release):** CrmService.Application.Tests **1773/0/5** (+23 analysis test) + Diten.Web.Tests **137/0**. Tenant izolasyonu (her sorgu TenantId). Gateway {everything} wildcard {id}/analysis kapsıyor (ocelot değişmedi).
+- ⏳ **DET-B/E4:** görsel detay sayfası bu API'yi tüketecek.
+
+**DET-A KOMPLE. Sıra: DET-B (Detay ayrı sayfası — mockup, DET-A API'sini tüketir).**
 ```
