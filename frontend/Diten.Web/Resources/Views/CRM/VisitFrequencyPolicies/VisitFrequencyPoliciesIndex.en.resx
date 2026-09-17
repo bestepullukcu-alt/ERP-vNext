@@ -270,4 +270,10 @@
   <data name="ConflictsEmpty" xml:space="preserve"><value>No competing policies for this target.</value></data>
   <data name="CandidateBadge" xml:space="preserve"><value>Candidate</value></data>
   <data name="TargetsWord" xml:space="preserve"><value>targets</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Account</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Campaign target</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>narrowest scope</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>broadest scope</value></data>
 </root>

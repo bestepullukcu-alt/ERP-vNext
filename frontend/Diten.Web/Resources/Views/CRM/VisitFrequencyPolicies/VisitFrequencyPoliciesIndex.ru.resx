@@ -270,4 +270,10 @@
   <data name="ConflictsEmpty" xml:space="preserve"><value>Нет конкурирующих политик для этой цели.</value></data>
   <data name="CandidateBadge" xml:space="preserve"><value>Кандидат</value></data>
   <data name="TargetsWord" xml:space="preserve"><value>целей</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Организация</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Контакт</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Цель кампании</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>самая узкая область</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>самая широкая область</value></data>
 </root>

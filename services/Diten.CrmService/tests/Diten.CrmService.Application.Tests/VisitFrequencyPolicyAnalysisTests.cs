@@ -194,6 +194,15 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         Assert.Contains(r.Data.Conflicts.Candidates,
             c => !c.Selected && c.PolicyCode == "HI" && c.Reason == FrequencyReasonCodes.PolicySelectedByPriority);
         Assert.All(r.Data.Conflicts.Candidates, c => Assert.Contains("×/", c.FrequencySummary));
+        // WP-FREQ-DET-G — the additive raw fields are populated (not only the pre-baked FrequencySummary), so the
+        // Details page can render a localized target-type sub-line + "N / period" frequency without string-parsing.
+        Assert.All(r.Data.Conflicts.Candidates, c =>
+        {
+            Assert.Equal(FrequencyTargetType.AccountContactLink, c.TargetType);
+            Assert.Equal(2, c.RequiredVisitCount);
+            Assert.Equal(FrequencyPeriodType.Week, c.PeriodType);
+            Assert.True(c.Specificity >= 0);
+        });
     }
 
     [Fact]

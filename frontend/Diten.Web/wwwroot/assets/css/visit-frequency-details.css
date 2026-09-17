@@ -273,12 +273,17 @@
     flex: none;
 }
 
-/* in-card 4-cell stat strip (mockup: bordered cells INSIDE the main policy card, not separate cards) */
+/* in-card 4-cell stat strip (mockup: WHITE, adjacent cells split by a hairline — NOT grey chips). The 1px grid gap over
+   a divider-coloured strip background paints the hairline rules; overflow:hidden keeps them inside the rounded frame. */
 .vfp-detail-scope .vfp-det-stat-strip {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
+    gap: 1px;
     margin-top: 20px;
+    background: var(--vfp-card-border);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 6px;
+    overflow: hidden;
 }
 @media (max-width: 991.98px) {
     .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -287,9 +292,9 @@
     .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: 1fr; }
 }
 .vfp-detail-scope .vfp-det-stat-cell {
-    background: var(--vfp-soft-bg);
-    border: 1px solid var(--vfp-card-border);
-    border-radius: 10px;
+    background: var(--vfp-card-bg);
+    border: none;
+    border-radius: 0;
     padding: 14px 16px;
     min-width: 0;
 }
@@ -378,13 +383,19 @@
     margin-top: 2px;
 }
 
-/* conflicting policies */
+/* conflicting policies — WP-FREQ-DET-G mockup row: [badge] [ad + tip alt-satır] [frekans] [reason]. A 4-column grid keeps
+   the four blocks on one aligned row; the selected policy gets a green tint + left green rule, a candidate stays card-bg. */
 .vfp-detail-scope .vfp-det-cand-count { font-weight: 400; }
 .vfp-detail-scope .vfp-det-cand {
+    display: grid;
+    grid-template-columns: auto minmax(140px, 1fr) auto auto;
+    align-items: center;
+    gap: 6px 14px;
+    background: var(--vfp-card-bg);
     border: 1px solid var(--vfp-card-border);
     border-left: 3px solid transparent;
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: 6px;
+    padding: 12px 14px;
     margin-bottom: 10px;
 }
 .vfp-detail-scope .vfp-det-cand:last-child { margin-bottom: 0; }
@@ -392,20 +403,34 @@
     border-left-color: var(--bs-success);
     background: rgba(var(--bs-success-rgb), 0.06);
 }
-.vfp-detail-scope .vfp-det-cand-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+.vfp-detail-scope .vfp-det-cand-id { min-width: 0; }
 .vfp-detail-scope .vfp-det-cand-name {
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--vfp-heading);
+    word-break: break-word;
+}
+.vfp-detail-scope .vfp-det-cand-type {
+    font-size: 11px;
+    color: var(--vfp-muted);
+    margin-top: 2px;
 }
 .vfp-detail-scope .vfp-det-cand-freq {
     font-size: 13px;
     font-weight: 600;
     color: var(--bs-primary);
-    margin: 4px 0 2px;
+    white-space: nowrap;
+}
+.vfp-detail-scope .vfp-det-cand-reason {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    text-align: right;
+}
+/* narrow screens: let the row wrap to two lines (badge+identity, then frequency+reason) instead of squeezing 4 columns */
+@media (max-width: 575.98px) {
+    .vfp-detail-scope .vfp-det-cand {
+        grid-template-columns: auto 1fr;
+    }
+    .vfp-detail-scope .vfp-det-cand-freq { grid-column: 1 / -1; }
+    .vfp-detail-scope .vfp-det-cand-reason { grid-column: 1 / -1; text-align: left; }
 }

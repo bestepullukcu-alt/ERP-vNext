@@ -270,4 +270,10 @@
   <data name="ConflictsEmpty" xml:space="preserve"><value>此目标没有冲突的策略。</value></data>
   <data name="CandidateBadge" xml:space="preserve"><value>候选</value></data>
   <data name="TargetsWord" xml:space="preserve"><value>个目标</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>细分</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>客户</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>联系人</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>活动目标</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>最小范围</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>最大范围</value></data>
 </root>

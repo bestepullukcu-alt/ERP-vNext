@@ -20,6 +20,9 @@
     // details.js — never a hardcoded authoring vocabulary. PascalCase dictionary keys survive Json.Serialize as authored.
     var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
     var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    // WP-FREQ-DET-G — target-type DISPLAY labels for the conflicting-policies sub-line. Only the friendly-named codes ship;
+    // any other target type (account-contact-link / territory-node / concept-node / audience-profile) is humanized in JS.
+    var targetCodes = new[] { "segment", "account", "contact", "campaign-target" };
     var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
     var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
     var reasonCodes = new[]
@@ -72,6 +75,9 @@
         ["ConflictsEmpty"] = Localizer["ConflictsEmpty"].Value,
         ["SelectedBadge"] = Localizer["ResolveSelectedBadge"].Value,
         ["CandidateBadge"] = Localizer["CandidateBadge"].Value,
+        // WP-FREQ-DET-G — optional specificity hint appended to the conflict-row target-type sub-line.
+        ["SpecNarrowest"] = Localizer["SpecNarrowest"].Value,
+        ["SpecBroadest"] = Localizer["SpecBroadest"].Value,
         // archive flow
         ["ArchiveConfirm"] = Localizer["ArchiveConfirm"].Value,
         ["RecordArchived"] = Localizer["RecordArchived"].Value,
@@ -99,6 +105,9 @@
     var periodLabels = new Dictionary<string, string>();
     foreach (var p in periodCodes) { periodLabels[p] = Localizer[$"Period_{p}"].Value; }
     l10n["periodLabels"] = periodLabels;
+    var targetLabels = new Dictionary<string, string>();
+    foreach (var tt in targetCodes) { targetLabels[tt] = Localizer[$"TargetType_{tt}"].Value; }
+    l10n["targetLabels"] = targetLabels;
 }
 
 <div class="vfp-detail-scope vfp-detail-page" id="vfpDetailPage"

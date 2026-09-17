@@ -30,6 +30,7 @@
     const bandLabels = L.bandLabels || {};
     const sourceLabels = L.sourceLabels || {};
     const periodLabels = L.periodLabels || {};
+    const targetLabels = L.targetLabels || {};
     const timelineLabels = L.timelineLabels || {};
 
     // ── helpers (mirrors resolve.js) ─────────────────────────────────────────────
@@ -50,6 +51,9 @@
     const reasonLabel = r => reasonLabels[norm(r)] || humanize(r);
     const sourceLabel = s => sourceLabels[norm(s)] || humanize(s) || dash();
     const periodLabel = p => periodLabels[norm(p)] || humanize(p) || '';
+    // WP-FREQ-DET-G — target-type DISPLAY label (segment→Segment, campaign-target→Kampanya hedefi, contact→Kişiye özel,
+    // account→Kurum …). Localized labels ship via the detail L10n bridge; any unmapped code degrades to humanize().
+    const targetLabel = tt => targetLabels[norm(tt)] || humanize(tt) || dash();
     const badge = (text, tone = 'primary') => `<span class="badge bg-label-${tone}">${esc(text)}</span>`;
 
     const envelope = async response => {
@@ -303,22 +307,43 @@
         el('vfpDetImpact').innerHTML = parts.join('');
     };
 
-    const conflictRow = c => {
+    // WP-FREQ-DET-G — mockup grid row: [badge selected/candidate] · [name + target-type sub-line] · [freq "N / period"]
+    // · [reason]. The frequency is rebuilt locally from the raw RequiredVisitCount + localized PeriodType ("2 / ay") — the
+    // pre-baked English FrequencySummary ("2×/month") is NOT shown. Nothing is fabricated: every value is a real DTO field.
+    const conflictRow = (c, specHint) => {
         const sel = !!c.selected;
         const mark = sel ? badge(t('SelectedBadge', 'Selected'), 'success') : badge(t('CandidateBadge', 'Candidate'), 'secondary');
+        const typeLine = [targetLabel(c.targetType), norm(specHint)].filter(Boolean).join(' · ');
+        const freq = freqSentence(c.requiredVisitCount, c.periodType);
         return `<div class="vfp-det-cand ${sel ? 'vfp-det-cand--selected' : ''}">`
-            + `<div class="vfp-det-cand-head">${mark}<span class="vfp-det-cand-name">${esc(c.policyName || dash())}</span></div>`
-            + (norm(c.policyCode) ? `<div class="vfp-mono vfp-meta">${esc(c.policyCode)}</div>` : '')
-            + `<div class="vfp-det-cand-freq">${esc(norm(c.frequencySummary))}</div>`
-            + `<div class="vfp-meta">${esc(reasonLabel(c.reason))}</div>`
+            + `<span class="vfp-det-cand-mark">${mark}</span>`
+            + `<div class="vfp-det-cand-id">`
+            +   `<div class="vfp-det-cand-name">${esc(c.policyName || dash())}</div>`
+            +   (typeLine ? `<div class="vfp-det-cand-type vfp-mono">${esc(typeLine)}</div>` : '')
+            + `</div>`
+            + `<div class="vfp-det-cand-freq">${esc(freq || dash())}</div>`
+            + `<div class="vfp-det-cand-reason">${esc(reasonLabel(c.reason))}</div>`
             + `</div>`;
     };
     const renderConflicts = conflicts => {
         const cands = (conflicts && conflicts.candidates) || [];
         const countEl = el('vfpDetConflictsCount');
         if (countEl) countEl.innerHTML = cands.length ? badge(fmt(t('ConflictsCandidateCount', '{0}'), cands.length), 'secondary') : '';
+        // Optional specificity hint (WP: "isteğe bağlı") — only when the candidates genuinely differ in scope breadth, so
+        // the narrowest/broadest gets a short localized note. Degrades to no hint when the L10n keys are absent.
+        const specs = cands.map(c => Number(c.specificity)).filter(n => !Number.isNaN(n));
+        const maxSpec = specs.length ? Math.max(...specs) : null;
+        const minSpec = specs.length ? Math.min(...specs) : null;
+        const distinct = maxSpec != null && maxSpec !== minSpec;
+        const hintFor = c => {
+            if (!distinct) return '';
+            const s = Number(c.specificity);
+            if (s === maxSpec) return t('SpecNarrowest', '');
+            if (s === minSpec) return t('SpecBroadest', '');
+            return '';
+        };
         el('vfpDetConflicts').innerHTML = cands.length
-            ? cands.map(conflictRow).join('')
+            ? cands.map(c => conflictRow(c, hintFor(c))).join('')
             : `<div class="vfp-meta">${esc(t('ConflictsEmpty', 'No competing policies.'))}</div>`;
     };
 

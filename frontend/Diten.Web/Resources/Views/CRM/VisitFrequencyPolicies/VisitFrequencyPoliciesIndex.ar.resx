@@ -270,4 +270,10 @@
   <data name="ConflictsEmpty" xml:space="preserve"><value>لا توجد سياسات متعارضة لهذا الهدف.</value></data>
   <data name="CandidateBadge" xml:space="preserve"><value>مرشح</value></data>
   <data name="TargetsWord" xml:space="preserve"><value>هدف</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>شريحة</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>حساب</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>جهة اتصال</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>هدف الحملة</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>أضيق نطاق</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>أوسع نطاق</value></data>
 </root>

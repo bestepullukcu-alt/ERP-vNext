@@ -252,7 +252,13 @@ public sealed class GetVisitFrequencyPolicyAnalysisHandler
                 $"{c.RequiredVisitCount}×/{c.PeriodType}",
                 c.Priority,
                 c.Selected,
-                c.Reason))
+                c.Reason,
+                // WP-FREQ-DET-G — additive raw fields (already present on FrequencyCandidatePolicy) so the Details page
+                // renders a localized target-type sub-line + "N / period" frequency without parsing FrequencySummary.
+                c.TargetType,
+                c.RequiredVisitCount,
+                c.PeriodType,
+                c.Specificity))
             .ToList();
 
         return new VisitFrequencyPolicyConflictsDto(

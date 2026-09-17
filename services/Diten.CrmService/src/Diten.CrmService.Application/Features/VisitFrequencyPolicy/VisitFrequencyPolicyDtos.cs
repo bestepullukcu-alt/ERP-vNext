@@ -96,7 +96,11 @@ public sealed record VisitFrequencyPolicyConflictsDto(
     IReadOnlyList<VisitFrequencyPolicyConflictCandidateDto> Candidates);
 
 /// <summary>One competing policy in the conflict analysis: identity, a compact frequency summary
-/// (<c>RequiredVisitCount×/PeriodType</c>), its priority, whether it was selected, and the resolve reason code.</summary>
+/// (<c>RequiredVisitCount×/PeriodType</c>), its priority, whether it was selected, and the resolve reason code.
+/// <para>WP-FREQ-DET-G — the raw <see cref="TargetType"/>, <see cref="RequiredVisitCount"/>, <see cref="PeriodType"/> and
+/// <see cref="Specificity"/> are surfaced additively (they already exist on the internal resolve candidate) so the
+/// Details page can render a localized target-type sub-line and a localized "N / period" frequency without parsing the
+/// pre-baked <see cref="FrequencySummary"/> string; <see cref="FrequencySummary"/> is retained unchanged.</para></summary>
 public sealed record VisitFrequencyPolicyConflictCandidateDto(
     Guid PolicyId,
     string PolicyCode,
@@ -104,4 +108,8 @@ public sealed record VisitFrequencyPolicyConflictCandidateDto(
     string FrequencySummary,
     int Priority,
     bool Selected,
-    string Reason);
+    string Reason,
+    string TargetType,
+    int RequiredVisitCount,
+    string PeriodType,
+    int Specificity);

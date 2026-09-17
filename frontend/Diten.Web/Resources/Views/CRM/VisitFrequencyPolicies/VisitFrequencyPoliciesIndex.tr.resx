@@ -270,4 +270,10 @@
   <data name="ConflictsEmpty" xml:space="preserve"><value>Bu hedef için çakışan politika yok.</value></data>
   <data name="CandidateBadge" xml:space="preserve"><value>Aday</value></data>
   <data name="TargetsWord" xml:space="preserve"><value>hedef</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Kurum</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Kişiye özel</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Kampanya hedefi</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>en dar kapsam</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>en geniş kapsam</value></data>
 </root>
