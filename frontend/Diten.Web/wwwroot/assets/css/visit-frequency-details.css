@@ -231,6 +231,12 @@
     box-shadow: 0 0 0 3px var(--vfp-card-bg);
 }
 
+/* WP-FREQ-DET-F — DETAILS timeline'da başlık ile "tarih · aktör" satırı alt-alta dursun (ikisi de span, varsayılan
+   inline → bitişik). Yalnız #vfpDetTimeline'a scope'lu: Resolve panelinin paylaşılan vfp-dv-tl trail'i etkilenmez.
+   Dot/dikey çizgi/renk/margin korunur (title/detail zaten bir sarmalayıcı span içinde, block ile satır atlar). */
+#vfpDetTimeline .vfp-dv-tl-title,
+#vfpDetTimeline .vfp-dv-tl-detail { display: block; }
+
 /* header */
 .vfp-detail-scope .vfp-det-header {
     display: flex;
