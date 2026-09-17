@@ -51,10 +51,20 @@
         ["FieldBrand"] = Localizer["FieldBrand"].Value,
         ["FieldProduct"] = Localizer["FieldProduct"].Value,
         ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
-        // timeline
-        ["DetailCreated"] = Localizer["DetailCreated"].Value,
-        ["DetailUpdated"] = Localizer["DetailUpdated"].Value,
-        ["DetailArchived"] = Localizer["DetailArchived"].Value,
+        // timeline (WP-FREQ-DET-C — DURUM AKIŞI audit trail type labels; the fallbacks details.js carries are English)
+        ["TlCreated"] = Localizer["Tl_created"].Value,
+        ["TlWeightChanged"] = Localizer["Tl_weight_changed"].Value,
+        ["TlArchived"] = Localizer["Tl_archived"].Value,
+        ["timelineLabels"] = new Dictionary<string, string>
+        {
+            ["created"] = Localizer["Tl_created"].Value,
+            ["published"] = Localizer["Tl_published"].Value,
+            ["deactivated"] = Localizer["Tl_deactivated"].Value,
+            ["reactivated"] = Localizer["Tl_reactivated"].Value,
+            ["weight-changed"] = Localizer["Tl_weight_changed"].Value,
+            ["archived"] = Localizer["Tl_archived"].Value,
+            ["next-eval"] = Localizer["Tl_next_eval"].Value
+        },
         // impact + conflicts
         ["ImpactTargetsLine"] = Localizer["ImpactTargetsLine"].Value,
         ["ImpactVisitsLine"] = Localizer["ImpactVisitsLine"].Value,

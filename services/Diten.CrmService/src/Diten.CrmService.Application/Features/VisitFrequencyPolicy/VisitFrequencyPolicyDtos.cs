@@ -47,7 +47,25 @@ public sealed record VisitFrequencyPolicyListDto(
 public sealed record VisitFrequencyPolicyAnalysisDto(
     Guid PolicyId,
     VisitFrequencyPolicyImpactDto Impact,
-    VisitFrequencyPolicyConflictsDto Conflicts);
+    VisitFrequencyPolicyConflictsDto Conflicts,
+    IReadOnlyList<VisitFrequencyPolicyTimelineEntryDto> Timeline);
+
+/// <summary>
+/// WP-FREQ-DET-C — one DURUM AKIŞI row. Real entries come from the policy's embedded audit trail
+/// (<see cref="Diten.CrmService.Domain.Entities.VisitFrequencyPolicy.Events"/>) in chronological order; for a policy
+/// that predates the trail the timeline is BACKFILLED from the CreatedAt / ArchivedAt timestamps (created + archived
+/// only — a weight change leaves no timestamp, so it is never fabricated). The final <see cref="IsFuture"/> entry is the
+/// derived "Sonraki değerlendirme" (next-eval): the cycle-period end when the policy is cycle-scoped, else EffectiveTo,
+/// else omitted. <see cref="FromValue"/>/<see cref="ToValue"/> carry band codes for a <c>weight-changed</c> entry (or a
+/// status pair) so the UI localizes them; they are null for point events.
+/// </summary>
+public sealed record VisitFrequencyPolicyTimelineEntryDto(
+    string Type,
+    DateTimeOffset At,
+    string? By,
+    string? FromValue,
+    string? ToValue,
+    bool IsFuture);
 
 /// <summary>
 /// ETKİ — the reach of a policy's target and the implied quarterly visit load.

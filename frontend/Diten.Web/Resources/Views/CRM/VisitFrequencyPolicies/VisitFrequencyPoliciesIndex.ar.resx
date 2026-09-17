@@ -115,6 +115,13 @@
   <data name="DetailCreated" xml:space="preserve"><value>أُنشئ</value></data>
   <data name="DetailUpdated" xml:space="preserve"><value>حُدّث</value></data>
   <data name="DetailArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>تم إنشاء المسودة</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>تم النشر</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>تم التعطيل</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>تمت إعادة التفعيل</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>تم تغيير الوزن</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>التقييم التالي</value></data>
   <data name="FieldConceptNode" xml:space="preserve"><value>عقدة المفهوم</value></data>
   <data name="FieldAudienceProfile" xml:space="preserve"><value>ملف الجمهور</value></data>
   <data name="ResolveInputSection" xml:space="preserve"><value>مدخلات التحليل</value></data>

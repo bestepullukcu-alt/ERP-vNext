@@ -200,6 +200,10 @@
 .vfp-detail-scope .vfp-dv-tl-dot--secondary { background: var(--bs-secondary); }
 .vfp-detail-scope .vfp-dv-tl-dot--primary { background: var(--bs-primary); }
 .vfp-detail-scope .vfp-dv-tl-dot--warning { background: var(--bs-warning); }
+.vfp-detail-scope .vfp-dv-tl-dot--success { background: var(--bs-success); }
+/* WP-FREQ-DET-C — the derived "next-eval" row is a faded, future entry (not yet happened). */
+.vfp-detail-scope .vfp-dv-tl-item--future { opacity: 0.5; }
+.vfp-detail-scope .vfp-dv-tl-dot--future { background: var(--bs-secondary); }
 
 /* header */
 .vfp-detail-scope .vfp-det-header {

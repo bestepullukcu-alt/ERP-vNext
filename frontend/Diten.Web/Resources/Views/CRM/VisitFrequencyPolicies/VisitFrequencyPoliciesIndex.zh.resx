@@ -115,6 +115,13 @@
   <data name="DetailCreated" xml:space="preserve"><value>已创建</value></data>
   <data name="DetailUpdated" xml:space="preserve"><value>已更新</value></data>
   <data name="DetailArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>已创建草稿</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>已停用</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>已重新启用</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>权重已更改</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>下次评估</value></data>
   <data name="FieldConceptNode" xml:space="preserve"><value>概念节点</value></data>
   <data name="FieldAudienceProfile" xml:space="preserve"><value>受众画像</value></data>
   <data name="ResolveInputSection" xml:space="preserve"><value>解析输入</value></data>

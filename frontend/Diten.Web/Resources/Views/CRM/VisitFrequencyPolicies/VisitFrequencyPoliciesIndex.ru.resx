@@ -115,6 +115,13 @@
   <data name="DetailCreated" xml:space="preserve"><value>Создано</value></data>
   <data name="DetailUpdated" xml:space="preserve"><value>Обновлено</value></data>
   <data name="DetailArchived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Черновик создан</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Деактивировано</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Повторно активировано</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Вес изменён</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Следующая оценка</value></data>
   <data name="FieldConceptNode" xml:space="preserve"><value>Узел концепции</value></data>
   <data name="FieldAudienceProfile" xml:space="preserve"><value>Профиль аудитории</value></data>
   <data name="ResolveInputSection" xml:space="preserve"><value>Входные данные разрешения</value></data>

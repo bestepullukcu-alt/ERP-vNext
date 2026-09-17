@@ -452,6 +452,11 @@ public static class DependencyInjection
             map.GetMemberMap(p => p.CycleId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(p => p.CyclePeriodId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
+        // WP-FREQ-DET-C — the embedded audit-trail event is an owned value object with NO Guid FK, so plain AutoMap is
+        // sufficient (no string-Guid serializer). Registered explicitly (like VisitReportSample/Amendment) so the driver
+        // never treats it as an anonymous type. AutoMap only rejects UNKNOWN elements on read, never missing ones, so a
+        // pre-trail policy document (no Events element) still deserializes — its Events member stays the empty default.
+        Map<VisitFrequencyPolicyEvent>(_ => { });
 
         // MOD-0164 FU02 — ConsentRecord / PreferenceRecord. SubjectId and ScopeId are Guid FKs, so they take the
         // string-Guid convention like every other CRM aggregate: without it the evaluation filter serializes a string

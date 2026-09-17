@@ -564,6 +564,113 @@ public sealed class VisitFrequencyPolicyTests
         }
     }
 
+    // ---------------- Audit trail events (WP-FREQ-DET-C) ----------------
+
+    private sealed class NamedActor : IActorContext
+    {
+        public string? ActorName => "Dr. Ayse Yilmaz";
+    }
+
+    [Fact]
+    public async Task Create_Active_Appends_Created_Then_Published()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Equal(
+            new[] { FrequencyPolicyEventType.Created, FrequencyPolicyEventType.Published },
+            row.Events.Select(e => e.Type).ToArray());
+        Assert.All(row.Events, e => Assert.Equal(row.CreatedAt, e.At));
+    }
+
+    [Fact]
+    public async Task Create_Draft_Appends_Only_Created()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Draft), default);
+        Assert.Equal(201, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        var evt = Assert.Single(row.Events);
+        Assert.Equal(FrequencyPolicyEventType.Created, evt.Type);
+    }
+
+    [Fact]
+    public async Task Update_Draft_To_Active_Appends_Published_With_Actor()
+    {
+        var repo = new FakeRepo();
+        var create = new CreateVisitFrequencyPolicyHandler(Tenant(TenantA), new NamedActor(), repo);
+        var update = new UpdateVisitFrequencyPolicyHandler(Tenant(TenantA), new NamedActor(), repo);
+        var created = await create.Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Draft), default);
+
+        var r = await update.Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "Renamed", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(200, r.StatusCode);
+
+        var row = Assert.Single(repo.Items);
+        var published = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.Published);
+        Assert.Equal("Dr. Ayse Yilmaz", published.By);
+        Assert.Equal(FrequencyPolicyStatus.Draft, published.FromValue);
+        Assert.Equal(FrequencyPolicyStatus.Active, published.ToValue);
+    }
+
+    [Fact]
+    public async Task Update_Active_To_Inactive_Appends_Deactivated()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        var r = await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "P", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Inactive), default);
+        Assert.Equal(200, r.StatusCode);
+        var row = Assert.Single(f.Repo.Items);
+        Assert.Contains(row.Events, e => e.Type == FrequencyPolicyEventType.Deactivated);
+    }
+
+    [Fact]
+    public async Task Update_Priority_Change_Appends_WeightChanged_With_Band_Codes()
+    {
+        var f = new Fixture(TenantA);
+        // Created at priority 300 (campaign-level band); update to 500 (standard band).
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), priority: 300, status: FrequencyPolicyStatus.Active), default);
+        var r = await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "P", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 500,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(200, r.StatusCode);
+
+        var row = Assert.Single(f.Repo.Items);
+        var weight = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.WeightChanged);
+        Assert.Equal("campaign-level", weight.FromValue);
+        Assert.Equal("standard", weight.ToValue);
+    }
+
+    [Fact]
+    public async Task Update_No_Status_Or_Weight_Change_Appends_Nothing()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), priority: 300, status: FrequencyPolicyStatus.Active), default);
+        var row = f.Repo.Items.Single();
+        var before = row.Events.Count;
+
+        // Rename only — same status and same weight.
+        await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
+            created.Data, "Renamed", FrequencyType.Weekly, 2, FrequencyPeriodType.Week, Jan1, 300,
+            FrequencySource.Manual, Status: FrequencyPolicyStatus.Active), default);
+        Assert.Equal(before, row.Events.Count);
+    }
+
+    [Fact]
+    public async Task Archive_Appends_Archived_Event()
+    {
+        var f = new Fixture(TenantA);
+        var created = await f.Create().Handle(Cmd(Guid.NewGuid(), status: FrequencyPolicyStatus.Active), default);
+        await f.Archive().Handle(new ArchiveVisitFrequencyPolicyCommand(created.Data), default);
+        var row = Assert.Single(f.Repo.Items);
+        var archived = Assert.Single(row.Events, e => e.Type == FrequencyPolicyEventType.Archived);
+        Assert.Equal(row.ArchivedAt, archived.At);
+    }
+
     // ---------------- Fake repository ----------------
 
     private sealed class FakeRepo : IVisitFrequencyPolicyRepository

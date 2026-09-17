@@ -87,9 +87,58 @@ public sealed class VisitFrequencyPolicy : EntityBase
     /// soft-delete (<see cref="EntityBase.IsDeleted"/>) removes it from the working set (list + resolve).</summary>
     public string? DeletedBy { get; set; }
 
+    /// <summary>WP-FREQ-DET-C — additive, embedded audit trail of the status/weight lifecycle (created / published /
+    /// deactivated / reactivated / weight-changed / archived). Appended by the command handlers alongside the existing
+    /// CreatedAt / UpdatedAt / ArchivedAt stamps; it changes NO write semantics. Carries NO Guid FK (same document, so
+    /// no string-Guid class-map is needed), and it is initialised to an empty list so pre-existing policies (documents
+    /// with no <c>Events</c> element) round-trip to an empty trail — the DETAY DURUM AKIŞI then backfills from the
+    /// timestamps. Never a source of truth for resolve/CRUD; a read-side projection only.</summary>
+    public List<VisitFrequencyPolicyEvent> Events { get; set; } = new();
+
     /// <summary>Effective at a given instant: EffectiveFrom ≤ at ≤ EffectiveTo (open end when EffectiveTo is null).</summary>
     public bool IsEffectiveAt(DateTimeOffset at)
         => EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo);
+}
+
+/// <summary>WP-FREQ-DET-C — one entry in the policy's embedded audit trail (<see cref="VisitFrequencyPolicy.Events"/>).
+/// It is an owned value object (no Guid FK, no identity of its own), so it needs no string-Guid class map and old
+/// documents that predate the trail simply deserialize to an empty list. A settable-property class (the same shape as
+/// every other stored embedded CRM value object, e.g. <see cref="VisitReportSample"/>) so AutoMap round-trips it and a
+/// missing <c>Events</c> element is safe.</summary>
+public sealed class VisitFrequencyPolicyEvent
+{
+    /// <summary><see cref="FrequencyPolicyEventType"/> — created / published / deactivated / reactivated /
+    /// weight-changed / archived.</summary>
+    public string Type { get; set; } = string.Empty;
+
+    /// <summary>When the transition happened.</summary>
+    public DateTimeOffset At { get; set; }
+
+    /// <summary>Actor who caused it (provenance; null when the principal carries no usable identity).</summary>
+    public string? By { get; set; }
+
+    /// <summary>Old value for a <c>weight-changed</c> (band code, resolved from the contract) or a status transition.
+    /// Null for point events (created / archived).</summary>
+    public string? FromValue { get; set; }
+
+    /// <summary>New value for a <c>weight-changed</c> or status transition. Null for point events.</summary>
+    public string? ToValue { get; set; }
+}
+
+/// <summary>WP-FREQ-DET-C — the audit-trail event vocabulary. Structural (in-domain), mirrors the lifecycle the mockup
+/// DURUM AKIŞI renders. <c>next-eval</c> is NOT an event type: it is a derived, future timeline entry produced only by
+/// the analysis read model, never persisted.</summary>
+public static class FrequencyPolicyEventType
+{
+    public const string Created = "created";
+    public const string Published = "published";
+    public const string Deactivated = "deactivated";
+    public const string Reactivated = "reactivated";
+    public const string WeightChanged = "weight-changed";
+    public const string Archived = "archived";
+
+    /// <summary>Not a stored event — a derived future timeline entry (the "Sonraki değerlendirme" row).</summary>
+    public const string NextEval = "next-eval";
 }
 
 /// <summary>Policy lifecycle. Hard delete does not exist; a policy is closed with inactive/archived.</summary>
@@ -242,6 +291,23 @@ public static class FrequencyPriorityBands
         new FrequencyPriorityBand("baseline", Baseline),
         new FrequencyPriorityBand("last-resort", LastResort),
     };
+
+    /// <summary>WP-FREQ-DET-C — the band code for an authored weight, or null when the weight matches no suggested band
+    /// (the value stays an authored integer, so a non-band weight has no code). Used by the audit trail to record a
+    /// <c>weight-changed</c> event's from/to as the stable band code the UI localizes; a UI falls back to the raw
+    /// number when this is null.</summary>
+    public static string? CodeForValue(int value)
+    {
+        foreach (var band in All)
+        {
+            if (band.Value == value)
+            {
+                return band.Code;
+            }
+        }
+
+        return null;
+    }
 
     /// <summary>Recommended tier from source + target (a manager override always wins; a campaign context sits at the
     /// campaign level; everything else defaults to standard). For UI defaulting only — never auto-applied.</summary>

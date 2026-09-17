@@ -115,6 +115,13 @@
   <data name="DetailCreated" xml:space="preserve"><value>Creado</value></data>
   <data name="DetailUpdated" xml:space="preserve"><value>Actualizado</value></data>
   <data name="DetailArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Borrador creado</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Publicado</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Desactivado</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Reactivado</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Peso modificado</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Próxima evaluación</value></data>
   <data name="FieldConceptNode" xml:space="preserve"><value>Nodo de concepto</value></data>
   <data name="FieldAudienceProfile" xml:space="preserve"><value>Perfil de audiencia</value></data>
   <data name="ResolveInputSection" xml:space="preserve"><value>Datos de resolución</value></data>

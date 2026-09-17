@@ -23,17 +23,20 @@ public sealed class GetVisitFrequencyPolicyAnalysisHandler
     private readonly IVisitFrequencyPolicyRepository _repository;
     private readonly IVisitFrequencyPolicyResolver _resolver;
     private readonly IVisitFrequencyTargetImpactCounter _impactCounter;
+    private readonly ICyclePeriodRepository _cyclePeriods;
 
     public GetVisitFrequencyPolicyAnalysisHandler(
         ITenantContext tenant,
         IVisitFrequencyPolicyRepository repository,
         IVisitFrequencyPolicyResolver resolver,
-        IVisitFrequencyTargetImpactCounter impactCounter)
+        IVisitFrequencyTargetImpactCounter impactCounter,
+        ICyclePeriodRepository cyclePeriods)
     {
         _tenant = tenant;
         _repository = repository;
         _resolver = resolver;
         _impactCounter = impactCounter;
+        _cyclePeriods = cyclePeriods;
     }
 
     public async Task<Response<VisitFrequencyPolicyAnalysisDto>> Handle(
@@ -53,9 +56,74 @@ public sealed class GetVisitFrequencyPolicyAnalysisHandler
         var now = DateTimeOffset.UtcNow;
         var impact = await BuildImpactAsync(tenantId, policy, now, cancellationToken);
         var conflicts = await BuildConflictsAsync(policy, cancellationToken);
+        var timeline = await BuildTimelineAsync(tenantId, policy, cancellationToken);
 
         return Response<VisitFrequencyPolicyAnalysisDto>.Success(
-            new VisitFrequencyPolicyAnalysisDto(policy.Id, impact, conflicts));
+            new VisitFrequencyPolicyAnalysisDto(policy.Id, impact, conflicts, timeline));
+    }
+
+    /// <summary>
+    /// WP-FREQ-DET-C — the DURUM AKIŞI timeline. Real embedded <see cref="Vfp.Events"/> are projected in chronological
+    /// order; a policy that predates the trail (empty Events) is BACKFILLED from the CreatedAt / ArchivedAt stamps
+    /// (created + archived only — never a fabricated weight change). A derived "next-eval" future entry is appended when
+    /// it can be derived (cycle-period end → EffectiveTo → omitted). This is a read-side projection; it writes nothing.
+    /// </summary>
+    private async Task<IReadOnlyList<VisitFrequencyPolicyTimelineEntryDto>> BuildTimelineAsync(
+        Guid tenantId, Vfp policy, CancellationToken cancellationToken)
+    {
+        var entries = new List<VisitFrequencyPolicyTimelineEntryDto>();
+
+        if (policy.Events.Count > 0)
+        {
+            entries.AddRange(policy.Events
+                .OrderBy(e => e.At)
+                .Select(e => new VisitFrequencyPolicyTimelineEntryDto(
+                    e.Type, e.At, e.By, e.FromValue, e.ToValue, IsFuture: false)));
+        }
+        else
+        {
+            // Backfill from timestamps only — the created + (optional) archived point events. There is no timestamp for
+            // a historic weight or status change, so those are never invented for a pre-trail policy.
+            entries.Add(new VisitFrequencyPolicyTimelineEntryDto(
+                FrequencyPolicyEventType.Created, policy.CreatedAt, policy.CreatedBy, null, null, IsFuture: false));
+            if (policy.ArchivedAt is { } archivedAt)
+            {
+                entries.Add(new VisitFrequencyPolicyTimelineEntryDto(
+                    FrequencyPolicyEventType.Archived, archivedAt, policy.ArchivedBy, null, null, IsFuture: false));
+            }
+        }
+
+        var nextEvalAt = await DeriveNextEvaluationAsync(tenantId, policy, cancellationToken);
+        if (nextEvalAt is { } at)
+        {
+            entries.Add(new VisitFrequencyPolicyTimelineEntryDto(
+                FrequencyPolicyEventType.NextEval, at, By: null, FromValue: null, ToValue: null, IsFuture: true));
+        }
+
+        return entries;
+    }
+
+    /// <summary>Derives the "Sonraki değerlendirme" instant WITHOUT inventing one: the cycle-period end when the policy
+    /// is cycle-scoped and the period is readable, else the policy's EffectiveTo, else null (the row is omitted). An
+    /// archived policy has no next evaluation.</summary>
+    private async Task<DateTimeOffset?> DeriveNextEvaluationAsync(
+        Guid tenantId, Vfp policy, CancellationToken cancellationToken)
+    {
+        if (string.Equals(policy.Status, FrequencyPolicyStatus.Archived, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        if (policy.CyclePeriodId is { } cyclePeriodId)
+        {
+            var period = await _cyclePeriods.GetByIdAsync(tenantId, cyclePeriodId, cancellationToken);
+            if (period is not null)
+            {
+                return period.EndDate;
+            }
+        }
+
+        return policy.EffectiveTo;
     }
 
     private async Task<VisitFrequencyPolicyImpactDto> BuildImpactAsync(

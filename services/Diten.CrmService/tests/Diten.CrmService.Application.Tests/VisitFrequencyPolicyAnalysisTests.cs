@@ -12,6 +12,7 @@ using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using Xunit;
 using Vfp = Diten.CrmService.Domain.Entities.VisitFrequencyPolicy;
+using CyclePeriodEntity = Diten.CrmService.Domain.Entities.CyclePeriod;
 
 namespace Diten.CrmService.Application.Tests;
 
@@ -68,8 +69,9 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         };
 
     private static GetVisitFrequencyPolicyAnalysisHandler Handler(
-        Guid tenant, FakeVfpRepo repo, IVisitFrequencyTargetImpactCounter counter)
-        => new(Ctx(tenant), repo, new VisitFrequencyPolicyResolver(Ctx(tenant), repo), counter);
+        Guid tenant, FakeVfpRepo repo, IVisitFrequencyTargetImpactCounter counter, FakeCyclePeriodRepo? cyclePeriods = null)
+        => new(Ctx(tenant), repo, new VisitFrequencyPolicyResolver(Ctx(tenant), repo), counter,
+            cyclePeriods ?? new FakeCyclePeriodRepo());
 
     // ---------------- Guards ----------------
 
@@ -79,7 +81,7 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         var handler = new GetVisitFrequencyPolicyAnalysisHandler(
             new TenantContext(), new FakeVfpRepo(),
             new VisitFrequencyPolicyResolver(new TenantContext(), new FakeVfpRepo()),
-            new StubCounter(VisitFrequencyTargetImpact.Countable(1)));
+            new StubCounter(VisitFrequencyTargetImpact.Countable(1)), new FakeCyclePeriodRepo());
         var r = await handler.Handle(new GetVisitFrequencyPolicyAnalysisQuery(Guid.NewGuid()), default);
         Assert.Equal(400, r.StatusCode);
     }
@@ -207,6 +209,110 @@ public sealed class VisitFrequencyPolicyAnalysisTests
 
         Assert.Equal(FrequencyStatus.Conflict, r.Data!.Conflicts.Verdict);
         Assert.NotNull(r.Data.Conflicts.SelectedPolicyId);
+    }
+
+    // ---------------- Timeline (WP-FREQ-DET-C) ----------------
+
+    [Fact]
+    public async Task Timeline_Projects_Real_Events_Chronologically()
+    {
+        var repo = new FakeVfpRepo();
+        var policy = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid());
+        policy.Events.Add(new VisitFrequencyPolicyEvent
+        {
+            Type = FrequencyPolicyEventType.Created, At = Jan1, By = "Ali"
+        });
+        policy.Events.Add(new VisitFrequencyPolicyEvent
+        {
+            Type = FrequencyPolicyEventType.WeightChanged, At = Jan1.AddDays(2), By = "Ali",
+            FromValue = "baseline", ToValue = "standard"
+        });
+        policy.Events.Add(new VisitFrequencyPolicyEvent
+        {
+            Type = FrequencyPolicyEventType.Published, At = Jan1.AddDays(1), By = "Ali"
+        });
+        repo.Items.Add(policy);
+
+        var r = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)))
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(policy.Id), default);
+
+        var tl = r.Data!.Timeline.Where(e => !e.IsFuture).ToList();
+        Assert.Equal(3, tl.Count);
+        Assert.Equal(FrequencyPolicyEventType.Created, tl[0].Type);
+        Assert.Equal(FrequencyPolicyEventType.Published, tl[1].Type); // chronological, not insertion order
+        Assert.Equal(FrequencyPolicyEventType.WeightChanged, tl[2].Type);
+        Assert.Equal("baseline", tl[2].FromValue);
+        Assert.Equal("standard", tl[2].ToValue);
+    }
+
+    [Fact]
+    public async Task Timeline_Backfills_Created_And_Archived_When_Events_Empty()
+    {
+        var repo = new FakeVfpRepo();
+        var policy = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid(),
+            status: FrequencyPolicyStatus.Archived);
+        policy.CreatedAt = Jan1;
+        policy.CreatedBy = "Ali";
+        policy.ArchivedAt = Jan1.AddMonths(2);
+        policy.ArchivedBy = "Veli";
+        // Events left empty → pre-trail policy.
+        repo.Items.Add(policy);
+
+        var r = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)))
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(policy.Id), default);
+
+        var tl = r.Data!.Timeline.Where(e => !e.IsFuture).ToList();
+        Assert.Equal(2, tl.Count);
+        Assert.Equal(FrequencyPolicyEventType.Created, tl[0].Type);
+        Assert.Equal("Ali", tl[0].By);
+        Assert.Equal(FrequencyPolicyEventType.Archived, tl[1].Type);
+        Assert.Equal("Veli", tl[1].By);
+        // A pre-trail policy never invents a weight/status change.
+        Assert.DoesNotContain(tl, e => e.Type == FrequencyPolicyEventType.WeightChanged);
+    }
+
+    [Fact]
+    public async Task NextEval_Uses_CyclePeriod_End_When_Cycle_Scoped()
+    {
+        var repo = new FakeVfpRepo();
+        var cyclePeriods = new FakeCyclePeriodRepo();
+        var periodId = Guid.NewGuid();
+        var periodEnd = Jan1.AddMonths(3);
+        cyclePeriods.Rows.Add(new CyclePeriodEntity
+        {
+            Id = periodId, TenantId = TenantA, StartDate = Jan1, EndDate = periodEnd
+        });
+        var policy = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid());
+        policy.CyclePeriodId = periodId;
+        policy.EffectiveTo = Jan1.AddYears(5); // must be ignored in favour of the cycle-period end
+        repo.Items.Add(policy);
+
+        var r = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)), cyclePeriods)
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(policy.Id), default);
+
+        var future = Assert.Single(r.Data!.Timeline, e => e.IsFuture);
+        Assert.Equal(FrequencyPolicyEventType.NextEval, future.Type);
+        Assert.Equal(periodEnd, future.At);
+    }
+
+    [Fact]
+    public async Task NextEval_Falls_Back_To_EffectiveTo_Then_Omits_When_Neither_Present()
+    {
+        var repo = new FakeVfpRepo();
+        var withTo = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid(), code: "TO");
+        withTo.EffectiveTo = Jan1.AddMonths(6);
+        var openEnded = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid(), code: "OPEN");
+        repo.Items.Add(withTo);
+        repo.Items.Add(openEnded);
+
+        var rTo = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)))
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(withTo.Id), default);
+        var future = Assert.Single(rTo.Data!.Timeline, e => e.IsFuture);
+        Assert.Equal(Jan1.AddMonths(6), future.At);
+
+        var rOpen = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)))
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(openEnded.Id), default);
+        Assert.DoesNotContain(rOpen.Data!.Timeline, e => e.IsFuture);
     }
 
     // ---------------- Real impact counter (per-type counting via REUSED readers) ----------------
@@ -430,6 +536,34 @@ public sealed class VisitFrequencyPolicyAnalysisTests
 
         public Task InsertAsync(Vfp policy, CancellationToken ct) { Items.Add(policy); return Task.CompletedTask; }
         public Task UpdateAsync(Vfp policy, CancellationToken ct) => Task.CompletedTask;
+    }
+
+    private sealed class FakeCyclePeriodRepo : ICyclePeriodRepository
+    {
+        public List<CyclePeriodEntity> Rows { get; } = new();
+
+        public Task<CyclePeriodEntity?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
+            => Task.FromResult(Rows.FirstOrDefault(r => r.TenantId == t && r.Id == id && !r.IsDeleted));
+
+        public Task<IReadOnlyList<CyclePeriodEntity>> ListAsync(Guid t, CancellationToken ct)
+            => Task.FromResult((IReadOnlyList<CyclePeriodEntity>)Rows.Where(r => r.TenantId == t && !r.IsDeleted).ToList());
+
+        public Task<IReadOnlyList<CyclePeriodEntity>> ListByCodeAsync(Guid t, string code, CancellationToken ct)
+            => Task.FromResult((IReadOnlyList<CyclePeriodEntity>)Rows
+                .Where(r => r.TenantId == t && !r.IsDeleted && r.CycleCode == code).ToList());
+
+        public Task<IReadOnlyList<CyclePeriodEntity>> ListByYearAsync(Guid t, int year, CancellationToken ct)
+            => Task.FromResult((IReadOnlyList<CyclePeriodEntity>)Rows
+                .Where(r => r.TenantId == t && !r.IsDeleted && r.Year == year).ToList());
+
+        public Task<IReadOnlyList<CyclePeriodEntity>> ListActiveAsync(Guid t, CancellationToken ct)
+            => Task.FromResult((IReadOnlyList<CyclePeriodEntity>)Rows
+                .Where(r => r.TenantId == t && !r.IsDeleted).ToList());
+
+        public Task InsertAsync(CyclePeriodEntity entity, CancellationToken ct) { Rows.Add(entity); return Task.CompletedTask; }
+
+        public Task<bool> ReplaceAsync(CyclePeriodEntity entity, int expectedVersion, CancellationToken ct)
+            => Task.FromResult(true);
     }
 
     private sealed class FakeCampaignTargetRepo : ICampaignTargetRepository

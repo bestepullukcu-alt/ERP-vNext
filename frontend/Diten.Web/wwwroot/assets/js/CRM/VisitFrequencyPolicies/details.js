@@ -30,6 +30,7 @@
     const bandLabels = L.bandLabels || {};
     const sourceLabels = L.sourceLabels || {};
     const periodLabels = L.periodLabels || {};
+    const timelineLabels = L.timelineLabels || {};
 
     // ── helpers (mirrors resolve.js) ─────────────────────────────────────────────
     const el = id => document.getElementById(id);
@@ -204,15 +205,45 @@
         el('vfpDetNotes').textContent = p.notes;
     };
 
-    const renderTimeline = p => {
+    // ── DURUM AKIŞI timeline (WP-FREQ-DET-C) ─────────────────────────────────────
+    // Rendered from analysis.Timeline (the embedded audit trail, or a timestamp backfill for a pre-trail policy). Each
+    // entry: colored dot (by type) + title (weight-changed → "Ağırlık {from}→{to}" with band labels) + date + actor.
+    // The derived next-eval entry is faded (future). Falls back to a created/archived stub if analysis is unavailable.
+    const TIMELINE_TONE = {
+        created: 'secondary', published: 'success', deactivated: 'warning',
+        reactivated: 'success', 'weight-changed': 'primary', archived: 'secondary', 'next-eval': 'future'
+    };
+    const bandCodeLabel = code => { const c = norm(code); return c ? (bandLabels[c] || humanize(c)) : ''; };
+    const timelineTitle = e => {
+        const type = norm(e.type);
+        if (type === 'weight-changed') {
+            const arrow = `${bandCodeLabel(e.fromValue)} → ${bandCodeLabel(e.toValue)}`.trim();
+            const base = timelineLabels[type] || t('TlWeightChanged', 'Weight changed');
+            return `${base}: ${arrow}`;
+        }
+        return timelineLabels[type] || humanize(type) || dash();
+    };
+    const renderTimeline = (p, timeline) => {
         const by = who => { const s = norm(who); return s ? ` · ${esc(s.length === 36 ? shortId(s) : s)}` : ''; };
-        const item = (tone, title, when, who) =>
-            `<div class="vfp-dv-tl-item"><span class="vfp-dv-tl-dot vfp-dv-tl-dot--${tone}"></span><span>`
+        const item = (tone, title, when, who, future) =>
+            `<div class="vfp-dv-tl-item${future ? ' vfp-dv-tl-item--future' : ''}"><span class="vfp-dv-tl-dot vfp-dv-tl-dot--${tone}"></span><span>`
             + `<span class="vfp-dv-tl-title">${esc(title)}</span>`
             + `<span class="vfp-dv-tl-detail">${esc(fmtDateTime(when))}${by(who)}</span></span></div>`;
-        const tl = [item('secondary', t('DetailCreated', 'Created'), p.createdAt, p.createdBy)];
-        if (norm(p.updatedAt)) tl.push(item('primary', t('DetailUpdated', 'Updated'), p.updatedAt, p.updatedBy));
-        if (norm(p.archivedAt)) tl.push(item('warning', t('DetailArchived', 'Archived'), p.archivedAt, p.archivedBy));
+
+        const entries = Array.isArray(timeline) ? timeline : null;
+        let tl;
+        if (entries && entries.length) {
+            tl = entries.map(e => item(
+                TIMELINE_TONE[norm(e.type)] || 'primary',
+                timelineTitle(e),
+                e.at,
+                e.by,
+                !!e.isFuture));
+        } else {
+            // Defensive fallback (analysis endpoint unavailable): the same created/archived stubs from the read model.
+            tl = [item('secondary', timelineLabels.created || t('TlCreated', 'Created'), p.createdAt, p.createdBy, false)];
+            if (norm(p.archivedAt)) tl.push(item('secondary', timelineLabels.archived || t('TlArchived', 'Archived'), p.archivedAt, p.archivedBy, false));
+        }
         el('vfpDetTimeline').innerHTML = tl.join('');
     };
 
@@ -279,7 +310,7 @@
             await renderStats(p, impact);
             await renderContext(p);
             renderNotes(p);
-            renderTimeline(p);
+            renderTimeline(p, analysis?.timeline || null);
             renderImpact(impact);
             renderConflicts(analysis?.conflicts || null);
             bindArchive();

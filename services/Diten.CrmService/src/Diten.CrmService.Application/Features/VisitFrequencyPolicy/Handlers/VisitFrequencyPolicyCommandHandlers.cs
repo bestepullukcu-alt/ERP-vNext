@@ -33,6 +33,12 @@ internal static class VisitFrequencyPolicyWrite
     }
 
     public static string? Trim(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>WP-FREQ-DET-C — the stable token stored on a <c>weight-changed</c> event: the suggested band code when
+    /// the authored weight matches one, otherwise the raw integer as a string (an authored non-band weight has no code).
+    /// The UI localizes a band code and falls back to the number.</summary>
+    public static string WeightToken(int priority)
+        => FrequencyPriorityBands.CodeForValue(priority) ?? priority.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 public sealed class CreateVisitFrequencyPolicyHandler : IRequestHandler<CreateVisitFrequencyPolicyCommand, Response<Guid>>
@@ -120,6 +126,24 @@ public sealed class CreateVisitFrequencyPolicyHandler : IRequestHandler<CreateVi
             CreatedBy = _actor.ActorName
         };
 
+        // WP-FREQ-DET-C — additive audit trail (write semantics unchanged): a policy is always born with a `created`
+        // event, and one born directly active also records the `published` transition, both stamped at CreatedAt.
+        policy.Events.Add(new VisitFrequencyPolicyEvent
+        {
+            Type = FrequencyPolicyEventType.Created,
+            At = policy.CreatedAt,
+            By = policy.CreatedBy
+        });
+        if (string.Equals(policy.Status, FrequencyPolicyStatus.Active, StringComparison.Ordinal))
+        {
+            policy.Events.Add(new VisitFrequencyPolicyEvent
+            {
+                Type = FrequencyPolicyEventType.Published,
+                At = policy.CreatedAt,
+                By = policy.CreatedBy
+            });
+        }
+
         await _repository.InsertAsync(policy, cancellationToken);
         return Response<Guid>.Success(policy.Id, 201);
     }
@@ -176,6 +200,11 @@ public sealed class UpdateVisitFrequencyPolicyHandler : IRequestHandler<UpdateVi
             return Response<bool>.Fail(error, 400);
         }
 
+        // WP-FREQ-DET-C — capture the pre-update status/weight BEFORE the assignments below so the additive audit trail
+        // can diff them. This reads existing fields only; it changes no write semantics.
+        var previousStatus = policy.Status;
+        var previousPriority = policy.Priority;
+
         // PolicyCode and TargetType/TargetId are immutable — a new target is a new policy, not an edit of this one.
         policy.PolicyName = request.PolicyName.Trim();
         policy.Description = VisitFrequencyPolicyWrite.Trim(request.Description);
@@ -199,8 +228,60 @@ public sealed class UpdateVisitFrequencyPolicyHandler : IRequestHandler<UpdateVi
         policy.UpdatedAt = DateTimeOffset.UtcNow;
         policy.UpdatedBy = _actor.ActorName;
 
+        // WP-FREQ-DET-C — additive audit trail (write semantics unchanged). Only the status transitions the mockup
+        // DURUM AKIŞI shows and a weight (priority band) change produce events; every other field edit is silent.
+        AppendUpdateEvents(policy, previousStatus, previousPriority);
+
         await _repository.UpdateAsync(policy, cancellationToken);
         return Response<bool>.Success(true);
+    }
+
+    /// <summary>Diffs the pre/post status and weight and appends the matching audit-trail events. Additive only — it
+    /// reads the same values the update already computed and never alters them. Update can never set status=archived
+    /// (guarded above), so no `archived` event is produced here; that is the archive endpoint's job.</summary>
+    private void AppendUpdateEvents(Vfp policy, string previousStatus, int previousPriority)
+    {
+        var now = DateTimeOffset.UtcNow;
+        var actor = _actor.ActorName;
+
+        var before = FrequencyPolicyStatus.Normalize(previousStatus);
+        var after = FrequencyPolicyStatus.Normalize(policy.Status);
+        if (!string.Equals(before, after, StringComparison.Ordinal))
+        {
+            // Only the three transitions the mockup DURUM AKIŞI shows produce an event (draft→active = first publish,
+            // active→inactive = deactivate, inactive→active = reactivate). Any other transition is silent — no fabricated
+            // event type.
+            var statusEvent = (before, after) switch
+            {
+                (FrequencyPolicyStatus.Draft, FrequencyPolicyStatus.Active) => FrequencyPolicyEventType.Published,
+                (FrequencyPolicyStatus.Active, FrequencyPolicyStatus.Inactive) => FrequencyPolicyEventType.Deactivated,
+                (FrequencyPolicyStatus.Inactive, FrequencyPolicyStatus.Active) => FrequencyPolicyEventType.Reactivated,
+                _ => null
+            };
+            if (statusEvent is not null)
+            {
+                policy.Events.Add(new VisitFrequencyPolicyEvent
+                {
+                    Type = statusEvent,
+                    At = now,
+                    By = actor,
+                    FromValue = before,
+                    ToValue = after
+                });
+            }
+        }
+
+        if (previousPriority != policy.Priority)
+        {
+            policy.Events.Add(new VisitFrequencyPolicyEvent
+            {
+                Type = FrequencyPolicyEventType.WeightChanged,
+                At = now,
+                By = actor,
+                FromValue = VisitFrequencyPolicyWrite.WeightToken(previousPriority),
+                ToValue = VisitFrequencyPolicyWrite.WeightToken(policy.Priority)
+            });
+        }
     }
 }
 
@@ -241,6 +322,14 @@ public sealed class ArchiveVisitFrequencyPolicyHandler : IRequestHandler<Archive
         policy.ArchivedBy = _actor.ActorName;
         policy.UpdatedAt = DateTimeOffset.UtcNow;
         policy.UpdatedBy = _actor.ActorName;
+
+        // WP-FREQ-DET-C — additive audit trail (write semantics unchanged): stamp the terminal `archived` event.
+        policy.Events.Add(new VisitFrequencyPolicyEvent
+        {
+            Type = FrequencyPolicyEventType.Archived,
+            At = policy.ArchivedAt.Value,
+            By = policy.ArchivedBy
+        });
 
         await _repository.UpdateAsync(policy, cancellationToken);
         return Response<bool>.Success(true);
