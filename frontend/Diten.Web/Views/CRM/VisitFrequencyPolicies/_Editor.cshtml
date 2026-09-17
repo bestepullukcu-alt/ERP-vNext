@@ -149,25 +149,41 @@
                     <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionIdentity"]</h6>
                     <p class="text-muted small mb-3">@Localizer["EditorHelpIdentity"]</p>
+                    @* WP-FREQ-F5 — Identity fields now use the app field pattern (/Tasks/Create): `form-label fw-medium`
+                       label + `.diten-field` icon wrapper + `.form-control`. Element ids (vfpPolicyCode/vfpPolicyName/
+                       vfpDescription/vfpNotes), the vfp-error/vfp-help divs and #vfpTargetLockNote are PRESERVED — form.js
+                       reads them by id, never by the old vfp-input/vfp-textarea class. *@
                     <div class="vfp-grid">
                         <div>
-                            <label class="vfp-label" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="vfp-req">*</span></label>
-                            <input type="text" class="vfp-input" id="vfpPolicyCode" autocomplete="off">
+                            <label class="form-label fw-medium" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="vfpPolicyCode" autocomplete="off">
+                            </div>
                             <div class="vfp-error" id="vfpPolicyCodeError"></div>
                             <div class="vfp-help vfp-hidden" id="vfpTargetLockNote">@Localizer["TargetLockNote"]</div>
                         </div>
                         <div>
-                            <label class="vfp-label" for="vfpPolicyName">@Localizer["FieldPolicyName"] <span class="vfp-req">*</span></label>
-                            <input type="text" class="vfp-input" id="vfpPolicyName" autocomplete="off">
+                            <label class="form-label fw-medium" for="vfpPolicyName">@Localizer["FieldPolicyName"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
+                                <input type="text" class="form-control" id="vfpPolicyName" autocomplete="off">
+                            </div>
                             <div class="vfp-error" id="vfpPolicyNameError"></div>
                         </div>
                         <div class="vfp-field-full">
-                            <label class="vfp-label" for="vfpDescription">@Localizer["FieldDescription"]</label>
-                            <textarea class="vfp-textarea" id="vfpDescription" rows="2"></textarea>
+                            <label class="form-label fw-medium" for="vfpDescription">@Localizer["FieldDescription"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea class="form-control" id="vfpDescription" rows="2"></textarea>
+                            </div>
                         </div>
                         <div class="vfp-field-full">
-                            <label class="vfp-label" for="vfpNotes">@Localizer["FieldNotes"]</label>
-                            <textarea class="vfp-textarea" id="vfpNotes" rows="2"></textarea>
+                            <label class="form-label fw-medium" for="vfpNotes">@Localizer["FieldNotes"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                                <textarea class="form-control" id="vfpNotes" rows="2"></textarea>
+                            </div>
                             <div class="vfp-help">@Localizer["NotesHelp"]</div>
                             <div class="vfp-error" id="vfpNotesError"></div>
                         </div>

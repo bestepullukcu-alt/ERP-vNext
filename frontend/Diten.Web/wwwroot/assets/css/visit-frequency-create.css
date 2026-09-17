@@ -34,6 +34,18 @@
     font-family: 'Inter', Helvetica, Arial, sans-serif;
 }
 
+/* WP-FREQ-F5 — the blanket Inter rule above matches the LAYOUT containers (`.vfp-editor-page`,
+   `.vfp-editor-layout`, `.vfp-editor-main`, `.vfp-side-sticky`), so the app card chrome — which carries no
+   vfp-* class — INHERITED Inter from them: the 8 section titles (`h6.text-heading`) and the Identity app
+   fields read in Inter instead of the shell font (Public Sans), unlike /Tasks/Create. Resetting the card +
+   card-body back to the shell font puts the chrome (h6 heading, form-label, form-control) on the app font by
+   inheritance, while every vfp-* mockup-content node inside re-asserts Inter via the blanket rule above (a
+   direct class match beats an inherited value at equal specificity). */
+.vfp-create-scope .card,
+.vfp-create-scope .card-body {
+    font-family: var(--bs-body-font-family);
+}
+
 /* a wider offcanvas so the two-column context grid breathes */
 .offcanvas.vfp-offcanvas {
     width: min(560px, 96vw);
