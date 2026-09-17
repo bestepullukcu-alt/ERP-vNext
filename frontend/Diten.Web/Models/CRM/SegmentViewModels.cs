@@ -40,6 +40,12 @@ public sealed class SegmentDetailViewModel
     public string? CreatedBy { get; set; }
     public DateTimeOffset? UpdatedAt { get; set; }
     public string? UpdatedBy { get; set; }
+
+    // WP-SEG-DETAILS6 — additive, nullable display names bound from the gateway response. The timeline shows these when
+    // present and otherwise a date only; the raw *By ids are never rendered.
+    public string? CreatedByName { get; set; }
+    public string? ActivatedByName { get; set; }
+    public string? UpdatedByName { get; set; }
 }
 
 /// <summary>One node of the embedded criteria tree. A flat list plus ParentNodeId, exactly as the runtime stores it.</summary>

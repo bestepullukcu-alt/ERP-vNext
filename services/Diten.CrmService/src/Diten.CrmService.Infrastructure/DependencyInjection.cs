@@ -131,6 +131,15 @@ public static class DependencyInjection
             Application.Features.RouteOptimization.IRouteOptimizationDefaultsProvider,
             RouteOptimization.ConfigurationRouteOptimizationDefaultsProvider>();
 
+        // WP-SEG-DETAILS6 — S2S display-name reader onto AuthService's internal/users/display-names endpoint. It resolves
+        // the segment timeline's CreatedBy/ActivatedBy/UpdatedBy provenance ids to display names in ONE bulk call, using
+        // the shared internal API key (a direct call: the internal endpoints are NOT behind the Gateway JWT surface).
+        // Fail-closed — an unconfigured/unreachable AuthService leaves the names absent and the read still succeeds.
+        services.Configure<Auth.AuthServiceOptions>(configuration.GetSection(Auth.AuthServiceOptions.SectionName));
+        services.AddHttpClient<
+            Application.Common.IUserDisplayNameResolver,
+            Auth.AuthUserDisplayNameClient>();
+
         services.AddHttpClient<IReferenceDataValidator, GatewayReferenceDataValidator>();
         // MOD-0150 FU04 — the same Gateway validator also reads per-value attributes (relationship-type metadata).
         services.AddScoped<Application.Common.ReferenceValidation.IReferenceMetadataReader>(

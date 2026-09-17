@@ -18,10 +18,19 @@ public sealed class SegmentAggregateTests
 {
     private readonly FakeSegmentRepository _segments = new();
     private readonly FakeProductReferenceValidator _references = new();
+    private readonly FakeUserDisplayNameResolver _displayNames = new();
 
     private CreateSegmentHandler Create(Guid tenant = default) => new(
         SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
         new NullActorContext(), _segments, _references);
+
+    private CreateSegmentHandler CreateAs(IActorContext actor, Guid tenant = default) => new(
+        SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
+        actor, _segments, _references);
+
+    private GetSegmentByIdHandler GetById(Guid tenant = default) => new(
+        SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
+        _segments, _displayNames);
 
     private UpdateSegmentHandler Update() => new(
         SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantA), new NullActorContext(), _segments, _references);
@@ -223,7 +232,7 @@ public sealed class SegmentAggregateTests
         var created = await Create().Handle(NewSegment(), default);
 
         var get = await new GetSegmentByIdHandler(
-                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments)
+                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments, _displayNames)
             .Handle(new GetSegmentByIdQuery(created.Data), default);
         Assert.Equal(404, get.StatusCode);
 
@@ -231,6 +240,56 @@ public sealed class SegmentAggregateTests
                 SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments)
             .Handle(new ListSegmentsQuery(null, null, null, null, null, null, true), default);
         Assert.Empty(list.Data!.Items);
+    }
+
+    [Fact]
+    public async Task Detail_resolves_the_provenance_actor_to_a_display_name_in_one_bulk_call()
+    {
+        // WP-SEG-DETAILS6: CreatedBy carries the actor's `sub` (a user id). The detail read resolves it to a display
+        // name via a SINGLE bulk call, and the raw *By id is preserved alongside the additive *ByName.
+        var actorId = Guid.NewGuid();
+        _displayNames.Names[actorId] = "S. Aydın";
+
+        var created = await CreateAs(new FixedActorContext(actorId.ToString())).Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Equal(actorId.ToString(), get.Data!.CreatedBy);
+        Assert.Equal("S. Aydın", get.Data.CreatedByName);
+        // One bulk call, asking only for the distinct provenance ids (never one call per field).
+        Assert.Equal(1, _displayNames.Calls);
+        Assert.Contains(actorId, _displayNames.LastRequestedIds);
+        Assert.Equal(_displayNames.LastRequestedIds.Count, _displayNames.LastRequestedIds.Distinct().Count());
+    }
+
+    [Fact]
+    public async Task Detail_is_fail_closed_when_a_provenance_actor_cannot_be_resolved()
+    {
+        // The resolver holds no name (AuthService unreachable / unknown id): the name stays null so the UI shows a date
+        // only, and the raw id is never lost.
+        var actorId = Guid.NewGuid();
+
+        var created = await CreateAs(new FixedActorContext(actorId.ToString())).Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Equal(actorId.ToString(), get.Data!.CreatedBy);
+        Assert.Null(get.Data.CreatedByName);
+    }
+
+    [Fact]
+    public async Task Detail_makes_no_resolver_call_when_there_is_no_provenance_actor()
+    {
+        // NullActorContext leaves CreatedBy null: there is nothing to resolve, so no network call is made at all.
+        var created = await Create().Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Null(get.Data!.CreatedByName);
+        Assert.Equal(0, _displayNames.Calls);
     }
 
     [Fact]

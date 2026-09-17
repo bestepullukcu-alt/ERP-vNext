@@ -352,7 +352,9 @@
                                 </span>
                                 <span class="segd-tl-body">
                                     <span class="segd-tl-title">@Localizer["TimelineCreated"]</span>
-                                    <span class="segd-tl-detail">@segment.CreatedAt.ToString("yyyy-MM-dd HH:mm")@(string.IsNullOrWhiteSpace(segment.CreatedBy) ? "" : " · " + segment.CreatedBy)</span>
+                                    @* WP-SEG-DETAILS6: show the resolved display name when present; otherwise the date
+                                       alone — the raw user id (GUID) is never rendered. *@
+                                    <span class="segd-tl-detail">@segment.CreatedAt.ToString("yyyy-MM-dd HH:mm")@(string.IsNullOrWhiteSpace(segment.CreatedByName) ? "" : " · " + segment.CreatedByName)</span>
                                 </span>
                             </div>
                             <div class="segd-tl-item">
@@ -365,7 +367,8 @@
                                     <span class="segd-tl-detail">
                                         @if (segment.ActivatedAt.HasValue)
                                         {
-                                            @(segment.ActivatedAt.Value.ToString("yyyy-MM-dd HH:mm"))@(string.IsNullOrWhiteSpace(segment.ActivatedBy) ? "" : " · " + segment.ActivatedBy)
+                                            @* WP-SEG-DETAILS6: display name when resolved, otherwise date only (no GUID). *@
+                                            @(segment.ActivatedAt.Value.ToString("yyyy-MM-dd HH:mm"))@(string.IsNullOrWhiteSpace(segment.ActivatedByName) ? "" : " · " + segment.ActivatedByName)
                                         }
                                         else
                                         {
@@ -383,7 +386,8 @@
                                     </span>
                                     <span class="segd-tl-body">
                                         <span class="segd-tl-title">@Localizer["UpdatedAt"]</span>
-                                        <span class="segd-tl-detail">@segment.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")@(string.IsNullOrWhiteSpace(segment.UpdatedBy) ? "" : " · " + segment.UpdatedBy)</span>
+                                        @* WP-SEG-DETAILS6: display name when resolved, otherwise date only (no GUID). *@
+                                        <span class="segd-tl-detail">@segment.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")@(string.IsNullOrWhiteSpace(segment.UpdatedByName) ? "" : " · " + segment.UpdatedByName)</span>
                                     </span>
                                 </div>
                             }

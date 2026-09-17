@@ -65,7 +65,14 @@ public sealed record SegmentDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SEG-DETAILS6 — ADDITIVE, nullable display names for the timeline. The raw *By ids (the user's `sub`) stay
+    // exactly as they were; these are the resolved labels the reader fills in via ONE bulk AuthService call, and each
+    // is null when the id could not be resolved (fail-closed) so the UI shows a date without a fabricated name.
+    // Appended LAST with null defaults so the mapper's positional projection is unchanged.
+    string? CreatedByName = null,
+    string? ActivatedByName = null,
+    string? UpdatedByName = null);
 
 /// <summary>One node of the embedded criteria tree as it is read back. Flat list plus ParentNodeId (D2).</summary>
 public sealed record SegmentCriteriaNodeDto(
