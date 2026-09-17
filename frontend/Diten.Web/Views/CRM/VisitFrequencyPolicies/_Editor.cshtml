@@ -145,9 +145,10 @@
             <div class="vfp-editor-main">
 
                 @* 01 — Identity (code / name / description / internal notes) *@
-                <section class="vfp-section">
-                    <div class="vfp-section-head"><span class="vfp-section-no">01</span><span class="vfp-section-title">@Localizer["EditorSectionIdentity"]</span></div>
-                    <p class="vfp-section-help">@Localizer["EditorHelpIdentity"]</p>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionIdentity"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpIdentity"]</p>
                     <div class="vfp-grid">
                         <div>
                             <label class="vfp-label" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="vfp-req">*</span></label>
@@ -171,16 +172,14 @@
                             <div class="vfp-error" id="vfpNotesError"></div>
                         </div>
                     </div>
+                    </div>
                 </section>
 
                 @* 02 — Target (who it applies to) + collapsible "where does it apply?" scope *@
-                <section class="vfp-section">
-                    <div class="vfp-section-head">
-                        <span class="vfp-section-no">02</span>
-                        <span class="vfp-section-title">@Localizer["EditorSectionTarget"]</span>
-                        <span class="vfp-section-aside">@Localizer["TargetListsNote"]</span>
-                    </div>
-                    <p class="vfp-section-help">@Localizer["EditorHelpTarget"]</p>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-target-lock dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionTarget"]<span class="vfp-section-aside">@Localizer["TargetListsNote"]</span></h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpTarget"]</p>
                     <label class="vfp-label">@Localizer["FieldTargetType"] <span class="vfp-req">*</span></label>
                     <div class="vfp-chipgrid" id="vfpTargetTypeCards"></div>
                     <label class="vfp-label mt-3" for="vfpTargetPicker">@Localizer["FieldTarget"] <span class="vfp-req">*</span></label>
@@ -255,12 +254,14 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </section>
 
                 @* 03 — Frequency (the actual value) *@
-                <section class="vfp-section">
-                    <div class="vfp-section-head"><span class="vfp-section-no">03</span><span class="vfp-section-title">@Localizer["EditorSectionFrequency"]</span></div>
-                    <p class="vfp-section-help">@Localizer["EditorHelpFrequency"]</p>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-repeat dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionFrequency"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpFrequency"]</p>
                     <div class="vfp-grid vfp-grid-3">
                         <div>
                             <label class="vfp-label" for="vfpFrequencyType">@Localizer["FieldFrequencyType"] <span class="vfp-req">*</span></label>
@@ -285,12 +286,14 @@
                             <div class="vfp-reads-as-raw" id="vfpFreqRaw"></div>
                         </div>
                     </div>
+                    </div>
                 </section>
 
                 @* 04 — Effective window *@
-                <section class="vfp-section">
-                    <div class="vfp-section-head"><span class="vfp-section-no">04</span><span class="vfp-section-title">@Localizer["EditorSectionEffective"]</span></div>
-                    <p class="vfp-section-help">@Localizer["EditorHelpEffective"]</p>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionEffective"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["EditorHelpEffective"]</p>
                     <div class="vfp-grid">
                         <div>
                             <label class="vfp-label" for="vfpEffectiveFrom">@Localizer["FieldEffectiveFrom"] <span class="vfp-req">*</span></label>
@@ -303,12 +306,14 @@
                     </div>
                     <div class="vfp-error" id="vfpEffectiveError"></div>
                     <div class="vfp-inline-note vfp-inline-note--muted">@Localizer["EffectiveNote"]</div>
+                    </div>
                 </section>
 
                 @* 05 — Conflict priority (contract bands + source) *@
-                <section class="vfp-section">
-                    <div class="vfp-section-head"><span class="vfp-section-no">05</span><span class="vfp-section-title">@Localizer["EditorSectionConflict"]</span></div>
-                    <p class="vfp-section-help">@Localizer["ConflictIntro"]</p>
+                <section class="card mb-4">
+                    <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionConflict"]</h6>
+                    <p class="text-muted small mb-3">@Localizer["ConflictIntro"]</p>
                     <label class="vfp-label">@Localizer["ConflictWeightLabel"] <span class="vfp-req">*</span></label>
                     <div class="vfp-cardgrid" id="vfpBandCards"></div>
                     <div class="vfp-error" id="vfpPriorityError"></div>
@@ -318,6 +323,7 @@
                         <div class="vfp-error" id="vfpSourceError"></div>
                         <div class="vfp-inline-note" id="vfpSourceNote">@Localizer["SourceNote"]</div>
                     </div>
+                    </div>
                 </section>
             </div>
 
@@ -325,8 +331,9 @@
             <aside class="vfp-editor-side">
                 <div class="vfp-side-sticky">
                     @* Lifecycle status selector *@
-                    <div class="vfp-side-card">
-                        <div class="vfp-side-title">@Localizer["LifecycleTitle"]</div>
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-been-here dt-card-icon" aria-hidden="true"></i>@Localizer["LifecycleTitle"]</h6>
                         <div class="vfp-lifecycle" id="vfpLifecycle">
                             <label class="vfp-life-row" data-status="draft">
                                 <input type="radio" name="vfpLifecycle" value="draft">
@@ -351,11 +358,13 @@
                         </div>
                         <div class="vfp-life-note">@Localizer["LifecycleNote"]</div>
                         <input type="hidden" id="vfpStatus" value="draft">
-                    </div>
+                        </div>
+                    </section>
 
                     @* Live "what will this policy do" summary *@
-                    <div class="vfp-side-card">
-                        <div class="vfp-side-title">@Localizer["SummaryTitle"]</div>
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["SummaryTitle"]</h6>
                         <p class="vfp-summary-sentence" id="vfpSummarySentence"></p>
                         <dl class="vfp-summary-kv">
                             <dt>@Localizer["Target"]</dt><dd id="vfpSumTarget">—</dd>
@@ -365,16 +374,16 @@
                             <dt>@Localizer["Weight"]</dt><dd id="vfpSumWeight">—</dd>
                             <dt>@Localizer["SummaryOnSaveLabel"]</dt><dd id="vfpSumStatus">—</dd>
                         </dl>
-                    </div>
+                        </div>
+                    </section>
 
                     @* Before-you-save checklist *@
-                    <div class="vfp-side-card">
-                        <div class="vfp-side-title vfp-side-title--row">
-                            <span>@Localizer["ChecklistTitle"]</span>
-                            <span class="vfp-check-badge" id="vfpCheckBadge"></span>
-                        </div>
+                    <section class="card mb-4">
+                        <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-check-shield dt-card-icon" aria-hidden="true"></i>@Localizer["ChecklistTitle"]<span class="vfp-check-badge ms-auto" id="vfpCheckBadge"></span></h6>
                         <ul class="vfp-checklist" id="vfpChecklist"></ul>
-                    </div>
+                        </div>
+                    </section>
 
                     @* Footer actions *@
                     <div class="vfp-editor-footer">
