@@ -317,7 +317,9 @@
     padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
 }
 
-/* "Hangi kayıt" dashed box — empty shows the app select; picked shows the chip (select hidden via .vfp-hidden). */
+/* "Hangi kayıt" dashed box — empty shows the app select; picked shows the chip (select hidden via .vfp-hidden).
+   WP-FREQ-F9 — the fill is now the body background (was --bs-tertiary-bg) so the box reads as part of the form
+   surface rather than a sunken panel. */
 .vfp-create-scope .vfp-picked-box {
     margin-top: 8px;
     display: flex;
@@ -326,7 +328,7 @@
     padding: 16px;
     border: 1px dashed var(--bs-border-color);
     border-radius: 6px;
-    background: var(--bs-tertiary-bg);
+    background: var(--bs-body-bg);
 }
 .vfp-create-scope .vfp-picked-box-head {
     display: flex;

@@ -41,6 +41,47 @@
     const t = (key, fallback) => L[key] || fallback || key;
     const statusLabel = s => statusLabels[norm(s)] || humanize(s) || '—';
 
+    // ── select2 (search) enhancement — the app-wide pattern (jQuery select2, dropdownParent, native-change bridge) ────
+    // WP-FREQ-F9. select2 + jQuery are loaded app-wide by the tenant shell layout. This is PRESENTATION + SEARCH ONLY:
+    // the underlying <select> keeps its id, data-role, value and selectedOptions, so buildPayload / currentTargetId /
+    // cascade / validation read it byte-for-byte as before. select2 announces a choice the jQuery way ($(el).trigger
+    // ('change')), which native addEventListener never hears — so a bridge re-dispatches a native BUBBLING change,
+    // keeping BOTH the FORM-delegated change listener and the target picker's own change listener alive. Because select2
+    // renders from a SNAPSHOT of the options, any re-fill (cascade model→node, brand→product, mode reset) must destroy +
+    // re-init; a value-only change just tells select2 to re-read via the `change.select2` namespace.
+    const jq = () => window.jQuery;
+    const hasSelect2 = () => { const $ = jq(); return !!($ && $.fn && $.fn.select2); };
+    const bindSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) return; // already bound
+        if (!(select.parentElement && select.parentElement.classList.contains('vfp-s2-wrap'))) {
+            $s.wrap('<div class="vfp-s2-wrap position-relative"></div>');
+        }
+        $s.select2({ dropdownParent: $s.parent() });
+        // Bridge: carry select2's jQuery-synthesised change across to a native bubbling change (namespaced so a
+        // `change.select2` re-read never triggers it). A real DOM change already reached the native listeners, and
+        // jQuery marks it with `originalEvent` — that guard stops the bridge echoing its own dispatch.
+        $s.off('change.vfpBridge').on('change.vfpBridge', ev => {
+            if (ev && ev.originalEvent) return;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
+    const unbindSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) { $s.off('change.vfpBridge'); $s.select2('destroy'); }
+    };
+    // destroy + re-init after the options (or the disabled state) were rebuilt — select2 snapshots them at init.
+    const rebindSelect2 = select => { unbindSelect2(select); bindSelect2(select); };
+    // value-only sync (no re-fill): tell select2 to re-read the underlying value WITHOUT firing the change bridge.
+    const syncSelect2 = select => {
+        const $ = jq();
+        if (select && hasSelect2() && $(select).hasClass('select2-hidden-accessible')) $(select).trigger('change.select2');
+    };
+
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
         if (!response.ok) throw Object.assign(new Error((body.errors || [t('ErrorState', 'Error')]).join(' · ')), { status: response.status });
@@ -228,11 +269,15 @@
             // WP-FREQ-F7 — app field pattern (diten-field icon + form-select), matching /Tasks/Create. The two select
             // ids and data-role="targetId" (form.js's payload source) are unchanged.
             host.innerHTML = `
-                <div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpTargetTerModel"><option value="">${esc(t('SelectTerritoryModel', 'Select model'))}</option></select></div>
-                <div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select></div>`;
+                <div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpTargetTerModel"><option value="">${esc(t('SelectTerritoryModel', 'Select model'))}</option></select></div>
+                <div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select></div>`;
             const models = await loadOptions('territory-model');
             fillSelect(el('vfpTargetTerModel'), models, t('SelectTerritoryModel', 'Select model'));
             if (seedId) seedSelect(el('vfpTargetTerNode'), seedId, seedName);
+            // WP-FREQ-F9 — search-enable both target selects AFTER options + seed are in place (cascade model→node
+            // re-inits the node select in cascadeNodes). data-role="targetId" stays on the underlying <select>.
+            bindSelect2(el('vfpTargetTerModel'));
+            bindSelect2(el('vfpTargetTerNode'));
             return;
         }
 
@@ -242,7 +287,7 @@
             return;
         }
 
-        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select" data-role="targetId"><option value="">${esc(t('SelectOption', '—'))}</option></select></div>`;
+        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select select2" data-role="targetId"><option value="">${esc(t('SelectOption', '—'))}</option></select></div>`;
         const control = host.querySelector('[data-role="targetId"]');
         const options = await loadOptions(kind);
         fillSelect(control, options, t('SelectOption', '—'));
@@ -252,6 +297,9 @@
             showPicked(picked, opt && opt.value ? opt.text : '');
             updatePanel();
         });
+        // WP-FREQ-F9 — search-enable AFTER options + seed + the native change listener; select2's choice reaches that
+        // listener through the native-change bridge, so showPicked/updatePanel fire exactly as before.
+        bindSelect2(control);
         const cur = control.selectedOptions[0];
         showPicked(picked, cur && cur.value ? cur.text : '');
     };
@@ -327,6 +375,7 @@
             fillSelect(select, options, t(c.ph, t('ContextNone', '— none —')));
             const seed = seeds[c.id];
             if (seed) seedSelect(select, seed, seeds[`${c.id}_name`]);
+            rebindSelect2(select); // WP-FREQ-F9 — search-enable after options + seed
         }
         // territory-node context = cascade model → node
         const modelSel = el('vfpTerritoryModel');
@@ -334,8 +383,10 @@
         if (modelSel) {
             const models = await loadOptions('territory-model');
             fillSelect(modelSel, models, t('SelectTerritoryModel', 'Select model'));
+            rebindSelect2(modelSel); // WP-FREQ-F9
         }
         if (nodeSel && seeds.vfpTerritoryNode) seedSelect(nodeSel, seeds.vfpTerritoryNode, seeds.vfpTerritoryNode_name);
+        if (nodeSel) rebindSelect2(nodeSel); // WP-FREQ-F9 — enhance the node select (may hold only its seed/placeholder)
         applyBrandProductNarrowing();
     };
     const cascadeNodes = async (modelSel, nodeSel) => {
@@ -343,6 +394,7 @@
         const modelId = norm(modelSel.value);
         const options = modelId ? await loadOptions('territory-node', modelId) : [];
         fillSelect(nodeSel, options, t('SelectTerritoryNode', 'Select node'));
+        rebindSelect2(nodeSel); // WP-FREQ-F9 — node options were re-filled; select2 must re-snapshot them
     };
     const onContextTerritoryModelChange = () => cascadeNodes(el('vfpTerritoryModel'), el('vfpTerritoryNode'));
 
@@ -356,6 +408,8 @@
         product.disabled = !hasBrand;
         if (!hasBrand) { product.value = ''; }
         if (hint) hint.classList.toggle('vfp-hidden', hasBrand);
+        // WP-FREQ-F9 — select2 snapshots the disabled state + value at init, so re-bind to reflect the toggle/clear.
+        rebindSelect2(product);
     };
 
     // ── collapsible scope block (chip summary + clear) ─────────────────────────
@@ -388,9 +442,9 @@
         if (clear) clear.classList.toggle('vfp-hidden', picked.length === 0);
     };
     const clearScope = () => {
-        SCOPE_FIELDS.forEach(f => { const s = el(f.id); if (s) s.value = ''; });
-        const model = el('vfpTerritoryModel'); if (model) model.value = '';
-        applyBrandProductNarrowing();
+        SCOPE_FIELDS.forEach(f => { const s = el(f.id); if (s) { s.value = ''; syncSelect2(s); } });
+        const model = el('vfpTerritoryModel'); if (model) { model.value = ''; syncSelect2(model); }
+        applyBrandProductNarrowing(); // re-binds product (disabled + cleared)
         renderScopeChips();
         updatePanel();
     };
@@ -648,6 +702,8 @@
         el('vfpTargetLockNote')?.classList.toggle('vfp-hidden', !ro);
         FORM.querySelectorAll('input[name="vfpTargetType"]').forEach(i => { i.disabled = ro; });
         el('vfpTargetPicker')?.querySelectorAll('select,input').forEach(i => { i.disabled = ro; });
+        // WP-FREQ-F9 — select2 snapshots disabled at init, so re-bind the target selects to reflect the lock (edit mode).
+        el('vfpTargetPicker')?.querySelectorAll('select').forEach(rebindSelect2);
         // WP-FREQ-F7 — the picked chip's "Değiştir…" must also lock when the target is immutable (edit mode).
         el('vfpTargetPicked')?.querySelectorAll('button').forEach(i => { i.disabled = ro; });
     };
@@ -724,6 +780,8 @@
         if (!(currentMode === 'edit' && loadedStatus === 'archived')) return;
         el('vfpArchivedNote')?.classList.remove('vfp-hidden');
         FORM.querySelectorAll('input, select, textarea, button').forEach(c => { c.disabled = true; });
+        // WP-FREQ-F9 — re-bind the search selects so their select2 boxes render the disabled (read-only) state too.
+        FORM.querySelectorAll('select.select2').forEach(rebindSelect2);
         el('vfpSaveActivate')?.classList.add('vfp-hidden');
         el('vfpSaveDraft')?.classList.add('vfp-hidden');
         el('vfpSaveInactive')?.classList.add('vfp-hidden');
