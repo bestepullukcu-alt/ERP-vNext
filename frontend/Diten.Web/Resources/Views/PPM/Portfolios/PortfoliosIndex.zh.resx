@@ -23,4 +23,20 @@
   <data name="LifecycleActive" xml:space="preserve"><value>活动中</value></data>
   <data name="LifecycleArchived" xml:space="preserve"><value>已归档</value></data>
   <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>要归档此项目组合吗？归档后将不允许建立新引用。</value></data>
+  <data name="CapacityAllocationDescription" xml:space="preserve"><value>容量分配说明</value></data>
+  <data name="Owner" xml:space="preserve"><value>负责人</value></data>
+  <data name="AssignOwner" xml:space="preserve"><value>指定负责人</value></data>
+  <data name="TransferOwner" xml:space="preserve"><value>移交责任</value></data>
+  <data name="AssignmentReason" xml:space="preserve"><value>分配理由</value></data>
+  <data name="OwnerRequired" xml:space="preserve"><value>请选择符合条件的用户。</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>请输入理由。</value></data>
+  <data name="NoOwner" xml:space="preserve"><value>尚未指定负责人</value></data>
+  <data name="AccessUnavailable" xml:space="preserve"><value>无法验证访问权限。请联系授权支持团队。</value></data>
+  <data name="DraftDeliveryScope" xml:space="preserve"><value>草稿信息和负责人分配。现有的有效或已归档记录为只读；生命周期操作和删除功能不可用。</value></data>
+  <data name="InvalidInput" xml:space="preserve"><value>请检查必填字段和长度限制。</value></data>
+  <data name="SessionRequired" xml:space="preserve"><value>请重新登录后继续。</value></data>
+  <data name="OperationDenied" xml:space="preserve"><value>您无权执行此操作。</value></data>
+  <data name="RecordUnavailable" xml:space="preserve"><value>记录不可用或已无法访问。</value></data>
+  <data name="VersionConflict" xml:space="preserve"><value>记录已更改。请关闭并重新打开表单后重试。</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>所需服务不可用。请稍后重试。</value></data>
 </root>

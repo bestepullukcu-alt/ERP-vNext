@@ -14,10 +14,12 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Diten.PpmService.Api\Diten.PpmService.Api.csproj" />
+    <ProjectReference Include="..\..\src\Diten.PpmService.Api\Diten.PpmService.Api.csproj" Aliases="PpmApi" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Application\Diten.PpmService.Application.csproj" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Infrastructure\Diten.PpmService.Infrastructure.csproj" />
     <ProjectReference Include="..\..\src\Diten.PpmService.Persistence\Diten.PpmService.Persistence.csproj" />
     <ProjectReference Include="..\..\..\Diten.Building.Blocks\src\Diten.BuildingBlocks.Eventing\Diten.BuildingBlocks.Eventing.csproj" />
+    <!-- Build the Auth host separately; no Auth test/initializer assembly enters the PPM process. -->
+    <ProjectReference Include="..\..\..\Diten.AuthService\tests\Diten.AuthService.AccountKindAcceptanceHost\Diten.AuthService.AccountKindAcceptanceHost.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

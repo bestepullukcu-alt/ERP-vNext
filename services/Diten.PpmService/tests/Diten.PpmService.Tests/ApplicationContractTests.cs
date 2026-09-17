@@ -232,6 +232,7 @@ public sealed class ApplicationContractTests
             "ppm.benefit-commitments.create",
             "ppm.benefit-commitments.read",
             "ppm.benefit-commitments.update",
+            "ppm.portfolios.assign-owner",
             "ppm.portfolios.change-lifecycle",
             "ppm.portfolios.create",
             "ppm.portfolios.read",
@@ -294,7 +295,7 @@ public sealed class ApplicationContractTests
     }
 
     [Fact]
-    public async Task Mutation_and_audit_are_one_unit_and_roll_back_when_audit_fails()
+    public async Task Missing_record_authority_prevents_mutation_before_audit_or_transaction()
     {
         var repository = new PortfolioRepository();
         var unit = new UnitOfWork();
@@ -305,15 +306,15 @@ public sealed class ApplicationContractTests
             new FixedCorrelation(),
             new PermissionEvaluator(true));
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            service.Create(new("P-1", "Portfolio", null, null), default));
+        var result = await service.Create(new("P-1", "Portfolio", null, null), default);
 
-        Assert.True(unit.RolledBack);
+        Assert.Equal(503, result.StatusCode);
+        Assert.False(unit.RolledBack);
         Assert.Empty(repository.Items);
     }
 
     [Fact]
-    public async Task Optimistic_concurrency_mismatch_is_rejected()
+    public async Task Missing_record_authority_precedes_version_validation()
     {
         var tenant = Guid.NewGuid();
         var actor = Guid.NewGuid();
@@ -326,8 +327,9 @@ public sealed class ApplicationContractTests
             new FixedCorrelation(),
             new PermissionEvaluator(true));
 
-        await Assert.ThrowsAsync<OptimisticConcurrencyException>(() =>
-            service.Update(new(entity.Id, "P-1", "Changed", null, null, 99), default));
+        var result = await service.Update(new(entity.Id, "P-1", "Changed", null, null, 99), default);
+        Assert.Equal(503, result.StatusCode);
+        Assert.Equal(1, entity.Version);
     }
 
     [Fact]

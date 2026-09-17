@@ -5,6 +5,8 @@ namespace Diten.PpmService.Application.Common;
 
 public static class PpmPermissions
 {
+    // Consumer requirement only; catalog publication and grants remain CT-owned.
+    public const string PortfoliosAssignOwner = "ppm.portfolios.assign-owner";
     public const string PortfoliosRead = "ppm.portfolios.read";
     public const string PortfoliosCreate = "ppm.portfolios.create";
     public const string PortfoliosUpdate = "ppm.portfolios.update";

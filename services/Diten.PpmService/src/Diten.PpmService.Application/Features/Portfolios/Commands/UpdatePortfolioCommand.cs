@@ -5,4 +5,4 @@ using MediatR;
 
 namespace Diten.PpmService.Application.Features.Portfolios;
 
-public sealed record UpdatePortfolioCommand(Guid Id, string Code, string Name, string? Description, string? VisibilityPolicyKey, int ExpectedVersion) : IRequest<Response<PortfolioDto>>;
+public sealed record UpdatePortfolioCommand(Guid Id, string Code, string Name, string? Description, string? VisibilityPolicyKey, int ExpectedVersion, string? CapacityAllocationDescription = null) : IRequest<Response<PortfolioDto>>;

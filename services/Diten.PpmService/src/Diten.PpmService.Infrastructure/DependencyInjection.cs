@@ -13,11 +13,14 @@ using Diten.PpmService.Application.Features.InvestmentCases.GateI.FundingScenari
 using Diten.Platform.Common.Authorization;
 using Diten.PpmService.Application.GateI;
 using Diten.PpmService.Application.Features.Initiatives;
+using Diten.PpmService.Application.Features.Portfolios;
 using Diten.PpmService.Infrastructure.Initiatives;
+using Diten.PpmService.Infrastructure.Portfolios;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Diten.PpmService.Infrastructure;
@@ -41,6 +44,30 @@ public static class DependencyInjection
         services.AddSingleton<IPermissionClaimEvaluator, SignedJwtPermissionClaimEvaluator>();
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
         services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
+        var portfolioAuthorityOptions = services.AddOptions<PortfolioAuthorityOptions>();
+        if (configuration is not null)
+        {
+            portfolioAuthorityOptions.Bind(configuration.GetSection(PortfolioAuthorityOptions.SectionName));
+        }
+        services.AddHttpClient<PortfolioAuthorityClient>();
+        services.AddScoped<IPortfolioOwnerActionAuthority>(provider => provider.GetRequiredService<PortfolioAuthorityClient>());
+        var temporaryPortfolioAccessOptions = services.AddOptions<PortfolioTemporaryNonProductionAccessOptions>();
+        if (configuration is not null)
+        {
+            temporaryPortfolioAccessOptions.Bind(configuration.GetSection(PortfolioTemporaryNonProductionAccessOptions.SectionName));
+        }
+        services.AddScoped<IPortfolioRecordAccessAuthority>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<PortfolioTemporaryNonProductionAccessOptions>>().Value;
+            var environmentName = provider.GetService<IHostEnvironment>()?.EnvironmentName;
+            var environment = string.Equals(environmentName, "Production", StringComparison.OrdinalIgnoreCase)
+                ? PortfolioTemporaryNonProductionAccessEnvironment.Production
+                : !string.IsNullOrWhiteSpace(options.NonProductionEnvironmentName) &&
+                  string.Equals(environmentName, options.NonProductionEnvironmentName, StringComparison.Ordinal)
+                    ? PortfolioTemporaryNonProductionAccessEnvironment.NonProduction
+                    : PortfolioTemporaryNonProductionAccessEnvironment.Unknown;
+            return new PortfolioTemporaryNonProductionRecordAccessAuthority(options.Enabled, environment);
+        });
         services.AddSingleton<GateICompositionGate>();
         services.AddSingleton<IGateIDecisionTraceLifecyclePolicy>(provider =>
             provider.GetRequiredService<GateICompositionGate>());

@@ -149,7 +149,9 @@ public sealed class PpmEntitlementAuthorizationTests
             new TenantContext(TenantId),
             new ActorContext(Guid.NewGuid()),
             correlation,
-            authorizer);
+            authorizer,
+            recordAuthority: new PortfolioTemporaryNonProductionRecordAccessAuthority(
+                enabled: true, PortfolioTemporaryNonProductionAccessEnvironment.NonProduction));
 
         var response = await service.Create(
             new("P-CORR", "Correlation", null, null),

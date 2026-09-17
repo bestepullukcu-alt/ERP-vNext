@@ -23,4 +23,20 @@
   <data name="LifecycleActive" xml:space="preserve"><value>Activo</value></data>
   <data name="LifecycleArchived" xml:space="preserve"><value>Archivado</value></data>
   <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>¿Archivar esta cartera? Ya no se permitirán nuevas referencias.</value></data>
+  <data name="CapacityAllocationDescription" xml:space="preserve"><value>Descripción de la asignación de capacidad</value></data>
+  <data name="Owner" xml:space="preserve"><value>Responsable</value></data>
+  <data name="AssignOwner" xml:space="preserve"><value>Asignar responsable</value></data>
+  <data name="TransferOwner" xml:space="preserve"><value>Transferir responsabilidad</value></data>
+  <data name="AssignmentReason" xml:space="preserve"><value>Motivo de la asignación</value></data>
+  <data name="OwnerRequired" xml:space="preserve"><value>Seleccione un usuario apto.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Introduzca un motivo.</value></data>
+  <data name="NoOwner" xml:space="preserve"><value>Sin responsable asignado</value></data>
+  <data name="AccessUnavailable" xml:space="preserve"><value>No se pudo verificar el acceso. Contacte con su equipo de soporte autorizado.</value></data>
+  <data name="DraftDeliveryScope" xml:space="preserve"><value>Datos del borrador y asignación del responsable. Los registros activos o archivados son de solo lectura; el ciclo de vida y la eliminación no están disponibles.</value></data>
+  <data name="InvalidInput" xml:space="preserve"><value>Compruebe los campos obligatorios y los límites de longitud.</value></data>
+  <data name="SessionRequired" xml:space="preserve"><value>Inicie sesión de nuevo para continuar.</value></data>
+  <data name="OperationDenied" xml:space="preserve"><value>No tiene autorización para esta operación.</value></data>
+  <data name="RecordUnavailable" xml:space="preserve"><value>El registro no está disponible o ya no es accesible.</value></data>
+  <data name="VersionConflict" xml:space="preserve"><value>El registro ha cambiado. Cierre y vuelva a abrir el formulario antes de reintentar.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>El servicio necesario no está disponible. Inténtelo más tarde.</value></data>
 </root>

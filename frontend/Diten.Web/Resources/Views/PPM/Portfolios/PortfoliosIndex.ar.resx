@@ -23,4 +23,20 @@
   <data name="LifecycleActive" xml:space="preserve"><value>نشط</value></data>
   <data name="LifecycleArchived" xml:space="preserve"><value>مؤرشف</value></data>
   <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>هل تريد أرشفة هذه المحفظة؟ لن يُسمح بإسنادات جديدة بعدها.</value></data>
+  <data name="CapacityAllocationDescription" xml:space="preserve"><value>وصف تخصيص السعة</value></data>
+  <data name="Owner" xml:space="preserve"><value>المسؤول</value></data>
+  <data name="AssignOwner" xml:space="preserve"><value>تعيين المسؤول</value></data>
+  <data name="TransferOwner" xml:space="preserve"><value>نقل المسؤولية</value></data>
+  <data name="AssignmentReason" xml:space="preserve"><value>سبب التعيين</value></data>
+  <data name="OwnerRequired" xml:space="preserve"><value>اختر مستخدمًا مؤهلاً.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>أدخل سببًا.</value></data>
+  <data name="NoOwner" xml:space="preserve"><value>لم يتم تعيين مسؤول</value></data>
+  <data name="AccessUnavailable" xml:space="preserve"><value>تعذر التحقق من الوصول. تواصل مع فريق الدعم المخوّل.</value></data>
+  <data name="DraftDeliveryScope" xml:space="preserve"><value>بيانات المسودة وتعيين المسؤول. السجلات النشطة أو المؤرشفة للقراءة فقط؛ عمليات دورة الحياة والحذف غير متاحة.</value></data>
+  <data name="InvalidInput" xml:space="preserve"><value>تحقق من الحقول المطلوبة وحدود الطول.</value></data>
+  <data name="SessionRequired" xml:space="preserve"><value>سجّل الدخول مجددًا للمتابعة.</value></data>
+  <data name="OperationDenied" xml:space="preserve"><value>ليست لديك صلاحية لتنفيذ هذه العملية.</value></data>
+  <data name="RecordUnavailable" xml:space="preserve"><value>السجل غير متاح أو لم يعد الوصول إليه ممكنًا.</value></data>
+  <data name="VersionConflict" xml:space="preserve"><value>تغيّر السجل. أغلق النموذج وأعد فتحه قبل المحاولة مجددًا.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>الخدمة المطلوبة غير متاحة. حاول لاحقًا.</value></data>
 </root>

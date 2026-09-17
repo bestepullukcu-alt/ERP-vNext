@@ -23,4 +23,20 @@
   <data name="LifecycleActive" xml:space="preserve"><value>Actif</value></data>
   <data name="LifecycleArchived" xml:space="preserve"><value>Archivé</value></data>
   <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>Archiver ce portefeuille ? Les nouvelles références ne seront plus autorisées.</value></data>
+  <data name="CapacityAllocationDescription" xml:space="preserve"><value>Description de l’allocation de capacité</value></data>
+  <data name="Owner" xml:space="preserve"><value>Responsable</value></data>
+  <data name="AssignOwner" xml:space="preserve"><value>Attribuer un responsable</value></data>
+  <data name="TransferOwner" xml:space="preserve"><value>Transférer la responsabilité</value></data>
+  <data name="AssignmentReason" xml:space="preserve"><value>Motif de l’attribution</value></data>
+  <data name="OwnerRequired" xml:space="preserve"><value>Sélectionnez un utilisateur admissible.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Saisissez un motif.</value></data>
+  <data name="NoOwner" xml:space="preserve"><value>Aucun responsable attribué</value></data>
+  <data name="AccessUnavailable" xml:space="preserve"><value>L’accès n’a pas pu être vérifié. Contactez votre équipe d’assistance habilitée.</value></data>
+  <data name="DraftDeliveryScope" xml:space="preserve"><value>Informations du brouillon et attribution du responsable. Les dossiers actifs ou archivés sont en lecture seule ; le cycle de vie et la suppression sont indisponibles.</value></data>
+  <data name="InvalidInput" xml:space="preserve"><value>Vérifiez les champs obligatoires et les limites de longueur.</value></data>
+  <data name="SessionRequired" xml:space="preserve"><value>Reconnectez-vous pour continuer.</value></data>
+  <data name="OperationDenied" xml:space="preserve"><value>Vous n’êtes pas autorisé à effectuer cette opération.</value></data>
+  <data name="RecordUnavailable" xml:space="preserve"><value>Le dossier est indisponible ou n’est plus accessible.</value></data>
+  <data name="VersionConflict" xml:space="preserve"><value>Le dossier a changé. Fermez puis rouvrez le formulaire avant de réessayer.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Le service requis est indisponible. Réessayez plus tard.</value></data>
 </root>

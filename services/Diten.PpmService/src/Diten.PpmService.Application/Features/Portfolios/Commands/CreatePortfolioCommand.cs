@@ -5,4 +5,4 @@ using MediatR;
 
 namespace Diten.PpmService.Application.Features.Portfolios;
 
-public sealed record CreatePortfolioCommand(string Code, string Name, string? Description, string? VisibilityPolicyKey) : IRequest<Response<PortfolioDto>>;
+public sealed record CreatePortfolioCommand(string Code, string Name, string? Description, string? VisibilityPolicyKey, string? CapacityAllocationDescription = null) : IRequest<Response<PortfolioDto>>;

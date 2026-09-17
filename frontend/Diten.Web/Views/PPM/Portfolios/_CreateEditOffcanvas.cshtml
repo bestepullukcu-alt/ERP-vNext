@@ -1,3 +1,42 @@
 @model Diten.Web.Models.PPM.PpmListPageViewModel
-@* Shared/_CreateEditOffcanvas renders id="offcanvasCreateEdit". *@
-<partial name="~/Views/PPM/Shared/_CreateEditOffcanvas.cshtml" model="Model" />
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCreateEdit" aria-labelledby="offcanvasCreateEditLabel">
+    <div class="offcanvas-header p-4">
+        <h5 id="offcanvasCreateEditLabel" class="offcanvas-title">-</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@ViewData["CancelText"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="ppm-form-alert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formPpm" class="pt-0" novalidate>
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="ppmId" name="Id" />
+            <input type="hidden" id="ppmVersion" name="Version" value="1" />
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="ppmCode" class="form-label fw-medium">@ViewData["CodeText"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input type="text" id="ppmCode" name="Code" class="form-control" maxlength="64" required /></div>
+                    <div class="invalid-feedback">@ViewData["InvalidInputText"]</div>
+                </div>
+                <div class="col-12">
+                    <label for="ppmName" class="form-label fw-medium">@ViewData["NameText"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-rename diten-field-icon" aria-hidden="true"></i><input type="text" id="ppmName" name="Name" class="form-control" maxlength="200" required /></div>
+                    <div class="invalid-feedback">@ViewData["InvalidInputText"]</div>
+                </div>
+                <div class="col-12">
+                    <label for="ppmDescription" class="form-label fw-medium">@ViewData["DescriptionText"]</label>
+                    <div class="diten-field"><i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i><textarea id="ppmDescription" name="Description" class="form-control" rows="4" maxlength="2000"></textarea></div>
+                </div>
+                <div class="col-12">
+                    <label for="ppmCapacityAllocationDescription" class="form-label fw-medium">@ViewData["CapacityText"]</label>
+                    <div class="diten-field"><i class="bx bx-group diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="ppmCapacityAllocationDescription" name="CapacityAllocationDescription" class="form-control" rows="3" maxlength="2000"></textarea>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@ViewData["CancelText"]</button>
+        <button type="button" id="btnSavePpm" class="btn btn-primary">@ViewData["SaveText"]</button>
+    </div>
+</div>

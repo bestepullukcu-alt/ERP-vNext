@@ -348,6 +348,9 @@ internal static class Program
             psi.Environment["MongoDbSettings__DatabaseName"] = AccountKindAcceptance.DatabaseName;
             psi.Environment["JwtSettings__Secret"] = seedHost.GeneratedJwtSecretForLeakGuardOnly
                 ?? throw new InvalidOperationException("seed host did not generate a JWT secret");
+            // The isolated API must mint and validate the same run-owned JWT profile.
+            psi.Environment["JwtSettings__Issuer"] = $"urn:diten:acceptance:issuer:{runId}";
+            psi.Environment["JwtSettings__Audience"] = $"urn:diten:acceptance:audience:{runId}";
             psi.Environment["Eventing__Transport"] = "InMemory";
             psi.Environment["Smtp__Enabled"] = "false";
             psi.Environment["TenantResolution__DevBypassEnabled"] = "false";

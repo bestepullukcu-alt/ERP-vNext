@@ -1,0 +1,35 @@
+@using Diten.Web.Views.PPM.Portfolios
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PortfoliosIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+<div class="offcanvas offcanvas-end" id="offcanvasOwnerAssignment" tabindex="-1" aria-labelledby="ownerAssignmentTitle">
+    <div class="offcanvas-header p-4">
+        <h5 id="ownerAssignmentTitle" class="offcanvas-title">@Localizer["AssignOwner"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body border-top p-4">
+        <div id="owner-assignment-alert" class="alert alert-danger d-none" role="alert"></div>
+        <form id="formPortfolioOwner" novalidate>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="portfolioOwnerUser" class="form-label">@Localizer["Owner"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-user diten-field-icon" aria-hidden="true"></i>
+                        <select id="portfolioOwnerUser" class="form-select" required></select>
+                    </div>
+                    <div class="invalid-feedback">@Localizer["OwnerRequired"]</div>
+                </div>
+                <div class="col-12">
+                    <label for="portfolioOwnerReason" class="form-label">@Localizer["AssignmentReason"] <span class="text-danger">*</span></label>
+                    <div class="diten-field"><i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
+                        <textarea id="portfolioOwnerReason" class="form-control" maxlength="2000" rows="4" required></textarea>
+                    </div>
+                    <div class="invalid-feedback">@Localizer["ReasonRequired"]</div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+        <button type="button" id="btnSavePortfolioOwner" class="btn btn-primary">@SharedLocalizer["Save"]</button>
+    </div>
+</div>

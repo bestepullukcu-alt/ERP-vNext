@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using Diten.Web.Models.PPM;
 using Diten.Web.Services.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,13 +24,52 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
     public IActionResult Hub() => View("~/Views/PPM/Index.cshtml");
 
     [HttpGet("{resource}")]
-    public IActionResult Index(string resource)
+    public async Task<IActionResult> Index(string resource, CancellationToken cancellationToken)
     {
         if (!Resources.Contains(resource))
             return NotFound();
 
+        if (resource.Equals("portfolios", StringComparison.OrdinalIgnoreCase))
+        {
+            var result = await ProxyAsync("portfolios", HttpMethod.Get, "page-access", cancellationToken);
+            var status = result is ContentResult content ? content.StatusCode ?? 503
+                : result is ObjectResult error ? error.StatusCode ?? 503
+                : result is StatusCodeResult failure ? failure.StatusCode : 503;
+            var page = new PortfolioPageModels(false, false, status is 401 or 403 or 404 or 503 ? status : 503);
+            if (status == 200 && result is ContentResult payload)
+            {
+                try
+                {
+                    using var json = JsonDocument.Parse(payload.Content ?? "");
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                    var envelope = JsonSerializer.Deserialize<PortfolioPageEnvelope>(json.RootElement.GetRawText(), options);
+                    if (envelope is { IsSuccessful: true, Data.CanRead: true })
+                        page = envelope.Data with { StatusCode = 200 };
+                    else page = new(false, false, 503);
+                }
+                catch (JsonException) { page = new(false, false, 503); }
+            }
+            Response.StatusCode = page.CanRead ? 200 : page.StatusCode;
+            Response.Headers.CacheControl = "no-store";
+            return View("~/Views/PPM/Portfolios/Index.cshtml", page);
+        }
         return View($"~/Views/PPM/{ToFolder(resource)}/Index.cshtml");
     }
+
+    private sealed record PortfolioPageEnvelope(bool IsSuccessful, PortfolioPageModels? Data);
+
+    [HttpGet("portfolios/api/page-access")]
+    public Task<IActionResult> PortfolioPageAccess(CancellationToken ct) =>
+        ProxyAsync("portfolios", HttpMethod.Get, "page-access", ct);
+
+    [HttpGet("portfolios/api/{id:guid}/owner-candidates")]
+    public Task<IActionResult> PortfolioOwnerCandidates(Guid id, CancellationToken ct) =>
+        ProxyAsync("portfolios", HttpMethod.Get, $"{id}/owner-candidates", ct, queryString: Request.QueryString.Value);
+
+    [ValidateAntiForgeryToken]
+    [HttpPost("portfolios/api/{id:guid}/owner-assignments")]
+    public Task<IActionResult> ChangePortfolioOwner(Guid id, CancellationToken ct) =>
+        ProxyBodyAsync("portfolios", HttpMethod.Post, $"{id}/owner-assignments", ct);
 
     [HttpGet("projects/{id:guid}")]
     public IActionResult ProjectWorkspace(Guid id)
@@ -104,6 +145,8 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
         if (!Resources.Contains(resource))
             return NotFound();
 
+        if (resource.Equals("portfolios", StringComparison.OrdinalIgnoreCase))
+            Response.Headers.CacheControl = "no-store";
         var tenantId = ResolveTenantId();
         if (tenantId is null)
             return StatusCode(StatusCodes.Status403Forbidden);
@@ -135,7 +178,7 @@ public sealed class PpmController(HttpClient httpClient, IConfiguration configur
                 StatusCode = (int)response.StatusCode
             };
         }
-        catch (HttpRequestException exception)
+        catch (Exception exception) when (exception is HttpRequestException || resource.Equals("portfolios", StringComparison.OrdinalIgnoreCase) && exception is OperationCanceledException && !cancellationToken.IsCancellationRequested)
         {
             logger.LogError(exception, "PPM Gateway request failed for {Resource}.", resource);
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { statusCode = StatusCodes.Status503ServiceUnavailable });

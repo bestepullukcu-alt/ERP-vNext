@@ -1,3 +1,5 @@
+extern alias PpmApi;
+
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
@@ -130,7 +132,7 @@ public sealed class GateILocalApiSmokeTests(GateIDisposableMongoReplicaSet mongo
             if (!CanBind(ApiPort))
                 throw new InvalidOperationException("The canonical PPM local-test port 5062 is occupied.");
 
-            var apiAssembly = typeof(global::Program).Assembly.Location;
+            var apiAssembly = typeof(PpmApi::Program).Assembly.Location;
             var start = new ProcessStartInfo("dotnet")
             {
                 WorkingDirectory = Path.GetDirectoryName(apiAssembly)!,

@@ -124,7 +124,7 @@ window.PpmCrud = (function () {
             try { state.dt?.processing?.(false); } catch (_) { }
         };
         const showFormError = (error) => {
-            const messages = error?.payload?.errors || [error?.message || L.ErrorOccurred || ''];
+            const messages = config.statusMessage ? [config.statusMessage(error, L)] : error?.payload?.errors || [error?.message || L.ErrorOccurred || ''];
             formAlert.replaceChildren(...messages.map((message) => {
                 const line = document.createElement('div');
                 line.textContent = message;
@@ -133,6 +133,7 @@ window.PpmCrud = (function () {
             formAlert.classList.remove('d-none');
         };
         const statusMessage = (error) => {
+            if (config.statusMessage) return config.statusMessage(error, L);
             if (error?.isOffline || error?.status === 0) return `${L.Error || L.ErrorOccurred || ''} (0)`;
             return ({
                 401: L.Unauthorized,
@@ -235,6 +236,7 @@ window.PpmCrud = (function () {
         };
 
         const rowActions = (row) => {
+            if (config.rowActions) return window.DitenDataTable.renderActions(config.rowActions(row, L));
             const dataJson = html(JSON.stringify(row));
             const actions = [
                 {
@@ -380,6 +382,13 @@ window.PpmCrud = (function () {
                 settleTableLoading(false);
                 return list;
             }, error: (xhr) => {
+                if (config.clearOnReadFailure) {
+                    state.rows.clear();
+                    state.dt?.clear?.().draw();
+                    config.clearDetails?.();
+                    detailsCanvas.hide();
+                    createCanvas.hide();
+                }
                 settleTableLoading(true);
                 if (xhr.status === 401) window.DtDefaults?.handleUnauthorized?.();
                 else setTableError(statusMessage({ status: xhr.status || 0, isOffline: xhr.status === 0 }));
@@ -399,7 +408,7 @@ window.PpmCrud = (function () {
                     { targets: actionIndex, className: 'cell-fit all', searchable: false, orderable: false,
                         render: (_value, _type, row) => rowActions(row) }
                 ],
-                buttons: window.DtDefaults.exportButtons(L.AddNew, {}, extraButtons, {
+                buttons: window.DtDefaults.exportButtons(config.canCreate === false ? null : L.AddNew, {}, extraButtons, {
                     exportColumns: Array.from({ length: actionIndex - 2 }, (_, i) => i + 2),
                     colvisColumns: Array.from({ length: actionIndex - 2 }, (_, i) => i + 2)
                 }),
@@ -512,6 +521,7 @@ window.PpmCrud = (function () {
         }
 
         async function openCreate() {
+            if (config.canCreate === false) return;
             resetForm();
             document.getElementById('offcanvasCreateEditLabel').textContent = L.AddNew;
             try { await refreshLookups(null); } catch (error) { showFormError(error); }
@@ -522,6 +532,7 @@ window.PpmCrud = (function () {
             resetForm();
             try {
                 const row = unwrap(await request(`${baseUrl}/${id}`));
+                if (config.canEdit && !config.canEdit(row)) { showFailure({ status: 403 }); return; }
                 state.editId = id;
                 document.getElementById('offcanvasCreateEditLabel').textContent = L.EditTitle;
                 document.getElementById('ppmId').value = row.id;
@@ -529,6 +540,7 @@ window.PpmCrud = (function () {
                 document.getElementById('ppmCode').value = row.code || '';
                 document.getElementById('ppmName').value = titleOf(row);
                 document.getElementById('ppmDescription').value = row.description || '';
+                config.populateForm?.(row);
                 if (config.hasPlanningDates) {
                     document.getElementById('ppmPlannedStartDate').value = row.plannedStartDate || '';
                     document.getElementById('ppmPlannedEndDate').value = row.plannedEndDate || '';
@@ -581,12 +593,14 @@ window.PpmCrud = (function () {
                 targetDescription: document.getElementById('ppmTargetDescription').value.trim(),
                 targetDate: document.getElementById('ppmTargetDate').value || null
             } : {}),
-            lifecycleState: document.getElementById('ppmLifecycleState').value,
+            ...(config.metadataOnly ? {} : { lifecycleState: document.getElementById('ppmLifecycleState').value }),
+            ...(config.readForm?.() || {}),
             ...(config.showVisibilityPolicy === false ? {} : { visibilityPolicyKey: null }),
             expectedVersion: Number(document.getElementById('ppmVersion').value || 1)
         });
 
         document.getElementById('btnSavePpm')?.addEventListener('click', async () => {
+            if (config.metadataOnly && document.getElementById('btnSavePpm')?.disabled) return;
             form.classList.add('was-validated');
             formAlert.classList.add('d-none');
             if (state.lookupBlocked || !form.checkValidity()) return;
@@ -619,7 +633,13 @@ window.PpmCrud = (function () {
             if (workspace) {
                 window.location.assign(config.workspaceUrl(workspace.dataset.id));
             } else if (view) {
-                const row = JSON.parse(view.dataset.json || '{}');
+                let row;
+                if (config.loadDetails) {
+                    detailsCanvas.hide();
+                    config.clearDetails?.();
+                    try { row = unwrap(await request(`${baseUrl}/${view.dataset.id}`)); }
+                    catch (error) { showFailure(error); return; }
+                } else row = JSON.parse(view.dataset.json || '{}');
                 document.getElementById('oc-title').textContent = titleOf(row) || '-';
                 document.getElementById('oc-subtitle').textContent = row.code || '-';
                 document.getElementById('oc-code').textContent = row.code || '-';
@@ -637,10 +657,12 @@ window.PpmCrud = (function () {
                 document.getElementById('oc-btn-edit').dataset.id = row.id;
                 const workspaceLink = document.getElementById('oc-open-workspace');
                 if (workspaceLink && config.workspaceUrl) workspaceLink.href = config.workspaceUrl(row.id);
+                config.renderDetails?.(row);
                 detailsCanvas.show();
             } else if (edit) {
                 await openEdit(edit.dataset.id);
             } else {
+                if (config.disableMutations) return;
                 const id = transition?.dataset.id || remove?.dataset.id;
                 const target = transition?.dataset.target;
                 const confirmation = target === 'Archived' ? L.ArchiveConfirm
@@ -671,6 +693,9 @@ window.PpmCrud = (function () {
                 });
             }
         });
+
+        config.onReady?.({ request, unwrap, L, reload: () => state.dt.ajax.reload(null, false),
+            showFailure, baseUrl, antiForgery, html });
 
         document.getElementById('oc-btn-edit')?.addEventListener('click', async (event) => {
             detailsCanvas.hide();

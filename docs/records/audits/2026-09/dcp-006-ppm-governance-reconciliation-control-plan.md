@@ -335,6 +335,38 @@ veya PR sayısı değildir. İlk hazırlık (eşleme + toplu mutabakat) yaklaş�
 uygulama + inceleme için 3–5 tur bir ön planlama aralığıdır. Kalan modül tahminleri exact eşleme sonrası
 yeniden kalibre edilir; açık owner kararları ve yeni scope bu aralıklara otomatik dahil değildir.
 
+### 9.5 Mevcut emeğin toplu kaynak–main mutabakatı — OPEN / 2026-09-11
+
+**Kullanıcı kapsam teyidi:** Budget yalnız bir örnektir. Toplama işi Budget/Scenario/Outcome ile
+sınırlandırılmaz; 1.3, 1.4, 1.6 içindeki tüm modüller ve bunlarla bağlantılı, daha önce geliştirilmiş
+işler birlikte değerlendirilir. Bu envanter kapsamıdır; DCP-006'nın ürün sahipliğini genişletmez,
+Portfolio teslimat sırasını değiştirmez, ES retrofit veya başka modül implementasyonu başlatmaz.
+
+- Kaynak kapsamı: ilgili yerel/uzak referanslar, commitler, worktree'lerdeki tracked/untracked işler,
+  stash, ilgili reflog ve önceki koruma kayıtları. Önceki kanıtlar yeniden kullanılır; yalnız eksik veya
+  değişen kısımlar tamamlanır. Başka bilgisayara veya silinmiş/erişilemeyen kaynağa erişim varsayılmaz.
+- Kaynak kapsam tablosunda her ref/worktree sabit SHA veya dirty içerik kanıtıyla, tarandı/taranmadı
+  durumu ve gerekçesiyle yer almalıdır. Author/branch adı tek başına sahiplik kanıtı değildir.
+  Claude ve diğer geliştiricilerin işleri devralınmaz; bağlantılı teslimat ve sahibi referanslanır.
+- Her geliştirme için: main'de karşılanıyor / benzersiz entegrasyon adayı / gerekli fakat yarım /
+  superseded-tarihsel-deneysel / kanıt veya sahip kararı eksik sonucu verilir. Ancestry, patch
+  eşdeğerliği ve davranış karşılığı ayrı kanıtlardır. Main'de dosya yokluğu “hiç geliştirilmedi” değildir.
+- Modül çekirdeği, çalışan servis, başka modüle bağlantı ve kullanıcı kabulü ayrı izlenir.
+  Commit veya dosya sayısı ürün tamamlanma yüzdesine çevrilmez. Ortak tarihçe/dosyalar tekilleştirilir.
+- Kapanış çıktısı yalnız bulunan dosyalar değil; exact kaynak listesi, incelenemeyen sınırlar ve
+  sahip/bağımlılık/test kapılarıyla anlamlı entegrasyon teslimat sırasıdır. FPA/Outcome'a ait dar
+  inceleme bu genel mutabakatı kapatmaz. Taranmamış kaynak varken “her şey main'de” denmez.
+- Sonraki teslimatlar mevcut planda kaynak SHA → teslimat SHA/PR → main doğrulaması → kalan eksik
+  iziyle takip edilir. Yeni işe başlarken bütün geçmiş yerine bu kayıt ve sonrasındaki delta okunur;
+  eksik/eski kayıt bulunursa yalnız ilgili kapsam yeniden açılır.
+
+**Güncel durum:** Genel kapanış henüz alınmadı. Budget core `1949b93e` için sabit main `ba271c39`
+üzerinde ancestry kontrolü exit 1 verdi; önceki “main'in atası” iddiası kullanılmaz. Portfolio'nun
+45 dirty dosyası 44 uygulama/test dosyası + bu kontrol planıdır. FPA/Outcome aday listeleri henüz
+taşıma yetkisi veya çalışan ürün kanıtı değildir; ortak FU16/Platform.Common değişiklikleri ayrı
+altyapı sahipliği ve onay kapısındadır. Yeni rapor/pack, kod, runtime, commit/push/merge veya
+temizlik yetkisi bu kayıtla verilmez; eski işler doğrulama ve ayrıca izin olmadan silinmez.
+
 ## 10. Portfolio mutabakatı — envanter sonrası güncel karar kaydı
 
 Bu bölüm önceki geçici form sayısı, sahiplik ve sıradaki iş ifadelerini günceller. Yalnız koordinasyon
@@ -936,10 +968,274 @@ ile checkout yapmadan okuyabilir; parent review bunu engellemez. Bu gelecekteki 
 henüz yoktur. FU ayrı küçük PR değil, mevcut anlamlı Portfolio teslimatıyla gider. Named-human/assignable
 target ve SOP-0029 record-access sözleşmeleri izin yayımını engellemez; gerçek owner kullanım kabulünü engeller.
 
+#### CT uygulama sırası ve runtime kanıt sınırı — 2026-09-11
+
+Önceki “SHA henüz yok” durumunu aşan teslim: governance checkpoint
+`4a10cd92e25cf9dc8dac1af81ae80e99edd86339` origin'e push edilmiştir ve CT tarafından
+FU01 yetki girdisi olarak kabul edilmiştir. Bu SHA yalnız dört governance belgesini taşır;
+yerel PPM consumer/ekran uygulamasının teslim edildiği anlamına gelmez.
+
+- **CT uygulaması bekleniyor:** CT, Auth/Platform exact kapsamını ve test kapılarını bildirdi;
+  BL-359, BL-360 ve izin yayımı kendi kuyruğunda MOD-0357 S3 kabulünden sonra, S4'ten önce
+  tek iş paketi olarak planlıdır. Uygulama checkpoint'i ve tamamlanmış test kanıtı henüz alınmadı.
+  Revoke regresyonları manuel/System grant'leri ve ilgisiz modül davranışını korumalı;
+  otomatik grant dışlama kümesi Domain'de tek kaynak olmalı, açık/yetkili grant yolu değişmemelidir.
+- **Ortam CT beyanıdır:** `diten_auth_v3` / `diten_platform`, localhost Mongo üzerinde diğer
+  geliştirme oturumlarıyla ortaktır; izole değildir. CT kendi kabulünde katalog/rol izinlerinin
+  önce–sonra farkını bu etiketle sunacağını bildirdi. Burada DB veya süreç ölçümü yapılmadı.
+  Böyle bir rapor destekleyici kanıt olabilir; izole PPM runtime veya browser kabulü yerine geçmez.
+- **Yetki sınırı:** Runbook ve startup self-registration davranışı tek başına yeni ortak DB yazma
+  yetkisi değildir. CT'nin bildirdiği sürekli kullanıcı talimatı burada bağımsız doğrulanmış sayılmaz;
+  bu kayıt servis başlatma/durdurma, ortak DB, grant/provisioning veya production yetkisi vermez.
+  Beklenmeyen rol-izin farkında durulur; mevcut grant'ler kendiliğinden düzeltilmez veya geri alınmaz.
+- **Sonraki kapanış:** Önce CT'nin SHA, exact dosya ve önce/sonra test sonuçları incelenir.
+  Kimlik/atanabilirlik ve SOP-0029 kayıt erişimi sağlayıcı sözleşmeleri ayrıca açık kalır;
+  bunlar ve onaylı güvenli test profili olmadan PPM browser kabulü **PENDING** kalır.
+  Portfolio teknik kabulü → kullanıcı eski/yeni ekran kontrolü → Claude uygunluk incelemesi →
+  düzeltmeler → anlamlı PR sırası korunur; sonraki sayfa başlatılmaz.
+
+Yeni backlog veya ayrı küçük PR açılmaz. Governance, CT'nin ilgili Auth/Platform değişikliklerinden
+önce veya aynı anda main'e girmelidir; main değiştiğinde merge uyumu yeniden kontrol edilir.
+
 
 <a id="portfolio-user-delivery-control"></a>
 
 ### 10.12 Portfolio ilk kullanıcı teslimatı — tek toplu onay önerisi / DRAFT / NON-EXECUTABLE
+
+**Güncel dar karar — 2026-09-11:** Kullanıcı yalnız yeni Draft kayıtları için geçici
+non-production erişim iş kuralının iki mevcut belgeye kaydedilmesini açıkça onayladı.
+Kanonik onay metni, kapsam ve sınırlar
+[MOD-0117 geçici erişim kararındadır](../../../../execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md#portfolio-temporary-nonproduction-access-decision).
+Oluşturan/güncel sorumlu/kayıt için açık yetkilendirilen kişi ilişkisi, işlem izni ve
+authoritative erişim kontrolüyle birlikte değerlendirilir; Admin/SuperAdmin otomatik hak
+vermez. Mevcut kayıtlar etkilenmez. SOP-0029 ve production açık kalır; ortak kimlik/izin,
+owner target uygunluğu için dış provider ve CT izin teslimatı tamamlanmış sayılmaz. Bu kayıt kod/runtime/DB/Git
+yetkisi veya test başarısı değildir. Sonraki iş mevcut zincirde bu politikanın teknik
+bağlama kapsamıdır; genel inceleme veya yeni Portfolio geliştirmesi başlatılmaz.
+
+**Teknik bağlama checkpoint'i — scoped PPM-local implementation / NON-PRODUCTION TESTED:** Kanonik
+uygulama yaklaşımı ve 13 dosyalık scoped liste [MOD-0117 teknik amendment'ındadır](../../../../execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md#portfolio-temporary-nonproduction-access-implementation).
+Yalnız mevcut aggregate'e create sırasında immutable policy binding yazılması; `CreatedBy`, güncel
+embedded owner ve record version'ın PpmService tarafından authoritative okunması; binding'siz eski
+kayıtların geçici kural dışında kalması önerilir. `IPortfolioRecordAccessAuthority` PPM-local policy
+ile page/create ve record kararını ayrı ele alır; `IPortfolioOwnerActionAuthority` ise dış ortak
+kimlik/izin ve named-human/assignable target kanıtı hazır olduğunda ayrı adapter olur. Page/create
+binding'sizdir; `VisibilityPolicyKey` bu temporary binding değildir ve null kalır. Default-off ve
+production-off local options/composition ile kapalıdır. Auth/Platform endpointi, credential'ı veya
+runtime kaydı tanımlanmaz. Başlama, dış adapter ve browser kabul kapıları kanonik amendment'ta ayrıdır.
+2026-09-11'de security correction sonrası PPM unit paketi `400/400`, yalnız
+`PpmDisposableMongo` profilinde `MongoPersistenceIntegrationTests` +
+`PortfolioOwnerAssignmentMongoTests` `33/33` geçti. Düzeltme öncesi focused test, ilişkisiz actor için
+dört owner operation'ında `Allowed` ve service seviyesinde `200` gösterdi; creator/current-owner
+relation guard'ından sonra focused local `9/9` ve gerçek Mongo service `1/1` geçti. Bu test-owned loopback/dinamik-port/geçici-dbpath
+profili ortak veya production veritabanı kullanmaz; sonuç browser, provider, grant/provisioning veya
+production kabulü değildir.
+
+**Scoped implementation kanıtı — 2026-09-11:** Kullanıcının sonraki açık onayı yalnız MOD-0117'deki
+exact 13 PPM-local kod/test dosyasını, build/unit kontrollerini ve tanımlı disposable Mongo profilini
+kapsar. PMO adına atama yetkisi kayıt erişiminin yerine geçmez; current owner olmamak tek başına ret
+nedeni değildir ve kayıt sınırı + assign-owner entitlement + PMO authority + target eligibility birlikte
+gerekir. Auth/Platform, dış adapter, frontend, config/secret, provisioning, ortak/production DB,
+browser kabulü ve Git teslim işlemleri kapsam dışı kalır.
+
+**Correction:** `manage-owner`, owner-candidates, assign ve transfer PPM-local creator/current-owner
+kayıt ilişkisini önce doğrular. PMO authority bu local kanıtın yerine geçmez; ilişkisiz actor olumlu
+dış actor/target test kanıtıyla bile aday alamaz veya mutation/audit oluşturamaz. Creator'ın current
+owner olmaması tek başına ret değildir; entitlement + PMO authority + target eligibility yine zorunludur.
+
+**Auth adapter — scoped implementation complete; label mapping recorded, runtime transport remains closed — 2026-09-13:** Sabit Auth kaynak
+referansı `9c4d68b90cde9ba698bafd8dde25868d8d99a1dc`dir; birleşme veya checkout hizalaması kanıtı değildir.
+Teslim edilen yüzey `[Authorize]` + trusted tenant bağlamı + `auth.users.lookup` altında
+`GET api/users/lookup?search=&limit=` (`Response` içinde yalnız `userId`/`displayLabel`) ve
+`GET api/users/{id}/account-assertion`dır (`active`, `Unknown|Human|Service`, assertion/update zamanları).
+Başka tenant/hedef yok aynı `404`; invalid input `400`, token `401`, tüketim izni `403`dur. PPM için bu
+hesap olgusudur: ActorAuthority PPM trusted actor/tenant, assign-owner entitlement ve local record relation
+ile üretilir; Auth'tan Portfolio yetkisi beklenmez. `Human` + active + same-tenant yalnız target eligibility
+oluşturur. Bozuk/ağ kesilmiş response veya provider `403`ü PPM'de `503` ve sıfır mutation/audit olarak kalır;
+pasif/Unknown/Service hedef `403` olarak korunur. Kanonik [12 dosyalık aday liste, HTTP/UX matrisi ve
+AccountKindAcceptance gerçek-provider test kapısı](../../../../execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md#portfolio-auth-owner-action-adapter-preparation)
+MOD-0117'de tutulur. Auth SHA'nın PPM test çözümünde erişilebilir kaynak hizalaması gerçek entegrasyonun
+somut önkoşuludur. Bu hazırlık Auth veya PPM implementation onayı değildir.
+
+**Scoped onay ve engel kanıtı:** Kullanıcı exact 12 PPM dosyasında uygulama ve tanımlı test kapılarını
+onayladı; Auth/Platform, frontend, Gateway, config/secret, provisioning, gerçek grant, shared/production
+DB, browser/production ve Git kaynak hizalaması hariçtir. Mevcut çalışma ağacında sabit Auth SHA yerel
+`feature/infra/auth-account-kind` ref'inde bulunur fakat aktif HEAD'in atası değildir; aktif Auth ağacında
+account assertion/lookup DTO'ları ve `AccountKindAcceptance` fixture'ı yoktur, `UsersController` da
+eşdeğer değildir. Bu nedenle gerçek-provider test projesi derlenemez; build/unit/Mongo/provider testleri
+başlatılmadı ve PPM adapter/DI uygulanmadı. Sahte fixture veya HTTP double gerçek integration kanıtı
+sayılmadı. Doğrulanmış kaynak hizalaması gelene kadar mevcut fail-closed `503` yolu korunur.
+
+**2026-09-13 label karar/uygulama kanıtı:** Aktif `b937810991153fde8b7b345fddef3f2ef095afe5`, label
+teslimatı `b368c9dfe8ba6ab0e45e63cf43dbd097bbed5b73`yı içerir. Kullanıcı geçerli `Unnamed` için
+`409 PORTFOLIO_OWNER_LABEL_MISSING`, 200 karakteri aşan geçerli `Named` için
+`409 PORTFOLIO_OWNER_LABEL_TOO_LONG` onayını verdi. Eşleme PPM kayıt yazma önkoşuludur; eligibility
+ret değildir. `PortfolioService` hem mutation öncesinde hem UoW içinde re-assert eder; kesme/fallback veya
+aggregate genişletmesi yoktur. Gerçek Auth fixture testi Named/Missing/TooLong mapping'ini, disposable
+PPM Mongo testi ise iki 409'da version `1`, boş history ve sıfır audit intent'i doğruladı.
+
+Adapter normal DI'da default-disabled'dır; PPM Auth'a bearer/tenant header aktarmaz ve runtime'da Auth
+base address/credential tanımlı değildir. Bu nedenle gerçek non-production kullanıcı owner action'ı `503`
+ile kapalı kalır. Gerekli güvenilir outbound Auth transport/credential-boundary sözleşmesi bu delivery'nin
+dışında ayrı bir somut blocker'dır; Auth/Platform/config/secret/provisioning, browser veya production
+kabulü açılmış değildir.
+
+**Auth adapter C1–C5 correction — 2026-09-13:** Candidate lookup artık doğrudan başarı listesi değildir:
+bounded her sonuç için assertion ve label doğrulanır; yalnız active `Human` ve seçilebilir server labelı
+döner. Unknown/Service/passive ile geçerli Unnamed/200 üstü label kesin elenir; malformed/çelişkili DTO,
+GUID/status taşması, missing `userUpdatedAt`, bilinmeyen kind/state veya provider arızası `503` olur.
+`userUpdatedAt: null` kontratta geçerli, alanın eksikliği değildir. Label endpointinin kesin `404`ü
+NotFound olarak korunur; cancellation yutulmaz. Focused client testleri **9/9**, tüm PPM unit **409/409**
+ve mevcut disposable-Mongo owner regresyonları **15/15** geçti. Birleşik gerçek Auth HTTP/JWT →
+`PortfolioAuthorityClient` → `PortfolioService` → PPM Mongo/UoW/CAS → receipt/history/audit testi eklendi,
+fakat PPM integration process'inde Auth fixture serializer başlangıç hatası (`BsonDefaults.GuidRepresentation`
+V2 önkoşulu) nedeniyle fixture kurulmadan duruyor. Aynı fixture kendi assembly'sinde
+`UserDisplayLabelEndpointTests` **14/14** geçti; blokaj process-içi global BSON uyumsuzluğudur.
+Serializer/GUID guard değiştirilmedi; gerçek-provider teknik kabul
+açıktır. PPM entitlement test seam'i birleşik testte hem Allowed hem 403 sonucunu sürer; gerçek entitlement
+sağlayıcısı veya PPM API JWT pipeline kanıtı değildir.
+
+**C5 correction:** Parent pack §4.9.5, `GateILocalApiSmokeTests.cs`yi Gate I local-evidence dosyası olarak
+adıyla tanımlar; Portfolio Auth adapter'ın 12 dosyalık scoped onayı değildir. Genel `extern alias` talimatı
+da bu dosya için adapter write authority sayılmaz. Csproj aliası tek başına eski `global::Program` kullanımını
+ayrıştıramadığı için mevcut fark teknik olarak gereklidir; bu turda silinmez veya yeni onaylanmış sayılmaz.
+Portfolio teslimatında tutmak için tek dar, dosya-adlı kullanıcı onayı gerekir.
+
+**Transaction reassertion correction:** `ChangeOwner`un UoW içindeki ikinci authority kararı artık
+definitive target `NotFound` için `404`, definitive deny/ineligible için `403`, unavailable/malformed/
+scope-mismatch için `503`, geçerli Missing/TooLong label için onaylı `409` döndürür. Scope/version binding
+gevşetilmedi. Gerçek PPM disposable Mongo regresyonu **16/16** geçti; bu ikinci-kontrol retlerinin her birinde
+Version `1`, boş owner history, null receipt ve sıfır audit intent kaldı.
+
+**C3 process isolation:** PPM test assembly initializer BSON V3, Auth test assembly initializer ise global
+`MongoDefaults.GuidRepresentation` Standard yazımı için V2 kullanır. Alias yalnız compile-time type adlarını
+ayırır; global Mongo staticsini ayırmaz. Güvenli aynı-process çözümü yoktur. Ayrı process yaklaşımı en az yeni
+PPM test-owned process host'u ve `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Testing/AccountKindAcceptance.cs`
+veya eşdeğer yeni Auth-side disposable host sözleşmesi gerektirir; bunlar mevcut scope dışındadır ve oluşturulmadı.
+
+**C3 ayrı-süreç scoped implementation approval — 2026-09-14:** Kullanıcı aşağıdaki sekiz dosyayı onayladı:
+Auth CT: `services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost/Diten.AuthService.AccountKindAcceptanceHost.csproj`,
+aynı projenin `Program.cs`si ve `services/Diten.AuthService/tests/Diten.AuthService.Application.Tests/Testing/AccountKindAcceptance.cs`;
+PPM: `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj`,
+yeni `Portfolios/PortfolioAuthProviderProcessHost.cs`, mevcut `Portfolios/PortfolioAuthProviderIntegrationTests.cs`,
+MOD-0117 ve bu plan. CT önce gerçek Auth API'nin disposable Mongo üzerinde dış süreçte başlaması için kısa
+private-pipe protocolünü sabitler; PPM aynı protokolü uygular. Auth fixture/behavior kopyalanmaz ve PPM process'i
+Auth test initializer'ını yüklemez. Private pipe ile bildirilen adres ve gerçekten çağrılan HTTP host bağlanır;
+loopback/nonce tek başına hedef güveni değildir. Redirect veya başka adrese credential aktarımı, gerçek credential
+okuma, secret'ın command line/stdout/stderr/rapora yazılması yasaktır. Başlatma hatası, timeout, iptal ve normal
+kapanış child process, disposable mongod ve geçici kaynak cleanup kanıtı ister. Ortak Mongo, `DefaultTenant`,
+mevcut kullanıcı/rol, runtime transport, browser, frontend, Gateway, production config, grant/provisioning ve Git
+yazma kapsam dışıdır. Gerçek C3 kanıtı henüz yoktur.
+
+**C3 sabit kaynak hizalaması ve gerçek koşu — 2026-09-17 / BLOCKED on Auth JWT acceptance:** Kullanıcı
+`f0f414ab04d3367c8fd70c8a7c06faa4b17e3a89` için kontrollü normal merge ve yalnız yerel merge commit'ini
+onayladı. Başlangıç `b937810991153fde8b7b345fddef3f2ef095afe5`; sonuç
+`70e5fc19af6536f666cedf1b700be27904c40698` (iki parent: başlangıç + sabit Auth SHA).
+Ortak taban `b368c9dfe8ba6ab0e45e63cf43dbd097bbed5b73`; incoming kapsam 51 tarihçe commit'i ve
+1.663 yoldur, yalnız CT'nin 20 Auth test dosyası değildir. Önceki HR/TEP, frontend, Platform, Gateway,
+ports ve architecture/tenancy değişiklikleri de kaynak tarihçesiyle gelir; bunlar PPM geliştirmesi sayılmaz.
+`git merge-tree --write-tree` temiz çıktı; index bu preview tree ile birebir doğrulandı. Başlangıçtaki 57
+tracked/untracked dirty dosya merge öncesi bundle + binary patch + untracked tar ve SHA-256 manifest ile
+`/Users/alitufanoglu/ERP-vNext/.git-backups/ppm-c3-20260917-142850` altında korundu; merge hemen sonrası
+57 dosyanın tamamı byte-identical ve commit dışında doğrulandı. Stash, rebase, cherry-pick veya reset yoktur.
+
+Bu tur uygulama yalnız `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/` altındaki
+`Diten.PpmService.IntegrationTests.csproj`, yeni `Portfolios/PortfolioAuthProviderProcessHost.cs` ve mevcut
+`Portfolios/PortfolioAuthProviderIntegrationTests.cs` üzerindedir. İki governance belgesi yalnız bu onay,
+gerçek sonuç ve blocker için güncellendi. Gate I alias dosyası başlangıç hash'iyle birebir korunur.
+Auth kaynakları merge sonrasında değiştirilmedi; implementation commit'i, push/PR ve browser kabulü yoktur.
+
+**PPM supervisor kanıt sınırı:** Sabit teslimattaki Control Protocol v1.2 revision 2 kaynak şeması tüketilir
+(wire `protocolVersion` değeri `1.2`). Auth host build-only project reference'tır; PPM `.deps.json` ve çalışan
+assembly listesinde Auth test assembly'si yoktur. macOS `posix_spawn` öncesinde yalnız altı izinli ortam girdisi
+üretilir; koşuya ait HOME/TMPDIR, yeni process group, descriptor izolasyonu, mkdtemp/lstat root kimliği ve
+control peer PID/UID/start-time kontrolü kullanılır. Her API bağlantısı fixed `api.sock` inode/owner ve kernel
+peer PID/UID/start-time ile doğrulanır. Redirect/proxy kapalıdır; koşuya ait credential yalnız bu bağlantıda
+`api/tenant-auth/login`e gider. 65.536-byte UTF-8/LF çerçevesi, BOM/CR/duplicate-key retleri, exact şema/sıra ve
+bounded timeout uygulanır. Shutdown/bye tek başına cleanup kabulü değildir: process kimliği, grup artığı,
+exit ve root silinmesi ayrıca kontrol edilir. Host mesajından silinecek keyfî yol alınmaz. Başarısız
+başlangıç, iptal, timeout, EOF ve normal kapanışta cleanup; bilinen password/JWT ve stdout/stderr leak
+kontrolleri koştu. macOS dışı destek veya PASS iddiası yoktur.
+
+| Gerçek doğrulama | Sonuç / ölçüm |
+|---|---|
+| PPM integration build | `dotnet build services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Diten.PpmService.IntegrationTests.csproj --no-restore` başarılı; Auth/Platform mevcut uyarıları korundu. Son C3 test komutu da son kaynağı derledi. |
+| PPM unit | `dotnet test services/Diten.PpmService/tests/Diten.PpmService.Tests/Diten.PpmService.Tests.csproj --no-restore`: 409/409. |
+| Mevcut disposable Mongo regresyonları | IntegrationTests projesinde `FullyQualifiedName~MongoPersistenceIntegrationTests|FullyQualifiedName~PortfolioOwnerAssignmentMongoTests`: 20 + 16 = 36/36. İkinci authority retleri, iki label 409, CAS/replay/rollback ve sıfır ek version/history/receipt/audit kanıtı bu PPM test zincirindedir. |
+| C3 supervisor | IntegrationTests projesinde `FullyQualifiedName~PortfolioAuthProviderSupervisorTests`: son C3 koşusunda 17/17; poisoned-parent environment, yanlış PID/UID/start-time ile sıfır byte, strict frames ve cleanup/leak negatifleri dahil. |
+| C3 gerçek-provider iş senaryoları | `FullyQualifiedName~PortfolioAuthProviderIntegrationTests`: 1/6; yalnız missing/untrusted composition geçti, beş gerçek-provider senaryosu başarısız. Birleşik son C3 koşusu 18/23, skip yoktur. |
+| Architecture | `dotnet test tests/architecture/TenantArchitecture.ArchitectureTests --no-restore`: 16/18. `JwtClockSkewGuardTests.NoProductionValidatorWritesItsOwnClockSkew` ve `EveryLifetimeValidatingFileDeclaresTheSharedSkew`, incoming HCM/TEP API `Program.cs` yollarını bildirir. Bu iki dosya sabit Auth teslimat ağacıyla birebirdir; PPM regression değil incoming baseline'dır. Guard/istisna değiştirilmedi. |
+
+**Somut Auth CT blocker:** Gerçek tenant login başarılıdır, fakat onun verdiği disposable JWT ile aynı
+Auth API'nin `api/users/{id}/account-assertion` çağrısı `401` döndürür. Test yalnız
+`issuerPresent=False, audiencePresent=False` boole'larını raporlar; token/claim değeri yazılmaz.
+`services/Diten.AuthService/tests/Diten.AuthService.AccountKindAcceptanceHost/Program.cs` child ortamına
+`JwtSettings__Secret` verir, issuer/audience vermez; `JwtSettings.cs` ikisini boş başlatır, gerçek Infrastructure
+JWT doğrulayıcısı `ValidateIssuer=true` ve `ValidateAudience=true` tutar. PPM bu Auth 401'ini mevcut sözleşmeyle
+503'e kapatır. Olumlu testlerin 200 beklentisi korunmuştur; 503 bekleyerek yeşile çevrilmedi. No-permission testi
+de gerçek 403'ü zorunlu tuttuğu için 401'i permission kanıtı saymaz.
+
+CT'nin test-owned Auth acceptance profile'ında issuer/audience'i gerçek doğrulayıcıyla tutarlı kılması ve
+login → protected lookup/assertion kanıtı vermesi gerekir. Auth/serializer/üretim güvenliği PPM tarafından
+onarılmadı. Yeni PPM dosya kapsamı gerekmiyor. Auth gerçek-provider üzerinde başarılı assign/transfer/replay,
+hedef/label retleri ve mutation öncesi yeniden assertion kabulü henüz kapanmadı; yerel Mongo/HTTP-double
+kanıtı bunun yerine geçmez. PPM entitlement seam'i gerçek entitlement sağlayıcısı veya PPM API JWT pipeline
+kabulü değildir; Auth login-settings stub'ı Platform entegrasyon kanıtı değildir. Runtime transport,
+default-off/production-off, ayrı history kapısı ve browser/production dışlaması aynen korunur.
+
+**C3 JWT test-profile correction — 2026-09-17 / scoped Codex ownership:** Kullanıcı yalnız Auth acceptance
+host JWT test profili düzeltmesini ve ilgili izole testleri bu iş için Codex'e devretti; CT aynı kapsamda
+eşzamanlı yazmayacak. Exact bu-tur kapsamı: Auth `tests/Diten.AuthService.AccountKindAcceptanceHost/Program.cs`,
+Auth `tests/Diten.AuthService.AccountKindAcceptanceHost.Tests/PoisonedEnvironmentTests.cs`,
+PPM `tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioAuthProviderIntegrationTests.cs`, MOD-0117
+ve DCP-006. Üretim Auth/PPM davranışı, config dosyaları, ortak/production DB, gerçek grant/provisioning,
+commit/push/PR ve browser kabulü kapsam dışıdır. Başlangıç HEAD `70e5fc19af6536f666cedf1b700be27904c40698`.
+
+Düzeltme öncesi gerçek login → protected assertion regresyonu `401`, `issuerPresent=False` ve
+`audiencePresent=False` ile kırmızı ölçüldü. Test-owned API child ortamına runId'den türetilen ayrı
+`JwtSettings__Issuer` ve `JwtSettings__Audience` eklendi; gerçek issuer/audience/signature/lifetime doğrulaması
+gevşetilmedi. Mevcut PPM testi iki claim'in varlığını, gerçek protected assertion `200` sonucunu ve bearer
+kaldırıldıktan sonra `401` sonucunu zorunlu tutar; no-permission actor için mevcut `403` beklentisi korunur.
+Token, secret veya claim değerleri raporlanmaz.
+
+Gerçek yeniden koşu: PPM unit **409/409**; integration build başarılı; birleşik disposable C3/Mongo
+**59/59** (gerçek Auth provider **6/6**, supervisor **17/17**, Mongo persistence/owner **36/36**), skip yok.
+Koşu fixture'larının cleanup ve sır-sızıntısı kontrolleri geçti. Architecture **16/18**; aynı incoming HCM/TEP
+`JwtClockSkewGuardTests` iki baseline hatası kaldı; kaynakları ve guard değiştirilmedi. İlk sandbox build
+socket izniyle durdu; yetkili izole test yeniden koşusu kullanıldı, bu ortam hatası test başarısı sayılmadı.
+
+Bu sonuç C3'ün macOS ayrı-süreç gerçek-provider teknik kabulünü kapatır; gerçek PPM entitlement sağlayıcısı,
+PPM API JWT pipeline, Platform login-settings entegrasyonu, runtime transport veya browser/production
+kabulü değildir. PPM entitlement seam'i ve Auth login-settings stub'ı ayrı kanıt sınırları olarak korunur.
+Runtime default-off/503 sınırı değişmedi.
+
+**Auth host güvenlik regresyonu:** Tam paket ilk koşuda **66/68** geçti. Exact child-environment testi,
+yeni iki JWT key'ini beklenmeyen alan olarak reddetti; yalnız bu iki key beklentiye eklendi ve dış ortamdan
+zehirli issuer/audience verilse bile çocuğun yalnız runId-kaynaklı değerleri aldığı bağımsız olarak doğrulandı.
+Diğer kırmızı `SigkillAfterReady_BackupGroupCleansUpApiAndMongod` testinin SIGTERM'den bir saniye sonra
+yaptığı process-exists kontrolündeydi; bildirilen üç PID sonraki salt-okunur ölçümde yoktu. Cleanup testi
+ve uygulaması değiştirilmedi. İki testin ayrı tekrar koşusu **2/2** geçti. Bu, tek koşuda 68/68 iddiası
+değildir; mevcut cleanup testinin zamanlama duyarlılığı açık risk olarak kaydedilir. JWT red→green ve
+PPM C3 **59/59** kanıtını değiştirmez. Auth test build'inde mevcut `CA1416` UnixFileMode uyarısı kaldı;
+Windows kabulü verilmez. No-restore ile test çalıştırmayan ilk Auth komutu PASS sayılmadı; restore/build
+sonrası gerçek koşular yukarıdaki sayılardır.
+
+Final kapsam beş dosyadır; başlangıçtaki 58 dirty dosyanın değiştirilen üçü dışındaki **55 dosya byte-identical**
+korundu; iki Auth test-owned dosyası bu tur dirty oldu. Silinen dosya, stage, commit, push veya PR yoktur.
+HEAD değişmedi: `70e5fc19af6536f666cedf1b700be27904c40698`. `git diff --check` geçti.
+
+
+**Gate I alias scoped approval — 2026-09-14:** Kullanıcı
+`services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/GateI/DecisionTrace/GateILocalApiSmokeTests.cs`
+içindeki mevcut `extern alias PpmApi` ve `typeof(PpmApi::Program)` derleme uyarlamasını dosya adıyla korumayı
+onayladı. Başka Gate I davranışı veya dosyası bu onayla açılmaz.
+
+**Repository architecture guard:** normal restore sonrası `TenantArchitecture.ArchitectureTests` `17/18`
+geçti. Tek baseline failure PPM dışındaki `PpmAuditRetentionPolicySeedMongoTests.cs` ve
+`DisposableStandaloneMongo.cs` fresh-Guid Mongo database adlarıdır; guard veya istisna listesi değiştirilmedi.
+
+Bu checkpoint pack review, `production_authority: none`, mevcut scoped onaylar ve eski kayıtlar için
+backfill/migration yasağını değiştirmez.
 
 > **SCOPED USER IMPLEMENTATION APPROVAL — 2026-09-10:** Kullanıcı dört alanlı Portfolio ekranı ve
 > Draft'ta sorumlu atama/devir geliştirmesini açıkça onayladı; mevcut Active/Archived read-only,
@@ -966,22 +1262,24 @@ yetkisi bu yazımla yükselmez. Pack review ve önceki scoped onaylar korunur.
 | İlk kullanıcı yüzeyi | Toplu öneri |
 |---|---|
 | Create/edit | Code required/max64, Name required/max200, Description optional/max2000, Capacity Allocation açıklaması optional/max2000: **4 alan → Golden Slim**. Capacity teknik limit önerisidir; rezervasyon/hesap yok. |
-| Liste/details | Yalnız authoritative erişimli kayıtlar; details güncel GET ve ayrı history-read kararı; Active/Archived izinli read-only. Slim quick view, Compact ayrı sayfalar yok. |
+| Liste/details | Yalnız yetkili kayıtlar; temporary binding'li yeni Draft için PPM-local karar, diğer kayıtlar için mevcut politika kapısı; details güncel GET ve ayrı history-read kararı. Active/Archived izinli read-only. Slim quick view, Compact ayrı sayfalar yok. |
 | Owner atama/devir | Ayrı User seçimi + gerekçe; User principal/Draft0–1/gerekçeli-anlık-Draft-only/owner kaldırma ve zamanlama dışlama **PROPOSED**. Genel admin/update/current-owner otomatik atama hakkı değildir. |
 | Kapalı işlemler | Aktivasyon, diğer lifecycle/delete ve assessment bu ilk kabul dışında; doğrudan API bypass'ı reddedilir. Finans/strateji/owner/frequency/approval gereklilikleri korunur. |
 | Sistem / dış kaynak | Id/tenant/actor/Version/RequestId/UTC/lifecycle/policy kanıtı form alanı değildir. SOP seviyesi, risk ölçeği, Review Frequency veya funding default'u icat edilmez. |
 
-**Gerçek veri kapısı:** SOP-0029 uygulanabilir politika ve page/create/record/edit/history karar sağlayıcısı
-yoksa ilgili okuma/yazma kapalıdır. Create için sınıflandırmayı dört alan üzerinden authoritative
-çözmek mümkün değilse create kapalı kalır; beşinci alan veya creator-only/en kısıtlı fallback eklenmez.
-Kimlik/scoped candidate/atanabilir insan hesabı sözleşmesi olmadan owner aksiyonu olumlu çalışmaz.
-Dört-alan formu güvenli gerçek kullanım hazır iddiası değildir; tam Portfolio formu ileriki kapsamdır.
+**Gerçek veri kapısı:** Onaylı temporary policy yalnız binding'li yeni non-production Draft için
+PpmService local page/create/record kararını sağlar; SOP-0029'un yerine geçmez. Binding'siz eski kayıt,
+başka kayıt erişimi veya açıkça yetkilendirilmiş üçüncü kişi için karar kaynağı yoksa ilgili işlem kapalıdır.
+Create için ek sınıflandırma istenirse dört alan bunun yerine geçmez; beşinci alan veya
+creator-only/en kısıtlı fallback eklenmez. Kimlik/scoped candidate/atanabilir insan hesabı sözleşmesi
+olmadan owner aksiyonu olumlu çalışmaz. Dört-alan formu güvenli gerçek kullanım hazır iddiası değildir;
+tam Portfolio formu ileriki kapsamdır.
 
 **Tek permission governance önerisi:** ppm.portfolios.assign-owner Tier-3, Assign/Transfer için aynı
 kontrollü izin; generic edit/assessment alias'ı veya PMO hardcoded rol kontrolü değil. User/role grant
 vermez. Önce §10.11'deki **mevcut altyapı CT kuyruğunda** auto-grant/case kusurları ve negatif kanıtlar;
 sonra aynı literal ile Platform PORTFOLIOS aksiyonu/testi ve Auth tekil canonical kayıt eşleşmesi;
-ardından doğrulanmış identity/record-access provider sözleşmesi ve PPM adapter bağlaması.
+ardından doğrulanmış identity/owner-target eligibility sözleşmesi ve yalnız dış owner-action adapter bağlaması.
 Auth/Platform kodu altyapı CT'nin tek yazarlı alanıdır; başka sohbete devir/görev mesajı yok.
 Kuyruk kaydı veya önerilen katalog deltası tamamlanmış iş değildir. Finans yalnız §10.5; diğer
 kaynakların sahipleri ve açık kapıları §10.7'de aynen kalır, mükerrer backlog açılmaz.

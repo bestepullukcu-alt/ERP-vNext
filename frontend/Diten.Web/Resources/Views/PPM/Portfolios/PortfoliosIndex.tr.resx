@@ -23,4 +23,20 @@
   <data name="LifecycleActive" xml:space="preserve"><value>Aktif</value></data>
   <data name="LifecycleArchived" xml:space="preserve"><value>Arşivlendi</value></data>
   <data name="ArchivePortfolioConfirmation" xml:space="preserve"><value>Bu portföy arşivlensin mi? Yeni referanslara artık izin verilmeyecek.</value></data>
+  <data name="CapacityAllocationDescription" xml:space="preserve"><value>Kapasite tahsis açıklaması</value></data>
+  <data name="Owner" xml:space="preserve"><value>Sorumlu</value></data>
+  <data name="AssignOwner" xml:space="preserve"><value>Sorumlu ata</value></data>
+  <data name="TransferOwner" xml:space="preserve"><value>Sorumluluğu devret</value></data>
+  <data name="AssignmentReason" xml:space="preserve"><value>Atama gerekçesi</value></data>
+  <data name="OwnerRequired" xml:space="preserve"><value>Uygun bir kullanıcı seçin.</value></data>
+  <data name="ReasonRequired" xml:space="preserve"><value>Bir gerekçe girin.</value></data>
+  <data name="NoOwner" xml:space="preserve"><value>Sorumlu atanmamış</value></data>
+  <data name="AccessUnavailable" xml:space="preserve"><value>Erişim doğrulanamadı. Yetkili destek ekibinize başvurun.</value></data>
+  <data name="DraftDeliveryScope" xml:space="preserve"><value>Draft bilgileri ve sorumlu atama. Mevcut Active/Archived kayıtlar salt okunurdur; lifecycle ve silme kapalıdır.</value></data>
+  <data name="InvalidInput" xml:space="preserve"><value>Zorunlu alanları ve uzunluk sınırlarını kontrol edin.</value></data>
+  <data name="SessionRequired" xml:space="preserve"><value>Devam etmek için yeniden oturum açın.</value></data>
+  <data name="OperationDenied" xml:space="preserve"><value>Bu işlem için yetkiniz yok.</value></data>
+  <data name="RecordUnavailable" xml:space="preserve"><value>Kayıt bulunamıyor veya artık erişilemiyor.</value></data>
+  <data name="VersionConflict" xml:space="preserve"><value>Kayıt değişti. Yeniden denemeden önce formu kapatıp açın.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Gerekli servis kullanılamıyor. Daha sonra tekrar deneyin.</value></data>
 </root>

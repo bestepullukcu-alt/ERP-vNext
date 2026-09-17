@@ -32,6 +32,14 @@ internal static class PpmBsonConfiguration
             ConventionRegistry.Register("Diten.PpmService", conventions, type =>
                 type.Namespace?.StartsWith("Diten.PpmService", StringComparison.Ordinal) == true);
 
+            BsonClassMap.RegisterClassMap<Diten.PpmService.Domain.Entities.Portfolio>(map =>
+            {
+                map.AutoMap();
+                map.UnmapMember(x => x.OwnerAssignments);
+                map.UnmapMember(x => x.CurrentOwnerAssignment);
+                map.MapField("_ownerAssignments").SetElementName("OwnerAssignments");
+                map.MapMember(x => x.TemporaryNonProductionAccessBinding).SetIgnoreIfNull(true);
+            });
             _configured = true;
         }
     }

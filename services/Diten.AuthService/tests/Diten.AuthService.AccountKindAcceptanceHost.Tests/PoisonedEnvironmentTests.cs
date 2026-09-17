@@ -50,6 +50,7 @@ public sealed class PoisonedEnvironmentTests
     {
         "PATH", "HOME", "TMPDIR", "DOTNET_ROOT", "ASPNETCORE_ENVIRONMENT", "ASPNETCORE_URLS",
         "MongoDbSettings__ConnectionString", "MongoDbSettings__DatabaseName", "JwtSettings__Secret",
+        "JwtSettings__Issuer", "JwtSettings__Audience",
         "Eventing__Transport", "Smtp__Enabled", "TenantResolution__DevBypassEnabled",
         "Observability__Metrics__Enabled", "Observability__Seq__Enabled", "OTEL_SDK_DISABLED",
         "InternalEventAuth__ApiKey", "PlatformService__InternalApiKey", "PlatformService__BaseUrl",
@@ -100,6 +101,8 @@ public sealed class PoisonedEnvironmentTests
             "ConnectionStrings__Default=poisoned-canary",
             "MongoDbSettings__CanaryExtra=poisoned-canary",     // same prefix as an allowed key, different key
             "JwtSettings__CanaryOther=poisoned-canary",
+            "JwtSettings__Issuer=poisoned-issuer",
+            "JwtSettings__Audience=poisoned-audience",
             "Smtp__Host=poisoned-canary",
             "Eventing__CanaryQueue=poisoned-canary",
             "OTEL_EXPORTER_OTLP_ENDPOINT=poisoned-canary",
@@ -140,6 +143,10 @@ public sealed class PoisonedEnvironmentTests
             var extra = observedKeys.Except(ExpectedAllowListKeys).ToList();
             Assert.True(missing.Count == 0, "allow-listed keys missing from the child's real environment: " + string.Join(", ", missing));
             Assert.True(extra.Count == 0, "UNEXPECTED keys reached the child's real environment (allow-list breach): " + string.Join(", ", extra));
+            Assert.True(observed["JwtSettings__Issuer"] == $"urn:diten:acceptance:issuer:{runId}",
+                "JWT issuer must be run-owned, not inherited; values withheld.");
+            Assert.True(observed["JwtSettings__Audience"] == $"urn:diten:acceptance:audience:{runId}",
+                "JWT audience must be run-owned, not inherited; values withheld.");
 
             // Canary families explicitly, by substring, as a second independent check (defense in depth beyond
             // the exact-set comparison above).

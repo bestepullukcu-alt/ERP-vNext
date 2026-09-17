@@ -1,3 +1,4 @@
+@model Diten.Web.Models.PPM.PortfolioPageModels
 @using Diten.Web.Views.PPM.Portfolios
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<PortfoliosIndex> Localizer
@@ -28,9 +29,36 @@
         LifecycleStates = ["Draft", "Active", "Archived"], DefaultLifecycleState = "Draft"
     };
 }
-@* Golden Slim contract marker: <partial name="_Filter" />. Runtime markup is composed by _ListShell.cshtml. *@
-@* Golden Slim contract marker: id="offcanvasDetailsPreview". Runtime markup is rendered by Shared/_DetailsQuickView.cshtml. *@
-<partial name="~/Views/PPM/Shared/_ListShell.cshtml" model="page" />
+@if (Model?.CanRead != true)
+{
+    <div role="alert" class="alert alert-warning">@Localizer["AccessUnavailable"]</div>
+}
+else
+{
+    ViewData["CancelText"] = SharedLocalizer["Cancel"].Value;
+    ViewData["SaveText"] = SharedLocalizer["Save"].Value;
+    ViewData["EditText"] = SharedLocalizer["EditRecord"].Value;
+    ViewData["ActionsText"] = SharedLocalizer["ViewDetails"].Value;
+    ViewData["ShowAllText"] = SharedLocalizer["ShowAll"].Value;
+    ViewData["ApplyText"] = SharedLocalizer["Apply"].Value;
+    ViewData["ResetText"] = SharedLocalizer["Reset"].Value;
+    ViewData["CapacityText"] = Localizer["CapacityAllocationDescription"].Value;
+    ViewData["InvalidInputText"] = Localizer["InvalidInput"].Value;
+    <div id="portfolio-surface" data-can-create="@Model.CanCreate.ToString().ToLowerInvariant()">
+        @* Contract marker: <partial name="_Filter" />; the explicit model below is the existing PPM list contract. *@
+        <partial name="~/Views/PPM/Portfolios/_Filter.cshtml" model="page" />
+        <div class="mb-3"><h5 class="mb-0">@Localizer["PortfoliosTitle"]</h5><p class="text-muted mb-0">@Localizer["DraftDeliveryScope"]</p></div>
+        <div id="bulkActionBar" class="card mb-4 d-none"><div class="card-body">
+            <span id="bulkSelectedCount">0</span> @SharedLocalizer["SelectedCount"]
+            <button id="btnClearSelection" type="button" class="btn btn-label-secondary">@SharedLocalizer["ClearSelection"]</button>
+        </div></div>
+        <partial name="~/Views/PPM/Portfolios/_DataTable.cshtml" model="page" />
+        <partial name="~/Views/PPM/Portfolios/_CreateEditOffcanvas.cshtml" model="page" />
+        @* Contract marker rendered by the local partial: id="offcanvasDetailsPreview". *@
+        <partial name="~/Views/PPM/Portfolios/_DetailsQuickView.cshtml" model="page" />
+        <partial name="~/Views/PPM/Portfolios/_OwnerAssignmentOffcanvas.cshtml" />
+    </div>
+}
 @section Scripts {
     @* Golden Slim contract marker: <partial name="_IndexL10n" />. *@
     <partial name="~/Views/PPM/Portfolios/_IndexL10n.cshtml" />

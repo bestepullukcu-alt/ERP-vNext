@@ -95,6 +95,7 @@ public sealed class MongoPersistenceIntegrationTests
         Assert.Equal(201, first.StatusCode);
         Assert.Equal(409, duplicate.StatusCode);
         Assert.Single(await fixture.Portfolios.ListAsync(fixture.TenantId, default));
+        Assert.Equal(1, await fixture.AuditCountAsync());
     }
 
     [Fact]
@@ -115,8 +116,14 @@ public sealed class MongoPersistenceIntegrationTests
             return true;
         }, default);
 
-        await Assert.ThrowsAsync<OptimisticConcurrencyException>(() =>
-            service.Update(new(id, "P-STALE", "Stale", null, null, 1), default));
+        var stale = await service.Update(new(id, "P-STALE", "Stale", null, null, 1), default);
+
+        Assert.Equal(409, stale.StatusCode);
+        var persisted = await fixture.Portfolios.GetByIdAsync(fixture.TenantId, id, default);
+        Assert.NotNull(persisted);
+        Assert.Equal("Concurrent", persisted.Name);
+        Assert.Equal(2, persisted.Version);
+        Assert.Equal(2, await fixture.AuditCountAsync());
     }
 
     [Fact]
@@ -131,6 +138,19 @@ public sealed class MongoPersistenceIntegrationTests
         var response = await otherTenantService.GetById(new(id), default);
 
         Assert.Equal(404, response.StatusCode);
+        Assert.Equal(1, await fixture.AuditCountAsync());
+    }
+
+    [Fact]
+    public async Task Missing_record_authority_closes_create_without_persistence_or_audit()
+    {
+        var fixture = await Fixture.Create();
+        var response = await fixture.PortfolioService(includeRecordAuthority: false)
+            .Create(new("P-NO-AUTHORITY", "No authority", null, null), default);
+
+        Assert.Equal(503, response.StatusCode);
+        Assert.Empty(await fixture.Portfolios.ListAsync(fixture.TenantId, default));
+        Assert.Equal(0, await fixture.AuditCountAsync());
     }
 
     [Fact]
@@ -464,12 +484,23 @@ public sealed class MongoPersistenceIntegrationTests
             new(Guid.NewGuid(), TenantId, ActorId, Guid.NewGuid(), entity.GetType().Name, entity.Id,
                 mutation, DateTime.UtcNow);
 
-        public PortfolioService PortfolioService(Guid? tenantId = null) =>
+        public async Task<long> AuditCountAsync() =>
+            await Context.AuditIntents.CountDocumentsAsync(
+                item => item.TenantId == TenantId);
+
+        public PortfolioService PortfolioService(
+            Guid? tenantId = null,
+            bool includeRecordAuthority = true) =>
             new(Portfolios, Audit, UnitOfWork,
                 new RequestContext(tenantId ?? TenantId, ActorId),
                 new RequestContext(tenantId ?? TenantId, ActorId),
                 new CorrelationContext(),
-                new PermissionEvaluator(), InvestmentCases);
+                new PermissionEvaluator(),
+                InvestmentCases,
+                recordAuthority: includeRecordAuthority
+                    ? new PortfolioTemporaryNonProductionRecordAccessAuthority(
+                        enabled: true, PortfolioTemporaryNonProductionAccessEnvironment.NonProduction)
+                    : null);
 
         public ProjectService ProjectService() =>
             new(Projects, Initiatives, Programs, Audit, UnitOfWork,
@@ -508,4 +539,5 @@ public sealed class MongoPersistenceIntegrationTests
             CancellationToken cancellationToken) =>
             Task.FromResult(PpmAccessDecision.Allowed);
     }
+
 }
