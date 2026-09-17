@@ -272,6 +272,10 @@
         reason: action.requiresReason,
         evidence: action.requiresEvidence,
         bulk: action.supportsBulk,
+        // WP-WCN-KANBAN-01 — the Kanban drag target, a normalizedStatus string or null (the action does not
+        // move the item's column: it changes who holds the work, not its state). Carried through untouched so
+        // the board never re-derives it from the action code.
+        targetStatus: action.targetStatus ?? null,
         /*
          * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
          * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`

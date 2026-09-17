@@ -861,7 +861,10 @@
 
     const activeItems = () => state.items.filter((item) => {
         if (!inTab(item, state.tab)) { return false; }
-        if (SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board is not filtered by segment: its columns ARE the status
+        // axis SEGMENTS narrows (İşlerim's "Aktif" segment hides Bekletiliyor, which would silently empty the
+        // board's own Bekletiliyor column). The segment bar itself is hidden in this view — see buildSegments.
+        if (state.view !== 'kanban' && SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
         return passesFilters(item);
     });
 
@@ -1234,6 +1237,9 @@
     // Segment bar = STATUS (only İşlerim). Aktif / Bekleyen / Planlı — a status
     // change moves the segment, never the tab (Fable's law).
     const buildSegments = () => {
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board does not apply the segment filter (see activeItems), so
+        // the chips that would narrow it are hidden rather than drawn and ignored.
+        if (state.view === 'kanban') { return ''; }
         const segs = SEGMENTS[state.tab];
         if (!segs) { return ''; }
         const btn = (seg) =>
@@ -6292,30 +6298,51 @@
          * labelled with the current segment. Measured on İşlerim: a single "Aktif 30" column — a board that is
          * a list with extra furniture. A board whose shape changes with the tab is two boards under one name.
          *
-         * ⚠ THE SEGMENT FILTER STILL APPLIES; it just stops deciding the columns. `activeItems()` has already
-         * narrowed to "Aktif", and the board arranges THAT by stage.
+         * ⚠ THE SEGMENT FILTER DOES NOT APPLY HERE (WP-WCN-KANBAN-01 Dilim 2) — see `activeItems`. The board
+         * arranges the tab's WHOLE non-terminal set by stage; narrowing it by segment first would silently
+         * empty a real column (İşlerim's "Aktif" segment excludes Bekletiliyor).
          *
          * ⚠ FLOW ORDER, NOT ALPHABETICAL — Pending → In Progress → Waiting → Done → Cancelled is the order the
          * work moves in, and a board read left-to-right is the only reason to prefer it over a list.
          *
          * ⚠ AN EMPTY STAGE IS DRAWN; AN IMPOSSIBLE ONE IS NOT — and the difference was measured, not assumed.
-         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done and Cancelled
-         * CANNOT occur outside History and the other three cannot occur inside it. Drawing all five everywhere
-         * would put two or three permanently empty columns on every board — the same promise-of-a-population
-         * this session removed from the chips and the table's columns. So: a stage this tab can reach is drawn
-         * even at zero (the flow stays readable); a stage it can never reach is left out.
+         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done/Cancelled
+         * CANNOT hold an item outside History and the other three cannot hold one inside it. Drawing all five
+         * everywhere would put permanently empty columns on every board — the same promise-of-a-population this
+         * session removed from the chips and the table's columns. So a stage this tab can reach is drawn even at
+         * zero; a stage it can never reach is left out — WITH ONE EXCEPTION, below.
+         *
+         * ⚠ İŞLERİM/BAŞLATTIKLARIM DRAW TWO THIN, CARDLESS DROP ZONES (WP-WCN-KANBAN-01 Dilim 2, owner decision
+         * 2026-09-16/17) — Tamamlandı and İptal never hold a card here (still true: `inTab` still excludes
+         * terminal work), but the column itself is now drawn, narrow and body-less, as the landing target Dilim
+         * 3's drag wires up ("Geçmiş'e taşındı" on drop). Havuz keeps today's shape exactly — no terminal columns
+         * at all — and History is untouched: its five/two columns, its cards, and `KanbanReadonly`'s note are
+         * still exactly what they were.
          */
         const FLOW = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
         const TERMINAL_STATES = ['Done', 'Cancelled'];
-        const reachable = (st) => (state.tab === 'history'
+        const isHistory = state.tab === 'history';
+        const showsDropZones = state.tab === 'islerim' || state.tab === 'baslattiklarim';
+        const reachable = (st) => (isHistory
             ? TERMINAL_STATES.indexOf(st) >= 0
-            : TERMINAL_STATES.indexOf(st) < 0);
+            : TERMINAL_STATES.indexOf(st) < 0 || showsDropZones);
         const cols = FLOW.filter(reachable)
-            .map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) }));
+            .map((st) => ({
+                label: t(STATUS_KEY[st]),
+                items: items.filter((i) => i.status === st),
+                dropZone: showsDropZones && TERMINAL_STATES.indexOf(st) >= 0
+            }));
         // Every reachable stage empty means the board has nothing to arrange — the product's empty-state
-        // sentence, not five empty columns with a heading each.
+        // sentence, not a wall of empty columns and drop zones with a heading each.
         if (!cols.some((col) => col.items.length)) { return emptyState(); }
         const colHtml = cols.map((col) => {
+            if (col.dropZone) {
+                // No count badge: it would always read 0 (a real card never lands here before Dilim 3 exists),
+                // and a "0" beside Tamamlandı/İptal reads as a real, countable column rather than a target.
+                return `<div class="wcn-kcol wcn-kcol-dropzone">
+                    <header class="wcn-kcol-head"><span>${esc(col.label)}</span></header>
+                </div>`;
+            }
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
             return `<div class="wcn-kcol">
                 <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
@@ -6323,7 +6350,7 @@
             </div>`;
         }).join('');
         return `<div class="wcn-kanban">
-            <div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>
+            ${isHistory ? `<div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>` : ''}
             <div class="wcn-kboard">${colHtml}</div>
         </div>`;
     };

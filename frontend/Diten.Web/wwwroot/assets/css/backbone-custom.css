@@ -5761,6 +5761,11 @@ tags.diten-tags .tagify__input {
     font-size: .8125rem; font-weight: 700; color: var(--bs-heading-color); border-block-end: 1px solid var(--bs-border-color); }
 .wcn-kcol-count { font-size: .6875rem; padding: .0625rem .375rem; border-radius: 1rem; background: var(--bs-card-bg); color: var(--bs-secondary-color); }
 .wcn-kcol-body { display: flex; flex-direction: column; gap: .5rem; padding: .5rem; min-block-size: 3rem; }
+/* WP-WCN-KANBAN-01 Dilim 2 — İşlerim/Başlattıklarım's thin, cardless Tamamlandı/İptal drop zones. Narrower than
+   a real column and dashed rather than solid, so the eye reads "target", not "empty list waiting to fill up". */
+.wcn-kcol-dropzone { flex-basis: 8rem; border: 1px dashed var(--bs-border-color); background: transparent; }
+.wcn-kcol-dropzone .wcn-kcol-head { justify-content: center; border-block-end: none; color: var(--bs-secondary-color);
+    font-weight: 600; text-align: center; }
 .wcn-kcard { background: var(--bs-card-bg); border: 1px solid var(--bs-border-color); border-radius: .5rem;
     padding: .625rem; cursor: pointer; transition: all .12s ease; }
 .wcn-kcard:hover { border-color: var(--bs-primary); }
