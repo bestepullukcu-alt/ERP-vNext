@@ -92,16 +92,23 @@
   <data name="NotesRequired" xml:space="preserve"><value>يتطلب التكرار المخصص ملاحظات.</value></data>
   <data name="FixErrors" xml:space="preserve"><value>يرجى تصحيح الحقول المميزة.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>تعذر تجهيز المحرر.</value></data>
-  <data name="Band_manager-override" xml:space="preserve"><value>يتجاوز كل شيء</value></data>
-  <data name="Band_campaign-target" xml:space="preserve"><value>مستوى الحملة</value></data>
-  <data name="Band_account-contact-link" xml:space="preserve"><value>جهة اتصال في موقع</value></data>
-  <data name="Band_contact" xml:space="preserve"><value>جهة اتصال</value></data>
-  <data name="Band_account" xml:space="preserve"><value>حساب</value></data>
-  <data name="Band_segment" xml:space="preserve"><value>شريحة</value></data>
-  <data name="Band_territory-node" xml:space="preserve"><value>منطقة</value></data>
-  <data name="Band_concept-node" xml:space="preserve"><value>مفهوم</value></data>
-  <data name="Band_audience-profile" xml:space="preserve"><value>ملف الجمهور</value></data>
-  <data name="Band_business-rule" xml:space="preserve"><value>قاعدة أساسية</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>يتجاوز كل شيء</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>مستوى الحملة</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>قياسي</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>أساسي</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>الملاذ الأخير</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>يتجاوز جميع القواعد الأخرى، بما في ذلك قواعد الحملة والشريحة.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>يأخذ الأولوية على القواعد القياسية خلال فترة الحملة.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>المستوى الموصى به لقواعد الشريحة والهدف العادية.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>التردد الأساسي على مستوى المنطقة؛ القواعد الأضيق تتجاوزه.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>ينطبق فقط عندما لا تتطابق أي قاعدة أخرى.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>يوم</value></data>
+  <data name="Period_week" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="Period_month" xml:space="preserve"><value>شهر</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>ربع سنة</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>دورة</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>فترة مخصصة</value></data>
   <!-- WP-FREQ-C details quick-view + resolve panel -->
   <data name="NoEndDate" xml:space="preserve"><value>بلا تاريخ انتهاء</value></data>
   <data name="DetailTrail" xml:space="preserve"><value>سجل التدقيق</value></data>

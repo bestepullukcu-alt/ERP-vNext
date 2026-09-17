@@ -538,12 +538,17 @@ public sealed class VisitFrequencyPolicyTests
 
         var bands = r.Data!.Vocabulary.PriorityBands;
         Assert.Equal(FrequencyPriorityBands.All.Count, bands.Count);
+        Assert.Equal(5, bands.Count); // WP-FREQ-F1: five conceptual weight tiers
         Assert.All(bands, b => Assert.True(b.Value >= 1));
-        Assert.Contains(bands, b => b.Code == "manager-override" && b.Value == FrequencyPriorityBands.ManagerOverride);
-        Assert.Contains(bands, b => b.Code == "campaign-target" && b.Value == FrequencyPriorityBands.CampaignTarget);
-        Assert.Contains(bands, b => b.Code == "business-rule" && b.Value == FrequencyPriorityBands.BusinessRule);
-        // manager-override is the strongest band, so its weight is the smallest (smaller wins).
-        Assert.Equal(bands.Min(b => b.Value), bands.Single(b => b.Code == "manager-override").Value);
+        Assert.Contains(bands, b => b.Code == "override-all" && b.Value == FrequencyPriorityBands.OverrideAll);
+        Assert.Contains(bands, b => b.Code == "campaign-level" && b.Value == FrequencyPriorityBands.CampaignLevel);
+        Assert.Contains(bands, b => b.Code == "standard" && b.Value == FrequencyPriorityBands.Standard);
+        Assert.Contains(bands, b => b.Code == "baseline" && b.Value == FrequencyPriorityBands.Baseline);
+        Assert.Contains(bands, b => b.Code == "last-resort" && b.Value == FrequencyPriorityBands.LastResort);
+        // override-all is the strongest tier, so its weight is the smallest (smaller wins).
+        Assert.Equal(bands.Min(b => b.Value), bands.Single(b => b.Code == "override-all").Value);
+        // last-resort is the weakest tier, so its weight is the largest.
+        Assert.Equal(bands.Max(b => b.Value), bands.Single(b => b.Code == "last-resort").Value);
         // The mockup's inverted sentinel numbers must never reach the client as real bands.
         Assert.DoesNotContain(bands, b => b.Value == 50);
     }

@@ -41,6 +41,10 @@
     let bandByWeight = new Map();
     const bandLabels = L.bandLabels || {};
     const sourceLabels = L.sourceLabels || {};
+    const periodLabels = L.periodLabels || {};
+    // AĞIRLIK: contract band CODE → Bootstrap label tone (5-tier weight model, WP-FREQ-F1). Unmapped codes fall back
+    // to a neutral secondary badge — the codes themselves still arrive from /contract, never hardcoded as vocabulary.
+    const bandTones = { 'override-all': 'danger', 'campaign-level': 'warning', standard: 'primary', baseline: 'info', 'last-resort': 'secondary' };
 
     // ── helpers ──────────────────────────────────────────────────────────────
     const getAuthHeaders = () => ({ Accept: 'application/json' });
@@ -67,7 +71,15 @@
     };
     // KAYNAK: contract source code → localized label (humanized fallback; never a hardcoded vocabulary).
     const sourceLabel = s => sourceLabels[norm(s)] || humanize(s) || '—';
-    // AĞIRLIK: priority weight → contract band code → localized band label. Falls back to the bare weight.
+    // FREKANS: contract period code → localized label (humanized fallback; never a hardcoded vocabulary).
+    const periodLabel = p => periodLabels[norm(p)] || humanize(p) || '';
+    // AĞIRLIK: priority weight → contract band code (from bandByWeight). Empty ⇒ no matching tier.
+    const weightCode = priority => {
+        const p = priority == null ? null : Number(priority);
+        if (p == null || Number.isNaN(p)) return '';
+        return bandByWeight.get(p) || '';
+    };
+    // AĞIRLIK: priority weight → localized band label. Falls back to the bare weight when no tier matches.
     const weightLabel = priority => {
         const p = priority == null ? null : Number(priority);
         if (p == null || Number.isNaN(p)) return '';
@@ -356,17 +368,16 @@
             : `<span class="text-muted small">${esc(shortId(row.targetId))}</span>`;
         return badge(label, 'secondary') + `<div class="mt-1">${nameHtml}</div>`;
     };
-    // FREKANS — type badge + "N / period" + subtitle (dönem sınırlı [EffectiveTo set] / süresiz geçerli [empty]).
+    // FREKANS — "N / <localized period>" prominent + subtitle (dönem sınırlı [EffectiveTo set] / süresiz geçerli
+    // [empty]). No frequencyType badge (WP-FREQ-F1 mockup: "2 / ay" + "süresiz geçerli").
     const frequencyCell = row => {
-        const type = humanize(row.frequencyType);
         const count = row.requiredVisitCount != null ? String(row.requiredVisitCount) : '';
-        const period = humanize(row.periodType);
+        const period = periodLabel(row.periodType);
         const per = norm(L.PerPeriod) || '/';
         const line = [count, per, period].filter(s => norm(s)).join(' ');
         const sub = norm(row.effectiveTo) ? norm(L.FreqBounded) : norm(L.FreqOpenEnded);
-        return badge(type, 'info')
-            + (line ? ` <span class="text-muted small">${esc(line)}</span>` : '')
-            + (sub ? `<div class="text-muted small">${esc(sub)}</div>` : '');
+        return (line ? `<span class="fw-medium text-heading d-block">${esc(line)}</span>` : '<span class="text-muted">—</span>')
+            + (sub ? `<span class="text-muted small">${esc(sub)}</span>` : '');
     };
     // GEÇERLİLİK — EffectiveFrom → EffectiveTo | "süresiz", dd.MM.yyyy.
     const validityCell = row => {
@@ -374,8 +385,14 @@
         const to = norm(row.effectiveTo) ? fmtDate(row.effectiveTo) : (norm(L.ValidityOpenEnded) || 'süresiz');
         return `<span>${esc(from || '—')}</span> <span class="text-muted">→</span> <span>${esc(to)}</span>`;
     };
-    // AĞIRLIK — priority band label (raw weight fallback).
-    const weightCell = row => { const w = weightLabel(row.priority); return w ? `<span class="badge bg-label-secondary">${esc(w)}</span>` : '—'; };
+    // AĞIRLIK — colored priority tier badge (5-tier tone map); raw weight ⇒ neutral badge fallback.
+    const weightCell = row => {
+        const label = weightLabel(row.priority);
+        if (!label) return '—';
+        const code = weightCode(row.priority);
+        const tone = code ? (bandTones[code] || 'secondary') : 'secondary';
+        return `<span class="badge bg-label-${tone}">${esc(label)}</span>`;
+    };
     // KAYNAK — source label.
     const sourceCell = row => `<span>${esc(sourceLabel(row.source))}</span>`;
 

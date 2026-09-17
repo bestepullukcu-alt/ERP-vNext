@@ -92,16 +92,23 @@
   <data name="NotesRequired" xml:space="preserve"><value>Una frecuencia personalizada requiere notas.</value></data>
   <data name="FixErrors" xml:space="preserve"><value>Corrija los campos resaltados.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>No se pudo preparar el editor.</value></data>
-  <data name="Band_manager-override" xml:space="preserve"><value>Por encima de todo</value></data>
-  <data name="Band_campaign-target" xml:space="preserve"><value>Nivel de campaña</value></data>
-  <data name="Band_account-contact-link" xml:space="preserve"><value>Contacto en un sitio</value></data>
-  <data name="Band_contact" xml:space="preserve"><value>Contacto</value></data>
-  <data name="Band_account" xml:space="preserve"><value>Cuenta</value></data>
-  <data name="Band_segment" xml:space="preserve"><value>Segmento</value></data>
-  <data name="Band_territory-node" xml:space="preserve"><value>Territorio</value></data>
-  <data name="Band_concept-node" xml:space="preserve"><value>Concepto</value></data>
-  <data name="Band_audience-profile" xml:space="preserve"><value>Perfil de audiencia</value></data>
-  <data name="Band_business-rule" xml:space="preserve"><value>Regla base</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Por encima de todo</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Nivel de campaña</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Estándar</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Base</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Último recurso</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Anula todas las demás reglas, incluidas las de campaña y segmento.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Prevalece sobre las reglas estándar durante un período de campaña.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>El nivel recomendado para las reglas normales de segmento y objetivo.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Frecuencia base para toda la región; las reglas más específicas la superan.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Se aplica solo cuando ninguna otra regla coincide.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>Día</value></data>
+  <data name="Period_week" xml:space="preserve"><value>Semana</value></data>
+  <data name="Period_month" xml:space="preserve"><value>Mes</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>Trimestre</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>Ciclo</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>Período de campaña</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>Período personalizado</value></data>
   <!-- WP-FREQ-C details quick-view + resolve panel -->
   <data name="NoEndDate" xml:space="preserve"><value>Sin fecha de fin</value></data>
   <data name="DetailTrail" xml:space="preserve"><value>Registro de auditoría</value></data>

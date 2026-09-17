@@ -216,59 +216,50 @@ public static class FrequencySource
 /// the authored <paramref name="Value"/> (smaller wins). WP-FREQ-B additive contract surface.</summary>
 public sealed record FrequencyPriorityBand(string Code, int Value);
 
-/// <summary>Suggested default priority bands (smaller wins). These are RECOMMENDATIONS a UI can surface; the stored
-/// <see cref="VisitFrequencyPolicy.Priority"/> is always authored explicitly and never silently defaulted.</summary>
+/// <summary>Suggested priority bands (smaller wins). WP-FREQ-F1 replaces the earlier 10 specificity bands with the
+/// user-approved 5 conceptual weight tiers ("who wins a conflict") — override-all &lt; campaign-level &lt; standard &lt;
+/// baseline &lt; last-resort. These are RECOMMENDATIONS a UI can surface as named bands; the stored
+/// <see cref="VisitFrequencyPolicy.Priority"/> is always authored explicitly and never silently defaulted, and the
+/// resolver still ties on the raw integer weight — the tiers are authoring/display labels only.</summary>
 public static class FrequencyPriorityBands
 {
-    public const int ManagerOverride = 100;
-    public const int CampaignTarget = 200;
-    public const int AccountContactLink = 300;
-    public const int Contact = 400;
-    public const int Account = 500;
-    public const int Segment = 600;
-    public const int TerritoryNode = 700;
-    public const int ConceptNode = 750;
-    public const int AudienceProfile = 775;
-    public const int BusinessRule = 800;
+    public const int OverrideAll = 100;
+    public const int CampaignLevel = 300;
+    public const int Standard = 500;
+    public const int Baseline = 700;
+    public const int LastResort = 900;
 
     /// <summary>The suggested bands as a client-facing (code, value) list — the SAME constants above, in ascending
     /// weight order (smaller wins). Exposed additively on the FU03 contract (WP-FREQ-B) so an authoring UI can render
     /// priority as named bands WITHOUT hardcoding the numbers; it changes no behaviour (Priority is still authored and
-    /// validated as a positive integer, never auto-defaulted from this list). Codes reuse the target/source vocabulary
-    /// spelling so a UI can localize each one by code.</summary>
+    /// validated as a positive integer, never auto-defaulted from this list). A UI localizes each entry by its
+    /// code.</summary>
     public static readonly IReadOnlyList<FrequencyPriorityBand> All = new[]
     {
-        new FrequencyPriorityBand("manager-override", ManagerOverride),
-        new FrequencyPriorityBand("campaign-target", CampaignTarget),
-        new FrequencyPriorityBand("account-contact-link", AccountContactLink),
-        new FrequencyPriorityBand("contact", Contact),
-        new FrequencyPriorityBand("account", Account),
-        new FrequencyPriorityBand("segment", Segment),
-        new FrequencyPriorityBand("territory-node", TerritoryNode),
-        new FrequencyPriorityBand("concept-node", ConceptNode),
-        new FrequencyPriorityBand("audience-profile", AudienceProfile),
-        new FrequencyPriorityBand("business-rule", BusinessRule),
+        new FrequencyPriorityBand("override-all", OverrideAll),
+        new FrequencyPriorityBand("campaign-level", CampaignLevel),
+        new FrequencyPriorityBand("standard", Standard),
+        new FrequencyPriorityBand("baseline", Baseline),
+        new FrequencyPriorityBand("last-resort", LastResort),
     };
 
-    /// <summary>Recommended band from source + target (manager-override always wins the band). For UI defaulting only.</summary>
+    /// <summary>Recommended tier from source + target (a manager override always wins; a campaign context sits at the
+    /// campaign level; everything else defaults to standard). For UI defaulting only — never auto-applied.</summary>
     public static int Suggest(string? source, string? targetType)
     {
-        if (string.Equals(source?.Trim(), FrequencySource.ManagerOverride, StringComparison.OrdinalIgnoreCase))
+        var normalizedSource = source?.Trim().ToLowerInvariant();
+        if (string.Equals(normalizedSource, FrequencySource.ManagerOverride, StringComparison.OrdinalIgnoreCase))
         {
-            return ManagerOverride;
+            return OverrideAll;
         }
 
-        return (targetType?.Trim().ToLowerInvariant()) switch
+        var normalizedTarget = targetType?.Trim().ToLowerInvariant();
+        if (normalizedTarget == FrequencyTargetType.CampaignTarget
+            || string.Equals(normalizedSource, FrequencySource.Campaign, StringComparison.OrdinalIgnoreCase))
         {
-            FrequencyTargetType.CampaignTarget => CampaignTarget,
-            FrequencyTargetType.AccountContactLink => AccountContactLink,
-            FrequencyTargetType.Contact => Contact,
-            FrequencyTargetType.Account => Account,
-            FrequencyTargetType.Segment => Segment,
-            FrequencyTargetType.TerritoryNode => TerritoryNode,
-            FrequencyTargetType.ConceptNode => ConceptNode,
-            FrequencyTargetType.AudienceProfile => AudienceProfile,
-            _ => BusinessRule
-        };
+            return CampaignLevel;
+        }
+
+        return Standard;
     }
 }

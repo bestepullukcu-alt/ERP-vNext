@@ -92,16 +92,23 @@
   <data name="NotesRequired" xml:space="preserve"><value>自定义频率需要备注。</value></data>
   <data name="FixErrors" xml:space="preserve"><value>请修正高亮的字段。</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>无法准备编辑器。</value></data>
-  <data name="Band_manager-override" xml:space="preserve"><value>凌驾一切</value></data>
-  <data name="Band_campaign-target" xml:space="preserve"><value>活动级别</value></data>
-  <data name="Band_account-contact-link" xml:space="preserve"><value>站点内联系人</value></data>
-  <data name="Band_contact" xml:space="preserve"><value>联系人</value></data>
-  <data name="Band_account" xml:space="preserve"><value>客户</value></data>
-  <data name="Band_segment" xml:space="preserve"><value>细分</value></data>
-  <data name="Band_territory-node" xml:space="preserve"><value>区域</value></data>
-  <data name="Band_concept-node" xml:space="preserve"><value>概念</value></data>
-  <data name="Band_audience-profile" xml:space="preserve"><value>受众画像</value></data>
-  <data name="Band_business-rule" xml:space="preserve"><value>基础规则</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>凌驾一切</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>活动级别</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>标准</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>基准</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>最后手段</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>覆盖包括活动和细分规则在内的所有其他规则。</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>在活动期间优先于标准规则。</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>常规细分和目标规则的推荐级别。</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>区域范围的基础频率；更具体的规则会覆盖它。</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>仅当没有其他规则匹配时才生效。</value></data>
+  <data name="Period_day" xml:space="preserve"><value>天</value></data>
+  <data name="Period_week" xml:space="preserve"><value>周</value></data>
+  <data name="Period_month" xml:space="preserve"><value>月</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>季度</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>周期</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>活动周期</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>自定义周期</value></data>
   <!-- WP-FREQ-C details quick-view + resolve panel -->
   <data name="NoEndDate" xml:space="preserve"><value>无结束日期</value></data>
   <data name="DetailTrail" xml:space="preserve"><value>审计记录</value></data>

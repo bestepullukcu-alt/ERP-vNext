@@ -65,16 +65,23 @@
         // stored weight to its code and labels it here (humanized/raw-number fallback), never a hardcoded band vocab.
         bandLabels = new Dictionary<string, string>
         {
-            ["manager-override"] = Localizer["Band_manager-override"].Value,
-            ["campaign-target"] = Localizer["Band_campaign-target"].Value,
-            ["account-contact-link"] = Localizer["Band_account-contact-link"].Value,
-            ["contact"] = Localizer["Band_contact"].Value,
-            ["account"] = Localizer["Band_account"].Value,
-            ["segment"] = Localizer["Band_segment"].Value,
-            ["territory-node"] = Localizer["Band_territory-node"].Value,
-            ["concept-node"] = Localizer["Band_concept-node"].Value,
-            ["audience-profile"] = Localizer["Band_audience-profile"].Value,
-            ["business-rule"] = Localizer["Band_business-rule"].Value
+            ["override-all"] = Localizer["Band_override-all"].Value,
+            ["campaign-level"] = Localizer["Band_campaign-level"].Value,
+            ["standard"] = Localizer["Band_standard"].Value,
+            ["baseline"] = Localizer["Band_baseline"].Value,
+            ["last-resort"] = Localizer["Band_last-resort"].Value
+        },
+        // FREKANS — period DISPLAY labels keyed by contract period CODE. Codes still come from the /contract
+        // vocabulary; index.js labels each through this map (humanized fallback), never a hardcoded period vocab.
+        periodLabels = new Dictionary<string, string>
+        {
+            ["day"] = Localizer["Period_day"].Value,
+            ["week"] = Localizer["Period_week"].Value,
+            ["month"] = Localizer["Period_month"].Value,
+            ["quarter"] = Localizer["Period_quarter"].Value,
+            ["cycle"] = Localizer["Period_cycle"].Value,
+            ["campaign-period"] = Localizer["Period_campaign-period"].Value,
+            ["custom"] = Localizer["Period_custom"].Value
         },
         // KAYNAK — source DISPLAY labels keyed by contract source CODE. Codes still come from the /contract
         // vocabulary; index.js labels each through this map (humanized fallback), never a hardcoded source vocab.

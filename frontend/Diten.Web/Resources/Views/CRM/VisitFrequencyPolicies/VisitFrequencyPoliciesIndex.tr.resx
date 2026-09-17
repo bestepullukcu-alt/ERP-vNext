@@ -92,16 +92,23 @@
   <data name="NotesRequired" xml:space="preserve"><value>Özel sıklık not gerektirir.</value></data>
   <data name="FixErrors" xml:space="preserve"><value>Lütfen işaretli alanları düzeltin.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>Düzenleyici hazırlanamadı.</value></data>
-  <data name="Band_manager-override" xml:space="preserve"><value>Her şeyin üstünde</value></data>
-  <data name="Band_campaign-target" xml:space="preserve"><value>Kampanya seviyesi</value></data>
-  <data name="Band_account-contact-link" xml:space="preserve"><value>Sahadaki kişi</value></data>
-  <data name="Band_contact" xml:space="preserve"><value>Doktor</value></data>
-  <data name="Band_account" xml:space="preserve"><value>Kurum</value></data>
-  <data name="Band_segment" xml:space="preserve"><value>Segment</value></data>
-  <data name="Band_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
-  <data name="Band_concept-node" xml:space="preserve"><value>Konsept</value></data>
-  <data name="Band_audience-profile" xml:space="preserve"><value>Hedef kitle</value></data>
-  <data name="Band_business-rule" xml:space="preserve"><value>Temel kural</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Her şeyin üstünde</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Kampanya seviyesi</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Standart</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Temel</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Son çare</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Kampanya ve segment kuralları dahil hepsini geçersiz kılar.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Kampanya döneminde standart kuralların önüne geçer.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>Normal segment ve hedef kuralları için önerilen seviye.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Bölge geneli için taban frekans; daha dar kurallar bunu geçer.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Başka hiçbir kural denk gelmezse devreye girer.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>gün</value></data>
+  <data name="Period_week" xml:space="preserve"><value>hafta</value></data>
+  <data name="Period_month" xml:space="preserve"><value>ay</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>çeyrek</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>dönem</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>kampanya dönemi</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>özel dönem</value></data>
   <!-- WP-FREQ-C details quick-view + resolve panel -->
   <data name="NoEndDate" xml:space="preserve"><value>Bitiş yok</value></data>
   <data name="DetailTrail" xml:space="preserve"><value>Kayıt izi</value></data>

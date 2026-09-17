@@ -92,16 +92,23 @@
   <data name="NotesRequired" xml:space="preserve"><value>Пользовательская частота требует примечаний.</value></data>
   <data name="FixErrors" xml:space="preserve"><value>Исправьте выделенные поля.</value></data>
   <data name="ContractUnavailable" xml:space="preserve"><value>Не удалось подготовить редактор.</value></data>
-  <data name="Band_manager-override" xml:space="preserve"><value>Превыше всего</value></data>
-  <data name="Band_campaign-target" xml:space="preserve"><value>Уровень кампании</value></data>
-  <data name="Band_account-contact-link" xml:space="preserve"><value>Контакт на объекте</value></data>
-  <data name="Band_contact" xml:space="preserve"><value>Контакт</value></data>
-  <data name="Band_account" xml:space="preserve"><value>Клиент</value></data>
-  <data name="Band_segment" xml:space="preserve"><value>Сегмент</value></data>
-  <data name="Band_territory-node" xml:space="preserve"><value>Территория</value></data>
-  <data name="Band_concept-node" xml:space="preserve"><value>Концепт</value></data>
-  <data name="Band_audience-profile" xml:space="preserve"><value>Профиль аудитории</value></data>
-  <data name="Band_business-rule" xml:space="preserve"><value>Базовое правило</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Превыше всего</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Уровень кампании</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Стандарт</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Базовый</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Крайняя мера</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Переопределяет все прочие правила, включая правила кампаний и сегментов.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Имеет приоритет над стандартными правилами в период кампании.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>Рекомендуемый уровень для обычных правил сегментов и целей.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Базовая частота для всего региона; более узкие правила её переопределяют.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Применяется, только если не подходит ни одно другое правило.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>День</value></data>
+  <data name="Period_week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="Period_month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>Квартал</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>Цикл</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>Особый период</value></data>
   <!-- WP-FREQ-C details quick-view + resolve panel -->
   <data name="NoEndDate" xml:space="preserve"><value>Без даты окончания</value></data>
   <data name="DetailTrail" xml:space="preserve"><value>Журнал аудита</value></data>
