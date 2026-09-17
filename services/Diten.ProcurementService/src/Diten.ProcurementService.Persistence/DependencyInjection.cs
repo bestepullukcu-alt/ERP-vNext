@@ -42,10 +42,17 @@ public static class DependencyInjection
         services.AddScoped<IRfxRepository, RfxRepository>();
         services.AddScoped<IRequisitionRepository, RequisitionRepository>();
         services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
+        services.AddScoped<IGrnRepository, GrnRepository>();
 
         // PRODUCT-MASTER (MOD-0290) consume seam — progressive integration (0290 bu dilimde bağlı değil).
         // Varsayılan permissive (hard-fail etmez); gerçek 0290 gateway'i bağlanınca bu kayıt değiştirilir.
         services.AddSingleton<IProductReferenceValidator, PermissiveProductReferenceValidator>();
+
+        // INVENTORY (MOD-0173) posting seam — progressive integration (0173 bu dilimde bağlı değil). Varsayılan
+        // MockInventoryPostingClient deterministik transactionId üretir (çalışan 0173 GEREKMEZ); gerçek HTTP client
+        // sonraki wiring — bu kayıt değiştirilir, GRN kodu DEĞİŞMEZ (contract sınırı, AD-2/§8). Shadow stock YOK:
+        // stok yalnız INVENTORY POST /movements ile artar; GRN yalnız dönen inventoryTransactionId referansını saklar.
+        services.AddSingleton<IInventoryPostingClient, MockInventoryPostingClient>();
 
         services.AddScoped<IModuleSeedDataInitializer, NoOpModuleSeedDataInitializer>();
 

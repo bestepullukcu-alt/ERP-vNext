@@ -31,7 +31,8 @@ public sealed class MongoIndexInitializerHostedService : BackgroundService
             await SupplierIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
             await SourcingIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
             await RequisitionPoIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
-            _logger.LogInformation("Supplier + Sourcing + Requisition/PO Mongo indexes ensured.");
+            await GrnIndexConfiguration.EnsureIndexesAsync(database, stoppingToken);
+            _logger.LogInformation("Supplier + Sourcing + Requisition/PO + GRN Mongo indexes ensured.");
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
