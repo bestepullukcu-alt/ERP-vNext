@@ -6,7 +6,7 @@ service: Diten.ProcurementService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: procurement / control-tower
 branch: feature/procurement-mvp-2
 started: 2026-09-16
@@ -16,7 +16,7 @@ form_field_count: 11
 
 # MOD-0143 — Invoice Capture & 3-Way Match
 
-> **Status guard.** `draft` — DCP-010 `approved`/`ready-for-execution` + bu pack `ready-for-dev` olmadan kod YOK (CAP-001 §7). DCP-010 §8 sırasında W-2 dilimi (0142 GRN'den sonra). Bu pack ready-for-dev **hedefli** yazılmıştır; Ali DCP-010'u onaylayıp 0141/0142 dilimleri açıldıktan sonra `ready-for-dev`'e alınır.
+> **Status guard.** `ready-for-dev` — DCP-010 `approved` (Ali) + bu pack `ready-for-dev` (Ali, 2026-09-17) → kod yetkili (CAP-001 §7). DCP-010 §8: 0142 GRN'den sonra (W-2). 3-way match GoodsReceived (0142) + PO (0141) tüketir; build 0142'den sonra yürür.
 > **Contract authority.** Entity alanları/objeleri/endpoint'leri `docs/analysis/contracts/invoice-match.openapi.yaml` (OWNED, x-owner MOD-0143, x-min-contract MATCH-BUNDLE) türetilir; uydurma yasak (K12). Gap'ler açıkça `ASSUMPTION-...:` ile işaretlenir. PO/GRN/ürün kimliği **consume edilir, yaratılmaz** (K16). Bu modül **AP/payment SoR DEĞİLDİR** — yalnız eşleşme sonucunu üretir.
 
 ## 1. Module Summary
@@ -167,7 +167,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [ ] Acceptance test edilebilir + G2A golden flow kuyruğu (GRN post → 3-way match → exception/tolerance-override) + E4/L3
 - [ ] Test expectations build/verifier/RESX/smoke/contract-mock kapsıyor
 - [ ] CONSUMED contract redefine yok (0141/0142/0290 fail-closed consume)
-- [ ] DCP-010 approved + 0141/0142 dilimleri + bu pack ready-for-dev onayı (kod kapısı)
+- [x] DCP-010 approved + 0141/0142 dilimleri + bu pack ready-for-dev onayı (Ali, 2026-09-17; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
 DCP-010 §8 sırasında W-2 dilimi: 0142 GRN'den sonra, 0144 Contracting'den önce (0140→0145→0141→0142→**0143**→0144). Servis scaffold MOD-0140 ile doğar; bu modül mevcut `Diten.ProcurementService`'e feature olarak eklenir (port 5062, JWT + Mongo V3 GUID + TenantId izolasyonu). MATCH contract producer surface `x-status: REVIEW` — freeze owner+consumer review sonrası.

@@ -6,7 +6,7 @@ service: Diten.ProcurementService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: procurement / control-tower
 branch: feature/procurement-mvp-2
 started: 2026-09-16
@@ -16,7 +16,7 @@ form_field_count: 10
 
 # MOD-0144 — Contracting & Clause Library
 
-> **Status guard.** `draft` — DCP-010 `approved`/`ready-for-execution` + bu pack `ready-for-dev` olmadan kod YOK (CAP-001 §7). DCP-010 §8 sırasında **son dikey dilim** (0140→0145→0141→0142→0143→0144); MVP-2 içinde mi yoksa fast-follow mu Ali onayında netleşir (OD-4). Bu pack ready-for-dev **hedefli** yazılmıştır.
+> **Status guard.** `ready-for-dev` — DCP-010 `approved` (Ali) + bu pack `ready-for-dev` (Ali, 2026-09-17) → kod yetkili (CAP-001 §7). DCP-010 §8 **son dikey dilim** (0140→0145→0141→0142→0143→**0144**). SUPPLIER (0140) + SOURCING (0145) tüketir; build 0143'ten sonra yürür.
 > **Contract authority.** Entity alanları `docs/analysis/contracts/contracting.openapi.yaml`'dan (x-owner MOD-0144, `x-min-contract: CLM-CONTRACT-BUNDLE`) türetilir; uydurma yasak (K12). Supplier (0140) ve award/rfx (0145) **consume edilir, yaratılmaz** — bilinmeyen supplier/rfx `fail-closed` (404 UNKNOWN_REFERENCE). Doküman binary burada saklanmaz; yalnız `evidenceRef` → MOD-0029/0031.
 
 ## 1. Module Summary
@@ -166,7 +166,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [ ] Gateway routing kararı (integration-agent task)
 - [ ] Acceptance test edilebilir + consume-don't-own (supplier 0140 / award 0145) fail-closed posture
 - [ ] Test expectations build/verifier/RESX/smoke/contract-mock kapsıyor
-- [ ] DCP-010 approved + bu pack ready-for-dev onayı (kod kapısı)
+- [x] DCP-010 approved + bu pack ready-for-dev onayı (Ali, 2026-09-17; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
 DCP-010 §8 sırasında **son dikey dilim** (0140→0145→0141→0142→0143→0144). OD-4 gereği Contracting MVP-2 içinde mi yoksa **fast-follow** mu Ali onayında netleşir (şu an DCP üyesi, sıra sonuncu). Servis zaten 0140 ile scaffold edilmiş olacağından bu pack yeni servis doğurmaz; yalnız `Features/Contract` + `Features/Clause` eklenir (JWT + Mongo V3 GUID + TenantId+LE izolasyonu + port 5062 + gateway route integration-agent task). CONTRACTING contract `x-status: REVIEW` — freeze owner+consumer review sonrası. Approval MOD-0023 üzerinden; `workflowInstanceId` activate'te doldurulur.

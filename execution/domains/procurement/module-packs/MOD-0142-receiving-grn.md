@@ -6,7 +6,7 @@ service: Diten.ProcurementService
 shell: tenant
 golden_reference: compact
 entity_base: EntityBase
-status: draft
+status: ready-for-dev
 owner: procurement / control-tower
 branch: feature/procurement-mvp-2
 started: 2026-09-16
@@ -16,7 +16,7 @@ form_field_count: 12
 
 # MOD-0142 — Receiving (GRN)
 
-> **Status guard.** `draft` — DCP-010 `approved`/`ready-for-execution` + bu pack `ready-for-dev` olmadan kod YOK (CAP-001 §7). Bu pack ready-for-dev **hedefli** yazılmıştır; Ali DCP-010'u onaylayınca `ready-for-dev`'e alınır. DCP-010 §8 sırasında 0140→0145→0141'den sonra scaffold edilir (W-2).
+> **Status guard.** `ready-for-dev` — DCP-010 `approved` (Ali) + bu pack `ready-for-dev` (Ali, 2026-09-17) → kod yetkili (CAP-001 §7). DCP-010 §8: 0140/0145/0141 done → **0142 aktif** (W-2, kritik: INVENTORY'ye post, shadow-stock YASAK, G2A golden flow).
 > **Contract authority.** Entity alanları OWNED `docs/analysis/contracts/grn-event.openapi.yaml`'dan (FROZEN v1) türetilir; uydurma yasak (K12). Ürün/tedarikçi/stok/lokasyon kimliği consume edilir, yaratılmaz.
 > **No shadow stock.** GRN envanteri **kendi balance'ı olarak tutmaz**; yalnız frozen INVENTORY-BUNDLE `POST /api/inventory/movements` (`GOODS_RECEIPT_PO`) ile post eder ve dönen `inventoryTransactionId` referansını saklar. İkinci stok balance/ledger YASAK (AD-2, rapor §21.1 rule 3).
 
@@ -168,7 +168,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [ ] Gateway routing kararı (integration-agent task)
 - [ ] Acceptance test edilebilir + G2A zincirinde GRN→0173 post rolü (E4/E5) + shadow-stock-yok kanıtı
 - [ ] Test expectations build/verifier/RESX/smoke/contract-mock + cross-module seam kapsıyor
-- [ ] DCP-010 approved + bu pack ready-for-dev onayı (kod kapısı)
+- [x] DCP-010 approved + bu pack ready-for-dev onayı (Ali, 2026-09-17; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
 DCP-010 §8 sırasında W-2 dilimi (0140→0145→0141→**0142**→0143→0144). **Progressive integration:** GRN, frozen INVENTORY-BUNDLE'a post eder — mock şimdi (`prism mock inventory-bundle.openapi.yaml`), gerçek MOD-0173 sonra; contract sınır olduğu için GRN kodu değişmez (AD-2/§8). GRN-EVENT OWNED-FROZEN v1; şekli değiştirilmez, gerekirse additive-only. Kritik tasarım kuralı: GRN **doküman + dönen `inventoryTransactionId`** sahibidir, **stok gerçeği değil** — envanter tek SoR MOD-0173. INVENTORY `MovementRequest.sourceModule=MOD-0142`, `sourceType=GOODS_RECEIPT`, `sourceDocumentId=GrnId`, `sourceLineId=poLineId` map edilir (contract örneğiyle uyumlu).
