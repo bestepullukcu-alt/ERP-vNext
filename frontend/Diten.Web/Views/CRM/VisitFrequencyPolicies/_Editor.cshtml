@@ -153,8 +153,8 @@
                        label + `.diten-field` icon wrapper + `.form-control`. Element ids (vfpPolicyCode/vfpPolicyName/
                        vfpDescription/vfpNotes), the vfp-error/vfp-help divs and #vfpTargetLockNote are PRESERVED — form.js
                        reads them by id, never by the old vfp-input/vfp-textarea class. *@
-                    <div class="vfp-grid">
-                        <div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
                             <label class="form-label fw-medium" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="text-danger">*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
@@ -163,7 +163,7 @@
                             <div class="vfp-error" id="vfpPolicyCodeError"></div>
                             <div class="vfp-help vfp-hidden" id="vfpTargetLockNote">@Localizer["TargetLockNote"]</div>
                         </div>
-                        <div>
+                        <div class="col-md-6">
                             <label class="form-label fw-medium" for="vfpPolicyName">@Localizer["FieldPolicyName"] <span class="text-danger">*</span></label>
                             <div class="diten-field">
                                 <i class="bx bx-text diten-field-icon" aria-hidden="true"></i>
@@ -171,20 +171,19 @@
                             </div>
                             <div class="vfp-error" id="vfpPolicyNameError"></div>
                         </div>
-                        <div class="vfp-field-full">
+                        <div class="col-12">
                             <label class="form-label fw-medium" for="vfpDescription">@Localizer["FieldDescription"]</label>
                             <div class="diten-field">
                                 <i class="bx bx-align-left diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
                                 <textarea class="form-control" id="vfpDescription" rows="2"></textarea>
                             </div>
                         </div>
-                        <div class="vfp-field-full">
+                        <div class="col-12">
                             <label class="form-label fw-medium" for="vfpNotes">@Localizer["FieldNotes"]</label>
                             <div class="diten-field">
                                 <i class="bx bx-note diten-field-icon diten-field-icon--top" aria-hidden="true"></i>
-                                <textarea class="form-control" id="vfpNotes" rows="2"></textarea>
+                                <textarea class="form-control" id="vfpNotes" rows="2" placeholder="@Localizer["NotesHelp"]"></textarea>
                             </div>
-                            <div class="vfp-help">@Localizer["NotesHelp"]</div>
                             <div class="vfp-error" id="vfpNotesError"></div>
                         </div>
                     </div>
