@@ -276,4 +276,67 @@
   <data name="TargetType_campaign-target" xml:space="preserve"><value>Cible de campagne</value></data>
   <data name="SpecNarrowest" xml:space="preserve"><value>portée la plus étroite</value></data>
   <data name="SpecBroadest" xml:space="preserve"><value>portée la plus large</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>Sur qui vous renseignez-vous ?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Choisissez une cible ; nous montrerons combien de visites elle reçoit actuellement et de quelle règle cela provient.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Qui / quoi</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Un médecin — dans un hôpital précis</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Un médecin — tous les hôpitaux</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Un établissement/compte</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Lien personne–établissement</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Toutes les cibles d’un segment</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Cible de campagne</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Zone de territoire</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Nœud de concept</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Profil d’audience</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Enregistrement</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>changer</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Date</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Afficher la fréquence</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>La règle est simple</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Si plusieurs politiques correspondent à une cible, la portée la plus étroite l’emporte : une règle propre à une personne bat une règle de campagne, et une règle de campagne bat une règle de segment. À portée égale, la priorité la plus élevée l’emporte ; à priorité égale, la date de début la plus récente l’emporte.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Réponse</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} visites {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Aucune fréquence définie</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Conflit</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>par jour</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>par semaine</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>par mois</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>par trimestre</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>par cycle</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>par période de campagne</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>par période personnalisée</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Une règle correspondante a été trouvée pour cette cible ; la plus étroite a été appliquée.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Aucune politique ne correspond à cette cible ; le planificateur utilise la valeur par défaut du système.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Plusieurs règles partagent la même portée ; celle de priorité supérieure a été appliquée. Vous pourriez vouloir revoir l’autre.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>La résolution ne s’applique pas à cette demande.</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>La règle qui fixe cette fréquence</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Ouvrir la politique</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Autres règles correspondant à cette cible</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>du plus étroit au plus large</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Aucune autre règle ne correspond à cette cible.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>sélectionnée</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>hors période</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>non appliquée</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>de secours</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Que dois-je faire ?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Rien à faire</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Le planificateur appliquera cette fréquence à cette cible.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Si la fréquence semble incorrecte</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Ouvrez la règle appliquée et modifiez le nombre de visites, ou archivez la règle.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>Deux règles partagent la même portée</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Pour une solution durable, réduisez la portée de l’une ou baissez sa priorité.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Pas de problème pour l’instant</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Le planificateur utilise la règle de priorité supérieure ; la planification continue.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Cette cible n’est pas couverte</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Envisagez de définir une règle de secours au niveau du segment ou du territoire.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Solution rapide</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Une seule politique pour le segment couvre toutes les cibles qu’il contient.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Non applicable</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>La résolution n’est pas valide pour ce type de cible.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Spécifique à la personne</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Concept</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Territoire</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Audience</value></data>
 </root>

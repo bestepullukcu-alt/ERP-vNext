@@ -276,4 +276,67 @@
   <data name="TargetType_campaign-target" xml:space="preserve"><value>هدف الحملة</value></data>
   <data name="SpecNarrowest" xml:space="preserve"><value>أضيق نطاق</value></data>
   <data name="SpecBroadest" xml:space="preserve"><value>أوسع نطاق</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>عمّن تسأل؟</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>اختر هدفًا؛ سنعرض عدد الزيارات المخصصة له حاليًا ومن أي قاعدة تأتي.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>من / ماذا</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>طبيب — في مستشفى محدد</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>طبيب — كل المستشفيات</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>مؤسسة/حساب</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>ارتباط شخص-مؤسسة</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>كل الأهداف في شريحة</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>هدف الحملة</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>منطقة إقليمية</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>عقدة مفهوم</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>السجل</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>تغيير</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>عرض التكرار</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>القاعدة بسيطة</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>إذا انطبقت أكثر من سياسة على هدف، يفوز الأضيق نطاقًا: القاعدة الخاصة بشخص تتغلب على قاعدة الحملة، وقاعدة الحملة تتغلب على قاعدة الشريحة. عند تساوي النطاق تفوز الأولوية الأعلى، وعند تساوي الأولوية يفوز أحدث تاريخ بدء.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>الإجابة</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} زيارة {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>لا يوجد تكرار محدد</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>غير قابل للتطبيق</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>يوميًا</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>أسبوعيًا</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>شهريًا</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>كل ربع سنة</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>لكل دورة</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>لكل فترة حملة</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>لكل فترة مخصصة</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>تم العثور على قاعدة مطابقة لهذا الهدف؛ وطُبِّقت الأضيق نطاقًا.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>لا توجد سياسة تطابق هذا الهدف؛ يستخدم المخطط الإعداد الافتراضي للنظام.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>أكثر من قاعدة تتشارك النطاق نفسه؛ طُبِّقت الأعلى أولوية. قد ترغب في مراجعة الأخرى.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>لا ينطبق الحل على هذا الطلب.</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>القاعدة التي تحدد هذا التكرار</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>فتح السياسة</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>قواعد أخرى تطابق هذا الهدف</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>مرتبة من الأضيق إلى الأوسع</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>لا توجد قواعد أخرى تطابق هذا الهدف.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>مُختارة</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>خارج النطاق الزمني</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>غير مُفعَّلة</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>احتياطية</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>ماذا ينبغي أن أفعل؟</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>لا حاجة لأي إجراء</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>سيطبّق المخطط هذا التكرار على هذا الهدف.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>إذا بدا التكرار خاطئًا</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>افتح القاعدة المُطبَّقة وغيّر عدد الزيارات، أو أرشِف القاعدة.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>قاعدتان تتشاركان النطاق نفسه</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>لحل دائم، ضيّق نطاق إحداهما أو اخفض أولويتها.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>لا مشكلة في الوقت الحالي</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>يستخدم المخطط القاعدة الأعلى أولوية؛ ويستمر إنشاء الخطة.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>هذا الهدف غير مُغطّى</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>يُنصح بتعريف قاعدة احتياطية على مستوى الشريحة أو الإقليم.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>حل سريع</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>سياسة واحدة للشريحة تغطي كل الأهداف ضمنها.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>غير قابل للتطبيق</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>الحل غير صالح لهذا النوع من الأهداف.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>خاص بالشخص</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>مفهوم</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>إقليم</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>الجمهور</value></data>
 </root>

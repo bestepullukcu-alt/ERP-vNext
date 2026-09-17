@@ -30,6 +30,9 @@
     const verdictLabels = L.verdictLabels || {};
     const reasonLabels = L.reasonLabels || {};
     const bandLabels = L.bandLabels || {};
+    const periodLabels = L.periodLabels || {};       // period CODE → "ay/hafta/…" (freq "N / dönem")
+    const cadenceLabels = L.cadenceLabels || {};     // period CODE → "ayda/haftada/…" (headline)
+    const targetTypeLabels = L.targetTypeLabels || {}; // targetType CODE → friendly label
 
     // ── helpers ─────────────────────────────────────────────────────────────────
     const el = id => document.getElementById(id);
@@ -139,10 +142,17 @@
         return label ? `${label} (${p})` : String(p);
     };
 
+    // period/targetType humanized display through the closed L10n maps (contract codes drive them; humanized fallback).
+    const periodLabel = p => periodLabels[norm(p)] || humanize(p) || '';
+    const cadenceLabel = p => cadenceLabels[norm(p)] || periodLabel(p);
+    const targetTypeLabel = code => targetTypeLabels[norm(code)] || humanize(code);
+    // composite-format template ({0},{1},…) so each language keeps its own word order.
+    const fmt = (tpl, ...args) => String(tpl || '').replace(/\{(\d+)\}/g, (m, i) => (args[Number(i)] != null ? String(args[Number(i)]) : ''));
+
     const freqSentence = (count, period) => {
         const c = norm(count);
         const per = t('PerPeriod', '/');
-        const pd = norm(period) ? humanize(period) : '';
+        const pd = norm(period) ? periodLabel(period) : '';
         return [c, per, pd].filter(Boolean).join(' ');
     };
 
@@ -267,10 +277,40 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════════
-    //  2) RESOLVE / ÇÖZÜMLEME PANEL
+    //  2) RESOLVE / ÇÖZÜMLEME PANEL — WP-FREQ-DET-H "Frekans Kontrolü" mockup (3 cards).
+    //     A friendly SCENARIO → (targetType + context) drives GET /resolve (IncludeDiagnostics=true); the answer, the
+    //     rule ladder and the "ne yapmalıyım?" steps are all DERIVED from the real payload — nothing is fabricated.
     // ════════════════════════════════════════════════════════════════════════════
     const PANEL = el('vfpResolvePanel');
 
+    // Friendly scenario → targetType (+ scenario-specific context). Kept as a display mapping; the targetType still has
+    // to be in the contract vocabulary (scenarios whose type is absent are dropped in initResolvePanel).
+    const SCENARIOS = [
+        { id: 'contact-territory', targetType: 'contact', context: ['territory'], labelKey: 'ResolveScenario_contact_territory' },
+        { id: 'contact', targetType: 'contact', context: [], labelKey: 'ResolveScenario_contact' },
+        { id: 'account', targetType: 'account', context: [], labelKey: 'ResolveScenario_account' },
+        { id: 'account-contact-link', targetType: 'account-contact-link', context: [], labelKey: 'ResolveScenario_account-contact-link' },
+        { id: 'segment', targetType: 'segment', context: [], labelKey: 'ResolveScenario_segment' },
+        { id: 'campaign-target', targetType: 'campaign-target', context: [], labelKey: 'ResolveScenario_campaign-target' },
+        { id: 'territory-node', targetType: 'territory-node', context: [], labelKey: 'ResolveScenario_territory-node' },
+        { id: 'concept-node', targetType: 'concept-node', context: [], labelKey: 'ResolveScenario_concept-node' },
+        { id: 'audience-profile', targetType: 'audience-profile', context: [], labelKey: 'ResolveScenario_audience-profile' }
+    ];
+    let scenarioList = [];
+    const scenarioById = id => scenarioList.find(s => s.id === norm(id)) || scenarioList[0] || null;
+
+    // priority weight → contract band code (last-resort detection for the "yedek" ladder tag). Reuses bandByWeight.
+    const ensureBands = async () => {
+        if (!bandByWeight) {
+            bandByWeight = new Map();
+            const c = await loadContract();
+            (c?.vocabulary?.priorityBands || []).forEach(b => bandByWeight.set(Number(b.value), b.code));
+        }
+        return bandByWeight;
+    };
+    const bandCode = p => { const n = Number(p); return (bandByWeight && !Number.isNaN(n)) ? (bandByWeight.get(n) || '') : ''; };
+
+    // the record (Kayıt) picker for the scenario's targetType — reuses TARGET_KIND / loadOptions (names, never GUIDs).
     const renderTargetPicker = async targetType => {
         const host = el('vfpRsTargetPicker');
         if (!host) return;
@@ -293,31 +333,44 @@
         fillSelect(el('vfpRsTargetId'), await loadOptions(kind), t('SelectOption', '—'));
     };
 
+    // scenario-specific context (e.g. doctor-in-hospital reveals a Saha alanı model+node picker → territoryNodeId).
+    const renderScenarioContext = async scenario => {
+        const host = el('vfpRsScenarioContext');
+        if (!host) return;
+        if (!scenario || !scenario.context.includes('territory')) {
+            host.innerHTML = '';
+            host.classList.add('d-none');
+            return;
+        }
+        host.classList.remove('d-none');
+        host.innerHTML = `<label class="form-label small mb-1">${esc(t('FieldTerritory', 'Territory'))}</label>`
+            + `<select class="form-select form-select-sm mb-2" id="vfpRsCtxTerModel"></select>`
+            + `<select class="form-select form-select-sm" id="vfpRsCtxTerNode"></select>`;
+        fillSelect(el('vfpRsCtxTerModel'), await loadOptions('territory-model'), t('SelectTerritoryModel', 'Select model'));
+        fillSelect(el('vfpRsCtxTerNode'), [], t('SelectTerritoryNode', 'Select node'));
+        el('vfpRsCtxTerModel').addEventListener('change', async e => {
+            fillSelect(el('vfpRsCtxTerNode'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
+        });
+    };
+
     const targetIdValue = () => norm(el('vfpRsTargetId')?.value);
+
+    const applyScenario = async scenario => {
+        if (!scenario) return;
+        await Promise.all([renderTargetPicker(scenario.targetType), renderScenarioContext(scenario)]);
+    };
 
     const initResolvePanel = async () => {
         const c = await loadContract();
         const targetTypes = c?.vocabulary?.targetTypes || [];
-        fillSelect(el('vfpRsTargetType'), targetTypes.map(code => ({ value: code, text: humanize(code) })), t('SelectOption', '—'));
+        await ensureBands();
+        // scenario → targetType mapping is anchored to the contract vocabulary.
+        scenarioList = SCENARIOS.filter(s => targetTypes.includes(s.targetType));
+        fillSelect(el('vfpRsScenario'), scenarioList.map(s => ({ value: s.id, text: t(s.labelKey, s.id) })), null);
+        fillSelect(el('vfpRsCyclePeriod'), await loadOptions('cycle-period'), t('ContextNone', '— none —'));
 
-        // context selects
-        const fill = async (id, kind) => fillSelect(el(id), await loadOptions(kind), t('ContextNone', '— none —'));
-        await Promise.all([
-            fill('vfpRsBusinessUnit', 'business-unit'),
-            fill('vfpRsSegment', 'segment'),
-            fill('vfpRsCampaign', 'campaign'),
-            fill('vfpRsBrand', 'brand'),
-            fill('vfpRsProduct', 'product'),
-            fill('vfpRsConceptNode', 'concept-node'),
-            fill('vfpRsAudienceProfile', 'audience-profile')
-        ]);
-        fillSelect(el('vfpRsTerritoryModel'), await loadOptions('territory-model'), t('SelectTerritoryModel', 'Select model'));
-        fillSelect(el('vfpRsTerritoryNode'), [], t('SelectTerritoryNode', 'Select node'));
-
-        el('vfpRsTargetType')?.addEventListener('change', e => void renderTargetPicker(e.target.value));
-        el('vfpRsTerritoryModel')?.addEventListener('change', async e => {
-            fillSelect(el('vfpRsTerritoryNode'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
-        });
+        await applyScenario(scenarioById(el('vfpRsScenario')?.value));
+        el('vfpRsScenario')?.addEventListener('change', e => void applyScenario(scenarioById(e.target.value)));
         el('vfpRsRun')?.addEventListener('click', () => void runResolve());
     };
 
@@ -327,81 +380,135 @@
         el('vfpRsResult')?.classList.toggle('d-none', state !== 'result');
     };
 
-    const candidateRow = c => {
-        const sel = c.selected;
-        const tone = sel ? 'success' : 'secondary';
-        const mark = sel ? badge(t('ResolveSelectedBadge', 'Selected'), 'success') : badge(t('ResolveEliminated', 'Eliminated'), 'secondary');
-        return `<tr class="${sel ? 'vfp-rs-cand-selected' : ''}">`
-            + `<td><span class="fw-medium">${esc(c.policyName || '')}</span><br><span class="vfp-meta vfp-mono">${esc(c.policyCode || '')}</span></td>`
-            + `<td>${esc(freqSentence(c.requiredVisitCount, c.periodType))}</td>`
-            + `<td class="text-center">${esc(c.priority != null ? String(c.priority) : '')}</td>`
-            + `<td class="text-center">${esc(c.specificity != null ? String(c.specificity) : '')}</td>`
-            + `<td>${badge(statusLabel(c.status), statusTone(c.status))}</td>`
-            + `<td>${mark}<div class="vfp-meta mt-1">${esc(reasonLabel(c.reason))}</div></td>`
-            + `</tr>`;
+    // ── verdict → answer headline / explain / tone ────────────────────────────────
+    const HEADLINE_KEY = { unknown: 'ResolveHeadlineUnknown', conflict: 'ResolveHeadlineConflict', not_applicable: 'ResolveHeadlineNotApplicable' };
+    const EXPLAIN_KEY = { resolved: 'ResolveExplainResolved', unknown: 'ResolveExplainUnknown', conflict: 'ResolveExplainConflict', not_applicable: 'ResolveExplainNotApplicable' };
+    const answerHeadline = r => {
+        const v = norm(r.frequencyStatus);
+        if (v === 'resolved' && r.requiredVisitCount != null) {
+            return fmt(t('ResolveHeadlineResolved', '{1} {0}'), r.requiredVisitCount, cadenceLabel(r.periodType));
+        }
+        return t(HEADLINE_KEY[v] || 'ResolveHeadlineUnknown', verdictLabel(v));
+    };
+    const answerTone = v => verdictTone(v);
+
+    // ── candidate (ladder) status tag ─────────────────────────────────────────────
+    const ELIMINATED_REASONS = new Set(['policy_not_effective', 'policy_inactive', 'policy_archived',
+        'business_scope_mismatch', 'campaign_context_missing', 'segment_context_missing', 'cycle_context_missing']);
+    const candTag = c => {
+        if (c.selected) return { text: t('ResolveTagSelected', 'seçildi'), tone: 'success' };
+        const reason = norm(c.reason);
+        if (reason === 'policy_not_effective') return { text: t('ResolveTagNotEffective', 'tarih dışı'), tone: 'danger' };
+        if (ELIMINATED_REASONS.has(reason)) return { text: t('ResolveTagInactive', 'devrede değil'), tone: 'secondary' };
+        // eligible-but-lost: a last-resort-band policy reads as a "yedek" (fallback); otherwise it just didn't win.
+        if (bandCode(c.priority) === 'last-resort') return { text: t('ResolveTagFallback', 'yedek'), tone: 'info' };
+        return { text: t('ResolveTagInactive', 'devrede değil'), tone: 'secondary' };
     };
 
+    // ── NE YAPMALIYIM? — steps derived from the verdict ───────────────────────────
+    const NEXT_STEPS = {
+        resolved: [{ kind: 'ok', l: 'ResolveDo_resolved_1', d: 'ResolveDo_resolved_1d' }, { kind: 'info', l: 'ResolveDo_resolved_2', d: 'ResolveDo_resolved_2d' }],
+        conflict: [{ kind: 'warn', l: 'ResolveDo_conflict_1', d: 'ResolveDo_conflict_1d' }, { kind: 'info', l: 'ResolveDo_conflict_2', d: 'ResolveDo_conflict_2d' }],
+        unknown: [{ kind: 'warn', l: 'ResolveDo_unknown_1', d: 'ResolveDo_unknown_1d' }, { kind: 'info', l: 'ResolveDo_unknown_2', d: 'ResolveDo_unknown_2d' }],
+        not_applicable: [{ kind: 'info', l: 'ResolveDo_na_1', d: 'ResolveDo_na_1d' }]
+    };
+    const DO_ICON = { ok: '✓', warn: '!', info: 'i' };
     const renderResolveResult = async r => {
-        const parts = [];
-        parts.push(`<div class="vfp-rs-verdict-row">${badge(verdictLabel(r.frequencyStatus), verdictTone(r.frequencyStatus))}</div>`);
+        await ensureBands();
+        const v = norm(r.frequencyStatus);
+        const hasWinner = !!norm(r.selectedFrequencyPolicyId);
 
-        if (norm(r.selectedFrequencyPolicyId)) {
+        // CEVAP card ------------------------------------------------------------------
+        const answer = `<div class="vfp-rs-answer vfp-rs-answer--${answerTone(v)}">`
+            + '<div class="vfp-rs-answer-main">'
+            + `<span class="vfp-rs-answer-label">${esc(t('ResolveAnswerLabel', 'Cevap'))}</span>`
+            + `<span class="vfp-rs-answer-headline">${esc(answerHeadline(r))}</span>`
+            + `<span class="vfp-rs-answer-explain">${esc(t(EXPLAIN_KEY[v] || 'ResolveExplainUnknown', ''))}</span>`
+            + '</div>'
+            + badge(verdictLabel(v), answerTone(v))
+            + '</div>';
+
+        // winning rule ----------------------------------------------------------------
+        let winner = '';
+        if (hasWinner) {
             const prio = await priorityText(r.priority);
-            parts.push('<div class="vfp-rs-selected">'
-                + `<div class="vfp-rs-selected-name">${esc(r.selectedPolicyName || dash())}</div>`
-                + `<div class="vfp-rs-selected-code vfp-mono">${esc(r.selectedPolicyCode || '')}</div>`
-                + `<div class="vfp-rs-selected-freq">${esc(freqSentence(r.requiredVisitCount, r.periodType))}</div>`
-                + `<div class="vfp-rs-reason"><strong>${esc(t('ResolveSelectionReason', 'Selection reason'))}:</strong> ${esc(reasonLabel(r.selectionReason))}</div>`
-                + `<div class="vfp-meta mt-2">${esc(t('DvSectionPriority', 'Priority'))}: ${esc(prio)} · ${esc(t('FieldSource', 'Source'))}: ${esc(humanize(r.source) || dash())}`
-                + ` · ${esc(fmtDate(r.effectiveFrom) || dash())} → ${esc(fmtDate(r.effectiveTo) || t('NoEndDate', 'No end date'))}</div>`
-                + '</div>');
-        } else {
-            parts.push(`<div class="vfp-rs-empty">${esc(t('ResolveNoSelected', 'No policy governs this target in this context.'))}</div>`);
+            const scopeBits = [prio, humanize(r.source) ? sourcePretty(r.source) : '',
+                `${fmtDate(r.effectiveFrom) || dash()} → ${fmtDate(r.effectiveTo) || t('NoEndDate', 'No end date')}`,
+                reasonLabel(r.selectionReason)].filter(Boolean);
+            const openBtn = `<a class="btn btn-sm btn-label-secondary" href="/CRM/VisitFrequencyPolicies/Details/${esc(r.selectedFrequencyPolicyId)}">${esc(t('ResolveOpenPolicy', 'Open policy'))}</a>`;
+            winner = `<div class="mt-2"><span class="vfp-rs-block-title">${esc(t('ResolveWinnerTitle', 'Bu frekansı veren kural'))}</span></div>`
+                + '<div class="vfp-rs-winner mt-2">'
+                + `<div class="vfp-rs-winner-id"><span class="vfp-rs-winner-name">${esc(r.selectedPolicyName || dash())}</span>`
+                + `<span class="vfp-rs-winner-scope">${esc(scopeBits.join(' · '))}</span></div>`
+                + `<span class="vfp-rs-winner-freq">${esc(freqSentence(r.requiredVisitCount, r.periodType))}</span>`
+                + openBtn + '</div>';
         }
 
-        const cands = r.candidatePolicies || [];
-        parts.push(`<h6 class="text-uppercase text-heading fw-semibold mb-2 mt-3">${esc(t('ResolveCandidates', 'Candidate policies'))}</h6>`);
-        if (cands.length) {
-            parts.push('<div class="table-responsive"><table class="table table-sm border-top"><thead><tr>'
-                + `<th>${esc(t('FieldPolicyName', 'Name'))}</th><th>${esc(t('DvSectionFrequency', 'Frequency'))}</th>`
-                + `<th class="text-center">${esc(t('DvSectionPriority', 'Priority'))}</th><th class="text-center">${esc(t('ResolveSpecificity', 'Specificity'))}</th>`
-                + `<th>${esc(t('FieldStatus', 'Status'))}</th><th>${esc(t('ResolveSelectedBadge', 'Selected'))}</th>`
-                + '</tr></thead><tbody>' + cands.map(candidateRow).join('') + '</tbody></table></div>');
-        } else {
-            parts.push(`<div class="vfp-meta">${esc(t('ResolveNoCandidates', 'No candidate policies.'))}</div>`);
-        }
+        // ladder — CandidatePolicies, "dardan genişe" (ascending specificity = narrow → broad) -------------
+        const cands = (r.candidatePolicies || []).slice().sort((a, b) => {
+            const sa = a.specificity == null ? 99 : Number(a.specificity), sb = b.specificity == null ? 99 : Number(b.specificity);
+            if (sa !== sb) return sa - sb;
+            return (a.priority || 0) - (b.priority || 0);
+        });
+        const specs = cands.map(c => Number(c.specificity)).filter(n => !Number.isNaN(n));
+        const minSpec = specs.length ? Math.min(...specs) : null;
+        const maxSpec = specs.length ? Math.max(...specs) : null;
+        const typeSub = c => {
+            const base = targetTypeLabel(c.targetType);
+            const s = Number(c.specificity);
+            if (!Number.isNaN(s) && minSpec !== maxSpec) {
+                if (s === minSpec) return `${base} · ${t('SpecNarrowest', 'en dar kapsam')}`;
+                if (s === maxSpec) return `${base} · ${t('SpecBroadest', 'en geniş kapsam')}`;
+            }
+            return base;
+        };
+        const candRow = c => {
+            const tag = candTag(c);
+            return `<div class="vfp-rs-cand${c.selected ? ' vfp-rs-cand--selected' : ''}">`
+                + `<div class="vfp-rs-cand-id"><span class="vfp-rs-cand-name">${esc(c.policyName || dash())}</span>`
+                + `<span class="vfp-rs-cand-type">${esc(typeSub(c))}</span></div>`
+                + `<span class="vfp-rs-cand-freq">${esc(freqSentence(c.requiredVisitCount, c.periodType))}</span>`
+                + badge(tag.text, tag.tone)
+                + `<div class="vfp-rs-cand-why">${esc(reasonLabel(c.reason))}</div>`
+                + '</div>';
+        };
+        const ladderHead = `<div class="mt-3 mb-2"><span class="vfp-rs-block-title">${esc(t('ResolveLadderTitle', 'Bu hedefe denk gelen diğer kurallar'))}</span> `
+            + `<span class="vfp-rs-block-hint">${esc(t('ResolveLadderSort', 'dardan genişe sıralı'))}</span></div>`;
+        const ladderBody = cands.length ? cands.map(candRow).join('') : `<div class="vfp-meta">${esc(t('ResolveLadderEmpty', 'Bu hedefe denk gelen başka kural yok.'))}</div>`;
 
-        const codes = r.reasonCodes || [];
-        if (codes.length) {
-            parts.push(`<h6 class="text-uppercase text-heading fw-semibold mb-2 mt-3">${esc(t('ResolveReasonCodes', 'Reason codes'))}</h6>`);
-            parts.push(`<div class="vfp-rs-codes">${codes.map(rc => badge(reasonLabel(rc), 'secondary')).join('')}</div>`);
-        }
+        const answerCard = '<section class="card mb-4"><div class="card-body p-4">'
+            + answer + winner + ladderHead + ladderBody + '</div></section>';
 
-        el('vfpRsResult').innerHTML = parts.join('');
+        // NE YAPMALIYIM? card ---------------------------------------------------------
+        const steps = NEXT_STEPS[v] || NEXT_STEPS.unknown;
+        const stepRow = s => `<div class="vfp-rs-do"><span class="vfp-rs-do-icon vfp-rs-do-icon--${s.kind}">${DO_ICON[s.kind]}</span>`
+            + `<div><div class="vfp-rs-do-label">${esc(t(s.l, ''))}</div><div class="vfp-rs-do-detail">${esc(t(s.d, ''))}</div></div></div>`;
+        const doCard = '<section class="card"><div class="card-body p-4">'
+            + `<div class="mb-3"><span class="vfp-rs-block-title">${esc(t('ResolveNextTitle', 'Ne yapmalıyım?'))}</span></div>`
+            + steps.map(stepRow).join('') + '</div></section>';
+
+        el('vfpRsResult').innerHTML = answerCard + doCard;
     };
+
+    // source code → localized label (reuses the closed source set; humanized fallback).
+    const sourceLabels = L.sourceLabels || {};
+    const sourcePretty = s => sourceLabels[norm(s)] || humanize(s) || dash();
 
     async function runResolve() {
-        const targetType = norm(el('vfpRsTargetType')?.value);
-        if (!targetType) { window.showToast?.(t('ResolveTargetTypeRequired', 'Pick a target type.'), 'error'); return; }
+        const scenario = scenarioById(el('vfpRsScenario')?.value);
+        if (!scenario) { window.showToast?.(t('ResolveTargetTypeRequired', 'Pick a target type.'), 'error'); return; }
         const targetId = targetIdValue();
         if (!targetId) { window.showToast?.(t('TargetRequired', 'Pick a target.'), 'error'); return; }
 
         const q = new URLSearchParams();
-        q.set('targetType', targetType);
+        q.set('targetType', scenario.targetType);
         q.set('targetId', targetId);
+        q.set('includeDiagnostics', 'true');
         const at = norm(el('vfpRsEffectiveAt')?.value);
         if (at) q.set('effectiveAt', at);
-        const ctx = {
-            businessUnit: norm(el('vfpRsBusinessUnit')?.value),
-            territoryNodeId: norm(el('vfpRsTerritoryNode')?.value),
-            campaignId: norm(el('vfpRsCampaign')?.value),
-            segmentId: norm(el('vfpRsSegment')?.value),
-            brandId: norm(el('vfpRsBrand')?.value),
-            productId: norm(el('vfpRsProduct')?.value),
-            conceptNodeId: norm(el('vfpRsConceptNode')?.value),
-            audienceProfileId: norm(el('vfpRsAudienceProfile')?.value)
-        };
-        Object.entries(ctx).forEach(([k, v]) => { if (v) q.set(k, v); });
+        // scenario-specific context: the doctor-in-hospital scenario supplies the contact-location (territory) context.
+        const terNode = norm(el('vfpRsCtxTerNode')?.value);
+        if (scenario.context.includes('territory') && terNode) q.set('territoryNodeId', terNode);
 
         showResolveState('running');
         try {

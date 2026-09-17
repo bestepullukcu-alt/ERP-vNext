@@ -434,3 +434,148 @@
     .vfp-detail-scope .vfp-det-cand-freq { grid-column: 1 / -1; }
     .vfp-detail-scope .vfp-det-cand-reason { grid-column: 1 / -1; text-align: left; }
 }
+
+/* ------------------------------------------------------------------ WP-FREQ-DET-H — Çözümleme (Frekans Kontrolü) tab
+   mockup: a 3-card "ask a question → get one answer + the rule ladder → what to do next" panel. All classes stay nested
+   under .vfp-detail-scope so nothing leaks to the shell; neutrals bind to the theme-aware Bootstrap variables and the
+   accent is --bs-primary. Everything the panel shows comes from the real GET /resolve — no fabricated result. */
+.vfp-detail-scope .vfp-rs-who-desc {
+    font-size: 12.5px;
+    color: var(--vfp-muted);
+    margin: -4px 0 4px;
+}
+.vfp-detail-scope .vfp-rs-record {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--vfp-soft-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 6px;
+    padding: 9px 12px;
+    font-size: 13px;
+}
+.vfp-detail-scope .vfp-rs-record-name { font-weight: 500; color: var(--vfp-heading); word-break: break-word; }
+
+/* "Kural basit" static note box */
+.vfp-detail-scope .vfp-rs-simple {
+    background: var(--vfp-soft-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 6px;
+    padding: 12px 14px;
+}
+.vfp-detail-scope .vfp-rs-simple-title { font-size: 12px; font-weight: 600; color: var(--vfp-heading); }
+.vfp-detail-scope .vfp-rs-simple-body { font-size: 12px; color: var(--vfp-muted); margin-top: 6px; line-height: 1.5; }
+
+/* CEVAP — the single big answer block, tinted by verdict tone */
+.vfp-detail-scope .vfp-rs-answer {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 18px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--vfp-card-border);
+    background: var(--vfp-soft-bg);
+}
+.vfp-detail-scope .vfp-rs-answer--success { background: rgba(var(--bs-success-rgb), 0.08); border-color: rgba(var(--bs-success-rgb), 0.30); }
+.vfp-detail-scope .vfp-rs-answer--warning { background: rgba(var(--bs-warning-rgb), 0.10); border-color: rgba(var(--bs-warning-rgb), 0.32); }
+.vfp-detail-scope .vfp-rs-answer--danger { background: rgba(var(--bs-danger-rgb), 0.08); border-color: rgba(var(--bs-danger-rgb), 0.30); }
+.vfp-detail-scope .vfp-rs-answer--secondary { background: var(--vfp-soft-bg); border-color: var(--vfp-card-border); }
+.vfp-detail-scope .vfp-rs-answer-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 240px; }
+.vfp-detail-scope .vfp-rs-answer-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    color: var(--vfp-muted);
+}
+.vfp-detail-scope .vfp-rs-answer-headline {
+    font-size: 24px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--vfp-heading);
+    line-height: 1.2;
+    word-break: break-word;
+}
+.vfp-detail-scope .vfp-rs-answer-explain { font-size: 13px; color: var(--vfp-muted); line-height: 1.5; }
+
+/* the winning rule */
+.vfp-detail-scope .vfp-rs-winner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    border-radius: 6px;
+    border: 1px solid rgba(var(--bs-success-rgb), 0.35);
+    background: rgba(var(--bs-success-rgb), 0.06);
+}
+.vfp-detail-scope .vfp-rs-winner-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1 1 220px; }
+.vfp-detail-scope .vfp-rs-winner-name { font-size: 14px; font-weight: 600; color: var(--vfp-heading); word-break: break-word; }
+.vfp-detail-scope .vfp-rs-winner-scope { font-size: 12px; color: var(--vfp-muted); line-height: 1.45; }
+.vfp-detail-scope .vfp-rs-winner-freq { font-size: 14px; font-weight: 600; color: var(--bs-primary); white-space: nowrap; }
+
+/* section label + hint (BU HEDEFE DENK GELEN DİĞER KURALLAR · dardan genişe sıralı) */
+.vfp-detail-scope .vfp-rs-block-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--vfp-heading);
+}
+.vfp-detail-scope .vfp-rs-block-hint { font-size: 12px; color: var(--vfp-muted); font-weight: 400; }
+
+/* ladder — one candidate row: [name + type-subline | freq | status tag] then a full-width "why" line */
+.vfp-detail-scope .vfp-rs-cand {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 6px 16px;
+    padding: 13px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--vfp-card-border);
+    border-left: 3px solid transparent;
+    background: var(--vfp-card-bg);
+    margin-bottom: 10px;
+}
+.vfp-detail-scope .vfp-rs-cand:last-child { margin-bottom: 0; }
+.vfp-detail-scope .vfp-rs-cand--selected {
+    border-left-color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.06);
+}
+.vfp-detail-scope .vfp-rs-cand-id { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.vfp-detail-scope .vfp-rs-cand-name { font-size: 13px; font-weight: 600; color: var(--vfp-heading); word-break: break-word; }
+.vfp-detail-scope .vfp-rs-cand-type { font-size: 12px; color: var(--vfp-muted); }
+.vfp-detail-scope .vfp-rs-cand-freq { font-size: 13px; font-weight: 600; color: var(--bs-primary); white-space: nowrap; }
+.vfp-detail-scope .vfp-rs-cand-why { grid-column: 1 / -1; font-size: 12px; color: var(--vfp-muted); line-height: 1.45; }
+@media (max-width: 575.98px) {
+    .vfp-detail-scope .vfp-rs-cand { grid-template-columns: 1fr auto; }
+    .vfp-detail-scope .vfp-rs-cand-freq { grid-column: 1 / -1; }
+}
+
+/* NE YAPMALIYIM — icon + label + detail rows */
+.vfp-detail-scope .vfp-rs-do {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    margin-bottom: 12px;
+}
+.vfp-detail-scope .vfp-rs-do:last-child { margin-bottom: 0; }
+.vfp-detail-scope .vfp-rs-do-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 1px;
+    flex: none;
+}
+.vfp-detail-scope .vfp-rs-do-icon--ok { background: rgba(var(--bs-success-rgb), 0.15); color: var(--bs-success); }
+.vfp-detail-scope .vfp-rs-do-icon--warn { background: rgba(var(--bs-warning-rgb), 0.18); color: var(--bs-warning); }
+.vfp-detail-scope .vfp-rs-do-icon--info { background: rgba(var(--bs-primary-rgb), 0.15); color: var(--bs-primary); }
+.vfp-detail-scope .vfp-rs-do-label { font-size: 13px; font-weight: 500; color: var(--vfp-heading); }
+.vfp-detail-scope .vfp-rs-do-detail { font-size: 12px; color: var(--vfp-muted); margin-top: 2px; line-height: 1.5; }

@@ -276,4 +276,67 @@
   <data name="TargetType_campaign-target" xml:space="preserve"><value>活动目标</value></data>
   <data name="SpecNarrowest" xml:space="preserve"><value>最小范围</value></data>
   <data name="SpecBroadest" xml:space="preserve"><value>最大范围</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>您要查询谁？</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>选择一个目标；我们会显示它当前分配到多少次拜访，以及来自哪条规则。</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>谁 / 什么</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>某位医生 — 在特定医院</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>某位医生 — 所有医院</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>某个机构/客户</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>人员—机构关联</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>某个细分中的所有目标</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>活动目标</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>辖区区域</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>概念节点</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>受众画像</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>记录</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>更改</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>日期</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>显示频率</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>规则很简单</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>如果一个目标匹配到多条策略，范围最窄的获胜：针对个人的规则优先于活动规则，活动规则又优先于细分规则。范围相同时优先级高者获胜，优先级相同时开始日期最新者获胜。</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>答案</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{1}{0} 次拜访</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>未定义频率</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>冲突</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>每日</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>每周</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>每月</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>每季度</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>每周期</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>每活动周期</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>每自定义周期</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>为该目标找到匹配规则；已应用范围最窄的一条。</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>没有策略匹配该目标；计划程序将使用系统默认值。</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>多条规则处于相同范围；已应用优先级较高的一条。您可能需要检查另一条。</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>解析不适用于此请求。</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>设定此频率的规则</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>打开策略</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>匹配该目标的其他规则</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>从窄到宽排序</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>没有其他规则匹配该目标。</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>已选中</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>不在日期范围</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>未生效</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>后备</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>我该怎么做？</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>无需操作</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>计划程序将对该目标应用此频率。</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>如果频率看起来不对</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>打开已应用的规则并修改拜访次数，或归档该规则。</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>两条规则处于相同范围</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>要彻底解决，请缩小其中一条的范围或降低其优先级。</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>目前没有问题</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>计划程序使用优先级较高的规则；计划照常生成。</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>该目标未被覆盖</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>建议在细分或辖区级别定义一条后备规则。</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>快速解决</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>为该细分设置一条策略即可覆盖其下所有目标。</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>不适用</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>解析对该目标类型无效。</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>针对个人</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>概念</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>辖区</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>受众</value></data>
 </root>

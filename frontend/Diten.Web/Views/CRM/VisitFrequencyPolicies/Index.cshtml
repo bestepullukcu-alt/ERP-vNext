@@ -26,6 +26,9 @@
     };
     var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
     var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+    var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    var targetTypeCodes = new[] { "account-contact-link", "contact", "account", "campaign-target", "concept-node", "territory-node", "audience-profile", "segment" };
+    var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
 
     var resolveL10n = new Dictionary<string, object>
     {
@@ -96,6 +99,61 @@
         ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
         ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
         ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        // WP-FREQ-DET-H — Çözümleme "Frekans Kontrolü" mockup (3-card resolve panel)
+        ["ResolveWhoTitle"] = Localizer["ResolveWhoTitle"].Value,
+        ["ResolveWhoDesc"] = Localizer["ResolveWhoDesc"].Value,
+        ["ResolveScenarioLabel"] = Localizer["ResolveScenarioLabel"].Value,
+        ["ResolveScenario_contact_territory"] = Localizer["ResolveScenario_contact_territory"].Value,
+        ["ResolveScenario_contact"] = Localizer["ResolveScenario_contact"].Value,
+        ["ResolveScenario_account"] = Localizer["ResolveScenario_account"].Value,
+        ["ResolveScenario_account-contact-link"] = Localizer["ResolveScenario_account-contact-link"].Value,
+        ["ResolveScenario_segment"] = Localizer["ResolveScenario_segment"].Value,
+        ["ResolveScenario_campaign-target"] = Localizer["ResolveScenario_campaign-target"].Value,
+        ["ResolveScenario_territory-node"] = Localizer["ResolveScenario_territory-node"].Value,
+        ["ResolveScenario_concept-node"] = Localizer["ResolveScenario_concept-node"].Value,
+        ["ResolveScenario_audience-profile"] = Localizer["ResolveScenario_audience-profile"].Value,
+        ["ResolveRecordLabel"] = Localizer["ResolveRecordLabel"].Value,
+        ["ResolveChange"] = Localizer["ResolveChange"].Value,
+        ["ResolveCyclePeriod"] = Localizer["ResolveCyclePeriod"].Value,
+        ["ResolveDateLabel"] = Localizer["ResolveDateLabel"].Value,
+        ["ResolveShowFrequency"] = Localizer["ResolveShowFrequency"].Value,
+        ["ResolveRuleSimpleTitle"] = Localizer["ResolveRuleSimpleTitle"].Value,
+        ["ResolveRuleSimpleBody"] = Localizer["ResolveRuleSimpleBody"].Value,
+        ["ResolveAnswerLabel"] = Localizer["ResolveAnswerLabel"].Value,
+        ["ResolveHeadlineResolved"] = Localizer["ResolveHeadlineResolved"].Value,
+        ["ResolveHeadlineUnknown"] = Localizer["ResolveHeadlineUnknown"].Value,
+        ["ResolveHeadlineConflict"] = Localizer["ResolveHeadlineConflict"].Value,
+        ["ResolveHeadlineNotApplicable"] = Localizer["ResolveHeadlineNotApplicable"].Value,
+        ["ResolveExplainResolved"] = Localizer["ResolveExplainResolved"].Value,
+        ["ResolveExplainUnknown"] = Localizer["ResolveExplainUnknown"].Value,
+        ["ResolveExplainConflict"] = Localizer["ResolveExplainConflict"].Value,
+        ["ResolveExplainNotApplicable"] = Localizer["ResolveExplainNotApplicable"].Value,
+        ["ResolveWinnerTitle"] = Localizer["ResolveWinnerTitle"].Value,
+        ["ResolveOpenPolicy"] = Localizer["ResolveOpenPolicy"].Value,
+        ["ResolveLadderTitle"] = Localizer["ResolveLadderTitle"].Value,
+        ["ResolveLadderSort"] = Localizer["ResolveLadderSort"].Value,
+        ["ResolveLadderEmpty"] = Localizer["ResolveLadderEmpty"].Value,
+        ["ResolveTagSelected"] = Localizer["ResolveTagSelected"].Value,
+        ["ResolveTagNotEffective"] = Localizer["ResolveTagNotEffective"].Value,
+        ["ResolveTagInactive"] = Localizer["ResolveTagInactive"].Value,
+        ["ResolveTagFallback"] = Localizer["ResolveTagFallback"].Value,
+        ["ResolveNextTitle"] = Localizer["ResolveNextTitle"].Value,
+        ["ResolveDo_resolved_1"] = Localizer["ResolveDo_resolved_1"].Value,
+        ["ResolveDo_resolved_1d"] = Localizer["ResolveDo_resolved_1d"].Value,
+        ["ResolveDo_resolved_2"] = Localizer["ResolveDo_resolved_2"].Value,
+        ["ResolveDo_resolved_2d"] = Localizer["ResolveDo_resolved_2d"].Value,
+        ["ResolveDo_conflict_1"] = Localizer["ResolveDo_conflict_1"].Value,
+        ["ResolveDo_conflict_1d"] = Localizer["ResolveDo_conflict_1d"].Value,
+        ["ResolveDo_conflict_2"] = Localizer["ResolveDo_conflict_2"].Value,
+        ["ResolveDo_conflict_2d"] = Localizer["ResolveDo_conflict_2d"].Value,
+        ["ResolveDo_unknown_1"] = Localizer["ResolveDo_unknown_1"].Value,
+        ["ResolveDo_unknown_1d"] = Localizer["ResolveDo_unknown_1d"].Value,
+        ["ResolveDo_unknown_2"] = Localizer["ResolveDo_unknown_2"].Value,
+        ["ResolveDo_unknown_2d"] = Localizer["ResolveDo_unknown_2d"].Value,
+        ["ResolveDo_na_1"] = Localizer["ResolveDo_na_1"].Value,
+        ["ResolveDo_na_1d"] = Localizer["ResolveDo_na_1d"].Value,
+        ["SpecNarrowest"] = Localizer["SpecNarrowest"].Value,
+        ["SpecBroadest"] = Localizer["SpecBroadest"].Value,
         ["statusLabels"] = new Dictionary<string, string>
         {
             ["draft"] = Localizer["Status_draft"].Value,
@@ -113,6 +171,20 @@
     var resolveBandLabels = new Dictionary<string, string>();
     foreach (var b in bandCodes) { resolveBandLabels[b] = Localizer[$"Band_{b}"].Value; }
     resolveL10n["bandLabels"] = resolveBandLabels;
+    // WP-FREQ-DET-H maps — period ("ay"), cadence ("ayda"), friendly target-type, source labels (closed sets; the
+    // codes still come from the FU03 contract at runtime, resolve.js labels each through these maps with a fallback).
+    var resolvePeriodLabels = new Dictionary<string, string>();
+    foreach (var p in periodCodes) { resolvePeriodLabels[p] = Localizer[$"Period_{p}"].Value; }
+    resolveL10n["periodLabels"] = resolvePeriodLabels;
+    var resolveCadenceLabels = new Dictionary<string, string>();
+    foreach (var p in periodCodes) { resolveCadenceLabels[p] = Localizer[$"ResolveCadence_{p}"].Value; }
+    resolveL10n["cadenceLabels"] = resolveCadenceLabels;
+    var resolveTargetTypeLabels = new Dictionary<string, string>();
+    foreach (var tt in targetTypeCodes) { resolveTargetTypeLabels[tt] = Localizer[$"TargetType_{tt}"].Value; }
+    resolveL10n["targetTypeLabels"] = resolveTargetTypeLabels;
+    var resolveSourceLabels = new Dictionary<string, string>();
+    foreach (var sc in sourceCodes) { resolveSourceLabels[sc] = Localizer[$"Source_{sc}"].Value; }
+    resolveL10n["sourceLabels"] = resolveSourceLabels;
 }
 
 <div class="mb-3">

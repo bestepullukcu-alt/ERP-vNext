@@ -276,4 +276,67 @@
   <data name="TargetType_campaign-target" xml:space="preserve"><value>Цель кампании</value></data>
   <data name="SpecNarrowest" xml:space="preserve"><value>самая узкая область</value></data>
   <data name="SpecBroadest" xml:space="preserve"><value>самая широкая область</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>О ком вы спрашиваете?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Выберите цель; мы покажем, сколько визитов ей сейчас назначено и из какого правила это следует.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Кто / что</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Врач — в конкретной больнице</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Врач — все больницы</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Организация/аккаунт</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Связь человек–организация</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Все цели в сегменте</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Цель кампании</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Территориальная зона</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Узел концепции</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Запись</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>изменить</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Дата</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Показать частоту</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>Правило простое</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Если цели соответствует несколько политик, побеждает самая узкая: правило для конкретного человека важнее правила кампании, а правило кампании важнее правила сегмента. При равном охвате побеждает более высокий приоритет, а при равном приоритете — самая свежая дата начала.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Ответ</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} визита {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Частота не задана</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Конфликт</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>в день</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>в неделю</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>в месяц</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>в квартал</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>за цикл</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>за период кампании</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>за пользовательский период</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Для этой цели найдено подходящее правило; применено самое узкое.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Ни одна политика не соответствует этой цели; планировщик использует системное значение по умолчанию.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Несколько правил имеют одинаковый охват; применено с более высоким приоритетом. Возможно, стоит проверить другое.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Разрешение не применяется к этому запросу.</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>Правило, задающее эту частоту</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Открыть политику</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Другие правила, подходящие для этой цели</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>от узкого к широкому</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Других подходящих правил для этой цели нет.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>выбрано</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>вне срока</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>не действует</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>резерв</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Что мне делать?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Ничего делать не нужно</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Планировщик применит эту частоту к цели.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Если частота кажется неверной</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Откройте применённое правило и измените число визитов или заархивируйте правило.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>Два правила с одинаковым охватом</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Для устойчивого решения сузьте охват одного или понизьте его приоритет.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Пока проблемы нет</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Планировщик использует правило с более высоким приоритетом; планирование продолжается.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Эта цель не охвачена</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Стоит задать резервное правило на уровне сегмента или территории.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Быстрое решение</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Одна политика для сегмента охватывает все входящие в него цели.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>Разрешение недействительно для этого типа цели.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Для конкретного человека</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Концепция</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Территория</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Аудитория</value></data>
 </root>

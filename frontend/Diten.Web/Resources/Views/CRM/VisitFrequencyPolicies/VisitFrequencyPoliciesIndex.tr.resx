@@ -276,4 +276,67 @@
   <data name="TargetType_campaign-target" xml:space="preserve"><value>Kampanya hedefi</value></data>
   <data name="SpecNarrowest" xml:space="preserve"><value>en dar kapsam</value></data>
   <data name="SpecBroadest" xml:space="preserve"><value>en geniş kapsam</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>Kimi soruyorsunuz?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Bir hedef seçin; o hedefe şu anda kaç ziyaret düştüğünü ve bunun hangi kuraldan geldiğini gösterelim.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Kim / ne</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Bir doktor — belirli hastanede</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Bir doktor — tüm hastaneler</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Bir kurum/hesap</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Kişi-kurum bağı</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Segmentteki tüm hedefler</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Kampanya hedefi</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Konsept düğümü</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Hedef kitle profili</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Kayıt</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>değiştir</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Tarih</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Frekansı göster</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>Kural basit</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Bir hedefe birden fazla politika denk gelirse, en dar kapsamlı olan kazanır: kişiye özel kural, kampanya kuralını; kampanya kuralı da segment kuralını geçer. Kapsam eşitse yüksek öncelik, öncelik de eşitse en yeni başlangıç tarihi kazanır.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Cevap</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{1} {0} ziyaret</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Tanımlı frekans yok</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Çakışma</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Uygulanmaz</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>günde</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>haftada</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>ayda</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>çeyrekte</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>cycle başına</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>kampanya döneminde</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>özel dönemde</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Bu hedefe uygun bir kural bulundu; en dar kapsamlı olan uygulandı.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Bu hedefe hiçbir politika denk gelmiyor; planlayıcı sistem varsayılanını kullanır.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Aynı kapsamda birden fazla kural var; daha yüksek öncelikli olan uygulandı. Diğerini gözden geçirmek isteyebilirsiniz.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Bu istek için çözümleme uygulanmıyor.</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>Bu frekansı veren kural</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Politikayı aç</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Bu hedefe denk gelen diğer kurallar</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>dardan genişe sıralı</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Bu hedefe denk gelen başka kural yok.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>seçildi</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>tarih dışı</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>devrede değil</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>yedek</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Ne yapmalıyım?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Bir şey yapmanız gerekmiyor</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Planlayıcı bu hedefe bu frekansı uygulayacak.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Frekans yanlış geliyorsa</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Uygulanan kuralı açıp ziyaret sayısını değiştirin ya da kuralı arşivleyin.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>İki kural aynı kapsamda</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Kalıcı çözüm için birinin kapsamını daraltın veya önceliğini düşürün.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Şimdilik sorun yok</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Planlayıcı yüksek öncelikli kuralı kullanıyor; plan üretilmeye devam eder.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Bu hedef kapsama girmiyor</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Segment veya bölge seviyesinde bir yedek kural tanımlamanız önerilir.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Hızlı çözüm</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Segment için tek bir politika, altındaki tüm hedefleri kapsar.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Uygulanmaz</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>Bu hedef tipi için çözümleme geçerli değil.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Kişiye özel</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Konsept</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Hedef kitle</value></data>
 </root>
