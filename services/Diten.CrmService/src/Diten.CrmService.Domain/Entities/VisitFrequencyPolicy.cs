@@ -82,6 +82,11 @@ public sealed class VisitFrequencyPolicy : EntityBase
     public DateTimeOffset? ArchivedAt { get; set; }
     public string? ArchivedBy { get; set; }
 
+    /// <summary>Who soft-deleted the policy (WP-FREQ-A). Pairs with <see cref="EntityBase.DeletedAt"/>. Soft-delete is
+    /// DISTINCT from archive: archive keeps the row as readable history (status=archived, still listed), whereas
+    /// soft-delete (<see cref="EntityBase.IsDeleted"/>) removes it from the working set (list + resolve).</summary>
+    public string? DeletedBy { get; set; }
+
     /// <summary>Effective at a given instant: EffectiveFrom ≤ at ≤ EffectiveTo (open end when EffectiveTo is null).</summary>
     public bool IsEffectiveAt(DateTimeOffset at)
         => EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo);

@@ -246,3 +246,45 @@ public sealed class ArchiveVisitFrequencyPolicyHandler : IRequestHandler<Archive
         return Response<bool>.Success(true);
     }
 }
+
+/// <summary>WP-FREQ-A additive soft-delete. Sets IsDeleted=true (+ DeletedAt/By) so the policy leaves the list and the
+/// resolve working set. This is DISTINCT from archive: archive keeps the row as readable history (status=archived),
+/// delete removes it from the working set. Not a hard delete — the document stays in Mongo and every read/list/resolve
+/// filters IsDeleted=false. An already-deleted (or unknown) policy is not found (soft-delete rows are filtered on read).</summary>
+public sealed class DeleteVisitFrequencyPolicyHandler : IRequestHandler<DeleteVisitFrequencyPolicyCommand, Response<bool>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IActorContext _actor;
+    private readonly IVisitFrequencyPolicyRepository _repository;
+
+    public DeleteVisitFrequencyPolicyHandler(
+        ITenantContext tenant, IActorContext actor, IVisitFrequencyPolicyRepository repository)
+    {
+        _tenant = tenant;
+        _actor = actor;
+        _repository = repository;
+    }
+
+    public async Task<Response<bool>> Handle(DeleteVisitFrequencyPolicyCommand request, CancellationToken cancellationToken)
+    {
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<bool>.Fail("Tenant context is required.", 400);
+        }
+
+        var policy = await _repository.GetByIdAsync(tenantId, request.PolicyId, cancellationToken);
+        if (policy is null)
+        {
+            return Response<bool>.Fail("Visit frequency policy not found.", 404);
+        }
+
+        policy.IsDeleted = true;
+        policy.DeletedAt = DateTimeOffset.UtcNow;
+        policy.DeletedBy = _actor.ActorName;
+        policy.UpdatedAt = DateTimeOffset.UtcNow;
+        policy.UpdatedBy = _actor.ActorName;
+
+        await _repository.UpdateAsync(policy, cancellationToken);
+        return Response<bool>.Success(true);
+    }
+}

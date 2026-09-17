@@ -753,6 +753,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>İçerik Setleri</value>
   </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Ziyaret Sıklığı Politikaları</value>
+  </data>
   <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
     <value>Uygunluk Politikaları</value>
   </data>

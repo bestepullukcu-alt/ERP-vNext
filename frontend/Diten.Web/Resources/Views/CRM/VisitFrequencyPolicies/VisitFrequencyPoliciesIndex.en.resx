@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Visit Frequency Policies</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Author call-cycle / visit frequency policies — how often a target should be visited.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Archive keeps a policy as readable history; Delete removes it from the working list. Both are soft.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Policies</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Resolve</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>The resolve panel is coming in a later update.</value></data>
+  <data name="Code" xml:space="preserve"><value>Code</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Target" xml:space="preserve"><value>Target</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
+  <data name="Source" xml:space="preserve"><value>Source</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>New Policy</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>The policy editor is coming in a later update.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>The details view is coming in a later update.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
+  <data name="Archive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Archive this policy? It stays readable as history.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Delete this policy? It will be removed from the list.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Policy archived.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>No frequency policies yet.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Something went wrong. Please try again.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>per</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Draft</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Active</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactive</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Archived</value></data>
+</root>

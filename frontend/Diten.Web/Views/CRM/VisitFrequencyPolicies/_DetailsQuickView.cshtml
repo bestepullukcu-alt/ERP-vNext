@@ -1,0 +1,27 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-FREQ-A placeholder — the details quick-view (full policy read model, effective window, provenance) is authored in
+   FREQ-C. The shell + contract marker id="offcanvasDetailsPreview" exist now so the row "Details" action can open it;
+   the header title/subtitle are filled from the DataTable row by index.js. *@
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+     aria-labelledby="offcanvasDetailsPreviewLabel">
+    <div class="offcanvas-header p-4">
+        <div class="min-w-0">
+            <h5 id="oc-title" class="offcanvas-title mb-0 text-truncate">-</h5>
+            <small id="oc-subtitle" class="text-muted d-block text-truncate">-</small>
+        </div>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top">
+        <div class="text-center text-muted py-5">
+            <i class="bx bx-detail display-6 d-block mb-2"></i>
+            <p class="mb-0">@Localizer["DetailsPlaceholder"]</p>
+        </div>
+    </div>
+    <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
+        <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
+    </div>
+</div>

@@ -692,6 +692,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Наборы контента</value>
   </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Политики частоты визитов</value>
+  </data>
   <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
     <value>Политики допустимости</value>
   </data>

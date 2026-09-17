@@ -43,6 +43,13 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
     private const string ContentSetRead = "crm.content-set.read";
     private const string EligibilityRead = "crm.eligibility.read";
 
+    // MOD-0165-FU03 (WP-FREQ-A). The canonical crm.visit-frequency-policy.* keys are not seeded yet, so — exactly like
+    // the CrmService [HasPermission] guards and the Diten.Web console — the page's read gate runs on the documented
+    // fallback (crm.territory.read). Using the fallback here means the sidebar entry actually renders for a CRM user
+    // today; it flips to the canonical key when MOD-0165-FU-RBAC lands. The action descriptors below carry the
+    // canonical write/resolve keys so an RBAC admin can grant them ahead of that follow-up.
+    private const string VisitFrequencyPolicyReadFallback = TerritoryRead;
+
     public ModuleManifestDocument GetManifest() =>
         new(
             ModuleCode: "CRM",
@@ -156,6 +163,16 @@ public sealed class CrmManifestProvider : IModuleManifestProvider
                 [
                     new ModuleManifestAction("MANAGE", "New Policy", "crm.eligibility.manage", "Toolbar", 10, false, true, false),
                     new ModuleManifestAction("EVALUATE", "Evaluate", "crm.eligibility.evaluate", "Toolbar", 20, false, true, false)
+                ]),
+                // MOD-0165-FU03 (WP-FREQ-A) Visit Frequency / Call-Cycle Policy console. Archive closes a policy as
+                // readable history; Delete is the WP-FREQ-A soft-delete that removes it from the working set (both soft,
+                // no hard delete). resolve is a SEPARATE read op from manage. Read gate = territory.read fallback until
+                // MOD-0165-FU-RBAC seeds the canonical keys (see VisitFrequencyPolicyReadFallback).
+                new ModuleManifestPage("VISIT_FREQUENCY_POLICIES", "Visit Frequency Policies", "/CRM/VisitFrequencyPolicies", VisitFrequencyPolicyReadFallback, null, true, "List", 180,
+                [
+                    new ModuleManifestAction("MANAGE", "New Policy", "crm.visit-frequency-policy.manage", "Toolbar", 10, false, true, false),
+                    new ModuleManifestAction("RESOLVE", "Resolve", "crm.visit-frequency-policy.resolve", "Toolbar", 20, false, true, false),
+                    new ModuleManifestAction("DELETE", "Delete", "crm.visit-frequency-policy.manage", "RowAction", 30, false, false, true)
                 ])
             ]);
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>拜访频率策略</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>定义呼叫周期／拜访频率策略——目标应多久拜访一次。</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>归档将策略保留为可读历史；删除将其从工作列表中移除。两者均为软操作。</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>策略</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>解析</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>解析面板将在后续更新中提供。</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Target" xml:space="preserve"><value>目标</value></data>
+  <data name="Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级</value></data>
+  <data name="Source" xml:space="preserve"><value>来源</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>新建策略</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>策略编辑器将在后续更新中提供。</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>详情视图将在后续更新中提供。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="Archive" xml:space="preserve"><value>归档</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>归档此策略？它将作为历史记录保持可读。</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>删除此策略？它将从列表中移除。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>策略已归档。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>暂无频率策略。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>出错了，请重试。</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>每</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_active" xml:space="preserve"><value>启用</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+</root>

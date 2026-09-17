@@ -48,6 +48,9 @@ public sealed class VisitFrequencyPolicyTests
         public ArchiveVisitFrequencyPolicyHandler Archive()
             => new(Tenant(TenantId), new NullActorContext(), Repo);
 
+        public DeleteVisitFrequencyPolicyHandler Delete()
+            => new(Tenant(TenantId), new NullActorContext(), Repo);
+
         public ResolveVisitFrequencyPolicyHandler Resolver()
             => new(Tenant(TenantId), new VisitFrequencyPolicyResolver(Tenant(TenantId), Repo));
 
@@ -399,6 +402,66 @@ public sealed class VisitFrequencyPolicyTests
         var update = await f.Update().Handle(new UpdateVisitFrequencyPolicyCommand(
             created.Data, "Renamed", FrequencyType.Weekly, 3, FrequencyPeriodType.Week, Jan1, 300, FrequencySource.Manual), default);
         Assert.Equal(409, update.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Removes_From_List_Get_And_Resolve()
+    {
+        var f = new Fixture(TenantA);
+        var target = Guid.NewGuid();
+        var created = await f.Create().Handle(Cmd(target), default);
+        var policyId = created.Data;
+
+        var delete = await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(policyId), default);
+        Assert.Equal(200, delete.StatusCode);
+
+        // Soft-deleted: the row is flagged, not removed, but every read filters IsDeleted=false.
+        var row = Assert.Single(f.Repo.Items);
+        Assert.True(row.IsDeleted);
+        Assert.NotNull(row.DeletedAt);
+
+        var list = await f.List().Handle(new ListVisitFrequencyPoliciesQuery(), default);
+        Assert.Empty(list.Data!.Items);
+
+        var read = await f.Get().Handle(new GetVisitFrequencyPolicyQuery(policyId), default);
+        Assert.Equal(404, read.StatusCode);
+
+        var resolve = await f.Resolver().Handle(
+            new ResolveVisitFrequencyPolicyQuery(FrequencyTargetType.AccountContactLink, target, Jun1), default);
+        Assert.Equal(FrequencyStatus.Unknown, resolve.Data!.FrequencyStatus);
+    }
+
+    [Fact]
+    public async Task Delete_Is_Distinct_From_Archive_Which_Stays_Readable()
+    {
+        var f = new Fixture(TenantA);
+        // Archive keeps the row listed as history; delete removes it from the working set — the two are not the same.
+        var archived = await f.Create().Handle(Cmd(Guid.NewGuid(), code: "ARCH"), default);
+        await f.Archive().Handle(new ArchiveVisitFrequencyPolicyCommand(archived.Data), default);
+
+        var deleted = await f.Create().Handle(Cmd(Guid.NewGuid(), code: "DEL"), default);
+        await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(deleted.Data), default);
+
+        var list = await f.List().Handle(new ListVisitFrequencyPoliciesQuery(), default);
+        var only = Assert.Single(list.Data!.Items);
+        Assert.Equal("ARCH", only.PolicyCode);   // archived history remains listed
+        Assert.Equal("archived", only.Status);   // ...as archived
+    }
+
+    [Fact]
+    public async Task Delete_Unknown_Policy_Returns_404()
+    {
+        var f = new Fixture(TenantA);
+        var r = await f.Delete().Handle(new DeleteVisitFrequencyPolicyCommand(Guid.NewGuid()), default);
+        Assert.Equal(404, r.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_Without_Tenant_Returns_400()
+    {
+        var handler = new DeleteVisitFrequencyPolicyHandler(new TenantContext(), new NullActorContext(), new FakeRepo());
+        var r = await handler.Handle(new DeleteVisitFrequencyPolicyCommand(Guid.NewGuid()), default);
+        Assert.Equal(400, r.StatusCode);
     }
 
     [Fact]

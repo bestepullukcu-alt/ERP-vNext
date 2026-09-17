@@ -693,6 +693,9 @@
   <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
     <value>Ensembles de contenu</value>
   </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Politiques de fréquence de visite</value>
+  </data>
   <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
     <value>Politiques d'éligibilité</value>
   </data>

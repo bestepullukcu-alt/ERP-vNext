@@ -1,0 +1,71 @@
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["PoliciesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // Çözümleme (resolve) tab is permission-gated (UAS-001): only drawn for a user granted resolve (canonical or the
+    // documented territory.read fallback). Its panel content is FREQ-C — here it is an empty placeholder.
+    var canResolve = PermissionClaims.HasPermission(User, "crm.visit-frequency-policy.resolve")
+        || PermissionClaims.HasPermission(User, "crm.territory.read");
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PoliciesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["ArchiveVsDeleteNote"]</small>
+</div>
+
+@* Tabbed console: the policy list + (permission-gated) the read-only resolve/çözümleme panel (FREQ-C). *@
+<div class="nav-align-top mb-3">
+    <ul class="nav nav-pills gap-2 flex-wrap" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-policies" role="tab">
+                <i class="bx bx-list-ul me-1"></i>@Localizer["PoliciesTab"]
+            </button>
+        </li>
+        @if (canResolve)
+        {
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-resolve" role="tab">
+                    <i class="bx bx-target-lock me-1"></i>@Localizer["ResolveTab"]
+                </button>
+            </li>
+        }
+    </ul>
+</div>
+
+<div class="tab-content p-0">
+    <div class="tab-pane fade show active" id="tab-policies" role="tabpanel">
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/VisitFrequencyPolicies/_Filter.cshtml" />
+        <partial name="~/Views/CRM/VisitFrequencyPolicies/_DataTable.cshtml" />
+    </div>
+
+    @if (canResolve)
+    {
+        @* FREQ-C placeholder — the resolve/çözümleme panel is authored in a later work pack. *@
+        <div class="tab-pane fade" id="tab-resolve" role="tabpanel">
+            <div class="card">
+                <div class="card-body text-center text-muted py-5">
+                    <i class="bx bx-target-lock display-6 d-block mb-2"></i>
+                    <p class="mb-0">@Localizer["ResolvePlaceholder"]</p>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* Offcanvas placeholders — FREQ-B fills the create/edit editor, FREQ-C the details quick-view. *@
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
+<partial name="~/Views/CRM/VisitFrequencyPolicies/_DetailsQuickView.cshtml" />
+@* Contract marker rendered by _CreateEditOffcanvas.cshtml: id="offcanvasCreateEdit" *@
+<partial name="~/Views/CRM/VisitFrequencyPolicies/_CreateEditOffcanvas.cshtml" />
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitFrequencyPolicies/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.js" asp-append-version="true"></script>
+}

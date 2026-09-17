@@ -1,0 +1,57 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Code-keyed L10n bridge for the VisitFrequencyPolicies console. The frequency-policy VOCABULARY itself (target /
+   frequency / period / source codes) is NOT hardcoded here — it comes from the FU03 /contract endpoint and index.js
+   humanizes each code; only the lifecycle status labels (a closed, structural set) are shipped as localized strings. *@
+<script id="vfp-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        // table chrome
+        Actions = Localizer["Actions"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        // columns
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        Target = Localizer["Target"].Value,
+        Frequency = Localizer["Frequency"].Value,
+        Priority = Localizer["Priority"].Value,
+        Source = Localizer["Source"].Value,
+        // row + toolbar actions
+        NewPolicy = Localizer["NewPolicy"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        Archive = Localizer["Archive"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        // confirmations + toasts
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        // states
+        EmptyState = Localizer["EmptyState"].Value,
+        ErrorState = Localizer["ErrorState"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        PerPeriod = Localizer["PerPeriod"].Value,
+        // lifecycle status labels (closed structural set)
+        statusLabels = new
+        {
+            draft = Localizer["Status_draft"].Value,
+            active = Localizer["Status_active"].Value,
+            inactive = Localizer["Status_inactive"].Value,
+            archived = Localizer["Status_archived"].Value
+        }
+    })
+</script>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Политики частоты визитов</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Задайте политики цикла звонков / частоты визитов — как часто следует посещать цель.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Архивирование сохраняет политику как читаемую историю; Удаление убирает её из рабочего списка. Оба действия мягкие.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Политики</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Разрешение</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>Панель разрешения появится в следующем обновлении.</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="Target" xml:space="preserve"><value>Цель</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Частота</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>Новая политика</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>Редактор политик появится в следующем обновлении.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>Подробный просмотр появится в следующем обновлении.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Архивировать эту политику? Она останется читаемой как история.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Удалить эту политику? Она будет убрана из списка.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Политика архивирована.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Пока нет политик частоты.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>в</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активна</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивна</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Архивирована</value></data>
+</root>
