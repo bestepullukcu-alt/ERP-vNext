@@ -172,13 +172,19 @@
     const fillVocabSelect = (select, codes, labeller, placeholder) =>
         fillSelect(select, (codes || []).map(c => ({ value: c, text: labeller(c) })), placeholder);
 
-    // ── radio-card grids (target type + priority band) ─────────────────────────
-    const renderCards = (host, items, name) => {
+    // ── priority-band radio-card list ──────────────────────────────────────────
+    // WP-FREQ-F12 — the bands render as a VERTICAL stacked radio-card list (full-width rows, a VISIBLE radio + a bold
+    // title + a description; the selected row is highlighted). The value badge is retired (mockup). Each radio's value
+    // is still the CONTRACT band weight, so checkedValue('vfpPriority') / buildPayload are byte-for-byte unchanged.
+    const renderBandCards = (host, items, name) => {
+        if (!host) return;
         host.innerHTML = (items || []).map(it => `
-            <label class="vfp-radio-card">
-                <input type="radio" class="vfp-radio-input" name="${esc(name)}" value="${esc(it.value)}">
-                <span class="vfp-radio-title">${esc(it.title)}${it.weight != null ? `<span class="vfp-band-weight">${esc(it.weight)}</span>` : ''}</span>
-                ${it.help ? `<span class="vfp-radio-help">${esc(it.help)}</span>` : ''}
+            <label class="vfp-band-card">
+                <input type="radio" class="vfp-band-radio" name="${esc(name)}" value="${esc(it.value)}">
+                <span class="vfp-band-body">
+                    <span class="vfp-band-title">${esc(it.title)}</span>
+                    ${it.help ? `<span class="vfp-band-desc">${esc(it.help)}</span>` : ''}
+                </span>
             </label>`).join('');
     };
     // Target-type DISPLAY order (specificity, narrow → broad). This is a display-only transform: the vocabulary itself
@@ -220,13 +226,17 @@
         // priority band cards — CONTRACT bands (code + weight); smaller wins. Sorted by weight ascending (strongest
         // first). The description is the F1 Band_{code}_Desc phrase.
         const bands = (vocab.priorityBands || []).slice().sort((a, b) => (a.value || 0) - (b.value || 0));
-        renderCards(el('vfpBandCards'),
-            bands.map(b => ({ value: b.value, title: t(`Band_${b.code}`, humanize(b.code)), help: t(`Band_${b.code}_Desc`, ''), weight: b.value })),
+        renderBandCards(el('vfpBandCards'),
+            bands.map(b => ({ value: b.value, title: t(`Band_${b.code}`, humanize(b.code)), help: t(`Band_${b.code}_Desc`, '') })),
             'vfpPriority');
 
         // frequency + source vocab selects
         fillVocabSelect(el('vfpFrequencyType'), vocab.frequencyTypes, c => t(`Freq_${c}`, humanize(c)), t('SelectOption', '—'));
         fillVocabSelect(el('vfpSource'), vocab.sources, c => t(`Source_${c}`, humanize(c)), t('SelectOption', '—'));
+        // WP-FREQ-F11/F12 — search-enable the frequency + source vocab selects AFTER their options are filled (select2
+        // snapshots options at init). The native-change bridge keeps the FORM-delegated change listener alive.
+        rebindSelect2(el('vfpFrequencyType'));
+        rebindSelect2(el('vfpSource'));
         refreshPeriodOptions();
 
         built = true;
@@ -242,6 +252,9 @@
         fillVocabSelect(el('vfpPeriodType'), usable, c => t(`Period_${c}`, humanize(c)), t('SelectOption', '—'));
         if (usable.includes(prev)) el('vfpPeriodType').value = prev;
         else if (usable.length === 1) el('vfpPeriodType').value = usable[0];
+        // WP-FREQ-F11 — the period options were re-filled (allow-map), so re-init select2 to re-snapshot them AFTER the
+        // value is settled; the underlying id/value/allow-map are untouched.
+        rebindSelect2(el('vfpPeriodType'));
         updateFreqSentence();
     };
 
@@ -502,8 +515,10 @@
     const weightText = () => {
         const p = norm(checkedValue('vfpPriority'));
         if (!p) return '—';
-        const card = FORM.querySelector(`input[name="vfpPriority"][value="${(window.CSS && CSS.escape) ? CSS.escape(p) : p}"]`)?.closest('.vfp-radio-card');
-        const title = card?.querySelector('.vfp-radio-title')?.childNodes?.[0]?.textContent;
+        // WP-FREQ-F12 — the band card markup moved to `.vfp-band-card` / `.vfp-band-title` (vertical radio-card, no
+        // weight badge); read the band label from there. checkedValue('vfpPriority') itself is unchanged.
+        const card = FORM.querySelector(`input[name="vfpPriority"][value="${(window.CSS && CSS.escape) ? CSS.escape(p) : p}"]`)?.closest('.vfp-band-card');
+        const title = card?.querySelector('.vfp-band-title')?.textContent;
         return norm(title) || p;
     };
     const targetSummary = () => {
@@ -753,6 +768,11 @@
         el('vfpRequiredVisitCount').value = p.requiredVisitCount ?? '';
         el('vfpPeriodType').value = p.periodType || '';
         el('vfpSource').value = p.source || '';
+        // WP-FREQ-F11/F12 — these three are now select2; a direct .value set doesn't refresh the rendered box, so tell
+        // select2 to re-read the underlying value (change.select2 — no bridge, no cascade re-fire).
+        syncSelect2(el('vfpFrequencyType'));
+        syncSelect2(el('vfpPeriodType'));
+        syncSelect2(el('vfpSource'));
         el('vfpEffectiveFrom').value = (p.effectiveFrom || '').slice(0, 10);
         el('vfpEffectiveTo').value = (p.effectiveTo || '').slice(0, 10);
         el('vfpNotes').value = p.notes || '';

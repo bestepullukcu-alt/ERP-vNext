@@ -235,6 +235,7 @@
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>جميع فترات الدورة</value></data>
   <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
   <data name="EditorSectionTargetLong" xml:space="preserve"><value>الهدف — على من ينطبق</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>التكرار — القيمة الفعلية</value></data>
   <data name="TargetPickedWhich" xml:space="preserve"><value>أي سجل</value></data>
   <data name="TargetChange" xml:space="preserve"><value>تغيير…</value></data>
   <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>وحدة العمل والمنطقة — اتركه فارغًا لعدم التقييد</value></data>

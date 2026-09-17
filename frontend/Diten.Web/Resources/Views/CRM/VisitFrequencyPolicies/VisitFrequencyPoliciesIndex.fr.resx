@@ -235,6 +235,7 @@
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Toutes les périodes de cycle</value></data>
   <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
   <data name="EditorSectionTargetLong" xml:space="preserve"><value>CIBLE — À QUI ELLE S'APPLIQUE</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>FRÉQUENCE — LA VALEUR RÉELLE</value></data>
   <data name="TargetPickedWhich" xml:space="preserve"><value>Quel enregistrement</value></data>
   <data name="TargetChange" xml:space="preserve"><value>Modifier…</value></data>
   <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Unité commerciale et secteur — laisser vide pour aucune contrainte</value></data>

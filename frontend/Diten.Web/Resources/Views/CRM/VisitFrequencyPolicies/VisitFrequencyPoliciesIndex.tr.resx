@@ -235,6 +235,7 @@
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Tüm cycle dönemleri</value></data>
   <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
   <data name="EditorSectionTargetLong" xml:space="preserve"><value>HEDEF — KİME UYGULANIYOR</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>FREKANS — ASIL DEĞER</value></data>
   <data name="TargetPickedWhich" xml:space="preserve"><value>Hangi kayıt</value></data>
   <data name="TargetChange" xml:space="preserve"><value>Değiştir…</value></data>
   <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>İş birimi ve saha alanı — boş bırakılırsa kısıt yok</value></data>

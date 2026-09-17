@@ -316,51 +316,70 @@
                     </div>
                 </section>
 
-                @* 03 — Frequency (the actual value) *@
+                @* 03 — Frequency (the actual value)
+                   WP-FREQ-F11 — FREKANS section aligned to the mockup + the app field/font pattern (task-create). The
+                   heading uses the new long key (EditorSectionFrequencyLong), the three fields become app fields
+                   (FrequencyType/PeriodType = search-enabled `form-select select2` per WP-FREQ-F9; RequiredVisitCount =
+                   `form-control` number in a `.diten-field` icon wrapper), and the resolved cadence renders as a single
+                   row (label + 18px value + monospace meta). Field ids (vfpFrequencyType/vfpRequiredVisitCount/
+                   vfpPeriodType/vfpFreqSentence/vfpFreqRaw) + error ids are PRESERVED — form.js reads them by id and
+                   buildPayload / the FrequencyType×PeriodType allow-map are untouched. The `.vfp-app-section` wrapper
+                   puts the card content back on the shell font (only the cadence meta stays monospace). *@
                 <section class="card mb-4">
-                    <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-repeat dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionFrequency"]</h6>
+                    <div class="card-body p-4 vfp-app-section">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-repeat dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionFrequencyLong"]</h6>
                     <p class="text-muted small mb-3">@Localizer["EditorHelpFrequency"]</p>
                     <div class="vfp-grid vfp-grid-3">
                         <div>
-                            <label class="vfp-label" for="vfpFrequencyType">@Localizer["FieldFrequencyType"] <span class="vfp-req">*</span></label>
-                            <select class="vfp-select" id="vfpFrequencyType"></select>
+                            <label class="form-label fw-medium" for="vfpFrequencyType">@Localizer["FieldFrequencyType"] <span class="text-danger">*</span></label>
+                            <select class="form-select select2" id="vfpFrequencyType"></select>
                             <div class="vfp-error" id="vfpFreqError"></div>
                         </div>
                         <div>
-                            <label class="vfp-label" for="vfpRequiredVisitCount">@Localizer["FieldRequiredVisitCount"] <span class="vfp-req">*</span></label>
-                            <input type="number" min="1" step="1" class="vfp-input" id="vfpRequiredVisitCount">
+                            <label class="form-label fw-medium" for="vfpRequiredVisitCount">@Localizer["FieldRequiredVisitCount"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input type="number" min="1" step="1" class="form-control" id="vfpRequiredVisitCount" autocomplete="off">
+                            </div>
                             <div class="vfp-error" id="vfpCountError"></div>
                         </div>
                         <div>
-                            <label class="vfp-label" for="vfpPeriodType">@Localizer["FieldPeriodType"] <span class="vfp-req">*</span></label>
-                            <select class="vfp-select" id="vfpPeriodType"></select>
+                            <label class="form-label fw-medium" for="vfpPeriodType">@Localizer["FieldPeriodType"] <span class="text-danger">*</span></label>
+                            <select class="form-select select2" id="vfpPeriodType"></select>
                             <div class="vfp-error" id="vfpPeriodError"></div>
                         </div>
                     </div>
-                    <div class="vfp-reads-as">
-                        <div class="vfp-reads-as-label">@Localizer["FreqResolvedLabel"]</div>
-                        <div class="vfp-reads-as-row">
-                            <div class="vfp-reads-as-text" id="vfpFreqSentence">@Localizer["FreqSentenceEmpty"]</div>
-                            <div class="vfp-reads-as-raw" id="vfpFreqRaw"></div>
-                        </div>
+                    <div class="vfp-cadence">
+                        <span class="vfp-cadence-label">@Localizer["FreqResolvedLabel"]</span>
+                        <span class="vfp-cadence-value" id="vfpFreqSentence">@Localizer["FreqSentenceEmpty"]</span>
+                        <span class="vfp-cadence-meta" id="vfpFreqRaw"></span>
                     </div>
                     </div>
                 </section>
 
-                @* 04 — Effective window *@
+                @* 04 — Effective window
+                   WP-FREQ-F12 — GEÇERLİLİK fields now use the app field pattern (task-create): `form-label fw-medium`
+                   label + `.diten-field` (bx-calendar icon) + `form-control` date input. EffectiveTo carries the
+                   "open-ended" placeholder. Ids (vfpEffectiveFrom/vfpEffectiveTo/vfpEffectiveError) are PRESERVED. The
+                   `.vfp-app-section` wrapper keeps the card content on the shell font. *@
                 <section class="card mb-4">
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 vfp-app-section">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionEffective"]</h6>
                     <p class="text-muted small mb-3">@Localizer["EditorHelpEffective"]</p>
                     <div class="vfp-grid">
                         <div>
-                            <label class="vfp-label" for="vfpEffectiveFrom">@Localizer["FieldEffectiveFrom"] <span class="vfp-req">*</span></label>
-                            <input type="date" class="vfp-input" id="vfpEffectiveFrom">
+                            <label class="form-label fw-medium" for="vfpEffectiveFrom">@Localizer["FieldEffectiveFrom"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="date" class="form-control" id="vfpEffectiveFrom">
+                            </div>
                         </div>
                         <div>
-                            <label class="vfp-label" for="vfpEffectiveTo">@Localizer["FieldEffectiveTo"]</label>
-                            <input type="date" class="vfp-input" id="vfpEffectiveTo" placeholder="@Localizer["ValidityOpenEnded"]">
+                            <label class="form-label fw-medium" for="vfpEffectiveTo">@Localizer["FieldEffectiveTo"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                                <input type="date" class="form-control" id="vfpEffectiveTo" placeholder="@Localizer["ValidityOpenEnded"]">
+                            </div>
                         </div>
                     </div>
                     <div class="vfp-error" id="vfpEffectiveError"></div>
@@ -368,17 +387,24 @@
                     </div>
                 </section>
 
-                @* 05 — Conflict priority (contract bands + source) *@
+                @* 05 — Conflict priority (contract bands + source)
+                   WP-FREQ-F12 — the priority bands render as a VERTICAL stacked radio-card list (full-width rows: a
+                   visible radio + a bold title + a description; the selected row is highlighted in the accent). The
+                   value badge is gone (mockup). form.js's renderBandCards emits this markup; each radio still carries
+                   the CONTRACT band weight as its value, so checkedValue('vfpPriority') / buildPayload are unchanged.
+                   Source is a search-enabled `form-select select2` (WP-FREQ-F9 pattern). Ids (vfpBandCards/vfpSource/
+                   vfpPriorityError/vfpSourceError/vfpSourceNote) are PRESERVED. `.vfp-app-section` keeps the content on
+                   the shell font. *@
                 <section class="card mb-4">
-                    <div class="card-body p-4">
+                    <div class="card-body p-4 vfp-app-section">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionConflict"]</h6>
                     <p class="text-muted small mb-3">@Localizer["ConflictIntro"]</p>
-                    <label class="vfp-label">@Localizer["ConflictWeightLabel"] <span class="vfp-req">*</span></label>
-                    <div class="vfp-cardgrid" id="vfpBandCards"></div>
+                    <label class="form-label fw-medium">@Localizer["ConflictWeightLabel"] <span class="text-danger">*</span></label>
+                    <div class="vfp-bandlist" id="vfpBandCards"></div>
                     <div class="vfp-error" id="vfpPriorityError"></div>
                     <div class="mt-3">
-                        <label class="vfp-label" for="vfpSource">@Localizer["ConflictSourceLabel"] <span class="vfp-req">*</span></label>
-                        <select class="vfp-select" id="vfpSource"></select>
+                        <label class="form-label fw-medium" for="vfpSource">@Localizer["ConflictSourceLabel"] <span class="text-danger">*</span></label>
+                        <select class="form-select select2" id="vfpSource"></select>
                         <div class="vfp-error" id="vfpSourceError"></div>
                         <div class="vfp-inline-note" id="vfpSourceNote">@Localizer["SourceNote"]</div>
                     </div>

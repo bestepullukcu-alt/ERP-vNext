@@ -235,6 +235,7 @@
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>所有周期段</value></data>
   <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
   <data name="EditorSectionTargetLong" xml:space="preserve"><value>目标 — 适用对象</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>频率 — 实际值</value></data>
   <data name="TargetPickedWhich" xml:space="preserve"><value>选择记录</value></data>
   <data name="TargetChange" xml:space="preserve"><value>更改…</value></data>
   <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>业务单元与区域 — 留空表示不限制</value></data>

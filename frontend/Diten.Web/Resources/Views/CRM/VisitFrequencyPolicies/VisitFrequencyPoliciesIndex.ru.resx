@@ -235,6 +235,7 @@
   <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Все периоды цикла</value></data>
   <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
   <data name="EditorSectionTargetLong" xml:space="preserve"><value>ЦЕЛЬ — К КОМУ ПРИМЕНЯЕТСЯ</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>ЧАСТОТА — ФАКТИЧЕСКОЕ ЗНАЧЕНИЕ</value></data>
   <data name="TargetPickedWhich" xml:space="preserve"><value>Какая запись</value></data>
   <data name="TargetChange" xml:space="preserve"><value>Изменить…</value></data>
   <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Бизнес-единица и территория — пусто = без ограничений</value></data>

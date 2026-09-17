@@ -117,40 +117,8 @@
     color: var(--bs-secondary-color);
 }
 
-/* ------------------------------------------------------------------ radio-card grid (target type + priority band) */
-.vfp-create-scope .vfp-cardgrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-}
-.vfp-create-scope .vfp-radio-card {
-    position: relative;
-    display: block;
-    text-align: left;
-    padding: 11px 13px;
-    border: 1.5px solid var(--bs-border-color);
-    border-radius: 9px;
-    cursor: pointer;
-    margin: 0;
-}
-.vfp-create-scope .vfp-radio-card:hover {
-    border-color: var(--bs-primary);
-}
-.vfp-create-scope .vfp-radio-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--bs-body-color);
-}
-.vfp-create-scope .vfp-radio-help {
-    display: block;
-    font-size: 12px;
-    line-height: 1.45;
-    color: var(--vfp-muted);
-    margin-top: 4px;
-}
+/* ------------------------------------------------------------------ hidden radio input (target-type compact chips)
+   The target-type chips (`.vfp-chip-card`) still hide their native radio and show selection via the chip fill. */
 .vfp-create-scope .vfp-radio-input {
     position: absolute;
     opacity: 0;
@@ -158,27 +126,66 @@
     height: 0;
     pointer-events: none;
 }
-.vfp-create-scope .vfp-radio-card:has(> .vfp-radio-input:checked) {
+
+/* ------------------------------------------------------------------ WP-FREQ-F12 — conflict priority band list
+   The priority bands are a VERTICAL stacked radio-card list (full-width rows: a visible radio + a bold title + a
+   description; the selected row is highlighted in the accent). No value badge (mockup). The radio VALUE stays the
+   contract band weight, so buildPayload / checkedValue('vfpPriority') read it exactly as before. */
+.vfp-create-scope .vfp-bandlist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.vfp-create-scope .vfp-band-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 9px;
+    cursor: pointer;
+    margin: 0;
+}
+.vfp-create-scope .vfp-band-card:hover {
+    border-color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-band-radio {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    accent-color: var(--bs-primary);
+    cursor: pointer;
+}
+.vfp-create-scope .vfp-band-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.vfp-create-scope .vfp-band-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+.vfp-create-scope .vfp-band-desc {
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-band-card:has(.vfp-band-radio:checked) {
     background: rgba(var(--bs-primary-rgb), 0.08);
     border-color: var(--vfp-accent);
     box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
 }
-.vfp-create-scope .vfp-radio-card:has(> .vfp-radio-input:checked) .vfp-radio-title {
+.vfp-create-scope .vfp-band-card:has(.vfp-band-radio:checked) .vfp-band-title {
     color: var(--bs-primary);
-}
-.vfp-create-scope .vfp-band-weight {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--vfp-muted);
-    margin-left: auto;
-    padding: 2px 8px;
-    background: var(--bs-secondary-bg);
-    border-radius: 999px;
 }
 
 /* ------------------------------------------------------------------ target-type compact chips (WP-FREQ-F3)
    The target type selector is a single-row, flex-wrap set of compact chips (specificity order, most-specific → broadest,
-   with a small subtext on the first + last). The priority-band selector keeps the larger .vfp-radio-card layout above. */
+   with a small subtext on the first + last). The priority-band selector uses the vertical `.vfp-band-card` list above. */
 .vfp-create-scope .vfp-chipgrid {
     display: flex;
     flex-wrap: wrap;
@@ -228,26 +235,38 @@
     opacity: 0.75;
 }
 
-/* ------------------------------------------------------------------ frequency reads-as sentence */
-.vfp-create-scope .vfp-reads-as {
-    padding: 12px 14px;
+/* ------------------------------------------------------------------ WP-FREQ-F11 — resolved cadence (single row)
+   The resolved cadence renders as ONE row: an uppercase accent label, the 18px value (#vfpFreqSentence) and, pushed to
+   the far end, a monospace meta (#vfpFreqRaw = "frequencyType · count · periodType"). */
+.vfp-create-scope .vfp-cadence {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    padding: 16px 18px;
     background: var(--bs-primary-bg-subtle);
     border: 1px solid var(--bs-primary-border-subtle);
-    border-radius: 9px;
-    margin-top: 12px;
+    border-radius: 6px;
 }
-.vfp-create-scope .vfp-reads-as-label {
+.vfp-create-scope .vfp-cadence-label {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--bs-primary);
-    margin-bottom: 4px;
 }
-.vfp-create-scope .vfp-reads-as-text {
-    font-size: 14px;
-    line-height: 1.55;
-    color: var(--bs-primary-text-emphasis);
+.vfp-create-scope .vfp-cadence-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--bs-heading-color);
+}
+.vfp-create-scope .vfp-cadence-meta {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 11px;
+    color: var(--bs-primary);
+    white-space: nowrap;
 }
 
 /* ------------------------------------------------------------------ source note */
@@ -307,6 +326,17 @@
 .vfp-create-scope .vfp-target-section .vfp-picked-code,
 .vfp-create-scope .vfp-target-section .vfp-picked-ext,
 .vfp-create-scope .vfp-target-section .vfp-code-hint {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* WP-FREQ-F11/F12 — the FREKANS + GEÇERLİLİK + ÇAKIŞMA sections put their mockup-content (`.vfp-*`) nodes back on the
+   shell font (same reset as the HEDEF `.vfp-target-section`), so the whole card reads in the app font like
+   /Tasks/Create. Only the resolved-cadence meta stays monospace. */
+.vfp-create-scope .vfp-app-section [class^="vfp-"],
+.vfp-create-scope .vfp-app-section [class*=" vfp-"] {
+    font-family: var(--bs-body-font-family);
+}
+.vfp-create-scope .vfp-app-section .vfp-cadence-meta {
     font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
@@ -580,19 +610,6 @@
     cursor: pointer;
 }
 
-/* -------------------------------------------------------- reads-as sentence (cadence) row */
-.vfp-create-scope .vfp-reads-as-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-}
-.vfp-create-scope .vfp-reads-as-raw {
-    font-size: 12px;
-    color: var(--bs-primary-text-emphasis);
-    opacity: 0.7;
-    white-space: nowrap;
-}
 .vfp-create-scope .vfp-inline-note--muted {
     background: var(--bs-secondary-bg);
     color: var(--vfp-muted);
