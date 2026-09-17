@@ -134,6 +134,15 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public Task<IActionResult> TerritoryModels(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/territory-models{Request.QueryString}", ct, "crm.territory.read", ReadFallback);
 
+    // WP-FREQ-F19 — territory-node reverse lookup for edit-restore. A stored policy carries only TerritoryNodeId (no
+    // parent model), so the editor resolves the id back to {id,name,modelId,code} to re-select the model + cascade its
+    // nodes and show the node BY NAME. Read-only pass-through, same territory.read RBAC as the sibling territory reads.
+    // The literal "nodes/by-ids" sits under the EXISTING Gateway {everything} wildcard and can never match the
+    // {modelId:guid}/nodes route below ("nodes" is not a GUID) — no ocelot change needed (WP-SEG-DETAILS8 pattern).
+    [HttpGet("api/territory-models/nodes/by-ids")]
+    public Task<IActionResult> TerritoryNodesByIds(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/territory-models/nodes/by-ids{Request.QueryString}", ct, "crm.territory.read", ReadFallback);
+
     [HttpGet("api/territory-models/{modelId:guid}/nodes")]
     public Task<IActionResult> TerritoryNodes(Guid modelId, CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/territory-models/{modelId}/nodes{Request.QueryString}", ct, "crm.territory.read", ReadFallback);

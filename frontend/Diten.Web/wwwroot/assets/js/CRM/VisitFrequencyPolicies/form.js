@@ -286,7 +286,10 @@
                 <div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select></div>`;
             const models = await loadOptions('territory-model');
             fillSelect(el('vfpTargetTerModel'), models, t('SelectTerritoryModel', 'Select model'));
-            if (seedId) seedSelect(el('vfpTargetTerNode'), seedId, seedName);
+            // WP-FREQ-F19 — edit-restore: resolve the stored node id back to {modelId,name}, select the model, cascade
+            // its node options and show the node BY NAME (degrades to a raw seed when unresolved). data-role="targetId"
+            // stays on vfpTargetTerNode; CREATE (no seedId) is unchanged.
+            if (seedId) await restoreTerritoryPair(el('vfpTargetTerModel'), el('vfpTargetTerNode'), seedId, seedName);
             // WP-FREQ-F9 — search-enable both target selects AFTER options + seed are in place (cascade model→node
             // re-inits the node select in cascadeNodes). data-role="targetId" stays on the underlying <select>.
             bindSelect2(el('vfpTargetTerModel'));
@@ -398,8 +401,14 @@
             fillSelect(modelSel, models, t('SelectTerritoryModel', 'Select model'));
             rebindSelect2(modelSel); // WP-FREQ-F9
         }
-        if (nodeSel && seeds.vfpTerritoryNode) seedSelect(nodeSel, seeds.vfpTerritoryNode, seeds.vfpTerritoryNode_name);
-        if (nodeSel) rebindSelect2(nodeSel); // WP-FREQ-F9 — enhance the node select (may hold only its seed/placeholder)
+        // WP-FREQ-F19 — edit-restore: a stored node id carries no model, so resolve it back to {modelId,name}, select the
+        // model, cascade its node options and show the node BY NAME (degrades to a raw seed when unresolved). Empty (create
+        // / no scope) keeps the plain F9 enhance of the node placeholder — create behaviour is unchanged.
+        if (nodeSel && seeds.vfpTerritoryNode) {
+            await restoreTerritoryPair(modelSel, nodeSel, seeds.vfpTerritoryNode, seeds.vfpTerritoryNode_name);
+        } else if (nodeSel) {
+            rebindSelect2(nodeSel); // WP-FREQ-F9 — enhance the node select (may hold only its placeholder)
+        }
         applyBrandProductNarrowing();
     };
     const cascadeNodes = async (modelSel, nodeSel) => {
@@ -410,6 +419,42 @@
         rebindSelect2(nodeSel); // WP-FREQ-F9 — node options were re-filled; select2 must re-snapshot them
     };
     const onContextTerritoryModelChange = () => cascadeNodes(el('vfpTerritoryModel'), el('vfpTerritoryNode'));
+
+    // WP-FREQ-F19 — a stored policy keeps only the TerritoryNodeId (the parent model is not persisted), so edit-restore
+    // resolves the node id back to {modelId, name} through the by-ids reverse-lookup proxy. Pure READ; returns null when
+    // it can't resolve, so the caller keeps the raw-id degrade (never a fabricated name).
+    const resolveNodeLookup = async nodeId => {
+        const id = norm(nodeId);
+        if (!id) return null;
+        try {
+            const rows = await getJson(`/territory-models/nodes/by-ids?ids=${encodeURIComponent(id)}`);
+            const list = Array.isArray(rows) ? rows : (rows?.items || rows?.nodes || []);
+            const hit = list.find(r => String(r.id ?? r.Id ?? r.nodeId ?? r.NodeId) === id) || list[0];
+            if (!hit) return null;
+            const modelId = norm(hit.modelId ?? hit.ModelId);
+            const name = hit.name || hit.Name || '';
+            return modelId ? { modelId, name } : null;
+        } catch (e) { return null; }
+    };
+    // WP-FREQ-F19 — edit-restore a territory (model + node) pair from a bare node id: select the resolved parent model
+    // (its options are already filled), cascade-load that model's node options, then select the node BY NAME. Both
+    // selects are select2, re-bound after each re-fill (F9). Degrades to the raw-id seed when the lookup can't resolve.
+    const restoreTerritoryPair = async (modelSel, nodeSel, nodeId, fallbackName) => {
+        if (!nodeSel) return;
+        const id = norm(nodeId);
+        if (!id) return;
+        const lookup = await resolveNodeLookup(id);
+        if (lookup && modelSel) {
+            modelSel.value = lookup.modelId;
+            syncSelect2(modelSel); // model options already loaded — just tell select2 to re-read the value
+            await cascadeNodes(modelSel, nodeSel); // load THIS model's node options (+ rebind select2)
+            seedSelect(nodeSel, id, lookup.name); // select by id; the option now shows the resolved name
+            rebindSelect2(nodeSel); // re-snapshot so a just-appended (archived) node renders too
+            return;
+        }
+        seedSelect(nodeSel, id, fallbackName || null); // degrade: raw-id seed (no fabricated name)
+        rebindSelect2(nodeSel);
+    };
 
     // brand → product narrowing (mockup: product disabled until a brand is picked, "önce marka seçin")
     const applyBrandProductNarrowing = () => {
