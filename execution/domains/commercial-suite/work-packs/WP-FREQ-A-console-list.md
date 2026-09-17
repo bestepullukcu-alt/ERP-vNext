@@ -49,3 +49,17 @@ Durma: EntityBase IsDeleted yoksa (soft-delete kurulamıyor); Golden Compact v2 
 Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
 ```
 - İzole worktree → Diten.Web.Tests + CrmService.Application.Tests baseline-diff; console 2 tab; Golden Compact v2 DataTable (kolon+aksiyon+Yeni); soft-delete additive (IsDeleted list filtreler, Archive/status davranışı korundu); nav+RBAC; offcanvas placeholder (içerik yok); backend contract/resolve/CRUD değişmedi.
+
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
+```
+Commit: a14dd389 · Agent: PASS · CT: ACCEPTED E2 (gerçek build) · izole /c/tmp/ct-freqa-verify @a14dd389
+```
+- ✅ Scope: yeni VisitFrequencyPolicies frontend (Controller + Index + 5 view + 2 js + 7 resx) + backend additive soft-delete (Delete command/handler + entity DeletedBy) + CrmManifestProvider nav + 1 test. Segment/başka modül dokunulmadı.
+- ✅ Backend additive: contract/resolve/CRUD/archive DEĞİŞMEDİ (yalnız Delete command/handler + DeletedBy). Soft-delete DISTINCT from Archive (Arşivle=status archived listede kalır; Sil=IsDeleted listeden+resolve-setinden düşer; hard delete yok). list/get/resolve zaten IsDeleted=false filtreliyor.
+- ✅ Console: 2 tab (Liste aktif + Çözümleme resolve-gated placeholder); Golden Compact v2 DataTable (id=dt-visitfrequencypolicies, data-dt-standard=v2; dt-inline-filter-host + updateVisualState gotcha'ları korundu); kolon Code/Name/Hedef/Frekans/Priority/Status/Actions; satır aksiyon Detay/Düzenle/Arşivle/Sil + Yeni Politika; contract-driven filtre. _CreateEditOffcanvas + _DetailsQuickView boş placeholder (FREQ-B/C).
+- ✅ Nav: CrmManifestProvider VISIT_FREQUENCY_POLICIES (sortOrder 180) + Nav.Page.* 7 dil; NavManifestL10nGuard yeşil.
+- ✅ Build+test (CT izole, Release, GERÇEK): CrmService.Application.Tests **1749/0/5** (+4 soft-delete) + Diten.Web.Tests **137/0**.
+- ℹ️ Kapsam kararları (kabul): activate satır-aksiyonu yok (FU03 backend'inde activate endpoint yok — KORU'ya uygun; status→active editörde FREQ-B); bulk yok (backend bulk-delete yok + EligibilityPolicies referansı da içermiyor); nav RequiredPermission=crm.territory.read fallback (canonical seed'lenene dek). verify_datatable_page.py fail = EligibilityPolicies ile aynı proxy/no-bulk baseline ailesi (WP kabul kapısı değil).
+- ⏳ E4: /CRM/VisitFrequencyPolicies liste dolu; Yeni/Detay offcanvas placeholder; Sil soft-delete.
+
+**FREQ-A iskelet KOMPLE. Sıra: FREQ-B (Create/Edit offcanvas editör — güncel mockup C:\tmp\mockup-freq.html).**
