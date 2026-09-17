@@ -29,9 +29,11 @@ KORU/YAPMA: kart içerikleri/id/form.js/buildPayload/validation DEĞİŞMEZ; bac
 DOĞRULA (E2): Diten.Web.Tests 137/0; git diff yalnız _Editor(+css). Ayrı commit. §22 TÜRKÇE. K13.
 Durma: yan yana düzen kart içeriğini/id/işlevi bozuyorsa; kapsam 04+05 dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
 ```
-- İzole worktree → Diten.Web.Tests 137/0; 04+05 row g-4 col-xl-6 yan yana (dar alt alta); kart içerik/id/form.js/buildPayload/backend/diğer bölüm değişmedi; git diff yalnız _Editor(+css).
+Commit: 1cd8ca6b · Agent: PASS · CT: ACCEPTED E2 (izole temiz build) · /c/tmp/ct-f14-verify @1cd8ca6b
+```
+- ✅ Kapsam: _Editor.cshtml + visit-frequency-create.css (2 dosya). form.js/backend/liste/detay = 0.
+- ✅ 04+05 `row g-4 vfp-effective-conflict-row` > `col-12 col-xl-6` (geniş yan yana, dar alt alta); kart height:100% eşit; id'ler (vfpEffectiveFrom/To/vfpBandCards/vfpSource) korundu; mb-4→row gap.
+- ✅ Diten.Web.Tests 137/0 (izole temiz).
 ```
