@@ -468,6 +468,14 @@
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+/* WP-FREQ-F14 — GEÇERLİLİK (04) + ÇAKIŞMA (05) kartları `row g-4` içinde `col-12 col-xl-6` yan yana. Kartlardan
+   `mb-4` kaldırıldı; dikey boşluğu row g-4 gap yönetir. Geniş ekranda iki kart eşit yükseklik olsun diye col
+   içindeki `.card` yüksekliği %100'e sabitlenir (tema-nötr; app card chrome'a dokunmaz). */
+.vfp-create-scope .vfp-effective-conflict-row > [class*="col-"] > .card {
+    height: 100%;
+    margin-bottom: 0;
+}
+
 /* WP-FREQ-F7 — the HEDEF section aside note now carries the app `.wcn-act-outcome` class (size + muted colour from
    backbone-custom.css). It still sits inside the uppercase app-card h6, so the inherited transform/spacing/weight are
    reset back to a plain note (the old `.vfp-section-aside` shell is retired). */

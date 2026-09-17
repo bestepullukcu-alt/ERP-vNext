@@ -372,12 +372,19 @@
                     </div>
                 </section>
 
+                @* WP-FREQ-F14 — GEÇERLİLİK (04) + ÇAKIŞMA (05) kartları yan yana: iki section.card bir `row g-4`
+                   içinde `col-12 col-xl-6` sütunlara alındı (geniş ekranda yan yana, dar ekranda alt alta). Kart iç
+                   içeriği/başlık/ikon/alanlar/tüm id AYNEN korundu; yalnız iki kartı saran 2-kolon wrapper eklendi.
+                   Çift dikey boşluk olmasın diye kartlardan `mb-4` kaldırıldı (row g-4 gap yönetir) ve col içinde
+                   `.card{height:100%}` ile eşit yükseklik css'e taşındı. *@
+                <div class="row g-4 vfp-effective-conflict-row">
+                <div class="col-12 col-xl-6">
                 @* 04 — Effective window
                    WP-FREQ-F12 — GEÇERLİLİK fields now use the app field pattern (task-create): `form-label fw-medium`
                    label + `.diten-field` (bx-calendar icon) + `form-control` date input. EffectiveTo carries the
                    "open-ended" placeholder. Ids (vfpEffectiveFrom/vfpEffectiveTo/vfpEffectiveError) are PRESERVED. The
                    `.vfp-app-section` wrapper keeps the card content on the shell font. *@
-                <section class="card mb-4">
+                <section class="card">
                     <div class="card-body p-4 vfp-app-section">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-calendar dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionEffective"]</h6>
                     <p class="text-muted small mb-3">@Localizer["EditorHelpEffective"]</p>
@@ -401,7 +408,8 @@
                     <div class="vfp-inline-note vfp-inline-note--muted">@Localizer["EffectiveNote"]</div>
                     </div>
                 </section>
-
+                </div>
+                <div class="col-12 col-xl-6">
                 @* 05 — Conflict priority (contract bands + source)
                    WP-FREQ-F12 — the priority bands render as a VERTICAL stacked radio-card list (full-width rows: a
                    visible radio + a bold title + a description; the selected row is highlighted in the accent). The
@@ -410,7 +418,7 @@
                    Source is a search-enabled `form-select select2` (WP-FREQ-F9 pattern). Ids (vfpBandCards/vfpSource/
                    vfpPriorityError/vfpSourceError/vfpSourceNote) are PRESERVED. `.vfp-app-section` keeps the content on
                    the shell font. *@
-                <section class="card mb-4">
+                <section class="card">
                     <div class="card-body p-4 vfp-app-section">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionConflict"]</h6>
                     <p class="text-muted small mb-3">@Localizer["ConflictIntro"]</p>
@@ -425,6 +433,8 @@
                     </div>
                     </div>
                 </section>
+                </div>
+                </div>
             </div>
 
             @* ───────────────────────── RIGHT: sticky lifecycle / summary / checklist ───────────────────────── *@
