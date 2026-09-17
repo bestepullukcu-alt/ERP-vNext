@@ -25,6 +25,61 @@
         segment.Criteria, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase });
 }
 
+@* WP-SEG-DETAILS7: criteria predicate'ini insan cümlesine çevirir (frontend-only, Razor).
+   Öncelik elle girilen node.Label'dadır; boşsa humanize(attribute) + operator ifadesi + değer(ler)
+   kurulur. Operator ifadesi form.js OPERATOR_LABEL_KEY ile BİREBİR aynı resx anahtarları üzerinden
+   Localizer ile çözülür (form read-back ile tutarlılık — K13). 36 karakterlik GUID/UUID değerler
+   makine kimliğidir, okunur değildir: atlanır (territory node ismi WP-DETAILS8). Backend/katalog yok. *@
+@functions {
+    // Operator kodu -> iş-dili resx anahtarı. form.js OPERATOR_LABEL_KEY ile aynı harita/anahtarlar.
+    static string OperatorLabelKey(string op) => op switch
+    {
+        "eq" => "OpIs",
+        "ne" => "OpIsNot",
+        "in" => "OpIsAnyOf",
+        "not-in" => "OpIsNoneOf",
+        "contains" => "OpContains",
+        "gt" => "OpMoreThan",
+        "gte" => "OpAtLeast",
+        "lt" => "OpLessThan",
+        "lte" => "OpAtMost",
+        "between" => "OpBetween",
+        "is-null" => "OpIsEmpty",
+        "is-not-null" => "OpIsSet",
+        _ => null
+    };
+
+    // Attribute kodunu iş-diline çevirir. Mockup'ın adlandırdığı kodlara iş-dili karşılığı; gerisi
+    // form.js attributeLabel ile aynı: son nokta segmenti, tire->boşluk, ilk harf büyük.
+    static string HumanizeAttribute(string code)
+    {
+        if (string.IsNullOrWhiteSpace(code)) { return code; }
+        switch (code)
+        {
+            case "account.type": return "Account type";
+            case "consent.eligibility": return "Contactability";
+        }
+        var raw = code.Split('.').Last().Replace('-', ' ').Trim();
+        if (raw.Length == 0) { return code; }
+        return char.ToUpperInvariant(raw[0]) + raw.Substring(1);
+    }
+
+    // 36 karakterlik UUID = makine kimliği (entity-picker/territory node); okunur değildir.
+    static bool IsGuidValue(string value) => value?.Length == 36 && Guid.TryParse(value, out _);
+
+    // Reference-set / enum değeri okunur biçime: tire/alt-çizgi->boşluk, kelime başları büyük.
+    static string TitleCaseValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) { return value; }
+        var words = value.Replace('-', ' ').Replace('_', ' ').Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < words.Length; i++)
+        {
+            words[i] = char.ToUpperInvariant(words[i][0]) + words[i].Substring(1);
+        }
+        return string.Join(" ", words);
+    }
+}
+
 @* .segment-details-scope keeps the ported segd-* palette + Inter font off the app shell (WP §5).
    data-segment-type drives which membership blocks details.js shows: static hides the resolve preview, dynamic hides
    the manual table, hybrid shows both — the same rule the runtime already enforces. *@
@@ -197,8 +252,25 @@
                                 }
                                 else
                                 {
+                                    @* WP-SEG-DETAILS7: elle girilen node.Label her zaman önceliklidir; boşsa criteria
+                                       kodları yerine insan cümlesi kurulur (humanize + operator ifadesi + değer[ler]).
+                                       GUID değerler atlanır; hiç okunur değer kalmazsa cümle attribute + operator ile biter. *@
+                                    var predHuman = node.Label;
+                                    if (string.IsNullOrWhiteSpace(predHuman))
+                                    {
+                                        var attrText = HumanizeAttribute(node.AttributeCode);
+                                        var opKey = OperatorLabelKey(node.Operator);
+                                        var opText = opKey != null ? Localizer[opKey].Value : node.Operator;
+                                        var shownValues = node.Values
+                                            .Where(v => !IsGuidValue(v))
+                                            .Select(v => TitleCaseValue(v))
+                                            .ToList();
+                                        predHuman = (shownValues.Count > 0
+                                            ? $"{attrText} {opText} {string.Join(", ", shownValues)}"
+                                            : $"{attrText} {opText}").Trim();
+                                    }
                                     <div class="segd-pred">
-                                        <span class="segd-pred-human">@(string.IsNullOrWhiteSpace(node.Label) ? node.AttributeCode : node.Label)</span>
+                                        <span class="segd-pred-human">@predHuman</span>
                                         <span class="segd-pred-badges">
                                             <span class="segd-tag segd-tag-attr segd-mono">@node.AttributeCode</span>
                                             <span class="segd-tag segd-tag-op segd-mono">@node.Operator</span>
