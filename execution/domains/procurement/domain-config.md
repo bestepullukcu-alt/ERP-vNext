@@ -64,7 +64,7 @@ Blueprint 8.1 `Blueprint_Data` "Module Name" sütunundan **birebir** alınmışt
 ## Service & Deployment
 
 - **Servis:** `Diten.ProcurementService` (yeni tek servis — procurement domaini; kullanıcı onayı 2026-09-16).
-- **Port:** **5062** (mikroservis bandı 5011-5061 doluydu; band 5062'ye uzatıldı — AGENTS.md §3 güncellenir).
+- **Port:** **5065** (mikroservis bandı 5011-5061 doluydu; band 5065'ye uzatıldı — AGENTS.md §3 güncellenir).
 - **Persistence:** MongoDB (repo deseni; V3 GUID subtype-4) · her sorguda `TenantId` izolasyonu.
 - **Gateway:** `/api/suppliers`, `/api/sourcing`, `/api/requisitions`, `/api/purchase-orders`, `/api/grn`, `/api/invoice-match`, `/api/contracts` route'ları yalnız `integration-agent` tarafından eklenir (protected `ocelot.json`).
 - ⚠️ **Servis scaffold** yalnız DCP-010 `approved`/`ready-for-execution` + ilgili module pack (ilk: MOD-0140) `ready-for-dev` + `@orchestrator /add-module` ile başlar (AGENTS.md §2, CAP-001 §7). Bu domain-config scaffold'ı **yetkilendirir**, tetiklemez.

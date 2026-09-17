@@ -84,7 +84,7 @@ Fatura yakalama + 3-yönlü eşleştirme (PurchaseOrder ↔ GoodsReceipt ↔ Inv
 - **Downstream consumers:** Finance/Treasury (match outcome → AP/payment; MOD-0146 dışarıda). Match outcome üretir, ödeme yürütmez.
 
 ## 8. Runtime Constraints
-- Gateway port **5062**; frontend yalnız Gateway (5000) üzerinden çağırır (`/api/invoice-match`).
+- Gateway port **5065**; frontend yalnız Gateway (5000) üzerinden çağırır (`/api/invoice-match`).
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404).
 - Soft delete (`IsDeleted`/`DeletedAt`).
 - **Idempotent capture/match/resolve** (`Idempotency-Key` header zorunlu — replay yan-etki üretmez).
@@ -134,7 +134,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Actor: tenant_user (procurement / AP-önü rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/invoice-match` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür. Frontend servis portuna (5062) doğrudan gitmez; yalnız Gateway (5000).
+- Karar: Gateway değişikliği **gerekli** (`/api/invoice-match` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür. Frontend servis portuna (5065) doğrudan gitmez; yalnız Gateway (5000).
 
 ## 16. Acceptance Criteria
 - [ ] `POST /invoices` idempotent capture → 201 (Captured); duplicate (Supplier+InvoiceNumber) → 409; bilinmeyen PO/supplier/item → 404 (fail-closed).
@@ -170,7 +170,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [x] DCP-010 approved + 0141/0142 dilimleri + bu pack ready-for-dev onayı (Ali, 2026-09-17; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
-DCP-010 §8 sırasında W-2 dilimi: 0142 GRN'den sonra, 0144 Contracting'den önce (0140→0145→0141→0142→**0143**→0144). Servis scaffold MOD-0140 ile doğar; bu modül mevcut `Diten.ProcurementService`'e feature olarak eklenir (port 5062, JWT + Mongo V3 GUID + TenantId izolasyonu). MATCH contract producer surface `x-status: REVIEW` — freeze owner+consumer review sonrası.
+DCP-010 §8 sırasında W-2 dilimi: 0142 GRN'den sonra, 0144 Contracting'den önce (0140→0145→0141→0142→**0143**→0144). Servis scaffold MOD-0140 ile doğar; bu modül mevcut `Diten.ProcurementService`'e feature olarak eklenir (port 5065, JWT + Mongo V3 GUID + TenantId izolasyonu). MATCH contract producer surface `x-status: REVIEW` — freeze owner+consumer review sonrası.
 
 **ASSUMPTION-P2P-01 (carry-forward, DCP-010 AD-7 / domain-config §Key Decisions ile hizalı):** 3-yönlü eşleştirme toleransı **POLICY-DRIVEN** modellenir (`toleranceProfileId` + qty/price/amount toleransları); mismatch → exception queue. Koda/contract'a **sabit sayısal varsayılan GÖMÜLMEZ**; gerçek tolerans değeri/sahibi tenant policy/Finance kararıdır (EA/Finance-TBD). Bu **contract-bozan değil additive-safe** bir açıklıktır; contract `runThreeWayMatch` request'inde `toleranceProfileId` opsiyonel ve verilmezse LE/tenant default profil uygulama tarafından çözülür.
 

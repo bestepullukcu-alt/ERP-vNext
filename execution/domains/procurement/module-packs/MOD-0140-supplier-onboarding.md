@@ -75,7 +75,7 @@ Tedarikçi master + onboarding (KYC / sanctions / doküman / onay) SoR'u. Hedef 
 - **Downstream consumers:** MOD-0141 PO (`supplierId`), MOD-0143 Invoice-Match, MOD-0145 Sourcing (`invitedSupplierIds`/`bid.supplierId`), MOD-0144 Contracting, MVP-6 0147/0148.
 
 ## 8. Runtime Constraints
-- Gateway port **5062**; frontend yalnız Gateway (5000) üzerinden çağırır.
+- Gateway port **5065**; frontend yalnız Gateway (5000) üzerinden çağırır.
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404).
 - Soft delete (`IsDeleted`/`DeletedAt`).
 - Idempotent create/onboarding (`Idempotency-Key`); update optimistic concurrency (`If-Match`/rowVersion) → 409.
@@ -114,7 +114,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Actor: tenant_user (procurement rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/suppliers` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
+- Karar: Gateway değişikliği **gerekli** (`/api/suppliers` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
 
 ## 16. Acceptance Criteria
 - [ ] `POST /api/suppliers` idempotent create → 201; `GET` list/by-id tenant+LE filtreli.
@@ -147,7 +147,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [x] DCP-010 approved (Ali, 2026-09-16) + bu pack ready-for-dev onayı (kod kapısı AÇIK)
 
 ## 19. Implementation Notes
-İlk scaffold edilecek modül (DCP-010 §8 sıra: 0140→0145→0141→0142→0143→0144). Servis scaffold bu pack + `@orchestrator /add-module` ile doğar (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5062 + gateway route). SUPPLIER contract producer surface `x-producer-status: REVIEW` — freeze owner+consumer review sonrası; MVP-6 slice superset korunur.
+İlk scaffold edilecek modül (DCP-010 §8 sıra: 0140→0145→0141→0142→0143→0144). Servis scaffold bu pack + `@orchestrator /add-module` ile doğar (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5065 + gateway route). SUPPLIER contract producer surface `x-producer-status: REVIEW` — freeze owner+consumer review sonrası; MVP-6 slice superset korunur.
 
 ## 20. Follow-up Items
 - Supplier performance/risk (0147) ve portal (0148) → MVP-6 (bu modül değil).

@@ -79,7 +79,7 @@ RFx (RFQ/RFP/RFI) → teklif (bid) → değerlendirme/skor → award (kazanan) S
 - **Downstream consumers:** MOD-0141 Requisition/PO (award → PO kaynağı), MOD-0144 Contracting (award → sözleşme kaynağı).
 
 ## 8. Runtime Constraints
-- Gateway port **5062**; frontend yalnız Gateway (5000) üzerinden çağırır.
+- Gateway port **5065**; frontend yalnız Gateway (5000) üzerinden çağırır.
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404).
 - Soft delete (`IsDeleted`/`DeletedAt`); yalnız Draft RFx silinebilir (bkz. §12/§13).
 - Idempotent create/publish/bid/award (`Idempotency-Key` header zorunlu — contract); replay yan-etkisiz.
@@ -127,7 +127,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Actor: tenant_user (procurement sourcing rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/sourcing` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (POST/GET `/events`, `/events/{rfxId}`, `/events/{rfxId}/publish`, `/events/{rfxId}/bids`, `/events/{rfxId}/award`) + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
+- Karar: Gateway değişikliği **gerekli** (`/api/sourcing` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (POST/GET `/events`, `/events/{rfxId}`, `/events/{rfxId}/publish`, `/events/{rfxId}/bids`, `/events/{rfxId}/award`) + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
 
 ## 16. Acceptance Criteria
 - [ ] `POST /api/sourcing/events` idempotent create → 201 (Draft); `GET /events` list + `GET /events/{rfxId}` tenant+LE filtreli.
@@ -162,7 +162,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [x] DCP-010 approved (Ali, 2026-09-16) + bu pack ready-for-dev onayı (Ali, 2026-09-16; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
-DCP-010 §8 sıra: 0140→**0145**→0141→0142→0143→0144 (Sourcing 2. dikey dilim, Supplier'dan sonra). Servis 0140 ile scaffold edilir (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5062); bu modül mevcut servise `Features/Sourcing` olarak eklenir. SOURCING contract producer surface `x-status: REVIEW` — freeze owner+consumer review sonrası. Award decision **upstream** çıktıdır: PO (0141) ve Contracting (0144) tüketir.
+DCP-010 §8 sıra: 0140→**0145**→0141→0142→0143→0144 (Sourcing 2. dikey dilim, Supplier'dan sonra). Servis 0140 ile scaffold edilir (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5065); bu modül mevcut servise `Features/Sourcing` olarak eklenir. SOURCING contract producer surface `x-status: REVIEW` — freeze owner+consumer review sonrası. Award decision **upstream** çıktıdır: PO (0141) ve Contracting (0144) tüketir.
 - **ASSUMPTION-SRC-01 (id üretimi):** `rfxId`/`bidId` contract'ta server-assigned public code olarak varsayılır (0140 `SupplierId` deseni); alan tipi string, tenant+LE unique.
 - **ASSUMPTION-SRC-02 (state geçiş sahipliği):** Contract yalnız `publish`/`award` endpoint'i verir; `Evaluating`/`Closed`/`Cancelled` geçişleri için ayrı endpoint yok → `Evaluating` ilk bid/skorlama ile, `Closed` `closesAt` geçince (server-driven), award yalnız Published/Evaluating'den yapılır varsayıldı. Cancel akışı follow-up.
 - **ASSUMPTION-SRC-03 (evaluation skoru):** `Bid.evaluationScore` contract'ta okuma-yalnız alan; skorlama algoritması/ağırlıkları koda gömülmez (policy-driven, EA/procurement-TBD) — sabit varsayılan yok.

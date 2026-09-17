@@ -88,7 +88,7 @@ Mal kabul (Goods Receipt Note / GRN) SoR'u. Hedef kullanıcı: depo/receiving op
 - **Downstream consumers:** MOD-0143 Invoice-Match (`GoodsReceived` event + GRN referansı), MOD-0175 QC (`GoodsReceived` event, `QUALITY_INSPECTION` statüsü).
 
 ## 8. Runtime Constraints
-- Servis portu **5062**; frontend yalnız Gateway (5000) üzerinden çağırır; servis portuna doğrudan gitmez.
+- Servis portu **5065**; frontend yalnız Gateway (5000) üzerinden çağırır; servis portuna doğrudan gitmez.
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404; INVENTORY post'unda cross-LE → 403 CROSS_LE_FORBIDDEN).
 - **Shadow stock YASAK:** GRN miktarı yalnız INVENTORY `POST /movements` ile post edilir; GRN kendi balance kolonu tutmaz, yalnız `inventoryTransactionId` referansı saklar.
 - **Idempotent posting** (`Idempotency-Key`); replay'de mükerrer INVENTORY hareketi YOK (aynı key → orijinal `transactionId`).
@@ -135,7 +135,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Actor: tenant_user (procurement/receiving rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/grn` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür. GRN'in çağırdığı `/api/inventory/movements` route'u MOD-0173 tarafında (mock/gerçek); procurement yalnız consumer.
+- Karar: Gateway değişikliği **gerekli** (`/api/grn` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür. GRN'in çağırdığı `/api/inventory/movements` route'u MOD-0173 tarafında (mock/gerçek); procurement yalnız consumer.
 
 ## 16. Acceptance Criteria
 - [ ] `POST /api/grn` idempotent create → 201 `GrnResponse`; her satır INVENTORY `POST /movements` (`GOODS_RECEIPT_PO`) ile post edilir ve `inventoryTransactionId` GRN satırında saklanır.

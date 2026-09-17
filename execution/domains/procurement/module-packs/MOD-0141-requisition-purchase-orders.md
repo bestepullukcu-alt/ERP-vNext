@@ -104,7 +104,7 @@ Requisition (satın alma talebi) + Purchase Order SoR'u. Hedef kullanıcı: proc
 - **Downstream consumers:** MOD-0142 GRN (PO'yu `poId/poLineId` ile okur — G2A upstream), MOD-0143 Invoice-Match (3-way match PO'yu okur), MOD-0189 MRP (requirement önerir; PO SoR burada kalır).
 
 ## 8. Runtime Constraints
-- Gateway port **5062**; frontend yalnız Gateway (5000) üzerinden çağırır.
+- Gateway port **5065**; frontend yalnız Gateway (5000) üzerinden çağırır.
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404).
 - Soft delete (`IsDeleted`/`DeletedAt`).
 - Idempotent create/submit/approve (`Idempotency-Key`); update optimistic concurrency (`If-Match`/rowVersion) → 409.
@@ -150,7 +150,7 @@ Compact seti — **her iki modül için ayrı**: `Index.cshtml`, `_Filter.cshtml
 - Actor: tenant_user (procurement rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/requisitions` + `/api/purchase-orders` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (submit/approve alt-path'leri + OPTIONS dahil) içeren **integration-agent task**'ı olarak ayrı yürütülür.
+- Karar: Gateway değişikliği **gerekli** (`/api/requisitions` + `/api/purchase-orders` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (submit/approve alt-path'leri + OPTIONS dahil) içeren **integration-agent task**'ı olarak ayrı yürütülür.
 
 ## 16. Acceptance Criteria
 - [ ] `POST /api/requisitions` idempotent create → 201; `GET` list/by-id tenant+LE filtreli; `POST /submit` → onaya gönderir (MOD-0023 workflowInstanceId).
@@ -184,7 +184,7 @@ Compact seti — **her iki modül için ayrı**: `Index.cshtml`, `_Filter.cshtml
 - [x] DCP-010 approved (Ali, 2026-09-16) + bu pack ready-for-dev onayı (Ali, 2026-09-16; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
-DCP-010 §8 sırasında üçüncü dilim (0140 Supplier → 0145 Sourcing → **0141 Req/PO** → 0142 GRN → 0143 Invoice → 0144 Contracting). Servis scaffold MOD-0140 ile doğmuş olur (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5062); bu pack o servise iki yeni feature (Requisition, PurchaseOrder) ekler. REQUISITION-PO contract `x-status: REVIEW` — freeze owner+consumer review sonrası; PO downstream slice (`poId/poLineId/status`) superset korunur. MRP (MOD-0189) yalnız requirement önerir, PO SoR burada kalır — seam tek-yazıcı (K15). Update/delete/bulk-delete additive (ASSUMPTION-P2P-0141-02); freeze kapısında additive-safe sunulur.
+DCP-010 §8 sırasında üçüncü dilim (0140 Supplier → 0145 Sourcing → **0141 Req/PO** → 0142 GRN → 0143 Invoice → 0144 Contracting). Servis scaffold MOD-0140 ile doğmuş olur (JWT + Mongo V3 GUID + TenantId izolasyonu + port 5065); bu pack o servise iki yeni feature (Requisition, PurchaseOrder) ekler. REQUISITION-PO contract `x-status: REVIEW` — freeze owner+consumer review sonrası; PO downstream slice (`poId/poLineId/status`) superset korunur. MRP (MOD-0189) yalnız requirement önerir, PO SoR burada kalır — seam tek-yazıcı (K15). Update/delete/bulk-delete additive (ASSUMPTION-P2P-0141-02); freeze kapısında additive-safe sunulur.
 
 ## 20. Follow-up Items
 - MRP (MOD-0189) → PO requirement önerisi seam'i (öneri girişi; PO SoR bu modülde) → entegrasyon FU.

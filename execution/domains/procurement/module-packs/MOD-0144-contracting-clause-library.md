@@ -88,7 +88,7 @@ Procurement/sourcing sözleşmeleri + clause library + clause deviation + onay (
 - **Downstream consumers:** yok (sözleşme yaşam döngüsü şimdilik terminal SoR; MVP-6/raporlama ileride tüketebilir).
 
 ## 8. Runtime Constraints
-- Gateway port **5062**; frontend yalnız Gateway (5000) üzerinden çağırır.
+- Gateway port **5065**; frontend yalnız Gateway (5000) üzerinden çağırır.
 - **Tenant + Legal-Entity izolasyonu her sorguda** (server-resolved; cross-LE fail-closed → 404).
 - Soft delete (`IsDeleted`/`DeletedAt`).
 - Idempotent create/activate (`Idempotency-Key` zorunlu header); replay yan-etki üretmez.
@@ -136,7 +136,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - Actor: tenant_user (procurement rolü); server-side `[HasPermission]` zorunlu.
 
 ## 15. Gateway / API Routing Decision
-- Karar: Gateway değişikliği **gerekli** (`/api/contracts` → 5062). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (`/api/contracts`, `/api/contracts/{everything}`) + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
+- Karar: Gateway değişikliği **gerekli** (`/api/contracts` → 5065). `ocelot.json` protected; bu pack yazmaz — explicit Upstream/Downstream (`/api/contracts`, `/api/contracts/{everything}`) + OPTIONS içeren **integration-agent task**'ı olarak ayrı yürütülür.
 
 ## 16. Acceptance Criteria
 - [ ] `POST /api/contracts` idempotent create → 201; `GET` list/by-id tenant+LE filtreli; bilinmeyen supplier/rfx → 404 UNKNOWN_REFERENCE (fail-closed).
@@ -169,7 +169,7 @@ Compact seti: `Index.cshtml`, `_Filter.cshtml`, `_DataTable.cshtml` (`data-dt-st
 - [x] DCP-010 approved + bu pack ready-for-dev onayı (Ali, 2026-09-17; kod kapısı AÇIK)
 
 ## 19. Implementation Notes
-DCP-010 §8 sırasında **son dikey dilim** (0140→0145→0141→0142→0143→0144). OD-4 gereği Contracting MVP-2 içinde mi yoksa **fast-follow** mu Ali onayında netleşir (şu an DCP üyesi, sıra sonuncu). Servis zaten 0140 ile scaffold edilmiş olacağından bu pack yeni servis doğurmaz; yalnız `Features/Contract` + `Features/Clause` eklenir (JWT + Mongo V3 GUID + TenantId+LE izolasyonu + port 5062 + gateway route integration-agent task). CONTRACTING contract `x-status: REVIEW` — freeze owner+consumer review sonrası. Approval MOD-0023 üzerinden; `workflowInstanceId` activate'te doldurulur.
+DCP-010 §8 sırasında **son dikey dilim** (0140→0145→0141→0142→0143→0144). OD-4 gereği Contracting MVP-2 içinde mi yoksa **fast-follow** mu Ali onayında netleşir (şu an DCP üyesi, sıra sonuncu). Servis zaten 0140 ile scaffold edilmiş olacağından bu pack yeni servis doğurmaz; yalnız `Features/Contract` + `Features/Clause` eklenir (JWT + Mongo V3 GUID + TenantId+LE izolasyonu + port 5065 + gateway route integration-agent task). CONTRACTING contract `x-status: REVIEW` — freeze owner+consumer review sonrası. Approval MOD-0023 üzerinden; `workflowInstanceId` activate'te doldurulur.
 
 **ASSUMPTION satırları (contract boşlukları — additive-safe, contract-bozan değil):**
 - **ASSUMPTION-0144-01:** `contracting.openapi.yaml` yalnız `POST/GET /`, `GET /{id}`, `POST /{id}/activate`, `GET/POST /clauses` tanımlar; update/soft-delete/bulk-delete endpoint'i YOK. Permission seti (`update|delete|bulk-delete`) + compact CRUD deseni gereği `PATCH /{contractId}`, soft `DELETE`, bulk-delete **additive** eklenir; owned contract'a freeze öncesi additive yansıtılır (K16, superset korunur). Uydurma veri değil — CRUD yüzeyi.
