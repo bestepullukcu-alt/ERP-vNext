@@ -100,6 +100,72 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public Task<IActionResult> Delete(Guid policyId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"{PoliciesBase}/{policyId}/delete", null, ct, ManageCanonical, ManageFallback);
 
+    // ---------------- WP-FREQ-B entity-picker proxies (read-only pass-throughs to surfaces that ALREADY exist) --------
+    // The editor picks a target/context entity by NAME (never a raw GUID). Every list below is an existing sibling read;
+    // nothing new is opened, the browser never sees a service URL or a bearer token, and each carries the target
+    // module's read permission OR the documented territory.read fallback the console already runs on. account-contact-link
+    // has no picker (not in the mockup) — the editor falls back to a manual id input for it.
+
+    [HttpGet("api/segments")]
+    public Task<IActionResult> Segments(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/segments{Request.QueryString}", ct, "crm.segment.read", ReadFallback);
+
+    [HttpGet("api/accounts")]
+    public Task<IActionResult> Accounts(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/accounts{Request.QueryString}", ct, "crm.account.read", ReadFallback);
+
+    [HttpGet("api/contacts")]
+    public Task<IActionResult> Contacts(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/contacts{Request.QueryString}", ct, "crm.contact.read", ReadFallback);
+
+    [HttpGet("api/territory-models")]
+    public Task<IActionResult> TerritoryModels(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/territory-models{Request.QueryString}", ct, "crm.territory.read", ReadFallback);
+
+    [HttpGet("api/territory-models/{modelId:guid}/nodes")]
+    public Task<IActionResult> TerritoryNodes(Guid modelId, CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/territory-models/{modelId}/nodes{Request.QueryString}", ct, "crm.territory.read", ReadFallback);
+
+    [HttpGet("api/campaigns")]
+    public Task<IActionResult> Campaigns(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/campaigns{Request.QueryString}", ct, "crm.campaign.read", ReadFallback);
+
+    // cycle-period picker — the MOD-0165 FU08 selector; downstream guard still decides visibility (fail-closed).
+    [HttpGet("api/cycle-periods")]
+    public Task<IActionResult> CyclePeriods(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/cycle-periods/selector{Request.QueryString}", ct, "crm.territory.read", ReadFallback);
+
+    [HttpGet("api/audience-profiles")]
+    public Task<IActionResult> AudienceProfiles(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/audience-profiles{Request.QueryString}", ct, "crm.knowledge.subject.read", ReadFallback);
+
+    [HttpGet("api/concept-nodes")]
+    public Task<IActionResult> ConceptNodes(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/knowledge/concept-nodes{Request.QueryString}", ct, "crm.knowledge.concept.read", ReadFallback);
+
+    [HttpGet("api/mdm-brands")]
+    public Task<IActionResult> MdmBrands(CancellationToken ct) =>
+        ProxyGetAsync($"/api/mdm/brands{Request.QueryString}", ct, "mdm.brands.read", ReadFallback);
+
+    [HttpGet("api/mdm-products")]
+    public Task<IActionResult> MdmProducts(CancellationToken ct) =>
+        ProxyGetAsync($"/api/mdm/products{Request.QueryString}", ct, "mdm.products.read", ReadFallback);
+
+    /// <summary>business-unit context picker. Reads the MOD-0048 PUBLISHED business-unit value set (tenant scope_key) —
+    /// the same consumer call the Territory + Campaign forms make. The stored <c>BusinessUnit</c> is a value CODE (a
+    /// string), not a GUID, so the editor keeps the picked value code. An unpublished set degrades to an empty list.</summary>
+    [HttpGet("api/business-units")]
+    public async Task<IActionResult> BusinessUnits(CancellationToken ct)
+    {
+        if (RequireJson(ReadCanonical, ReadFallback) is { } denied) return denied;
+        var tenantId = GetTenantId();
+        if (string.IsNullOrWhiteSpace(tenantId))
+            return StatusCode(StatusCodes.Status401Unauthorized, new { message = "Tenant context is required." });
+
+        var path = $"/api/v1/reference-data/sets/business-unit/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
+        return await ToProxyResultAsync(await SendGatewayAsync(HttpMethod.Get, path, null, ct), ct);
+    }
+
     // ---------------- helpers ----------------
 
     private async Task<IActionResult> ProxyGetAsync(string path, CancellationToken ct, params string[] permissions)

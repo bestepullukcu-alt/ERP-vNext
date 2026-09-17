@@ -32,4 +32,74 @@
   <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
   <data name="Status_inactive" xml:space="preserve"><value>Pasif</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Arşivlenmiş</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Bağlam</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Sıklık kontrolü</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Çakışma önceliği</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Geçerlilik</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>Bu politika için sabit bir kod ve görünen ad.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>Politikanın kime uygulandığı. Önce tür, sonra hedef seçin.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>İsteğe bağlı köken ve kapsam. Kısıt istemiyorsanız boş bırakın.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>Dönem başına kaç ziyaret gerektiği.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>İki politika çakışırsa küçük ağırlık kazanır.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>Bu politikanın ne zaman geçerli olduğu. Süresiz için bitişi boş bırakın.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Serbest not. Özel sıklık için zorunludur.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Politika kodu</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Politika adı</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Durum</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Hedef türü</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Hedef</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Segment</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Kampanya</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Marka</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Cycle dönemi</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Sıklık türü</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Gerekli ziyaret</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Dönem</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Kaynak</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Başlangıç</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Bitiş</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Notlar</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçin…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— yok —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Model seçin</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Alan seçin</value></data>
+  <data name="Selected" xml:space="preserve"><value>Seçilen</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Kimlik girin (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Kod ve hedef oluşturulduktan sonra değiştirilemez.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Bu sıklığın nereden geldiği. Yalnız köken — sıklığı etkilemez.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Şöyle okunur</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Bir sayı ve dönem belirleyin.</value></data>
+  <data name="Required" xml:space="preserve"><value>Zorunlu</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Bir hedef seçin.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>Geçerli bir kimlik gerekli.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Sıfırdan büyük olmalı.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>Bu dönem seçilen sıklık için geçerli değil.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Bir öncelik bandı seçin.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>Bitiş, başlangıçtan önce olamaz.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>Cycle tabanlı sıklık için bir cycle dönemi gerekli.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>Bir kampanya gerekli.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>Segmentasyon kaynağı için bir segment gerekli.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>Özel sıklık not gerektirir.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Lütfen işaretli alanları düzeltin.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Düzenleyici hazırlanamadı.</value></data>
+  <data name="Band_manager-override" xml:space="preserve"><value>Her şeyin üstünde</value></data>
+  <data name="Band_campaign-target" xml:space="preserve"><value>Kampanya seviyesi</value></data>
+  <data name="Band_account-contact-link" xml:space="preserve"><value>Sahadaki kişi</value></data>
+  <data name="Band_contact" xml:space="preserve"><value>Doktor</value></data>
+  <data name="Band_account" xml:space="preserve"><value>Kurum</value></data>
+  <data name="Band_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="Band_territory-node" xml:space="preserve"><value>Saha alanı</value></data>
+  <data name="Band_concept-node" xml:space="preserve"><value>Konsept</value></data>
+  <data name="Band_audience-profile" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="Band_business-rule" xml:space="preserve"><value>Temel kural</value></data>
 </root>

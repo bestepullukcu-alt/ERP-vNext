@@ -528,6 +528,27 @@ public sealed class VisitFrequencyPolicyTests
     }
 
     [Fact]
+    public void Contract_Exposes_Priority_Bands_From_Domain_With_Real_Weights()
+    {
+        // WP-FREQ-B: the contract additively carries the suggested priority bands so the authoring UI can render named
+        // bands WITHOUT hardcoding the numbers. The client must receive the DOMAIN weights ("smaller wins"), never the
+        // mockup's inverted "larger wins" numbers (600/400/200/100/50).
+        var handler = new GetVisitFrequencyContractHandler(Tenant(TenantA));
+        var r = handler.Handle(new GetVisitFrequencyContractQuery(), default).GetAwaiter().GetResult();
+
+        var bands = r.Data!.Vocabulary.PriorityBands;
+        Assert.Equal(FrequencyPriorityBands.All.Count, bands.Count);
+        Assert.All(bands, b => Assert.True(b.Value >= 1));
+        Assert.Contains(bands, b => b.Code == "manager-override" && b.Value == FrequencyPriorityBands.ManagerOverride);
+        Assert.Contains(bands, b => b.Code == "campaign-target" && b.Value == FrequencyPriorityBands.CampaignTarget);
+        Assert.Contains(bands, b => b.Code == "business-rule" && b.Value == FrequencyPriorityBands.BusinessRule);
+        // manager-override is the strongest band, so its weight is the smallest (smaller wins).
+        Assert.Equal(bands.Min(b => b.Value), bands.Single(b => b.Code == "manager-override").Value);
+        // The mockup's inverted sentinel numbers must never reach the client as real bands.
+        Assert.DoesNotContain(bands, b => b.Value == 50);
+    }
+
+    [Fact]
     public void Resolve_Result_Has_No_Route_Visit_Due_LastVisit_Consent_Fields()
     {
         // Response shape guard: the resolve result type must never leak a consumer-domain field.

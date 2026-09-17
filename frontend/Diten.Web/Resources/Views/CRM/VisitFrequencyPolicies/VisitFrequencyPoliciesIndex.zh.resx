@@ -32,4 +32,74 @@
   <data name="Status_active" xml:space="preserve"><value>启用</value></data>
   <data name="Status_inactive" xml:space="preserve"><value>停用</value></data>
   <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>保存</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>标识</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>上下文</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>频率控制</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>冲突优先级</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>来源</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>生效期间</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>备注</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>此策略的稳定代码和显示名称。</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>策略适用于谁。先选类型，再选目标。</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>可选的来源和范围。留空表示不限制。</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>每个周期需要多少次拜访。</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>两条策略重叠时，权重较小者胜出。</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>此策略何时生效。结束留空表示长期有效。</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>自由备注。自定义频率时必填。</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>策略代码</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>策略名称</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>描述</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>目标类型</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>区域</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>细分</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>活动</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>品牌</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>周期期段</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>频率类型</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>所需拜访次数</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>周期</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>来源</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>生效自</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>生效至</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>备注</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— 无 —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>选择模型</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>选择节点</value></data>
+  <data name="Selected" xml:space="preserve"><value>已选择</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>输入 id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>创建后代码和目标不可更改。</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>此频率的来源。仅为溯源 — 不影响频率。</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>读作</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>请设置次数和周期。</value></data>
+  <data name="Required" xml:space="preserve"><value>必填</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>请选择一个目标。</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>需要有效的 id。</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>必须大于零。</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>此周期对所选频率无效。</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>请选择一个优先级档位。</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>结束不能早于开始。</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>基于周期的频率需要一个周期期段。</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>需要一个活动。</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>细分来源需要一个细分。</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>自定义频率需要备注。</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>请修正高亮的字段。</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>无法准备编辑器。</value></data>
+  <data name="Band_manager-override" xml:space="preserve"><value>凌驾一切</value></data>
+  <data name="Band_campaign-target" xml:space="preserve"><value>活动级别</value></data>
+  <data name="Band_account-contact-link" xml:space="preserve"><value>站点内联系人</value></data>
+  <data name="Band_contact" xml:space="preserve"><value>联系人</value></data>
+  <data name="Band_account" xml:space="preserve"><value>客户</value></data>
+  <data name="Band_segment" xml:space="preserve"><value>细分</value></data>
+  <data name="Band_territory-node" xml:space="preserve"><value>区域</value></data>
+  <data name="Band_concept-node" xml:space="preserve"><value>概念</value></data>
+  <data name="Band_audience-profile" xml:space="preserve"><value>受众画像</value></data>
+  <data name="Band_business-rule" xml:space="preserve"><value>基础规则</value></data>
 </root>

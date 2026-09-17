@@ -212,6 +212,10 @@ public static class FrequencySource
     public static string Normalize(string value) => value.Trim().ToLowerInvariant();
 }
 
+/// <summary>One suggested priority band as a client-facing pair: a stable <paramref name="Code"/> a UI localizes and
+/// the authored <paramref name="Value"/> (smaller wins). WP-FREQ-B additive contract surface.</summary>
+public sealed record FrequencyPriorityBand(string Code, int Value);
+
 /// <summary>Suggested default priority bands (smaller wins). These are RECOMMENDATIONS a UI can surface; the stored
 /// <see cref="VisitFrequencyPolicy.Priority"/> is always authored explicitly and never silently defaulted.</summary>
 public static class FrequencyPriorityBands
@@ -226,6 +230,25 @@ public static class FrequencyPriorityBands
     public const int ConceptNode = 750;
     public const int AudienceProfile = 775;
     public const int BusinessRule = 800;
+
+    /// <summary>The suggested bands as a client-facing (code, value) list — the SAME constants above, in ascending
+    /// weight order (smaller wins). Exposed additively on the FU03 contract (WP-FREQ-B) so an authoring UI can render
+    /// priority as named bands WITHOUT hardcoding the numbers; it changes no behaviour (Priority is still authored and
+    /// validated as a positive integer, never auto-defaulted from this list). Codes reuse the target/source vocabulary
+    /// spelling so a UI can localize each one by code.</summary>
+    public static readonly IReadOnlyList<FrequencyPriorityBand> All = new[]
+    {
+        new FrequencyPriorityBand("manager-override", ManagerOverride),
+        new FrequencyPriorityBand("campaign-target", CampaignTarget),
+        new FrequencyPriorityBand("account-contact-link", AccountContactLink),
+        new FrequencyPriorityBand("contact", Contact),
+        new FrequencyPriorityBand("account", Account),
+        new FrequencyPriorityBand("segment", Segment),
+        new FrequencyPriorityBand("territory-node", TerritoryNode),
+        new FrequencyPriorityBand("concept-node", ConceptNode),
+        new FrequencyPriorityBand("audience-profile", AudienceProfile),
+        new FrequencyPriorityBand("business-rule", BusinessRule),
+    };
 
     /// <summary>Recommended band from source + target (manager-override always wins the band). For UI defaulting only.</summary>
     public static int Suggest(string? source, string? targetType)

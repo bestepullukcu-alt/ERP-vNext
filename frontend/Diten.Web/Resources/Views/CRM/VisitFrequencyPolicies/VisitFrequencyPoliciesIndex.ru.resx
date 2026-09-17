@@ -32,4 +32,74 @@
   <data name="Status_active" xml:space="preserve"><value>Активна</value></data>
   <data name="Status_inactive" xml:space="preserve"><value>Неактивна</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Архивирована</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Цель</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Контекст</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Управление частотой</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Приоритет конфликта</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Период действия</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>Стабильный код и отображаемое имя для этой политики.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>К кому применяется политика. Выберите тип, затем цель.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>Необязательные происхождение и область. Оставьте пустым без ограничений.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>Сколько визитов требуется за период.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>При пересечении двух политик побеждает меньший вес.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>Когда политика действует. Оставьте конец пустым для бессрочного действия.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Свободные примечания. Обязательны для пользовательской частоты.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Код политики</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Название политики</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Тип цели</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Цель</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Территория</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Кампания</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Бренд</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Период цикла</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Тип частоты</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Требуемые визиты</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Период</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— нет —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Выберите модель</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Выберите узел</value></data>
+  <data name="Selected" xml:space="preserve"><value>Выбрано</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Введите id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Код и цель нельзя изменить после создания.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Откуда взялась эта частота. Только происхождение — не влияет на частоту.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Читается как</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Задайте число и период.</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Выберите цель.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>Требуется корректный id.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Должно быть больше нуля.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>Этот период недопустим для выбранной частоты.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Выберите диапазон приоритета.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>Конец не может быть раньше начала.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>Для частоты по циклу требуется период цикла.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>Требуется кампания.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>Для источника сегментации требуется сегмент.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>Пользовательская частота требует примечаний.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Исправьте выделенные поля.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Не удалось подготовить редактор.</value></data>
+  <data name="Band_manager-override" xml:space="preserve"><value>Превыше всего</value></data>
+  <data name="Band_campaign-target" xml:space="preserve"><value>Уровень кампании</value></data>
+  <data name="Band_account-contact-link" xml:space="preserve"><value>Контакт на объекте</value></data>
+  <data name="Band_contact" xml:space="preserve"><value>Контакт</value></data>
+  <data name="Band_account" xml:space="preserve"><value>Клиент</value></data>
+  <data name="Band_segment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="Band_territory-node" xml:space="preserve"><value>Территория</value></data>
+  <data name="Band_concept-node" xml:space="preserve"><value>Концепт</value></data>
+  <data name="Band_audience-profile" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="Band_business-rule" xml:space="preserve"><value>Базовое правило</value></data>
 </root>

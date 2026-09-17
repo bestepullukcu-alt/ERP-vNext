@@ -32,4 +32,74 @@
   <data name="Status_active" xml:space="preserve"><value>Active</value></data>
   <data name="Status_inactive" xml:space="preserve"><value>Inactive</value></data>
   <data name="Status_archived" xml:space="preserve"><value>Archived</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Save</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Identity</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Context</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Frequency control</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Conflict priority</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Source</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Effective window</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>A stable code and a display name for this policy.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>Who the policy applies to. Pick a type, then the target.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>Optional provenance and scope. Leave empty for no restriction.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>How many visits are required per period.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>When two policies overlap, the smaller weight wins.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>When this policy is valid. Leave the end empty for open-ended.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Free-form notes. Required for a custom frequency.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Policy code</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Policy name</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Status</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Target type</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Target</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Territory</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Segment</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Campaign</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Brand</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Cycle period</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Frequency type</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Required visits</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Period</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Source</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Effective from</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Effective to</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Notes</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Select…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— none —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Select model</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Select node</value></data>
+  <data name="Selected" xml:space="preserve"><value>Selected</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Enter id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Code and target cannot be changed after creation.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Where this frequency came from. Provenance only — it does not affect the frequency.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Reads as</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Set a count and a period.</value></data>
+  <data name="Required" xml:space="preserve"><value>Required</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Pick a target.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>A valid id is required.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Must be greater than zero.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>This period is not valid for the chosen frequency.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Pick a priority band.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>The end cannot be before the start.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>A cycle period is required for cycle-based frequency.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>A campaign is required.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>A segment is required for a segmentation source.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>A custom frequency requires notes.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Please fix the highlighted fields.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>The editor could not be prepared.</value></data>
+  <data name="Band_manager-override" xml:space="preserve"><value>Overrides everything</value></data>
+  <data name="Band_campaign-target" xml:space="preserve"><value>Campaign level</value></data>
+  <data name="Band_account-contact-link" xml:space="preserve"><value>Contact at a site</value></data>
+  <data name="Band_contact" xml:space="preserve"><value>Contact</value></data>
+  <data name="Band_account" xml:space="preserve"><value>Account</value></data>
+  <data name="Band_segment" xml:space="preserve"><value>Segment</value></data>
+  <data name="Band_territory-node" xml:space="preserve"><value>Territory</value></data>
+  <data name="Band_concept-node" xml:space="preserve"><value>Concept</value></data>
+  <data name="Band_audience-profile" xml:space="preserve"><value>Audience profile</value></data>
+  <data name="Band_business-rule" xml:space="preserve"><value>Baseline rule</value></data>
 </root>

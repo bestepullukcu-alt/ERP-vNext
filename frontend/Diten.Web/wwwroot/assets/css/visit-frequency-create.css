@@ -1,0 +1,274 @@
+/**
+ * WP-FREQ-B — Visit Frequency Policy Create/Edit offcanvas editor (MOD-0165-FU03, frontend only).
+ *
+ * Same design language as the Segment editor (segment-create.css), distilled into `vfp-*` classes ALL nested under the
+ * `.vfp-create-scope` wrapper so the mockup palette never leaks to the app shell or any other page. It is a SEPARATE
+ * file — segment-create.css is reused as the reference pattern, never edited. Neutrals bind to the app's light/dark-aware
+ * Bootstrap variables (theme-aware), accent is `--bs-primary`, and the only literal white left is a foreground on an
+ * accent fill (checkmarks / active chips), correct in both themes. It is linked ONLY from _CreateEditOffcanvas.cshtml.
+ */
+
+.vfp-create-scope {
+    --vfp-accent: var(--bs-primary);
+    --vfp-accent-hover: color-mix(in srgb, var(--bs-primary), #000 12%);
+    --vfp-accent-ring: rgba(var(--bs-primary-rgb), 0.14);
+    --vfp-card-bg: var(--bs-card-bg);
+    --vfp-control-bg: var(--bs-card-bg);
+    --vfp-card-border: var(--bs-border-color);
+    --vfp-heading: var(--bs-heading-color);
+    --vfp-text: var(--bs-body-color);
+    --vfp-muted: var(--bs-secondary-color);
+    --vfp-label: var(--bs-body-color);
+    --vfp-input-border: var(--bs-border-color);
+    --vfp-readonly-bg: var(--bs-secondary-bg);
+    -webkit-font-smoothing: antialiased;
+    color: var(--vfp-text);
+}
+
+/* Inter belongs ONLY to the mockup content (every inner node carries a vfp-* class); the app card chrome carries none
+   and keeps the shell font. */
+.vfp-create-scope [class^="vfp-"],
+.vfp-create-scope [class*=" vfp-"] {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+}
+
+/* a wider offcanvas so the two-column context grid breathes */
+.offcanvas.vfp-offcanvas {
+    width: min(560px, 96vw);
+}
+
+/* ------------------------------------------------------------------ sections (app-card shell + mockup inner) */
+.vfp-create-scope .vfp-section {
+    background: var(--vfp-card-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 10px;
+    padding: 18px 18px;
+    margin-bottom: 16px;
+}
+.vfp-create-scope .vfp-section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+.vfp-create-scope .vfp-section-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border-radius: 999px;
+    background: var(--bs-secondary-bg);
+    color: var(--vfp-accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+.vfp-create-scope .vfp-section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vfp-heading);
+}
+.vfp-create-scope .vfp-section-help {
+    font-size: 12.5px;
+    color: var(--vfp-muted);
+    margin: 0 0 14px 32px;
+}
+
+/* ------------------------------------------------------------------ fields */
+.vfp-create-scope .vfp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+.vfp-create-scope .vfp-field-full {
+    grid-column: 1 / -1;
+}
+.vfp-create-scope .vfp-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--vfp-label);
+}
+.vfp-create-scope .vfp-req {
+    color: var(--bs-danger);
+}
+.vfp-create-scope .vfp-help {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    margin-top: 6px;
+}
+.vfp-create-scope .vfp-input,
+.vfp-create-scope .vfp-textarea,
+.vfp-create-scope .vfp-select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: var(--vfp-text);
+    background: var(--vfp-control-bg);
+    border: 1px solid var(--vfp-input-border);
+    border-radius: 6px;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.vfp-create-scope .vfp-textarea {
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 64px;
+}
+.vfp-create-scope .vfp-input:focus,
+.vfp-create-scope .vfp-textarea:focus,
+.vfp-create-scope .vfp-select:focus {
+    border-color: var(--vfp-accent);
+    box-shadow: 0 0 0 3px var(--vfp-accent-ring);
+}
+.vfp-create-scope .vfp-input[readonly] {
+    color: var(--bs-secondary-color);
+    background: var(--vfp-readonly-bg);
+}
+.vfp-create-scope .vfp-input::placeholder,
+.vfp-create-scope .vfp-textarea::placeholder {
+    color: var(--bs-secondary-color);
+}
+
+/* ------------------------------------------------------------------ radio-card grid (target type + priority band) */
+.vfp-create-scope .vfp-cardgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+}
+.vfp-create-scope .vfp-radio-card {
+    position: relative;
+    display: block;
+    text-align: left;
+    padding: 11px 13px;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 9px;
+    cursor: pointer;
+    margin: 0;
+}
+.vfp-create-scope .vfp-radio-card:hover {
+    border-color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-radio-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+.vfp-create-scope .vfp-radio-help {
+    display: block;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--vfp-muted);
+    margin-top: 4px;
+}
+.vfp-create-scope .vfp-radio-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.vfp-create-scope .vfp-radio-card:has(> .vfp-radio-input:checked) {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    border-color: var(--vfp-accent);
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
+}
+.vfp-create-scope .vfp-radio-card:has(> .vfp-radio-input:checked) .vfp-radio-title {
+    color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-band-weight {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--vfp-muted);
+    margin-left: auto;
+    padding: 2px 8px;
+    background: var(--bs-secondary-bg);
+    border-radius: 999px;
+}
+
+/* ------------------------------------------------------------------ frequency reads-as sentence */
+.vfp-create-scope .vfp-reads-as {
+    padding: 12px 14px;
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--bs-primary-border-subtle);
+    border-radius: 9px;
+    margin-top: 12px;
+}
+.vfp-create-scope .vfp-reads-as-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+    margin-bottom: 4px;
+}
+.vfp-create-scope .vfp-reads-as-text {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--bs-primary-text-emphasis);
+}
+
+/* ------------------------------------------------------------------ source note */
+.vfp-create-scope .vfp-inline-note {
+    padding: 10px 12px;
+    margin-top: 8px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    background: var(--bs-info-bg-subtle);
+    color: var(--bs-info-text-emphasis);
+    border: 1px solid var(--bs-info-border-subtle);
+}
+
+/* ------------------------------------------------------------------ validation + errors */
+.vfp-create-scope .vfp-error {
+    display: none;
+    font-size: 12px;
+    color: var(--bs-danger);
+    margin-top: 5px;
+}
+.vfp-create-scope .vfp-error.is-shown {
+    display: block;
+}
+.vfp-create-scope .vfp-form-error {
+    display: none;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bs-danger-bg-subtle);
+    color: var(--bs-danger-text-emphasis);
+    border: 1px solid var(--bs-danger-border-subtle);
+}
+.vfp-create-scope .vfp-form-error.is-shown {
+    display: block;
+}
+
+/* the picked-entity name chip (shows the resolved name, never a GUID) */
+.vfp-create-scope .vfp-picked {
+    display: none;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-picked.is-shown {
+    display: block;
+}
+
+/* ------------------------------------------------------------------ footer actions */
+.vfp-offcanvas .vfp-footer {
+    gap: 8px;
+}
+.vfp-create-scope .vfp-hidden {
+    display: none !important;
+}
+
+/* select2 dropped inside the scope should fill its cell */
+.vfp-create-scope .select2-container {
+    width: 100% !important;
+}
