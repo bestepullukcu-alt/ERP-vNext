@@ -29,6 +29,9 @@ public static class DependencyInjection
 
         // MOD-0165 FU03 — the single read-only frequency resolve seam (repo + deterministic engine). Both the FU03
         // HTTP endpoint and the MOD-0151 FU09B route-candidate reader consume THIS; no consumer copies the engine.
+        // WP-FREQ-DET-P: the resolver also takes ISegmentRepository + ISegmentMembershipReader (auto-injected here) to
+        // derive a contact target's active segment memberships; both are optional ctor params so in-process callers that
+        // construct the resolver with (tenant, repo) keep single-segment context behaviour unchanged.
         services.AddScoped<Features.VisitFrequencyPolicy.Resolve.IVisitFrequencyPolicyResolver,
             Features.VisitFrequencyPolicy.Resolve.VisitFrequencyPolicyResolver>();
 
