@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>por periodo personalizado</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>Se encontró una regla que coincide con este objetivo; se aplicó la más estrecha.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>Ninguna política coincide con este objetivo; el planificador usa el valor predeterminado del sistema.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>Más de una regla comparte el mismo alcance; se aplicó la de mayor prioridad. Quizá quieras revisar la otra.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Dos reglas compartían el mismo alcance; se aplicó la de mayor prioridad. Quizá quieras revisar la otra.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>La resolución no aplica a esta solicitud.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Hay reglas que coinciden con el objetivo, pero la fecha que elegiste queda fuera del rango de validez de todas ellas.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>Ninguna regla válida en esta fecha</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>resultado claro</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>conflicto resuelto</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>fuera de fecha</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Desconocido</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>La regla que define esta frecuencia</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>Abrir política</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>Otras reglas que coinciden con este objetivo</value></data>

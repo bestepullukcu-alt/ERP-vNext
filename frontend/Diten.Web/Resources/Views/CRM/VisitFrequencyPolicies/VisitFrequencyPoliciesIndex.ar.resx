@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>لكل فترة مخصصة</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>تم العثور على قاعدة مطابقة لهذا الهدف؛ وطُبِّقت الأضيق نطاقًا.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>لا توجد سياسة تطابق هذا الهدف؛ يستخدم المخطط الإعداد الافتراضي للنظام.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>أكثر من قاعدة تتشارك النطاق نفسه؛ طُبِّقت الأعلى أولوية. قد ترغب في مراجعة الأخرى.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>قاعدتان تتشاركان النطاق نفسه؛ طُبِّقت الأعلى أولوية. قد ترغب في مراجعة الأخرى.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>لا ينطبق الحل على هذا الطلب.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>توجد قواعد تطابق الهدف، لكن التاريخ الذي اخترته يقع خارج نطاق سريان أيٍّ منها.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>لا توجد قاعدة سارية في هذا التاريخ</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>نتيجة واضحة</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>تم حل التعارض</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>خارج النطاق الزمني</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>غير معروف</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>القاعدة التي تحدد هذا التكرار</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>فتح السياسة</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>قواعد أخرى تطابق هذا الهدف</value></data>

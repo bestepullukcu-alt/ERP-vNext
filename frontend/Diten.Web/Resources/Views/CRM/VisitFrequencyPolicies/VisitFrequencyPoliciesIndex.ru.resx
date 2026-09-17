@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>за пользовательский период</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>Для этой цели найдено подходящее правило; применено самое узкое.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>Ни одна политика не соответствует этой цели; планировщик использует системное значение по умолчанию.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>Несколько правил имеют одинаковый охват; применено с более высоким приоритетом. Возможно, стоит проверить другое.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Два правила имели одинаковый охват; применено с более высоким приоритетом. Возможно, стоит проверить другое.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Разрешение не применяется к этому запросу.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Есть правила, подходящие для цели, но выбранная дата не попадает в срок действия ни одного из них.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>На эту дату нет действующего правила</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>чёткий результат</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>конфликт разрешён</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>вне срока</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Неизвестно</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>Правило, задающее эту частоту</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>Открыть политику</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>Другие правила, подходящие для этой цели</value></data>

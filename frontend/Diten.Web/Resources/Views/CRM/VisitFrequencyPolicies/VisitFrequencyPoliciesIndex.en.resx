@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>per custom period</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>A matching rule was found for this target; the narrowest one was applied.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>No policy matches this target; the planner uses the system default.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>More than one rule shares the same scope; the higher-priority one was applied. You may want to review the other.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Two rules shared the same scope; the higher-priority one was applied. You may want to review the other.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Resolution does not apply to this request.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>There are rules that match the target, but the date you chose falls outside every rule's effective range.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>No rule is valid on this date</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>clear result</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>conflict resolved</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>out of date range</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Unknown</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>The rule that sets this frequency</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>Open policy</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>Other rules that match this target</value></data>

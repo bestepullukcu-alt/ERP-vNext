@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>özel dönemde</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>Bu hedefe uygun bir kural bulundu; en dar kapsamlı olan uygulandı.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>Bu hedefe hiçbir politika denk gelmiyor; planlayıcı sistem varsayılanını kullanır.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>Aynı kapsamda birden fazla kural var; daha yüksek öncelikli olan uygulandı. Diğerini gözden geçirmek isteyebilirsiniz.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Aynı kapsamda iki kural vardı; daha yüksek öncelikli olan uygulandı. Diğerini gözden geçirmek isteyebilirsiniz.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Bu istek için çözümleme uygulanmıyor.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Hedefe uyan kurallar var ama seçtiğiniz tarih hiçbirinin geçerlilik aralığına girmiyor.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>Bu tarihte geçerli kural yok</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>net sonuç</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>çakışma çözüldü</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>tarih dışında</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>Bu frekansı veren kural</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>Politikayı aç</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>Bu hedefe denk gelen diğer kurallar</value></data>

@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>每自定义周期</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>为该目标找到匹配规则；已应用范围最窄的一条。</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>没有策略匹配该目标；计划程序将使用系统默认值。</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>多条规则处于相同范围；已应用优先级较高的一条。您可能需要检查另一条。</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>有两条规则处于相同范围；已应用优先级较高的一条。您可能需要检查另一条。</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>解析不适用于此请求。</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>有与目标匹配的规则，但您所选的日期不在任何规则的生效范围内。</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>该日期没有生效的规则</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>明确结果</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>冲突已解决</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>不在日期范围</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>未知</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>设定此频率的规则</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>打开策略</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>匹配该目标的其他规则</value></data>

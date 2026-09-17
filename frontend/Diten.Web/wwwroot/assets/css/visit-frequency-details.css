@@ -551,6 +551,10 @@
     border: 1px solid var(--bs-border-color);
     background: var(--bs-tertiary-bg);
 }
+/* WP-FREQ-DET-M — verdict-tone tint (theme-aware subtle tokens). Neutral (unknown/not_applicable) keeps tertiary-bg. */
+.vfp-detail-scope .vfp-rs-answer--success { background: var(--bs-success-bg-subtle); border-color: var(--bs-success-border-subtle); }
+.vfp-detail-scope .vfp-rs-answer--warning { background: var(--bs-warning-bg-subtle); border-color: var(--bs-warning-border-subtle); }
+.vfp-detail-scope .vfp-rs-answer--danger { background: var(--bs-danger-bg-subtle); border-color: var(--bs-danger-border-subtle); }
 .vfp-detail-scope .vfp-rs-answer-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 240px; }
 .vfp-detail-scope .vfp-rs-answer-label {
     font-size: 11px;

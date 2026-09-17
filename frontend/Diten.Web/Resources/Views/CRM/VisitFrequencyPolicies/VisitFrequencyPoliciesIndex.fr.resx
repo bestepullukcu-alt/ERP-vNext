@@ -309,8 +309,14 @@
   <data name="ResolveCadence_custom" xml:space="preserve"><value>par période personnalisée</value></data>
   <data name="ResolveExplainResolved" xml:space="preserve"><value>Une règle correspondante a été trouvée pour cette cible ; la plus étroite a été appliquée.</value></data>
   <data name="ResolveExplainUnknown" xml:space="preserve"><value>Aucune politique ne correspond à cette cible ; le planificateur utilise la valeur par défaut du système.</value></data>
-  <data name="ResolveExplainConflict" xml:space="preserve"><value>Plusieurs règles partagent la même portée ; celle de priorité supérieure a été appliquée. Vous pourriez vouloir revoir l’autre.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Deux règles partageaient la même portée ; celle de priorité supérieure a été appliquée. Vous pourriez vouloir revoir l’autre.</value></data>
   <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>La résolution ne s’applique pas à cette demande.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Des règles correspondent à la cible, mais la date choisie ne tombe dans la période de validité d’aucune d’elles.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>Aucune règle valide à cette date</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>résultat net</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>conflit résolu</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>hors période</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Inconnu</value></data>
   <data name="ResolveWinnerTitle" xml:space="preserve"><value>La règle qui fixe cette fréquence</value></data>
   <data name="ResolveOpenPolicy" xml:space="preserve"><value>Ouvrir la politique</value></data>
   <data name="ResolveLadderTitle" xml:space="preserve"><value>Autres règles correspondant à cette cible</value></data>

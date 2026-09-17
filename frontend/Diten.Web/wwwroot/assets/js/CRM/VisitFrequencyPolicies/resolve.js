@@ -467,12 +467,34 @@
     // ── verdict → answer headline / explain / tone ────────────────────────────────
     const HEADLINE_KEY = { unknown: 'ResolveHeadlineUnknown', conflict: 'ResolveHeadlineConflict', not_applicable: 'ResolveHeadlineNotApplicable' };
     const EXPLAIN_KEY = { resolved: 'ResolveExplainResolved', unknown: 'ResolveExplainUnknown', conflict: 'ResolveExplainConflict', not_applicable: 'ResolveExplainNotApplicable' };
-    const answerHeadline = r => {
+    // WP-FREQ-DET-M — display verdict: the mockup's five colour states. Backend FrequencyStatus stays
+    // resolved/conflict/unknown/not_applicable; "date_out" is DERIVED (unknown + every candidate eliminated ONLY because
+    // it is outside its effective window) so the answer box can read "tarih dışında" in danger tone. Nothing fabricated.
+    const displayVerdict = (r, cands) => {
         const v = norm(r.frequencyStatus);
-        if (v === 'resolved' && r.requiredVisitCount != null) {
+        if (v === 'conflict') return 'conflict';
+        if (v === 'resolved') return 'resolved';
+        if (v === 'not_applicable') return 'not_applicable';
+        // v === 'unknown' (no winner): every candidate rejected solely as out-of-date → date_out; mixed reasons → unknown.
+        if (cands.length > 0 && cands.every(c => norm(c.reason) === 'policy_not_effective')) return 'date_out';
+        return 'unknown';
+    };
+    // headline: any winner (resolved OR conflict) reads "N / dönem"; date_out gets its own headline; else the status key.
+    const answerHeadline = (r, dv) => {
+        if (!!norm(r.selectedFrequencyPolicyId) && r.requiredVisitCount != null) {
             return fmt(t('ResolveHeadlineResolved', '{1} {0}'), r.requiredVisitCount, cadenceLabel(r.periodType));
         }
+        if (dv === 'date_out') return t('ResolveHeadlineDateOut', 'Bu tarihte geçerli kural yok');
+        const v = norm(r.frequencyStatus);
         return t(HEADLINE_KEY[v] || 'ResolveHeadlineUnknown', verdictLabel(v));
+    };
+    // display verdict → answer-box tone modifier + badge (text/tone). unknown/not_applicable stay neutral (no modifier).
+    const ANSWER_TONE_CLASS = { resolved: 'success', conflict: 'warning', date_out: 'danger' };
+    const VERDICT_BADGE = {
+        resolved: { key: 'ResolveVerdictBadge_resolved', fb: 'net sonuç', tone: 'success' },
+        conflict: { key: 'ResolveVerdictBadge_conflict', fb: 'çakışma çözüldü', tone: 'warning' },
+        date_out: { key: 'ResolveVerdictBadge_dateout', fb: 'tarih dışında', tone: 'danger' },
+        unknown: { key: 'ResolveVerdictBadge_unknown', fb: 'Bilinmiyor', tone: 'secondary' }
     };
     const answerTone = v => verdictTone(v);
 
@@ -502,15 +524,32 @@
         const v = norm(r.frequencyStatus);
         const hasWinner = !!norm(r.selectedFrequencyPolicyId);
 
-        // CEVAP card — WP-FREQ-DET-I: a NEUTRAL grey panel (no verdict-tone tint); the verdict reads through the muted
-        // badge on the right (kural yok/çözüldü/çakışma/uygulanmaz), so the number stays the focus.
-        const answer = `<div class="vfp-rs-answer">`
+        // ladder candidates — computed FIRST so the display verdict (date_out derivation) can read them.
+        // "dardan genişe" (ascending specificity = narrow → broad).
+        const cands = (r.candidatePolicies || []).slice().sort((a, b) => {
+            const sa = a.specificity == null ? 99 : Number(a.specificity), sb = b.specificity == null ? 99 : Number(b.specificity);
+            if (sa !== sb) return sa - sb;
+            return (a.priority || 0) - (b.priority || 0);
+        });
+        const specs = cands.map(c => Number(c.specificity)).filter(n => !Number.isNaN(n));
+        const minSpec = specs.length ? Math.min(...specs) : null;
+        const maxSpec = specs.length ? Math.max(...specs) : null;
+
+        // CEVAP card — WP-FREQ-DET-M: the mockup's five colour states. The answer box is tinted by the DISPLAY verdict
+        // (resolved=green / conflict=amber / date_out=red / unknown+not_applicable=neutral) and the badge on the right
+        // states it in words; the number stays the focus. Backend FrequencyStatus is unchanged (date_out is derived).
+        const dv = displayVerdict(r, cands);
+        const toneClass = ANSWER_TONE_CLASS[dv] || '';
+        const bd = VERDICT_BADGE[dv];
+        const verdictBadge = bd ? badge(t(bd.key, bd.fb), bd.tone) : badge(verdictLabel(v), 'secondary');
+        const explainKey = dv === 'date_out' ? 'ResolveExplainDateOut' : (EXPLAIN_KEY[v] || 'ResolveExplainUnknown');
+        const answer = `<div class="vfp-rs-answer${toneClass ? ' vfp-rs-answer--' + toneClass : ''}">`
             + '<div class="vfp-rs-answer-main">'
             + `<span class="vfp-rs-answer-label">${esc(t('ResolveAnswerLabel', 'Cevap'))}</span>`
-            + `<span class="vfp-rs-answer-headline">${esc(answerHeadline(r))}</span>`
-            + `<span class="vfp-rs-answer-explain">${esc(t(EXPLAIN_KEY[v] || 'ResolveExplainUnknown', ''))}</span>`
+            + `<span class="vfp-rs-answer-headline">${esc(answerHeadline(r, dv))}</span>`
+            + `<span class="vfp-rs-answer-explain">${esc(t(explainKey, ''))}</span>`
             + '</div>'
-            + badge(verdictLabel(v), 'secondary')
+            + verdictBadge
             + '</div>';
 
         // winning rule ----------------------------------------------------------------
@@ -529,15 +568,7 @@
                 + openBtn + '</div>';
         }
 
-        // ladder — CandidatePolicies, "dardan genişe" (ascending specificity = narrow → broad) -------------
-        const cands = (r.candidatePolicies || []).slice().sort((a, b) => {
-            const sa = a.specificity == null ? 99 : Number(a.specificity), sb = b.specificity == null ? 99 : Number(b.specificity);
-            if (sa !== sb) return sa - sb;
-            return (a.priority || 0) - (b.priority || 0);
-        });
-        const specs = cands.map(c => Number(c.specificity)).filter(n => !Number.isNaN(n));
-        const minSpec = specs.length ? Math.min(...specs) : null;
-        const maxSpec = specs.length ? Math.max(...specs) : null;
+        // (ladder candidates `cands` + specs/minSpec/maxSpec are computed above so the display verdict can read them.)
 
         // WP-FREQ-DET-I — friendly type sub-line: targetType label (segment → "Segmentteki tüm hedefler") + a resolved
         // NAME only where the candidate genuinely carries one (nameOf; never fabricated) + the narrow/broad hint.
