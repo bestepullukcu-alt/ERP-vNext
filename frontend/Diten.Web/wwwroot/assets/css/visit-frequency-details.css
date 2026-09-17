@@ -26,7 +26,8 @@
 .vfp-detail-scope [class*=" vfp-rs-"]:not(.vfp-mono),
 .vfp-detail-scope [class^="vfp-det-"]:not(.vfp-mono),
 .vfp-detail-scope [class*=" vfp-det-"]:not(.vfp-mono) {
-    font-family: 'Inter', Helvetica, Arial, sans-serif;
+    /* WP-FREQ-DET-N — align with the WorkCenterNext header typography (theme default), not a private 'Inter' face. */
+    font-family: var(--bs-body-font-family, 'Public Sans', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif);
 }
 .vfp-detail-scope .vfp-mono {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -252,8 +253,8 @@
     flex-wrap: wrap;
 }
 .vfp-detail-scope .vfp-det-name {
-    font-size: 18px;
-    font-weight: 650;
+    font-size: 1.25rem; /* WP-FREQ-DET-N — WCN full-detail title size */
+    font-weight: 600; /* WP-FREQ-DET-N — WCN header weight (was 650) */
     color: var(--vfp-heading);
 }
 .vfp-detail-scope .vfp-det-code {
@@ -327,7 +328,7 @@
 .vfp-detail-scope .vfp-det-stat-label i { font-size: 15px; }
 .vfp-detail-scope .vfp-det-stat-value {
     font-size: 19px;
-    font-weight: 650;
+    font-weight: 600; /* WP-FREQ-DET-N — WCN header weight (was 650) */
     color: var(--vfp-heading);
     line-height: 1.25;
     word-break: break-word;
