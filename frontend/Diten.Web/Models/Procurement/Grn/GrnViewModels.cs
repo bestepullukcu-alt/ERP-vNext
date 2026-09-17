@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.Grn;
 
 // MOD-0142 Receiving (GRN) — frontend view models.
-// Fields bind ONLY the GRN-EVENT contract (docs/analysis/contracts/grn-event.openapi.yaml):
+// Fields bind ONLY the GRN-EVENT contract (grn-event.openapi.yaml):
 // GrnRequest / GrnResponse (GRN header + embedded GrnLine). Item/SKU/UoM identity (MOD-0290),
 // location identity (LOCATION) and PO reference (MOD-0141) are CONSUMED, never created.
 // Quantities are Decimal strings (float YASAK). No update endpoint (create + reverse only).

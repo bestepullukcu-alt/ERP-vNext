@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.Requisitions;
 
 // MOD-0141 Requisition — frontend view models.
-// Fields bind ONLY the REQUISITION-PO contract (docs/analysis/contracts/requisition-po.openapi.yaml):
+// Fields bind ONLY the REQUISITION-PO contract (requisition-po.openapi.yaml):
 // RequisitionUpsert / Requisition (requisition master + embedded RequisitionLine).
 // Item/SKU/UoM identity (MOD-0290/MOD-0048) is CONSUMED, never created (opaque references; fail-closed server-side).
 public sealed class RequisitionsEditViewModel

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.PurchaseOrders;
 
 // MOD-0141 Purchase Order — frontend view models.
-// Fields bind ONLY the REQUISITION-PO contract (docs/analysis/contracts/requisition-po.openapi.yaml):
+// Fields bind ONLY the REQUISITION-PO contract (requisition-po.openapi.yaml):
 // PurchaseOrderUpsert / PurchaseOrder (PO master + embedded PoLine).
 // Supplier identity (MOD-0140), item/SKU/UoM identity (MOD-0290/MOD-0048) are CONSUMED, never created
 // (opaque references; fail-closed server-side). lineAmount/totalAmount are server-computed (not user input).

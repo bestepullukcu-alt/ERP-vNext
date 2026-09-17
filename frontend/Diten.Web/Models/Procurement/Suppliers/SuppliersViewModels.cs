@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.Suppliers;
 
 // MOD-0140 Supplier — frontend view models.
-// Fields bind ONLY the SUPPLIER contract (docs/analysis/contracts/supplier.openapi.yaml):
+// Fields bind ONLY the SUPPLIER contract (supplier.openapi.yaml):
 // Supplier / SupplierUpsert (master) + OnboardingSubmit (KYC / documents / approval).
 public sealed class SuppliersEditViewModel
 {

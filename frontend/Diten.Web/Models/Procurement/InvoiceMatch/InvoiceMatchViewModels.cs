@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.InvoiceMatch;
 
 // MOD-0143 Invoice Capture & 3-Way Match — frontend view models.
-// Fields bind ONLY the MATCH owned contract (docs/analysis/contracts/invoice-match.openapi.yaml):
+// Fields bind ONLY the MATCH owned contract (invoice-match.openapi.yaml):
 // InvoiceUpsert / Invoice / InvoiceLine / MatchOutcome / MatchException. SupplierId (MOD-0140),
 // PoId (MOD-0141), Lines[].ItemId (MOD-0290) are CONSUMED, never created. Money is Decimal string (float YASAK).
 // The contract exposes NO invoice update endpoint (capture + match + resolve only) → Edit is a parity-only shell.

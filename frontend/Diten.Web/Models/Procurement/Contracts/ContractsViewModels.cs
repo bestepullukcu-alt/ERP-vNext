@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.Contracts;
 
 // MOD-0144 Contracting & Clause Library — frontend view models.
-// Fields bind ONLY the CONTRACTING contract (docs/analysis/contracts/contracting.openapi.yaml):
+// Fields bind ONLY the CONTRACTING contract (contracting.openapi.yaml):
 // ContractUpsert / Contract (contract master + embedded ClauseRef), ClauseUpsert / Clause (clause library).
 // Supplier identity (MOD-0140) and award/rfx identity (MOD-0145) are CONSUMED, never created (fail-closed server-side).
 public sealed class ContractEditViewModel

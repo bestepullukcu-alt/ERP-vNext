@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Diten.Web.Models.Procurement.Sourcing;
 
 // MOD-0145 Sourcing (RFQ/RFP) — frontend view models.
-// Fields bind ONLY the SOURCING contract (docs/analysis/contracts/sourcing.openapi.yaml):
+// Fields bind ONLY the SOURCING contract (sourcing.openapi.yaml):
 // RfxUpsert / RfxEvent (RFx master + embedded RfxLine), BidUpsert / Bid (embedded BidLine), AwardDecision.
 // Supplier identity (MOD-0140) and item/UoM identity (MOD-0290) are CONSUMED, never created.
 public sealed class SourcingEditViewModel
