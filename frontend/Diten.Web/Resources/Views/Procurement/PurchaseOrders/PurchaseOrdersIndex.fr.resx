@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>Bons de commande</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bons de commande : commandez le besoin approuvé auprès des fournisseurs, valorisez les lignes et approuvez.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter un bon de commande</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier le bon de commande</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter un bon de commande</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le bon de commande</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="PoId" xml:space="preserve"><value>N° de commande</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Fournisseur</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Montant total</value></data>
+  <data name="Currency" xml:space="preserve"><value>Devise</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>Détails du bon de commande</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Lignes de commande</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Intégration</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Ajouter une ligne</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>Sélectionner un fournisseur</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>Le fournisseur est validé par rapport au référentiel fournisseurs (fail-closed).</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>Référence de la demande</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>p. ex. REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>Référence facultative à une demande approuvée.</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>p. ex. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>La devise doit correspondre à la devise de base de l'entité juridique.</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>N° d'article</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>p. ex. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>N° de SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>p. ex. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>p. ex. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Unité</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>p. ex. BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Prix unitaire</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>p. ex. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Montant de la ligne</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Au moins une ligne est requise (article, quantité, unité de mesure, prix unitaire). Les montants de ligne et le total sont calculés par le serveur.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>p. ex. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Référence externe</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>p. ex. ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Approuvé</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>Partiellement reçu</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Reçu</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Clôturé</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Annulé</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Approuver</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>Approuver ce bon de commande ? Les bons approuvés sont ouverts à la réception de marchandises.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Bon de commande approuvé.</value></data>
+</root>

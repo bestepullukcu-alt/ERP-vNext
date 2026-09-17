@@ -864,4 +864,10 @@
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="RfxUpdateNotSupported" xml:space="preserve"><value>La modification d'un RFx n'est pas prise en charge ; créez un nouveau RFx ou gérez-le via la publication, l'offre et l'attribution.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Demandes d'achat</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Demandes d'achat</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Bons de commande</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Bons de commande</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>La modification d'une demande n'est pas prise en charge ; créez une nouvelle demande ou soumettez celle-ci pour approbation.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>La modification d'un bon de commande n'est pas prise en charge ; créez un nouveau bon de commande ou approuvez celui-ci.</value></data>
 </root>

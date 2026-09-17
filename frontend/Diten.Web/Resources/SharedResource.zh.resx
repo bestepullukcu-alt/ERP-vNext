@@ -863,4 +863,10 @@
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>寻源</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>寻源</value></data>
   <data name="RfxUpdateNotSupported" xml:space="preserve"><value>不支持修改 RFx；请新建 RFx，或通过发布、报价和授标进行管理。</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>不支持修改采购申请；请新建申请，或提交此申请以供审批。</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>不支持修改采购订单；请新建采购订单，或批准此订单。</value></data>
 </root>

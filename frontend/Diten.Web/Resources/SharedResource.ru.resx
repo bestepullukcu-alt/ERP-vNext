@@ -863,4 +863,10 @@
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Источники</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Источники</value></data>
   <data name="RfxUpdateNotSupported" xml:space="preserve"><value>Изменение RFx не поддерживается; создайте новый RFx или управляйте им через публикацию, предложение и присуждение.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Заявки</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Заявки</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Заказы на закупку</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Заказы на закупку</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Изменение заявки не поддерживается; создайте новую заявку или отправьте эту на утверждение.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Изменение заказа на закупку не поддерживается; создайте новый заказ или утвердите этот.</value></data>
 </root>

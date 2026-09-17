@@ -863,4 +863,10 @@
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>التوريد</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>التوريد</value></data>
   <data name="RfxUpdateNotSupported" xml:space="preserve"><value>تعديل RFx غير مدعوم؛ أنشئ RFx جديدًا أو أدِرْه عبر النشر والعرض والترسية.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>طلبات الشراء</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>طلبات الشراء</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>أوامر الشراء</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>أوامر الشراء</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>تعديل الطلب غير مدعوم؛ أنشئ طلبًا جديدًا أو أرسل هذا الطلب للموافقة.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>تعديل أمر الشراء غير مدعوم؛ أنشئ أمر شراء جديدًا أو اعتمد هذا الأمر.</value></data>
 </root>

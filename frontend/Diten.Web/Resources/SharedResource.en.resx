@@ -924,4 +924,10 @@
   <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Sourcing</value></data>
   <data name="RfxUpdateNotSupported" xml:space="preserve"><value>Updating an RFx is not supported; create a new RFx or manage it via publish, bid, and award.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Requisitions</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Requisitions</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Purchase Orders</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Purchase Orders</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Updating a requisition is not supported; create a new requisition or submit this one for approval.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Updating a purchase order is not supported; create a new purchase order or approve this one.</value></data>
 </root>
