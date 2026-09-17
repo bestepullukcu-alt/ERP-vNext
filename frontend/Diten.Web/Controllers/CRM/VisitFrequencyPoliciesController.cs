@@ -95,6 +95,13 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public Task<IActionResult> PolicyGet(Guid policyId, CancellationToken ct) =>
         ProxyGetAsync($"{PoliciesBase}/{policyId}", ct, ReadCanonical, ReadFallback);
 
+    // WP-FREQ-DET-A — read-only detail-analysis pass-through (target impact + conflict outcome). The literal
+    // "{guid}/analysis" sits under the EXISTING Gateway visit-frequency-policies {everything} wildcard, so no ocelot
+    // change is needed. Same read RBAC as the sibling reads.
+    [HttpGet("api/visit-frequency-policies/{policyId:guid}/analysis")]
+    public Task<IActionResult> PolicyAnalysis(Guid policyId, CancellationToken ct) =>
+        ProxyGetAsync($"{PoliciesBase}/{policyId}/analysis", ct, ReadCanonical, ReadFallback);
+
     [HttpPost("api/visit-frequency-policies")]
     public Task<IActionResult> Create([FromBody] JsonElement body, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, PoliciesBase, body, ct, ManageCanonical, ManageFallback);

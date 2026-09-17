@@ -32,6 +32,11 @@ public static class DependencyInjection
         services.AddScoped<Features.VisitFrequencyPolicy.Resolve.IVisitFrequencyPolicyResolver,
             Features.VisitFrequencyPolicy.Resolve.VisitFrequencyPolicyResolver>();
 
+        // WP-FREQ-DET-A — read-only detail-analysis impact counter. Reuses the segment membership resolver, territory
+        // coverage resolver and campaign-target repository to count a policy target's reach; no new matching engine.
+        services.AddScoped<Features.VisitFrequencyPolicy.Analysis.IVisitFrequencyTargetImpactCounter,
+            Features.VisitFrequencyPolicy.Analysis.VisitFrequencyTargetImpactCounter>();
+
         // MOD-0164 FU02 — the single read-only consent/preference evaluation seam (repos + deterministic engine).
         // The FU02 HTTP endpoint and every future consumer (MOD-0155, MOD-0165 FU04, MOD-0167 consent filter) consume
         // THIS; no consumer copies the engine and none of them needs raw consent read access.

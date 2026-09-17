@@ -88,6 +88,15 @@ public sealed class VisitFrequencyPoliciesController : CustomBaseController
     public async Task<IActionResult> Get(Guid policyId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetVisitFrequencyPolicyQuery(policyId), cancellationToken));
 
+    /// <summary>
+    /// WP-FREQ-DET-A — read-only DETAY ANALİZ for one policy: target impact (per-type count + quarterly projection) and
+    /// the conflict outcome (FU03 resolve engine REUSED for the policy's own target + context). NEVER writes.
+    /// </summary>
+    [HttpGet("api/crm/visit-frequency-policies/{policyId:guid}/analysis")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Analysis(Guid policyId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetVisitFrequencyPolicyAnalysisQuery(policyId), cancellationToken));
+
     // ---------------- Writes ----------------
 
     [HttpPost("api/crm/visit-frequency-policies")]
