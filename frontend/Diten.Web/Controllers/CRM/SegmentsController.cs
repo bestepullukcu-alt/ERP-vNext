@@ -308,6 +308,15 @@ public sealed class SegmentsController : Controller
         ProxyGetAsync(
             $"/api/crm/territory-models/{modelId}/nodes{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
 
+    /// <summary>WP-SEG-DETAILS8 — territory.node reverse lookup by ids (?ids=guid,guid). Edit uses it to re-establish the
+    /// model context for a saved node so the model+node cascade comes back SELECTED instead of showing a raw id. It reuses
+    /// the MOD-0151 bulk read that lives under the existing territory-models Gateway wildcard, so no new Gateway route is
+    /// added; nothing is written.</summary>
+    [HttpGet("api/territory-nodes")]
+    public Task<IActionResult> TerritoryNodesByIds(CancellationToken ct) =>
+        ProxyGetAsync(
+            $"/api/crm/territory-models/nodes/by-ids{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
+
     /// <summary>consent.scope-product picker. Existing MDM product list.</summary>
     [HttpGet("api/mdm-products")]
     public Task<IActionResult> MdmProducts(CancellationToken ct) =>

@@ -39,6 +39,21 @@ public sealed class TerritoryNodeRepository : ITerritoryNodeRepository
             .SortBy(n => n.SortOrder).ThenBy(n => n.TerritoryCode)
             .ToListAsync(cancellationToken);
 
+    public async Task<IReadOnlyList<TerritoryNode>> ListByIdsAsync(
+        Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        // Fail-closed on an empty request: never fan out an unbounded "give me every node" query by mistake.
+        if (ids is null || ids.Count == 0)
+        {
+            return Array.Empty<TerritoryNode>();
+        }
+
+        var distinct = ids.Distinct().ToList();
+        var filter = Builders<TerritoryNode>.Filter.Where(n => n.TenantId == tenantId && !n.IsDeleted)
+                     & Builders<TerritoryNode>.Filter.In(n => n.Id, distinct);
+        return await _collection.Find(filter).ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> WouldCreateCycleAsync(Guid tenantId, Guid modelId, Guid nodeId, Guid candidateParentId, CancellationToken cancellationToken)
     {
         var current = (Guid?)candidateParentId;

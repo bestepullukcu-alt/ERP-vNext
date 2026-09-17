@@ -63,6 +63,11 @@ public sealed class SegmentCriteriaNodeViewModel
     public bool Negate { get; set; }
     public int SortOrder { get; set; }
     public string? Label { get; set; }
+
+    // WP-SEG-DETAILS8 — additive, nullable value → display-name map bound from the gateway response. Populated only for
+    // territory-node criteria whose ids the backend resolved; the human criteria sentence shows the name instead of a raw
+    // id, and a missing entry keeps the raw id hidden (fail-closed). The stored Values are never altered.
+    public Dictionary<string, string>? ValueLabels { get; set; }
 }
 
 // ----- gateway envelopes / contract -----

@@ -87,7 +87,13 @@ public sealed record SegmentCriteriaNodeDto(
     IReadOnlyDictionary<string, string> Parameters,
     bool Negate,
     int SortOrder,
-    string? Label);
+    string? Label,
+    // WP-SEG-DETAILS8 — ADDITIVE, nullable value → display-name map for entity-picker (territory-node) values. The stored
+    // Values stay exactly as they were (raw node ids); this only carries the resolved label so a reader can show
+    // "Territory is any of Marmara" instead of a GUID. Populated ONLY for territory.node criteria, only when the reverse
+    // lookup resolved the id (fail-closed: an unresolved id is simply absent, never fabricated). Appended LAST with a
+    // null default so the mapper's positional projection is unchanged.
+    IReadOnlyDictionary<string, string>? ValueLabels = null);
 
 /// <summary>One node of the criteria tree as it is WRITTEN. NodeId is optional on input: a create supplies none and
 /// the runtime assigns them, so the caller can never forge or reuse an id from another segment.</summary>

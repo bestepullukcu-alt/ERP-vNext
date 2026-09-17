@@ -19,6 +19,7 @@ public sealed class SegmentAggregateTests
     private readonly FakeSegmentRepository _segments = new();
     private readonly FakeProductReferenceValidator _references = new();
     private readonly FakeUserDisplayNameResolver _displayNames = new();
+    private readonly Territory.FakeTerritoryNodeRepo _territoryNodes = new();
 
     private CreateSegmentHandler Create(Guid tenant = default) => new(
         SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
@@ -30,7 +31,7 @@ public sealed class SegmentAggregateTests
 
     private GetSegmentByIdHandler GetById(Guid tenant = default) => new(
         SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
-        _segments, _displayNames);
+        _segments, _displayNames, _territoryNodes);
 
     private UpdateSegmentHandler Update() => new(
         SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantA), new NullActorContext(), _segments, _references);
@@ -232,7 +233,7 @@ public sealed class SegmentAggregateTests
         var created = await Create().Handle(NewSegment(), default);
 
         var get = await new GetSegmentByIdHandler(
-                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments, _displayNames)
+                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments, _displayNames, _territoryNodes)
             .Handle(new GetSegmentByIdQuery(created.Data), default);
         Assert.Equal(404, get.StatusCode);
 
@@ -290,6 +291,70 @@ public sealed class SegmentAggregateTests
         Assert.True(get.IsSuccessful);
         Assert.Null(get.Data!.CreatedByName);
         Assert.Equal(0, _displayNames.Calls);
+    }
+
+    [Fact]
+    public async Task Detail_resolves_territory_node_ids_to_names_additively_without_touching_values()
+    {
+        // WP-SEG-DETAILS8: a territory.node criterion stores the raw node id. The detail read reverse-resolves it to the
+        // node name (ONE bulk lookup) and hangs it off the ADDITIVE ValueLabels map; the stored Values are unchanged.
+        var nodeId = Guid.NewGuid();
+        _territoryNodes.Items.Add(new TerritoryNode
+        {
+            Id = nodeId,
+            TenantId = SegmentTestDoubles.TenantA,
+            ModelId = Guid.NewGuid(),
+            Name = "Marmara",
+            TerritoryCode = "TR-MAR"
+        });
+
+        var segment = SegmentTestBuilders.Segment(
+            SegmentTestDoubles.TenantA,
+            subjectType: SegmentSubjectTypes.Contact,
+            criteria: SegmentTestBuilders.Criteria(SegmentTestBuilders.Predicate(
+                SegmentAttributeCatalog.TerritoryNode, SegmentOperators.In, SegmentValueTypes.Guid,
+                new[] { nodeId.ToString() })));
+        _segments.Rows.Add(segment);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(segment.Id), default);
+
+        Assert.True(get.IsSuccessful);
+        var predicate = get.Data!.Criteria.Single(n => n.AttributeCode == SegmentAttributeCatalog.TerritoryNode);
+        Assert.NotNull(predicate.ValueLabels);
+        Assert.Equal("Marmara", predicate.ValueLabels![nodeId.ToString()]);
+        // The raw id is preserved verbatim — the label is display-only and never rewrites the stored value.
+        Assert.Equal(new[] { nodeId.ToString() }, predicate.Values);
+    }
+
+    [Fact]
+    public async Task Detail_leaves_the_territory_node_label_absent_when_the_node_belongs_to_another_tenant()
+    {
+        // Fail-closed + tenant isolation: a node owned by TenantB is invisible to TenantA's lookup, so no label is
+        // fabricated and the reader keeps hiding the raw id.
+        var nodeId = Guid.NewGuid();
+        _territoryNodes.Items.Add(new TerritoryNode
+        {
+            Id = nodeId,
+            TenantId = SegmentTestDoubles.TenantB,
+            ModelId = Guid.NewGuid(),
+            Name = "Marmara",
+            TerritoryCode = "TR-MAR"
+        });
+
+        var segment = SegmentTestBuilders.Segment(
+            SegmentTestDoubles.TenantA,
+            subjectType: SegmentSubjectTypes.Contact,
+            criteria: SegmentTestBuilders.Criteria(SegmentTestBuilders.Predicate(
+                SegmentAttributeCatalog.TerritoryNode, SegmentOperators.In, SegmentValueTypes.Guid,
+                new[] { nodeId.ToString() })));
+        _segments.Rows.Add(segment);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(segment.Id), default);
+
+        Assert.True(get.IsSuccessful);
+        var predicate = get.Data!.Criteria.Single(n => n.AttributeCode == SegmentAttributeCatalog.TerritoryNode);
+        Assert.True(predicate.ValueLabels is null || predicate.ValueLabels.Count == 0);
+        Assert.Equal(new[] { nodeId.ToString() }, predicate.Values);
     }
 
     [Fact]

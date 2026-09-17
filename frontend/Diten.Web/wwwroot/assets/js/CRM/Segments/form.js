@@ -425,9 +425,19 @@
             const seeded = spec.multi ? values : [single];
             const seedOptions = seeded.filter(v => String(v ?? '').trim() !== '')
                 .map(v => `<option value="${esc(v)}" selected>${esc(v)}</option>`).join('');
+            // WP-SEG-DETAILS8: on edit the saved node ids were reverse-resolved to their parent model (condition
+            // .territoryModelId) before render, so seed the cascade with that model SELECTED. The .js-node-cascade
+            // hydrate pass then repaints the full model list keeping this one chosen, and the node <select> below loads
+            // that model's nodes and marks the saved node selected — the cascade comes back restored, not blank. For a
+            // freshly-added condition territoryModelId is undefined, so this seeds nothing and the control renders
+            // exactly as before.
+            const cascadeSeed = spec.control === 'cascade-select' && condition.territoryModelId
+                ? `<option value="${esc(condition.territoryModelId)}" selected>${esc(condition.territoryModelName || condition.territoryModelId)}</option>`
+                : '';
             const cascade = spec.control === 'cascade-select'
                 ? `<select class="form-select form-select-sm mb-1 js-node-cascade" data-node="${esc(condition.nodeId)}">
                        <option value="">${esc(L.SelectTerritoryModel || '')}</option>
+                       ${cascadeSeed}
                    </select>`
                 : '';
             return cascade + `<select class="form-select form-select-sm js-node-select"
@@ -1438,6 +1448,46 @@
         return result;
     };
 
+    // ---------------------------------------------------------------- territory-node edit restore (WP-SEG-DETAILS8)
+
+    /** Reverse-resolves every saved territory-node id (across all conditions) to its {name, modelId} in ONE bulk call,
+     *  then stamps each condition with its parent model context and value labels. This is what lets a saved node come
+     *  back with the model+node cascade SELECTED on edit instead of a bare GUID. Fail-closed: on any error the ids are
+     *  left exactly as they were (the picker still shows the raw id, nothing is fabricated). It NEVER touches
+     *  condition.values, so buildNodes / the posted payload stay byte-identical. */
+    const restoreTerritoryNodeContext = async () => {
+        const territoryConditions = allConditions().filter(c => {
+            const source = attributeFor(c.attributeCode)?.valueSource;
+            return source?.kind === 'entity-picker' && source.entityKind === 'territory-node';
+        });
+        const ids = [...new Set(territoryConditions
+            .flatMap(c => (c.values || []).map(v => String(v ?? '').trim()))
+            .filter(v => v !== ''))];
+        if (ids.length === 0) return;
+
+        let nodes = [];
+        try {
+            const data = await getJson(`/territory-nodes?ids=${encodeURIComponent(ids.join(','))}`);
+            nodes = Array.isArray(data) ? data : (data?.items || data?.nodes || []);
+        } catch (e) {
+            return; // fail-closed: leave the saved ids untouched
+        }
+
+        const byId = new Map(nodes.map(n => [String(n.id || n.Id), n]));
+        territoryConditions.forEach(c => {
+            c.valueLabels = c.valueLabels || {};
+            (c.values || []).forEach(v => {
+                const node = byId.get(String(v));
+                if (!node) return;
+                c.valueLabels[String(v)] = node.name || node.Name || String(v);
+                // The cascade shows ONE model, so the first resolved node's model becomes the restored context.
+                if (!c.territoryModelId) {
+                    c.territoryModelId = String(node.modelId || node.ModelId || '');
+                }
+            });
+        });
+    };
+
     // ---------------------------------------------------------------- bootstrap
 
     const init = async () => {
@@ -1455,6 +1505,10 @@
         try { loaded = JSON.parse(hidden.value || '[]') || []; }
         catch (error) { loaded = []; }
         blocks = nodesToBlocks(loaded);
+
+        // WP-SEG-DETAILS8: resolve saved territory-node ids → parent model + label BEFORE the first render, so the
+        // model+node cascade paints already restored (selected) rather than flashing a raw GUID.
+        await restoreTerritoryNodeContext();
 
         renderTemplates();
         render();

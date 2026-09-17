@@ -261,9 +261,15 @@
                                         var attrText = HumanizeAttribute(node.AttributeCode);
                                         var opKey = OperatorLabelKey(node.Operator);
                                         var opText = opKey != null ? Localizer[opKey].Value : node.Operator;
+                                        // WP-SEG-DETAILS8: a GUID value (territory node) is shown by its backend-resolved
+                                        // name (node.ValueLabels) when present — "Territory is any of Marmara"; without a
+                                        // label a bare GUID stays hidden (fail-closed). Reference-set/enum values are not
+                                        // GUID-shaped and keep the existing title-cased rendering.
                                         var shownValues = node.Values
-                                            .Where(v => !IsGuidValue(v))
-                                            .Select(v => TitleCaseValue(v))
+                                            .Select(v => IsGuidValue(v)
+                                                ? (node.ValueLabels != null && node.ValueLabels.TryGetValue(v, out var nodeName) ? nodeName : null)
+                                                : TitleCaseValue(v))
+                                            .Where(v => !string.IsNullOrEmpty(v))
                                             .ToList();
                                         predHuman = (shownValues.Count > 0
                                             ? $"{attrText} {opText} {string.Join(", ", shownValues)}"
@@ -276,14 +282,20 @@
                                             <span class="segd-tag segd-tag-op segd-mono">@node.Operator</span>
                                             @if (node.Values.Count > 0)
                                             {
-                                                @* A bare 36-char UUID is machine provenance, not a readable value: the human line
-                                                   (node.Label) already names it, so its badge is suppressed. Reference-set / enum
-                                                   values (e.g. "Cardiology") are not GUID-shaped and stay visible. *@
+                                                @* A bare 36-char UUID is machine provenance, not a readable value. For a
+                                                   territory node the backend resolves the id to a name (node.ValueLabels),
+                                                   so that name is shown as the value badge; a GUID with no resolved label
+                                                   stays suppressed (fail-closed). Reference-set / enum values (e.g.
+                                                   "Cardiology") are not GUID-shaped and stay visible unchanged. *@
                                                 foreach (var value in node.Values)
                                                 {
                                                     if (!(value?.Length == 36 && Guid.TryParse(value, out _)))
                                                     {
                                                         <span class="segd-tag segd-tag-val segd-mono">@value</span>
+                                                    }
+                                                    else if (node.ValueLabels != null && node.ValueLabels.TryGetValue(value, out var nodeName))
+                                                    {
+                                                        <span class="segd-tag segd-tag-val segd-mono">@nodeName</span>
                                                     }
                                                 }
                                             }
