@@ -70,7 +70,13 @@ builder.Services.AddCors(options =>
 });
 
 // ── Controllers + ProblemDetails ──────────────────────────────────────────
-builder.Services.AddControllers();
+// Enums serialize as their string names (Active/Draft/Posted/…) to match the OWNED OpenAPI
+// contracts (which define string enums) and the frontend status-badge mappings. The converter
+// also ACCEPTS numeric input on deserialize, so no consumer breaks. (Runtime E2E found supplier
+// status rendering as "Bilinmiyor" because numeric 0 was emitted instead of "Active".)
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 builder.Services.AddProblemDetails();
 
 // ── Swagger ───────────────────────────────────────────────────────────────
