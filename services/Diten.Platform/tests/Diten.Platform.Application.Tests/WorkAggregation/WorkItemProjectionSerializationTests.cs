@@ -38,7 +38,8 @@ public sealed class WorkItemProjectionSerializationTests
         Actions:
         [
             new WorkItemActionDto("approve", WorkItemLabelDto.Resource("WorkAggregation_Action_Approve"),
-                "approve", true, WorkItemContract.ActionSourceProvider, null, null, true, false, false, true, "normal")
+                "approve", true, WorkItemContract.ActionSourceProvider, null, null, true, false, false, true,
+                "normal", TargetStatus: "InProgress")
         ],
         Concurrency: new WorkItemConcurrencyDto("version", "17"),
         WaitingContext: null,
@@ -90,6 +91,12 @@ public sealed class WorkItemProjectionSerializationTests
         {
             Assert.True(action.TryGetProperty(field, out _), $"Missing action field '{field}'.");
         }
+
+        // WP-WCN-KANBAN-01 — targetStatus is a JSON STRING, never a numeric enum. This project has broken this
+        // exact way before (a JSON enum-serialization regression escaped 1500 passing unit tests), so the wire
+        // shape is asserted here rather than assumed from the C# type.
+        Assert.Equal(JsonValueKind.String, action.GetProperty("targetStatus").ValueKind);
+        Assert.Equal("InProgress", action.GetProperty("targetStatus").GetString());
 
         var concurrency = root.GetProperty("concurrency");
         Assert.True(concurrency.TryGetProperty("kind", out _));

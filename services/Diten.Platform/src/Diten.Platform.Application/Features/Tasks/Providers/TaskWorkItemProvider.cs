@@ -2267,7 +2267,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         else if (task.AssignmentTarget == TaskAssignmentTarget.Person && openOrPlanned)
         {
             // The acceptance gate: an assignee decides whether to take the work on.
-            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update)));
+            // TargetStatus mirrors AcceptTaskItemHandler exactly (WP-WCN-KANBAN-01, CT decision 2026-09-17):
+            // Open promotes to InProgress; Planned is left untouched by the handler, so accepting a Planned task
+            // does not move its Kanban card — null, not a guess, since BuildActions already knows task.Lifecycle.
+            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update),
+                targetStatus: task.Lifecycle == TaskLifecycle.Open ? TaskLifecycleService.InProgress : null));
             primary = "accept";
         }
         else if (approvalPending)
@@ -2300,7 +2304,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // is part of the work. Only the decision actions below (submitReview/complete) wait for the minutes.
             actions.Add(approvalOutstanding
                 ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey)
-                : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update)));
+                : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update),
+                    targetStatus: TaskLifecycleService.InProgress));
             primary = "start";
         }
         else
@@ -2309,7 +2314,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             {
                 // MOD-0357 S9 (CT fix-up F1) — start is NEVER held back by the review-meeting gate (see resume above);
                 // the server's → InProgress path asks no such question either.
-                actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update)));
+                actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update),
+                    targetStatus: TaskLifecycleService.InProgress));
                 primary = "start";
             }
 
@@ -2336,7 +2342,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                                 ? Disabled("submitReview", ActionSubmitReviewKey,
                                     TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
                                 : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                                    requiresConfirmation: true));
+                                    requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
                 }
                 else
@@ -2355,7 +2361,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                                 ? Disabled("complete", ActionCompleteKey,
                                     TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
                                 : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                                    requiresConfirmation: true));
+                                    requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
             }
@@ -2386,7 +2392,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                         ? Disabled("submitReview", ActionSubmitReviewKey,
                             TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
                         : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                            requiresConfirmation: true));
+                            requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
                 }
                 else if (reviewOutstanding)
@@ -2406,7 +2412,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                             ? Disabled("complete", ActionCompleteKey,
                                 TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
                             : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                                requiresConfirmation: true));
+                                requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
             }
@@ -2439,7 +2445,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         if (!unclaimed && isHolder
             && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress)
         {
-            actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true));
+            actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true,
+                targetStatus: TaskLifecycleService.Waiting));
         }
 
         /*
@@ -2539,7 +2546,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static WorkItemActionDto CancelAction(WorkItemActor actor)
         => Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
-            requiresConfirmation: true, riskLevel: "destructive");
+            requiresConfirmation: true, riskLevel: "destructive", targetStatus: TaskLifecycleService.Cancelled);
 
     private static WorkItemActionDto Build(
         string code,
@@ -2547,7 +2554,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool permitted,
         bool requiresConfirmation = false,
         string riskLevel = "normal",
-        bool requiresReason = false)
+        bool requiresReason = false,
+        string? targetStatus = null)
         => permitted
             ? new WorkItemActionDto(
                 Code: code,
@@ -2561,7 +2569,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 RequiresReason: requiresReason,
                 RequiresEvidence: false,
                 SupportsBulk: false,
-                RiskLevel: riskLevel)
+                RiskLevel: riskLevel,
+                TargetStatus: targetStatus)
             : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey);
 
     /// <summary>

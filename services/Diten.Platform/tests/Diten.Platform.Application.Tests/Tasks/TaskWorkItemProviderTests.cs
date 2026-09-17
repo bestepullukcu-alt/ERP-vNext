@@ -438,6 +438,12 @@ public sealed class TaskWorkItemProviderTests
                 Assert.False(string.IsNullOrWhiteSpace(action.DisabledReasonCode));
                 Assert.NotNull(action.DisabledReason);
             }
+            // WP-WCN-KANBAN-01 — TargetStatus, when present, is a normalizedStatus string, never a raw enum name
+            // or an invented value the Kanban column set does not recognize.
+            if (action.TargetStatus is not null)
+            {
+                Assert.Contains(action.TargetStatus, statuses);
+            }
         }
 
         // A terminal item exposes no enabled state-changing action.
