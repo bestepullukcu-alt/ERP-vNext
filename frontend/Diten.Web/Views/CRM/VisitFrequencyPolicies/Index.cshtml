@@ -52,11 +52,10 @@
     }
 </div>
 
-@* Offcanvas placeholders — FREQ-B fills the create/edit editor, FREQ-C the details quick-view. *@
+@* WP-FREQ-F2 — the create/edit editor is now a SEPARATE page (/Create, /Edit/{id}); the FREQ-B offcanvas is retired.
+   Only the FREQ-C details quick-view offcanvas remains here. *@
 @* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/CRM/VisitFrequencyPolicies/_DetailsQuickView.cshtml" />
-@* Contract marker rendered by _CreateEditOffcanvas.cshtml: id="offcanvasCreateEdit" *@
-<partial name="~/Views/CRM/VisitFrequencyPolicies/_CreateEditOffcanvas.cshtml" />
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@

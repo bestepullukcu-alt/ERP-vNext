@@ -168,4 +168,63 @@
   <data name="Source_business-rule" xml:space="preserve"><value>قاعدة عمل آلية</value></data>
   <data name="Source_manager-override" xml:space="preserve"><value>مدير الميدان</value></data>
   <data name="Source_other" xml:space="preserve"><value>أخرى</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>تعديل السياسة</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>هذه السياسة مؤرشفة وللقراءة فقط؛ لا يمكن تعديلها.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>ملاحظة داخلية — لا يقرأها محرك التخطيط.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>القوائم تأتي من تعريفات النظام</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>ابحث واختر من القائمة</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>أين يتم تطبيقها؟</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>اختياري — أي حقل يُترك فارغًا يعني “الكل”</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>اختر علامة تجارية أولاً</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>مسح النطاق</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>الإيقاع المحسوب</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>إذا تُرك تاريخ الانتهاء فارغًا فإن السياسة سارية إلى أجل غير مسمى؛ وعند التعارض يفوز تاريخ بدء أحدث لنفس الهدف.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>في حال حدوث تعارض</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>إذا انطبقت قاعدة أخرى على نفس الهدف، فإن هذا الاختيار يحدد أيهما يفوز.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>وزن هذه القاعدة</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>من أين تأتي هذه القاعدة؟</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>غير مُدرجة في التخطيط</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>مُدرجة في التخطيط</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>متوقفة حاليًا</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>للقراءة فقط، غير محذوفة</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>لا يوجد حذف. يتم الإغلاق عبر الأرشفة؛ يبقى السجل قابلاً للقراءة في السجل التاريخي ولا يُقيَّم بواسطة محرك التخطيط.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>ماذا ستفعل هذه السياسة؟</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>عند الحفظ</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>قبل الحفظ</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>حفظ وتفعيل</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>إلغاء النشر</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>زيارات</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>بلا قيد</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>قيود</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>سيتم تخطيط أهداف "{name}" بمعدل {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>على كامل النطاق</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>هذه السياسة</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>جاهز</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>تحذيرات</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>تم اختيار الهدف</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>التردد صالح</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>الفترة متسقة</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>تم تضييق النطاق</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>لا قيد على النطاق</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>تم اختيار وزن التعارض</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>ستبقى مسودة</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>سيتم نشرها</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>سيتم إلغاء نشرها</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>سيتم أرشفتها</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>جميع وحدات الأعمال</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>مستقل عن الشريحة</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>مستقل عن الحملة</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>جميع العلامات التجارية</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>جميع المنتجات</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>جميع فترات الدورة</value></data>
 </root>

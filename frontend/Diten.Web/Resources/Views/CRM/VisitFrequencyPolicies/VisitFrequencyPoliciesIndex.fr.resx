@@ -168,4 +168,63 @@
   <data name="Source_business-rule" xml:space="preserve"><value>Règle métier automatique</value></data>
   <data name="Source_manager-override" xml:space="preserve"><value>Responsable terrain</value></data>
   <data name="Source_other" xml:space="preserve"><value>Autre</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Modifier la politique</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Retour à la liste</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Cette politique est archivée et en lecture seule ; elle ne peut pas être modifiée.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Note interne — le moteur de planification ne la lit pas.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Les listes proviennent des définitions du système</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Rechercher et sélectionner dans la liste</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Où s'applique-t-elle ?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>facultatif — tout champ laissé vide signifie « tout »</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Organisation</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Portée</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Période</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Choisissez d'abord une marque</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Effacer la portée</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Cadence résolue</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Si la date de fin est vide, la politique est valable indéfiniment ; en cas de conflit, une date de début plus récente pour la même cible l'emporte.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>En cas de conflit</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Si une autre règle s'applique aussi à la même cible, ce choix détermine laquelle l'emporte.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Poids de cette règle</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>D'où vient cette règle ?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Cycle de vie</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>non incluse dans la planification</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>incluse dans la planification</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>suspendue pour l'instant</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>lecture seule, non supprimée</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Il n'y a pas de suppression. La clôture se fait par archivage ; l'enregistrement reste consultable dans l'historique et n'est pas évalué par le moteur de planification.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Que fera cette politique ?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Portée</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>À l'enregistrement</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Avant d'enregistrer</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Enregistrer et activer</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Enregistrer comme brouillon</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Dépublier</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Archiver</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>visites</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>aucune contrainte</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>contraintes</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>Les cibles « {name} » seront planifiées à {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>sur toute la portée</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Cette politique</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>prêt</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>avertissements</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Cible sélectionnée</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Fréquence valide</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Période cohérente</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Portée restreinte</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Aucune contrainte de portée</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Poids de conflit choisi</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Restera un brouillon</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Sera publiée</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Sera dépubliée</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Sera archivée</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Toutes les unités commerciales</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Indépendant du segment</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Indépendant de la campagne</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Toutes les marques</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Tous les produits</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Toutes les périodes de cycle</value></data>
 </root>

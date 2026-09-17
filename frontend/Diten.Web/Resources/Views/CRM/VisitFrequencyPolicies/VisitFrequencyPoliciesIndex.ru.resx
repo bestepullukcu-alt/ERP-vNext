@@ -168,4 +168,63 @@
   <data name="Source_business-rule" xml:space="preserve"><value>Автоматическое бизнес-правило</value></data>
   <data name="Source_manager-override" xml:space="preserve"><value>Полевой менеджер</value></data>
   <data name="Source_other" xml:space="preserve"><value>Прочее</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Изменить политику</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Эта политика заархивирована и доступна только для чтения; её нельзя редактировать.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Внутренняя заметка — движок планирования её не читает.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Списки берутся из системных определений</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Найдите и выберите из списка</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Где она применяется?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>необязательно — любое пустое поле означает «все»</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Организация</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Область</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Сначала выберите бренд</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Очистить область</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Итоговая частота</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Если дата окончания не указана, политика действует бессрочно; при конфликте побеждает более новая дата начала для той же цели.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>При конфликте</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Если к той же цели применяется другое правило, этот выбор определяет, какое из них победит.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Вес этого правила</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>Откуда взято это правило?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>не участвует в планировании</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>участвует в планировании</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>пока приостановлена</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>только чтение, не удалена</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Удаления нет. Закрытие выполняется через архивирование; запись остаётся доступной для чтения в истории и не оценивается движком планирования.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Что сделает эта политика?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>При сохранении</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Перед сохранением</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Сохранить и активировать</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить как черновик</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Снять с публикации</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>визитов</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>без ограничений</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>огранич.</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>Цели «{name}» будут запланированы с частотой {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>по всей области</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Эта политика</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>готово</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>предупр.</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Цель выбрана</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Частота корректна</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Период согласован</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Область сужена</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Нет ограничения области</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Вес конфликта выбран</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Останется черновиком</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Будет опубликована</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Будет снята с публикации</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Будет заархивирована</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Все бизнес-единицы</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Независимо от сегмента</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Независимо от кампании</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Все бренды</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Все продукты</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Все периоды цикла</value></data>
 </root>

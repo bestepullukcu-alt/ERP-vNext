@@ -1,29 +1,32 @@
 /**
- * MOD-0165-FU03 (WP-FREQ-B) Visit Frequency / Call-Cycle Policy — Create/Edit offcanvas editor (frontend only).
+ * MOD-0165-FU03 (WP-FREQ-F2) Visit Frequency / Call-Cycle Policy — Create/Edit editor as a SEPARATE Golden Compact page
+ * (the FREQ-B offcanvas is retired). ONE body, two modes read from the form dataset: Create (empty) and Edit
+ * (GET → fill). The FREQ-A console (index.js) navigates here ("New Policy" → /Create, row "Edit" → /Edit/{id}); this
+ * file owns the editor only.
  *
- * ONE offcanvas, two modes: "New Policy" (empty) and row "Edit" (GET → fill). The FREQ-A console (index.js) owns the
- * list, the toolbar "New" button and the row "Edit" action, and it is NOT touched — this file only listens (capture
- * phase, so it runs before the console shows the offcanvas) to learn which mode/id the user asked for, then populates
- * and submits the editor when the offcanvas opens.
+ * FIELD LOGIC IS REUSED unchanged from the offcanvas editor: targetType / frequencyType / periodType / source / the
+ * PRIORITY BANDS all come from the FU03 /contract endpoint — nothing is a hardcoded vocabulary. The band radio-cards
+ * render from contract.vocabulary.priorityBands (code + authored weight, "smaller wins"), labelled + described through
+ * L10n. The ONLY structural rule embedded here is the FrequencyType×PeriodType allow-map (a validation rule the WP
+ * enumerates, mirroring the backend), never a vocabulary list. PICKERS show NAMES, never GUIDs. The submitted payload
+ * maps one-to-one onto the CrmService Create/Update request (TenantId is never sent; PolicyCode + TargetType/TargetId
+ * are immutable on edit) — the payload contract is byte-for-byte the FREQ-B contract.
  *
- * CONTRACT-DRIVEN end to end. targetType / frequencyType / periodType / source / status / PRIORITY BANDS all come from
- * the FU03 /contract endpoint — nothing is a hardcoded vocabulary here. The priority band radio-cards render from
- * contract.vocabulary.priorityBands (code + authored weight, "smaller wins"), labelled through L10n; the mockup's
- * inverted "larger wins" numbers are never used. The ONLY structural rule embedded here is the FrequencyType×PeriodType
- * allow-map (a validation rule the WP enumerates, mirroring the backend), never a vocabulary list.
- *
- * PICKERS show NAMES, never GUIDs: each target/context entity is chosen from an existing sibling list, proxied
- * same-origin (the browser never sees a service URL or a bearer token). The submitted payload maps one-to-one onto the
- * CrmService Create/Update request (TenantId is never sent; PolicyCode + TargetType/TargetId are immutable on edit).
+ * NEW for F2 (page-only presentation): the right-hand sticky panel — a lifecycle status selector, a live "what will this
+ * policy do?" summary and a "before you save" checklist — the collapsible "where does it apply?" scope block with a chip
+ * summary + clear, brand→product narrowing, and two save buttons (activate / draft) plus edit-mode inactivate/archive.
+ * Save redirects to the list; archive uses the dedicated archive endpoint.
  */
 (function (window, document) {
     'use strict';
 
-    const OFFCANVAS = document.getElementById('offcanvasCreateEdit');
     const FORM = document.getElementById('vfpEditorForm');
-    if (!OFFCANVAS || !FORM) return;
+    if (!FORM) return;
 
     const endpoint = FORM.dataset.endpoint || '/CRM/VisitFrequencyPolicies/api';
+    const LIST_URL = '/CRM/VisitFrequencyPolicies';
+    const initialMode = (FORM.dataset.mode || 'create').toLowerCase() === 'edit' ? 'edit' : 'create';
+    const initialId = (FORM.dataset.policyId || '').trim() || null;
 
     let L = {};
     try { L = JSON.parse(document.getElementById('vfp-editor-l10n')?.textContent || '{}'); } catch (e) { L = {}; }
@@ -108,8 +111,9 @@
     let contract = null;
     let vocab = null;
     let built = false;
-    let currentMode = 'create';
-    let currentId = null;
+    let currentMode = initialMode;
+    let currentId = initialId;
+    let loadedStatus = 'draft'; // the persisted status of the record being edited (for archived read-only detection)
 
     const loadContract = async () => {
         if (contract) return contract;
@@ -151,16 +155,16 @@
             (vocab.targetTypes || []).map(code => ({ value: code, title: t(`TargetType_${code}`, humanize(code)) })),
             'vfpTargetType');
 
-        // priority band cards — CONTRACT bands (code + weight); smaller wins. Sorted by weight ascending (strongest first).
+        // priority band cards — CONTRACT bands (code + weight); smaller wins. Sorted by weight ascending (strongest
+        // first). The description is the F1 Band_{code}_Desc phrase.
         const bands = (vocab.priorityBands || []).slice().sort((a, b) => (a.value || 0) - (b.value || 0));
         renderCards(el('vfpBandCards'),
-            bands.map(b => ({ value: b.value, title: t(`Band_${b.code}`, humanize(b.code)), help: t(`BandHelp_${b.code}`, ''), weight: b.value })),
+            bands.map(b => ({ value: b.value, title: t(`Band_${b.code}`, humanize(b.code)), help: t(`Band_${b.code}_Desc`, ''), weight: b.value })),
             'vfpPriority');
 
-        // frequency + source + status vocab selects
+        // frequency + source vocab selects
         fillVocabSelect(el('vfpFrequencyType'), vocab.frequencyTypes, c => t(`Freq_${c}`, humanize(c)), t('SelectOption', '—'));
         fillVocabSelect(el('vfpSource'), vocab.sources, c => t(`Source_${c}`, humanize(c)), t('SelectOption', '—'));
-        fillVocabSelect(el('vfpStatus'), vocab.statuses, statusLabel, null);
         refreshPeriodOptions();
 
         built = true;
@@ -182,10 +186,14 @@
     const updateFreqSentence = () => {
         const count = norm(el('vfpRequiredVisitCount')?.value);
         const period = norm(el('vfpPeriodType')?.value);
+        const freq = norm(el('vfpFrequencyType')?.value);
         const box = el('vfpFreqSentence');
+        const raw = el('vfpFreqRaw');
+        if (raw) raw.textContent = (count && period) ? [freq, count, period].filter(Boolean).join(' · ') : '';
         if (!box) return;
         if (!count || !period) { box.textContent = t('FreqSentenceEmpty', '—'); return; }
-        box.textContent = `${count} ${t('PerPeriod', '/')} ${t(`Period_${period}`, humanize(period))}`;
+        const visits = t('VisitsWord', '');
+        box.textContent = `${count} ${visits} ${t('PerPeriod', '/')} ${t(`Period_${period}`, humanize(period))}`.replace(/\s+/g, ' ').trim();
     };
 
     // ── target picker (varies by target type) ──────────────────────────────────
@@ -201,7 +209,6 @@
                 <select class="vfp-select" id="vfpTargetTerNode" data-role="targetId"><option value="">${esc(t('SelectTerritoryNode', 'Select node'))}</option></select>`;
             const models = await loadOptions('territory-model');
             fillSelect(el('vfpTargetTerModel'), models, t('SelectTerritoryModel', 'Select model'));
-            // (edit restore of a territory-node target is best-effort: the node id is seeded so the payload is correct)
             if (seedId) seedSelect(el('vfpTargetTerNode'), seedId, seedName);
             return;
         }
@@ -220,6 +227,7 @@
         control.addEventListener('change', () => {
             const opt = control.selectedOptions[0];
             showPicked(picked, opt && opt.value ? opt.text : '');
+            updatePanel();
         });
         const cur = control.selectedOptions[0];
         showPicked(picked, cur && cur.value ? cur.text : '');
@@ -243,15 +251,21 @@
     };
 
     const currentTargetId = () => norm(FORM.querySelector('#vfpTargetPicker [data-role="targetId"]')?.value);
+    const currentTargetName = () => {
+        const ctrl = FORM.querySelector('#vfpTargetPicker [data-role="targetId"]');
+        if (!ctrl) return '';
+        if (ctrl.tagName === 'SELECT') { const o = ctrl.selectedOptions[0]; return o && o.value ? o.text : ''; }
+        return norm(ctrl.value);
+    };
 
-    // ── context selects (optional provenance) ──────────────────────────────────
+    // ── context selects (optional provenance / scope) ──────────────────────────
     const CONTEXT = [
-        { id: 'vfpBusinessUnit', kind: 'business-unit' },
-        { id: 'vfpSegment', kind: 'segment' },
-        { id: 'vfpCampaign', kind: 'campaign' },
-        { id: 'vfpBrand', kind: 'brand' },
-        { id: 'vfpProduct', kind: 'product' },
-        { id: 'vfpCyclePeriod', kind: 'cycle-period' }
+        { id: 'vfpBusinessUnit', kind: 'business-unit', ph: 'ScopeAllBusinessUnits' },
+        { id: 'vfpSegment', kind: 'segment', ph: 'ScopeSegmentIndependent' },
+        { id: 'vfpCampaign', kind: 'campaign', ph: 'ScopeCampaignIndependent' },
+        { id: 'vfpBrand', kind: 'brand', ph: 'ScopeAllBrands' },
+        { id: 'vfpProduct', kind: 'product', ph: 'ScopeAllProducts' },
+        { id: 'vfpCyclePeriod', kind: 'cycle-period', ph: 'ScopeAllCyclePeriods' }
     ];
     const loadContextSelects = async seeds => {
         seeds = seeds || {};
@@ -259,7 +273,7 @@
             const select = el(c.id);
             if (!select) continue;
             const options = await loadOptions(c.kind);
-            fillSelect(select, options, t('ContextNone', '— none —'));
+            fillSelect(select, options, t(c.ph, t('ContextNone', '— none —')));
             const seed = seeds[c.id];
             if (seed) seedSelect(select, seed, seeds[`${c.id}_name`]);
         }
@@ -271,6 +285,7 @@
             fillSelect(modelSel, models, t('SelectTerritoryModel', 'Select model'));
         }
         if (nodeSel && seeds.vfpTerritoryNode) seedSelect(nodeSel, seeds.vfpTerritoryNode, seeds.vfpTerritoryNode_name);
+        applyBrandProductNarrowing();
     };
     const cascadeNodes = async (modelSel, nodeSel) => {
         if (!modelSel || !nodeSel) return;
@@ -279,6 +294,191 @@
         fillSelect(nodeSel, options, t('SelectTerritoryNode', 'Select node'));
     };
     const onContextTerritoryModelChange = () => cascadeNodes(el('vfpTerritoryModel'), el('vfpTerritoryNode'));
+
+    // brand → product narrowing (mockup: product disabled until a brand is picked, "önce marka seçin")
+    const applyBrandProductNarrowing = () => {
+        const brand = el('vfpBrand');
+        const product = el('vfpProduct');
+        const hint = el('vfpProductHint');
+        if (!brand || !product) return;
+        const hasBrand = !!norm(brand.value);
+        product.disabled = !hasBrand;
+        if (!hasBrand) { product.value = ''; }
+        if (hint) hint.classList.toggle('vfp-hidden', hasBrand);
+    };
+
+    // ── collapsible scope block (chip summary + clear) ─────────────────────────
+    const SCOPE_FIELDS = [
+        { id: 'vfpBusinessUnit', label: () => t('FieldBusinessUnit', 'Business unit') },
+        { id: 'vfpTerritoryNode', label: () => t('FieldTerritory', 'Territory') },
+        { id: 'vfpSegment', label: () => t('FieldSegment', 'Segment') },
+        { id: 'vfpCampaign', label: () => t('FieldCampaign', 'Campaign') },
+        { id: 'vfpBrand', label: () => t('FieldBrand', 'Brand') },
+        { id: 'vfpProduct', label: () => t('FieldProduct', 'Product') },
+        { id: 'vfpCyclePeriod', label: () => t('FieldCyclePeriod', 'Cycle period') }
+    ];
+    const selectedScope = () => SCOPE_FIELDS.filter(f => norm(el(f.id)?.value));
+    const scopeText = f => { const s = el(f.id); const o = s?.selectedOptions?.[0]; return o && o.value ? o.text : ''; };
+    const toggleScope = force => {
+        const body = el('vfpScopeBody');
+        const btn = el('vfpScopeToggle');
+        if (!body || !btn) return;
+        const show = force != null ? force : body.classList.contains('vfp-hidden');
+        body.classList.toggle('vfp-hidden', !show);
+        btn.setAttribute('aria-expanded', String(show));
+        btn.classList.toggle('is-open', show);
+    };
+    const renderScopeChips = () => {
+        const host = el('vfpScopeChips');
+        const clear = el('vfpScopeClear');
+        if (!host) return;
+        const picked = selectedScope();
+        host.innerHTML = picked.map(f => `<span class="vfp-chip">${esc(f.label())}: ${esc(scopeText(f))}</span>`).join('');
+        if (clear) clear.classList.toggle('vfp-hidden', picked.length === 0);
+    };
+    const clearScope = () => {
+        SCOPE_FIELDS.forEach(f => { const s = el(f.id); if (s) s.value = ''; });
+        const model = el('vfpTerritoryModel'); if (model) model.value = '';
+        applyBrandProductNarrowing();
+        renderScopeChips();
+        updatePanel();
+    };
+
+    // ── lifecycle status selector (right panel) ────────────────────────────────
+    const getSelectedStatus = () => norm(checkedValue('vfpLifecycle')) || norm(el('vfpStatus')?.value) || 'draft';
+    const setLifecycle = status => {
+        const s = norm(status) || 'draft';
+        setChecked('vfpLifecycle', s);
+        if (el('vfpStatus')) el('vfpStatus').value = s;
+        updateFooter();
+        updatePanel();
+    };
+    const configureLifecycleForMode = () => {
+        // create: only draft/active are meaningful — hide inactive/archived rows. edit (non-archived): all four.
+        const rows = FORM.querySelectorAll('#vfpLifecycle .vfp-life-row');
+        rows.forEach(r => {
+            const s = r.dataset.status;
+            const hide = currentMode === 'create' && (s === 'inactive' || s === 'archived');
+            r.classList.toggle('vfp-hidden', hide);
+        });
+    };
+    const updateFooter = () => {
+        const selected = getSelectedStatus();
+        const editable = !(currentMode === 'edit' && loadedStatus === 'archived');
+        const showInactive = editable && currentMode === 'edit';
+        const showArchive = editable && currentMode === 'edit';
+        el('vfpSaveInactive')?.classList.toggle('vfp-hidden', !showInactive);
+        el('vfpArchive')?.classList.toggle('vfp-hidden', !showArchive);
+        // "armed" highlight follows the currently selected lifecycle (senkron with the radios).
+        const arm = (btn, on) => btn && btn.classList.toggle('vfp-btn-armed', on);
+        arm(el('vfpSaveActivate'), selected === 'active');
+        arm(el('vfpSaveDraft'), selected === 'draft');
+        arm(el('vfpSaveInactive'), selected === 'inactive');
+        arm(el('vfpArchive'), selected === 'archived');
+    };
+
+    // ── live summary + checklist (right panel) ─────────────────────────────────
+    const cadenceText = () => {
+        const count = norm(el('vfpRequiredVisitCount')?.value);
+        const period = norm(el('vfpPeriodType')?.value);
+        if (!count || !period) return '';
+        return `${count} ${t('VisitsWord', '')} ${t('PerPeriod', '/')} ${t(`Period_${period}`, humanize(period))}`.replace(/\s+/g, ' ').trim();
+    };
+    const validityText = () => {
+        const from = norm(el('vfpEffectiveFrom')?.value);
+        const to = norm(el('vfpEffectiveTo')?.value);
+        if (!from) return '—';
+        return `${from} → ${to || t('SummaryOpenEnded', '—')}`;
+    };
+    const weightText = () => {
+        const p = norm(checkedValue('vfpPriority'));
+        if (!p) return '—';
+        const card = FORM.querySelector(`input[name="vfpPriority"][value="${(window.CSS && CSS.escape) ? CSS.escape(p) : p}"]`)?.closest('.vfp-radio-card');
+        const title = card?.querySelector('.vfp-radio-title')?.childNodes?.[0]?.textContent;
+        return norm(title) || p;
+    };
+    const targetSummary = () => {
+        const type = checkedValue('vfpTargetType');
+        if (!type) return '—';
+        const label = t(`TargetType_${type}`, humanize(type));
+        const name = currentTargetName();
+        return name ? `${label} · ${name}` : label;
+    };
+    const scopeSummary = () => {
+        const n = selectedScope().length;
+        return n === 0 ? t('ScopeNoConstraint', 'no constraints') : `${n} ${t('ScopeConstraintUnit', 'constraints')}`;
+    };
+
+    const updateSummary = () => {
+        const name = norm(el('vfpPolicyName')?.value) || t('SummaryEmptyName', 'This policy');
+        const cadence = cadenceText();
+        const nConstraints = selectedScope().length;
+        const scopePhrase = nConstraints === 0 ? t('SummaryScopeAll', '') : scopeSummary();
+        const sentenceBox = el('vfpSummarySentence');
+        if (sentenceBox) {
+            if (cadence) {
+                const tpl = t('SummarySentenceTpl', '"{name}" — {cadence} — {scope}');
+                sentenceBox.textContent = tpl.replace('{name}', name).replace('{cadence}', cadence).replace('{scope}', scopePhrase);
+            } else {
+                sentenceBox.textContent = '';
+            }
+        }
+        const set = (id, v) => { const n = el(id); if (n) n.textContent = v || '—'; };
+        set('vfpSumTarget', targetSummary());
+        set('vfpSumFrequency', cadence);
+        set('vfpSumScope', scopeSummary());
+        set('vfpSumValidity', validityText());
+        set('vfpSumWeight', weightText());
+        set('vfpSumStatus', statusLabel(getSelectedStatus()));
+    };
+
+    const willLabel = status => ({
+        draft: t('ChkWillDraft', 'Stays draft'),
+        active: t('ChkWillActive', 'Will be published'),
+        inactive: t('ChkWillInactive', 'Will be unpublished'),
+        archived: t('ChkWillArchived', 'Will be archived')
+    }[norm(status)] || statusLabel(status));
+
+    const updateChecklist = () => {
+        const host = el('vfpChecklist');
+        const badge = el('vfpCheckBadge');
+        if (!host) return;
+        const freq = norm(el('vfpFrequencyType')?.value);
+        const count = Number(el('vfpRequiredVisitCount')?.value);
+        const period = norm(el('vfpPeriodType')?.value);
+        const targetOk = !!checkedValue('vfpTargetType') && !!currentTargetId();
+        const freqOk = !!freq && count > 0;
+        const periodOk = !!period && (!(freq && ALLOWED_PERIODS[freq]) || ALLOWED_PERIODS[freq].includes(period));
+        const weightOk = !!norm(checkedValue('vfpPriority'));
+        const nScope = selectedScope().length;
+
+        const items = [
+            { ok: targetOk, label: t('ChkTarget', 'Target selected') },
+            { ok: freqOk, label: t('ChkFrequency', 'Frequency valid') },
+            { ok: periodOk, label: t('ChkPeriod', 'Period consistent') },
+            { ok: true, neutral: true, label: nScope > 0 ? t('ChkScopeNarrowed', 'Scope narrowed') : t('ChkScopeNone', 'No scope constraint') },
+            { ok: weightOk, label: t('ChkWeight', 'Conflict weight chosen') },
+            { ok: true, neutral: true, label: willLabel(getSelectedStatus()) }
+        ];
+        host.innerHTML = items.map(it => {
+            const cls = it.neutral ? 'is-neutral' : (it.ok ? 'is-ok' : 'is-warn');
+            const icon = it.neutral ? 'bx-info-circle' : (it.ok ? 'bx-check' : 'bx-error-circle');
+            return `<li class="vfp-check ${cls}"><i class="bx ${icon}"></i><span>${esc(it.label)}</span></li>`;
+        }).join('');
+
+        const warnCount = items.filter(it => !it.neutral && !it.ok).length;
+        if (badge) {
+            badge.textContent = warnCount === 0 ? t('ChecklistReady', 'ready') : `${warnCount} ${t('ChecklistWarnWord', 'warnings')}`;
+            badge.classList.toggle('is-ready', warnCount === 0);
+            badge.classList.toggle('is-warn', warnCount > 0);
+        }
+    };
+
+    const updatePanel = () => {
+        renderScopeChips();
+        updateSummary();
+        updateChecklist();
+    };
 
     // ── validation ─────────────────────────────────────────────────────────────
     const setError = (id, message) => {
@@ -337,6 +537,9 @@
         if (source === 'segmentation' && !segmentId) { setError('vfpSegmentError', t('SegmentRequired', 'A segment is required for segmentation source')); errors.push('segment'); }
         if (freq === 'custom' && !notes) { setError('vfpNotesError', t('NotesRequired', 'A custom frequency requires notes')); errors.push('notes'); }
 
+        // opening the scope block so a hidden context error is visible
+        if (['cycle', 'campaign', 'segment'].some(e => errors.includes(e))) toggleScope(true);
+
         return errors.length === 0;
     };
 
@@ -383,12 +586,11 @@
         box.textContent = message || '';
         box.classList.toggle('is-shown', !!message);
     };
-    const setTitle = text => { const h = el('offcanvasCreateEditLabel'); if (h) h.textContent = text; };
+    const setTitle = text => { const h = el('vfpEditorTitle'); if (h) h.textContent = text; };
     const setCodeReadonly = ro => {
         const code = el('vfpPolicyCode');
         if (code) code.readOnly = ro;
         el('vfpTargetLockNote')?.classList.toggle('vfp-hidden', !ro);
-        // disable target type cards on edit (immutable)
         FORM.querySelectorAll('input[name="vfpTargetType"]').forEach(i => { i.disabled = ro; });
         el('vfpTargetPicker')?.querySelectorAll('select,input').forEach(i => { i.disabled = ro; });
     };
@@ -397,21 +599,23 @@
     const resetForCreate = async () => {
         currentMode = 'create';
         currentId = null;
+        loadedStatus = 'draft';
         setTitle(t('NewPolicy', 'New Policy'));
         setFormError('');
         clearErrors();
-        FORM.reset();
         buildOnce();
+        configureLifecycleForMode();
         setCodeReadonly(false);
         if (el('vfpPolicyCode')) el('vfpPolicyCode').value = suggestCode();
         if (el('vfpEffectiveFrom')) el('vfpEffectiveFrom').value = new Date().toISOString().slice(0, 10);
-        if (el('vfpStatus') && (vocab.statuses || []).includes('draft')) el('vfpStatus').value = 'draft';
         // default target type = first card
         const firstTarget = (vocab.targetTypes || [])[0];
         if (firstTarget) { setChecked('vfpTargetType', firstTarget); await renderTargetPicker(firstTarget); }
         await loadContextSelects({});
         refreshPeriodOptions();
         showPicked(el('vfpTargetPicked'), '');
+        setLifecycle((vocab.statuses || []).includes('draft') ? 'draft' : getSelectedStatus());
+        updatePanel();
     };
 
     const loadForEdit = async id => {
@@ -420,11 +624,13 @@
         setFormError('');
         clearErrors();
         buildOnce();
+        configureLifecycleForMode();
         let p;
         try { p = await getJson(`/visit-frequency-policies/${id}`); }
         catch (e) { setFormError(e.message || t('ErrorState', 'Error')); return; }
         if (!p) { setFormError(t('ErrorState', 'Error')); return; }
 
+        loadedStatus = norm(p.status) || 'draft';
         setTitle(p.policyName || p.policyCode || t('Edit', 'Edit'));
         el('vfpPolicyCode').value = p.policyCode || '';
         el('vfpPolicyName').value = p.policyName || '';
@@ -434,13 +640,11 @@
         el('vfpRequiredVisitCount').value = p.requiredVisitCount ?? '';
         el('vfpPeriodType').value = p.periodType || '';
         el('vfpSource').value = p.source || '';
-        if (el('vfpStatus')) el('vfpStatus').value = p.status || 'draft';
         el('vfpEffectiveFrom').value = (p.effectiveFrom || '').slice(0, 10);
         el('vfpEffectiveTo').value = (p.effectiveTo || '').slice(0, 10);
         el('vfpNotes').value = p.notes || '';
         setChecked('vfpPriority', String(p.priority));
         updateFreqSentence();
-        toggleSourceNote();
 
         setChecked('vfpTargetType', p.targetType);
         await renderTargetPicker(p.targetType, p.targetId, null);
@@ -450,21 +654,39 @@
             vfpProduct: p.productId, vfpCyclePeriod: p.cyclePeriodId,
             vfpTerritoryNode: p.territoryNodeId
         });
+        setLifecycle(loadedStatus);
         // Lock code + target AFTER the pickers are (re)built so the freshly rendered target controls are disabled too.
         setCodeReadonly(true);
+        // any scope constraint present → open the block so it is visible
+        if (selectedScope().length > 0) toggleScope(true);
+        applyReadOnlyIfArchived();
+        updatePanel();
     };
 
-    const toggleSourceNote = () => {
-        const note = el('vfpSourceNote');
-        if (note) note.classList.toggle('vfp-hidden', false); // the "does not affect frequency" note always shows
+    const applyReadOnlyIfArchived = () => {
+        if (!(currentMode === 'edit' && loadedStatus === 'archived')) return;
+        el('vfpArchivedNote')?.classList.remove('vfp-hidden');
+        FORM.querySelectorAll('input, select, textarea, button').forEach(c => { c.disabled = true; });
+        el('vfpSaveActivate')?.classList.add('vfp-hidden');
+        el('vfpSaveDraft')?.classList.add('vfp-hidden');
+        el('vfpSaveInactive')?.classList.add('vfp-hidden');
+        el('vfpArchive')?.classList.add('vfp-hidden');
     };
 
-    // ── submit ───────────────────────────────────────────────────────────────────
-    const submit = async () => {
+    // ── submit + archive ─────────────────────────────────────────────────────────
+    let busy = false;
+    const setBusy = on => {
+        busy = on;
+        ['vfpSaveActivate', 'vfpSaveDraft', 'vfpSaveInactive', 'vfpArchive'].forEach(id => { const b = el(id); if (b) b.disabled = on; });
+    };
+    const redirectToList = () => { window.location.href = LIST_URL; };
+
+    const submit = async status => {
+        if (busy) return;
+        setLifecycle(status);
         if (!validate()) { setFormError(t('FixErrors', 'Please fix the highlighted fields.')); return; }
         setFormError('');
-        const btn = el('vfpSaveBtn');
-        if (btn) btn.disabled = true;
+        setBusy(true);
         const payload = buildPayload();
         const isEdit = currentMode === 'edit';
         const path = isEdit ? `/visit-frequency-policies/${currentId}` : '/visit-frequency-policies';
@@ -477,45 +699,70 @@
             });
             await envelope(response);
             window.showToast?.(isEdit ? t('RecordUpdated', 'Saved') : t('RecordCreated', 'Created'), 'success');
-            window.bootstrap?.Offcanvas.getOrCreateInstance(OFFCANVAS).hide();
-            // FREQ-A owns the list; a reload is the simplest way to reflect the change without touching index.js.
-            setTimeout(() => window.location.reload(), 350);
+            setTimeout(redirectToList, 350);
         } catch (e) {
             setFormError(e.message || t('ErrorState', 'Error'));
-            if (btn) btn.disabled = false;
+            setBusy(false);
         }
     };
 
-    // ── wiring ────────────────────────────────────────────────────────────────────
-    // Capture phase so we learn the intended mode/id BEFORE the FREQ-A console shows the offcanvas.
-    let pending = { mode: 'create', id: null };
-    document.addEventListener('click', event => {
-        const edit = event.target.closest('.js-vfp-edit');
-        if (edit) { pending = { mode: 'edit', id: edit.dataset.id }; return; }
-        const addNew = event.target.closest('.add-new, [data-vfp-new]');
-        if (addNew) { pending = { mode: 'create', id: null }; }
-    }, true);
+    const archive = () => {
+        if (busy || currentMode !== 'edit' || !currentId) return;
+        const run = async () => {
+            setBusy(true);
+            try {
+                await envelope(await fetch(`${endpoint}/visit-frequency-policies/${currentId}/archive`, {
+                    method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' }
+                }));
+                window.showToast?.(t('RecordArchived', 'Archived'), 'success');
+                setTimeout(redirectToList, 350);
+            } catch (e) {
+                setFormError(e.message || t('ErrorState', 'Error'));
+                setBusy(false);
+            }
+        };
+        if (window.showConfirm) {
+            window.showConfirm(t('ArchiveConfirm', ''), run, { type: 'warning', confirmButtonText: t('ArchiveAction', 'Archive') });
+        } else { run(); }
+    };
 
-    OFFCANVAS.addEventListener('show.bs.offcanvas', async () => {
+    // ── wiring ────────────────────────────────────────────────────────────────────
+    FORM.addEventListener('change', event => {
+        if (event.target.id === 'vfpFrequencyType') { refreshPeriodOptions(); updatePanel(); return; }
+        if (event.target.id === 'vfpPeriodType') { updateFreqSentence(); updatePanel(); return; }
+        if (event.target.id === 'vfpTerritoryModel') { void onContextTerritoryModelChange(); return; }
+        if (event.target.id === 'vfpTargetTerModel') { void cascadeNodes(el('vfpTargetTerModel'), el('vfpTargetTerNode')); return; }
+        if (event.target.id === 'vfpBrand') { applyBrandProductNarrowing(); updatePanel(); return; }
+        if (event.target.name === 'vfpTargetType') { void renderTargetPicker(event.target.value); showPicked(el('vfpTargetPicked'), ''); updatePanel(); return; }
+        if (event.target.name === 'vfpLifecycle') { setLifecycle(event.target.value); return; }
+        if (event.target.name === 'vfpPriority') { updatePanel(); return; }
+        if (SCOPE_FIELDS.some(f => f.id === event.target.id) || event.target.id === 'vfpTerritoryNode') { updatePanel(); return; }
+    });
+    FORM.addEventListener('input', event => {
+        if (event.target.id === 'vfpRequiredVisitCount') { updateFreqSentence(); updatePanel(); return; }
+        if (event.target.id === 'vfpPolicyName') { updateSummary(); return; }
+        if (event.target.id === 'vfpEffectiveFrom' || event.target.id === 'vfpEffectiveTo') { updateSummary(); return; }
+        if (event.target.id === 'vfpNotes') { updateChecklist(); return; }
+    });
+
+    el('vfpScopeToggle')?.addEventListener('click', () => toggleScope());
+    el('vfpScopeClear')?.addEventListener('click', () => clearScope());
+    el('vfpSaveActivate')?.addEventListener('click', e => { e.preventDefault(); void submit('active'); });
+    el('vfpSaveDraft')?.addEventListener('click', e => { e.preventDefault(); void submit('draft'); });
+    el('vfpSaveInactive')?.addEventListener('click', e => { e.preventDefault(); void submit('inactive'); });
+    el('vfpArchive')?.addEventListener('click', e => { e.preventDefault(); archive(); });
+    FORM.addEventListener('submit', e => { e.preventDefault(); void submit(getSelectedStatus() === 'draft' ? 'draft' : 'active'); });
+
+    // ── page init ───────────────────────────────────────────────────────────────
+    const init = async () => {
         try {
             await loadContract();
-            if (pending.mode === 'edit' && pending.id) await loadForEdit(pending.id);
+            if (currentMode === 'edit' && currentId) await loadForEdit(currentId);
             else await resetForCreate();
         } catch (e) {
             setFormError(e.message || t('ContractUnavailable', 'The editor could not be prepared.'));
         }
-    });
-
-    FORM.addEventListener('change', event => {
-        if (event.target.id === 'vfpFrequencyType') { refreshPeriodOptions(); return; }
-        if (event.target.id === 'vfpPeriodType') { updateFreqSentence(); return; }
-        if (event.target.id === 'vfpTerritoryModel') { void onContextTerritoryModelChange(); return; }
-        if (event.target.id === 'vfpTargetTerModel') { void cascadeNodes(el('vfpTargetTerModel'), el('vfpTargetTerNode')); return; }
-        if (event.target.name === 'vfpTargetType') { void renderTargetPicker(event.target.value); showPicked(el('vfpTargetPicked'), ''); return; }
-    });
-    FORM.addEventListener('input', event => {
-        if (event.target.id === 'vfpRequiredVisitCount') updateFreqSentence();
-    });
-    el('vfpSaveBtn')?.addEventListener('click', event => { event.preventDefault(); void submit(); });
-    FORM.addEventListener('submit', event => { event.preventDefault(); void submit(); });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
 })(window, document);

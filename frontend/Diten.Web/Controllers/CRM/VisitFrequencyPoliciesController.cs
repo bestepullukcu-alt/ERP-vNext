@@ -65,6 +65,18 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public IActionResult Index() =>
         RequirePage(ReadCanonical, ReadFallback) ?? View($"{ViewRoot}/Index.cshtml");
 
+    // WP-FREQ-F2 — the create/edit editor is a SEPARATE Golden Compact page (the FREQ-B offcanvas is retired). Both are
+    // GET shells the reused form.js drives (it still POSTs the create/update payload to the api proxies below — the page
+    // change is presentation only). Writes are gated on the manage permission (canonical OR the documented fallback);
+    // an unauthorized user gets 403 (no page skeleton — UAS-001), exactly like the Index read gate.
+    [HttpGet("Create")]
+    public IActionResult Create() =>
+        RequirePage(ManageCanonical, ManageFallback) ?? View($"{ViewRoot}/Create.cshtml");
+
+    [HttpGet("Edit/{policyId:guid}")]
+    public IActionResult Edit(Guid policyId) =>
+        RequirePage(ManageCanonical, ManageFallback) ?? View($"{ViewRoot}/Edit.cshtml", policyId);
+
     // ---------------- Same-origin browser proxy ----------------
 
     [HttpGet("api/visit-frequency-policies")]

@@ -325,13 +325,9 @@
         window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
     };
 
-    // ── offcanvas placeholders (FREQ-B/C fill them) ──────────────────────────
-    const openCreateEdit = (row) => {
-        const label = document.getElementById('offcanvasCreateEditLabel');
-        if (label) label.textContent = row ? (row.policyName || L.Edit || '') : (L.NewPolicy || '');
-        const el = document.getElementById('offcanvasCreateEdit');
-        if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
-    };
+    // ── create/edit navigation (WP-FREQ-F2: the editor is a SEPARATE page; the offcanvas is retired) ──────────
+    const goCreate = () => { window.location.href = '/CRM/VisitFrequencyPolicies/Create'; };
+    const goEdit = id => { if (id) window.location.href = `/CRM/VisitFrequencyPolicies/Edit/${id}`; };
     const openDetails = id => {
         const row = rowById[id];
         if (!row) return;
@@ -445,7 +441,7 @@
             bindInlineFilterA11y(api);
             void setupFilters(api);
             if (!addNewBound) {
-                nodeContainer(api).querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); openCreateEdit(null); });
+                nodeContainer(api).querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); goCreate(); });
                 addNewBound = true;
             }
             setTimeout(() => { saveFilterArmed = true; }, 0);
@@ -511,7 +507,7 @@
         if (details) { event.preventDefault(); openDetails(details.dataset.id); return; }
 
         const edit = event.target.closest('.js-vfp-edit');
-        if (edit) { event.preventDefault(); openCreateEdit(rowById[edit.dataset.id]); return; }
+        if (edit) { event.preventDefault(); goEdit(edit.dataset.id); return; }
 
         const archive = event.target.closest('.js-vfp-archive');
         if (archive) {

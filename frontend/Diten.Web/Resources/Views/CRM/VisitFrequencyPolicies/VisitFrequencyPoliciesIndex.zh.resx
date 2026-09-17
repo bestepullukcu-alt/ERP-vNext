@@ -168,4 +168,63 @@
   <data name="Source_business-rule" xml:space="preserve"><value>自动业务规则</value></data>
   <data name="Source_manager-override" xml:space="preserve"><value>现场经理</value></data>
   <data name="Source_other" xml:space="preserve"><value>其他</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>编辑政策</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>此政策已归档，为只读，无法编辑。</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>内部备注 — 规划引擎不会读取。</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>列表来自系统定义</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>从列表中搜索并选择</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>适用范围？</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>可选 — 留空的字段表示“全部”</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>组织</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>请先选择品牌</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>清除范围</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>解析后的频率</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>若结束日期留空，政策将无限期有效；发生冲突时，同一目标中较新的生效日期优先。</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>发生冲突时</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>如果另一条规则也适用于同一目标，此选择决定哪条胜出。</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>此规则的权重</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>此规则来自何处？</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>不纳入规划</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>纳入规划</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>暂时停用</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>只读，未删除</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>没有删除。关闭通过归档完成；记录在历史中保持可读，且不会被规划引擎评估。</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>此政策将做什么？</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>保存后</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>保存前</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>保存并激活</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存为草稿</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>取消发布</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>归档</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>次访问</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>无限制</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>项限制</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" 的目标将按 {cadence} 安排 — {scope}。</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>适用于全部范围</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>此政策</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>就绪</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>条警告</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>已选择目标</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>频率有效</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>周期一致</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>范围已缩小</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>无范围限制</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>已选择冲突权重</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>将保持草稿</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>将被发布</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>将取消发布</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>将被归档</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>所有业务单元</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>与细分无关</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>与活动无关</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>所有品牌</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>所有产品</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>所有周期段</value></data>
 </root>

@@ -168,4 +168,63 @@
   <data name="Source_business-rule" xml:space="preserve"><value>Otomatik iş kuralı</value></data>
   <data name="Source_manager-override" xml:space="preserve"><value>Saha yöneticisi</value></data>
   <data name="Source_other" xml:space="preserve"><value>Diğer</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Politikayı Düzenle</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Listeye dön</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Arşivlenmiş politika salt-okunurdur; düzenlenemez.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Dahili not — planlama motoru okumaz.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Listeler sistem tanımlarından gelir</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Listeden ara ve seç</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Nerede geçerli olsun?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>opsiyonel — boş bırakılan her alan “tümü” demektir</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Organizasyon</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Dönem</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Önce marka seçin</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Kapsamı temizle</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Çözülen cadence</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Bitiş boş bırakılırsa politika süresiz geçerlidir; aynı hedefe daha yeni bir başlangıç tarihi çakışmada öne geçer.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>Çakışma olursa</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Aynı hedefe başka bir kural da denk gelirse hangisinin kazanacağını bu seçim belirler.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Bu kuralın ağırlığı</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>Bu kural nereden geliyor?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>plana girmez</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>plana giriyor</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>şimdilik durduruldu</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>okunur, silinmez</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Silme yok. Kapatma Archive ile yapılır; kayıt geçmişte okunur kalır ve planlama motoru tarafından değerlendirilmez.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Bu politika ne yapacak?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>Kaydedilince</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Kaydetmeden önce</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Kaydet ve aktive et</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslak olarak kaydet</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Yayından kaldır</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>ziyaret</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>kısıt yok</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>kısıt</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" hedeflerine {cadence} planlanacak — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>tüm kapsamda</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Bu politika</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>hazır</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>uyarı</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Hedef seçildi</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Frekans geçerli</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Dönem tutarlı</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Kapsam daraltıldı</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Kapsam kısıtı yok</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Çakışma ağırlığı seçildi</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Taslak olarak kalacak</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Yayına alınacak</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Yayından kaldırılacak</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Arşivlenecek</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Tüm iş birimleri</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Segmentten bağımsız</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Kampanyadan bağımsız</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Tüm markalar</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Tüm ürünler</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Tüm cycle dönemleri</value></data>
 </root>

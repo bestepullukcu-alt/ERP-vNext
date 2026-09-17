@@ -1,0 +1,390 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* WP-FREQ-F2 — the create/edit editor as a SEPARATE full Golden Compact page (the FREQ-B offcanvas is retired). ONE
+   body, two modes: Create (empty) and Edit (form.js GET → fill). The reused form.js (contract-driven target/frequency/
+   period/source + the 5 priority bands, entity pickers, cadence, all validation, create/update payload) drives this DOM
+   exactly as it drove the offcanvas — only the layout + the right-hand lifecycle/summary/checklist panel are new. The
+   editor is scoped under `.vfp-create-scope` so the mockup palette never leaks; segment-create.css is the reference
+   pattern, never edited. Vocabulary (target/frequency/period/source/status) AND the bands come from /contract — nothing
+   is a hardcoded vocabulary; only the closed lifecycle statuses + the band CODE→label map are shipped as strings. *@
+
+@{
+    var mode = (ViewData["Mode"] as string) ?? "create";
+    var policyId = ViewData["PolicyId"] as string;
+    var isEdit = string.Equals(mode, "edit", StringComparison.OrdinalIgnoreCase);
+
+    // Band DISPLAY labels + descriptions keyed by the contract band CODE (structural, stable). The bands + their weights
+    // still arrive from /contract at runtime; this only translates a known code to a phrase. Dictionary keys are NOT
+    // camelCased by Json.Serialize, so the PascalCase keys form.js reads survive as authored.
+    var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+    var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
+
+    var l10n = new Dictionary<string, object>
+    {
+        ["NewPolicy"] = Localizer["NewPolicy"].Value,
+        ["Edit"] = SharedLocalizer["EditRecord"].Value,
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["RecordCreated"] = SharedLocalizer["RecordCreated"].Value,
+        ["RecordUpdated"] = SharedLocalizer["RecordUpdated"].Value,
+        ["RecordArchived"] = Localizer["RecordArchived"].Value,
+        ["ArchiveConfirm"] = Localizer["ArchiveConfirm"].Value,
+        ["SelectOption"] = Localizer["SelectOption"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
+        ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
+        ["Selected"] = Localizer["Selected"].Value,
+        ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        ["FreqSentenceEmpty"] = Localizer["FreqSentenceEmpty"].Value,
+        ["Required"] = Localizer["Required"].Value,
+        ["TargetRequired"] = Localizer["TargetRequired"].Value,
+        ["TargetIdInvalid"] = Localizer["TargetIdInvalid"].Value,
+        ["CountPositive"] = Localizer["CountPositive"].Value,
+        ["PeriodComboInvalid"] = Localizer["PeriodComboInvalid"].Value,
+        ["BandRequired"] = Localizer["BandRequired"].Value,
+        ["EffectiveOrder"] = Localizer["EffectiveOrder"].Value,
+        ["CycleRequired"] = Localizer["CycleRequired"].Value,
+        ["CampaignRequired"] = Localizer["CampaignRequired"].Value,
+        ["SegmentRequired"] = Localizer["SegmentRequired"].Value,
+        ["NotesRequired"] = Localizer["NotesRequired"].Value,
+        ["FixErrors"] = Localizer["FixErrors"].Value,
+        ["ContractUnavailable"] = Localizer["ContractUnavailable"].Value,
+        ["VisitsWord"] = Localizer["VisitsWord"].Value,
+        ["FreqResolvedLabel"] = Localizer["FreqResolvedLabel"].Value,
+        // scope chip summary + per-select "all / independent" placeholders
+        ["ScopeNoConstraint"] = Localizer["ScopeNoConstraint"].Value,
+        ["ScopeConstraintUnit"] = Localizer["ScopeConstraintUnit"].Value,
+        ["ScopePickBrandFirst"] = Localizer["ScopePickBrandFirst"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["ScopeAllBusinessUnits"] = Localizer["ScopeAllBusinessUnits"].Value,
+        ["ScopeSegmentIndependent"] = Localizer["ScopeSegmentIndependent"].Value,
+        ["ScopeCampaignIndependent"] = Localizer["ScopeCampaignIndependent"].Value,
+        ["ScopeAllBrands"] = Localizer["ScopeAllBrands"].Value,
+        ["ScopeAllProducts"] = Localizer["ScopeAllProducts"].Value,
+        ["ScopeAllCyclePeriods"] = Localizer["ScopeAllCyclePeriods"].Value,
+        // scope chip field labels (reused for the chip "label: value")
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        // right panel — summary
+        ["SummarySentenceTpl"] = Localizer["SummarySentenceTpl"].Value,
+        ["SummaryScopeAll"] = Localizer["SummaryScopeAll"].Value,
+        ["SummaryEmptyName"] = Localizer["SummaryEmptyName"].Value,
+        ["SummaryOpenEnded"] = Localizer["ValidityOpenEnded"].Value,
+        // right panel — checklist
+        ["ChecklistReady"] = Localizer["ChecklistReady"].Value,
+        ["ChecklistWarnWord"] = Localizer["ChecklistWarnWord"].Value,
+        ["ChkTarget"] = Localizer["ChkTarget"].Value,
+        ["ChkFrequency"] = Localizer["ChkFrequency"].Value,
+        ["ChkPeriod"] = Localizer["ChkPeriod"].Value,
+        ["ChkScopeNarrowed"] = Localizer["ChkScopeNarrowed"].Value,
+        ["ChkScopeNone"] = Localizer["ChkScopeNone"].Value,
+        ["ChkWeight"] = Localizer["ChkWeight"].Value,
+        ["ChkWillDraft"] = Localizer["ChkWillDraft"].Value,
+        ["ChkWillActive"] = Localizer["ChkWillActive"].Value,
+        ["ChkWillInactive"] = Localizer["ChkWillInactive"].Value,
+        ["ChkWillArchived"] = Localizer["ChkWillArchived"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    foreach (var code in bandCodes)
+    {
+        l10n[$"Band_{code}"] = Localizer[$"Band_{code}"].Value;
+        l10n[$"Band_{code}_Desc"] = Localizer[$"Band_{code}_Desc"].Value;
+    }
+    foreach (var code in periodCodes)
+    {
+        l10n[$"Period_{code}"] = Localizer[$"Period_{code}"].Value;
+    }
+    foreach (var code in sourceCodes)
+    {
+        l10n[$"Source_{code}"] = Localizer[$"Source_{code}"].Value;
+    }
+}
+
+<div class="vfp-create-scope vfp-editor-page">
+    <div class="vfp-editor-head">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/CRM/VisitFrequencyPolicies">@Localizer["PoliciesTitle"]</a></li>
+                    <li class="breadcrumb-item active text-primary">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</li>
+                </ol>
+            </nav>
+            <h5 class="mb-0" id="vfpEditorTitle">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</h5>
+        </div>
+        <a href="/CRM/VisitFrequencyPolicies" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+    </div>
+
+    <div class="vfp-archived-note vfp-hidden" id="vfpArchivedNote" role="alert">
+        <i class="bx bx-lock-alt me-1"></i>@Localizer["ArchivedReadonly"]
+    </div>
+
+    <form id="vfpEditorForm" data-endpoint="/CRM/VisitFrequencyPolicies/api"
+          data-mode="@(isEdit ? "edit" : "create")" data-policy-id="@(policyId ?? string.Empty)" novalidate>
+        <div id="vfpFormError" class="vfp-form-error" role="alert"></div>
+
+        <div class="vfp-editor-layout">
+            @* ───────────────────────── LEFT: the 5 form sections ───────────────────────── *@
+            <div class="vfp-editor-main">
+
+                @* 01 — Identity (code / name / description / internal notes) *@
+                <section class="vfp-section">
+                    <div class="vfp-section-head"><span class="vfp-section-no">01</span><span class="vfp-section-title">@Localizer["EditorSectionIdentity"]</span></div>
+                    <p class="vfp-section-help">@Localizer["EditorHelpIdentity"]</p>
+                    <div class="vfp-grid">
+                        <div>
+                            <label class="vfp-label" for="vfpPolicyCode">@Localizer["FieldPolicyCode"] <span class="vfp-req">*</span></label>
+                            <input type="text" class="vfp-input" id="vfpPolicyCode" autocomplete="off">
+                            <div class="vfp-error" id="vfpPolicyCodeError"></div>
+                            <div class="vfp-help vfp-hidden" id="vfpTargetLockNote">@Localizer["TargetLockNote"]</div>
+                        </div>
+                        <div>
+                            <label class="vfp-label" for="vfpPolicyName">@Localizer["FieldPolicyName"] <span class="vfp-req">*</span></label>
+                            <input type="text" class="vfp-input" id="vfpPolicyName" autocomplete="off">
+                            <div class="vfp-error" id="vfpPolicyNameError"></div>
+                        </div>
+                        <div class="vfp-field-full">
+                            <label class="vfp-label" for="vfpDescription">@Localizer["FieldDescription"]</label>
+                            <textarea class="vfp-textarea" id="vfpDescription" rows="2"></textarea>
+                        </div>
+                        <div class="vfp-field-full">
+                            <label class="vfp-label" for="vfpNotes">@Localizer["FieldNotes"]</label>
+                            <textarea class="vfp-textarea" id="vfpNotes" rows="2"></textarea>
+                            <div class="vfp-help">@Localizer["NotesHelp"]</div>
+                            <div class="vfp-error" id="vfpNotesError"></div>
+                        </div>
+                    </div>
+                </section>
+
+                @* 02 — Target (who it applies to) + collapsible "where does it apply?" scope *@
+                <section class="vfp-section">
+                    <div class="vfp-section-head">
+                        <span class="vfp-section-no">02</span>
+                        <span class="vfp-section-title">@Localizer["EditorSectionTarget"]</span>
+                        <span class="vfp-section-aside">@Localizer["TargetListsNote"]</span>
+                    </div>
+                    <p class="vfp-section-help">@Localizer["EditorHelpTarget"]</p>
+                    <label class="vfp-label">@Localizer["FieldTargetType"] <span class="vfp-req">*</span></label>
+                    <div class="vfp-cardgrid" id="vfpTargetTypeCards"></div>
+                    <label class="vfp-label mt-3" for="vfpTargetPicker">@Localizer["FieldTarget"] <span class="vfp-req">*</span></label>
+                    <div class="vfp-help mb-1">@Localizer["TargetPickHint"]</div>
+                    <div id="vfpTargetPicker"></div>
+                    <div class="vfp-picked" id="vfpTargetPicked"></div>
+                    <div class="vfp-error" id="vfpTargetError"></div>
+
+                    <div class="vfp-scope">
+                        <button type="button" class="vfp-scope-toggle" id="vfpScopeToggle" aria-expanded="false" aria-controls="vfpScopeBody">
+                            <i class="bx bx-chevron-right vfp-scope-caret"></i>
+                            <span class="vfp-scope-toggle-label">@Localizer["ScopeToggle"]</span>
+                            <span class="vfp-scope-hint">@Localizer["ScopeOptionalNote"]</span>
+                        </button>
+                        <div class="vfp-scope-body vfp-hidden" id="vfpScopeBody">
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupOrg"]</div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="vfp-label" for="vfpBusinessUnit">@Localizer["FieldBusinessUnit"]</label>
+                                        <select class="vfp-select" id="vfpBusinessUnit"></select>
+                                    </div>
+                                    <div>
+                                        <label class="vfp-label" for="vfpTerritoryModel">@Localizer["FieldTerritory"]</label>
+                                        <select class="vfp-select mb-2" id="vfpTerritoryModel"></select>
+                                        <select class="vfp-select" id="vfpTerritoryNode"></select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupScope"]</div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="vfp-label" for="vfpSegment">@Localizer["FieldSegment"]</label>
+                                        <select class="vfp-select" id="vfpSegment"></select>
+                                        <div class="vfp-error" id="vfpSegmentError"></div>
+                                    </div>
+                                    <div>
+                                        <label class="vfp-label" for="vfpCampaign">@Localizer["FieldCampaign"]</label>
+                                        <select class="vfp-select" id="vfpCampaign"></select>
+                                        <div class="vfp-error" id="vfpCampaignError"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupProduct"]</div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="vfp-label" for="vfpBrand">@Localizer["FieldBrand"]</label>
+                                        <select class="vfp-select" id="vfpBrand"></select>
+                                    </div>
+                                    <div>
+                                        <label class="vfp-label" for="vfpProduct">@Localizer["FieldProduct"]</label>
+                                        <select class="vfp-select" id="vfpProduct" disabled></select>
+                                        <div class="vfp-help vfp-product-hint" id="vfpProductHint">@Localizer["ScopePickBrandFirst"]</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-group">
+                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupPeriod"]</div>
+                                <div class="vfp-grid">
+                                    <div>
+                                        <label class="vfp-label" for="vfpCyclePeriod">@Localizer["FieldCyclePeriod"]</label>
+                                        <select class="vfp-select" id="vfpCyclePeriod"></select>
+                                        <div class="vfp-error" id="vfpCyclePeriodError"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vfp-scope-footer">
+                                <div class="vfp-scope-chips" id="vfpScopeChips"></div>
+                                <button type="button" class="vfp-scope-clear vfp-hidden" id="vfpScopeClear">@Localizer["ScopeClear"]</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                @* 03 — Frequency (the actual value) *@
+                <section class="vfp-section">
+                    <div class="vfp-section-head"><span class="vfp-section-no">03</span><span class="vfp-section-title">@Localizer["EditorSectionFrequency"]</span></div>
+                    <p class="vfp-section-help">@Localizer["EditorHelpFrequency"]</p>
+                    <div class="vfp-grid vfp-grid-3">
+                        <div>
+                            <label class="vfp-label" for="vfpFrequencyType">@Localizer["FieldFrequencyType"] <span class="vfp-req">*</span></label>
+                            <select class="vfp-select" id="vfpFrequencyType"></select>
+                            <div class="vfp-error" id="vfpFreqError"></div>
+                        </div>
+                        <div>
+                            <label class="vfp-label" for="vfpRequiredVisitCount">@Localizer["FieldRequiredVisitCount"] <span class="vfp-req">*</span></label>
+                            <input type="number" min="1" step="1" class="vfp-input" id="vfpRequiredVisitCount">
+                            <div class="vfp-error" id="vfpCountError"></div>
+                        </div>
+                        <div>
+                            <label class="vfp-label" for="vfpPeriodType">@Localizer["FieldPeriodType"] <span class="vfp-req">*</span></label>
+                            <select class="vfp-select" id="vfpPeriodType"></select>
+                            <div class="vfp-error" id="vfpPeriodError"></div>
+                        </div>
+                    </div>
+                    <div class="vfp-reads-as">
+                        <div class="vfp-reads-as-label">@Localizer["FreqResolvedLabel"]</div>
+                        <div class="vfp-reads-as-row">
+                            <div class="vfp-reads-as-text" id="vfpFreqSentence">@Localizer["FreqSentenceEmpty"]</div>
+                            <div class="vfp-reads-as-raw" id="vfpFreqRaw"></div>
+                        </div>
+                    </div>
+                </section>
+
+                @* 04 — Effective window *@
+                <section class="vfp-section">
+                    <div class="vfp-section-head"><span class="vfp-section-no">04</span><span class="vfp-section-title">@Localizer["EditorSectionEffective"]</span></div>
+                    <p class="vfp-section-help">@Localizer["EditorHelpEffective"]</p>
+                    <div class="vfp-grid">
+                        <div>
+                            <label class="vfp-label" for="vfpEffectiveFrom">@Localizer["FieldEffectiveFrom"] <span class="vfp-req">*</span></label>
+                            <input type="date" class="vfp-input" id="vfpEffectiveFrom">
+                        </div>
+                        <div>
+                            <label class="vfp-label" for="vfpEffectiveTo">@Localizer["FieldEffectiveTo"]</label>
+                            <input type="date" class="vfp-input" id="vfpEffectiveTo" placeholder="@Localizer["ValidityOpenEnded"]">
+                        </div>
+                    </div>
+                    <div class="vfp-error" id="vfpEffectiveError"></div>
+                    <div class="vfp-inline-note vfp-inline-note--muted">@Localizer["EffectiveNote"]</div>
+                </section>
+
+                @* 05 — Conflict priority (contract bands + source) *@
+                <section class="vfp-section">
+                    <div class="vfp-section-head"><span class="vfp-section-no">05</span><span class="vfp-section-title">@Localizer["EditorSectionConflict"]</span></div>
+                    <p class="vfp-section-help">@Localizer["ConflictIntro"]</p>
+                    <label class="vfp-label">@Localizer["ConflictWeightLabel"] <span class="vfp-req">*</span></label>
+                    <div class="vfp-cardgrid" id="vfpBandCards"></div>
+                    <div class="vfp-error" id="vfpPriorityError"></div>
+                    <div class="mt-3">
+                        <label class="vfp-label" for="vfpSource">@Localizer["ConflictSourceLabel"] <span class="vfp-req">*</span></label>
+                        <select class="vfp-select" id="vfpSource"></select>
+                        <div class="vfp-error" id="vfpSourceError"></div>
+                        <div class="vfp-inline-note" id="vfpSourceNote">@Localizer["SourceNote"]</div>
+                    </div>
+                </section>
+            </div>
+
+            @* ───────────────────────── RIGHT: sticky lifecycle / summary / checklist ───────────────────────── *@
+            <aside class="vfp-editor-side">
+                <div class="vfp-side-sticky">
+                    @* Lifecycle status selector *@
+                    <div class="vfp-side-card">
+                        <div class="vfp-side-title">@Localizer["LifecycleTitle"]</div>
+                        <div class="vfp-lifecycle" id="vfpLifecycle">
+                            <label class="vfp-life-row" data-status="draft">
+                                <input type="radio" name="vfpLifecycle" value="draft">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_draft"]</span><span class="vfp-life-help">@Localizer["LifecycleDraftHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="active">
+                                <input type="radio" name="vfpLifecycle" value="active">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_active"]</span><span class="vfp-life-help">@Localizer["LifecycleActiveHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="inactive">
+                                <input type="radio" name="vfpLifecycle" value="inactive">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_inactive"]</span><span class="vfp-life-help">@Localizer["LifecycleInactiveHelp"]</span></span>
+                            </label>
+                            <label class="vfp-life-row" data-status="archived">
+                                <input type="radio" name="vfpLifecycle" value="archived">
+                                <span class="vfp-life-dot"></span>
+                                <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_archived"]</span><span class="vfp-life-help">@Localizer["LifecycleArchivedHelp"]</span></span>
+                            </label>
+                        </div>
+                        <div class="vfp-life-note">@Localizer["LifecycleNote"]</div>
+                        <input type="hidden" id="vfpStatus" value="draft">
+                    </div>
+
+                    @* Live "what will this policy do" summary *@
+                    <div class="vfp-side-card">
+                        <div class="vfp-side-title">@Localizer["SummaryTitle"]</div>
+                        <p class="vfp-summary-sentence" id="vfpSummarySentence"></p>
+                        <dl class="vfp-summary-kv">
+                            <dt>@Localizer["Target"]</dt><dd id="vfpSumTarget">—</dd>
+                            <dt>@Localizer["Frequency"]</dt><dd id="vfpSumFrequency">—</dd>
+                            <dt>@Localizer["Scope"]</dt><dd id="vfpSumScope">—</dd>
+                            <dt>@Localizer["Validity"]</dt><dd id="vfpSumValidity">—</dd>
+                            <dt>@Localizer["Weight"]</dt><dd id="vfpSumWeight">—</dd>
+                            <dt>@Localizer["SummaryOnSaveLabel"]</dt><dd id="vfpSumStatus">—</dd>
+                        </dl>
+                    </div>
+
+                    @* Before-you-save checklist *@
+                    <div class="vfp-side-card">
+                        <div class="vfp-side-title vfp-side-title--row">
+                            <span>@Localizer["ChecklistTitle"]</span>
+                            <span class="vfp-check-badge" id="vfpCheckBadge"></span>
+                        </div>
+                        <ul class="vfp-checklist" id="vfpChecklist"></ul>
+                    </div>
+
+                    @* Footer actions *@
+                    <div class="vfp-editor-footer">
+                        <button type="button" class="btn btn-primary w-100" id="vfpSaveActivate">@Localizer["SaveActivate"]</button>
+                        <button type="button" class="btn btn-label-secondary w-100" id="vfpSaveDraft">@Localizer["SaveDraft"]</button>
+                        <button type="button" class="btn btn-label-warning w-100 vfp-hidden" id="vfpSaveInactive">@Localizer["SaveInactive"]</button>
+                        <button type="button" class="btn btn-label-danger w-100 vfp-hidden" id="vfpArchive">@Localizer["ArchiveAction"]</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </form>
+</div>
+
+@* Editor L10n bridge (code-keyed, PascalCase preserved). Rendered next to the form so form.js can read it as it loads. *@
+<script id="vfp-editor-l10n" type="application/json">@Html.Raw(Json.Serialize(l10n))</script>

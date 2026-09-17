@@ -5,7 +5,9 @@
  * `.vfp-create-scope` wrapper so the mockup palette never leaks to the app shell or any other page. It is a SEPARATE
  * file — segment-create.css is reused as the reference pattern, never edited. Neutrals bind to the app's light/dark-aware
  * Bootstrap variables (theme-aware), accent is `--bs-primary`, and the only literal white left is a foreground on an
- * accent fill (checkmarks / active chips), correct in both themes. It is linked ONLY from _CreateEditOffcanvas.cshtml.
+ * accent fill (checkmarks / active chips), correct in both themes. WP-FREQ-F2: the editor is now a SEPARATE page, so
+ * this file is linked from Create.cshtml / Edit.cshtml (via _Editor.cshtml); the retired offcanvas rules are kept below
+ * for reference. segment-create.css remains the untouched reference pattern.
  */
 
 .vfp-create-scope {
@@ -271,4 +273,314 @@
 /* select2 dropped inside the scope should fill its cell */
 .vfp-create-scope .select2-container {
     width: 100% !important;
+}
+
+/* ================================================================== WP-FREQ-F2 — separate-page editor layout
+   The offcanvas rules above stay for reference; the editor now renders as a full page. The `.vfp-create-scope` wrapper
+   still confines the mockup palette; the shell (breadcrumb/buttons) uses app chrome. Two columns on desktop, one on
+   phone. */
+.vfp-editor-page {
+    display: block;
+}
+.vfp-create-scope.vfp-editor-page .vfp-editor-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+.vfp-editor-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 991.98px) {
+    .vfp-editor-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+.vfp-create-scope .vfp-grid-3 {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+/* section aside note (right of the section title) */
+.vfp-create-scope .vfp-section-aside {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--vfp-muted);
+}
+
+/* -------------------------------------------------------- collapsible scope block */
+.vfp-create-scope .vfp-scope {
+    margin-top: 16px;
+    border-top: 1px dashed var(--vfp-card-border);
+    padding-top: 14px;
+}
+.vfp-create-scope .vfp-scope-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--vfp-heading);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+}
+.vfp-create-scope .vfp-scope-caret {
+    transition: transform 0.15s ease;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-scope-toggle.is-open .vfp-scope-caret {
+    transform: rotate(90deg);
+}
+.vfp-create-scope .vfp-scope-hint {
+    margin-left: auto;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-scope-body {
+    margin-top: 14px;
+}
+.vfp-create-scope .vfp-scope-group {
+    margin-bottom: 14px;
+}
+.vfp-create-scope .vfp-scope-group-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--vfp-muted);
+    margin-bottom: 8px;
+}
+.vfp-create-scope .vfp-product-hint {
+    color: var(--bs-warning-text-emphasis, var(--vfp-muted));
+}
+.vfp-create-scope .vfp-scope-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.vfp-create-scope .vfp-scope-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    flex: 1 1 auto;
+}
+.vfp-create-scope .vfp-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+}
+.vfp-create-scope .vfp-scope-clear {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--bs-danger);
+    cursor: pointer;
+}
+
+/* -------------------------------------------------------- reads-as sentence (cadence) row */
+.vfp-create-scope .vfp-reads-as-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.vfp-create-scope .vfp-reads-as-raw {
+    font-size: 12px;
+    color: var(--bs-primary-text-emphasis);
+    opacity: 0.7;
+    white-space: nowrap;
+}
+.vfp-create-scope .vfp-inline-note--muted {
+    background: var(--bs-secondary-bg);
+    color: var(--vfp-muted);
+    border-color: var(--vfp-card-border);
+}
+
+/* -------------------------------------------------------- archived read-only banner */
+.vfp-create-scope .vfp-archived-note {
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--bs-secondary-bg);
+    color: var(--vfp-muted);
+    border: 1px solid var(--vfp-card-border);
+}
+
+/* -------------------------------------------------------- right sticky panel */
+.vfp-editor-side {
+    position: relative;
+}
+.vfp-side-sticky {
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+@media (max-width: 991.98px) {
+    .vfp-side-sticky { position: static; }
+}
+.vfp-create-scope .vfp-side-card {
+    background: var(--vfp-card-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 10px;
+    padding: 16px;
+}
+.vfp-create-scope .vfp-side-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--vfp-muted);
+    margin-bottom: 12px;
+}
+.vfp-create-scope .vfp-side-title--row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* lifecycle selector */
+.vfp-create-scope .vfp-lifecycle {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vfp-create-scope .vfp-life-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 11px;
+    border: 1.5px solid var(--bs-border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0;
+}
+.vfp-create-scope .vfp-life-row input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+.vfp-create-scope .vfp-life-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    margin-top: 4px;
+    flex: none;
+    background: var(--bs-secondary-color);
+}
+.vfp-create-scope .vfp-life-row[data-status="active"] .vfp-life-dot { background: var(--bs-success); }
+.vfp-create-scope .vfp-life-row[data-status="inactive"] .vfp-life-dot { background: var(--bs-warning); }
+.vfp-create-scope .vfp-life-row[data-status="archived"] .vfp-life-dot { background: var(--bs-secondary); }
+.vfp-create-scope .vfp-life-name {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--vfp-heading);
+}
+.vfp-create-scope .vfp-life-help {
+    display: block;
+    font-size: 11.5px;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-life-row:has(input:checked) {
+    border-color: var(--vfp-accent);
+    background: rgba(var(--bs-primary-rgb), 0.06);
+}
+.vfp-create-scope .vfp-life-note {
+    margin-top: 10px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--vfp-muted);
+}
+
+/* live summary */
+.vfp-create-scope .vfp-summary-sentence {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--vfp-text);
+    margin: 0 0 12px;
+}
+.vfp-create-scope .vfp-summary-sentence:empty { display: none; }
+.vfp-create-scope .vfp-summary-kv {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 12px;
+    margin: 0;
+}
+.vfp-create-scope .vfp-summary-kv dt {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-summary-kv dd {
+    font-size: 12.5px;
+    color: var(--vfp-text);
+    margin: 0;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* checklist */
+.vfp-create-scope .vfp-check-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 999px;
+}
+.vfp-create-scope .vfp-check-badge.is-ready {
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+}
+.vfp-create-scope .vfp-check-badge.is-warn {
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+.vfp-create-scope .vfp-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vfp-create-scope .vfp-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--vfp-text);
+}
+.vfp-create-scope .vfp-check i { font-size: 15px; flex: none; }
+.vfp-create-scope .vfp-check.is-ok i { color: var(--bs-success); }
+.vfp-create-scope .vfp-check.is-warn i { color: var(--bs-warning); }
+.vfp-create-scope .vfp-check.is-warn span { color: var(--vfp-muted); }
+.vfp-create-scope .vfp-check.is-neutral i { color: var(--vfp-muted); }
+
+/* footer actions */
+.vfp-editor-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.vfp-editor-footer .vfp-btn-armed {
+    box-shadow: 0 0 0 3px var(--vfp-accent-ring);
 }
