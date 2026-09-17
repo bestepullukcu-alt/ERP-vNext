@@ -869,4 +869,7 @@
   <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Заказы на закупку</value></data>
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Изменение заявки не поддерживается; создайте новую заявку или отправьте эту на утверждение.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Изменение заказа на закупку не поддерживается; создайте новый заказ или утвердите этот.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.</value></data>
 </root>

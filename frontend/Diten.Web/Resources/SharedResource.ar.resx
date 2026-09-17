@@ -869,4 +869,7 @@
   <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>أوامر الشراء</value></data>
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>تعديل الطلب غير مدعوم؛ أنشئ طلبًا جديدًا أو أرسل هذا الطلب للموافقة.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>تعديل أمر الشراء غير مدعوم؛ أنشئ أمر شراء جديدًا أو اعتمد هذا الأمر.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.</value></data>
 </root>

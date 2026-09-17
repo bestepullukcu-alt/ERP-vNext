@@ -930,4 +930,7 @@
   <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Talep güncelleme desteklenmiyor; yeni bir talep oluşturun veya bunu onaya gönderin.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Satın alma siparişi güncelleme desteklenmiyor; yeni bir sipariş oluşturun veya bunu onaylayın.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
 </root>

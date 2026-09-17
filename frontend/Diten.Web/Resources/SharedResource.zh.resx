@@ -869,4 +869,7 @@
   <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>不支持修改采购申请；请新建申请，或提交此申请以供审批。</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>不支持修改采购订单；请新建采购订单，或批准此订单。</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>不支持修改收货单；已过账的收货通过冲销移动更正，而非编辑。</value></data>
 </root>
