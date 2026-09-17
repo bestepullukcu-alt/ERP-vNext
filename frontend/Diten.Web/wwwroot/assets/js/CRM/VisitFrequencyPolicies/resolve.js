@@ -586,6 +586,19 @@
         const q = new URLSearchParams();
         q.set('targetType', scenario.targetType);
         q.set('targetId', targetId);
+        // WP-FREQ-DET-K — "X için çöz" semantiği: senaryonun targetType'ı kendi-kapsam boyutuysa targetId'yi eşleşen
+        // context param olarak DA gönder. Böylece hem hedeflenen (targetMatched) hem kapsamlı (context) politikalar
+        // uygulanır; başka bir kapsamdaki politika request≠policy ile doğru şekilde elenir. (Detay-analiz handler ile
+        // aynı davranış.) Map dışı targetType'lar (contact/account/account-contact-link) değişmez.
+        const SCENARIO_SELF_CONTEXT = {
+            'segment': 'segmentId',
+            'campaign-target': 'campaignId',
+            'territory-node': 'territoryNodeId',
+            'concept-node': 'conceptNodeId',
+            'audience-profile': 'audienceProfileId'
+        };
+        const selfCtx = SCENARIO_SELF_CONTEXT[norm(scenario.targetType)];
+        if (selfCtx) q.set(selfCtx, targetId);
         q.set('includeDiagnostics', 'true');
         const at = norm(el('vfpRsEffectiveAt')?.value);
         if (at) q.set('effectiveAt', at);
