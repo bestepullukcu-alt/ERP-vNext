@@ -451,7 +451,9 @@
         const clear = el('vfpScopeClear');
         if (!host) return;
         const picked = selectedScope();
-        host.innerHTML = picked.map(f => `<span class="vfp-chip">${esc(f.label())}: ${esc(scopeText(f))}</span>`).join('');
+        // WP-FREQ-F10 — chip markup is now a muted label + a bold value (label:value); selectedScope/scopeText/clear
+        // toggle are UNCHANGED (presentation only).
+        host.innerHTML = picked.map(f => `<span class="vfp-chip"><span class="vfp-chip-label">${esc(f.label())}</span><span class="vfp-chip-value">${esc(scopeText(f))}</span></span>`).join('');
         if (clear) clear.classList.toggle('vfp-hidden', picked.length === 0);
     };
     const clearScope = () => {
@@ -563,34 +565,85 @@
         archived: t('ChkWillArchived', 'Will be archived')
     }[norm(status)] || statusLabel(status));
 
+    // WP-FREQ-F13 — live checklist sub-descriptions (read-only DERIVATIONS of the form state; buildPayload/validation are
+    // untouched). Each returns { ok, desc } (and the weight row also a dynamic title read off the selected band card).
+    const targetCheck = () => {
+        const type = norm(checkedValue('vfpTargetType'));
+        const id = currentTargetId();
+        if (!type || !id) return { ok: false, desc: t('ChkTargetEmptyDesc', 'No record picked yet.') };
+        const name = currentTargetName();
+        const ext = (id && !isGuid(id) && id !== name) ? id : '';
+        const label = name || id;
+        return { ok: true, desc: ext ? `${label} · ${ext}` : label };
+    };
+    const periodCheck = () => {
+        const freq = norm(el('vfpFrequencyType')?.value);
+        const period = norm(el('vfpPeriodType')?.value);
+        if (!freq || !period) return { ok: false, desc: t('ChkPeriodEmptyDesc', 'Pick both a frequency and a period.') };
+        const consistent = !ALLOWED_PERIODS[freq] || ALLOWED_PERIODS[freq].includes(period);
+        const desc = `${t(`Freq_${freq}`, humanize(freq))} ↔ ${t(`Period_${period}`, humanize(period))}`;
+        return { ok: consistent, desc };
+    };
+    // dynamic band title + description are read off the selected band card (Band_{code}/Band_{code}_Desc, L10n+contract —
+    // never a hardcoded band/vocabulary here). null → nothing selected.
+    const weightBand = () => {
+        const p = norm(checkedValue('vfpPriority'));
+        if (!p) return null;
+        const card = FORM.querySelector(`input[name="vfpPriority"][value="${(window.CSS && CSS.escape) ? CSS.escape(p) : p}"]`)?.closest('.vfp-band-card');
+        if (!card) return null;
+        return {
+            title: norm(card.querySelector('.vfp-band-title')?.textContent),
+            desc: norm(card.querySelector('.vfp-band-desc')?.textContent)
+        };
+    };
+    const willDesc = status => ({
+        draft: t('ChkWillDraftDesc', 'Draft rules do not enter the plan; publish them when ready.'),
+        active: t('ChkWillActiveDesc', 'The rule goes live and enters the plan.'),
+        inactive: t('ChkWillInactiveDesc', 'The rule is kept but no longer applied.'),
+        archived: t('ChkWillArchivedDesc', 'The rule is retired and becomes read-only.')
+    }[norm(status)] || '');
+
     const updateChecklist = () => {
         const host = el('vfpChecklist');
         const badge = el('vfpCheckBadge');
         if (!host) return;
         const freq = norm(el('vfpFrequencyType')?.value);
         const count = Number(el('vfpRequiredVisitCount')?.value);
-        const period = norm(el('vfpPeriodType')?.value);
-        const targetOk = !!checkedValue('vfpTargetType') && !!currentTargetId();
+        const status = getSelectedStatus();
+
+        const tgt = targetCheck();
+        const per = periodCheck();
+        const cadence = cadenceText();
         const freqOk = !!freq && count > 0;
-        const periodOk = !!period && (!(freq && ALLOWED_PERIODS[freq]) || ALLOWED_PERIODS[freq].includes(period));
         const weightOk = !!norm(checkedValue('vfpPriority'));
+        const band = weightBand();
         const nScope = selectedScope().length;
 
+        // mockup: every row is ✓ (satisfied) or ! (attention) — no grey neutral. "No scope constraint" and non-active
+        // lifecycle states are surfaced as ! (a heads-up), so the "N warnings"/"ready" badge counts them.
         const items = [
-            { ok: targetOk, label: t('ChkTarget', 'Target selected') },
-            { ok: freqOk, label: t('ChkFrequency', 'Frequency valid') },
-            { ok: periodOk, label: t('ChkPeriod', 'Period consistent') },
-            { ok: true, neutral: true, label: nScope > 0 ? t('ChkScopeNarrowed', 'Scope narrowed') : t('ChkScopeNone', 'No scope constraint') },
-            { ok: weightOk, label: t('ChkWeight', 'Conflict weight chosen') },
-            { ok: true, neutral: true, label: willLabel(getSelectedStatus()) }
+            { ok: tgt.ok, title: t('ChkTarget', 'Target selected'), desc: tgt.desc },
+            { ok: freqOk, title: t('ChkFrequency', 'Frequency valid'), desc: cadence || t('ChkFreqEmptyDesc', 'Frequency is not complete yet.') },
+            { ok: per.ok, title: t('ChkPeriod', 'Period consistent'), desc: per.desc },
+            {
+                ok: nScope > 0,
+                title: nScope > 0 ? t('ChkScopeNarrowed', 'Scope narrowed') : t('ChkScopeNone', 'No scope constraint'),
+                desc: nScope > 0 ? `${nScope} ${t('ScopeConstraintUnit', 'constraints')}` : t('ChkScopeAllDesc', 'This policy applies to every record of this target type.')
+            },
+            {
+                ok: weightOk,
+                title: band ? band.title : t('ChkWeight', 'Conflict weight chosen'),
+                desc: band ? band.desc : t('ChkWeightEmptyDesc', 'Pick a conflict weight band.')
+            },
+            { ok: status === 'active', title: willLabel(status), desc: willDesc(status) }
         ];
         host.innerHTML = items.map(it => {
-            const cls = it.neutral ? 'is-neutral' : (it.ok ? 'is-ok' : 'is-warn');
-            const icon = it.neutral ? 'bx-info-circle' : (it.ok ? 'bx-check' : 'bx-error-circle');
-            return `<li class="vfp-check ${cls}"><i class="bx ${icon}"></i><span>${esc(it.label)}</span></li>`;
+            const cls = it.ok ? 'is-ok' : 'is-warn';
+            const icon = it.ok ? 'bx-check-circle' : 'bx-error-circle';
+            return `<li class="vfp-check ${cls}"><i class="bx ${icon}"></i><span class="vfp-check-body"><span class="vfp-check-title">${esc(it.title)}</span>${it.desc ? `<span class="vfp-check-desc">${esc(it.desc)}</span>` : ''}</span></li>`;
         }).join('');
 
-        const warnCount = items.filter(it => !it.neutral && !it.ok).length;
+        const warnCount = items.filter(it => !it.ok).length;
         if (badge) {
             badge.textContent = warnCount === 0 ? t('ChecklistReady', 'ready') : `${warnCount} ${t('ChecklistWarnWord', 'warnings')}`;
             badge.classList.toggle('is-ready', warnCount === 0);

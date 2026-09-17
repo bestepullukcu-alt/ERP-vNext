@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>Sera publiée</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>Sera dépubliée</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>Sera archivée</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>L'enregistrement auquel elle s'applique n'est pas encore choisi.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>La fréquence n'est pas encore complète.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Sélectionnez à la fois une fréquence et une période.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Cette politique s'applique à tous les enregistrements de ce type de cible.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Choisissez une bande de poids de conflit.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Les règles brouillon n'entrent pas dans le plan ; publiez-les quand elles sont prêtes.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>La règle est publiée et entre dans le plan.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>La règle est conservée mais n'est plus appliquée.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>La règle est retirée et devient en lecture seule.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Toutes les unités commerciales</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Indépendant du segment</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Indépendant de la campagne</value></data>

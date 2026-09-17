@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>Will be published</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>Will be unpublished</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>Will be archived</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Which record it applies to is not chosen yet.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>The frequency is not complete yet.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Pick both a frequency and a period.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>This policy applies to every record of this target type.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Pick a conflict weight band.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Draft rules do not enter the plan; publish them when ready.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>The rule goes live and enters the plan.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>The rule is kept but no longer applied.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>The rule is retired and becomes read-only.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>All business units</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Segment-independent</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Campaign-independent</value></data>

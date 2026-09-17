@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>سيتم نشرها</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>سيتم إلغاء نشرها</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>سيتم أرشفتها</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>لم يتم بعد اختيار السجل الذي تُطبَّق عليه.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>لم يكتمل التردد بعد.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>اختر كلاً من التردد والفترة.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>تُطبَّق هذه السياسة على كل سجلات هذا النوع من الأهداف.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>اختر نطاق وزن التعارض.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>لا تدخل القواعد المسودّة في الخطة؛ انشرها عندما تكون جاهزة.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>تُنشَر القاعدة وتدخل في الخطة.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>يُحتفَظ بالقاعدة لكنها لم تعد مطبَّقة.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>تُسحَب القاعدة وتصبح للقراءة فقط.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>جميع وحدات الأعمال</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>مستقل عن الشريحة</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>مستقل عن الحملة</value></data>

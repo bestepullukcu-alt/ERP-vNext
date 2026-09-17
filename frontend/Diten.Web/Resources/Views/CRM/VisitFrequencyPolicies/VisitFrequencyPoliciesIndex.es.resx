@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>Se publicará</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>Se despublicará</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>Se archivará</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Aún no se ha elegido a qué registro se aplica.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>La frecuencia aún no está completa.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Seleccione una frecuencia y un período.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Esta política se aplica a todos los registros de este tipo de objetivo.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Elija una banda de peso de conflicto.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Las reglas en borrador no entran en el plan; publíquelas cuando estén listas.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>La regla se publica y entra en el plan.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>La regla se conserva pero ya no se aplica.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>La regla se retira y queda de solo lectura.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Todas las unidades de negocio</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Independiente del segmento</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Independiente de la campaña</value></data>

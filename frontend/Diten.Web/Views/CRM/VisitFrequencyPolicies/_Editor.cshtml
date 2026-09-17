@@ -96,6 +96,16 @@
         ["ChkWillActive"] = Localizer["ChkWillActive"].Value,
         ["ChkWillInactive"] = Localizer["ChkWillInactive"].Value,
         ["ChkWillArchived"] = Localizer["ChkWillArchived"].Value,
+        // WP-FREQ-F13 — checklist live sub-descriptions (static templates; dynamic parts come from form state)
+        ["ChkTargetEmptyDesc"] = Localizer["ChkTargetEmptyDesc"].Value,
+        ["ChkFreqEmptyDesc"] = Localizer["ChkFreqEmptyDesc"].Value,
+        ["ChkPeriodEmptyDesc"] = Localizer["ChkPeriodEmptyDesc"].Value,
+        ["ChkScopeAllDesc"] = Localizer["ChkScopeAllDesc"].Value,
+        ["ChkWeightEmptyDesc"] = Localizer["ChkWeightEmptyDesc"].Value,
+        ["ChkWillDraftDesc"] = Localizer["ChkWillDraftDesc"].Value,
+        ["ChkWillActiveDesc"] = Localizer["ChkWillActiveDesc"].Value,
+        ["ChkWillInactiveDesc"] = Localizer["ChkWillInactiveDesc"].Value,
+        ["ChkWillArchivedDesc"] = Localizer["ChkWillArchivedDesc"].Value,
         ["statusLabels"] = new Dictionary<string, string>
         {
             ["draft"] = Localizer["Status_draft"].Value,
@@ -305,10 +315,15 @@
                                     </div>
                                 </div>
                             </div>
+                            @* WP-FREQ-F10 — KAPSAM özet kutusu grid'e getirildi: sol kolon KAPSAM label + #vfpScopeChips
+                               (label:value çipler) + boşken "tüm hedefler" fallback; sağda align-self-end "Kapsamı temizle".
+                               id'ler (#vfpScopeChips/#vfpScopeClear) korunur — form.js chip render + clear aynı çalışır. *@
                             <div class="vfp-scope-summary">
-                                <span class="vfp-scope-summary-label">@Localizer["Scope"]</span>
-                                <div class="vfp-scope-chips" id="vfpScopeChips"></div>
-                                <span class="vfp-scope-all">@Localizer["ScopeAllTargets"]</span>
+                                <div class="vfp-scope-summary-main">
+                                    <span class="vfp-scope-summary-label">@Localizer["Scope"]</span>
+                                    <div class="vfp-scope-chips" id="vfpScopeChips"></div>
+                                    <span class="vfp-scope-all">@Localizer["ScopeAllTargets"]</span>
+                                </div>
                                 <button type="button" class="vfp-scope-clear vfp-hidden" id="vfpScopeClear">@Localizer["ScopeClear"]</button>
                             </div>
                         </div>

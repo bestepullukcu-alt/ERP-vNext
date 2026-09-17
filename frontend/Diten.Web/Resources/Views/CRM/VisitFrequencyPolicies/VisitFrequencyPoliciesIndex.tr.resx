@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>Yayına alınacak</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>Yayından kaldırılacak</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>Arşivlenecek</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Hangi kayda uygulanacağı henüz seçilmedi.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>Frekans henüz tamamlanmadı.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Frekans ve dönem birlikte seçilmeli.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Politika bu hedef tipindeki tüm kayıtlara uygulanır.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Bir çakışma ağırlığı bandı seçin.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Taslak kurallar plana girmez; hazır olduğunda yayına alırsınız.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>Kural yayına alınır ve plana girer.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>Kural saklanır ama artık uygulanmaz.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>Kural emekliye ayrılır ve salt-okunur olur.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Tüm iş birimleri</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Segmentten bağımsız</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Kampanyadan bağımsız</value></data>

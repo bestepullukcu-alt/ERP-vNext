@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>Будет опубликована</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>Будет снята с публикации</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>Будет заархивирована</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Ещё не выбрана запись, к которой она применяется.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>Частота ещё не заполнена.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Выберите и частоту, и период.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Эта политика применяется ко всем записям этого типа цели.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Выберите диапазон веса конфликта.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Черновые правила не входят в план; опубликуйте их, когда будете готовы.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>Правило публикуется и входит в план.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>Правило сохраняется, но больше не применяется.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>Правило выводится из эксплуатации и становится только для чтения.</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Все бизнес-единицы</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Независимо от сегмента</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Независимо от кампании</value></data>

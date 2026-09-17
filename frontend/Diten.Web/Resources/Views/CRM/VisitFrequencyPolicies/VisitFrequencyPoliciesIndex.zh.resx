@@ -227,6 +227,15 @@
   <data name="ChkWillActive" xml:space="preserve"><value>将被发布</value></data>
   <data name="ChkWillInactive" xml:space="preserve"><value>将取消发布</value></data>
   <data name="ChkWillArchived" xml:space="preserve"><value>将被归档</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>尚未选择适用的记录。</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>频率尚未填写完整。</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>请同时选择频率和周期。</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>此策略适用于该目标类型的所有记录。</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>请选择一个冲突权重等级。</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>草稿规则不会进入计划；准备就绪后再发布。</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>规则将上线并进入计划。</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>规则将保留但不再应用。</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>规则将停用并变为只读。</value></data>
   <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>所有业务单元</value></data>
   <data name="ScopeSegmentIndependent" xml:space="preserve"><value>与细分无关</value></data>
   <data name="ScopeCampaignIndependent" xml:space="preserve"><value>与活动无关</value></data>
