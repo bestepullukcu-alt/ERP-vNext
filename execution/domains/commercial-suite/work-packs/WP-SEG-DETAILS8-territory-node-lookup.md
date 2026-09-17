@@ -50,3 +50,17 @@ Durma: territory_nodes read handler deseni yoksa/kurulamıyorsa; node→modelId 
 Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
 ```
 - İzole worktree → CrmService.Application.Tests + Diten.Web.Tests baseline-diff; node-by-ids bulk read (tenant-scoped, fail-closed, territory write dokunulmadı); segment detail territory value-label additive; Details "Territory is any of <ad>"; Edit cascade restore; buildNodes payload byte-identical; per-node read yok; reference-set/enum value değişmedi.
+
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
+```
+Commit: 8b89f467 · Agent: PASS · CT: ACCEPTED E2 (gerçek build) · izole /c/tmp/ct-det8-verify @8b89f467
+```
+- ✅ Scope: CrmService territory read (GetTerritoryNodesByIdsHandler + Queries/Dtos + ITerritoryNodeRepository.ListByIdsAsync + repo) + Segmentation detail (GetSegmentByIdHandler + SegmentModels ValueLabels) + TerritoryModelsController(nodes/by-ids) + SegmentsController proxy + Details.cshtml + form.js + SegmentViewModels + 2 test. Territory write/aggregate DOKUNULMADI.
+- ✅ **Gateway route (ocelot değişmedi):** `nodes/by-ids` action TerritoryModelsController'da; mevcut `/api/crm/territory-models/{everything}` wildcard altında. `[HttpGet("nodes/by-ids")]` literal, `{id:guid}/nodes`'ten önce — GUID olmayan "by-ids" `{id:guid}` ile çakışmaz (FU08 deseni).
+- ✅ **buildNodes payload byte-identical:** md5 eşit (824a5cdf==8b89f467); territoryModelId/valueLabels salt UI-state, hidden input'a girmez.
+- ✅ **Fail-closed + tenant-scoped + bulk:** ListByIdsAsync boş-id→sorgu yok; criteria territory GUID→node name tek toplu okuma; erişilemez/cross-tenant→ValueLabels null (GUID gizli). +2 guard (value-label additive; cross-tenant→etiket yok). reference-set/enum value değişmedi.
+- ✅ Details: territory-node value ValueLabels'tan isim ("Territory is any of <ad>"); yoksa GUID gizli. Edit: restoreTerritoryNodeContext node→modelId toplu çöz → cascade select model+node seçili.
+- ✅ Build+test (CT izole, Release, GERÇEK): CrmService.Application.Tests **1745/0/5** + Diten.Web.Tests **137/0**.
+- ⏳ E4: Details "Territory is any of TR — Marmara"; Edit territory model+node dolu-seçili.
+
+**Segment Create/Edit + Details TAM KOMPLE — tüm açık noktalar kapandı.**
