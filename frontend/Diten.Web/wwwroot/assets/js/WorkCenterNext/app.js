@@ -7379,7 +7379,7 @@
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
-            return;
+            return { outcome: 'done' };
         }
 
         /*
@@ -7398,7 +7398,7 @@
             await loadWorkItems();
             render();
             toast(t('ErrorConcurrencyRefreshed'), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode || 'TASK_CONCURRENCY_CONFLICT' };
         }
 
         if (global.TasksApi.isTransitionBlocked(result)) {
@@ -7407,11 +7407,12 @@
             await loadWorkItems();
             render();
             toast(global.TasksApi.failureMessage(result, overrides), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         render();
         toast(global.TasksApi.failureMessage(result, overrides), 'error');
+        return { outcome: 'refused', reasonCode: result.reasonCode };
     };
 
     /*
@@ -8061,9 +8062,8 @@
 
     const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(
+            return submitRealTransition(
                 item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
-            return;
         }
 
         /*
@@ -8081,23 +8081,27 @@
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
         render();
-        global.setTimeout(() => {
-            const outcome = applyTransition(item, action.key);
-            markSeen(item);
-            item.activity = item.activity || [];
-            // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
-            item.activity.push({
-                actor: data.currentUser.name,
-                kind: 'event',
-                eventKey: 'AuditActionStamp',
-                actionLabel: label,
-                atMs: data.referenceDate(item.provenance)
-            });
-            state.submittingItemId = null;
-            state.submittingActionCode = null;
-            render();
-            toastForOutcome(outcome, label, reason, item);
-        }, 350);
+        return new Promise((resolve) => {
+            global.setTimeout(() => {
+                const outcome = applyTransition(item, action.key);
+                markSeen(item);
+                item.activity = item.activity || [];
+                // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
+                item.activity.push({
+                    actor: data.currentUser.name,
+                    kind: 'event',
+                    eventKey: 'AuditActionStamp',
+                    actionLabel: label,
+                    atMs: data.referenceDate(item.provenance)
+                });
+                state.submittingItemId = null;
+                state.submittingActionCode = null;
+                render();
+                toastForOutcome(outcome, label, reason, item);
+                // A showcase fixture has no engine to refuse it — the local mutation above always succeeds.
+                resolve({ outcome: 'done' });
+            }, 350);
+        });
     };
 
     // Plan / re-plan for a SHOWCASE item only — sets the PERSONAL planned date (spec v2 §4), which is distinct
@@ -8129,16 +8133,20 @@
             expectedVersion: Number(item.concurrency?.token ?? 0),
             plannedDate: dateStr
         });
-        await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
+        const ok = await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
+        return ok ? { outcome: 'done' } : { outcome: 'refused', reasonCode: result.reasonCode };
     };
 
     const openDatePicker = (item, action) => {
         const label = actionLabel(action);
         const real = isDispatchableItem(item);
         if (!global.Swal) {
-            if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
+            if (real) {
+                return submitPlan(item, item.dueAt || data.todayIso)
+                    .catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
+            }
             applyPlan(item, item.dueAt || data.todayIso, label);
-            return;
+            return Promise.resolve({ outcome: 'done' });
         }
         /*
          * ── THROUGH THE SHARED COMPONENT (2026-08-24, A3) ────────────────────────────────────────────────
@@ -8152,6 +8160,10 @@
          * dialog already takes, flatpickr and all — see `openSnooze`.
          */
         const seed = item.plannedDate || item.dueAt;
+        // The stitch captures `resolve` rather than nesting the whole dialog inside `new Promise(...)` — the
+        // options object below keeps the SAME indentation sharedConfirm callers use everywhere else in this file.
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             subtext: outcomeLead(action),
@@ -8182,11 +8194,15 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (!value) { return; }
-                const applied = real ? submitPlan(item, value) : applyPlan(item, value, label);
-                if (applied && typeof applied.catch === 'function') { applied.catch(reportSwalFailure); }
-            }
+                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                const applied = real ? submitPlan(item, value) : Promise.resolve(applyPlan(item, value, label)).then(() => ({ outcome: 'done' }));
+                Promise.resolve(applied)
+                    .then(resolveOutcome)
+                    .catch((error) => { reportSwalFailure(error); resolveOutcome({ outcome: 'refused' }); });
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
@@ -8469,12 +8485,13 @@
         if (!result.ok) {
             render();
             toast(global.MeetingsApi.failureMessage(result), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         await loadWorkItems();
         render();
         toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+        return { outcome: 'done' };
     };
 
     // The date/time step, shared by both the fixture path and the real one — only what happens ON CONFIRM
@@ -8482,6 +8499,8 @@
     // literal `t(...)` call, which is what the l10n guard (wcn-dialog-seven-defects.test.js) scans app.js for.
     const openMeetingDateTimePicker = (item, action, label, subtextText, onWhenChosen) => {
         const seed = item.dueAt || data.todayIso;
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
@@ -8504,19 +8523,26 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (value) { onWhenChosen(String(value).replace('T', ' ')); }
-            }
+                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                Promise.resolve(onWhenChosen(String(value).replace('T', ' ')))
+                    .then((resolved) => resolveOutcome(resolved || { outcome: 'done' }))
+                    .catch(() => resolveOutcome({ outcome: 'refused' }));
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     const openMeetingScheduler = async (item, action) => {
         const label = actionLabel(action);
 
         if (isFixtureShowcase(item)) {
-            if (!global.showConfirm) { applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-            openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
-                (whenStr) => applyReviewMeetingFixture(item, whenStr, label));
-            return;
+            if (!global.showConfirm) {
+                applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label);
+                return { outcome: 'done' };
+            }
+            return openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
+                (whenStr) => { applyReviewMeetingFixture(item, whenStr, label); return { outcome: 'done' }; });
         }
 
         // A REAL task needs a REAL meeting type — the receiving side's own CreateMeetingRequest requires one
@@ -8524,16 +8550,18 @@
         const typesResult = await global.MeetingsApi.lookupTypes();
         if (!typesResult.ok) {
             toast(global.MeetingsApi.failureMessage(typesResult), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: typesResult.reasonCode };
         }
         const types = Array.isArray(typesResult.data) ? typesResult.data : [];
         if (types.length === 0) {
             toast(t('MeetingNoTypesAvailable'), 'error');
-            return;
+            return { outcome: 'refused' };
         }
         const typeOptions = {};
         types.forEach((type) => { typeOptions[type.id] = type.name; });
 
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             subtext: esc(t('MeetingTypeSubtext')),
@@ -8546,17 +8574,21 @@
                 validate: (value) => (value ? null : t('MeetingTypeLabel'))
             },
             onConfirm: (meetingTypeId) => {
-                if (!meetingTypeId) { return; }
+                if (!meetingTypeId) { resolveOutcome({ outcome: 'cancelled' }); return; }
                 openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
-                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr));
-            }
+                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr)).then(resolveOutcome);
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     // Log time — manual minutes entry into the timesheet (task only).
     const openLogTime = (item, action) => {
         const label = actionLabel(action);
-        if (!global.Swal) { return; }
+        if (!global.Swal) { return Promise.resolve({ outcome: 'cancelled' }); }
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             /*
@@ -8588,9 +8620,14 @@
                     item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
                     render();
                     toast(tf('ToastTimeLogged', formatMinutes(mins)));
+                    resolveOutcome({ outcome: 'done' });
+                } else {
+                    resolveOutcome({ outcome: 'cancelled' });
                 }
-            }
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     /*
@@ -9069,19 +9106,25 @@
      * pushed onto `state.notes` and nothing else. Its `?` icon — the defect the owner photographed — is gone
      * with it rather than repainted.
      */
+    // WP-WCN-KANBAN-01 Dilim 1 — the stitch. Every branch below resolves the same Promise<{ outcome, reasonCode? }>
+    // the caller awaits: 'done' (applied), 'cancelled' (the reader dismissed a dialog, no request sent) or
+    // 'refused' (the engine said no; reasonCode is its code when one exists). The button path is UNCHANGED —
+    // it never reads the resolved value, so every dialog, toast and re-render below fires exactly as before.
     const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
-        if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
+        if (!item || !action || action.disabled || state.submittingItemId === item.id) {
+            return { outcome: 'cancelled' };
+        }
         // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
         // openDatePicker itself decides whether to write to the engine or, for a showcase item, only locally.
-        if (action.input === 'date') { openDatePicker(item, action); return; }
-        if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
-        if (action.input === 'minutes') { openLogTime(item, action); return; }
+        if (action.input === 'date') { return openDatePicker(item, action); }
+        if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
+        if (action.input === 'minutes') { return openLogTime(item, action); }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
         // a mandatory-rationale textarea, which also serves as the confirm step.
         if (action.reason) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
 
             /*
              * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
@@ -9108,7 +9151,7 @@
                 if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
                     toast(t('ReassignNoAssignableUsers'), 'error');
-                    return;
+                    return { outcome: 'refused' };
                 }
             }
 
@@ -9137,7 +9180,7 @@
              * cannot go through `showConfirm` — but every reason it looked wrong was appearance, not structure,
              * and appearance is now something it can ask for by name.
              */
-            global.Swal.fire(Object.assign({
+            return global.Swal.fire(Object.assign({
                 /*
                  * ⚠ THE ICON RIDES THE TITLE HERE TOO (2026-08-24, option B). The shared confirm composes the
                  * two into one slot because the popup is a grid with one slot per row; a raw dialog that kept
@@ -9190,10 +9233,10 @@
                 }
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
+                    return applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
                 }
+                return { outcome: 'cancelled' };
             });
-            return;
         }
 
         /*
@@ -9230,7 +9273,7 @@
             && !!item.taskType?.requiresDeliverableOnCompletion
             && !existingAttachments.some((a) => a.kind === 'Deliverable');
         if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
 
             /*
              * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
@@ -9298,7 +9341,7 @@
             // complete or not at all, and there is no later moment to hand it a list that was still in flight.
             const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
 
-            global.Swal.fire(Object.assign({
+            return global.Swal.fire(Object.assign({
                 title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
                     + '<span>' + esc(actionLabel(action)) + '</span>',
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
@@ -9414,7 +9457,7 @@
                     return { outcomeCode, reason, closureFieldValues, attachment };
                 }
             }, dialogLook())).then(async (res) => {
-                if (!res.isConfirmed || !res.value) { return; }
+                if (!res.isConfirmed || !res.value) { return { outcome: 'cancelled' }; }
                 /*
                  * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
                  * upload must not complete the task: the reader asked for both, and completing anyway would
@@ -9424,20 +9467,19 @@
                  */
                 if (res.value.attachment) {
                     const uploaded = await uploadAttachment(item.id, res.value.attachment);
-                    if (!uploaded) { return; }
+                    if (!uploaded) { return { outcome: 'refused' }; }
                 }
-                applyAction(
+                return applyAction(
                     item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
                     res.value.closureFieldValues);
             });
-            return;
         }
 
         // High-consequence action (approve/sign-off/complete): explicit confirm so
         // an accidental click — or the `a` keyboard shortcut on a six-figure
         // approval — can't fire irreversibly (spec v2 §6, P1 fix).
         if (action.confirm) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
             /*
              * The sentence no longer quotes the title: the badge below carries it, in the product's own framed
              * chip. Two places saying the same name is how one of them goes stale.
@@ -9462,6 +9504,8 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
+            let resolveOutcome;
+            const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
             sharedConfirm({
                 title: actionLabel(action),
                 /*
@@ -9484,12 +9528,13 @@
                  * title, the rail button and this button all read the same string.
                  */
                 confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
-                onConfirm: () => applyAction(item, action)
+                onConfirm: () => { resolveOutcome(applyAction(item, action)); },
+                onCancel: () => resolveOutcome({ outcome: 'cancelled' })
             });
-            return;
+            return outcome;
         }
 
-        applyAction(item, action);
+        return applyAction(item, action);
     };
 
     const executeTriggerAction = (trigger, action, reason) => {
@@ -9904,7 +9949,14 @@
         const actionEl = event.target.closest('[data-wcn-action]');
         if (actionEl) {
             event.stopPropagation();
-            performAction(itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
+            /*
+             * WP-WCN-KANBAN-01 Dilim 1 — the click path calls performAction exactly as it always did; nothing
+             * here reads or awaits the resolved value, so the button's own behaviour is unchanged. The global is
+             * a TEST-ONLY observation seam (module has no exports): performAction's Promise<{outcome,...}> has no
+             * other exit from a DOM click, and tests await it after `.click()` to assert the branch it resolved.
+             */
+            global.__wcnLastActionOutcome = performAction(
+                itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
             return;
         }
 

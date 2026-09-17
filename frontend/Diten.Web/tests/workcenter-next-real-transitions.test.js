@@ -154,7 +154,10 @@ describe("work item actions reach the engine", () => {
      */
     it("routes a real item's action to the dispatch endpoint, not to the mock state machine", () => {
       expect(app).toContain("const isDispatchableItem");
-      expect(app).toMatch(/isDispatchableItem\(item\)\s*\)\s*\{\s*submitRealTransition/);
+      // WP-WCN-KANBAN-01 Dilim 1 — applyAction now RETURNS submitRealTransition's Promise (the outcome-resolving
+      // stitch) instead of firing it and falling through; the routing rule under test — a real item's action goes
+      // to submitRealTransition, not the mock state machine — is unchanged.
+      expect(app).toMatch(/isDispatchableItem\(item\)\s*\)\s*\{\s*return submitRealTransition/);
       // Matched across newlines: the body comes from the declared TRANSITION_BODIES vocabulary rather than a
       // literal at the call site, so the assertion follows the refactor instead of pinning its formatting.
       expect(app).toMatch(/global\.WorkCenterNextApi\.dispatchAction\(\s*item\.id,\s*action\.code/);
@@ -203,16 +206,21 @@ describe("work item actions reach the engine", () => {
       // This used to read `action.input === 'date' && !isRealTaskItem(item)`: the engine accepted no date, so a
       // real user was never asked for one. POST .../plan now stores it, so the guard is gone; openDatePicker
       // itself decides whether to write to the engine or, for a showcase item, only locally.
+      //
+      // WP-WCN-KANBAN-01 Dilim 1 — performAction now RETURNS openDatePicker's Promise (the outcome-resolving
+      // stitch) instead of firing it and returning undefined; which branch opens is unchanged.
       expect(app).not.toContain("!isRealTaskItem(item)) { openDatePicker");
-      expect(app).toContain("if (action.input === 'date') { openDatePicker(item, action); return; }");
+      expect(app).toContain("if (action.input === 'date') { return openDatePicker(item, action); }");
     });
 
     it("does not apply a real plan optimistically", () => {
       const fn = app.slice(app.indexOf("const openDatePicker"), app.indexOf("const reportSwalFailure"));
       expect(fn).toContain("submitPlan");
       // The real branch calls the engine and nothing else; applyPlan (the local mutation) is reserved for the
-      // non-real branch only.
-      expect(fn).toContain("real ? submitPlan(item, value) : applyPlan(item, value, label)");
+      // non-real branch only. WP-WCN-KANBAN-01 Dilim 1 wraps the non-real call so BOTH branches resolve the same
+      // { outcome } shape — the real/non-real split itself, which this test guards, is untouched.
+      expect(fn).toContain(
+        "real ? submitPlan(item, value) : Promise.resolve(applyPlan(item, value, label)).then(() => ({ outcome: 'done' }))");
     });
   });
 
