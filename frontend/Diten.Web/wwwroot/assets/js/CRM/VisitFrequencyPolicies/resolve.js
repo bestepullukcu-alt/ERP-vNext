@@ -115,6 +115,8 @@
         segment: 'segment', account: 'account', contact: 'contact',
         'campaign-target': 'campaign', 'concept-node': 'concept-node', 'audience-profile': 'audience-profile'
     };
+    // WP-FREQ-DET-O — target types whose picker searches server-side (large lists); the others keep the DET-L preload.
+    const REMOTE_KINDS = new Set(['contact', 'account']);
 
     const fillSelect = (select, options, placeholder) => {
         if (!select) return;
@@ -151,6 +153,48 @@
     };
     // destroy + re-init after the options were rebuilt — select2 snapshots them at init.
     const rebindSelect2 = select => { unbindSelect2(select); bindSelect2(select); };
+
+    // ── remote (server-side) select2 — WP-FREQ-DET-O. contact/account lists are 128K/43K rows; a client-side snapshot
+    // (fillSelect + pageSize=200) can't find a record outside the first page. The backend List already accepts ?search=
+    // (ListContactsQuery/ListAccountsQuery → ListAsync search) and the web proxy forwards it, so search runs server-side:
+    // select2 ajax calls getJson('/contacts?search=…&pageSize=20') and shows a NAME (mapOption). Nothing fabricated;
+    // value stays the selected GUID. jQuery/select2 absent → silent no-op (degrades to the bare select), like DET-L.
+    const REMOTE_PLURAL = { contact: 'contacts', account: 'accounts' };
+    const bindSelect2Remote = (select, kind) => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) return; // already bound
+        const plural = REMOTE_PLURAL[kind];
+        if (!plural) return;
+        $s.select2({
+            dropdownParent: $s.parent(),
+            minimumInputLength: 0,
+            allowClear: true,
+            placeholder: t('SelectOption', '—'),
+            ajax: {
+                delay: 250,
+                transport: (params, success, failure) => {
+                    const term = (params.data && params.data.term) ? params.data.term : '';
+                    getJson('/' + plural + '?search=' + encodeURIComponent(term) + '&pageSize=20')
+                        .then(data => {
+                            const items = Array.isArray(data) ? data : (data?.items || data?.values || []);
+                            const results = items.map(mapOption)
+                                .filter(o => o.value !== '' && o.value != null)
+                                .map(o => ({ id: o.value, text: o.text }));
+                            success({ results });
+                        })
+                        .catch(() => { if (failure) failure(); });
+                    return { abort() { } };
+                }
+            }
+        });
+        // same native-change bridge as bindSelect2 so the existing showPicked change listener still fires.
+        $s.off('change.vfpBridge').on('change.vfpBridge', ev => {
+            if (ev && ev.originalEvent) return;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
 
     // ── contract (loaded once, shared) ──────────────────────────────────────────
     let contractPromise = null;
@@ -395,6 +439,16 @@
                 fillSelect(el('vfpRsTargetId'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
                 rebindSelect2(el('vfpRsTargetId'));
             });
+            el('vfpRsTargetId').addEventListener('change', e => {
+                const opt = e.target.selectedOptions[0];
+                showPicked(opt && opt.value ? opt.text : '');
+            });
+            return;
+        }
+        // WP-FREQ-DET-O — contact/account: server-side (ajax) search instead of a preloaded pageSize=200 snapshot.
+        if (REMOTE_KINDS.has(targetType)) {
+            host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpRsTargetId" data-role="targetId"><option value=""></option></select></div>`;
+            bindSelect2Remote(el('vfpRsTargetId'), targetType);
             el('vfpRsTargetId').addEventListener('change', e => {
                 const opt = e.target.selectedOptions[0];
                 showPicked(opt && opt.value ? opt.text : '');
