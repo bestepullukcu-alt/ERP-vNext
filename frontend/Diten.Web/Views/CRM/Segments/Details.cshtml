@@ -67,24 +67,24 @@
     @* ---------------------------------------------------------------- stats — only the numbers the segment actually has.
        There is no stored member count and no consumer reverse-lookup, so "Members" is filled by the on-demand resolve
        (details.js) and stays "—" until then; a fabricated "Used by" tile is deliberately NOT rendered (WP). *@
+    @* Stat tiles — Tenant/VisitPlanning-Details stat-card markup (icon avatar + label + value), app-native and theme-aware. *@
     <div class="segd-stats mb-4">
-        <div class="segd-stat">
-            <div class="segd-stat-label">@Localizer["MatchedCount"]</div>
-            <div class="segd-stat-valrow">
-                <span class="segd-stat-value" id="statMembersValue">—</span>
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-primary"><i class="bx bx-group"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["MatchedCount"]</small><h5 class="mb-0" id="statMembersValue">—</h5></div>
             </div>
         </div>
-        <div class="segd-stat">
-            <div class="segd-stat-label">@Localizer["SegmentStatus"]</div>
-            <div class="segd-stat-valrow">
-                <span class="segd-stat-value">@segment.SegmentStatus</span>
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-info"><i class="bx bx-flag"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["SegmentStatus"]</small><h5 class="mb-0">@segment.SegmentStatus</h5></div>
             </div>
         </div>
-        <div class="segd-stat">
-            <div class="segd-stat-label">@Localizer["SegmentVersion"]</div>
-            <div class="segd-stat-valrow">
-                <span class="segd-stat-value">v@(segment.SegmentVersion)</span>
-                <span class="segd-stat-unit">@(frozen ? Localizer["Frozen"] : Localizer["Editable"])</span>
+        <div class="card h-100">
+            <div class="card-body d-flex align-items-center gap-3 p-3">
+                <div class="avatar"><span class="avatar-initial rounded bg-label-secondary"><i class="bx bx-git-branch"></i></span></div>
+                <div><small class="text-muted d-block">@Localizer["SegmentVersion"]</small><h5 class="mb-0">v@(segment.SegmentVersion) <small class="text-muted fw-normal">@(frozen ? Localizer["Frozen"] : Localizer["Editable"])</small></h5></div>
             </div>
         </div>
     </div>
