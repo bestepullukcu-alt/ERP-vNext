@@ -181,7 +181,7 @@
                 <span class="segd-chip-stat segd-chip-dropped"><span class="segd-chip-value">${esc(Number(data.excludedCount ?? 0).toLocaleString())}</span><span class="segd-chip-label">${esc(L.ExcludedCount || 'Excluded')}</span></span>
                 <span class="segd-chip-stat segd-chip-manual"><span class="segd-chip-value">${esc(fromManual.toLocaleString())}</span><span class="segd-chip-label">${esc(L.FromManual || 'from manual rows')}</span></span>
                 ${data.segmentEffective === false ? `<span class="segd-chip-stat"><span class="segd-chip-label">${esc((data.reasonCodes || []).join(', '))}</span></span>` : ''}
-                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-US'))}</span>`;
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }))}</span>`;
 
             // A genuine 0 is a result, not a failure: the summary chips still show "0 included" and this line names it
             // (fetch/HTTP errors take the catch path below and render a visible segd-error-row instead).
@@ -261,7 +261,7 @@
             // Included count + resolved-at + the draft caveat: this is today's data and not an audience until activated.
             summary.innerHTML = `
                 <span class="segd-chip-stat segd-chip-included"><span class="segd-chip-value">${esc(total.toLocaleString())}</span><span class="segd-chip-label">${esc(L.MatchedCount || 'Members')}</span></span>
-                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-US'))}</span>
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }))}</span>
                 <span class="segd-draft-note">${esc(L.DraftPreviewNote || '')}</span>`;
 
             // A genuine 0 is a result, not a failure (fetch/HTTP errors take the catch path and render an error row).
