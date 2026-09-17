@@ -101,6 +101,7 @@ public sealed class CreateTaskFieldDefinitionHandler
             // BL-024 Phase 2 — the two permission keys that make the metadata above actually decide something.
             ViewPermission = Trimmed(request.ViewPermission),
             EditPermission = Trimmed(request.EditPermission),
+            Stage = request.Stage,
             IsActive = request.IsActive,
             CreatedBy = _currentUser.ActorName
         };
@@ -187,6 +188,7 @@ public sealed class UpdateTaskFieldDefinitionHandler
         definition.DefaultAccessState = request.DefaultAccessState;
         definition.ViewPermission = Trimmed(request.ViewPermission);
         definition.EditPermission = Trimmed(request.EditPermission);
+        definition.Stage = request.Stage;
         definition.IsActive = request.IsActive;
         definition.UpdatedBy = _currentUser.ActorName;
 

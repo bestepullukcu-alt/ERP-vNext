@@ -1,6 +1,8 @@
 using Diten.Platform.Infrastructure.Persistence.Schema;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using MongoDB.Bson;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Persistence;
@@ -103,6 +105,50 @@ public sealed class TaskCommentOrderMongoTests : IAsyncLifetime
         var comments = await _repository.ListByTaskIdAsync(Guid.NewGuid());
 
         Assert.Empty(comments);
+    }
+
+    [Fact]
+    public async Task WP_PSS_MOD0024_TASK_MENTIONS_01_MentionedUserIds_round_trips_through_a_real_write_and_read()
+    {
+        // A GUID list is exactly the shape BsonValue's Guid conversion has already needed a deprecation warning
+        // for elsewhere in this codebase — worth proving against the real driver rather than the in-memory fake,
+        // which would happily round-trip anything.
+        var mentioned = new[] { Guid.NewGuid(), Guid.NewGuid() };
+        await _repository.CreateAsync(new TaskComment
+        {
+            Id = Guid.NewGuid(),
+            TenantId = _harness.TenantContext.TenantId,
+            TaskItemId = TaskId,
+            Text = "@bak",
+            AuthorUserId = Guid.NewGuid(),
+            AuthorDisplayName = "CT",
+            CreatedAt = Base,
+            MentionedUserIds = mentioned
+        });
+
+        var comment = Assert.Single(await _repository.ListByTaskIdAsync(TaskId));
+
+        Assert.Equal(mentioned, comment.MentionedUserIds);
+    }
+
+    [Fact]
+    public async Task A_comment_written_before_this_slice_reads_with_an_empty_MentionedUserIds_not_null()
+    {
+        // Backward compatibility as a TEST, not a claim. Rather than hand-construct a whole legacy BSON document
+        // (and risk getting every OTHER field's on-the-wire shape wrong), a real comment is written normally and
+        // then the field itself is $unset — reproducing exactly the one difference a document written before
+        // this slice has: no MentionedUserIds element at all.
+        var id = Guid.NewGuid();
+        await SeedAsync("eski yorum", Base, id: id);
+        var raw = _harness.DbContext.Database.GetCollection<BsonDocument>(PlatformCollections.TaskComments);
+        await raw.UpdateOneAsync(
+            Builders<BsonDocument>.Filter.Eq("_id", id),
+            Builders<BsonDocument>.Update.Unset(nameof(TaskComment.MentionedUserIds)));
+
+        var comment = Assert.Single(await _repository.ListByTaskIdAsync(TaskId));
+
+        Assert.NotNull(comment.MentionedUserIds);
+        Assert.Empty(comment.MentionedUserIds);
     }
 
     private Task SeedAsync(string text, DateTimeOffset at, Guid? taskId = null, Guid? id = null)

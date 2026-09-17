@@ -199,9 +199,11 @@ public sealed class TaskOutboxTests
 
         var item = Assert.Single(await Project(task));
 
-        Assert.Equal(["reassign", "plan", "cancel"], item.Actions.Select(a => a.Code).ToArray());
+        // `scheduleReviewMeeting` (MOD-0357 S4) trails: the actor is this task's requester, and the bridge
+        // action is holder-OR-requester-shaped, same as `plan` above it.
+        Assert.Equal(["reassign", "plan", "cancel", "scheduleReviewMeeting"], item.Actions.Select(a => a.Code).ToArray());
         Assert.Equal("reassign", item.PrimaryActionCode);
-        Assert.Equal(["plan", "cancel"], item.OverflowActionCodes!.ToArray());
+        Assert.Equal(["plan", "cancel", "scheduleReviewMeeting"], item.OverflowActionCodes!.ToArray());
         Assert.DoesNotContain(item.Actions, a => a.Code == item.PrimaryActionCode && a.RiskLevel == "destructive");
     }
 

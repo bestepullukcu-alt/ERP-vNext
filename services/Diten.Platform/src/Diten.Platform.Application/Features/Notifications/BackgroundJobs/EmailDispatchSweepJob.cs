@@ -77,7 +77,7 @@ public sealed class EmailDispatchSweepJob : IBackgroundJobHandler<EmailDispatchS
                     TriggeredBy: nameof(EmailDispatchSweepJob));
 
                 await _scheduler.EnqueueAsync<EmailDispatchJobArgs, EmailDispatchJob>(
-                    new EmailDispatchJobArgs(handle.TenantId, handle.DispatchId),
+                    new EmailDispatchJobArgs(handle.TenantId, handle.DispatchId, maxRetryCount),
                     jobContext,
                     cancellationToken);
 

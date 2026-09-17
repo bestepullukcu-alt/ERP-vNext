@@ -1,7 +1,14 @@
 'use strict';
 
 (function (global) {
-    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception'];
+    /*
+     * MOD-0357 S5c — `meetingInvite` ADDED (CT decision, 2026-09-11), the SIXTH value and the first contract
+     * change this array has taken since WC-1. `review`/`issue`/`exception` are still fixture-only placeholders
+     * (no provider emits them); `meetingInvite` is not — `MeetingWorkItemProvider` is a REAL source. The name
+     * is not new: app.js's own icon/chip/filter maps (`TYPE_ICON_MAP`, `TYPE_KEY`) and the trigger-only
+     * showcase this replaces already spelled it exactly this way.
+     */
+    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception', 'meetingInvite'];
     const ASSIGNMENT_MODES = ['direct', 'approval', 'groupQueue', 'offered'];
     const OWNERSHIP_STATES = ['unowned', 'assigned', 'owned', 'notApplicable'];
     const ADMISSION_STATES = ['pendingAcceptance', 'pendingClaim', 'pendingOffer', 'admitted', 'notApplicable'];
@@ -335,6 +342,31 @@
             push(errors, fixture, 'SOURCE_REQUIRED', 'source');
         }
         if (fixture.actionDepth === 'deeplink' && !isSafeLink(fixture.source?.deepLink)) { push(errors, fixture, 'DEEPLINK_REQUIRED', 'source.deepLink'); }
+        /*
+         * MOD-0357 S5c — a meeting invite is nothing BUT a deep link and a deadline: there is no detail page of
+         * its own to fall back on the way a task or an approval has, and no third answer besides Accept/Decline
+         * (K5 — no "maybe"). So both are required regardless of `actionDepth` (the rule above only fires when
+         * `actionDepth === 'deeplink'`, and this card's actions stay inline), and the action set is closed to
+         * exactly the two codes the card offers, in the exact placement the card was built for.
+         */
+        if (fixture.workIntent === 'meetingInvite') {
+            if (!isSafeLink(fixture.source?.deepLink)) {
+                push(errors, fixture, 'MEETING_INVITE_DEEPLINK_REQUIRED', 'source.deepLink');
+            }
+            if (!fixture.dueAt || Number.isNaN(new Date(fixture.dueAt).getTime())) {
+                push(errors, fixture, 'MEETING_INVITE_DUE_AT_REQUIRED', 'dueAt');
+            }
+            const inviteCodes = (fixture.actions || []).map((action) => action.code);
+            if (inviteCodes.length !== 2 || !inviteCodes.includes('acceptInvite') || !inviteCodes.includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_ACTIONS_INVALID', 'actions');
+            }
+            if (fixture.primaryActionCode !== 'acceptInvite') {
+                push(errors, fixture, 'MEETING_INVITE_PRIMARY_ACTION_INVALID', 'primaryActionCode');
+            }
+            if (!(fixture.secondaryActionCodes || []).includes('declineInvite')) {
+                push(errors, fixture, 'MEETING_INVITE_SECONDARY_ACTION_INVALID', 'secondaryActionCodes');
+            }
+        }
         if ((fixture.normalizedStatus === 'Waiting') !== !!fixture.waitingContext) { push(errors, fixture, 'WAITING_CONTEXT_BIDIRECTIONAL', 'waitingContext'); }
         // An unknown type is a CONTRACT error, not a rendering quirk: the shell can only translate what it is
         // told about, so a type nobody declared reaches the user as silence.
@@ -549,10 +581,36 @@
             if (requirement !== 'notAllowed' && !meetingAction) {
                 push(errors, fixture, 'REVIEW_MEETING_ACTION_REQUIRED', 'actions');
             }
-            if (requirement === 'required' && !fixture.reviewMeetingPolicy.meetingId) {
-                const decision = byCode.get('approve') || byCode.get('signoff');
-                if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
-                    push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+            /*
+             * MOD-0357 S9 (owner, 2026-09-13) — the gate holds until MINUTES publish, not merely until a meeting
+             * gets linked. Checked by `minutesPublished`, never by `meetingId` alone: a meeting can be linked for
+             * a long time before its minutes publish, and the earlier version of this rule (meetingId present ⇒
+             * "fine") would have waved every merely-scheduled meeting through.
+             *
+             * WHICH action is the decision depends on whose vocabulary the item speaks (CT fix-up F1, 2026-09-15):
+             *
+             * - A MOD-0024 task (`workIntent: 'task'`): the decision is `submitReview` / `complete`. Whichever of
+             *   them is present must NOT be enabled. Its disabled reason may legitimately be an earlier gate
+             *   (APPROVAL_PENDING, REVIEW_PENDING) — the projection shows only the first unmet reason. An Open task
+             *   carries no decision action yet, which is valid. `start` is NOT a decision and is never checked
+             *   here: scheduling and holding the meeting is part of the work, so the work must be able to begin.
+             * - A MOD-0023 review/approval item: the decision is `approve` / `signoff`, which must be present and
+             *   disabled with REVIEW_MEETING_REQUIRED (the INBOX-REVIEW-REQUIRED-MEETING showcase).
+             */
+            if (requirement === 'required' && fixture.reviewMeetingPolicy.minutesPublished !== true) {
+                if (fixture.workIntent === 'task') {
+                    const decisionEnabled = ['submitReview', 'complete'].some((code) => {
+                        const decision = byCode.get(code);
+                        return Boolean(decision && decision.enabled);
+                    });
+                    if (decisionEnabled) {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
+                } else {
+                    const decision = byCode.get('approve') || byCode.get('signoff');
+                    if (!decision || decision.enabled || decision.disabledReasonCode !== 'REVIEW_MEETING_REQUIRED') {
+                        push(errors, fixture, 'REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION', 'actions');
+                    }
                 }
             }
         }

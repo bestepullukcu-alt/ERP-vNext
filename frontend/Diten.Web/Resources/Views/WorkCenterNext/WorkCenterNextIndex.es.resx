@@ -237,8 +237,8 @@
     <value>Actuar</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Ver</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de aprobación</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de aprobación programada: {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Programar reunión de revisión</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Reunión de revisión programada: {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Preparar la cédula de eliminación intercompañía</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Eliminar los saldos intercompañía antes de la consolidación.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Investigar la regresión de la regla de precios</value></data>
@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Fecha y hora de la reunión</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Tipo de reunión</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Elija el tipo de reunión que se va a programar.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Todavía no hay tipos de reunión configurados. Pida a un administrador que agregue uno.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Esto crea una reunión real en Reuniones, vinculada a esta tarea.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Revisión de cierre del T3</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Enviar</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mencionar a alguien</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Quitar mención</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mencionar personas</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Añadir</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Elija al menos una persona.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Todavía no hay nadie a quien mencionar en esta tarea.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Ya se agregaron todas las personas que se pueden mencionar.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un comentario puede mencionar como máximo a {0} personas.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Escribe algo antes de publicar</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Colaboración y registros</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Detalles del elemento de trabajo</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>No se encontró el elemento de trabajo solicitado.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Este elemento de trabajo no se pudo mostrar porque no superó la validación del contrato.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Volver al centro de trabajo</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Su autoridad sobre este elemento ha finalizado.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Una dependencia requerida está incompleta.</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Aprobación: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Pendiente</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Pendiente de aprobación</value>
@@ -1542,6 +1582,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>A la espera de…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Programar reunión de revisión</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Aceptar</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Rechazar</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Devolver</value>
@@ -1895,6 +1944,12 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Una subtarea sigue abierta</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Ya hay una reunión de revisión programada</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Esta decisión permanece bloqueada hasta que se publique el acta de la reunión de revisión vinculada.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Lista de verificación actualizada.</value>
   </data>
@@ -2158,6 +2213,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Algunas fuentes no respondieron: esta lista puede estar incompleta.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} elemento(s) de trabajo no se pudieron mostrar debido a un error de contrato.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Algunas fuentes no respondieron, por lo que este recuento puede estar incompleto.</value>
   </data>
@@ -2203,6 +2261,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Cerrado como: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Cierre</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} entregable(s) adjunto(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} archivo(s) de evidencia adjunto(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>¿Cómo terminó este trabajo?</value>
   </data>
@@ -2223,6 +2290,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Este resultado exige un motivo.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Este campo es obligatorio para poder completar la tarea.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completado según lo solicitado</value>
@@ -2274,6 +2344,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Subido por {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Adjunto añadido.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Adjunto eliminado.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Agregue un entregable o una evidencia (opcional)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>El tipo de esta tarea requiere un archivo entregable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Elija un archivo antes de completar esta tarea.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Añadir evidencia</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} archivo(s) de evidencia</value></data>
 </root>

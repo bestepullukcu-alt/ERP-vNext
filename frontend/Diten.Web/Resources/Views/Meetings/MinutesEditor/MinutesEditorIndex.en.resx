@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MinutesTitle" xml:space="preserve"><value>Minutes</value></data>
+  <data name="MeetingTitleLabel" xml:space="preserve"><value>Meeting</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusPublishedPrefix" xml:space="preserve"><value>Published v</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Save Draft</value></data>
+  <data name="Publish" xml:space="preserve"><value>Publish</value></data>
+  <data name="PublishCorrection" xml:space="preserve"><value>Publish Correction</value></data>
+  <data name="AttendanceSection" xml:space="preserve"><value>Attendance</value></data>
+  <data name="NoAttendeesHint" xml:space="preserve"><value>No attendees on this meeting.</value></data>
+  <data name="AttendancePresent" xml:space="preserve"><value>Present</value></data>
+  <data name="AttendanceAbsent" xml:space="preserve"><value>Absent</value></data>
+  <data name="AttendanceExcused" xml:space="preserve"><value>Excused</value></data>
+  <data name="DecisionsSection" xml:space="preserve"><value>Decisions</value></data>
+  <data name="AddDecision" xml:space="preserve"><value>Add Decision</value></data>
+  <data name="RemoveDecision" xml:space="preserve"><value>Remove</value></data>
+  <data name="NoDecisionsHint" xml:space="preserve"><value>No decisions recorded yet.</value></data>
+  <data name="DecisionTextPlaceholder" xml:space="preserve"><value>Describe the decision...</value></data>
+  <data name="DecidedByLabel" xml:space="preserve"><value>Decided by</value></data>
+  <data name="DecidedByPlaceholder" xml:space="preserve"><value>Not specified</value></data>
+  <data name="CreateTaskFromDecision" xml:space="preserve"><value>Create Task</value></data>
+  <data name="AddedLaterBadge" xml:space="preserve"><value>Added after publish</value></data>
+  <data name="HistorySection" xml:space="preserve"><value>Version History</value></data>
+  <data name="HistoryDraftLabel" xml:space="preserve"><value>Draft</value></data>
+  <data name="HistoryPublishedPrefix" xml:space="preserve"><value>Published v</value></data>
+  <data name="HistoryCorrectionOfPrefix" xml:space="preserve"><value>Correction of v</value></data>
+  <data name="PublishConfirmTitle" xml:space="preserve"><value>Publish minutes?</value></data>
+  <data name="PublishConfirmText" xml:space="preserve"><value>Once published, this version is locked. Corrections create a new version.</value></data>
+  <data name="CorrectionReasonLabel" xml:space="preserve"><value>Correction reason</value></data>
+  <data name="CorrectionReasonPlaceholder" xml:space="preserve"><value>Why is this correction needed?</value></data>
+  <data name="CorrectionReasonRequired" xml:space="preserve"><value>A correction reason is required.</value></data>
+  <data name="ToastDraftSaved" xml:space="preserve"><value>Draft saved</value></data>
+  <data name="ToastPublished" xml:space="preserve"><value>Minutes published</value></data>
+  <data name="ToastCorrected" xml:space="preserve"><value>Correction published</value></data>
+</root>

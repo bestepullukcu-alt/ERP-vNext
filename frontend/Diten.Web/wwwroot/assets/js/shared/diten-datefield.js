@@ -24,6 +24,54 @@
  * Returns the number of inputs it enhanced, so a caller can assert it found what it expected.
  */
 (function (global) {
+    /*
+     * BL-391 — "gg.aa.yyyy" typed by hand is a promise: what the reader typed is what gets saved, or nothing
+     * is. `allowInput: true` hands flatpickr free text on close, and flatpickr's OWN parser (`Date.parse`-style
+     * leniency) can turn an unrecognised string into a DIFFERENT valid date instead of refusing it — the exact
+     * failure mode this bug report described (a typed "2026-09-13" silently became a stored "2026-06-20").
+     *
+     * The fix does not try to out-guess flatpickr's parser. It watches what the reader actually left in the box
+     * (an `input` listener, captured BEFORE flatpickr's own close-time reformat can overwrite that value) and,
+     * on close, re-renders whatever flatpickr DID resolve back into the SAME display format. If that re-render
+     * does not read back identical to what was typed — or nothing was resolved at all — the field cannot be
+     * trusted to mean what it shows, so it is cleared and marked invalid instead.
+     *
+     * `formatKey` is 'dateFormat' for a plain field (this file's own default: no altInput, the visible input IS
+     * the value) or 'altFormat' for an altInput field (Organization/PositionAssignments/form.js's own shape) —
+     * whichever format governs the text the reader is actually looking at and typing into.
+     */
+    const guardAgainstSilentMisparse = (instance, formatKey) => {
+        // A real flatpickr instance always has both; a minimal test double (or a future caller that hands this
+        // an incomplete object) does not, and the SAME "nothing to enhance, quietly skip" posture `enhance`
+        // itself already takes below applies here too — never throw out of a setup path.
+        const target = instance?.altInput || instance?.input;
+        if (!target || !Array.isArray(instance.config?.onClose) || typeof instance.formatDate !== 'function') {
+            return;
+        }
+
+        let lastTyped = target.value || '';
+        target.addEventListener('input', () => { lastTyped = target.value; });
+
+        instance.config.onClose.push((selectedDates) => {
+            const raw = lastTyped.trim();
+            if (!raw) {
+                target.classList.remove('is-invalid');
+                lastTyped = target.value;
+                return;
+            }
+
+            const resolved = selectedDates[0];
+            const reformatted = resolved ? instance.formatDate(resolved, instance.config[formatKey]) : '';
+            if (!resolved || reformatted !== raw) {
+                instance.clear();
+                target.classList.add('is-invalid');
+            } else {
+                target.classList.remove('is-invalid');
+            }
+            lastTyped = target.value;
+        });
+    };
+
     const enhance = (root, options) => {
         const scope = root || global.document;
         if (!scope) { return 0; }
@@ -60,6 +108,11 @@
                 options || {}
             ));
 
+            // BL-391 — `allowInput: true` lets the reader type straight past the picker, and flatpickr's own
+            // parser is lenient: text that does not actually match `dateFormat` can still resolve to SOME date
+            // with no sign anything went wrong. Guarded on every field this component enhances.
+            guardAgainstSilentMisparse(node._flatpickr, 'dateFormat');
+
             /*
              * The icon is looked up from the CONTROL, not from the wrapper, on purpose: select2 and other
              * enhancers insert their own element between .diten-field and the control, so the icon is the
@@ -76,5 +129,6 @@
         return nodes.length;
     };
 
-    global.DitenDateField = { enhance };
+    // guardAgainstSilentMisparse exposed so a test can drive it directly against a real flatpickr instance.
+    global.DitenDateField = { enhance, guardAgainstSilentMisparse };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -35,6 +35,16 @@ public sealed class QueueEmailNotificationHandler
     public const string ReasonRenderFailed = "TEMPLATE_RENDER_FAILED";
     public const string ReasonProviderRejected = "PROVIDER_REJECTED";
 
+    // BL-374 — the exact token SanitizeVariables/MaskSensitiveValues write in place of a sensitive value.
+    // Internal (not private) so EmailDispatchJob can recognise it in a persisted VariablesJson before
+    // attempting a full-fidelity re-render on retry, without a second, drifting copy of the literal.
+    internal const string RedactedToken = "[REDACTED]";
+
+    // BL-374 — an attachment has no secret to protect, but it does cost storage; above this the FIRST send
+    // still carries it (this bound is a persistence decision, not a delivery one) and only the retry path
+    // loses it, exactly like the gap this WP was written to close in reverse.
+    private const int MaxPersistedAttachmentBytes = 256 * 1024;
+
     private readonly ITenantMessagingSettingsResolver _settingsResolver;
     private readonly INotificationTemplateRepository _templateRepository;
     private readonly IEmailTemplateRenderer _renderer;
@@ -105,6 +115,7 @@ public sealed class QueueEmailNotificationHandler
         var correlationId = string.IsNullOrWhiteSpace(request.CorrelationId)
             ? Guid.NewGuid().ToString("N")
             : request.CorrelationId;
+        var persistedAttachments = PrepareAttachmentsForPersistence(request.Request.Attachments, out var attachmentsSkippedForSize);
         var dispatch = new NotificationDispatch
         {
             TenantId = request.TenantId,
@@ -125,13 +136,28 @@ public sealed class QueueEmailNotificationHandler
             BodyHtmlPreview = MaskSensitiveValues(renderResponse.Data.BodyHtmlPreview, request.Request.Variables),
             BodyTextPreview = MaskSensitiveValues(renderResponse.Data.BodyTextPreview, request.Request.Variables),
             VariablesJson = JsonSerializer.Serialize(SanitizeVariables(request.Request.Variables)),
+            // BL-374 — lets a retry decide whether re-rendering from TemplateId + VariablesJson would still
+            // reproduce this exact send, or whether the template has since moved on.
+            TemplateSemanticVersion = template.SemanticVersion,
+            Attachments = persistedAttachments,
             QueuedAt = DateTimeOffset.UtcNow,
             RetryCount = 0,
             CorrelationId = correlationId,
-            CausationId = request.Request.CausationId
+            CausationId = request.Request.CausationId,
+            MeetingAttendeeUserId = request.Request.MeetingAttendeeUserId
         };
 
         await _dispatchRepository.CreateAsync(dispatch, ct);
+
+        if (attachmentsSkippedForSize)
+        {
+            // Not silent (BL-374's own requirement): the FIRST send still carries the attachment below
+            // (it is read straight off request.Request.Attachments, never from `dispatch`), but a retry
+            // reconstructed from this row will not have one.
+            _logger.LogWarning(
+                "email.dispatch.attachments_not_persisted DispatchId={DispatchId} TenantId={TenantId} CorrelationId={CorrelationId}",
+                dispatch.Id, dispatch.TenantId, dispatch.CorrelationId);
+        }
 
         await _eventBus.PublishAsync(
             new NotificationEmailQueuedV1(
@@ -159,7 +185,12 @@ public sealed class QueueEmailNotificationHandler
                 dispatch.BodyHtmlPreview,
                 dispatch.BodyTextPreview,
                 renderResponse.Data.BodyHtml,
-                renderResponse.Data.BodyText),
+                renderResponse.Data.BodyText,
+                // MOD-0357 S5b — carried straight from the caller's request into THIS SAME synchronous provider
+                // call; never assigned to `dispatch` above, so it is never persisted (NotificationDispatch has
+                // no attachment column, and none is added here — see MessagingProviderEmailRequest's own doc
+                // comment on why a later retry already cannot have one anyway).
+                request.Request.Attachments),
             ct);
 
         if (providerResult.Accepted)
@@ -187,6 +218,10 @@ public sealed class QueueEmailNotificationHandler
             Redact(providerResult.ErrorCode) ?? "ProviderRejected",
             Redact(providerResult.ErrorMessage) ?? "Provider rejected the message.",
             DateTimeOffset.UtcNow);
+        // S10B live pass (2026-09-13): the first failure must be DUE for the retry sweep, which only selects rows
+        // with a NextRetryAt. Without this line a mail whose first attempt failed was never tried again, and every
+        // retry-fidelity rule (BL-374) sat behind a retry that could not happen. RetryCount stays 0: no retry has run.
+        dispatch.NextRetryAt = EmailDispatchRetryPolicy.NextRetryAt(dispatch.RetryCount + 1, DateTimeOffset.UtcNow);
         await _dispatchRepository.UpdateAsync(dispatch, ct);
         await _eventBus.PublishAsync(
             new NotificationDispatchFailedV1(
@@ -217,13 +252,39 @@ public sealed class QueueEmailNotificationHandler
     private static EmailRecipientDto ToProviderRecipient(EmailRecipient recipient) =>
         new(recipient.Email, recipient.DisplayName);
 
+    // BL-374 — the FIRST send never reads this; it uses request.Request.Attachments directly (see the
+    // provider call above). This only decides what a LATER retry will have to work with.
+    private static List<NotificationDispatchAttachment> PrepareAttachmentsForPersistence(
+        IReadOnlyList<MessagingProviderAttachment>? attachments, out bool skippedForSize)
+    {
+        skippedForSize = false;
+        if (attachments is null || attachments.Count == 0)
+        {
+            return [];
+        }
+
+        var totalBytes = attachments.Sum(a => (long)a.Content.Length);
+        if (totalBytes > MaxPersistedAttachmentBytes)
+        {
+            skippedForSize = true;
+            return [];
+        }
+
+        return attachments
+            .Select(a => new NotificationDispatchAttachment
+            {
+                FileName = a.FileName,
+                ContentType = a.ContentType,
+                Content = a.Content
+            })
+            .ToList();
+    }
+
     private static IReadOnlyDictionary<string, object?> SanitizeVariables(IReadOnlyDictionary<string, object?> variables) =>
         variables.ToDictionary(
             pair => pair.Key,
             pair => IsSensitiveKey(pair.Key) || NotificationParsing.LooksLikeRawSecret(Convert.ToString(pair.Value)) ? "[REDACTED]" : pair.Value,
             StringComparer.OrdinalIgnoreCase);
-
-    private const string RedactedToken = "[REDACTED]";
 
     // Replaces the concrete values of sensitive variables inside the persisted body preview, so a rendered
     // secret (temporary password, token, API key) never lands in the dispatch record. The full body sent to

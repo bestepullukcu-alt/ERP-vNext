@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="MeetingSeriesTitle" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>قواعد وتيرة متكررة — يتم إنشاء كل نسخة مستحقة تلقائيًا كاجتماع مستقل.</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Frequency" xml:space="preserve"><value>التكرار</value></data>
+  <data name="FrequencyWeekly" xml:space="preserve"><value>أسبوعي</value></data>
+  <data name="FrequencyMonthly" xml:space="preserve"><value>شهري</value></data>
+  <data name="FrequencyQuarterly" xml:space="preserve"><value>ربع سنوي</value></data>
+  <data name="FrequencyYearly" xml:space="preserve"><value>سنوي</value></data>
+  <data name="Interval" xml:space="preserve"><value>الفاصل الزمني</value></data>
+  <data name="IntervalHint" xml:space="preserve"><value>كل N فترة — القيمة 2 مع الأسبوعي تعني كل أسبوعين.</value></data>
+  <data name="DurationMinutes" xml:space="preserve"><value>المدة (دقائق)</value></data>
+  <data name="LeadTimeDays" xml:space="preserve"><value>مهلة التحضير (أيام)</value></data>
+  <data name="LeadTimeDaysHint" xml:space="preserve"><value>عدد الأيام قبل كل نسخة يتم فيها إنشاؤها، من 1 إلى 90.</value></data>
+  <data name="ChainAsFollowUp" xml:space="preserve"><value>ربط كاجتماع متابعة</value></data>
+  <data name="ChainAsFollowUpHint" xml:space="preserve"><value>كل نسخة جديدة تكمل السابقة، وتنقل إجراءاتها التي ما زالت مفتوحة.</value></data>
+  <data name="IsActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="LastGeneratedAt" xml:space="preserve"><value>آخر إنشاء</value></data>
+  <data name="LastGeneratedAtNever" xml:space="preserve"><value>لم يتم أبدًا</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>سلسلة اجتماعات جديدة</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل سلسلة الاجتماعات</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>تفاصيل السلسلة</value></data>
+  <data name="ScheduleSection" xml:space="preserve"><value>الجدول الزمني</value></data>
+  <data name="ParticipantsSection" xml:space="preserve"><value>المشاركون</value></data>
+  <data name="FlagsSection" xml:space="preserve"><value>الإعدادات</value></data>
+  <data name="DeleteConfirmTitle" xml:space="preserve"><value>هل تريد حذف هذه السلسلة؟</value></data>
+  <data name="DeleteConfirmText" xml:space="preserve"><value>هذا يزيل القاعدة فقط — لا يؤثر على الاجتماعات التي تم إنشاؤها بالفعل.</value></data>
+</root>

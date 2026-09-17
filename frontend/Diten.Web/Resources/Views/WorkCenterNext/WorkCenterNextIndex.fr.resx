@@ -237,8 +237,8 @@
     <value>Agir</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>Afficher</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>Planifier une réunion de validation</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>Réunion de validation planifiée : {0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>Planifier une réunion de revue</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>Réunion de revue planifiée : {0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>Préparer le tableau d'élimination intersociétés</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>Éliminer les soldes intersociétés avant la consolidation.</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>Enquêter sur la régression de la règle de tarification</value></data>
@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Date et heure de la réunion</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Type de réunion</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Choisissez le type de réunion à planifier.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>Aucun type de réunion n'est encore configuré. Demandez à un administrateur d'en ajouter un.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>Cette action crée une réunion réelle dans Réunions, liée à cette tâche.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Revue de clôture T3</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Publier</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mentionner quelqu'un</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Retirer la mention</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mentionner des personnes</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Ajouter</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Choisissez au moins une personne.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>Il n'y a encore personne à mentionner sur cette tâche.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Toutes les personnes pouvant être mentionnées sont déjà ajoutées.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>Un commentaire peut mentionner au plus {0} personnes.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Écrivez quelque chose avant de publier</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Collaboration et dossiers</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Détails de l’élément de travail</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>L’élément de travail demandé est introuvable.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>Cet élément de travail n’a pas pu être affiché car il n’a pas respecté le contrat de validation.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Retour au centre de travail</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Votre autorité sur cet élément a pris fin.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>Une dépendance requise est incomplète.</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 juillet 2026, 14:00–15:00 · Teams · Organisateur : Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approbation : {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>En attente</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>En attente d'approbation</value>
@@ -1542,6 +1582,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>En attente de…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Planifier une réunion de revue</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Accepter</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Refuser</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Renvoyer</value>
@@ -1895,6 +1944,12 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>Une sous-tâche est encore ouverte</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>Une réunion de revue est déjà planifiée</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>Cette décision reste verrouillée tant que le compte rendu de la réunion de revue liée n'est pas publié.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Liste de contrôle mise à jour.</value>
   </data>
@@ -2158,6 +2213,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Certaines sources n'ont pas répondu — cette liste peut être incomplète.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} élément(s) de travail n’a/n’ont pas pu être affiché(s) en raison d’une erreur de contrat.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Certaines sources n'ont pas répondu ; ce nombre peut donc être incomplet.</value>
   </data>
@@ -2203,6 +2261,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Clôturé en : {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Clôture</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} livrable(s) joint(s).</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} fichier(s) de preuve joint(s).</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>Comment ce travail s'est-il terminé ?</value>
   </data>
@@ -2223,6 +2290,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>Ce résultat exige un motif.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>Ce champ est obligatoire pour terminer la tâche.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Terminé comme demandé</value>
@@ -2274,6 +2344,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Ajouté par {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Pièce jointe ajoutée.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Pièce jointe supprimée.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Ajoutez un livrable ou une preuve (facultatif)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>Le type de cette tâche exige un fichier de livrable</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choisissez un fichier avant de terminer cette tâche.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Ajouter une preuve</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} fichier(s) de preuve</value></data>
 </root>

@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Le poste sélectionné ne peut pas recevoir de tâches. Choisissez un poste actif.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Quelqu'un d'autre a modifié cette tâche avant vous. L'écran affiche désormais l'état actuel.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Un élément obligatoire de la liste de contrôle n'est pas encore coché, la tâche ne peut donc pas être terminée.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Un champ de clôture obligatoire est encore vide, la tâche ne peut pas être terminée.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>L'unité organisationnelle indiquée est introuvable.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>Cette unité organisationnelle est hors de portée.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Une tâche dont celle-ci dépend n’est pas encore terminée, elle ne peut donc pas avancer.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Une sous-tâche est encore ouverte, cette tâche ne peut donc pas encore être terminée.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Cette tâche est clôturée, elle ne peut plus être commentée.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>Observateurs</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Liste de contrôle</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Les étapes de cette tâche. Les éléments se cochent après la création ; un élément bloquant empêche la clôture de la tâche.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Pièces jointes</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Fichiers pour cette tâche — les instructions pour l'ouvrir, ou une preuve et un livrable à enregistrer tout de suite. Téléversés une fois la tâche créée.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Fichier</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Type</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Pièce jointe</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Preuve</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Livrable</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Ajouter un fichier</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Retirer</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Tâche créée — certains fichiers n'ont pas été téléversés</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>La tâche a été créée, mais les fichiers suivants n'ont pas pu être téléversés. Ajoutez-les à nouveau depuis la carte Pièces jointes de la tâche :</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Aller à la tâche</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Saisissez un élément et appuyez sur Entrée</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Ajouter</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Cliquez sur l'étiquette pour changer de niveau. Il n'y a pas encore de liste de modèles.</value></data>
@@ -200,6 +215,12 @@
   </data>
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Ce commentaire a déjà été retiré.</value>
+  </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Une des personnes mentionnées ne peut pas voir cette tâche. Ajoutez-la d'abord comme observateur.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>Un commentaire peut mentionner au plus 10 personnes.</value>
   </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Cette personne ne peut pas être nommée ici.</value>

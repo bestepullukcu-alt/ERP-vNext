@@ -16,7 +16,13 @@ namespace Diten.Platform.Application.Features.DocumentManagementMasterRegister.H
 /// Reuses the quoted-aware <see cref="DocumentReferenceListParser"/> (naive splitting is banned — it corrupts the
 /// blocked-reason column) and the shared <see cref="DocumentRegisterIngestMapping"/> (DM-0 status mapping). Idempotent
 /// upsert by (TenantId, PermanentUid): <see cref="IDocumentMasterRegisterRepository.GetByPermanentUidAsync"/> → update
-/// if present, else create — re-import updates, never duplicates.
+/// if present, else create — re-import never duplicates.
+///
+/// <para>An existing row is written and counted <c>Updated</c> only when
+/// <see cref="DocumentRegisterIngestMapping.WouldChange"/> says its mapped fields actually differ; otherwise it is
+/// left untouched and counted <c>Unchanged</c> — the identical comparison the preview
+/// (<c>DocumentRegisterImportPreviewService</c>) already forecasts with, so a re-import of an unchanged file writes
+/// nothing and reports 0 updates, matching what the preview promised.</para>
 /// </summary>
 public sealed class IngestDocumentMasterRegisterHandler(
     IDocumentMasterRegisterRepository register,
@@ -51,7 +57,7 @@ public sealed class IngestDocumentMasterRegisterHandler(
         }
 
         var errors = new List<string>(parsed.Errors);
-        int created = 0, updated = 0, blocked = 0;
+        int created = 0, updated = 0, unchanged = 0, blocked = 0;
 
         foreach (var src in parsed.Entries)
         {
@@ -78,11 +84,28 @@ public sealed class IngestDocumentMasterRegisterHandler(
             }
             else
             {
-                DocumentRegisterIngestMapping.Apply(existing, src);
-                existing.UpdatedAt = DateTimeOffset.UtcNow;
-                existing.UpdatedBy = actor;
-                await register.UpdateAsync(existing, ct);
-                updated++;
+                /*
+                 * WP-DM-DCP005-RETIRE-CSV-01, AC1 — the SAME comparison the preview already promised its counts
+                 * with (DocumentRegisterIngestMapping.WouldChange). The mapping was already validated fail-closed
+                 * above, so re-resolving the status here cannot throw. A row whose mapped fields are byte-identical
+                 * to what Apply would write is neither re-written nor counted as Updated: it used to be both,
+                 * which is why a no-op re-import of the same CSV reported "N updated" while the preview, moments
+                 * earlier, had said "0 to update" — the commit's own history then disagreed with the preview that
+                 * produced it.
+                 */
+                var mappedStatus = DocumentRegisterIngestMapping.MapLifecycleStatus(src.Status);
+                if (DocumentRegisterIngestMapping.WouldChange(existing, src, mappedStatus))
+                {
+                    DocumentRegisterIngestMapping.Apply(existing, src);
+                    existing.UpdatedAt = DateTimeOffset.UtcNow;
+                    existing.UpdatedBy = actor;
+                    await register.UpdateAsync(existing, ct);
+                    updated++;
+                }
+                else
+                {
+                    unchanged++;
+                }
             }
 
             if (!src.LinkableInErp)
@@ -92,7 +115,7 @@ public sealed class IngestDocumentMasterRegisterHandler(
         }
 
         return Response<DocumentRegisterIngestResult>.Success(
-            new DocumentRegisterIngestResult(parsed.Entries.Count, created, updated, blocked, errors),
+            new DocumentRegisterIngestResult(parsed.Entries.Count, created, updated, unchanged, blocked, errors),
             correlationId: request.CorrelationId);
     }
 }

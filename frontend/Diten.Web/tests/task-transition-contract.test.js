@@ -111,6 +111,14 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * above already had to correct once. The builder wraps the moment it takes a second parameter, and it now
      * does.
      */
+    /*
+     * Faz 2a-rest (MOD-0024 Task Closure & Reporting) — `closureFieldValues` GRADUATED from exempted to
+     * included. It is TaskTransitionRequest's own trailing, optional field for CLOSURE-stage custom values;
+     * Faz 2a shipped the server half with nothing on the wire to send it, and this generic body now carries it
+     * for every transition (`undefined`, never sent, for the nine that never collect one — `complete` is the
+     * only caller that ever supplies it). The exclusion this test once needed is gone because the promise it
+     * stood in for is now actually true: field for field, once more.
+     */
     const fields = new Set(clientFields("__default"));
     expect(fields).toEqual(new Set(serverFields("TaskTransitionRequest")));
   });
@@ -142,13 +150,18 @@ describe("every transition sends exactly what its endpoint declares", () => {
     /*
      * The other half of the same defect: a builder that accepts an outcome is useless if no call site passes
      * one. Each hop is named, because a break in ANY of them restores the empty column silently.
+     *
+     * Faz 2a-rest added a SIXTH argument (`closureFieldValues`) to both `applyAction` and `submitRealTransition`
+     * and wrapped their call sites onto a second line — the outcome's own place in the signature (fourth
+     * parameter of five-then-six) is unchanged, so these patterns match across the line break rather than
+     * anchoring on the closing paren, which moved.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
     expect(source, "the dialog no longer hands the outcome to applyAction")
-      .toMatch(/applyAction\(item, action, res\.value\.reason, undefined, undefined, res\.value\.outcomeCode\)/);
+      .toMatch(/applyAction\(\s*item, action, res\.value\.reason, undefined, undefined, res\.value\.outcomeCode,/);
     expect(source, "applyAction no longer forwards the outcome")
-      .toMatch(/submitRealTransition\(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode\)/);
-    expect(source, "the body builder is no longer given the outcome").toMatch(/outcomeCode \}\)\);/);
+      .toMatch(/submitRealTransition\(\s*item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode,/);
+    expect(source, "the body builder is no longer given the outcome").toMatch(/outcomeCode \|\| null/);
   });
 
   it("only asks for an outcome when the task's TYPE offers one", () => {
@@ -156,10 +169,21 @@ describe("every transition sends exactly what its endpoint declares", () => {
      * BACKWARD COMPATIBILITY, asserted rather than promised. A hundred-odd tasks are open against types with no
      * dictionary; if the picker ever became unconditional, every one of them would meet a required field that
      * has no rows to choose from and could not be closed at all.
+     *
+     * Faz 2a-rest added the SAME promise for closure FIELDS beside closure OUTCOMES — the picker's guard is now
+     * an OR of the two. WP-PSS-MOD0024-ATTACHMENTS-UX-01 added a THIRD term, `canAttachOnComplete`, because a
+     * complete on a dispatchable item can now also offer "Çıktı / Kanıt ekle" — a file input `sharedConfirm`
+     * cannot hold — so the dialog is no longer conditional on outcomes/fields alone. The promise this test still
+     * pins is narrower and still true: the OUTCOME picker itself is drawn only when the type has one (see the
+     * `closureOutcomes.length ? … : ''` branch a few lines below the guard), never fabricated for a type that
+     * offers none.
      */
     const source = fs.readFileSync(APP_JS, "utf8");
     expect(source).toContain("const closureOutcomes = closureOutcomesFor(item, action);");
-    expect(source, "the picker stopped being conditional").toContain("if (closureOutcomes.length) {");
+    expect(source, "the picker stopped being conditional")
+      .toContain("if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {");
+    expect(source, "the outcome SELECT is still drawn only when the type has outcomes")
+      .toMatch(/const outcomeBlock = closureOutcomes\.length\s*\n\s*\? /);
   });
 });
 

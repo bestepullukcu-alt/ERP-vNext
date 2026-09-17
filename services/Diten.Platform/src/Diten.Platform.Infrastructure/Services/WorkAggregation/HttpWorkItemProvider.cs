@@ -155,6 +155,8 @@ public sealed class HttpWorkItemProvider : IWorkItemProvider
     /// REMOVED rather than drawn. A drawn button that reaches nothing is precisely the defect DCP-004 §2 D2
     /// records, and adding a network hop is no reason to re-ship it.</para>
     /// </summary>
+    private const string DisabledPermissionKey = "WorkAggregation_ActionDisabled_PermissionDenied";
+
     private WorkItemProjectionDto GateActions(WorkItemProjectionDto item, WorkItemActor actor)
     {
         var actions = new List<WorkItemActionDto>();
@@ -179,7 +181,10 @@ public sealed class HttpWorkItemProvider : IWorkItemProvider
                 {
                     Enabled = false,
                     DisabledReasonCode = WorkAggregationReasonCodes.PermissionDenied,
-                    DisabledReason = action.DisabledReason
+                    // BL-379 (CT) — the label of the REFUSAL, not the module's own: an action the module sent as enabled
+                    // carries no DisabledReason at all, and a disabled action without one fails the WC-1 contract
+                    // (DISABLED_REASON_REQUIRED), so the whole item was silently dropped by the browser.
+                    DisabledReason = WorkItemLabelDto.Resource(DisabledPermissionKey)
                 });
         }
 

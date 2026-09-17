@@ -102,6 +102,18 @@
         ChecklistMoveUp = Localizer["ChecklistMoveUp"].Value,
         ChecklistMoveDown = Localizer["ChecklistMoveDown"].Value,
 
+        @* WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the Attachments card's own JS vocabulary. The card's heading and
+           description, and the three add-row labels, stay server-rendered in _Form.cshtml (like the checklist
+           card's own CardChecklistTitle/Description); only what form-page.js builds at runtime — the pending
+           row's kind label and remove button, and the partial-upload-failure dialog — needs to reach it here. *@
+        AttachmentKindAttachment = Localizer["AttachmentKindAttachment"].Value,
+        AttachmentKindEvidence = Localizer["AttachmentKindEvidence"].Value,
+        AttachmentKindDeliverable = Localizer["AttachmentKindDeliverable"].Value,
+        AttachmentRemoveButton = Localizer["AttachmentRemoveButton"].Value,
+        AttachmentUploadPartialTitle = Localizer["AttachmentUploadPartialTitle"].Value,
+        AttachmentUploadPartialBody = Localizer["AttachmentUploadPartialBody"].Value,
+        AttachmentUploadRetryLink = Localizer["AttachmentUploadRetryLink"].Value,
+
         // Phase 5 — the configurable fields the form renders from the tenant's own definitions. The field LABELS
         // are tenant content and come from the definition itself; only the control's own furniture is translated
         // here (a picker's placeholder, and the two words a yes/no field offers).
@@ -171,6 +183,9 @@
         // "an error occurred" cannot tell a user waiting for their manager from one whose request was rejected.
         ErrorConcurrencyRefreshed = Localizer["ErrorConcurrencyRefreshed"].Value,
         ErrorChecklistIncomplete = Localizer["ErrorChecklistIncomplete"].Value,
+        ErrorClosureFieldRequired = Localizer["ErrorClosureFieldRequired"].Value,
+        ErrorOrganizationUnitNotFound = Localizer["ErrorOrganizationUnitNotFound"].Value,
+        ErrorOrganizationUnitOutOfScope = Localizer["ErrorOrganizationUnitOutOfScope"].Value,
         ErrorDependencyBlocked = Localizer["ErrorDependencyBlocked"].Value,
         ErrorSubtaskBlocked = Localizer["ErrorSubtaskBlocked"].Value,
         ErrorCommentTaskClosed = Localizer["ErrorCommentTaskClosed"].Value,
@@ -180,6 +195,10 @@
         // generic "an error occurred".
         ErrorCommentNotAuthor = Localizer["ErrorCommentNotAuthor"].Value,
         ErrorCommentWithdrawn = Localizer["ErrorCommentWithdrawn"].Value,
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — @mention refusals. Same rule as the pair above: unlisted here, the
+        // codes api.js already maps would reach the reader as the generic "an error occurred".
+        ErrorMentionNotVisible = Localizer["ErrorMentionNotVisible"].Value,
+        ErrorMentionLimitExceeded = Localizer["ErrorMentionLimitExceeded"].Value,
         // Naming an ineligible person when parking a task. This bridge does NOT auto-enumerate its resx.
         ErrorWaitingOnNotAssignable = Localizer["ErrorWaitingOnNotAssignable"].Value,
         ErrorPlanDateRequired = Localizer["ErrorPlanDateRequired"].Value,

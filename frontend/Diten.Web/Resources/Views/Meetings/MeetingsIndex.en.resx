@@ -37,8 +37,10 @@
   <data name="AddAgendaItem" xml:space="preserve"><value>Add</value></data>
   <data name="AgendaItemPlaceholder" xml:space="preserve"><value>Agenda item</value></data>
   <data name="RemoveAttendee" xml:space="preserve"><value>Remove attendee</value></data>
+  <data name="MailUndeliveredBadge" xml:space="preserve"><value>Mail undelivered</value></data>
   <data name="AddAttendee" xml:space="preserve"><value>Add</value></data>
   <data name="ReassignOrganizer" xml:space="preserve"><value>Reassign Organizer</value></data>
+  <data name="Minutes" xml:space="preserve"><value>Minutes</value></data>
   <data name="NewOrganizer" xml:space="preserve"><value>New Organizer</value></data>
   <data name="CancelMeeting" xml:space="preserve"><value>Cancel Meeting</value></data>
   <data name="CancellationReason" xml:space="preserve"><value>Cancellation reason</value></data>
@@ -49,6 +51,27 @@
   <data name="NoLinkedTasks" xml:space="preserve"><value>No tasks are linked to this meeting yet.</value></data>
   <data name="Agenda" xml:space="preserve"><value>Agenda</value></data>
   <data name="NoAgendaItems" xml:space="preserve"><value>No agenda items yet.</value></data>
+  <data name="CreateTaskFromMeeting" xml:space="preserve"><value>Create task</value></data>
+  <data name="LinkExistingTask" xml:space="preserve"><value>Link existing task</value></data>
+  <data name="CreateTaskFromAgendaItem" xml:space="preserve"><value>Create a task from this line</value></data>
+  <data name="TaskTitleLabel" xml:space="preserve"><value>Task title</value></data>
+  <data name="TaskTitleRequired" xml:space="preserve"><value>A task title is required.</value></data>
+  <data name="TaskAssigneeLabel" xml:space="preserve"><value>Assignee</value></data>
+  <data name="TaskAssigneeSelf" xml:space="preserve"><value>Myself</value></data>
+  <data name="TaskDueAtLabel" xml:space="preserve"><value>Due date</value></data>
+  <data name="LinkExistingTaskLabel" xml:space="preserve"><value>Task</value></data>
+  <data name="LinkExistingTaskPlaceholder" xml:space="preserve"><value>Search tasks to link</value></data>
+  <data name="LinkExistingTaskRequired" xml:space="preserve"><value>Choose a task to link.</value></data>
+  <data name="ToastTaskCreated" xml:space="preserve"><value>Task created and linked to this meeting.</value></data>
+  <data name="ToastTaskLinked" xml:space="preserve"><value>Task linked to this meeting.</value></data>
+  <data name="ScheduleFollowUp" xml:space="preserve"><value>Schedule follow-up</value></data>
+  <data name="ScheduleFollowUpHint" xml:space="preserve"><value>The still-open tasks linked to this meeting's agenda will be carried over to the new meeting, in their original order.</value></data>
+  <data name="FollowUpTitleSuffix" xml:space="preserve"><value>follow-up</value></data>
+  <data name="ToastFollowUpScheduled" xml:space="preserve"><value>Follow-up meeting scheduled.</value></data>
+  <data name="ToastFollowUpScheduledNoOpenWork" xml:space="preserve"><value>Follow-up meeting scheduled with an empty agenda — no open work to carry over.</value></data>
+  <data name="PreviousMeetingLabel" xml:space="preserve"><value>Previous meeting</value></data>
+  <data name="FollowUpMeetingLabel" xml:space="preserve"><value>Follow-up meeting</value></data>
+  <data name="CarriedFromPreviousMeetingBadge" xml:space="preserve"><value>From previous meeting</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Meeting Details</value></data>
@@ -64,13 +87,31 @@
   <data name="ErrorAttendeeNotEligible" xml:space="preserve"><value>This person cannot be invited right now.</value></data>
   <data name="ErrorAttendeeDuplicate" xml:space="preserve"><value>This person is already invited.</value></data>
   <data name="ErrorAttendeeNotFound" xml:space="preserve"><value>This attendee is not on the meeting.</value></data>
+  <data name="ErrorAttendeeIsOrganizer" xml:space="preserve"><value>The organizer cannot be removed from the meeting.</value></data>
+  <data name="UnknownUser" xml:space="preserve"><value>Unknown user</value></data>
   <data name="ErrorAgendaItemNotFound" xml:space="preserve"><value>This agenda item could not be found.</value></data>
   <data name="ErrorAgendaReorderMismatch" xml:space="preserve"><value>The agenda could not be reordered; please reload and try again.</value></data>
   <data name="ErrorTypeNotFound" xml:space="preserve"><value>This meeting type could not be found.</value></data>
   <data name="ErrorTypeNameDuplicate" xml:space="preserve"><value>A meeting type with this name already exists.</value></data>
   <data name="ErrorTypeInUse" xml:space="preserve"><value>This meeting type is used by a meeting and cannot be deleted.</value></data>
+  <data name="ErrorTaskAlreadyLinked" xml:space="preserve"><value>This task is already linked to this meeting.</value></data>
+  <data name="ErrorReviewAlreadyScheduled" xml:space="preserve"><value>A review meeting is already scheduled for this task.</value></data>
+  <data name="ErrorInvitationResponseInvalid" xml:space="preserve"><value>The response must be Accept or Decline.</value></data>
+  <data name="ErrorMinutesPublished" xml:space="preserve"><value>The published minutes cannot be edited directly.</value></data>
+  <data name="ErrorMinutesNotPublished" xml:space="preserve"><value>There is no published version to correct.</value></data>
+  <data name="ErrorMinutesCorrectionReasonRequired" xml:space="preserve"><value>A correction reason is required.</value></data>
+  <data name="ErrorMinutesConcurrencyConflict" xml:space="preserve"><value>The record changed meanwhile; reload and retry.</value></data>
+  <data name="ErrorDecisionNotFound" xml:space="preserve"><value>This decision could not be found.</value></data>
+  <data name="ErrorSeriesNotFound" xml:space="preserve"><value>This meeting series could not be found.</value></data>
+  <data name="ErrorSeriesNameDuplicate" xml:space="preserve"><value>A meeting series with this name already exists.</value></data>
+  <data name="ErrorSeriesInvalidWindow" xml:space="preserve"><value>Check the series' start, end and lead time — the schedule is invalid.</value></data>
+  <data name="ErrorSeriesIntervalInvalid" xml:space="preserve"><value>The interval must be at least 1.</value></data>
+  <data name="ErrorSeriesOrganizerRequired" xml:space="preserve"><value>An organizer is required.</value></data>
+  <data name="ErrorReportInvalidPeriod" xml:space="preserve"><value>The report period must end after it starts.</value></data>
+  <data name="ErrorReportExportTooLarge" xml:space="preserve"><value>This report covers too many rows to export. Narrow the period or the filters.</value></data>
   <data name="ErrorNoAccess" xml:space="preserve"><value>You do not have access to this action.</value></data>
   <data name="ErrorUnavailable" xml:space="preserve"><value>The Meetings service is unavailable right now.</value></data>
   <data name="FormValidationError" xml:space="preserve"><value>Please fill in every required field.</value></data>
   <data name="ManageTypes" xml:space="preserve"><value>Meeting Types</value></data>
+  <data name="ManageSeries" xml:space="preserve"><value>Meeting Series</value></data>
 </root>

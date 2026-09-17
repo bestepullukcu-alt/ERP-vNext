@@ -37,7 +37,6 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
     private const string PageTaskEdit = "TASK_EDIT";
     private const string PageTaskFieldDefinitions = "TASK_FIELD_DEFINITIONS";
     private const string PageTaskTypes = "TASK_TYPES";
-    private const string PageDocumentList = "TASK_DOCUMENT_LIST";
     private const string PageTaskRecurrenceRules = "TASK_RECURRENCE_RULES";
     private const string PageChecklistTemplates = "TASK_CHECKLIST_TEMPLATES";
     private const string PageTaskTemplates = "TASK_TEMPLATES";
@@ -48,8 +47,9 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
             ModuleName: "Task Engine",
             /*
              * ⚠ "GÖREV TANIMLARI", NOT "GÖREVLER". Every page this manifest publishes to the sidebar
-             * (TASK_FIELD_DEFINITIONS, TASK_TYPES, TASK_DOCUMENT_LIST, TASK_RECURRENCE_RULES) is a
-             * definition/settings screen. The four work surfaces — TASKS, TASK_CREATE, TASK_DETAIL, TASK_EDIT —
+             * (TASK_FIELD_DEFINITIONS, TASK_TYPES, TASK_RECURRENCE_RULES) is a definition/settings screen — the
+             * CSV controlled-document list (TASK_DOCUMENT_LIST) that used to be one of them was retired here
+             * (WP-DM-DCP005-RETIRE-CSV-01, BL-369). The four work surfaces — TASKS, TASK_CREATE, TASK_DETAIL, TASK_EDIT —
              * are IsNavigationVisible: false on purpose (see the Nav visibility note above), so "Görevler"
              * promised the user a task LIST from the menu and handed them a configuration screen instead.
              *
@@ -102,7 +102,16 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                         // Gives the field-definition key manifest attribution; its UI lands in Phase 5.
                         new ModuleManifestAction("FIELD_DEFINITIONS", "Manage Task Fields",
                             TaskPermissions.FieldDefinitionsManage,
-                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
+                            "Toolbar", 90, IsDangerous: false, IsToolbarAction: true, IsRowAction: false),
+                        // BL-349 — gives ReadAll manifest attribution (Module="tasks", Scope=Tenant) so an
+                        // authorized person CAN grant it to a tenant role; without a manifest home it would be
+                        // stamped Module="platform"/Scope=PlatformAdmin by the A1 reflection worker and could
+                        // never reach a tenant role at all (see the manifest's own class-level note). Declared as
+                        // a Toolbar action the same way WorkReportReadTenantWide's own manifest action is — a
+                        // declared AUTHORITY, not a request-body flag, even though no button calls it yet.
+                        new ModuleManifestAction("READ_ALL", "Read All Tasks (Tenant-Wide)",
+                            TaskPermissions.ReadAll,
+                            "Toolbar", 100, IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
                     ]),
 
                 new ModuleManifestPage(
@@ -203,34 +212,15 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     ]),
 
                 /*
-                 * The controlled-document reference LIST (DCP-005 slice 2).
-                 *
-                 * ⚠ ONE ACTION, AND IT IS AN IMPORT. There is no create, no edit and no delete — the list is a
-                 * lookup, not a table, and a row that could be edited here would be the second authority over a
-                 * document that §6.1 exists to prevent. The manifest says so too, because an action declared
-                 * here is an action the catalogue will offer.
+                 * WP-DM-DCP005-RETIRE-CSV-01 (BL-369) — the controlled-document reference LIST page (DCP-005
+                 * slice 2) was REMOVED from this manifest here: the view (/Tasks/DocumentList), its controller
+                 * actions and its client JS were deleted in the same change, so a page entry pointing at them
+                 * would be exactly the "promise the menu cannot keep" the page's own prior comment warned about.
+                 * TaskPermissions.DocumentListRead/.Import are unaffected — DocumentListRead still gates
+                 * SearchDocumentCitations and GetTaskTypeGoverningDocuments below; removing either key from the
+                 * Auth permission catalog itself is a separate, Control-Tower-owned cleanup (backlog, Faz 1.5),
+                 * not part of this manifest change.
                  */
-                new ModuleManifestPage(
-                    PageCode: PageDocumentList,
-                    DisplayName: "Controlled Documents",
-                    RoutePath: "/Tasks/DocumentList",
-                    // ⚠ READ, NOT IMPORT. Measured: the page was published behind the import permission while the search it
-                    // exists for asks only Read — so a QA reader who could see every row could not open the screen
-                    // showing them. The WRITE surfaces inside are gated separately, in the view.
-                    RequiredPermission: TaskPermissions.DocumentListRead,
-                    ParentPageCode: PageTasks,
-                    // ⚠ PUBLISHED VISIBLE ONLY NOW, in the round the screen was measured open. It shipped `true` once with no
-                    // view and no route: the sidebar would have grown an entry pointing at a 404 on the next
-                    // reconciliation. A manifest page is a promise the menu keeps — it is made when it can be kept.
-                    IsNavigationVisible: true,
-                    PageType: "List",
-                    SortOrder: 27,
-                    Actions:
-                    [
-                        new ModuleManifestAction("IMPORT", "Import Document List",
-                            TaskPermissions.DocumentListImport, "Toolbar", 10,
-                            IsDangerous: false, IsToolbarAction: true, IsRowAction: false)
-                    ]),
 
                 /*
                  * The recurring-rule admin surface (BL-052). Registered here for the same reason the field
@@ -426,6 +416,36 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     DisplayNameKey: "NotificationEvent_TaskCommented",
                     FallbackDisplayName: "Task commented",
                     Description: "Sent when somebody comments on a task. Edits and withdrawals send nothing.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                /*
+                 * WP-PSS-MOD0024-TASK-MENTIONS-01 — a direct @mention, distinct from the general "somebody
+                 * commented" event above. AddTaskCommentHandler excludes a mentioned person from the Commented
+                 * audience so the same comment never produces two emails for one reader; this event is the ONLY
+                 * one they get for it.
+                 *
+                 * Same variable set as its siblings, for the same reason: the comment TEXT is not among them,
+                 * because a comment can be withdrawn and an email cannot be recalled.
+                 */
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.Mentioned,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.mentioned",
+                    DisplayNameKey: "NotificationEvent_TaskMentioned",
+                    FallbackDisplayName: "Task mention",
+                    Description: "Sent when somebody @mentions you in a comment on a task.",
                     RequiredVariables:
                     [
                         new ModuleManifestNotificationVariable("TaskTitle"),

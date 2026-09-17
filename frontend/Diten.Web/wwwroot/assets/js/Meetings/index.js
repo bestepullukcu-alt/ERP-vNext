@@ -23,7 +23,10 @@ const MeetingsList = (function () {
             Yes: t('yes'), No: t('no'), Filter: t('filter'), Apply: t('apply'), Reset: t('reset'),
             ShowAll: t('showAll'), MeetingType: t('meetingType'), Organizer: t('organizer'),
             StatusScheduled: t('statusScheduled'), StatusCancelled: t('statusCancelled'), StatusCompleted: t('statusCompleted'),
-            ErrorOccurred: t('errorOccurred')
+            ErrorOccurred: t('errorOccurred'),
+            // BL-390 — an organizer id this tenant's eligible-people list does not resolve (deleted/test
+            // identity) must never render as the raw GUID; the same label everywhere it could otherwise leak.
+            UnknownUser: t('unknownUser')
         };
     };
 
@@ -94,7 +97,7 @@ const MeetingsList = (function () {
         const organizerIds = Array.from(new Set(rows.map((r) => r.organizerUserId)));
         const $organizer = $('#filterOrganizer');
         $organizer.empty();
-        organizerIds.forEach((id) => $organizer.append(new Option(organizerNamesById[id] || id, id)));
+        organizerIds.forEach((id) => $organizer.append(new Option(organizerNamesById[id] || L.UnknownUser, id)));
     };
 
     const bindFilterButtons = (api) => {
@@ -157,7 +160,7 @@ const MeetingsList = (function () {
         const types = typesResult.ok ? (typesResult.data || []) : [];
         organizerNamesById = {};
         if (attendeesResult.ok) {
-            (attendeesResult.data?.people || []).forEach((p) => { organizerNamesById[p.userId] = p.displayName || p.userId; });
+            (attendeesResult.data?.people || []).forEach((p) => { organizerNamesById[p.userId] = p.displayName || L.UnknownUser; });
         }
         return types;
     };
@@ -204,7 +207,7 @@ const MeetingsList = (function () {
                     },
                     { targets: 3, render: (data) => formatDateTime(data) },
                     { targets: 4, render: (data) => formatDateTime(data) },
-                    { targets: 5, render: (data) => organizerNamesById[data] || data },
+                    { targets: 5, render: (data) => organizerNamesById[data] || L.UnknownUser },
                     { targets: 6, render: (data) => boolBadge(data) },
                     {
                         targets: 7,

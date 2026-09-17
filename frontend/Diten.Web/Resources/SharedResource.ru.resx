@@ -797,6 +797,8 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Определения полей</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Совещания</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Типы совещаний</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Серии совещаний</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Отчёт по совещаниям</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>У вас нет доступа к разделу «{0}»</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Попросите администратора предоставить вам доступ к этой странице.</value></data>
   <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>Человеческий капитал</value></data>
