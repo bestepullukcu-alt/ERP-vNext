@@ -122,6 +122,36 @@
         select.innerHTML = head + (options || []).map(o => `<option value="${esc(o.value)}">${esc(o.text)}</option>`).join('');
     };
 
+    // ── select2 (search) enhancement — the app-wide pattern (jQuery select2, dropdownParent, native-change bridge). ─────
+    // WP-FREQ-DET-L. select2 + jQuery are loaded app-wide by the tenant shell layout. PRESENTATION + SEARCH ONLY: the
+    // underlying <select> keeps its id, data-role, value and selectedOptions, so targetIdValue() and the /resolve query
+    // read it byte-for-byte. select2 announces a choice the jQuery way ($(el).trigger('change')), which a native
+    // addEventListener never hears — a bridge re-dispatches a native BUBBLING change so the existing showPicked / cascade
+    // change listeners still fire. select2 renders from a SNAPSHOT of the options, so any re-fill must destroy + re-init.
+    const jq = () => window.jQuery;
+    const hasSelect2 = () => { const $ = jq(); return !!($ && $.fn && $.fn.select2); };
+    const bindSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) return; // already bound
+        $s.select2({ dropdownParent: $s.parent() });
+        // Bridge: carry select2's jQuery-synthesised change across to a native bubbling change (a real DOM change already
+        // reached the native listeners and jQuery marks it with `originalEvent` — that guard stops the bridge echoing).
+        $s.off('change.vfpBridge').on('change.vfpBridge', ev => {
+            if (ev && ev.originalEvent) return;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
+    const unbindSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) { $s.off('change.vfpBridge'); $s.select2('destroy'); }
+    };
+    // destroy + re-init after the options were rebuilt — select2 snapshots them at init.
+    const rebindSelect2 = select => { unbindSelect2(select); bindSelect2(select); };
+
     // ── contract (loaded once, shared) ──────────────────────────────────────────
     let contractPromise = null;
     const loadContract = () => {
@@ -355,12 +385,15 @@
         showPicked('');
         const kind = TARGET_KIND[targetType];
         if (targetType === 'territory-node') {
-            host.innerHTML = `<div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetTerModel"></select></div>`
-                + `<div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetId" data-role="targetId"></select></div>`;
+            host.innerHTML = `<div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpRsTargetTerModel"></select></div>`
+                + `<div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpRsTargetId" data-role="targetId"></select></div>`;
             fillSelect(el('vfpRsTargetTerModel'), await loadOptions('territory-model'), t('SelectTerritoryModel', 'Select model'));
             fillSelect(el('vfpRsTargetId'), [], t('SelectTerritoryNode', 'Select node'));
+            rebindSelect2(el('vfpRsTargetTerModel'));
+            rebindSelect2(el('vfpRsTargetId'));
             el('vfpRsTargetTerModel').addEventListener('change', async e => {
                 fillSelect(el('vfpRsTargetId'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
+                rebindSelect2(el('vfpRsTargetId'));
             });
             el('vfpRsTargetId').addEventListener('change', e => {
                 const opt = e.target.selectedOptions[0];
@@ -372,8 +405,9 @@
             host.innerHTML = `<div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="vfpRsTargetId" data-role="targetId" placeholder="${esc(t('TargetIdManual', 'Enter id (GUID)'))}"></div>`;
             return;
         }
-        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetId" data-role="targetId"></select></div>`;
+        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select select2" id="vfpRsTargetId" data-role="targetId"></select></div>`;
         fillSelect(el('vfpRsTargetId'), await loadOptions(kind), t('SelectOption', '—'));
+        rebindSelect2(el('vfpRsTargetId'));
         el('vfpRsTargetId').addEventListener('change', e => {
             const opt = e.target.selectedOptions[0];
             showPicked(opt && opt.value ? opt.text : '');
@@ -391,12 +425,15 @@
         }
         host.classList.remove('d-none');
         host.innerHTML = `<label class="form-label small mb-1">${esc(t('FieldTerritory', 'Territory'))}</label>`
-            + `<select class="form-select form-select-sm mb-2" id="vfpRsCtxTerModel"></select>`
-            + `<select class="form-select form-select-sm" id="vfpRsCtxTerNode"></select>`;
+            + `<select class="form-select form-select-sm select2 mb-2" id="vfpRsCtxTerModel"></select>`
+            + `<select class="form-select form-select-sm select2" id="vfpRsCtxTerNode"></select>`;
         fillSelect(el('vfpRsCtxTerModel'), await loadOptions('territory-model'), t('SelectTerritoryModel', 'Select model'));
         fillSelect(el('vfpRsCtxTerNode'), [], t('SelectTerritoryNode', 'Select node'));
+        rebindSelect2(el('vfpRsCtxTerModel'));
+        rebindSelect2(el('vfpRsCtxTerNode'));
         el('vfpRsCtxTerModel').addEventListener('change', async e => {
             fillSelect(el('vfpRsCtxTerNode'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
+            rebindSelect2(el('vfpRsCtxTerNode'));
         });
     };
 
