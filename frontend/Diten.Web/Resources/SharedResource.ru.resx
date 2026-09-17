@@ -870,6 +870,9 @@
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Изменение заявки не поддерживается; создайте новую заявку или отправьте эту на утверждение.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Изменение заказа на закупку не поддерживается; создайте новый заказ или утвердите этот.</value></data>
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Сопоставление счетов</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Захват счетов и трёхстороннее сопоставление</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Обновление счёта не поддерживается; исправьте его повторным сопоставлением или решением исключения, а не редактированием.</value></data>
 </root>

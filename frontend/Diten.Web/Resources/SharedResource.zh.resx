@@ -870,6 +870,9 @@
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>不支持修改采购申请；请新建申请，或提交此申请以供审批。</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>不支持修改采购订单；请新建采购订单，或批准此订单。</value></data>
   <data name="Nav.Module.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>发票匹配</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>发票采集与三方匹配</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>不支持修改收货单；已过账的收货通过冲销移动更正，而非编辑。</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>不支持更新发票；请通过重新运行三方匹配或解决其异常来更正，而不是通过编辑。</value></data>
 </root>

@@ -931,6 +931,9 @@
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Talep güncelleme desteklenmiyor; yeni bir talep oluşturun veya bunu onaya gönderin.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Satın alma siparişi güncelleme desteklenmiyor; yeni bir sipariş oluşturun veya bunu onaylayın.</value></data>
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Fatura Eşleştirme</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Fatura Yakalama ve 3-Yönlü Eşleştirme</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>
 </root>

@@ -724,6 +724,46 @@
       "UpstreamScheme": "http"
     },
     {
+      "DownstreamPathTemplate": "/api/invoice-match",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5062
+        }
+      ],
+      "UpstreamPathTemplate": "/api/invoice-match",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
+      "DownstreamPathTemplate": "/api/invoice-match/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5062
+        }
+      ],
+      "UpstreamPathTemplate": "/api/invoice-match/{everything}",
+      "UpstreamHttpMethod": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "OPTIONS",
+        "DELETE"
+      ],
+      "UpstreamScheme": "http"
+    },
+    {
       "DownstreamPathTemplate": "/api/personalization/views",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [

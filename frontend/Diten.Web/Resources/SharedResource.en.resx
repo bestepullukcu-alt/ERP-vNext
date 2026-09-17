@@ -931,6 +931,9 @@
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Updating a requisition is not supported; create a new requisition or submit this one for approval.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Updating a purchase order is not supported; create a new purchase order or approve this one.</value></data>
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Receiving (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Invoice Match</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Invoice Capture &amp; 3-Way Match</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Receiving (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Updating a GRN is not supported; a posted receipt is corrected with a reversing movement, not an edit.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Updating an invoice is not supported; correct it by re-running the 3-way match or resolving its exception, not by an edit.</value></data>
 </root>

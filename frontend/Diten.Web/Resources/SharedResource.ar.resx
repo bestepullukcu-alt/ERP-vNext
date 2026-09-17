@@ -870,6 +870,9 @@
   <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>تعديل الطلب غير مدعوم؛ أنشئ طلبًا جديدًا أو أرسل هذا الطلب للموافقة.</value></data>
   <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>تعديل أمر الشراء غير مدعوم؛ أنشئ أمر شراء جديدًا أو اعتمد هذا الأمر.</value></data>
   <data name="Nav.Module.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>مطابقة الفواتير</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>التقاط الفواتير والمطابقة الثلاثية</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.</value></data>
 </root>
