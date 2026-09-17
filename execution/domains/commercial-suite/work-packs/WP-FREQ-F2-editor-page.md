@@ -60,8 +60,18 @@ KORU/YAPMA: backend resolve/CRUD/archive/soft-delete/validation DAVRANIŞI DEĞ�
 DOĞRULA (E2): Diten.Web.Tests 137/0 (+backend'e dokunulduysa CrmService.Application.Tests baseline-diff sıfır-yeni-fail, Release); Create+Edit açılır (mockup tam tasarım); form.js reuse çalışır; buton/satır sayfaya yönlenir; offcanvas emekli; liste/detay/çözümleme bozulmadı; git diff kapsam içi. Ayrı commit. §22 TÜRKÇE. K13.
 Durma: create/update payload sözleşmesi korunamıyorsa; büyük backend değişiklik gerekiyorsa; form.js reuse yerine yeniden yazım gerekiyorsa (raporla); liste/detay davranışı değişmek zorundaysa; kapsam VisitFrequencyPolicies dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası, dispatch owner'da)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
 ```
-- İzole worktree → Diten.Web.Tests (+backend varsa CrmService) baseline-diff; Create+Edit ayrı sayfa (mockup 5 bölüm + sağ panel); form.js reuse (contract-driven, payload sözleşmesi korunmuş); offcanvas emekli; index.js buton/satır yönlendirme; liste/Save View/Detay/Çözümleme bozulmadı; backend davranışı değişmedi (varsa minimal status-geçiş); hardcode yok; git diff kapsam içi.
+Commit: 0aee605c · Agent: PASS · CT: ACCEPTED E2 (gerçek build) · izole /c/tmp/ct-freqf2-verify @0aee605c
+```
+- ✅ **Kapsam:** YENİ `_Editor.cshtml`+`Create.cshtml`+`Edit.cshtml`; M Controller + Index.cshtml + form.js + index.js + visit-frequency-create.css + 7 resx; **D `_CreateEditOffcanvas.cshtml`** (offcanvas emekli). **backend/Segment/resolve.js/_DetailsQuickView/_Resolve/_DataTable = 0 değişiklik** (grep 0).
+- ✅ **index.js = nav-only:** `openCreateEdit` → `goCreate`(/Create) + `goEdit`(/Edit/{id}); "Yeni Politika" + satır Düzenle yönlendirir. Liste renderer'ları (targetCell/frequencyCell/weightCell), Save View, kolonlar, Detay/Çözümleme, Arşivle/Sil DEĞİŞMEDİ.
+- ✅ **Index.cshtml:** `_CreateEditOffcanvas` partial kaldırıldı; `_DetailsQuickView` + `_Resolve` korundu.
+- ✅ **payload sözleşmesi BİREBİR:** buildPayload alanları aynı (policyCode/policyName/targetType/targetId/businessUnit/territoryNodeId/campaignId/segmentId/brandId/productId/cycleId(null)/cyclePeriodId/frequencyType/requiredVisitCount/periodType/effectiveFrom/effectiveTo/priority/source/status/description/notes); update'te PolicyCode/TargetType/TargetId immutable (re-send yok). Create/update proxy/DTO değişmedi.
+- ✅ **Controller Create()/Edit(policyId) GET:** `RequirePage(ManageCanonical, ManageFallback)` → yetkisiz 403 (UAS-001, iskelet çizilmez). Mevcut Index gate deseniyle birebir.
+- ✅ **form.js reuse:** contract-driven targetType kartları, entity picker+proxy, context select, cadence, 5 tier band (weight-sorted) + Band_*_Desc, source, validation KORUNDU; YENİ (sunum): yaşam-döngüsü status seçici (hidden #vfpStatus senkron), canlı "Bu politika ne yapacak" özet, canlı "Kaydetmeden önce" checklist, brand→product narrowing, iki save butonu (active/draft), archived read-only. Backend status yüzeyi zaten tam → değişmedi.
+- ✅ **Build+test (CT izole, Release):** Diten.Web.Tests **137/0**. Backend'e dokunulmadı → CrmService test gerekmedi.
+- ⚠️ **Bilinçli kapsam sapması (kabul):** Cycle→Cycle-dönemi narrowing için **ayrı Cycle picker eklenMEDİ** (repoda cycle-list proxy yok + cycleId payload=null korunmalı → yeni backend/proxy gerektirirdi = kapsam dışı). Mevcut tek CyclePeriod select'i korundu; brand→product narrowing tam. Tek sapma; kullanıcıya bildirilecek (ileride cycle picker ayrı WP olabilir).
+- ⏳ **E4:** Yeni Politika→/Create→doldur→aktive/taslak→liste; satır Düzenle→/Edit dolu→güncelle; sağ panel canlı özet+checklist; yaşam döngüsü geçişleri.
+
+**FREQ-F2 KOMPLE → MOD-0165-FU03 Frekans Politikası UI TAM (konsol+liste+Save View+detay+çözümleme+5 tier band+ayrı Create/Edit sayfa). Kalan: fleet restart + E4 uçtan uca.**
