@@ -17,15 +17,30 @@
 
     const endpoint = '/CRM/VisitFrequencyPolicies/api';
     const filterCollapseId = 'inlineFilterCollapse';
+    // Golden Compact v2 column map: 0 control · 1 Policy(name+code) · 2 Target · 3 Frequency · 4 Validity ·
+    // 5 Weight(band) · 6 Source · 7 Status · 8 Actions.
+    const saveViewColumnIndexes = [1, 2, 3, 4, 5, 6, 7];
+    const totalColumnCount = 9;
     const baseOrder = [[1, 'asc']];
+
+    // Save View personalization (shared backend; no new endpoint — mirrors EligibilityPolicies).
+    const personalizationClient = window.personalizationClient;
+    const personalizationContext = { moduleKey: 'crm', pageKey: 'visit-frequency-policies' };
 
     const L = window.VfpL10n || window.L10n || {};
     let dt = null;
     let addNewBound = false;
+    let saveFilterArmed = false;
+    let defaultViewRecord = null;
+    let defaultViewState = null;
     const emptyFilters = () => ({ status: [], targetType: [], source: '' });
     let appliedFilters = emptyFilters();
     let allRows = [];
     const rowById = {};
+    // AĞIRLIK: contract priority weight (int) → band code (populated from /contract; empty ⇒ raw-number fallback).
+    let bandByWeight = new Map();
+    const bandLabels = L.bandLabels || {};
+    const sourceLabels = L.sourceLabels || {};
 
     // ── helpers ──────────────────────────────────────────────────────────────
     const getAuthHeaders = () => ({ Accept: 'application/json' });
@@ -41,12 +56,32 @@
     const statusLabel = s => statusLabels[norm(s)] || humanize(s) || '—';
     const statusTone = s => ({ draft: 'secondary', active: 'success', inactive: 'warning', archived: 'secondary' }[norm(s)] || 'primary');
     const shortId = id => { const s = norm(id); return s ? s.slice(0, 8) + '…' : ''; };
+    // dd.MM.yyyy (mockup). Falls back to the raw yyyy-MM-dd slice if the value is not a parseable date.
+    const fmtDate = v => {
+        const s = norm(v);
+        if (!s) return '';
+        const d = new Date(s);
+        if (Number.isNaN(d.getTime())) return s.slice(0, 10);
+        const p = n => String(n).padStart(2, '0');
+        return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
+    };
+    // KAYNAK: contract source code → localized label (humanized fallback; never a hardcoded vocabulary).
+    const sourceLabel = s => sourceLabels[norm(s)] || humanize(s) || '—';
+    // AĞIRLIK: priority weight → contract band code → localized band label. Falls back to the bare weight.
+    const weightLabel = priority => {
+        const p = priority == null ? null : Number(priority);
+        if (p == null || Number.isNaN(p)) return '';
+        const code = bandByWeight.get(p);
+        const label = code ? (bandLabels[code] || humanize(code)) : '';
+        return label || String(p);
+    };
 
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
         if (!response.ok) throw Object.assign(new Error((body.errors || [L.ErrorState]).join(' · ')), { status: response.status });
         return body.data;
     };
+    const getJson = path => fetch(`${endpoint}${path}`, { credentials: 'same-origin', headers: getAuthHeaders() }).then(envelope);
 
     // ── inline filter (Golden Compact: dt-inline-filter-host) ────────────────
     const fillSelect = (id, options, keepShowAll) => {
@@ -108,16 +143,18 @@
         });
     };
 
-    // Vocabulary comes from the FU03 contract — never hardcoded here.
+    // Vocabulary comes from the FU03 contract — never hardcoded here (statuses, target types, sources AND the
+    // priority bands that map an authored weight to its named AĞIRLIK band).
     const loadFilterOptions = async () => {
-        let vocab = { statuses: [], targetTypes: [], sources: [] };
+        let vocab = { statuses: [], targetTypes: [], sources: [], priorityBands: [] };
         try {
             const contract = await envelope(await fetch(`${endpoint}/visit-frequency-policies/contract`, { credentials: 'same-origin', headers: getAuthHeaders() }));
             vocab = contract?.vocabulary || vocab;
         } catch (e) { /* filters degrade to empty; the list still renders */ }
+        bandByWeight = new Map((vocab.priorityBands || []).map(b => [Number(b.value), norm(b.code)]));
         fillSelect('filterStatus', (vocab.statuses || []).map(v => ({ value: v, text: statusLabel(v) })), false);
         fillSelect('filterTargetType', (vocab.targetTypes || []).map(v => ({ value: v, text: humanize(v) })), false);
-        fillSelect('filterSource', (vocab.sources || []).map(v => ({ value: v, text: humanize(v) })), true);
+        fillSelect('filterSource', (vocab.sources || []).map(v => ({ value: v, text: sourceLabel(v) })), true);
         initSelect2();
     };
 
@@ -168,6 +205,114 @@
         window.jQuery('#filterSource').val(f.source || '').trigger('change');
     };
 
+    // ── target name resolution (HEDEF) ───────────────────────────────────────
+    // Reuses the FREQ-C resolve.js pattern (READERS / mapOption / TARGET_KIND) — a NAME is shown, never a GUID; an
+    // unresolved ref degrades to a short id (no fabricated name). resolve.js is NOT touched: the pattern is copied here.
+    const READERS = {
+        segment: () => getJson('/segments?pageSize=200'),
+        account: () => getJson('/accounts?pageSize=200'),
+        contact: () => getJson('/contacts?pageSize=200'),
+        campaign: () => getJson('/campaigns?pageSize=200'),
+        'concept-node': () => getJson('/concept-nodes?pageSize=200'),
+        'audience-profile': () => getJson('/audience-profiles?pageSize=200')
+    };
+    const mapOption = x => ({
+        value: x.id ?? x.value ?? x.valueCode ?? x.segmentId ?? x.accountId ?? x.contactId ?? x.campaignId
+            ?? x.conceptNodeId ?? x.audienceProfileId ?? '',
+        text: x.name || x.Name || x.text || x.displayName || x.DisplayName || x.label || x.Label
+            || x.segmentName || x.SegmentName || x.accountName || x.AccountName || x.contactName || x.ContactName
+            || x.fullName || x.FullName || x.campaignName || x.CampaignName || x.conceptName || x.ConceptName
+            || x.audienceProfileName || x.profileName || x.code || x.Code
+            || String(x.id ?? x.value ?? x.valueCode ?? '')
+    });
+    // targetType → entity-picker kind (anything unmapped falls back to a short id).
+    const TARGET_KIND = {
+        segment: 'segment', account: 'account', contact: 'contact',
+        'campaign-target': 'campaign', 'concept-node': 'concept-node', 'audience-profile': 'audience-profile'
+    };
+    const optionCache = new Map();
+    const loadOptions = async kind => {
+        if (optionCache.has(kind)) return optionCache.get(kind);
+        let options = [];
+        try {
+            const data = await (READERS[kind] ? READERS[kind]() : Promise.resolve([]));
+            const items = Array.isArray(data) ? data : (data?.items || data?.nodes || data?.values || []);
+            options = items.map(mapOption).filter(o => o.value !== '' && o.value != null);
+        } catch (e) { options = []; }
+        optionCache.set(kind, options);
+        return options;
+    };
+    const targetNameByKey = new Map(); // `${kind}:${id}` → name
+    const resolveAllTargetNames = async rows => {
+        const kinds = new Set();
+        (rows || []).forEach(r => { const k = TARGET_KIND[norm(r.targetType)]; if (k) kinds.add(k); });
+        await Promise.all([...kinds].map(async kind => {
+            const options = await loadOptions(kind);
+            const byId = new Map(options.map(o => [String(o.value), o.text]));
+            (rows || []).forEach(r => {
+                if (TARGET_KIND[norm(r.targetType)] !== kind) return;
+                const id = norm(r.targetId);
+                const name = id ? byId.get(id) : '';
+                if (name) targetNameByKey.set(`${kind}:${id}`, name);
+            });
+        }));
+    };
+    const targetName = row => {
+        const kind = TARGET_KIND[norm(row.targetType)];
+        return kind ? (targetNameByKey.get(`${kind}:${norm(row.targetId)}`) || '') : '';
+    };
+
+    // ── Save View (shared personalization; ported from EligibilityPolicies) ───
+    const captureColVis = api => { const r = {}; saveViewColumnIndexes.forEach(ci => { try { r[ci] = !!api.column(ci).visible(); } catch (e) {} }); return r; };
+    const captureColOrder = api => { try { const o = api?.colReorder?.order?.(); return Array.isArray(o) && o.length === totalColumnCount ? o.map(Number) : null; } catch (e) { return null; } };
+    const applyColVis = (api, cv) => { if (!cv) return; saveViewColumnIndexes.forEach(ci => { if (typeof cv[ci] === 'boolean') { try { api.column(ci).visible(cv[ci], false); } catch (e) {} } }); };
+    const applyColOrder = (api, co) => { if (!Array.isArray(co) || co.length !== totalColumnCount || typeof api?.colReorder?.order !== 'function') return; try { api.colReorder.order(co, true); } catch (e) {} };
+    const defaultColVis = () => saveViewColumnIndexes.reduce((a, ci) => { a[ci] = true; return a; }, {});
+    const currentView = api => ({ filters: Object.assign({}, appliedFilters), search: norm(api.search()), colVis: captureColVis(api), columnOrder: captureColOrder(api), order: api.order() });
+    const serializeView = v => JSON.stringify({
+        filters: Object.keys(v?.filters || {}).sort().reduce((a, k) => { a[k] = Array.isArray(v.filters[k]) ? normArr(v.filters[k]).slice().sort() : norm(v.filters[k]); return a; }, {}),
+        search: norm(v?.search), colVis: v?.colVis || defaultColVis(),
+        columnOrder: Array.isArray(v?.columnOrder) ? v.columnOrder : Array.from({ length: totalColumnCount }, (_, i) => i),
+        order: Array.isArray(v?.order) ? v.order : baseOrder
+    });
+    const getResetBaselineState = () => ({ filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: Array.from({ length: totalColumnCount }, (_, i) => i), order: baseOrder });
+    const setSaveFilterVisible = show => { const b = dt ? nodeContainer(dt).querySelector('.dt-save-filter-btn') : null; if (!b) return; b.classList.toggle('d-none', !show); window.DtDefaults?.refreshButtonGroupRadii?.(); };
+    const isDirtyComparedToDefault = api => serializeView(currentView(api)) !== serializeView(defaultViewState || getResetBaselineState());
+    const getViewId = sv => sv?.id || sv?.Id || sv?._id || null;
+    const getSavedViewName = sv => sv?.viewName || sv?.ViewName || '';
+    const getViewDef = sv => { const raw = sv?.viewDefinition ?? sv?.ViewDefinition ?? {}; if (typeof raw === 'string') { try { return JSON.parse(raw); } catch (e) { return {}; } } return raw || {}; };
+    const mapViewToState = sv => { const d = getViewDef(sv); return { filters: Object.assign(emptyFilters(), d.filters || {}), search: norm(d.search), colVis: d.colVis || null, columnOrder: Array.isArray(d.columnOrder) ? d.columnOrder : null, order: Array.isArray(d.order) ? d.order : null }; };
+    const loadDefaultView = async () => {
+        defaultViewRecord = null; defaultViewState = null;
+        if (!personalizationClient?.getViews) return;
+        try {
+            const views = await personalizationClient.getViews(personalizationContext.moduleKey, personalizationContext.pageKey);
+            const items = Array.isArray(views) ? views : (views?.data || views?.Data || []);
+            defaultViewRecord = Array.isArray(items) ? (items.find(v => v?.isDefault === true || v?.IsDefault === true) || items[0] || null) : null;
+            defaultViewState = defaultViewRecord ? mapViewToState(defaultViewRecord) : null;
+        } catch (e) { if (!e?.authHandled) console.error('[Vfp SaveView] load failed', e); }
+    };
+    const saveDefaultView = async view => {
+        if (!personalizationClient?.saveView) return;
+        const payload = { moduleKey: personalizationContext.moduleKey, pageKey: personalizationContext.pageKey, viewName: (getSavedViewName(defaultViewRecord) || L.SaveView || 'Default').trim(), viewDefinition: view, isDefault: true, visibility: 'private' };
+        const id = getViewId(defaultViewRecord);
+        const saved = id ? await personalizationClient.updateView(id, payload) : await personalizationClient.saveView(payload);
+        const rec = saved?.data || saved?.Data || saved;
+        defaultViewRecord = rec && typeof rec === 'object' ? rec : Object.assign({}, defaultViewRecord || {}, payload);
+        defaultViewState = view;
+    };
+    const applySavedTableState = (api, view) => {
+        const v = view || getResetBaselineState();
+        appliedFilters = Object.assign(emptyFilters(), v.filters || {});
+        writeControls(appliedFilters);
+        applyColOrder(api, v.columnOrder);
+        applyColVis(api, v.colVis);
+        api.search(v.search || '');
+        api.order(v.order || baseOrder);
+        api.draw(false);
+        window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
+    };
+
     // ── offcanvas placeholders (FREQ-B/C fill them) ──────────────────────────
     const openCreateEdit = (row) => {
         const label = document.getElementById('offcanvasCreateEditLabel');
@@ -199,19 +344,40 @@
     };
 
     // ── column renderers ─────────────────────────────────────────────────────
+    // POLİTİKA — policy name (prominent) + policy code (muted).
+    const policyCell = row => `<span class="fw-medium text-heading d-block">${esc(row.policyName || '—')}</span>`
+        + (norm(row.policyCode) ? `<span class="text-muted small">${esc(row.policyCode)}</span>` : '');
+    // HEDEF — target type chip + resolved NAME (degrades to a short id, never a fabricated name).
     const targetCell = row => {
         const label = humanize(row.targetType);
-        const ref = shortId(row.targetId);
-        return `<span class="fw-medium">${esc(label)}</span>` + (ref ? `<br><span class="text-muted small">${esc(ref)}</span>` : '');
+        const name = targetName(row);
+        const nameHtml = name
+            ? `<span class="fw-medium">${esc(name)}</span>`
+            : `<span class="text-muted small">${esc(shortId(row.targetId))}</span>`;
+        return badge(label, 'secondary') + `<div class="mt-1">${nameHtml}</div>`;
     };
+    // FREKANS — type badge + "N / period" + subtitle (dönem sınırlı [EffectiveTo set] / süresiz geçerli [empty]).
     const frequencyCell = row => {
         const type = humanize(row.frequencyType);
         const count = row.requiredVisitCount != null ? String(row.requiredVisitCount) : '';
         const period = humanize(row.periodType);
         const per = norm(L.PerPeriod) || '/';
         const line = [count, per, period].filter(s => norm(s)).join(' ');
-        return badge(type, 'info') + (line ? ` <span class="text-muted small">${esc(line)}</span>` : '');
+        const sub = norm(row.effectiveTo) ? norm(L.FreqBounded) : norm(L.FreqOpenEnded);
+        return badge(type, 'info')
+            + (line ? ` <span class="text-muted small">${esc(line)}</span>` : '')
+            + (sub ? `<div class="text-muted small">${esc(sub)}</div>` : '');
     };
+    // GEÇERLİLİK — EffectiveFrom → EffectiveTo | "süresiz", dd.MM.yyyy.
+    const validityCell = row => {
+        const from = fmtDate(row.effectiveFrom);
+        const to = norm(row.effectiveTo) ? fmtDate(row.effectiveTo) : (norm(L.ValidityOpenEnded) || 'süresiz');
+        return `<span>${esc(from || '—')}</span> <span class="text-muted">→</span> <span>${esc(to)}</span>`;
+    };
+    // AĞIRLIK — priority band label (raw weight fallback).
+    const weightCell = row => { const w = weightLabel(row.priority); return w ? `<span class="badge bg-label-secondary">${esc(w)}</span>` : '—'; };
+    // KAYNAK — source label.
+    const sourceCell = row => `<span>${esc(sourceLabel(row.source))}</span>`;
 
     const buildConfig = () => ({
         data: allRows, stateSave: false, processing: true,
@@ -219,21 +385,25 @@
         order: baseOrder,
         columns: [
             { data: null, defaultContent: '' },
-            { data: 'policyCode' },
             { data: 'policyName' },
             { data: 'targetType' },
             { data: 'frequencyType' },
+            { data: 'effectiveFrom' },
             { data: 'priority' },
+            { data: 'source' },
             { data: 'status' },
             { data: null }
         ],
         columnDefs: [
             { targets: 0, className: 'control', orderable: false, render: () => '' },
-            { targets: 1, render: v => `<span class="fw-medium text-heading">${esc(v)}</span>` },
-            { targets: 3, orderable: false, render: (v, t, row) => targetCell(row) },
-            { targets: 4, orderable: false, render: (v, t, row) => frequencyCell(row) },
-            { targets: 6, render: v => badge(statusLabel(v), statusTone(v)) },
-            { targets: 7, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
+            { targets: 1, render: (v, t, row) => t === 'display' ? policyCell(row) : `${norm(row.policyName)} ${norm(row.policyCode)}` },
+            { targets: 2, orderable: false, render: (v, t, row) => t === 'display' ? targetCell(row) : `${humanize(row.targetType)} ${targetName(row)}` },
+            { targets: 3, orderable: false, render: (v, t, row) => frequencyCell(row) },
+            { targets: 4, render: (v, t, row) => t === 'display' ? validityCell(row) : norm(row.effectiveFrom) },
+            { targets: 5, render: (v, t, row) => t === 'display' ? weightCell(row) : (t === 'sort' || t === 'type' ? (row.priority == null ? '' : Number(row.priority)) : weightLabel(row.priority)) },
+            { targets: 6, render: (v, t, row) => t === 'display' ? sourceCell(row) : sourceLabel(row.source) },
+            { targets: 7, render: v => badge(statusLabel(v), statusTone(v)) },
+            { targets: 8, title: L.Actions, orderable: false, searchable: false, className: 'cell-fit text-end pe-3 all', render: (v, t, row) => actions(row) }
         ],
         language: { emptyTable: L.EmptyState, processing: L.Loading },
         buttons: window.DtDefaults.exportButtons(L.NewPolicy, {}, {
@@ -242,8 +412,16 @@
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',
                 attr: { title: L.Filter, 'aria-controls': filterCollapseId, 'aria-expanded': 'false', 'data-bs-toggle': 'tooltip' },
                 action: () => toggleInlineFilter()
+            },
+            saveFilterBtn: {
+                text: '<i class="icon-base bx bx-save icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.SaveView || '') + '</span>',
+                className: 'btn btn-label-primary d-none dt-save-filter-btn', attr: { title: L.SaveView, 'data-bs-toggle': 'tooltip' },
+                action: async function (e, api) {
+                    try { await saveDefaultView(currentView(api || dt)); setSaveFilterVisible(false); window.showToast?.(L.SaveView || '', 'success'); }
+                    catch (err) { if (!err?.authHandled) { console.error(err); window.showToast?.(L.ErrorState, 'error'); } }
+                }
             }
-        }, { exportColumns: [1, 2, 3, 4, 5, 6], colvisColumns: [1, 2, 3, 4, 5, 6] }),
+        }, { exportColumns: saveViewColumnIndexes, colvisColumns: saveViewColumnIndexes }),
         initComplete: function () {
             const api = this.api();
             mountInlineFilter(api);
@@ -253,28 +431,27 @@
                 nodeContainer(api).querySelector('.add-new')?.addEventListener('click', e => { e.preventDefault(); openCreateEdit(null); });
                 addNewBound = true;
             }
+            setTimeout(() => { saveFilterArmed = true; }, 0);
         },
         drawCallback: function () { window.DtDefaults?.updateVisualState?.(this.api(), getAppliedFilterCount()); }
     });
 
     const setupFilters = async api => {
         await loadFilterOptions();
-        writeControls(appliedFilters);
         try { api.rows().invalidate().draw(false); } catch (e) { /* table not ready */ }
-        window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
+        applySavedTableState(api, defaultViewState);
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
             appliedFilters = readControls();
             api.draw();
             window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
             const el = document.getElementById(filterCollapseId);
             if (el) window.bootstrap?.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
         });
         document.getElementById('btnFilterReset')?.addEventListener('click', e => {
             e.preventDefault();
-            appliedFilters = emptyFilters();
-            writeControls(appliedFilters);
-            api.draw();
-            window.DtDefaults?.updateVisualState?.(api, getAppliedFilterCount());
+            applySavedTableState(api, getResetBaselineState());
+            if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(api));
         });
     };
 
@@ -285,10 +462,13 @@
         document.getElementById('skeleton-loader')?.classList.remove('d-none');
         registerTableFilter();
         try {
+            await loadDefaultView();
             allRows = await loadRows();
+            await resolveAllTargetNames(allRows);
             dt = new DataTable(tableEl, window.DtDefaults?.create ? window.DtDefaults.create(buildConfig()) : buildConfig());
             dt.on('column-visibility.dt search.dt order.dt column-reorder.dt columns-reordered.dt', () => {
                 window.DtDefaults?.updateVisualState?.(dt, getAppliedFilterCount());
+                if (saveFilterArmed) setSaveFilterVisible(isDirtyComparedToDefault(dt));
             });
         } catch (error) {
             const host = document.getElementById('policyError');
@@ -304,6 +484,7 @@
             await envelope(await fetch(`${endpoint}${path}`, { method: 'POST', credentials: 'same-origin', headers: getAuthHeaders() }));
             window.showToast?.(okMsg, 'success');
             allRows = await loadRows();
+            await resolveAllTargetNames(allRows);
             if (dt) { dt.clear(); dt.rows.add(allRows).draw(false); }
         } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
     };

@@ -147,4 +147,18 @@
   <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Contexte de cycle manquant</value></data>
   <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>Périmètre métier incohérent</value></data>
   <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Contexte de localisation du contact absent</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>Politique</value></data>
+  <data name="Validity" xml:space="preserve"><value>Validité</value></data>
+  <data name="Weight" xml:space="preserve"><value>Poids</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>sans échéance</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>à durée limitée</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>valable sans échéance</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>Décision de campagne</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>Équipe de segmentation</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>Saisie manuelle</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>Depuis l'ancien système</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>Règle métier automatique</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>Responsable terrain</value></data>
+  <data name="Source_other" xml:space="preserve"><value>Autre</value></data>
 </root>

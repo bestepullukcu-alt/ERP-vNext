@@ -23,10 +23,17 @@
         // columns
         Code = Localizer["Code"].Value,
         Name = Localizer["Name"].Value,
+        Policy = Localizer["Policy"].Value,
         Target = Localizer["Target"].Value,
         Frequency = Localizer["Frequency"].Value,
+        Validity = Localizer["Validity"].Value,
+        Weight = Localizer["Weight"].Value,
         Priority = Localizer["Priority"].Value,
         Source = Localizer["Source"].Value,
+        // list frequency subtitle + validity open-ended (EffectiveTo empty)
+        FreqBounded = Localizer["FreqBounded"].Value,
+        FreqOpenEnded = Localizer["FreqOpenEnded"].Value,
+        ValidityOpenEnded = Localizer["ValidityOpenEnded"].Value,
         // row + toolbar actions
         NewPolicy = Localizer["NewPolicy"].Value,
         Details = SharedLocalizer["Details"].Value,
@@ -52,6 +59,34 @@
             active = Localizer["Status_active"].Value,
             inactive = Localizer["Status_inactive"].Value,
             archived = Localizer["Status_archived"].Value
+        },
+        // AĞIRLIK — priority band DISPLAY labels keyed by contract band CODE (same closed set the FREQ-B/FREQ-C
+        // views ship). The bands + their integer weights still arrive from /contract at runtime; index.js maps a
+        // stored weight to its code and labels it here (humanized/raw-number fallback), never a hardcoded band vocab.
+        bandLabels = new Dictionary<string, string>
+        {
+            ["manager-override"] = Localizer["Band_manager-override"].Value,
+            ["campaign-target"] = Localizer["Band_campaign-target"].Value,
+            ["account-contact-link"] = Localizer["Band_account-contact-link"].Value,
+            ["contact"] = Localizer["Band_contact"].Value,
+            ["account"] = Localizer["Band_account"].Value,
+            ["segment"] = Localizer["Band_segment"].Value,
+            ["territory-node"] = Localizer["Band_territory-node"].Value,
+            ["concept-node"] = Localizer["Band_concept-node"].Value,
+            ["audience-profile"] = Localizer["Band_audience-profile"].Value,
+            ["business-rule"] = Localizer["Band_business-rule"].Value
+        },
+        // KAYNAK — source DISPLAY labels keyed by contract source CODE. Codes still come from the /contract
+        // vocabulary; index.js labels each through this map (humanized fallback), never a hardcoded source vocab.
+        sourceLabels = new Dictionary<string, string>
+        {
+            ["campaign"] = Localizer["Source_campaign"].Value,
+            ["segmentation"] = Localizer["Source_segmentation"].Value,
+            ["manual"] = Localizer["Source_manual"].Value,
+            ["legacy-import"] = Localizer["Source_legacy-import"].Value,
+            ["business-rule"] = Localizer["Source_business-rule"].Value,
+            ["manager-override"] = Localizer["Source_manager-override"].Value,
+            ["other"] = Localizer["Source_other"].Value
         }
     })
 </script>
