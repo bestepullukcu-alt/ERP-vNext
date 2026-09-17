@@ -44,6 +44,7 @@
     const shortId = id => { const s = norm(id); return s ? s.slice(0, 8) + '…' : ''; };
     const fmtDate = v => { const s = norm(v); return s ? s.slice(0, 10) : ''; };
     const fmtDateTime = v => { const s = norm(v); return s ? s.slice(0, 10) + ' ' + s.slice(11, 16) : ''; };
+    const isGuid = v => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(norm(v));
 
     const statusLabel = s => statusLabels[norm(s)] || humanize(s) || dash();
     const statusTone = s => ({ draft: 'secondary', active: 'success', inactive: 'warning', archived: 'secondary' }[norm(s)] || 'primary');
@@ -310,27 +311,73 @@
     };
     const bandCode = p => { const n = Number(p); return (bandByWeight && !Number.isNaN(n)) ? (bandByWeight.get(n) || '') : ''; };
 
+    // WP-FREQ-DET-I — the picked "Hangi kayıt" chip (type badge + resolved NAME + optional external code + "değiştir").
+    // Empty → the app select in #vfpRsTargetPicker is shown; picked → that picker is hidden (d-none) and this chip shows.
+    // The [data-role="targetId"] control (id vfpRsTargetId) stays in the DOM with its value, so targetIdValue() and the
+    // /resolve query are unchanged; "değiştir" simply re-reveals the picker.
+    const showPicked = name => {
+        const host = el('vfpRsTargetPicked');
+        const picker = el('vfpRsTargetPicker');
+        if (!host) return;
+        if (!name) {
+            host.innerHTML = '';
+            host.classList.remove('is-shown');
+            picker?.classList.remove('d-none');
+            return;
+        }
+        const targetType = scenarioById(el('vfpRsScenario')?.value)?.targetType || '';
+        const typeLabel = targetType ? targetTypeLabel(targetType) : '';
+        const val = targetIdValue();
+        const ext = (val && !isGuid(val) && val !== name) ? val : '';
+        host.innerHTML = `
+            <div class="vfp-rs-picked-chip">
+                ${typeLabel ? `<span class="vfp-rs-picked-code">${esc(typeLabel)}</span>` : ''}
+                <span class="vfp-rs-picked-name">${esc(name)}</span>
+                ${ext ? `<span class="vfp-rs-picked-ext">${esc(ext)}</span>` : ''}
+                <button type="button" class="vfp-rs-picked-change">${esc(t('ResolveChange', 'değiştir'))}</button>
+            </div>`;
+        host.classList.add('is-shown');
+        picker?.classList.add('d-none');
+        const change = host.querySelector('.vfp-rs-picked-change');
+        if (change) change.addEventListener('click', () => {
+            picker?.classList.remove('d-none');
+            host.classList.remove('is-shown');
+            host.innerHTML = '';
+        });
+    };
+
     // the record (Kayıt) picker for the scenario's targetType — reuses TARGET_KIND / loadOptions (names, never GUIDs).
+    // WP-FREQ-DET-I — each control is wrapped in the app field pattern (.diten-field + leading icon); a normal single
+    // select shows the picked chip on change (showPicked). id vfpRsTargetId + data-role="targetId" are unchanged.
     const renderTargetPicker = async targetType => {
         const host = el('vfpRsTargetPicker');
         if (!host) return;
+        showPicked('');
         const kind = TARGET_KIND[targetType];
         if (targetType === 'territory-node') {
-            host.innerHTML = `<select class="form-select form-select-sm mb-2" id="vfpRsTargetTerModel"></select>`
-                + `<select class="form-select form-select-sm" id="vfpRsTargetId" data-role="targetId"></select>`;
+            host.innerHTML = `<div class="diten-field mb-2"><i class="bx bx-sitemap diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetTerModel"></select></div>`
+                + `<div class="diten-field"><i class="bx bx-map-pin diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetId" data-role="targetId"></select></div>`;
             fillSelect(el('vfpRsTargetTerModel'), await loadOptions('territory-model'), t('SelectTerritoryModel', 'Select model'));
             fillSelect(el('vfpRsTargetId'), [], t('SelectTerritoryNode', 'Select node'));
             el('vfpRsTargetTerModel').addEventListener('change', async e => {
                 fillSelect(el('vfpRsTargetId'), e.target.value ? await loadOptions('territory-node', e.target.value) : [], t('SelectTerritoryNode', 'Select node'));
             });
+            el('vfpRsTargetId').addEventListener('change', e => {
+                const opt = e.target.selectedOptions[0];
+                showPicked(opt && opt.value ? opt.text : '');
+            });
             return;
         }
         if (!kind) {
-            host.innerHTML = `<input type="text" class="form-control" id="vfpRsTargetId" data-role="targetId" placeholder="${esc(t('TargetIdManual', 'Enter id (GUID)'))}">`;
+            host.innerHTML = `<div class="diten-field"><i class="bx bx-hash diten-field-icon" aria-hidden="true"></i><input type="text" class="form-control" id="vfpRsTargetId" data-role="targetId" placeholder="${esc(t('TargetIdManual', 'Enter id (GUID)'))}"></div>`;
             return;
         }
-        host.innerHTML = `<select class="form-select" id="vfpRsTargetId" data-role="targetId"></select>`;
+        host.innerHTML = `<div class="diten-field"><i class="bx bx-crosshair diten-field-icon" aria-hidden="true"></i><select class="form-select" id="vfpRsTargetId" data-role="targetId"></select></div>`;
         fillSelect(el('vfpRsTargetId'), await loadOptions(kind), t('SelectOption', '—'));
+        el('vfpRsTargetId').addEventListener('change', e => {
+            const opt = e.target.selectedOptions[0];
+            showPicked(opt && opt.value ? opt.text : '');
+        });
     };
 
     // scenario-specific context (e.g. doctor-in-hospital reveals a Saha alanı model+node picker → territoryNodeId).
@@ -418,14 +465,15 @@
         const v = norm(r.frequencyStatus);
         const hasWinner = !!norm(r.selectedFrequencyPolicyId);
 
-        // CEVAP card ------------------------------------------------------------------
-        const answer = `<div class="vfp-rs-answer vfp-rs-answer--${answerTone(v)}">`
+        // CEVAP card — WP-FREQ-DET-I: a NEUTRAL grey panel (no verdict-tone tint); the verdict reads through the muted
+        // badge on the right (kural yok/çözüldü/çakışma/uygulanmaz), so the number stays the focus.
+        const answer = `<div class="vfp-rs-answer">`
             + '<div class="vfp-rs-answer-main">'
             + `<span class="vfp-rs-answer-label">${esc(t('ResolveAnswerLabel', 'Cevap'))}</span>`
             + `<span class="vfp-rs-answer-headline">${esc(answerHeadline(r))}</span>`
             + `<span class="vfp-rs-answer-explain">${esc(t(EXPLAIN_KEY[v] || 'ResolveExplainUnknown', ''))}</span>`
             + '</div>'
-            + badge(verdictLabel(v), answerTone(v))
+            + badge(verdictLabel(v), 'secondary')
             + '</div>';
 
         // winning rule ----------------------------------------------------------------
@@ -453,28 +501,63 @@
         const specs = cands.map(c => Number(c.specificity)).filter(n => !Number.isNaN(n));
         const minSpec = specs.length ? Math.min(...specs) : null;
         const maxSpec = specs.length ? Math.max(...specs) : null;
-        const typeSub = c => {
-            const base = targetTypeLabel(c.targetType);
+
+        // WP-FREQ-DET-I — friendly type sub-line: targetType label (segment → "Segmentteki tüm hedefler") + a resolved
+        // NAME only where the candidate genuinely carries one (nameOf; never fabricated) + the narrow/broad hint.
+        const specHintOf = c => {
             const s = Number(c.specificity);
-            if (!Number.isNaN(s) && minSpec !== maxSpec) {
-                if (s === minSpec) return `${base} · ${t('SpecNarrowest', 'en dar kapsam')}`;
-                if (s === maxSpec) return `${base} · ${t('SpecBroadest', 'en geniş kapsam')}`;
-            }
-            return base;
+            if (Number.isNaN(s) || minSpec === maxSpec) return '';
+            if (s === minSpec) return t('SpecNarrowest', 'en dar kapsam');
+            if (s === maxSpec) return t('SpecBroadest', 'en geniş kapsam');
+            return '';
         };
-        const candRow = c => {
+        const candTypeFriendly = tt => (norm(tt) === 'segment'
+            ? t('ResolveCandSegmentAll', 'Segmentteki tüm hedefler') : targetTypeLabel(tt));
+        const candTypeSub = async c => {
+            const kind = TARGET_KIND[c.targetType];
+            const cid = norm(c.targetId);
+            let name = '';
+            if (kind && cid) { try { name = await nameOf(kind, cid); } catch (e) { name = ''; } }
+            return [candTypeFriendly(c.targetType), name, specHintOf(c)].filter(Boolean).join(' · ');
+        };
+
+        // WP-FREQ-DET-I — an explanatory "why" sentence, driven ONLY by real fields (reason code + selected + band +
+        // specificity), keyed to L10n (7 languages) with a reasonLabel/humanize fallback. Nothing is fabricated.
+        const CTX_MISS = {
+            segment_context_missing: 'FieldSegment', campaign_context_missing: 'FieldCampaign',
+            cycle_context_missing: 'FieldCyclePeriod', business_scope_mismatch: 'FieldBusinessUnit',
+            contact_location_context_absent: 'FieldTerritory'
+        };
+        const candWhy = c => {
+            const reason = norm(c.reason);
+            if (c.selected) {
+                if (reason === 'policy_selected_by_priority') return t('ResolveWhySelPriority', reasonLabel('policy_selected_by_priority'));
+                if (reason === 'policy_selected_by_latest_effective_from') return reasonLabel(reason);
+                return t('ResolveWhySelSpecificity', 'En dar kapsamlı kural olduğu için seçildi.');
+            }
+            if (reason === 'policy_not_effective') return t('ResolveWhyNotEffective', 'Kural var ama seçtiğiniz tarihte geçerli değil.');
+            if (reason === 'policy_inactive' || reason === 'policy_archived') return reasonLabel(reason);
+            if (CTX_MISS[reason]) return fmt(t('ResolveWhyContextMissing', 'Seçilen bağlamda geçerli değil ({0} eksik).'), L[CTX_MISS[reason]] || humanize(reason));
+            if (bandCode(c.priority) === 'last-resort') return t('ResolveWhyLastResort', 'Daha dar bir kural bulunmazsa bu kural devreye girer.');
+            const s = Number(c.specificity);
+            if (!Number.isNaN(s) && minSpec !== maxSpec && s === maxSpec) return t('ResolveWhyBroader', 'Bölge/segment kuralı, daha dar kurallardan geniş kapsamlı.');
+            return t('ResolveWhySpecificityLost', 'Daha dar kapsamlı bir kural olduğu için bu kural uygulanmadı.');
+        };
+
+        const candRow = async c => {
             const tag = candTag(c);
+            const sub = await candTypeSub(c);
             return `<div class="vfp-rs-cand${c.selected ? ' vfp-rs-cand--selected' : ''}">`
                 + `<div class="vfp-rs-cand-id"><span class="vfp-rs-cand-name">${esc(c.policyName || dash())}</span>`
-                + `<span class="vfp-rs-cand-type">${esc(typeSub(c))}</span></div>`
+                + `<span class="vfp-rs-cand-type">${esc(sub)}</span></div>`
                 + `<span class="vfp-rs-cand-freq">${esc(freqSentence(c.requiredVisitCount, c.periodType))}</span>`
                 + badge(tag.text, tag.tone)
-                + `<div class="vfp-rs-cand-why">${esc(reasonLabel(c.reason))}</div>`
+                + `<div class="vfp-rs-cand-why">${esc(candWhy(c))}</div>`
                 + '</div>';
         };
         const ladderHead = `<div class="mt-3 mb-2"><span class="vfp-rs-block-title">${esc(t('ResolveLadderTitle', 'Bu hedefe denk gelen diğer kurallar'))}</span> `
             + `<span class="vfp-rs-block-hint">${esc(t('ResolveLadderSort', 'dardan genişe sıralı'))}</span></div>`;
-        const ladderBody = cands.length ? cands.map(candRow).join('') : `<div class="vfp-meta">${esc(t('ResolveLadderEmpty', 'Bu hedefe denk gelen başka kural yok.'))}</div>`;
+        const ladderBody = cands.length ? (await Promise.all(cands.map(candRow))).join('') : `<div class="vfp-meta">${esc(t('ResolveLadderEmpty', 'Bu hedefe denk gelen başka kural yok.'))}</div>`;
 
         const answerCard = '<section class="card mb-4"><div class="card-body p-4">'
             + answer + winner + ladderHead + ladderBody + '</div></section>';

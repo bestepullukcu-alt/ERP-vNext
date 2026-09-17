@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>hors période</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>non appliquée</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>de secours</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>La règle existe mais n'est pas en vigueur à la date choisie.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Une règle de portée plus étroite s'est appliquée, donc cette règle n'a pas été utilisée.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Règle de région/segment — de portée plus large que les règles plus étroites.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Cette règle s'applique par défaut si aucune règle plus étroite n'est trouvée.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Sélectionnée car c'est la règle de portée la plus étroite.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Sélectionnée selon la priorité.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Non valable dans le contexte sélectionné ({0} manquant).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Toutes les cibles du segment</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>Que dois-je faire ?</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Rien à faire</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Le planificateur appliquera cette fréquence à cette cible.</value></data>

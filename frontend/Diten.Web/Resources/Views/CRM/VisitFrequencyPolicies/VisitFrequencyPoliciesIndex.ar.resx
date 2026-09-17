@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>خارج النطاق الزمني</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>غير مُفعَّلة</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>احتياطية</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>القاعدة موجودة لكنها غير سارية في التاريخ الذي اخترته.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>طُبّقت قاعدة ذات نطاق أضيق، لذا لم تُستخدم هذه القاعدة.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>قاعدة منطقة/شريحة، نطاقها أوسع من القواعد الأضيق.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>تُطبّق هذه القاعدة كخيار احتياطي عند عدم وجود قاعدة أضيق.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>اختيرت لأنها القاعدة ذات النطاق الأضيق.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>اختيرت حسب الأولوية.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>غير صالحة في السياق المحدد ({0} مفقود).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>جميع الأهداف في الشريحة</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>ماذا ينبغي أن أفعل؟</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>لا حاجة لأي إجراء</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>سيطبّق المخطط هذا التكرار على هذا الهدف.</value></data>

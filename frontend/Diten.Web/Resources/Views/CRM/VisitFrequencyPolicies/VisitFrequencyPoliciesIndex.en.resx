@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>out of date range</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>not in effect</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>fallback</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>The rule exists but is not effective on the date you chose.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>A narrower-scope rule applied instead, so this rule was not used.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>A region/segment rule — broader in scope than the narrower rules.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>This rule applies as a fallback when no narrower rule is found.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Selected because it is the narrowest-scope rule.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Selected by priority.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Not valid in the selected context ({0} missing).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>All targets in the segment</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>What should I do?</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Nothing to do</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>The planner will apply this frequency to this target.</value></data>

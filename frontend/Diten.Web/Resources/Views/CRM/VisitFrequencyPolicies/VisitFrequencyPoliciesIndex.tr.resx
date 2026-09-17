@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>tarih dışı</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>devrede değil</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>yedek</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>Kural var ama seçtiğiniz tarihte geçerli değil.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Daha dar kapsamlı bir kural olduğu için bu kural uygulanmadı.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Bölge/segment kuralı, daha dar kurallardan geniş kapsamlı.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Daha dar bir kural bulunmazsa bu kural devreye girer.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>En dar kapsamlı kural olduğu için seçildi.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Önceliğe göre seçildi.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Seçilen bağlamda geçerli değil ({0} eksik).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Segmentteki tüm hedefler</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>Ne yapmalıyım?</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Bir şey yapmanız gerekmiyor</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Planlayıcı bu hedefe bu frekansı uygulayacak.</value></data>

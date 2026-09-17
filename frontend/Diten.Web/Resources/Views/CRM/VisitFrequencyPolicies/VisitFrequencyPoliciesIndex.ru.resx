@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>вне срока</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>не действует</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>резерв</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>Правило существует, но не действует на выбранную вами дату.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Применилось правило с более узкой областью, поэтому это правило не использовалось.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Правило региона/сегмента — шире по охвату, чем более узкие правила.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Это правило применяется как запасное, если более узкого правила нет.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Выбрано, так как это правило с самой узкой областью.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Выбрано по приоритету.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Недействительно в выбранном контексте (отсутствует {0}).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Все цели в сегменте</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>Что мне делать?</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Ничего делать не нужно</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Планировщик применит эту частоту к цели.</value></data>

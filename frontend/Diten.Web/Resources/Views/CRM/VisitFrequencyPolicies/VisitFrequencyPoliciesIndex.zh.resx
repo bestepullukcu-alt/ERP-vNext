@@ -320,6 +320,14 @@
   <data name="ResolveTagNotEffective" xml:space="preserve"><value>不在日期范围</value></data>
   <data name="ResolveTagInactive" xml:space="preserve"><value>未生效</value></data>
   <data name="ResolveTagFallback" xml:space="preserve"><value>后备</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>该规则存在，但在所选日期不生效。</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>因存在范围更窄的规则，此规则未被采用。</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>区域/细分规则，范围比更窄的规则更广。</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>当找不到更窄的规则时，此规则作为兜底生效。</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>因是范围最窄的规则而被选中。</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>按优先级选中。</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>在所选上下文中无效（缺少{0}）。</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>该细分中的所有目标</value></data>
   <data name="ResolveNextTitle" xml:space="preserve"><value>我该怎么做？</value></data>
   <data name="ResolveDo_resolved_1" xml:space="preserve"><value>无需操作</value></data>
   <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>计划程序将对该目标应用此频率。</value></data>

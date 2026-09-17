@@ -273,30 +273,45 @@
     flex: none;
 }
 
-/* in-card 4-cell stat strip (mockup: WHITE, adjacent cells split by a hairline — NOT grey chips). The 1px grid gap over
-   a divider-coloured strip background paints the hairline rules; overflow:hidden keeps them inside the rounded frame. */
+/* in-card 4-cell stat strip (mockup: WHITE cells split by a thin hairline — NOT a grey chip strip). WP-FREQ-DET-I: the
+   old grid-gap-over-a-divider-coloured-background painted the whole strip grey; instead the strip is transparent (gap:0)
+   and each cell draws its OWN right-hand hairline, with the outer frame supplying the surround. nth-child rules keep the
+   dividers correct when the grid wraps to 2 or 1 columns (right rules between columns, bottom rules between rows). */
 .vfp-detail-scope .vfp-det-stat-strip {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
+    gap: 0;
     margin-top: 20px;
-    background: var(--vfp-card-border);
-    border: 1px solid var(--vfp-card-border);
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
     border-radius: 6px;
     overflow: hidden;
 }
-@media (max-width: 991.98px) {
-    .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-@media (max-width: 479.98px) {
-    .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: 1fr; }
-}
 .vfp-detail-scope .vfp-det-stat-cell {
-    background: var(--vfp-card-bg);
+    background: var(--bs-card-bg);
     border: none;
+    border-right: 1px solid var(--bs-border-color);
     border-radius: 0;
     padding: 14px 16px;
     min-width: 0;
+}
+.vfp-detail-scope .vfp-det-stat-cell:last-child { border-right: none; }
+/* 2-column wrap: right hairline only on the left column (odd cells); bottom hairline under the first row (cells 1-2) */
+@media (max-width: 991.98px) {
+    .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .vfp-detail-scope .vfp-det-stat-cell:nth-child(2n+1) { border-right: 1px solid var(--bs-border-color); }
+    .vfp-detail-scope .vfp-det-stat-cell:nth-child(2n) { border-right: none; }
+    .vfp-detail-scope .vfp-det-stat-cell:nth-child(1),
+    .vfp-detail-scope .vfp-det-stat-cell:nth-child(2) { border-bottom: 1px solid var(--bs-border-color); }
+}
+/* 1-column wrap: no right hairlines; a bottom hairline between every stacked cell except the last */
+@media (max-width: 479.98px) {
+    .vfp-detail-scope .vfp-det-stat-strip { grid-template-columns: 1fr; }
+    .vfp-detail-scope .vfp-det-stat-cell:nth-child(n) {
+        border-right: none;
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+    .vfp-detail-scope .vfp-det-stat-cell:last-child { border-bottom: none; }
 }
 .vfp-detail-scope .vfp-det-stat-label {
     font-size: 11.5px;
@@ -393,12 +408,15 @@
     gap: 6px 14px;
     background: var(--vfp-card-bg);
     border: 1px solid var(--vfp-card-border);
-    border-left: 3px solid transparent;
+    border-left-width: 3px;
+    border-left-color: var(--vfp-card-border);
     border-radius: 6px;
     padding: 12px 14px;
     margin-bottom: 10px;
 }
 .vfp-detail-scope .vfp-det-cand:last-child { margin-bottom: 0; }
+/* WP-FREQ-DET-I — the candidate's 3px left rule is now VISIBLE (card-border colour) so the row reads as a complete
+   rectangle; the selected row recolours the same 3px rule to success (no missing line, no overflow, no double border). */
 .vfp-detail-scope .vfp-det-cand--selected {
     border-left-color: var(--bs-success);
     background: rgba(var(--bs-success-rgb), 0.06);
@@ -456,9 +474,63 @@
 }
 .vfp-detail-scope .vfp-rs-record-name { font-weight: 500; color: var(--vfp-heading); word-break: break-word; }
 
-/* "Kural basit" static note box */
+/* WP-FREQ-DET-I — Kayıt/Dönem/Tarih app-field + the Kayıt "Hangi kayıt" picked pattern (mirrors the editor). A bare
+   .form-select inside .diten-field is NOT covered by backbone's `.diten-field .form-control` padding rule, so make room
+   for the leading icon here (the same fix the editor applies under .vfp-create-scope). All scoped to .vfp-detail-scope. */
+.vfp-detail-scope .diten-field .form-select {
+    padding-inline-start: calc(0.9375rem + 1rem + 0.5rem);
+}
+/* the record picker: empty shows the app select (#vfpRsTargetPicker); once picked, the select is hidden (vfp-hidden) and
+   this chip is shown — type badge + resolved NAME (never a GUID) + optional external code + "değiştir". */
+.vfp-detail-scope .vfp-rs-picked { display: none; margin-top: 6px; }
+.vfp-detail-scope .vfp-rs-picked.is-shown { display: block; }
+.vfp-detail-scope .vfp-rs-picked-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+}
+.vfp-detail-scope .vfp-rs-picked-code {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+.vfp-detail-scope .vfp-rs-picked-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    word-break: break-word;
+}
+.vfp-detail-scope .vfp-rs-picked-ext {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.vfp-detail-scope .vfp-rs-picked-change {
+    margin-left: auto;
+    padding: 4px 12px;
+    font-size: 13px;
+    color: var(--bs-body-color);
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    cursor: pointer;
+}
+.vfp-detail-scope .vfp-rs-picked-ext + .vfp-rs-picked-change { margin-left: 0; }
+.vfp-detail-scope .vfp-rs-picked-change:hover { border-color: var(--bs-primary); color: var(--bs-primary); }
+
+/* "Kural basit" static note box
+   WP-FREQ-DET-I — fill is the body background (was --vfp-soft-bg/grey) so the box reads as part of the form surface
+   (mockup: bg-body), matching the editor "Hangi kayıt" dashed-box surface treatment. */
 .vfp-detail-scope .vfp-rs-simple {
-    background: var(--vfp-soft-bg);
+    background: var(--bs-body-bg);
     border: 1px solid var(--vfp-card-border);
     border-radius: 6px;
     padding: 12px 14px;
@@ -466,21 +538,19 @@
 .vfp-detail-scope .vfp-rs-simple-title { font-size: 12px; font-weight: 600; color: var(--vfp-heading); }
 .vfp-detail-scope .vfp-rs-simple-body { font-size: 12px; color: var(--vfp-muted); margin-top: 6px; line-height: 1.5; }
 
-/* CEVAP — the single big answer block, tinted by verdict tone */
+/* CEVAP — the single big answer block. WP-FREQ-DET-I: NEUTRAL grey (mockup) — no amber/verdict colour-coding. The verdict
+   still reads through the muted badge on the right; the box itself is a calm tertiary-bg panel so the number is the focus.
+   The verdict-tone tint variants (--success/--warning/--danger/--secondary) are removed — resolve.js no longer emits them. */
 .vfp-detail-scope .vfp-rs-answer {
     display: flex;
     align-items: flex-start;
     gap: 14px;
     flex-wrap: wrap;
-    padding: 18px 20px;
-    border-radius: 8px;
-    border: 1px solid var(--vfp-card-border);
-    background: var(--vfp-soft-bg);
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
 }
-.vfp-detail-scope .vfp-rs-answer--success { background: rgba(var(--bs-success-rgb), 0.08); border-color: rgba(var(--bs-success-rgb), 0.30); }
-.vfp-detail-scope .vfp-rs-answer--warning { background: rgba(var(--bs-warning-rgb), 0.10); border-color: rgba(var(--bs-warning-rgb), 0.32); }
-.vfp-detail-scope .vfp-rs-answer--danger { background: rgba(var(--bs-danger-rgb), 0.08); border-color: rgba(var(--bs-danger-rgb), 0.30); }
-.vfp-detail-scope .vfp-rs-answer--secondary { background: var(--vfp-soft-bg); border-color: var(--vfp-card-border); }
 .vfp-detail-scope .vfp-rs-answer-main { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 240px; }
 .vfp-detail-scope .vfp-rs-answer-label {
     font-size: 11px;
@@ -490,8 +560,8 @@
     color: var(--vfp-muted);
 }
 .vfp-detail-scope .vfp-rs-answer-headline {
-    font-size: 24px;
-    font-weight: 650;
+    font-size: 26px;
+    font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--vfp-heading);
     line-height: 1.2;
@@ -526,6 +596,9 @@
 .vfp-detail-scope .vfp-rs-block-hint { font-size: 12px; color: var(--vfp-muted); font-weight: 400; }
 
 /* ladder — one candidate row: [name + type-subline | freq | status tag] then a full-width "why" line */
+/* WP-FREQ-DET-I — left-border fix: a candidate row now carries a VISIBLE flat border on all four sides (the left edge is a
+   3px rule in the card-border colour, so the gutter is reserved and the row reads as a complete rectangle — no missing
+   line, no overflow, no double border). The selected row simply recolours that same 3px left rule to success. */
 .vfp-detail-scope .vfp-rs-cand {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto auto;
@@ -534,7 +607,8 @@
     padding: 13px 16px;
     border-radius: 6px;
     border: 1px solid var(--vfp-card-border);
-    border-left: 3px solid transparent;
+    border-left-width: 3px;
+    border-left-color: var(--vfp-card-border);
     background: var(--vfp-card-bg);
     margin-bottom: 10px;
 }
