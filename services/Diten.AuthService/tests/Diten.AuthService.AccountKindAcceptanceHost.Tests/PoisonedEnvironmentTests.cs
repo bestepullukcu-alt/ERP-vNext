@@ -247,6 +247,116 @@ public sealed class PoisonedEnvironmentTests
         }
     }
 
+    // ── G2(b)(ii) (Aşama G) — the HOST's own process environment is reduced to an allow-list at the start of Main ──
+    // The in-process prep host's WebApplication.CreateBuilder adds the WHOLE process environment as a configuration
+    // source in its eager window (before any fixture callback can clear sources), so the host itself must not carry
+    // anything the supervisor did not mean to give it.
+
+    // Independent literal restatement of the contract (not derived from Program.cs): an addition or removal on the
+    // production set is caught here.
+    private static readonly HashSet<string> ExpectedHostAllowList = new(StringComparer.Ordinal)
+    {
+        "DITEN_ACCEPTANCE_ROOT", "DITEN_ACCEPTANCE_RUN_ID", "DITEN_ACCEPTANCE_DOTNET_PATH",
+        "PATH", "HOME", "TMPDIR", "DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY",
+    };
+
+    [Fact]
+    public void HostAllowList_IsExactlyTheContract_AndSelectionIsAPureOrdinalFilter()
+    {
+        Assert.True(ExpectedHostAllowList.SetEquals(Program.HostEnvironmentAllowList), "the host environment allow-list differs from the contract");
+
+        // A dictionary only — this test never mutates the runner's own environment.
+        var poisoned = new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["DITEN_ACCEPTANCE_ROOT"] = "/r",
+            ["DITEN_ACCEPTANCE_RUN_ID"] = "id",
+            ["DITEN_ACCEPTANCE_DOTNET_PATH"] = "/d/dotnet",
+            ["PATH"] = "/usr/bin:/bin",
+            ["HOME"] = "/r/home",
+            ["TMPDIR"] = "/r/tmp",
+            ["DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY"] = "k",
+            ["Mfa__Enabled"] = "true",
+            ["ASPNETCORE_ENVIRONMENT"] = "Development",
+            ["DOTNET_ENVIRONMENT"] = "Development",
+            ["MongoDbSettings__ConnectionString"] = "mongodb://127.0.0.1:27017",
+            ["Observability__Seq__ApiKey"] = "poisoned",
+            ["path"] = "/lowercase/is/a/different/name",
+            ["HOME "] = "/trailing/space/is/a/different/name",
+            ["DITEN_ACCEPTANCE_ROOT_EXTRA"] = "prefix-match-is-not-a-match",
+        };
+        var snapshot = new Dictionary<string, string?>(poisoned, StringComparer.Ordinal);
+
+        var kept = Program.SelectAllowListedEnvironment(poisoned);
+
+        Assert.True(ExpectedHostAllowList.SetEquals(kept.Keys), "the selection kept a key outside the allow-list or dropped an allowed one");
+        foreach (var key in ExpectedHostAllowList)
+        {
+            Assert.Equal(poisoned[key], kept[key]);
+        }
+
+        Assert.Equal(snapshot, poisoned); // pure: the input is untouched
+    }
+
+    [Fact]
+    public async Task RealHost_PoisonedEnvironment_StillReachesReadyAndExitsZero()
+    {
+        var h = new SupervisorTestHarness(_output);
+        var (root, dev, ino) = h.CreateRunRoot();
+        h.PrepareFixedSubdirs(root);
+        using var listener = h.Listen(root, out var runId);
+
+        // Black-box discriminator (measured): Mfa:Enabled is read EAGERLY by AuthService's
+        // Infrastructure/DependencyInjection.cs BuildSecretRequirements and is not one of the fixture's overrides.
+        // If it reached the prep host's configuration, Mfa:HashSecret would become a required secret, startup
+        // validation would throw, and the host would report mongo-start-failed/exit 2 instead of ready/exit 0.
+        // The other entries are the same canary families the API-child test uses, plus environment-name vectors.
+        var poisoned = new[]
+        {
+            "Mfa__Enabled=true",
+            "ASPNETCORE_ENVIRONMENT=Development",
+            "DOTNET_ENVIRONMENT=Development",
+            "JwtSettings__Issuer=poisoned-canary",
+            "Observability__Seq__ApiKey=poisoned-canary",
+            "ConnectionStrings__Default=poisoned-canary",
+            "OTEL_EXPORTER_OTLP_ENDPOINT=poisoned-canary",
+        };
+        var hostPid = h.SpawnHost(root, runId, extraEnv: poisoned);
+
+        try
+        {
+            var acceptTask = listener.AcceptAsync();
+            Assert.Same(acceptTask, await Task.WhenAny(acceptTask, Task.Delay(TimeSpan.FromSeconds(10))));
+            using var sock = await acceptTask;
+            using var stream = new NetworkStream(sock, ownsSocket: false);
+            using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
+            await reader.ReadLineAsync(); // hello
+            await h.SendAsync(stream, runId, "hello-ack", includeProtocolVersion: true);
+
+            var ready = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
+            Assert.NotNull(ready);
+            // On failure this shows the protocol error CODE only (a fixed P2 code, never exception text).
+            Assert.Equal("ready", ready!.Value.GetProperty("type").GetString() is "error"
+                ? "error:" + ready.Value.GetProperty("code").GetString()
+                : ready.Value.GetProperty("type").GetString());
+
+            var seedReady = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(60));
+            Assert.NotNull(seedReady);
+            Assert.Equal("seed-ready", seedReady!.Value.GetProperty("type").GetString());
+
+            await h.SendAsync(stream, runId, "shutdown");
+            var bye = await h.ReceiveRaw(reader, TimeSpan.FromSeconds(15));
+            Assert.NotNull(bye);
+            Assert.Equal("bye", bye!.Value.GetProperty("type").GetString());
+
+            var exitCode = await h.WaitForExitAsync(hostPid, TimeSpan.FromSeconds(20));
+            Assert.Equal(0, exitCode); // ExitCodes.Success
+        }
+        finally
+        {
+            h.CleanRoot(root, dev, ino);
+        }
+    }
+
     internal static (bool ToolAvailable, string[] Lines) RunLsof(int pid) => RunLsof2(pid, string.Empty);
 
     internal static (bool ToolAvailable, string[] Lines) RunLsof2(int pid, string extraArgs)

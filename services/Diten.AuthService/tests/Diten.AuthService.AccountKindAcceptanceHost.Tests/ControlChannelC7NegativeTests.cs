@@ -317,8 +317,10 @@ public sealed class ControlChannelC7NegativeTests
             var badTail = new byte[] { 0xFF, 0xFE };
             await SendRaw(client, prefix.Concat(badTail).Concat(new byte[] { (byte)'\n' }).ToArray());
             var ex = await Assert.ThrowsAsync<ProtocolFramingViolationException>(() => host.ReceiveAsync(TimeSpan.FromSeconds(3)));
-            Assert.DoesNotContain(canary, ex.Message);
-            Assert.DoesNotContain(canary, ex.ToString());
+            // G7 (Aşama G) — Assert.False with a fixed text: a failing Assert.DoesNotContain would print the very
+            // text that carries the canary into the test output.
+            Assert.False(ex.Message.Contains(canary, StringComparison.Ordinal), "exception message echoes the canary from the malformed input");
+            Assert.False(ex.ToString().Contains(canary, StringComparison.Ordinal), "exception text echoes the canary from the malformed input");
         }
         finally { client.Dispose(); Cleanup(dir); }
     }

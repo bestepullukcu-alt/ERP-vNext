@@ -17,6 +17,8 @@
 //   <root>/tmp/           — TMPDIR for the API child.
 //   <root>/content/       — API child's --contentRoot AND working directory; left EMPTY (C10 — appsettings.json,
 //                            appsettings.Development.json and their bin-output copies are never read this way).
+//                            G1 (Aşama G): also the in-process prep host's content root; the fixture refuses it
+//                            if it has any entry (mongo-start-failed / exit 2).
 //
 // Sequence: hello -> hello-ack -> [seed via AuthTestHost, reused per R6, NOT copied] -> launch real Api process
 // (dotnet <dll>, no `dotnet run`, no intermediate process) -> health-poll -> ONE real login round trip BEFORE
@@ -84,8 +86,84 @@ internal static class Program
 {
     private const string ProtocolVersion = "1.2";
 
+    /// <summary>
+    /// G2(b)(ii) (Aşama G) — the ONLY process environment variables this host keeps. Everything else is removed at
+    /// the very start of Main, before anything reads configuration: the in-process prep host's
+    /// <c>WebApplication.CreateBuilder</c> adds the WHOLE process environment as a configuration source in its eager
+    /// window, before any fixture callback can clear sources. Reason per entry:
+    ///   DITEN_ACCEPTANCE_ROOT / _RUN_ID / _DOTNET_PATH — the supervisor contract (read below in Main).
+    ///   PATH   — ResolveLocalMongoBinaryDirectory (fixture) searches it for mongod; the ps probe (ReadProcessComm)
+    ///            is started by name.
+    ///   HOME   — the supervisor-owned <root>/home (every spawned test passes it). Removing it would not remove a
+    ///            home directory: .NET's special-folder lookups fall back to the passwd entry, i.e. the developer's
+    ///            real home.
+    ///   TMPDIR — keeps Path.GetTempPath() on the supervisor's choice when it sets one (unset -> /tmp).
+    ///   DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY — the Ek-D test-only seam, read in Main AFTER this
+    ///            reduction (the seed step below).
+    /// Nothing else was needed: every spawned-host test reaches its expected state with exactly this set.
+    /// Limit (known .NET-on-Unix behaviour, not separately measured here): Environment.SetEnvironmentVariable edits
+    /// the managed environment block that configuration sources, Environment.GetEnvironmentVariable and Process.Start
+    /// read; native getenv() callers and runtime switches consumed before Main are not affected.
+    /// </summary>
+    internal static readonly IReadOnlySet<string> HostEnvironmentAllowList = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "DITEN_ACCEPTANCE_ROOT",
+        "DITEN_ACCEPTANCE_RUN_ID",
+        "DITEN_ACCEPTANCE_DOTNET_PATH",
+        "PATH",
+        "HOME",
+        "TMPDIR",
+        "DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY",
+    };
+
+    /// <summary>G2(b)(ii) — pure: the subset of <paramref name="environment"/> whose key is on the allow-list
+    /// (ordinal, case-sensitive, as Unix environment names are). Never mutates anything.</summary>
+    internal static Dictionary<string, string?> SelectAllowListedEnvironment(IReadOnlyDictionary<string, string?> environment) =>
+        environment
+            .Where(pair => HostEnvironmentAllowList.Contains(pair.Key))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+
+    /// <summary>G2(b)(ii) — applies <see cref="SelectAllowListedEnvironment"/> to this process's own environment and
+    /// re-reads it; returns false (fail closed) if anything outside the allow-list is still visible.</summary>
+    private static bool ReduceProcessEnvironmentToAllowList()
+    {
+        var current = ReadProcessEnvironment();
+        var kept = SelectAllowListedEnvironment(current);
+        foreach (var key in current.Keys.Where(key => !kept.ContainsKey(key)))
+        {
+            Environment.SetEnvironmentVariable(key, null);
+        }
+
+        return ReadProcessEnvironment().Keys.All(HostEnvironmentAllowList.Contains);
+
+        static Dictionary<string, string?> ReadProcessEnvironment()
+        {
+            var snapshot = new Dictionary<string, string?>(StringComparer.Ordinal);
+            foreach (System.Collections.DictionaryEntry entry in Environment.GetEnvironmentVariables())
+            {
+                snapshot[(string)entry.Key] = entry.Value as string;
+            }
+
+            return snapshot;
+        }
+    }
+
     private static async Task<int> Main(string[] args)
     {
+        // G3(i) (Aşama G) — measured: this host never writes to stdout itself (every DIAG line is Console.Error,
+        // the protocol is the control socket, the API/mongod children's output is redirected into pipes this
+        // process owns). Stdout is therefore closed off FIRST, so the in-process prep host's Serilog console sink,
+        // Persistence's Console.WriteLine(ex.Message) and the fixture's own Console.WriteLine lines (connection
+        // string, mongod binary directory) have nowhere to go.
+        Console.SetOut(TextWriter.Null);
+
+        // G2(b)(ii) (Aşama G) — before anything reads configuration or the environment.
+        if (!ReduceProcessEnvironmentToAllowList())
+        {
+            await Console.Error.WriteLineAsync("[host] DIAG environment-allow-list-failed");
+            return ExitCodes.Unexpected;
+        }
+
         // Measured (Stage 2 / C4 report): WebApplicationFactory<Program>'s content-root guess (inside
         // AccountKindAcceptance.AuthTestHost, reused per R6) is sensitive to Directory.GetCurrentDirectory() at
         // the moment the in-process seed host is built. A supervisor can launch this process from ANY working
@@ -162,8 +240,11 @@ internal static class Program
             var corruptPermissionKey = Environment.GetEnvironmentVariable("DITEN_ACCEPTANCE_TESTONLY_CORRUPT_PERMISSION_KEY");
             try
             {
+                // G1 (Aşama G) — contentDir is the supervisor-created, still-empty <root>/content (the API child's
+                // content root too, launched later); the fixture refuses it if it has any entry (-> mongo-start-failed).
                 seedHost = await AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
                     mongoDataDir,
+                    contentDir,
                     beforeSeedHookForTesting: string.IsNullOrEmpty(corruptPermissionKey)
                         ? null
                         : async host =>
@@ -179,13 +260,13 @@ internal static class Program
             }
             catch (AccountKindSeedFailedException seedDiagEx)
             {
-                await Console.Error.WriteLineAsync("[host] DIAG seed-failed: " + seedDiagEx);
+                await Console.Error.WriteLineAsync(DiagLine("seed-failed", seedDiagEx));
                 await channel.SendErrorAsync("seed-failed");
                 return ExitCodes.SeedFailed;
             }
             catch (Exception diagEx)
             {
-                await Console.Error.WriteLineAsync("[host] DIAG mongo-start-failed: " + diagEx);
+                await Console.Error.WriteLineAsync(DiagLine("mongo-start-failed", diagEx));
                 await channel.SendErrorAsync("mongo-start-failed");
                 return ExitCodes.MongoStartFailed;
             }
@@ -200,7 +281,7 @@ internal static class Program
             }
             catch (Exception displayLabelEx)
             {
-                await Console.Error.WriteLineAsync("[host] DIAG seed-failed (display-label subjects): " + displayLabelEx);
+                await Console.Error.WriteLineAsync(DiagLine("seed-failed-display-label", displayLabelEx));
                 await channel.SendErrorAsync("seed-failed");
                 return ExitCodes.SeedFailed;
             }
@@ -224,7 +305,7 @@ internal static class Program
             }
             catch (Exception diagEx)
             {
-                await Console.Error.WriteLineAsync("[host] DIAG mongod PID verification: " + diagEx);
+                await Console.Error.WriteLineAsync(DiagLine("mongod-pid-verification-failed", diagEx));
                 await channel.SendErrorAsync("mongo-start-failed");
                 return ExitCodes.MongoStartFailed;
             }
@@ -293,7 +374,7 @@ internal static class Program
             }
             catch (Exception startEx)
             {
-                await Console.Error.WriteLineAsync("[host] DIAG api process Start() threw: " + startEx);
+                await Console.Error.WriteLineAsync(DiagLine("api-start-threw", startEx));
                 apiProcess = null; // nothing to kill in finally — Start() never produced a live process
                 await channel.SendErrorAsync("api-start-failed");
                 return ExitCodes.ApiStartFailed;
@@ -327,7 +408,7 @@ internal static class Program
             // is used deliberately: it has no grants, so a genuine 401/403 on a LATER permission check would be
             // expected, but LOGIN ITSELF must still succeed (login needs no permission) — a real, measurable
             // pass/fail signal that Mongo and the login-settings stub are actually reachable from THIS process.
-            var preReadyLoginOk = await TryLoginAsync(apiSockPath, seed.TenantId, seed.NoPermission.Email, seedHost.ActorPassword);
+            var preReadyLoginOk = await TryLoginAsync(apiSockPath, apiPid, apiStartTime, seed.TenantId, seed.NoPermission.Email, seedHost.ActorPassword);
             if (!preReadyLoginOk)
             {
                 await channel.SendErrorAsync("api-bind-failed");
@@ -425,13 +506,13 @@ internal static class Program
         // type, never by re-parsing the exception's message string.
         catch (ProtocolFramingViolationException framingEx)
         {
-            await Console.Error.WriteLineAsync("[host] DIAG protocol-violation (framing): " + framingEx.Message);
+            await Console.Error.WriteLineAsync(DiagLine("protocol-violation-framing", framingEx));
             try { await channel.SendErrorAsync("protocol-violation"); } catch { /* channel already gone */ }
             return ExitCodes.ProtocolViolation;
         }
         catch (Exception diagEx)
         {
-            await Console.Error.WriteLineAsync("[host] DIAG top-level: " + diagEx);
+            await Console.Error.WriteLineAsync(DiagLine("top-level-unexpected", diagEx));
             try { await channel.SendErrorAsync("protocol-violation"); } catch { /* channel already gone */ }
             return ExitCodes.Unexpected;
         }
@@ -535,6 +616,16 @@ internal static class Program
         return Path.GetFileName(output);
     }
 
+    /// <summary>
+    /// F14 — the ONLY thing a DIAG line may carry about an exception: a fixed diagnostic code (never
+    /// caller-supplied, never exception-derived) plus the exception's own TYPE name. Never `.Message`, never
+    /// `.ToString()`, never an inner exception — any of those could carry a canary from test-only injected
+    /// failures (or, in a real run, a connection string, a path, or other operational detail) straight into
+    /// stderr/stdout, which is exactly the leak this closes.
+    /// </summary>
+    private static string DiagLine(string diagnosticCode, Exception ex) =>
+        $"[host] DIAG {diagnosticCode} ({ex.GetType().Name})";
+
     private static string GenerateDisposableKey()
     {
         Span<byte> bytes = stackalloc byte[24];
@@ -574,9 +665,14 @@ internal static class Program
         return false;
     }
 
-    private static async Task<bool> TryLoginAsync(string apiSockPath, Guid tenantId, string email, string password)
+    // F12 — `internal` (not `private`) and taking the expected peer identity explicitly so
+    // LoginPeerVerificationTests can drive this exact code path against a listener it controls, with
+    // deliberately-wrong expected values, and observe that the listener receives ZERO bytes (not just no body —
+    // ConnectCallback throwing means the HTTP layer never even writes the request line).
+    internal static async Task<bool> TryLoginAsync(
+        string apiSockPath, int expectedPeerPid, long expectedPeerStartTime, Guid tenantId, string email, string password)
     {
-        using var handler = UnixSocketHandler(apiSockPath);
+        using var handler = UnixSocketHandlerWithPeerVerification(apiSockPath, expectedPeerPid, expectedPeerStartTime);
         using var client = new HttpClient(handler) { BaseAddress = new Uri("http://localhost/"), Timeout = TimeSpan.FromSeconds(10) };
 
         var body = JsonSerializer.Serialize(new { email, password, rememberMe = false });
@@ -611,6 +707,128 @@ internal static class Program
             return new NetworkStream(socket, ownsSocket: true);
         }
     };
+
+    // F12 — used ONLY by TryLoginAsync (the call that carries the actor's password). AllowAutoRedirect=false so a
+    // 3xx response can never cause the credential-bearing request to be re-sent to a redirect target; the
+    // ConnectCallback verifies the peer BEFORE returning the stream the HTTP layer will write the request onto,
+    // so a mismatch means literally zero bytes (not even the request line) ever reach the wrong peer.
+    private static SocketsHttpHandler UnixSocketHandlerWithPeerVerification(string socketPath, int expectedPid, long expectedStartTime) => new()
+    {
+        AllowAutoRedirect = false,
+        ConnectCallback = async (_, ct) =>
+        {
+            var socket = new Socket(AddressFamily.Unix, SocketType.Stream, ProtocolType.Unspecified);
+            try
+            {
+                await socket.ConnectAsync(new UnixDomainSocketEndPoint(socketPath), ct);
+                VerifyPeerIsExpectedApiProcess(socket, expectedPid, expectedStartTime);
+                return new NetworkStream(socket, ownsSocket: true);
+            }
+            catch
+            {
+                // G6(a) (Aşama G) — a failed connect or a failed peer check closes the socket here, at once: the
+                // peer sees EOF with zero bytes, and no descriptor is left for the GC to find.
+                socket.Dispose();
+                throw;
+            }
+        }
+    };
+
+    /// <summary>
+    /// F12 — kernel-verified peer identity on the connected Unix domain socket (macOS LOCAL_PEERPID/LOCAL_PEERCRED,
+    /// SOL_LOCAL=0 — measured against this machine's own sys/un.h and sys/ucred.h): the socket's OTHER end really
+    /// is the process this host itself spawned (PID match), that process has not since exited and been replaced by
+    /// a same-PID impostor (start-time match, same technique as D5/D2 elsewhere in this file), and it runs as this
+    /// same OS user (UID match). Throws (never returns a bool) so the caller's ConnectCallback never hands the
+    /// HTTP layer a stream to a peer that failed verification.
+    /// </summary>
+    internal static void VerifyPeerIsExpectedApiProcess(Socket socket, int expectedPid, long expectedStartTime)
+    {
+        // G6(b) (Aşama G) — the option numbers, struct layout and kinfo_proc offsets below are macOS-only. Any other
+        // OS is refused explicitly (fail closed), not by whatever getsockopt happens to return there.
+        if (!OperatingSystem.IsMacOS())
+        {
+            throw new IOException("peer verification failed: unsupported operating system.");
+        }
+
+        var fd = (int)socket.SafeHandle.DangerousGetHandle();
+
+        var peerPid = GetLocalPeerPid(fd);
+        if (peerPid != expectedPid)
+        {
+            throw new IOException($"peer verification failed: connected peer pid {peerPid} does not match the expected api process pid {expectedPid}.");
+        }
+
+        var peerStartTime = ProcessTiming.GetStartTimeUnixMs(peerPid);
+        if (peerStartTime != expectedStartTime)
+        {
+            throw new IOException($"peer verification failed: pid {peerPid} start time does not match — a same-PID process, not the expected one.");
+        }
+
+        var peerUid = GetLocalPeerUid(fd);
+        var ownUid = GetOwnUid();
+        if (peerUid != ownUid)
+        {
+            throw new IOException("peer verification failed: connected peer does not run as this process's own user.");
+        }
+
+        // Measured against this machine's SDK (/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk):
+        // sys/un.h SOL_LOCAL 0, LOCAL_PEERCRED 0x001, LOCAL_PEERPID 0x002; sys/ucred.h struct xucred
+        // { u_int cr_version; uid_t cr_uid; short cr_ngroups; gid_t cr_groups[NGROUPS]; }, XUCRED_VERSION 0.
+        const int SOL_LOCAL = 0;
+        const int LOCAL_PEERPID = 0x002;
+        const int LOCAL_PEERCRED = 0x001;
+        const uint XUCRED_VERSION = 0;
+        const int CrUidOffset = 4;
+
+        static int GetLocalPeerPid(int fd)
+        {
+            var buf = new byte[4];
+            var len = (uint)buf.Length;
+            if (getsockopt(fd, SOL_LOCAL, LOCAL_PEERPID, buf, ref len) != 0)
+            {
+                throw new IOException("peer verification failed: getsockopt(LOCAL_PEERPID) failed.");
+            }
+
+            // G6(c) — pid_t is exactly 4 bytes; any other returned length means the value is not a pid.
+            if (len != sizeof(int))
+            {
+                throw new IOException("peer verification failed: getsockopt(LOCAL_PEERPID) returned an unexpected length.");
+            }
+
+            return BitConverter.ToInt32(buf, 0);
+        }
+
+        static uint GetLocalPeerUid(int fd)
+        {
+            var buf = new byte[128]; // struct xucred: cr_version(4) + cr_uid(4) + cr_ngroups(2, padded) + groups
+            var len = (uint)buf.Length;
+            if (getsockopt(fd, SOL_LOCAL, LOCAL_PEERCRED, buf, ref len) != 0)
+            {
+                throw new IOException("peer verification failed: getsockopt(LOCAL_PEERCRED) failed.");
+            }
+
+            // G6(c) — the kernel must have filled at least cr_version and cr_uid, in the layout this code reads.
+            if (len < CrUidOffset + sizeof(uint))
+            {
+                throw new IOException("peer verification failed: getsockopt(LOCAL_PEERCRED) returned too few bytes.");
+            }
+
+            if (BitConverter.ToUInt32(buf, 0) != XUCRED_VERSION)
+            {
+                throw new IOException("peer verification failed: unexpected xucred layout version.");
+            }
+
+            return BitConverter.ToUInt32(buf, CrUidOffset);
+        }
+
+        static uint GetOwnUid() => getuid();
+
+        [DllImport("libc", SetLastError = true)]
+        static extern int getsockopt(int socket, int level, int option_name, byte[] option_value, ref uint option_len);
+        [DllImport("libc", SetLastError = true)]
+        static extern uint getuid();
+    }
 }
 
 /// <summary>C7 — a message parsed off the control channel. Fields are validated per-type by the caller.</summary>
@@ -706,8 +924,9 @@ internal sealed class ControlChannel : IAsyncDisposable
 
         if (allowedTypes is { Length: > 0 } && message.Type != "error" && !allowedTypes.Contains(message.Type))
         {
+            // G4 (Aşama G) — fixed text: the sender-controlled type value is never part of the message.
             throw new ProtocolFramingViolationException(
-                $"protocol-violation: unexpected message type '{message.Type}' (allowed: {string.Join(",", allowedTypes)}, error).");
+                "protocol-violation: unexpected message type for the current protocol state.");
         }
 
         return message;
@@ -835,8 +1054,66 @@ internal sealed class ControlChannel : IAsyncDisposable
             throw new ProtocolFramingViolationException("protocol-violation: protocolVersion missing on hello/hello-ack.");
         }
 
+        // F13 — the C7 rule this closes a regression in: for every message TYPE the host actually receives FROM
+        // the supervisor (hello-ack, shutdown, error — `hello`/`ready`/`seed-ready`/`bye` are HOST-to-supervisor
+        // only and never parsed here), an unknown top-level field, a missing required field, a wrong JSON type,
+        // or a null where a non-null string is required is protocol-violation — never silently accepted by a
+        // lenient parser. None of these three types currently has a nested object field, so there is no "unknown
+        // inner field" case to enforce today; the check below still walks every level the schema DOES define.
+        if (MessageSchemas.TryGetValue(type, out var schema))
+        {
+            var seenFields = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var prop in root.EnumerateObject())
+            {
+                seenFields.Add(prop.Name);
+                if (!schema.Allowed.Contains(prop.Name))
+                {
+                    // G4 (Aşama G) — fixed text: the sender-controlled field NAME is never part of the message.
+                    throw new ProtocolFramingViolationException(
+                        "protocol-violation: unknown field for this message type.");
+                }
+            }
+
+            foreach (var required in schema.Required)
+            {
+                if (!seenFields.Contains(required))
+                {
+                    // `required` comes from this file's own schema table, never from the wire.
+                    throw new ProtocolFramingViolationException(
+                        $"protocol-violation: missing required field '{required}'.");
+                }
+            }
+
+            // error{code,message} — both required, non-null, non-empty strings (P2's own fixed-text contract).
+            // RequireString already throws ProtocolFramingViolationException for missing/null/wrong-type/empty.
+            if (type == "error")
+            {
+                RequireString(root, "code");
+                RequireString(root, "message");
+            }
+        }
+
         return new ControlMessage(type, runId, protocolVersion, root);
     }
+
+    /// <summary>
+    /// F13 — the strict schema for every message type the host actually receives FROM the supervisor. `type` and
+    /// `runId` are already validated unconditionally above (every message needs them); listed again here only so
+    /// the "unknown field" walk below has the complete allowed-set per type.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, (HashSet<string> Required, HashSet<string> Allowed)> MessageSchemas =
+        new Dictionary<string, (HashSet<string> Required, HashSet<string> Allowed)>
+        {
+            ["hello-ack"] = (
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId", "protocolVersion" },
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId", "protocolVersion" }),
+            ["shutdown"] = (
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId" },
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId" }),
+            ["error"] = (
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId", "code", "message" },
+                new HashSet<string>(StringComparer.Ordinal) { "type", "runId", "code", "message" }),
+        };
 
     private static string RequireString(JsonElement obj, string name)
     {
@@ -871,7 +1148,8 @@ internal sealed class ControlChannel : IAsyncDisposable
                         var name = reader.GetString()!;
                         if (!stack.Peek().Add(name))
                         {
-                            throw new ProtocolFramingViolationException($"protocol-violation: duplicate JSON key '{name}'.");
+                            // G4 (Aşama G) — fixed text: the duplicated key is never part of the message.
+                            throw new ProtocolFramingViolationException("protocol-violation: duplicate JSON key.");
                         }
                     }
                     break;

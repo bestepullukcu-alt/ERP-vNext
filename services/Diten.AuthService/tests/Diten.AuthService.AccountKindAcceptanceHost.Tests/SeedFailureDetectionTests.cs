@@ -25,10 +25,14 @@ public sealed class SeedFailureDetectionTests
     public async Task Corrupted_catalog_key_after_production_seeding_is_detected_as_AccountKindSeedFailedException()
     {
         var dir = Directory.CreateTempSubdirectory("dak-t11-").FullName;
+        // G1 (Aşama G) — the acceptance path now also takes an empty, run-owned content root.
+        var mongoDir = Directory.CreateDirectory(Path.Combine(dir, "mongo")).FullName;
+        var contentDir = Directory.CreateDirectory(Path.Combine(dir, "content")).FullName;
         try
         {
             var ex = await Record.ExceptionAsync(() => AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
-                dir,
+                mongoDir,
+                contentDir,
                 beforeSeedHookForTesting: async host =>
                 {
                     // Runs AFTER the production DataSeeder has already run (the host is fully built), BEFORE
@@ -67,12 +71,24 @@ public sealed class SeedFailureDetectionTests
     public async Task BadMongoDataDirectory_FailsBeforeSeedingStarts_NeverReachesTheSeedHook()
     {
         var hookCalled = false;
-        var ex = await Record.ExceptionAsync(() => AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
-            "/nonexistent-on-purpose-not-a-real-isolated-root/mongo",
-            beforeSeedHookForTesting: _ => { hookCalled = true; return Task.CompletedTask; }));
+        // G1 (Aşama G) — a VALID empty content root, so the failure measured here is still mongod's own, not the
+        // content-root refusal that now runs first.
+        var contentDir = Directory.CreateTempSubdirectory("dak-t11-content-").FullName;
+        try
+        {
+            var ex = await Record.ExceptionAsync(() => AccountKindAcceptance.AuthTestHost.StartWithMongoDataDirectoryAsync(
+                "/nonexistent-on-purpose-not-a-real-isolated-root/mongo",
+                contentDir,
+                beforeSeedHookForTesting: _ => { hookCalled = true; return Task.CompletedTask; }));
 
-        Assert.NotNull(ex);
-        Assert.False(hookCalled, "seeding must never even start when mongod itself could not start");
-        Assert.IsNotType<Diten.AuthService.Application.Tests.Testing.AccountKindSeedFailedException>(ex);
+            Assert.NotNull(ex);
+            Assert.False(hookCalled, "seeding must never even start when mongod itself could not start");
+            Assert.IsNotType<Diten.AuthService.Application.Tests.Testing.AccountKindSeedFailedException>(ex);
+            Assert.DoesNotContain("content root", ex!.Message);
+        }
+        finally
+        {
+            try { Directory.Delete(contentDir, recursive: true); } catch { /* own temp dir, best effort */ }
+        }
     }
 }

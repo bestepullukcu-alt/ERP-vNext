@@ -438,7 +438,8 @@ internal sealed class SupervisorTestHarness
             $"DITEN_ACCEPTANCE_RUN_ID={runId}",
             $"DITEN_ACCEPTANCE_DOTNET_PATH={dotnetPathOverrideForApiChild ?? dotnetPath}",
             $"PATH={Environment.GetEnvironmentVariable("PATH")}",
-            $"HOME={Environment.GetEnvironmentVariable("HOME")}"
+            // G7 (Aşama G) — the run-owned <root>/home (created by PrepareFixedSubdirs), never the developer's HOME.
+            $"HOME={Path.Combine(root, "home")}"
         };
         if (extraEnv is not null) env.AddRange(extraEnv);
 
