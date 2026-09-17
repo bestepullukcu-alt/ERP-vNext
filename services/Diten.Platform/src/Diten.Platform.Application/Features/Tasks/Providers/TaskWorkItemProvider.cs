@@ -2281,7 +2281,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // telling the user "waiting for approval" would point at an approver who was never asked.
             var approvalNeverStarted = task.WorkflowInstanceId is null;
             actions.Add(Disabled("start", ActionStartKey, TaskReasonCodes.ApprovalPending,
-                approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey));
+                approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey,
+                targetStatus: TaskLifecycleService.InProgress));
             primary = "start";
         }
         else if (task.Lifecycle is TaskLifecycle.Waiting)
@@ -2303,7 +2304,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // MOD-0357 S9 (CT fix-up F1) — resume is NEVER held back by the review-meeting gate: holding the meeting
             // is part of the work. Only the decision actions below (submitReview/complete) wait for the minutes.
             actions.Add(approvalOutstanding
-                ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey)
+                ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey,
+                    targetStatus: TaskLifecycleService.InProgress)
                 : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update),
                     targetStatus: TaskLifecycleService.InProgress));
             primary = "start";
@@ -2334,13 +2336,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // gate, then the checklist — each is its own reason, and only the first unmet one is shown.
                     actions.Add(approvalOutstanding
                         ? Disabled("submitReview", ActionSubmitReviewKey,
-                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
+                            targetStatus: TaskLifecycleService.Waiting)
                         : reviewMeetingBlocked
                             ? Disabled("submitReview", ActionSubmitReviewKey,
-                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                                targetStatus: TaskLifecycleService.Waiting)
                             : checklistBlocks
                                 ? Disabled("submitReview", ActionSubmitReviewKey,
-                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                    targetStatus: TaskLifecycleService.Waiting)
                                 : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
                                     requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
@@ -2353,13 +2358,16 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // a hint about a real refusal, never the enforcement.
                     actions.Add(approvalOutstanding
                         ? Disabled("complete", ActionCompleteKey,
-                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
+                            targetStatus: TaskLifecycleService.Done)
                         : reviewMeetingBlocked
                             ? Disabled("complete", ActionCompleteKey,
-                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                                targetStatus: TaskLifecycleService.Done)
                             : checklistBlocks
                                 ? Disabled("complete", ActionCompleteKey,
-                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                    targetStatus: TaskLifecycleService.Done)
                                 : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
                                     requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
@@ -2390,7 +2398,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 {
                     actions.Add(reviewMeetingBlocked
                         ? Disabled("submitReview", ActionSubmitReviewKey,
-                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                            targetStatus: TaskLifecycleService.Waiting)
                         : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
                             requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
@@ -2398,7 +2407,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 else if (reviewOutstanding)
                 {
                     actions.Add(Disabled("complete", ActionCompleteKey,
-                        TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey));
+                        TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey,
+                        targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
                 else
@@ -2407,10 +2417,12 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // then the checklist, the same order the InProgress branch above uses.
                     actions.Add(reviewMeetingBlocked
                         ? Disabled("complete", ActionCompleteKey,
-                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                            targetStatus: TaskLifecycleService.Done)
                         : checklistBlocks
                             ? Disabled("complete", ActionCompleteKey,
-                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                targetStatus: TaskLifecycleService.Done)
                             : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
                                 requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
@@ -2571,7 +2583,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 SupportsBulk: false,
                 RiskLevel: riskLevel,
                 TargetStatus: targetStatus)
-            : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey);
+            : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey, targetStatus);
 
     /// <summary>
     /// Turn an offered action into a disabled one, KEEPING its own label. The resume button says "Resume", not
@@ -2585,7 +2597,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             DisabledReason = WorkItemLabelDto.Resource(reasonKey)
         };
 
-    private static WorkItemActionDto Disabled(string code, string labelKey, string reasonCode, string reasonKey)
+    // WP-WCN-KANBAN-01 Dilim 3a — targetStatus travels even when the action is disabled: a disabled action is
+    // never a drop TARGET (the Kanban board only offers columns an ENABLED action reaches), but the board still
+    // needs to know which column WOULD have received it, to grey that column and show this disabledReason as
+    // its hint. Defaults to null so every other Disabled(...) call in this file (claim/release/plan/return/
+    // reassign never carry one) is unaffected.
+    private static WorkItemActionDto Disabled(
+        string code, string labelKey, string reasonCode, string reasonKey, string? targetStatus = null)
         => new(
             Code: code,
             Label: WorkItemLabelDto.Resource(labelKey),
@@ -2598,7 +2616,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             RequiresReason: false,
             RequiresEvidence: false,
             SupportsBulk: false,
-            RiskLevel: "normal");
+            RiskLevel: "normal",
+            TargetStatus: targetStatus);
 
     private async Task<IReadOnlyList<Guid>> ResolveActivePositionIdsAsync(Guid userId, CancellationToken ct)
     {

@@ -221,9 +221,12 @@ describe("② the board's columns are the flow, on every tab", () => {
     // KEYS, the same thing every other label assertion in this file checks.
     const dropZoneLabels = dropZones.map((el) => el.querySelector(".wcn-kcol-head span").textContent.trim());
     expect(dropZoneLabels).toEqual(["StatusDone", "StatusCancelled"]);
-    // A drop zone is cardless: no body, no card, no count badge (it would always read 0 before Dilim 3 exists).
+    // A drop zone is cardless: an EMPTY body (WP-WCN-KANBAN-01 Dilim 3a — Sortable needs a list to bind and a
+    // region to accept a drop into), never a card, never a count badge (it would always read 0).
     dropZones.forEach((el) => {
-      expect(el.querySelector(".wcn-kcol-body")).toBeNull();
+      const body = el.querySelector(".wcn-kcol-body");
+      expect(body, "a drop zone needs an empty body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length).toBe(0);
       expect(el.querySelector(".wcn-kcard")).toBeNull();
       expect(el.querySelector(".wcn-kcol-count")).toBeNull();
     });
@@ -313,7 +316,9 @@ describe("② the board's columns are the flow, on every tab", () => {
     const labels = dropZones.map((el) => el.querySelector(".wcn-kcol-head span").textContent.trim());
     expect(labels).toEqual(["StatusDone", "StatusCancelled"]);
     dropZones.forEach((el) => {
-      expect(el.querySelector(".wcn-kcol-body")).toBeNull();
+      const body = el.querySelector(".wcn-kcol-body");
+      expect(body, "a drop zone needs an empty body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length).toBe(0);
       expect(el.querySelector(".wcn-kcard")).toBeNull();
       expect(el.querySelector(".wcn-kcol-count")).toBeNull();
     });

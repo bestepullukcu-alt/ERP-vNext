@@ -5754,7 +5754,7 @@ tags.diten-tags .tagify__input {
 .wcn-viewnote { display: flex; align-items: center; gap: .375rem; margin-block-end: .75rem; padding: .375rem .625rem;
     border-radius: .375rem; font-size: .75rem; color: var(--bs-secondary-color); background: var(--bs-body-bg); }
 
-/* Kanban (read-only) ------------------------------------------------------- */
+/* Kanban — İşlerim/Başlattıklarım drag (WP-WCN-KANBAN-01 Dilim 3a); Havuz/Geçmiş stay read-only. ------------- */
 .wcn-kboard { display: flex; gap: .875rem; overflow-x: auto; padding-block-end: .5rem; }
 .wcn-kcol { flex: 0 0 17rem; display: flex; flex-direction: column; background: var(--bs-body-bg); border-radius: .5rem; }
 .wcn-kcol-head { display: flex; align-items: center; justify-content: space-between; padding: .625rem .75rem;
@@ -5769,6 +5769,14 @@ tags.diten-tags .tagify__input {
 .wcn-kcard { background: var(--bs-card-bg); border: 1px solid var(--bs-border-color); border-radius: .5rem;
     padding: .625rem; cursor: pointer; transition: all .12s ease; }
 .wcn-kcard:hover { border-color: var(--bs-primary); }
+/* A card with somewhere to go (Dilim 3a) draws a grab cursor over the whole card — there is no separate handle,
+   the card IS the handle, same as the checklist row above it drags by. A card with nothing to drag stays a
+   plain pointer: no grab affordance for a gesture that could not do anything. */
+.wcn-kcard[data-wcn-draggable="1"] { cursor: grab; }
+.wcn-kcard-ghost { opacity: .4; }
+/* The column a dragged card could NOT land in — dimmed and, on the dropzone shape, still dashed underneath. */
+.wcn-kcol.wcn-kcol-pale { opacity: .45; }
+.wcn-kcol.wcn-kcol-pale .wcn-kcol-body { pointer-events: none; }
 .wcn-kcard:focus-visible, .wcn-cal-item:focus-visible, .wcn-tr:focus-visible { outline: 2px solid var(--bs-primary); outline-offset: 1px; }
 .wcn-kcard.selected { border-color: var(--bs-primary); box-shadow: 0 0 0 2px color-mix(in sRGB, var(--bs-primary) 22%, transparent); }
 .wcn-kcard.unread { border-inline-start: 3px solid var(--bs-primary); }

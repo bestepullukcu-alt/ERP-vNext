@@ -182,9 +182,103 @@ public sealed class TaskWorkItemKanbanTargetStatusTests
         Assert.Null(action.TargetStatus);
     }
 
+    // ── WP-WCN-KANBAN-01 Dilim 3a — a DISABLED action still carries its target. It is never a drop TARGET (the
+    // board only offers columns an ENABLED action reaches), but the board needs to know which column WOULD have
+    // received it, to grey that column and show the disabledReason as its hint. ─────────────────────────────────
+
+    [Fact]
+    public async Task Permission_denied_start_is_disabled_but_still_targets_InProgress()
+    {
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.Open;
+
+        var items = await Provider(new FakeTaskItemRepository(task))
+            .GetWorkItemsAsync(ActorWithoutPermissions(), CancellationToken.None);
+        var action = Assert.Single(items).Actions.Single(a => a.Code == "start");
+
+        Assert.False(action.Enabled);
+        Assert.Equal(WorkAggregationReasonCodes.PermissionDenied, action.DisabledReasonCode);
+        Assert.Equal(TaskLifecycleService.InProgress, action.TargetStatus);
+    }
+
+    [Fact]
+    public async Task Approval_pending_start_is_disabled_but_still_targets_InProgress()
+    {
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.Open;
+        task.ApprovalRequired = true;
+        task.ApprovalManagerUserId = TaskTestData.Rival;
+
+        var action = await ActionFor(task, "start");
+
+        Assert.False(action.Enabled);
+        Assert.Equal(TaskReasonCodes.ApprovalPending, action.DisabledReasonCode);
+        Assert.Equal(TaskLifecycleService.InProgress, action.TargetStatus);
+    }
+
+    [Fact]
+    public async Task Checklist_incomplete_complete_is_disabled_but_still_targets_Done()
+    {
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.InProgress;
+        var checklist = new ChecklistRun { TenantId = TaskTestData.Tenant, TaskItemId = task.Id, Version = 1 };
+        checklist.Items.Add(new ChecklistRunItem
+        {
+            Code = "i0", LabelResourceKey = "WorkAggregation_Check_Sample",
+            Requirement = ChecklistItemRequirement.Blocking, SortOrder = 0, Completed = false
+        });
+
+        var items = await Provider(
+                new FakeTaskItemRepository(task), checklistRuns: new FakeChecklistRunRepository(checklist))
+            .GetWorkItemsAsync(Actor(), CancellationToken.None);
+        var action = Assert.Single(items).Actions.Single(a => a.Code == "complete");
+
+        Assert.False(action.Enabled);
+        Assert.Equal(TaskReasonCodes.ChecklistIncomplete, action.DisabledReasonCode);
+        Assert.Equal(TaskLifecycleService.Done, action.TargetStatus);
+    }
+
+    [Fact]
+    public async Task Review_meeting_required_submitReview_is_disabled_but_still_targets_Waiting()
+    {
+        var task = SelfTask();
+        task.Lifecycle = TaskLifecycle.InProgress;
+        task.ReviewRequired = true;
+        task.TaskTypeId = Guid.NewGuid();
+        var taskType = new TaskType
+        {
+            Id = task.TaskTypeId.Value, TenantId = TaskTestData.Tenant, Code = "REV", Name = "Review",
+            ReviewMeetingRequirement = TaskReviewMeetingRequirement.Required
+        };
+
+        var provider = new TaskWorkItemProvider(
+            new FakeTaskItemRepository(task), new FakePositionAssignmentRepository(),
+            new TaskLifecycleService(), new TaskAssignmentResolver(),
+            new FakeUserDisplayNameResolver(), new FakeChecklistRunRepository(),
+            new FakeTaskApprovalService(), new FakeTaskDependencyRepository(),
+            new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
+            new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(),
+            TaskActors.PermitAll(), new FakePositionRepository(), new FakeOrganizationUnitRepository(),
+            SlaForTests.Real(), new FakeTaskFieldDefinitionRepository(), new FakeTaskTypeRepository(taskType),
+            teamResolver: null, recordLinks: null, relatedRecordResolvers: null, attachments: null,
+            logger: null, meetingRepository: null, reviewMeetingGate: new FakeReviewMeetingGateReader(false));
+
+        var items = await provider.GetWorkItemsAsync(Actor(), CancellationToken.None);
+        var action = Assert.Single(items).Actions.Single(a => a.Code == "submitReview");
+
+        Assert.False(action.Enabled);
+        Assert.Equal(TaskReasonCodes.ReviewMeetingRequired, action.DisabledReasonCode);
+        Assert.Equal(TaskLifecycleService.Waiting, action.TargetStatus);
+    }
+
     // ── helpers ────────────────────────────────────────────────────────────
 
     private const string ActionResumeKeyLabel = "WorkAggregation_Action_Resume";
+
+    private static WorkItemActor ActorWithoutPermissions() => new(
+        TaskTestData.Me,
+        IsPlatformActor: false,
+        new HashSet<string>());
 
     private static async Task<WorkItemActionDto> ActionFor(TaskItem task, string code)
     {
@@ -204,13 +298,14 @@ public sealed class TaskWorkItemKanbanTargetStatusTests
 
     private static TaskWorkItemProvider Provider(
         FakeTaskItemRepository tasks,
-        FakePositionAssignmentRepository? positionAssignments = null)
+        FakePositionAssignmentRepository? positionAssignments = null,
+        FakeChecklistRunRepository? checklistRuns = null)
         => new(tasks,
             positionAssignments ?? new FakePositionAssignmentRepository(),
             new TaskLifecycleService(),
             new TaskAssignmentResolver(),
             new FakeUserDisplayNameResolver(),
-            new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(),
+            checklistRuns ?? new FakeChecklistRunRepository(), new FakeTaskApprovalService(), new FakeTaskDependencyRepository(),
             new FakeTaskCommentRepository(), new FakeTaskTransitionRepository(),
             new FakeTaskPersonalOverlayRepository(), new FakeTaskWatcherRepository(), TaskActors.PermitAll(),
             new FakePositionRepository(), new FakeOrganizationUnitRepository(), SlaForTests.Real(),

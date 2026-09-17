@@ -416,7 +416,7 @@
         "requiresEvidence": false,
         "supportsBulk": false,
         "riskLevel": "normal",
-        "targetStatus": null
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -458,7 +458,7 @@
         "requiresEvidence": false,
         "supportsBulk": false,
         "riskLevel": "normal",
-        "targetStatus": null
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",
@@ -858,7 +858,7 @@
         "requiresEvidence": false,
         "supportsBulk": false,
         "riskLevel": "normal",
-        "targetStatus": null
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -900,7 +900,7 @@
         "requiresEvidence": false,
         "supportsBulk": false,
         "riskLevel": "normal",
-        "targetStatus": null
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",

@@ -27,6 +27,10 @@
     };
     const seenIds = readSeenIds();
     let workCenterDt = null;
+    // WP-WCN-KANBAN-01 Dilim 3a — true for the same synchronous window a genuine drag's trailing click would
+    // land in (mouseup → onEnd → the browser's own click, all before the next macrotask). The row-click handler
+    // checks it so a drag that ends over the dragged card's own position does not also open its detail page.
+    let kanbanDragSuppressClick = false;
 
     if (!data) {
         return;
@@ -6328,6 +6332,7 @@
             : TERMINAL_STATES.indexOf(st) < 0 || showsDropZones);
         const cols = FLOW.filter(reachable)
             .map((st) => ({
+                status: st,
                 label: t(STATUS_KEY[st]),
                 items: items.filter((i) => i.status === st),
                 dropZone: showsDropZones && TERMINAL_STATES.indexOf(st) >= 0
@@ -6337,14 +6342,17 @@
         if (!cols.some((col) => col.items.length)) { return emptyState(); }
         const colHtml = cols.map((col) => {
             if (col.dropZone) {
-                // No count badge: it would always read 0 (a real card never lands here before Dilim 3 exists),
+                // No count badge: it would always read 0 (a real card never lands here before Dilim 3b exists),
                 // and a "0" beside Tamamlandı/İptal reads as a real, countable column rather than a target.
-                return `<div class="wcn-kcol wcn-kcol-dropzone">
+                // The empty `.wcn-kcol-body` is WP-WCN-KANBAN-01 Dilim 3a: Sortable needs a list to bind and a
+                // region to accept a drop into, even though no card is ever rendered inside it.
+                return `<div class="wcn-kcol wcn-kcol-dropzone" data-wcn-status="${esc(col.status)}">
                     <header class="wcn-kcol-head"><span>${esc(col.label)}</span></header>
+                    <div class="wcn-kcol-body"></div>
                 </div>`;
             }
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
-            return `<div class="wcn-kcol">
+            return `<div class="wcn-kcol" data-wcn-status="${esc(col.status)}">
                 <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
                 <div class="wcn-kcol-body">${cards}</div>
             </div>`;
@@ -6516,8 +6524,9 @@
     };
 
 
-    // ── Kanban view (READ-ONLY, spec v3) — columns by status; WorkCenter doesn't
-    // own status so cards don't drag between columns. Personal plan/pin only. ───
+    // ── Kanban view — columns by status. WP-WCN-KANBAN-01 Dilim 3a: a card is now draggable when it has at
+    // least one ENABLED action whose targetStatus leads to a DIFFERENT column (see kanbanDragTargets below);
+    // dropping still does nothing until Dilim 3b wires the drop handler to performAction. ─────────────────────
     const kanbanCard = (item) => {
         const prim = primaryAction(item);
         const quick = prim
@@ -6528,7 +6537,8 @@
         const quickSecondary = sec
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
             : '';
-        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        const draggable = kanbanDragTargets(item).length > 0;
+        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
                 ${chip('module', 'bx-cube', item.sourceModule)}
@@ -6537,6 +6547,38 @@
             </div>
             ${quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : ''}
         </div>`;
+    };
+
+    /*
+     * The WIRE's normalizedStatus ("InProgress") is not the COLUMN's key ("In Progress", the one
+     * `item.status`/`data-wcn-status` actually use — see toPresentation's own `item.status =` line). Every
+     * targetStatus comparison in this file has to go through the SAME display form or "In Progress" would never
+     * match its own column and every card reaching it would read as permanently unreachable.
+     */
+    const kanbanColumnKey = (normalizedStatus) => (normalizedStatus === 'InProgress' ? 'In Progress' : normalizedStatus);
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a — the column keys this item's ENABLED actions can drag it to, own column
+     * excluded (dropping on the column you are already in is not a move). A DISABLED action's targetStatus is
+     * deliberately excluded here — see kanbanColumnHint, which reads it separately to explain a pale column,
+     * never to make it accept a drop.
+     */
+    const kanbanDragTargets = (item) => (item.actions || [])
+        .filter((a) => a.enabled && a.targetStatus)
+        .map((a) => kanbanColumnKey(a.targetStatus))
+        .filter((status) => status !== item.status);
+
+    /*
+     * The hint text for a PALE column during a drag: this item's disabledReason for the one action (if there is
+     * exactly one) that targets it. Two or more actions targeting the same column with different reasons would
+     * be ambiguous to summarize in one line, so nothing is shown rather than picking one arbitrarily; zero
+     * actions targeting it means the column is simply unreachable from here, not blocked, so nothing is shown
+     * either.
+     */
+    const kanbanColumnHint = (item, columnStatus) => {
+        const matches = (item.actions || []).filter((a) => a.targetStatus && kanbanColumnKey(a.targetStatus) === columnStatus);
+        if (matches.length !== 1 || matches[0].enabled) { return null; }
+        return matches[0].disabledReason || null;
     };
 
 
@@ -6931,6 +6973,7 @@
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
+        if (state.view === 'kanban') { bindKanbanDrag(root); }
         restoreFocus(snap);
         syncUrl();
     };
@@ -7813,6 +7856,69 @@
                         (event.item.getAttribute('data-diten-check-row') || '').split(':');
                     if (!taskId || !itemCode) { return; }
                     dropChecklistItem(taskId, itemCode, event.newIndex);
+                }
+            });
+        });
+    };
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a — sürükleme başlar, sütunlar izin verir ya da soluklaşır. Dropping runs NO
+     * action yet (Dilim 3b wires that to performAction); this binding only computes which columns a card COULD
+     * move to and greys the rest, exactly how a real drop will read them once it exists.
+     *
+     * İşlerim/Başlattıklarım only — Havuz and Geçmiş keep today's read-only board (CT decision 2026-09-17) — and
+     * never in the Team scope: a colleague's work is not this reader's to drag.
+     */
+    const bindKanbanDrag = (root) => {
+        if (!global.Sortable || !root || state.view !== 'kanban') { return; }
+        if (state.tab !== 'islerim' && state.tab !== 'baslattiklarim') { return; }
+        if (state.scope === 'team') { return; }
+        root.querySelectorAll('.wcn-kcol-body').forEach((list) => {
+            // The board is rebuilt on every render, so this is a fresh element each time; the flag stops a
+            // second Sortable binding to the SAME node if render is ever called twice without replacing it.
+            if (list.dataset.wcnSortable === '1') { return; }
+            list.dataset.wcnSortable = '1';
+            global.Sortable.create(list, {
+                group: 'wcn-kanban',
+                animation: 150,
+                forceFallback: true,
+                fallbackTolerance: 3,
+                // A card with nothing to drag it TO (no enabled action reaches another column) gets no handle
+                // and no drag cursor — `filter` excludes it from Sortable's own draggable set entirely.
+                draggable: '.wcn-kcard[data-wcn-draggable="1"]',
+                filter: '.wcn-kcard:not([data-wcn-draggable="1"])',
+                ghostClass: 'wcn-kcard-ghost',
+                onStart: (event) => {
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    if (!item) { return; }
+                    const allowed = new Set(kanbanDragTargets(item));
+                    root.querySelectorAll('.wcn-kcol[data-wcn-status]').forEach((col) => {
+                        const status = col.getAttribute('data-wcn-status');
+                        // The card's OWN column is never pale, whatever the allowed set says — dropping back
+                        // where it already is is not a move to refuse. (Sabotage-guarded: remove this line and
+                        // a card's own column greys itself out from under it.)
+                        if (status === item.status) { return; }
+                        if (allowed.has(status)) { return; }
+                        col.classList.add('wcn-kcol-pale');
+                        // A pale column whose ONE reason is a disabled action's own refusal explains itself —
+                        // the same localized sentence the button would have shown, read from the wire.
+                        const hint = kanbanColumnHint(item, status);
+                        if (hint) { col.querySelector('.wcn-kcol-head')?.setAttribute('title', hint); }
+                    });
+                },
+                onMove: (event) => {
+                    const col = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    return !!col && !col.classList.contains('wcn-kcol-pale');
+                },
+                onEnd: () => {
+                    // The trailing click a real drag's mouseup fires next must not reopen the card's detail
+                    // page — cleared on the next tick, well after that click would already have run.
+                    kanbanDragSuppressClick = true;
+                    global.setTimeout(() => { kanbanDragSuppressClick = false; }, 0);
+                    // No drop action runs yet (Dilim 3b). Re-rendering from the untouched projection both clears
+                    // every wcn-kcol-pale class and title this drag added and puts the card back where it
+                    // started — there is nothing optimistic here to undo.
+                    render();
                 }
             });
         });
@@ -10375,7 +10481,7 @@
         // it into the split-detail navigation, which would re-render and kill the
         // dropdown before Bootstrap can open it.
         const onControl = event.target.closest('button, a, [data-bs-toggle], .dropdown-menu, [data-wcn-check], .wcn-td-check');
-        if (rowEl && state.view !== 'table' && !onControl) {
+        if (rowEl && state.view !== 'table' && !onControl && !kanbanDragSuppressClick) {
             state.selectedId = rowEl.getAttribute('data-wcn-row');
             const it = itemById(state.selectedId);
             if (it) { markSeen(it); }
