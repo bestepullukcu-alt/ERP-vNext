@@ -50,3 +50,16 @@ Durma: CrmService→Auth internal S2S auth yapılamıyorsa (DUR+raporla, alterna
 Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
 ```
 - İzole worktree → CrmService.Application.Tests + Diten.Web.Tests baseline-diff; DTO additive *ByName (mevcut *By korundu); reader tek bulk display-names + fail-closed (Auth yok→null); timeline display name veya yalnız tarih (GUID gizli); email eklenmedi; ekstra per-id çağrı yok.
+
+## §37 CT bağımsız doğrulama (2026-09-17) → **ACCEPTED (E2)**
+```
+Commit: 4c7a4939 (+ footer/date fix 8d8c3fef) · Agent: PASS · CT: ACCEPTED E2 (gerçek build) · izole /c/tmp/ct-det6-verify @4c7a4939
+```
+- ✅ Scope: CrmService (IUserDisplayNameResolver + AuthUserDisplayNameClient + AuthServiceOptions + DI + GetSegmentByIdHandler + SegmentModels + config + 2 test dosyası) + frontend (Details.cshtml timeline + SegmentViewModels). Footer/date fix (details.js + segment-details.css) de HEAD'de.
+- ✅ **/resolve şekli korundu:** SegmentDetailDto additive `CreatedByName/ActivatedByName/UpdatedByName = null` en sonda; mevcut *By alanları değişmedi.
+- ✅ **Auth endpoint GENİŞLETİLMEDİ:** InternalUsersController diff=0 (email eklenmedi, display-name kontratı korundu).
+- ✅ **Fail-closed + tek bulk:** AuthUserDisplayNameClient X-Internal-Api-Key S2S (Platform AuthUserDisplayNameClient deseni), chunk 100, ≤3 id=1 tur; config yok/erişilemez/bozuk→null map→GUID gizli. NullUserDisplayNameResolver varsayılan. Aktör yoksa 0 çağrı.
+- ✅ Frontend timeline: *ByName varsa display name, yoksa yalnız tarih (GUID gizli).
+- ✅ Footer/date fix: segd-tfoot bg `--bs-body-bg`; resolvedAt en-GB "17 Sep 2026, 14:32" (×2).
+- ✅ Build+test (CT izole, Release, GERÇEK): CrmService.Application.Tests **1743/0/5** (+3 yeni: resolve+tek-bulk+benzersiz / çözülemeyen→null / aktör-yok→0-çağrı) + Diten.Web.Tests **137/0**.
+- ⏳ E4: timeline "Created … · S. Aydın" (GUID yok); footer bg-body; tarih "17 Sep 2026, 14:32".
