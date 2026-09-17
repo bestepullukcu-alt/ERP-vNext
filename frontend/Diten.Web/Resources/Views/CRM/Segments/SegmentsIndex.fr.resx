@@ -253,4 +253,10 @@
   <data name="ConsumersSection" xml:space="preserve"><value>Utilisé comme audience par</value></data>
   <data name="ConsumersNoneYet" xml:space="preserve"><value>Aucun pour l'instant</value></data>
   <data name="ConsumersNote" xml:space="preserve"><value>Aucune campagne ni aucun ensemble de contenu ne cible encore ce segment. Les consommateurs seront répertoriés ici dès qu'ils y feront référence.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Spécialité</value></data>
+  <data name="Workplace" xml:space="preserve"><value>Lieu de travail</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>Affichage des {0} premiers membres sur {1}.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>Rien n'est stocké ici — le résultat est recalculé à chaque appel.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>Ouvrir le résultat complet</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>Il s'agit du maximum renvoyé par cette vue. Affinez la règle pour restreindre le résultat.</value></data>
 </root>

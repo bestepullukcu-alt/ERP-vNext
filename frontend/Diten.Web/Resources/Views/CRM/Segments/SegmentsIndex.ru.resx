@@ -253,4 +253,10 @@
   <data name="ConsumersSection" xml:space="preserve"><value>Используется как аудитория в</value></data>
   <data name="ConsumersNoneYet" xml:space="preserve"><value>Пока нет</value></data>
   <data name="ConsumersNote" xml:space="preserve"><value>Пока ни одна кампания или набор контента не ссылается на этот сегмент. Потребители появятся здесь, как только начнут его использовать.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Специальность</value></data>
+  <data name="Workplace" xml:space="preserve"><value>Место работы</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>Показаны первые {0} из {1} участников.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>Здесь ничего не сохраняется — результат пересчитывается при каждом вызове.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>Открыть полный результат</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>Это максимум, который возвращает это представление. Уточните правило, чтобы сузить результат.</value></data>
 </root>

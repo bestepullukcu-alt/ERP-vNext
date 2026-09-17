@@ -54,15 +54,43 @@
         document.getElementById('manualMembersBlock')?.classList.toggle('segd-hidden', segmentType === 'dynamic');
     };
 
-    /** avatar + name + quiet id — the readable label with the id kept as provenance underneath, never the id alone. */
-    const personCell = (displayName, subjectId, extraAvatarClass) => `
+    /** avatar + name — the readable label. The manual list keeps the id as provenance underneath (showSubId), while the
+     *  resolve/preview member tables drop the bare GUID line (WP-SEG-DETAILS5 §3): the name alone is enough there. */
+    const personCell = (displayName, subjectId, extraAvatarClass, showSubId = true) => `
         <span class="segd-col-person">
             <span class="segd-avatar ${extraAvatarClass || ''}">${esc(initials(displayName, subjectId))}</span>
             <span class="segd-person-body">
                 <span class="segd-name">${esc(displayName || subjectId || '—')}</span>
-                ${displayName ? `<span class="segd-subid segd-mono">${esc(subjectId)}</span>` : ''}
+                ${showSubId && displayName ? `<span class="segd-subid segd-mono">${esc(subjectId)}</span>` : ''}
             </span>
         </span>`;
+
+    // WP-SEG-DETAILS5 §4: the SEG-F secondary label ("Specialty · Workplace") is split into two columns. No separator ->
+    // the whole value is the Specialty and the Workplace shows "—". Reuses .segd-col-secondary (no CSS change).
+    const secondaryCells = raw => {
+        const parts = String(raw ?? '').split(' · ');
+        const specialty = (parts[0] || '').trim() || '—';
+        const workplace = parts.length > 1 ? (parts.slice(1).join(' · ').trim() || '—') : '—';
+        return `<span class="segd-col-secondary">${esc(specialty)}</span><span class="segd-col-secondary">${esc(workplace)}</span>`;
+    };
+
+    // WP-SEG-DETAILS5 §5: the recomputed-on-every-call footer + "Open the full result". The full-result link re-runs the
+    // SAME endpoint at its maximum (no new page, no backend): /resolve raises the paging limit, /preview is already at its
+    // sample cap. When even that maximum is shorter than the total, a quiet cap note replaces the link.
+    const renderResolveFooter = (shown, total, atMax) => {
+        const foot = document.getElementById('resolveFooter');
+        if (!foot) return;
+        const showing = String(L.ShowingFirstOfMembers || 'Showing the first {0} of {1} members.')
+            .replace('{0}', Number(shown).toLocaleString())
+            .replace('{1}', Number(total).toLocaleString());
+        const more = shown < total;
+        const tail = more
+            ? (atMax
+                ? `<span class="segd-full-cap">${esc(L.SampleCapNote || '')}</span>`
+                : `<button type="button" class="segd-ghost-btn js-open-full">${esc(L.OpenFullResult || 'Open the full result')}</button>`)
+            : '';
+        foot.innerHTML = `<span>${esc(showing)} ${esc(L.NothingStoredRecomputed || '')}</span>${tail}`;
+    };
 
     const verdictClass = v => v === 'member' ? 'segd-badge-ok' : v === 'unknown' ? 'segd-badge-unknown' : 'segd-badge-no';
 
@@ -119,7 +147,9 @@
         document.getElementById('resolveResult')?.classList.toggle('segd-hidden', state !== 'done');
     };
 
-    const runResolve = async () => {
+    // full === true is the "Open the full result" path (WP-SEG-DETAILS5 §5): the SAME /resolve endpoint at its paging
+    // ceiling (1000, the handler's MaxLimit) instead of the default sample page. No new page, no backend.
+    const runResolve = async (full = false) => {
         const summary = document.getElementById('resolveSummary');
         const memberBody = document.getElementById('resolveMembersBody');
         const excludedWrap = document.getElementById('resolveExcluded');
@@ -136,7 +166,7 @@
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
                 // includeExcluded: an elimination must be as visible as an acceptance.
-                body: JSON.stringify({ limit: 100, offset: 0, includeExcluded: true })
+                body: JSON.stringify({ limit: full ? 1000 : 100, offset: 0, includeExcluded: true })
             });
 
             const data = await envelope(response);
@@ -151,20 +181,24 @@
                 <span class="segd-chip-stat segd-chip-dropped"><span class="segd-chip-value">${esc(Number(data.excludedCount ?? 0).toLocaleString())}</span><span class="segd-chip-label">${esc(L.ExcludedCount || 'Excluded')}</span></span>
                 <span class="segd-chip-stat segd-chip-manual"><span class="segd-chip-value">${esc(fromManual.toLocaleString())}</span><span class="segd-chip-label">${esc(L.FromManual || 'from manual rows')}</span></span>
                 ${data.segmentEffective === false ? `<span class="segd-chip-stat"><span class="segd-chip-label">${esc((data.reasonCodes || []).join(', '))}</span></span>` : ''}
-                <span class="segd-resolvedat">${esc(new Date().toLocaleString())}</span>`;
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-US'))}</span>`;
 
             // A genuine 0 is a result, not a failure: the summary chips still show "0 included" and this line names it
             // (fetch/HTTP errors take the catch path below and render a visible segd-error-row instead).
+            // Active resolve KEEPS verdict/source/reasons — they carry real /resolve output (WP-SEG-DETAILS5 §2).
             memberBody.innerHTML = members.length === 0
                 ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
                 : members.map(m => `
                     <div class="segd-row">
-                        ${personCell(m.subjectDisplayName, m.subjectId)}
-                        <span class="segd-col-secondary">${esc(m.subjectSecondaryLabel || '—')}</span>
+                        ${personCell(m.subjectDisplayName, m.subjectId, '', false)}
+                        ${secondaryCells(m.subjectSecondaryLabel)}
                         <span class="segd-col-verdict"><span class="segd-badge ${verdictClass(m.verdict)}">${esc(m.verdict)}</span></span>
                         <span class="segd-col-source">${esc(m.membershipSource || '—')}</span>
                         <span class="segd-col-reasons segd-mono">${esc((m.reasonCodes || []).join(', '))}</span>
                     </div>`).join('');
+
+            // Footer: N shown of the matched total, with "Open the full result" until the paging ceiling is reached.
+            renderResolveFooter(members.length, Number(data.matchedCount ?? members.length), full);
 
             if (excludedWrap && excludedBody) {
                 excludedWrap.classList.toggle('segd-hidden', excluded.length === 0);
@@ -191,7 +225,9 @@
     // ---- Draft reach preview (draft dynamic/hybrid) — SEG-C /preview, no active state, persists nothing ---------
     // The active /resolve path above is UNCHANGED. This is its draft twin: /preview accepts the unsaved rule directly,
     // so a draft shows a real reach ("N members" + a member sample) instead of the /resolve "segment_not_active" wall.
-    const runDraftPreview = async () => {
+    // full === true is the "Open the full result" path (WP-SEG-DETAILS5 §5): /preview carries no paging field, so it is
+    // re-run at its fixed sample cap; when the total exceeds that cap the footer shows the cap note instead of the link.
+    const runDraftPreview = async (full = false) => {
         const summary = document.getElementById('resolveSummary');
         const memberBody = document.getElementById('resolveMembersBody');
         const excludedWrap = document.getElementById('resolveExcluded');
@@ -225,20 +261,22 @@
             // Included count + resolved-at + the draft caveat: this is today's data and not an audience until activated.
             summary.innerHTML = `
                 <span class="segd-chip-stat segd-chip-included"><span class="segd-chip-value">${esc(total.toLocaleString())}</span><span class="segd-chip-label">${esc(L.MatchedCount || 'Members')}</span></span>
-                <span class="segd-resolvedat">${esc(new Date().toLocaleString())}</span>
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-US'))}</span>
                 <span class="segd-draft-note">${esc(L.DraftPreviewNote || '')}</span>`;
 
             // A genuine 0 is a result, not a failure (fetch/HTTP errors take the catch path and render an error row).
+            // Draft preview DROPS verdict/source/reasons: /preview carries none, so an empty column would be a lie
+            // (WP-SEG-DETAILS5 §2). Only name + Specialty + Workplace.
             memberBody.innerHTML = sample.length === 0
                 ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
                 : sample.map(m => `
                     <div class="segd-row">
-                        ${personCell(m.displayName, m.subjectId)}
-                        <span class="segd-col-secondary">${esc(m.subjectSecondaryLabel || '—')}</span>
-                        <span class="segd-col-verdict"></span>
-                        <span class="segd-col-source"></span>
-                        <span class="segd-col-reasons"></span>
+                        ${personCell(m.displayName, m.subjectId, '', false)}
+                        ${secondaryCells(m.subjectSecondaryLabel)}
                     </div>`).join('');
+
+            // Footer: N sampled of the total reach, with "Open the full result" while the total exceeds the cap.
+            renderResolveFooter(sample.length, total, full);
 
             setResolveState('done');
         } catch (error) {
@@ -261,6 +299,9 @@
 
     document.addEventListener('click', event => {
         if (event.target.closest('#btnResolve')) { event.preventDefault(); void (segmentStatus === 'active' ? runResolve() : runDraftPreview()); return; }
+
+        // WP-SEG-DETAILS5 §5: re-run the same endpoint at its maximum. Same routing as the Resolve button.
+        if (event.target.closest('.js-open-full')) { event.preventDefault(); void (segmentStatus === 'active' ? runResolve(true) : runDraftPreview(true)); return; }
 
         const jsonBtn = event.target.closest('#btnToggleJson');
         if (jsonBtn) { event.preventDefault(); toggleStoredJson(jsonBtn); return; }

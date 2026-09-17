@@ -253,4 +253,10 @@
   <data name="ConsumersSection" xml:space="preserve"><value>Hedef kitle olarak kullanan</value></data>
   <data name="ConsumersNoneYet" xml:space="preserve"><value>Henüz yok</value></data>
   <data name="ConsumersNote" xml:space="preserve"><value>Bu segmenti henüz hiçbir kampanya veya içerik kümesi hedeflemiyor. Referans veren tüketiciler, veri oluştuğunda burada listelenecek.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Uzmanlık</value></data>
+  <data name="Workplace" xml:space="preserve"><value>Çalıştığı yer</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>{1} üyeden ilk {0} tanesi gösteriliyor.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>Burada hiçbir şey saklanmaz — sonuç her çağrıda yeniden hesaplanır.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>Tam sonucu aç</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>Bu görünümün döndürdüğü en fazla sonuç budur. Sonucu daraltmak için kuralı iyileştirin.</value></data>
 </root>

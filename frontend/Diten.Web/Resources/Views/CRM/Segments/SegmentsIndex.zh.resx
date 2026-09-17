@@ -253,4 +253,10 @@
   <data name="ConsumersSection" xml:space="preserve"><value>作为受众使用于</value></data>
   <data name="ConsumersNoneYet" xml:space="preserve"><value>暂无</value></data>
   <data name="ConsumersNote" xml:space="preserve"><value>目前尚无营销活动或内容集指向此细分。一旦有消费者引用，将在此处列出。</value></data>
+  <data name="Specialty" xml:space="preserve"><value>专业</value></data>
+  <data name="Workplace" xml:space="preserve"><value>工作单位</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>正在显示 {1} 名成员中的前 {0} 名。</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>此处不存储任何内容——每次调用都会重新计算结果。</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>打开完整结果</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>这是此视图返回的最大数量。请优化规则以缩小结果范围。</value></data>
 </root>

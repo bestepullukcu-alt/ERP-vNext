@@ -270,16 +270,23 @@
 
                             <div id="resolveResult" class="segd-hidden">
                                 <div id="resolveSummary" class="segd-summary"></div>
+                                @* WP-SEG-DETAILS5: Specialty/Workplace are two columns (details.js splits SEG-F's " · ").
+                                   verdict/source/reasons only exist for an ACTIVE segment's real /resolve output; a DRAFT
+                                   previews via /preview which carries none, so those columns are omitted for a draft. *@
                                 <div class="segd-table">
                                     <div class="segd-thead">
                                         <span class="segd-col-person">@Localizer["SubjectDisplayName"]</span>
-                                        <span class="segd-col-secondary">@Localizer["SecondaryLabel"]</span>
-                                        <span class="segd-col-verdict">@Localizer["Verdict"]</span>
-                                        <span class="segd-col-source">@Localizer["MembershipSource"]</span>
-                                        <span class="segd-col-reasons">@Localizer["ReasonCodes"]</span>
+                                        <span class="segd-col-secondary">@Localizer["Specialty"]</span>
+                                        <span class="segd-col-secondary">@Localizer["Workplace"]</span>
+                                        @if (segment.SegmentStatus == "active")
+                                        {
+                                            <span class="segd-col-verdict">@Localizer["Verdict"]</span>
+                                            <span class="segd-col-source">@Localizer["MembershipSource"]</span>
+                                            <span class="segd-col-reasons">@Localizer["ReasonCodes"]</span>
+                                        }
                                     </div>
                                     <div id="resolveMembersBody"></div>
-                                    <div class="segd-tfoot">
+                                    <div class="segd-tfoot" id="resolveFooter">
                                         <span>@Localizer["MembershipNeverStoredHelp"]</span>
                                     </div>
                                 </div>

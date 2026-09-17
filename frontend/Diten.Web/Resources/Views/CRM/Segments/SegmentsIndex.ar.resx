@@ -253,4 +253,10 @@
   <data name="ConsumersSection" xml:space="preserve"><value>مُستخدَم كجمهور بواسطة</value></data>
   <data name="ConsumersNoneYet" xml:space="preserve"><value>لا يوجد بعد</value></data>
   <data name="ConsumersNote" xml:space="preserve"><value>لا توجد بعد أي حملة أو مجموعة محتوى تستهدف هذه الشريحة. سيتم إدراج المستهلكين هنا بمجرد الإشارة إليها.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>التخصص</value></data>
+  <data name="Workplace" xml:space="preserve"><value>مكان العمل</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>عرض أول {0} من {1} عضوًا.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>لا يُخزَّن أي شيء هنا — تُعاد حوسبة النتيجة عند كل طلب.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>فتح النتيجة الكاملة</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>هذا هو الحد الأقصى الذي تُرجعه هذه الشاشة. حسِّن القاعدة لتضييق النتيجة.</value></data>
 </root>
