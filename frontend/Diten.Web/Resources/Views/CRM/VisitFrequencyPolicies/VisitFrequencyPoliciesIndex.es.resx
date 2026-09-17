@@ -102,4 +102,49 @@
   <data name="Band_concept-node" xml:space="preserve"><value>Concepto</value></data>
   <data name="Band_audience-profile" xml:space="preserve"><value>Perfil de audiencia</value></data>
   <data name="Band_business-rule" xml:space="preserve"><value>Regla base</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Sin fecha de fin</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Registro de auditoría</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Creado</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Nodo de concepto</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Perfil de audiencia</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Datos de resolución</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Resultado</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>El contexto opcional acota la coincidencia. Déjelo vacío para ignorarlo.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Vigente el</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Resolver</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Vista previa de solo lectura: la resolución nunca escribe nada.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Elija un objetivo y pulse Resolver.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Resolviendo…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Política seleccionada</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Políticas candidatas</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>No hay políticas candidatas.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Códigos de motivo</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Motivo de selección</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Ninguna política rige este objetivo en este contexto.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Especificidad</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Seleccionada</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Descartada</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Elija un tipo de objetivo.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Resuelto</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Conflicto</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>No aplicable</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Política de frecuencia resuelta</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Frecuencia desconocida</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Ninguna política coincidente</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Política no vigente en esta fecha</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Política inactiva</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Política archivada</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Empate de banda de prioridad: resuelto por id estable</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Seleccionada por prioridad</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Seleccionada por especificidad</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>Seleccionada por la fecha de vigencia más reciente</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Falta el contexto de campaña</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Falta el contexto de segmento</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Falta el contexto de ciclo</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>El ámbito de negocio no coincide</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Falta el contexto de ubicación del contacto</value></data>
 </root>

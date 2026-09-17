@@ -1,0 +1,90 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+
+@* WP-FREQ-C — the read-only Resolve / Çözümleme panel ("how often should THIS target be visited?"). Mirrors the
+   SCMM-11 EligibilityPolicies _Evaluate layout: an input card (target type + target + optional context + effectiveAt)
+   → "Resolve" → a result card (verdict badge + selected policy + candidate diagnostics + reason codes). It calls the
+   ready GET /resolve and shows exactly what the backend returns — no vocabulary or verdict is invented here, and the
+   endpoint is GET/read-only so nothing is ever written.
+
+   Behaviour + the shared L10n bridge live in resolve.js / the _DetailsQuickView partial (both always rendered), so this
+   file is markup only. The entity pickers reuse the same proxied sibling lists the FREQ-B editor uses (names, not GUIDs).
+   Rendered in place of the FREQ-A resolve-tab placeholder; this panel is only drawn for a resolve-permitted user. *@
+
+<div class="row g-4 vfp-detail-scope" id="vfpResolvePanel">
+    <div class="col-12 col-lg-5">
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ResolveInputSection"]</h6>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="vfpRsTargetType">@Localizer["FieldTargetType"] <span class="text-danger">*</span></label>
+                    <select id="vfpRsTargetType" class="form-select"></select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="vfpRsTargetPicker">@Localizer["FieldTarget"] <span class="text-danger">*</span></label>
+                    <div id="vfpRsTargetPicker"></div>
+                </div>
+
+                <label class="form-label fw-medium">@Localizer["EditorSectionContext"]</label>
+                <p class="vfp-meta mb-2">@Localizer["ResolveContextHelp"]</p>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsBusinessUnit">@Localizer["FieldBusinessUnit"]</label>
+                        <select id="vfpRsBusinessUnit" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsSegment">@Localizer["FieldSegment"]</label>
+                        <select id="vfpRsSegment" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsCampaign">@Localizer["FieldCampaign"]</label>
+                        <select id="vfpRsCampaign" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsBrand">@Localizer["FieldBrand"]</label>
+                        <select id="vfpRsBrand" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsProduct">@Localizer["FieldProduct"]</label>
+                        <select id="vfpRsProduct" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsConceptNode">@Localizer["FieldConceptNode"]</label>
+                        <select id="vfpRsConceptNode" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small mb-1" for="vfpRsAudienceProfile">@Localizer["FieldAudienceProfile"]</label>
+                        <select id="vfpRsAudienceProfile" class="form-select form-select-sm"></select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1" for="vfpRsTerritoryModel">@Localizer["FieldTerritory"]</label>
+                        <select id="vfpRsTerritoryModel" class="form-select form-select-sm mb-2"></select>
+                        <select id="vfpRsTerritoryNode" class="form-select form-select-sm"></select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="vfpRsEffectiveAt">@Localizer["ResolveEffectiveAt"]</label>
+                    <input id="vfpRsEffectiveAt" type="date" class="form-control" />
+                </div>
+
+                <button type="button" id="vfpRsRun" class="btn btn-primary"><i class="bx bx-target-lock me-1"></i>@Localizer["ResolveAction"]</button>
+                <div class="vfp-rs-note"><i class="bx bx-lock-alt"></i><span>@Localizer["ResolveReadOnlyNote"]</span></div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <section class="card">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ResolveResultSection"]</h6>
+                <div id="vfpRsResultEmpty" class="vfp-rs-empty">@Localizer["ResolveResultEmpty"]</div>
+                <div id="vfpRsRunning" class="vfp-rs-empty d-none"><span class="vfp-dv-spinner"></span></div>
+                <div id="vfpRsResult" class="d-none"></div>
+            </div>
+        </section>
+    </div>
+</div>

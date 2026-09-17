@@ -102,4 +102,49 @@
   <data name="Band_concept-node" xml:space="preserve"><value>مفهوم</value></data>
   <data name="Band_audience-profile" xml:space="preserve"><value>ملف الجمهور</value></data>
   <data name="Band_business-rule" xml:space="preserve"><value>قاعدة أساسية</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>بلا تاريخ انتهاء</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>أُنشئ</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>حُدّث</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>عقدة المفهوم</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>مدخلات التحليل</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>السياق الاختياري يضيّق التطابق. اتركه فارغًا لتجاهله.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>ساري اعتبارًا من</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>تحليل</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>معاينة للقراءة فقط — التحليل لا يكتب أي شيء.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>اختر هدفًا واضغط تحليل.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>جارٍ التحليل…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>السياسة المختارة</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>السياسات المرشحة</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>لا توجد سياسات مرشحة.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>رموز السبب</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>سبب الاختيار</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>لا توجد سياسة تحكم هذا الهدف في هذا السياق.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>الخصوصية</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>مختارة</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>مستبعدة</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>اختر نوع الهدف.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>محلولة</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>غير معروفة</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>غير قابلة للتطبيق</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>تم تحليل سياسة التكرار</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>التكرار غير معروف</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>لا توجد سياسة مطابقة</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>السياسة غير سارية في هذا التاريخ</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>السياسة غير نشطة</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>السياسة مؤرشفة</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>تعادل في نطاق الأولوية — حُسم بمعرّف ثابت</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>اختيرت حسب الأولوية</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>اختيرت حسب الخصوصية</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>اختيرت حسب أحدث تاريخ سريان</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>سياق الحملة مفقود</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>سياق الشريحة مفقود</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>سياق الدورة مفقود</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>نطاق العمل غير متطابق</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>سياق موقع جهة الاتصال غائب</value></data>
 </root>

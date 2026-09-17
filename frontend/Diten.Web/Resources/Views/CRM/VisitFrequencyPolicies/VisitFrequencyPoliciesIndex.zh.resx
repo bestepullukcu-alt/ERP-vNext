@@ -102,4 +102,49 @@
   <data name="Band_concept-node" xml:space="preserve"><value>概念</value></data>
   <data name="Band_audience-profile" xml:space="preserve"><value>受众画像</value></data>
   <data name="Band_business-rule" xml:space="preserve"><value>基础规则</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>无结束日期</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>审计记录</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>已更新</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>概念节点</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>受众画像</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>解析输入</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>结果</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>可选上下文可缩小匹配范围。留空则忽略。</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>解析</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>只读预览——解析不会写入任何内容。</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>选择一个目标并点击"解析"。</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>正在解析…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>所选策略</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>候选策略</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>没有候选策略。</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>原因代码</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>选择原因</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>在此上下文中没有策略管辖该目标。</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>具体性</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>已选中</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>已淘汰</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>请选择目标类型。</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>已解析</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>冲突</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>已解析频率策略</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>频率未知</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>没有匹配的策略</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>策略在此日期未生效</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>策略未激活</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>策略已归档</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>优先级带并列——按稳定 id 解析</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>按优先级选择</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>按具体性选择</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>按最新生效日期选择</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>缺少活动上下文</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>缺少细分上下文</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>缺少周期上下文</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>业务范围不匹配</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>缺少联系人位置上下文</value></data>
 </root>

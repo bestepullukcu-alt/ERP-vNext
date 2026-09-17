@@ -3,10 +3,126 @@
 @inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
-@* WP-FREQ-A placeholder — the details quick-view (full policy read model, effective window, provenance) is authored in
-   FREQ-C. The shell + contract marker id="offcanvasDetailsPreview" exist now so the row "Details" action can open it;
-   the header title/subtitle are filled from the DataTable row by index.js. *@
-<div class="offcanvas offcanvas-end backbone-preview-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
+@* WP-FREQ-C — the details quick-view. The row "Details" action (owned by FREQ-A index.js) opens this offcanvas and
+   fills the header (oc-title / oc-subtitle) from the DataTable row; resolve.js then fetches the full policy read model
+   (GET /visit-frequency-policies/{id}) and renders the read-only body below, resolving every context GUID to a NAME
+   through the same proxied sibling lists the FREQ-B editor uses. Nothing is written. The offcanvas shell + the contract
+   marker id="offcanvasDetailsPreview" are preserved so the FREQ-A row action keeps working unchanged.
+
+   This partial also owns the ONE shared L10n bridge (details + resolve) and loads resolve.js, so the script is present
+   for the details quick-view regardless of whether the permission-gated resolve tab is drawn. *@
+
+@{
+    // Code-keyed L10n bridge. Vocabulary itself (target/frequency/period/source) is NOT shipped here — resolve.js
+    // humanizes those codes exactly like the FREQ-A console. Only closed structural sets are localized: lifecycle
+    // statuses, resolve verdicts (FrequencyStatus) and reason codes (FrequencyReasonCodes). Any code missing from a map
+    // still degrades to a humanized label in resolve.js, so the maps never act as a hardcoded authoring vocabulary.
+    var reasonCodes = new[]
+    {
+        "frequency_policy_resolved", "frequency_unknown", "no_matching_policy", "policy_not_effective",
+        "policy_inactive", "policy_archived", "policy_conflict", "policy_selected_by_priority",
+        "policy_selected_by_specificity", "policy_selected_by_latest_effective_from", "campaign_context_missing",
+        "segment_context_missing", "cycle_context_missing", "business_scope_mismatch", "contact_location_context_absent"
+    };
+    var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
+    // Priority band DISPLAY labels, keyed by the contract band CODE (same closed set the FREQ-B editor ships). The bands
+    // + their integer weights still arrive from /contract at runtime; resolve.js maps a stored weight to its code and
+    // labels it through this map (humanized fallback for any code not listed), never a hardcoded band vocabulary.
+    var bandCodes = new[]
+    {
+        "manager-override", "campaign-target", "account-contact-link", "contact", "account",
+        "segment", "territory-node", "concept-node", "audience-profile", "business-rule"
+    };
+
+    var l10n = new Dictionary<string, object>
+    {
+        // shared
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["NotAvailable"] = SharedLocalizer["NotAvailable"].Value,
+        ["DetailLoading"] = SharedLocalizer["Loading"].Value,
+        ["NoEndDate"] = Localizer["NoEndDate"].Value,
+        // details section titles
+        ["DvSectionIdentity"] = Localizer["EditorSectionIdentity"].Value,
+        ["DvSectionTarget"] = Localizer["EditorSectionTarget"].Value,
+        ["DvSectionContext"] = Localizer["EditorSectionContext"].Value,
+        ["DvSectionFrequency"] = Localizer["Frequency"].Value,
+        ["DvSectionPriority"] = Localizer["Priority"].Value,
+        ["DvSectionSource"] = Localizer["Source"].Value,
+        ["DvSectionEffective"] = Localizer["EditorSectionEffective"].Value,
+        ["DvSectionStatus"] = Localizer["FieldStatus"].Value,
+        ["DvSectionTrail"] = Localizer["DetailTrail"].Value,
+        // details field labels (reuse FREQ-B where identical)
+        ["FieldPolicyCode"] = Localizer["FieldPolicyCode"].Value,
+        ["FieldPolicyName"] = Localizer["FieldPolicyName"].Value,
+        ["FieldDescription"] = Localizer["FieldDescription"].Value,
+        ["FieldTargetType"] = Localizer["FieldTargetType"].Value,
+        ["FieldTarget"] = Localizer["FieldTarget"].Value,
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        ["FieldConceptNode"] = Localizer["FieldConceptNode"].Value,
+        ["FieldAudienceProfile"] = Localizer["FieldAudienceProfile"].Value,
+        ["FieldFrequencyType"] = Localizer["FieldFrequencyType"].Value,
+        ["FieldRequiredVisitCount"] = Localizer["FieldRequiredVisitCount"].Value,
+        ["FieldPeriodType"] = Localizer["FieldPeriodType"].Value,
+        ["FieldSource"] = Localizer["FieldSource"].Value,
+        ["FieldEffectiveFrom"] = Localizer["FieldEffectiveFrom"].Value,
+        ["FieldEffectiveTo"] = Localizer["FieldEffectiveTo"].Value,
+        ["FieldNotes"] = Localizer["FieldNotes"].Value,
+        ["FieldStatus"] = Localizer["FieldStatus"].Value,
+        ["FreqReadsAsLabel"] = Localizer["FreqReadsAsLabel"].Value,
+        ["DetailCreated"] = Localizer["DetailCreated"].Value,
+        ["DetailUpdated"] = Localizer["DetailUpdated"].Value,
+        ["DetailArchived"] = Localizer["DetailArchived"].Value,
+        // resolve panel
+        ["ResolveInputSection"] = Localizer["ResolveInputSection"].Value,
+        ["ResolveResultSection"] = Localizer["ResolveResultSection"].Value,
+        ["ResolveEffectiveAt"] = Localizer["ResolveEffectiveAt"].Value,
+        ["ResolveAction"] = Localizer["ResolveAction"].Value,
+        ["ResolveReadOnlyNote"] = Localizer["ResolveReadOnlyNote"].Value,
+        ["ResolveResultEmpty"] = Localizer["ResolveResultEmpty"].Value,
+        ["ResolveRunning"] = Localizer["ResolveRunning"].Value,
+        ["ResolveSelectedPolicy"] = Localizer["ResolveSelectedPolicy"].Value,
+        ["ResolveCandidates"] = Localizer["ResolveCandidates"].Value,
+        ["ResolveNoCandidates"] = Localizer["ResolveNoCandidates"].Value,
+        ["ResolveReasonCodes"] = Localizer["ResolveReasonCodes"].Value,
+        ["ResolveSelectionReason"] = Localizer["ResolveSelectionReason"].Value,
+        ["ResolveNoSelected"] = Localizer["ResolveNoSelected"].Value,
+        ["ResolveSpecificity"] = Localizer["ResolveSpecificity"].Value,
+        ["ResolveSelectedBadge"] = Localizer["ResolveSelectedBadge"].Value,
+        ["ResolveEliminated"] = Localizer["ResolveEliminated"].Value,
+        ["ResolveTargetTypeRequired"] = Localizer["ResolveTargetTypeRequired"].Value,
+        ["TargetRequired"] = Localizer["TargetRequired"].Value,
+        ["SelectOption"] = Localizer["SelectOption"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
+        ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
+        ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    var verdictLabels = new Dictionary<string, string>();
+    foreach (var v in verdictCodes) { verdictLabels[v] = Localizer[$"Verdict_{v}"].Value; }
+    l10n["verdictLabels"] = verdictLabels;
+    var reasonLabels = new Dictionary<string, string>();
+    foreach (var r in reasonCodes) { reasonLabels[r] = Localizer[$"Reason_{r}"].Value; }
+    l10n["reasonLabels"] = reasonLabels;
+    var bandLabels = new Dictionary<string, string>();
+    foreach (var b in bandCodes) { bandLabels[b] = Localizer[$"Band_{b}"].Value; }
+    l10n["bandLabels"] = bandLabels;
+}
+
+<div class="offcanvas offcanvas-end backbone-preview-offcanvas vfp-dv-offcanvas" tabindex="-1" id="offcanvasDetailsPreview"
      aria-labelledby="offcanvasDetailsPreviewLabel">
     <div class="offcanvas-header p-4">
         <div class="min-w-0">
@@ -15,13 +131,17 @@
         </div>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="@SharedLocalizer["Cancel"]"></button>
     </div>
-    <div class="offcanvas-body flex-grow-1 p-4 border-top">
-        <div class="text-center text-muted py-5">
-            <i class="bx bx-detail display-6 d-block mb-2"></i>
-            <p class="mb-0">@Localizer["DetailsPlaceholder"]</p>
-        </div>
+    <div class="offcanvas-body flex-grow-1 p-4 border-top vfp-detail-scope">
+        <div id="vfpDetailLoading" class="vfp-dv-state"><span class="vfp-dv-spinner"></span></div>
+        <div id="vfpDetailError" class="vfp-dv-state text-danger d-none"></div>
+        <div id="vfpDetailBody" class="d-none"></div>
     </div>
     <div class="offcanvas-footer backbone-offcanvas-actions border-top p-4 d-flex justify-content-between gap-2">
         <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@SharedLocalizer["Cancel"]</button>
     </div>
 </div>
+
+@* Shared L10n bridge (details + resolve), code-keyed. Rendered here so resolve.js can read it as it loads. *@
+<script id="vfp-dr-l10n" type="application/json">@Html.Raw(Json.Serialize(l10n))</script>
+<link rel="stylesheet" href="~/assets/css/visit-frequency-details.css" asp-append-version="true" />
+<script src="~/assets/js/CRM/VisitFrequencyPolicies/resolve.js" asp-append-version="true"></script>

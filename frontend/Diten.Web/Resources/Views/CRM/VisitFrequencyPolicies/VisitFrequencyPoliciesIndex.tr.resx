@@ -102,4 +102,49 @@
   <data name="Band_concept-node" xml:space="preserve"><value>Konsept</value></data>
   <data name="Band_audience-profile" xml:space="preserve"><value>Hedef kitle</value></data>
   <data name="Band_business-rule" xml:space="preserve"><value>Temel kural</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Bitiş yok</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Kayıt izi</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Oluşturuldu</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Güncellendi</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Arşivlendi</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Konsept düğümü</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Hedef kitle</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Çözümleme girdisi</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Sonuç</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>İsteğe bağlı bağlam eşleşmeyi daraltır. Yok saymak için boş bırakın.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Geçerlilik tarihi</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Çözümle</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Salt-okunur önizleme — çözümleme hiçbir şey yazmaz.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Bir hedef seçip Çözümle'ye basın.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Çözümleniyor…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Seçilen politika</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Aday politikalar</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>Aday politika yok.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Neden kodları</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Seçim nedeni</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Bu bağlamda bu hedefi yöneten bir politika yok.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Özgüllük</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Seçildi</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Elendi</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Bir hedef türü seçin.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Çözümlendi</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Çakışma</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Uygulanamaz</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Sıklık politikası çözümlendi</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Sıklık bilinmiyor</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Eşleşen politika yok</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Politika bu tarihte geçerli değil</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Politika pasif</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Politika arşivlenmiş</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Öncelik bandı eşitliği — sabit kimlikle çözüldü</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Önceliğe göre seçildi</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Özgüllüğe göre seçildi</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>En son başlangıç tarihine göre seçildi</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Kampanya bağlamı eksik</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Segment bağlamı eksik</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Cycle bağlamı eksik</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>İş kapsamı uyuşmuyor</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Kişi-konum bağlamı yok</value></data>
 </root>

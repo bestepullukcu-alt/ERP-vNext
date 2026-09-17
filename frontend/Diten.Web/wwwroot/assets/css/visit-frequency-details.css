@@ -1,0 +1,194 @@
+/**
+ * WP-FREQ-C — Visit Frequency Policy Details quick-view + Resolve/Çözümleme panel (MOD-0165-FU03, frontend only).
+ *
+ * Same design language as the FREQ-B editor (visit-frequency-create.css) and the Segment Details port
+ * (segment-details.css), distilled into `vfp-dv-*` (details) and `vfp-rs-*` (resolve) classes, ALL nested under the
+ * `.vfp-detail-scope` wrapper so nothing leaks to the app shell or any other page. It is a SEPARATE file — neither
+ * visit-frequency-create.css nor segment-details.css is edited. Neutrals bind to the app's light/dark-aware Bootstrap
+ * variables (theme-aware); accent is `--bs-primary`. Linked ONLY from _DetailsQuickView.cshtml + _Resolve.cshtml.
+ */
+
+.vfp-detail-scope {
+    --vfp-card-bg: var(--bs-card-bg);
+    --vfp-card-border: var(--bs-border-color);
+    --vfp-heading: var(--bs-heading-color);
+    --vfp-text: var(--bs-body-color);
+    --vfp-muted: var(--bs-secondary-color);
+    --vfp-soft-bg: var(--bs-tertiary-bg);
+    -webkit-font-smoothing: antialiased;
+    color: var(--vfp-text);
+}
+
+/* Inter belongs ONLY to this content (every inner node carries a vfp-dv-*/vfp-rs-* class); `.vfp-mono` keeps monospace. */
+.vfp-detail-scope [class^="vfp-dv-"]:not(.vfp-mono),
+.vfp-detail-scope [class*=" vfp-dv-"]:not(.vfp-mono),
+.vfp-detail-scope [class^="vfp-rs-"]:not(.vfp-mono),
+.vfp-detail-scope [class*=" vfp-rs-"]:not(.vfp-mono) {
+    font-family: 'Inter', Helvetica, Arial, sans-serif;
+}
+.vfp-detail-scope .vfp-mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* a slightly wider details offcanvas so the two-column identity grid breathes */
+.offcanvas.vfp-dv-offcanvas {
+    width: min(520px, 96vw);
+}
+
+/* ------------------------------------------------------------------ details quick-view */
+.vfp-detail-scope .vfp-dv-state {
+    text-align: center;
+    color: var(--vfp-muted);
+    padding: 40px 8px;
+}
+.vfp-detail-scope .vfp-dv-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
+    border-top-color: var(--bs-primary);
+    border-radius: 50%;
+    display: inline-block;
+    animation: vfp-dv-spin 0.7s linear infinite;
+}
+@keyframes vfp-dv-spin { to { transform: rotate(360deg); } }
+
+.vfp-detail-scope .vfp-dv-section {
+    background: var(--vfp-card-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+}
+.vfp-detail-scope .vfp-dv-section-title {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--vfp-muted);
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.vfp-detail-scope .vfp-dv-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+}
+.vfp-detail-scope .vfp-dv-field-full { grid-column: 1 / -1; }
+.vfp-detail-scope .vfp-dv-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--vfp-muted);
+    margin-bottom: 3px;
+}
+.vfp-detail-scope .vfp-dv-value {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--vfp-heading);
+    word-break: break-word;
+}
+.vfp-detail-scope .vfp-dv-value .vfp-dv-sub {
+    display: block;
+    font-size: 11.5px;
+    color: var(--vfp-muted);
+    font-weight: 400;
+    margin-top: 1px;
+}
+
+/* frequency "reads as" box (mirrors the FREQ-B editor sentence) */
+.vfp-detail-scope .vfp-dv-readsas {
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.18);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 4px;
+}
+.vfp-detail-scope .vfp-dv-readsas-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--vfp-muted);
+}
+.vfp-detail-scope .vfp-dv-readsas-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--vfp-heading);
+    margin-top: 2px;
+}
+
+/* provenance timeline */
+.vfp-detail-scope .vfp-dv-tl { display: flex; flex-direction: column; gap: 12px; }
+.vfp-detail-scope .vfp-dv-tl-item { display: flex; gap: 10px; }
+.vfp-detail-scope .vfp-dv-tl-dot {
+    width: 9px;
+    height: 9px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--bs-primary);
+    flex: none;
+}
+.vfp-detail-scope .vfp-dv-tl-title { font-size: 12.5px; font-weight: 600; color: var(--vfp-heading); }
+.vfp-detail-scope .vfp-dv-tl-detail { font-size: 12px; color: var(--vfp-muted); margin-top: 1px; }
+
+/* ------------------------------------------------------------------ resolve / çözümleme panel */
+.vfp-detail-scope .vfp-rs-note {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    margin-top: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+.vfp-detail-scope .vfp-rs-empty {
+    text-align: center;
+    color: var(--vfp-muted);
+    padding: 36px 8px;
+}
+.vfp-detail-scope .vfp-rs-verdict-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.vfp-detail-scope .vfp-rs-selected {
+    background: var(--vfp-soft-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+.vfp-detail-scope .vfp-rs-selected-name {
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--vfp-heading);
+}
+.vfp-detail-scope .vfp-rs-selected-code {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    margin-bottom: 8px;
+}
+.vfp-detail-scope .vfp-rs-selected-freq {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--bs-primary);
+    margin: 6px 0;
+}
+.vfp-detail-scope .vfp-rs-reason {
+    font-size: 12.5px;
+    color: var(--vfp-text);
+}
+.vfp-detail-scope .vfp-rs-cand-selected {
+    background: rgba(var(--bs-primary-rgb), 0.05);
+}
+.vfp-detail-scope .vfp-rs-codes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+/* shared muted meta line */
+.vfp-detail-scope .vfp-meta { font-size: 12px; color: var(--vfp-muted); }

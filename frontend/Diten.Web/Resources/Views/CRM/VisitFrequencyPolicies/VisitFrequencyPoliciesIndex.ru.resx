@@ -102,4 +102,49 @@
   <data name="Band_concept-node" xml:space="preserve"><value>Концепт</value></data>
   <data name="Band_audience-profile" xml:space="preserve"><value>Профиль аудитории</value></data>
   <data name="Band_business-rule" xml:space="preserve"><value>Базовое правило</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Без даты окончания</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Журнал аудита</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Создано</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Узел концепции</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Входные данные разрешения</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Результат</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>Необязательный контекст сужает совпадение. Оставьте пустым, чтобы игнорировать.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Действует на дату</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Разрешить</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Предпросмотр только для чтения — разрешение ничего не записывает.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Выберите цель и нажмите «Разрешить».</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Разрешение…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Выбранная политика</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Политики-кандидаты</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>Нет политик-кандидатов.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Коды причин</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Причина выбора</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Ни одна политика не управляет этой целью в данном контексте.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Специфичность</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Выбрана</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Отклонена</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Выберите тип цели.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Конфликт</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Политика частоты разрешена</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Частота неизвестна</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Нет подходящей политики</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Политика не действует на эту дату</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Политика неактивна</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Политика архивирована</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Ничья в полосе приоритета — разрешено по стабильному id</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Выбрана по приоритету</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Выбрана по специфичности</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>Выбрана по самой поздней дате начала действия</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Отсутствует контекст кампании</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Отсутствует контекст сегмента</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Отсутствует контекст цикла</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>Несоответствие бизнес-области</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Отсутствует контекст местоположения контакта</value></data>
 </root>
