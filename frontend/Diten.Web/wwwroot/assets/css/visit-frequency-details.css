@@ -205,6 +205,32 @@
 .vfp-detail-scope .vfp-dv-tl-item--future { opacity: 0.5; }
 .vfp-detail-scope .vfp-dv-tl-dot--future { background: var(--bs-secondary); }
 
+/* WP-FREQ-DET-E — mockup DURUM AKIŞI dot palette: created=orange, weight-changed=purple (published/reactivated reuse
+   --success, deactivated/archived reuse --secondary). These tone classes are emitted only by the Details page timeline. */
+.vfp-detail-scope .vfp-dv-tl-dot--created { background: var(--bs-orange, #fd7e14); }
+.vfp-detail-scope .vfp-dv-tl-dot--weight { background: var(--bs-purple, #7367f0); }
+
+/* WP-FREQ-DET-E — vertical connector for the DETAILS timeline only (scoped to #vfpDetTimeline so the Resolve panel's own
+   vfp-dv-tl trail is untouched). The dot carries a card-bg halo so the line reads as connecting between dots. */
+#vfpDetTimeline.vfp-dv-tl { gap: 0; }
+#vfpDetTimeline .vfp-dv-tl-item { position: relative; padding-bottom: 18px; }
+#vfpDetTimeline .vfp-dv-tl-item:last-child { padding-bottom: 0; }
+#vfpDetTimeline .vfp-dv-tl-item::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 9px;
+    bottom: -9px;
+    width: 2px;
+    background: var(--vfp-card-border);
+}
+#vfpDetTimeline .vfp-dv-tl-item:last-child::before { display: none; }
+#vfpDetTimeline .vfp-dv-tl-dot {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 0 3px var(--vfp-card-bg);
+}
+
 /* header */
 .vfp-detail-scope .vfp-det-header {
     display: flex;
@@ -328,6 +354,22 @@
     font-size: 13.5px;
     color: var(--vfp-heading);
     margin-bottom: 4px;
+}
+
+/* WP-FREQ-DET-E — ETKİ big-figure metric: large bold number (tr thousands separator) over a small muted caption. */
+.vfp-detail-scope .vfp-det-metric { margin-bottom: 16px; }
+.vfp-detail-scope .vfp-det-metric:last-child { margin-bottom: 0; }
+.vfp-detail-scope .vfp-det-metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--vfp-heading);
+}
+.vfp-detail-scope .vfp-det-metric-caption {
+    font-size: 12px;
+    color: var(--vfp-muted);
+    margin-top: 2px;
 }
 
 /* conflicting policies */

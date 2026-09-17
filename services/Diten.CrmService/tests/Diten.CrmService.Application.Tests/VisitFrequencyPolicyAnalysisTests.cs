@@ -69,9 +69,10 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         };
 
     private static GetVisitFrequencyPolicyAnalysisHandler Handler(
-        Guid tenant, FakeVfpRepo repo, IVisitFrequencyTargetImpactCounter counter, FakeCyclePeriodRepo? cyclePeriods = null)
+        Guid tenant, FakeVfpRepo repo, IVisitFrequencyTargetImpactCounter counter, FakeCyclePeriodRepo? cyclePeriods = null,
+        IUserDisplayNameResolver? displayNames = null)
         => new(Ctx(tenant), repo, new VisitFrequencyPolicyResolver(Ctx(tenant), repo), counter,
-            cyclePeriods ?? new FakeCyclePeriodRepo());
+            cyclePeriods ?? new FakeCyclePeriodRepo(), displayNames ?? new NullUserDisplayNameResolver());
 
     // ---------------- Guards ----------------
 
@@ -81,7 +82,8 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         var handler = new GetVisitFrequencyPolicyAnalysisHandler(
             new TenantContext(), new FakeVfpRepo(),
             new VisitFrequencyPolicyResolver(new TenantContext(), new FakeVfpRepo()),
-            new StubCounter(VisitFrequencyTargetImpact.Countable(1)), new FakeCyclePeriodRepo());
+            new StubCounter(VisitFrequencyTargetImpact.Countable(1)), new FakeCyclePeriodRepo(),
+            new NullUserDisplayNameResolver());
         var r = await handler.Handle(new GetVisitFrequencyPolicyAnalysisQuery(Guid.NewGuid()), default);
         Assert.Equal(400, r.StatusCode);
     }
@@ -269,6 +271,34 @@ public sealed class VisitFrequencyPolicyAnalysisTests
         Assert.Equal("Veli", tl[1].By);
         // A pre-trail policy never invents a weight/status change.
         Assert.DoesNotContain(tl, e => e.Type == FrequencyPolicyEventType.WeightChanged);
+    }
+
+    [Fact]
+    public async Task Timeline_Resolves_Actor_Ids_To_Display_Names_FailClosed_To_ShortId()
+    {
+        // WP-FREQ-DET-E — a GUID-shaped actor is resolved to a display name in one bulk call; a GUID the resolver cannot
+        // answer for degrades to a short id (never a fabricated name); a non-GUID By is already a label and is untouched.
+        var repo = new FakeVfpRepo();
+        var known = Guid.NewGuid();
+        var unknown = Guid.NewGuid();
+        var policy = Policy(TenantA, FrequencyTargetType.Account, Guid.NewGuid());
+        policy.Events.Add(new VisitFrequencyPolicyEvent { Type = FrequencyPolicyEventType.Created, At = Jan1, By = known.ToString() });
+        policy.Events.Add(new VisitFrequencyPolicyEvent { Type = FrequencyPolicyEventType.Published, At = Jan1.AddDays(1), By = unknown.ToString() });
+        policy.Events.Add(new VisitFrequencyPolicyEvent { Type = FrequencyPolicyEventType.Archived, At = Jan1.AddDays(2), By = "legacy-string" });
+        repo.Items.Add(policy);
+
+        var names = new FakeUserDisplayNameResolver();
+        names.Names[known] = "M. Arslan";
+
+        var r = await Handler(TenantA, repo, new StubCounter(VisitFrequencyTargetImpact.Countable(1)), displayNames: names)
+            .Handle(new GetVisitFrequencyPolicyAnalysisQuery(policy.Id), default);
+
+        var tl = r.Data!.Timeline.Where(e => !e.IsFuture).OrderBy(e => e.At).ToList();
+        Assert.Equal("M. Arslan", tl[0].By);                       // resolved id ⇒ name
+        Assert.Equal(unknown.ToString()[..8] + "…", tl[1].By);      // unresolved GUID ⇒ short id (not fabricated)
+        Assert.Equal("legacy-string", tl[2].By);                    // non-GUID By ⇒ untouched
+        Assert.Single(names.Calls);                                 // ONE bulk call for the whole id set
+        Assert.Equal(2, names.Calls[0].Count);                      // only the two distinct GUID-shaped ids
     }
 
     [Fact]
@@ -534,6 +564,22 @@ public sealed class VisitFrequencyPolicyAnalysisTests
     };
 
     // ---------------- fakes ----------------
+
+    private sealed class FakeUserDisplayNameResolver : IUserDisplayNameResolver
+    {
+        public Dictionary<Guid, string> Names { get; } = new();
+        public List<IReadOnlyCollection<Guid>> Calls { get; } = new();
+
+        public Task<IReadOnlyDictionary<Guid, string>> ResolveAsync(
+            IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default)
+        {
+            Calls.Add(userIds);
+            IReadOnlyDictionary<Guid, string> hit = userIds
+                .Where(id => Names.ContainsKey(id))
+                .ToDictionary(id => id, id => Names[id]);
+            return Task.FromResult(hit);
+        }
+    }
 
     private sealed class StubCounter : IVisitFrequencyTargetImpactCounter
     {

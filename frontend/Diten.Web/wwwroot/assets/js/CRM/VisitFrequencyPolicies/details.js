@@ -234,9 +234,11 @@
     // Rendered from analysis.Timeline (the embedded audit trail, or a timestamp backfill for a pre-trail policy). Each
     // entry: colored dot (by type) + title (weight-changed → "Ağırlık {from}→{to}" with band labels) + date + actor.
     // The derived next-eval entry is faded (future). Falls back to a created/archived stub if analysis is unavailable.
+    // WP-FREQ-DET-E — mockup dot palette: created=orange, published/reactivated=green, weight-changed=purple,
+    // deactivated/archived=gray (muted), next-eval=faded.
     const TIMELINE_TONE = {
-        created: 'secondary', published: 'success', deactivated: 'warning',
-        reactivated: 'success', 'weight-changed': 'primary', archived: 'secondary', 'next-eval': 'future'
+        created: 'created', published: 'success', deactivated: 'secondary',
+        reactivated: 'success', 'weight-changed': 'weight', archived: 'secondary', 'next-eval': 'future'
     };
     const bandCodeLabel = code => { const c = norm(code); return c ? (bandLabels[c] || humanize(c)) : ''; };
     const timelineTitle = e => {
@@ -266,29 +268,37 @@
                 !!e.isFuture));
         } else {
             // Defensive fallback (analysis endpoint unavailable): the same created/archived stubs from the read model.
-            tl = [item('secondary', timelineLabels.created || t('TlCreated', 'Created'), p.createdAt, p.createdBy, false)];
+            tl = [item('created', timelineLabels.created || t('TlCreated', 'Created'), p.createdAt, p.createdBy, false)];
             if (norm(p.archivedAt)) tl.push(item('secondary', timelineLabels.archived || t('TlArchived', 'Archived'), p.archivedAt, p.archivedBy, false));
         }
         el('vfpDetTimeline').innerHTML = tl.join('');
     };
 
+    // WP-FREQ-DET-E — ETKİ as a big-bold figure (tr thousands separator) over a small muted caption. The caption is the
+    // localized line with its "{0}" slot stripped ("{0} hedef" → "hedef"), so the number and its label are separate.
+    const localeNum = v => (v == null || v === '' || Number.isNaN(Number(v))) ? dash() : Number(v).toLocaleString('tr-TR');
+    const captionOf = tpl => norm(tpl).replace('{0}', '').replace(/\s+/g, ' ').trim();
+    const metric = (value, caption) =>
+        `<div class="vfp-det-metric"><div class="vfp-det-metric-value">${esc(value)}</div>`
+        + (caption ? `<div class="vfp-det-metric-caption">${esc(caption)}</div>` : '') + `</div>`;
     const renderImpact = impact => {
         const computable = !!(impact && impact.targetCountComputable && impact.targetCount != null);
         const note = norm(impact && impact.projectionNote);
         const parts = [];
         if (computable) {
-            // A computable count (real membership, or a draft preview) shows the two figures; any caveat (draft/period)
+            // A computable count (real membership, or a draft preview) shows the two figures big; any caveat (draft/period)
             // rides below as a note.
-            const visitsVal = (impact && impact.plannedVisitsPerQuarter != null) ? String(impact.plannedVisitsPerQuarter) : dash();
-            parts.push(`<div class="vfp-det-impact-line">${esc(fmt(t('ImpactTargetsLine', '{0} targets'), String(impact.targetCount)))}</div>`);
-            parts.push(`<div class="vfp-det-impact-line">${esc(fmt(t('ImpactVisitsLine', '{0} visits / quarter'), visitsVal))}</div>`);
+            parts.push(metric(localeNum(impact.targetCount),
+                captionOf(t('ImpactTargetsLine', '{0} targets')) || t('TargetsWord', 'targets')));
+            const visitsVal = (impact && impact.plannedVisitsPerQuarter != null) ? localeNum(impact.plannedVisitsPerQuarter) : dash();
+            parts.push(metric(visitsVal, captionOf(t('ImpactVisitsLine', '{0} visits / quarter'))));
             if (note) parts.push(`<div class="vfp-meta mt-2">${esc(note)}</div>`);
         } else {
             // Genuinely uncomputable (candidate cap exceeded, or a target type with no counting path): show the backend's
-            // honest reason IN PLACE OF a fabricated "—".
+            // honest reason IN PLACE OF a fabricated number.
             parts.push(note
                 ? `<div class="vfp-meta">${esc(note)}</div>`
-                : `<div class="vfp-det-impact-line">${esc(fmt(t('ImpactTargetsLine', '{0} targets'), dash()))}</div>`);
+                : metric(dash(), captionOf(t('ImpactTargetsLine', '{0} targets')) || t('TargetsWord', 'targets')));
         }
         el('vfpDetImpact').innerHTML = parts.join('');
     };
