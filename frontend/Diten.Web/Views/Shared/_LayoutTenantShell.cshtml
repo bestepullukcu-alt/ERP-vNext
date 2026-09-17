@@ -302,7 +302,8 @@
                         || Perms.Has("procurement.requisitions.read")
                         || Perms.Has("procurement.purchase-orders.read")
                         || Perms.Has("procurement.grn.read")
-                        || Perms.Has("procurement.invoice-match.read"))
+                        || Perms.Has("procurement.invoice-match.read")
+                        || Perms.Has("procurement.contracts.read"))
                     {
                         <li class="menu-header small text-uppercase">
                             <span class="menu-header-text">@SharedLocalizer["Nav.Domain.PROCUREMENT"]</span>
@@ -368,6 +369,17 @@
                                 <a href="/InvoiceMatch" class="menu-link">
                                     <i class="menu-icon tf-icons bx bx-check-double"></i>
                                     <div>@SharedLocalizer["Nav.Module.INVOICEMATCH"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0144 — Procurement / Contracting & Clause Library (tenant shell). Link shown only with the
+                           contracts read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.contracts.read"))
+                        {
+                            <li class="menu-item @(activeController == "Contracts" ? "active" : "")">
+                                <a href="/Contracts" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-file"></i>
+                                    <div>@SharedLocalizer["Nav.Module.CONTRACTS"]</div>
                                 </a>
                             </li>
                         }

@@ -933,6 +933,9 @@
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
   <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Fatura Eşleştirme</value></data>
   <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Fatura Yakalama ve 3-Yönlü Eşleştirme</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Sözleşmeler</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Sözleşme ve Clause Kütüphanesi</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Yalnızca taslak sözleşmeler güncellenebilir; aktifleştirilmiş bir sözleşme düzenlemeyle değil yaşam döngüsü işlemleriyle yönetilir.</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>

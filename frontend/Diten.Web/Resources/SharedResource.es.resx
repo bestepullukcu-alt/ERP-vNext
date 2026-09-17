@@ -873,6 +873,9 @@
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
   <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Conciliación de facturas</value></data>
   <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Captura de facturas y conciliación de 3 vías</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Contratos</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Contratación y biblioteca de cláusulas</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Solo se pueden actualizar los contratos en borrador; un contrato activado se gestiona mediante acciones de ciclo de vida, no ediciones.</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>No se admite la edición de un GRN; una recepción contabilizada se corrige con un movimiento de reversión, no con una edición.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>No se admite actualizar una factura; corríjala volviendo a ejecutar la conciliación de 3 vías o resolviendo su excepción, no mediante una edición.</value></data>

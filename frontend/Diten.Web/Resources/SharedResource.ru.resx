@@ -872,6 +872,9 @@
   <data name="Nav.Module.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
   <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Сопоставление счетов</value></data>
   <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Захват счетов и трёхстороннее сопоставление</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Контракты</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Контракты и библиотека положений</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Обновлять можно только черновики контрактов; активированный контракт управляется действиями жизненного цикла, а не редактированием.</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Обновление счёта не поддерживается; исправьте его повторным сопоставлением или решением исключения, а не редактированием.</value></data>

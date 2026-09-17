@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>Contrats et bibliothèque de clauses</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Contrats d'achat et d'approvisionnement : associez un fournisseur et une attribution, ajoutez des clauses et gérez le cycle de vie du brouillon à l'actif.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Ajouter un contrat</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier le contrat</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Ajouter un contrat</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le contrat</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ContractId" xml:space="preserve"><value>N° de contrat</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>Titre</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>ex. Accord-cadre matières premières 2026</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Fournisseur</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>Sélectionnez ou saisissez un ID fournisseur</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>Les ID fournisseur sont validés par rapport au référentiel fournisseurs (fail-closed).</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / Attribution</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>ex. RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>Facultatif ; validé par rapport à l'attribution d'approvisionnement si fourni.</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Date de début</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Date de fin</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>Facultatif ; doit être égale ou postérieure à la date de début.</value></data>
+  <data name="Currency" xml:space="preserve"><value>Devise</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>ex. USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Laissez vide pour utiliser la devise de base de l'entité juridique.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>En révision</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Actif</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>Expiré</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>Résilié</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Détails du contrat</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>Clauses</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Preuves</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>Ajouter une clause</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>ID de clause</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>ex. CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>Dérogation</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>Notes de dérogation</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>Décrivez la dérogation à la clause standard</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>Référencez les clauses standard de la bibliothèque ; signalez toute dérogation au texte standard.</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Références de preuves</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>Ajoutez des ID de référence de preuve</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>Références de documents uniquement (MOD-0029/0031) ; les binaires ne sont pas stockés ici.</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>Seuls les contrats en brouillon peuvent être modifiés. Les contrats activés sont gérés via les actions de cycle de vie.</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>Piste d'approbation</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>Instance de workflow</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Activer</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>Résilier</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>Activer ce contrat et démarrer sa piste d'approbation ?</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>Résilier ce contrat actif ? Cette action est irréversible.</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>Contrat activé.</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>Contrat résilié.</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>Bibliothèque de clauses</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>ID de clause</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>Catégorie</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>ex. Conditions de paiement</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>Titre</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>ex. Paiement à 30 jours</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>Corps</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>Saisissez le texte de la clause standard</value></data>
+  <data name="AddClause" xml:space="preserve"><value>Ajouter une clause</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>Clause ajoutée à la bibliothèque.</value></data>
+</root>

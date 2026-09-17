@@ -872,6 +872,9 @@
   <data name="Nav.Module.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
   <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>مطابقة الفواتير</value></data>
   <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>التقاط الفواتير والمطابقة الثلاثية</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>العقود</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>العقود ومكتبة البنود</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>يمكن تحديث عقود المسودة فقط؛ تُدار العقود المفعّلة عبر إجراءات دورة الحياة وليس بالتعديل.</value></data>
   <data name="Nav.Page.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.</value></data>
