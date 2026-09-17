@@ -651,10 +651,41 @@
         }
     };
 
+    // WP-FREQ-F15 — header "Zorunlu: N/M" required-field badge. A READ-ONLY count of the required (*) fields that are
+    // satisfied, derived from the SAME conditions validate() uses but WITHOUT calling validate() (no error rendering,
+    // no side effects). `total` is the fixed set of * fields (Identity code+name, Target type+record, Frequency
+    // type+count+period, Conflict weight+source, Effective from); `satisfied` is how many currently hold a value. Note:
+    // the policy code is a * field in create mode and is prefilled+read-only in edit mode, so a value-present check is
+    // correct for both. This never mutates the form — buildPayload / validate stay untouched.
+    const requiredStatus = () => {
+        const checks = [
+            !!norm(el('vfpPolicyCode')?.value),
+            !!norm(el('vfpPolicyName')?.value),
+            !!norm(checkedValue('vfpTargetType')),
+            !!currentTargetId(),
+            !!norm(el('vfpFrequencyType')?.value),
+            Number(el('vfpRequiredVisitCount')?.value) > 0,
+            !!norm(el('vfpPeriodType')?.value),
+            !!norm(checkedValue('vfpPriority')),
+            !!norm(el('vfpSource')?.value),
+            !!norm(el('vfpEffectiveFrom')?.value)
+        ];
+        return { total: checks.length, satisfied: checks.filter(Boolean).length };
+    };
+    const updateRequiredBadge = () => {
+        const badge = el('vfpRequiredBadge');
+        if (!badge) return;
+        const { total, satisfied } = requiredStatus();
+        badge.textContent = `${t('Required', 'Required')}: ${satisfied}/${total}`;
+        badge.classList.add('is-shown');
+        badge.classList.toggle('is-complete', satisfied === total);
+    };
+
     const updatePanel = () => {
         renderScopeChips();
         updateSummary();
         updateChecklist();
+        updateRequiredBadge();
     };
 
     // ── validation ─────────────────────────────────────────────────────────────
@@ -932,6 +963,12 @@
         if (event.target.id === 'vfpEffectiveFrom' || event.target.id === 'vfpEffectiveTo') { updateSummary(); return; }
         if (event.target.id === 'vfpNotes') { updateChecklist(); return; }
     });
+
+    // WP-FREQ-F15 — the required badge is read-only, so a light standalone change/input listener keeps it live for
+    // EVERY field (including source/code/name/dates that don't route through updatePanel). It only reads + renders the
+    // count; it never calls validate() or mutates the form.
+    FORM.addEventListener('change', updateRequiredBadge);
+    FORM.addEventListener('input', updateRequiredBadge);
 
     el('vfpScopeToggle')?.addEventListener('click', () => toggleScope());
     el('vfpScopeClear')?.addEventListener('click', () => clearScope());

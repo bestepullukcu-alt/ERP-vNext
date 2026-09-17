@@ -130,17 +130,23 @@
 }
 
 <div class="vfp-create-scope vfp-editor-page">
-    <div class="vfp-editor-head">
+    @* WP-FREQ-F15 — header aligned to the Task Create pattern (Tasks/ChecklistTemplates/_Form.cshtml):
+       h5 title ON TOP, breadcrumb BELOW (mb-0). The right actions group holds the live "Zorunlu: N/M"
+       required badge to the LEFT of "Listeye Dön". #vfpEditorTitle is preserved (form.js setTitle reads it). *@
+    <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
+            <h5 class="mb-0" id="vfpEditorTitle">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</h5>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
+                <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/CRM/VisitFrequencyPolicies">@Localizer["PoliciesTitle"]</a></li>
                     <li class="breadcrumb-item active text-primary">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</li>
                 </ol>
             </nav>
-            <h5 class="mb-0" id="vfpEditorTitle">@(isEdit ? Localizer["EditPolicy"].Value : Localizer["NewPolicy"].Value)</h5>
         </div>
-        <a href="/CRM/VisitFrequencyPolicies" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        <div class="d-flex align-items-center gap-2">
+            <span class="vfp-required-badge" id="vfpRequiredBadge"></span>
+            <a href="/CRM/VisitFrequencyPolicies" class="btn btn-label-secondary">@Localizer["BackToList"]</a>
+        </div>
     </div>
 
     <div class="vfp-archived-note vfp-hidden" id="vfpArchivedNote" role="alert">
@@ -466,7 +472,10 @@
                                 <span class="vfp-life-text"><span class="vfp-life-name">@Localizer["Status_archived"]</span><span class="vfp-life-help">@Localizer["LifecycleArchivedHelp"]</span></span>
                             </label>
                         </div>
-                        <div class="vfp-life-note">@Localizer["LifecycleNote"]</div>
+                        @* WP-FREQ-F15 — the lifecycle note renders as an amber callout (see .vfp-life-note in css).
+                           The literal product term "Archive" is emphasised: the value is HTML-encoded first, then the
+                           token is wrapped in <strong> (a safe no-op in languages that translate the term). *@
+                        <div class="vfp-life-note">@Html.Raw(System.Net.WebUtility.HtmlEncode(Localizer["LifecycleNote"].Value).Replace("Archive", "<strong>Archive</strong>"))</div>
                         <input type="hidden" id="vfpStatus" value="draft">
                         </div>
                     </section>

@@ -468,6 +468,30 @@
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
+/* WP-FREQ-F15 — header live "Zorunlu: N/M" required-field badge (sits left of "Listeye Dön"). Amber pill (warning
+   tokens) while any required field is missing, green (success tokens) once all are satisfied. form.js fills it read-only
+   (no validate() call); it stays hidden until the first fill so no empty pill flashes before the script runs. */
+.vfp-create-scope .vfp-required-badge {
+    display: none;
+    align-items: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+    border: 1px solid var(--bs-warning-border-subtle);
+}
+.vfp-create-scope .vfp-required-badge.is-shown {
+    display: inline-flex;
+}
+.vfp-create-scope .vfp-required-badge.is-complete {
+    background: var(--bs-success-bg-subtle);
+    color: var(--bs-success-text-emphasis);
+    border-color: var(--bs-success-border-subtle);
+}
+
 /* WP-FREQ-F14 — GEÇERLİLİK (04) + ÇAKIŞMA (05) kartları `row g-4` içinde `col-12 col-xl-6` yan yana. Kartlardan
    `mb-4` kaldırıldı; dikey boşluğu row g-4 gap yönetir. Geniş ekranda iki kart eşit yükseklik olsun diye col
    içindeki `.card` yüksekliği %100'e sabitlenir (tema-nötr; app card chrome'a dokunmaz). */
@@ -735,11 +759,18 @@
 .vfp-create-scope .vfp-life-row.vfp-life-disabled:hover {
     border-color: var(--bs-border-color);
 }
+/* WP-FREQ-F15 — the lifecycle "no delete / Archive" note is an amber callout box (warning tokens, theme-aware
+   light+dark). "Archive" is emphasised in the markup (_Editor.cshtml). */
 .vfp-create-scope .vfp-life-note {
     margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 6px;
     font-size: 11.5px;
     line-height: 1.5;
-    color: var(--vfp-muted);
+    text-wrap: pretty;
+    background: var(--bs-warning-bg-subtle);
+    border: 1px solid var(--bs-warning-border-subtle);
+    color: var(--bs-warning-text-emphasis);
 }
 
 /* live summary */
@@ -830,6 +861,6 @@
     flex-direction: column;
     gap: 8px;
 }
-.vfp-editor-footer .vfp-btn-armed {
-    box-shadow: 0 0 0 3px var(--vfp-accent-ring);
-}
+/* WP-FREQ-F15 — the `.vfp-btn-armed` accent ring (box-shadow) is removed; #vfpSaveDraft no longer shows a halo.
+   form.js still toggles the class to track the selected lifecycle, but it now carries no visual — button function
+   and state are unchanged. */
