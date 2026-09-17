@@ -328,15 +328,9 @@
     // ── create/edit navigation (WP-FREQ-F2: the editor is a SEPARATE page; the offcanvas is retired) ──────────
     const goCreate = () => { window.location.href = '/CRM/VisitFrequencyPolicies/Create'; };
     const goEdit = id => { if (id) window.location.href = `/CRM/VisitFrequencyPolicies/Edit/${id}`; };
-    const openDetails = id => {
-        const row = rowById[id];
-        if (!row) return;
-        const set = (elId, val) => { const el = document.getElementById(elId); if (el) el.textContent = val ?? '—'; };
-        set('oc-title', row.policyName || row.policyCode || '—');
-        set('oc-subtitle', row.policyCode || '—');
-        const el = document.getElementById('offcanvasDetailsPreview');
-        if (el && window.bootstrap) window.bootstrap.Offcanvas.getOrCreateInstance(el).show();
-    };
+    // WP-FREQ-DET-B — the details quick-view offcanvas is retired; the row "Details" action now navigates to the
+    // separate Details page (/Details/{id}).
+    const openDetails = id => { if (id) window.location.href = `/CRM/VisitFrequencyPolicies/Details/${id}`; };
 
     // ── row actions ──────────────────────────────────────────────────────────
     const actions = row => {

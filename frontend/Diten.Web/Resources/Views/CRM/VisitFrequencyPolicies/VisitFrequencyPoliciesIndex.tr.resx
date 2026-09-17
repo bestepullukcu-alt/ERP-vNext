@@ -251,4 +251,16 @@
   <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment ve kampanya — boş bırakılırsa kısıt yok</value></data>
   <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marka ve ürün — önce marka, sonra ürün</value></data>
   <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Cycle dönemi — cycle tabanlı sıklıkta zorunludur</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Politika Detayı</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Durum akışı</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Etki</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} hedef bu politikayı alıyor</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} planlanan ziyaret / çeyrek</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Bu hedefte çakışan politikalar</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} aday</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Bu hedef için çakışan politika yok.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Aday</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>hedef</value></data>
 </root>

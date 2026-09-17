@@ -2,13 +2,117 @@
 @using Diten.Web.Views.CRM.VisitFrequencyPolicies
 @using Microsoft.AspNetCore.Mvc.Localization
 @inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 @{
     ViewData["Title"] = Localizer["PoliciesTitle"].Value;
     Layout = "_LayoutTenantShell";
     // Çözümleme (resolve) tab is permission-gated (UAS-001): only drawn for a user granted resolve (canonical or the
-    // documented territory.read fallback). Its panel content is FREQ-C — here it is an empty placeholder.
+    // documented territory.read fallback). Its panel content is FREQ-C.
     var canResolve = PermissionClaims.HasPermission(User, "crm.visit-frequency-policy.resolve")
         || PermissionClaims.HasPermission(User, "crm.territory.read");
+
+    // WP-FREQ-DET-B — the details quick-view offcanvas is RETIRED (details are now a separate /Details/{id} page). The
+    // shared L10n bridge + css + resolve.js that the retired _DetailsQuickView partial used to host are moved here so the
+    // permission-gated Çözümleme (resolve) tab keeps working UNCHANGED — resolve.js + _Resolve.cshtml are not touched.
+    // The bridge is only rendered when the resolve tab is drawn (canResolve). Only closed structural sets (lifecycle
+    // statuses, resolve verdicts, reason codes, priority bands) are localized; every code still degrades to a humanized
+    // label in resolve.js, so the maps never act as a hardcoded authoring vocabulary.
+    var reasonCodes = new[]
+    {
+        "frequency_policy_resolved", "frequency_unknown", "no_matching_policy", "policy_not_effective",
+        "policy_inactive", "policy_archived", "policy_conflict", "policy_selected_by_priority",
+        "policy_selected_by_specificity", "policy_selected_by_latest_effective_from", "campaign_context_missing",
+        "segment_context_missing", "cycle_context_missing", "business_scope_mismatch", "contact_location_context_absent"
+    };
+    var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
+    var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+
+    var resolveL10n = new Dictionary<string, object>
+    {
+        // shared
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["NotAvailable"] = SharedLocalizer["NotAvailable"].Value,
+        ["DetailLoading"] = SharedLocalizer["Loading"].Value,
+        ["NoEndDate"] = Localizer["NoEndDate"].Value,
+        // details section titles
+        ["DvSectionIdentity"] = Localizer["EditorSectionIdentity"].Value,
+        ["DvSectionTarget"] = Localizer["EditorSectionTarget"].Value,
+        ["DvSectionContext"] = Localizer["EditorSectionContext"].Value,
+        ["DvSectionFrequency"] = Localizer["Frequency"].Value,
+        ["DvSectionPriority"] = Localizer["Priority"].Value,
+        ["DvSectionSource"] = Localizer["Source"].Value,
+        ["DvSectionEffective"] = Localizer["EditorSectionEffective"].Value,
+        ["DvSectionStatus"] = Localizer["FieldStatus"].Value,
+        ["DvSectionTrail"] = Localizer["DetailTrail"].Value,
+        // details field labels (reuse FREQ-B where identical)
+        ["FieldPolicyCode"] = Localizer["FieldPolicyCode"].Value,
+        ["FieldPolicyName"] = Localizer["FieldPolicyName"].Value,
+        ["FieldDescription"] = Localizer["FieldDescription"].Value,
+        ["FieldTargetType"] = Localizer["FieldTargetType"].Value,
+        ["FieldTarget"] = Localizer["FieldTarget"].Value,
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        ["FieldConceptNode"] = Localizer["FieldConceptNode"].Value,
+        ["FieldAudienceProfile"] = Localizer["FieldAudienceProfile"].Value,
+        ["FieldFrequencyType"] = Localizer["FieldFrequencyType"].Value,
+        ["FieldRequiredVisitCount"] = Localizer["FieldRequiredVisitCount"].Value,
+        ["FieldPeriodType"] = Localizer["FieldPeriodType"].Value,
+        ["FieldSource"] = Localizer["FieldSource"].Value,
+        ["FieldEffectiveFrom"] = Localizer["FieldEffectiveFrom"].Value,
+        ["FieldEffectiveTo"] = Localizer["FieldEffectiveTo"].Value,
+        ["FieldNotes"] = Localizer["FieldNotes"].Value,
+        ["FieldStatus"] = Localizer["FieldStatus"].Value,
+        ["FreqReadsAsLabel"] = Localizer["FreqReadsAsLabel"].Value,
+        ["DetailCreated"] = Localizer["DetailCreated"].Value,
+        ["DetailUpdated"] = Localizer["DetailUpdated"].Value,
+        ["DetailArchived"] = Localizer["DetailArchived"].Value,
+        // resolve panel
+        ["ResolveInputSection"] = Localizer["ResolveInputSection"].Value,
+        ["ResolveResultSection"] = Localizer["ResolveResultSection"].Value,
+        ["ResolveEffectiveAt"] = Localizer["ResolveEffectiveAt"].Value,
+        ["ResolveAction"] = Localizer["ResolveAction"].Value,
+        ["ResolveReadOnlyNote"] = Localizer["ResolveReadOnlyNote"].Value,
+        ["ResolveResultEmpty"] = Localizer["ResolveResultEmpty"].Value,
+        ["ResolveRunning"] = Localizer["ResolveRunning"].Value,
+        ["ResolveSelectedPolicy"] = Localizer["ResolveSelectedPolicy"].Value,
+        ["ResolveCandidates"] = Localizer["ResolveCandidates"].Value,
+        ["ResolveNoCandidates"] = Localizer["ResolveNoCandidates"].Value,
+        ["ResolveReasonCodes"] = Localizer["ResolveReasonCodes"].Value,
+        ["ResolveSelectionReason"] = Localizer["ResolveSelectionReason"].Value,
+        ["ResolveNoSelected"] = Localizer["ResolveNoSelected"].Value,
+        ["ResolveSpecificity"] = Localizer["ResolveSpecificity"].Value,
+        ["ResolveSelectedBadge"] = Localizer["ResolveSelectedBadge"].Value,
+        ["ResolveEliminated"] = Localizer["ResolveEliminated"].Value,
+        ["ResolveTargetTypeRequired"] = Localizer["ResolveTargetTypeRequired"].Value,
+        ["TargetRequired"] = Localizer["TargetRequired"].Value,
+        ["SelectOption"] = Localizer["SelectOption"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
+        ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
+        ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    var resolveVerdictLabels = new Dictionary<string, string>();
+    foreach (var v in verdictCodes) { resolveVerdictLabels[v] = Localizer[$"Verdict_{v}"].Value; }
+    resolveL10n["verdictLabels"] = resolveVerdictLabels;
+    var resolveReasonLabels = new Dictionary<string, string>();
+    foreach (var r in reasonCodes) { resolveReasonLabels[r] = Localizer[$"Reason_{r}"].Value; }
+    resolveL10n["reasonLabels"] = resolveReasonLabels;
+    var resolveBandLabels = new Dictionary<string, string>();
+    foreach (var b in bandCodes) { resolveBandLabels[b] = Localizer[$"Band_{b}"].Value; }
+    resolveL10n["bandLabels"] = resolveBandLabels;
 }
 
 <div class="mb-3">
@@ -52,14 +156,21 @@
     }
 </div>
 
-@* WP-FREQ-F2 — the create/edit editor is now a SEPARATE page (/Create, /Edit/{id}); the FREQ-B offcanvas is retired.
-   Only the FREQ-C details quick-view offcanvas remains here. *@
-@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
-<partial name="~/Views/CRM/VisitFrequencyPolicies/_DetailsQuickView.cshtml" />
+@* WP-FREQ-DET-B — the details quick-view offcanvas (_DetailsQuickView) is retired; row "Details" now opens the separate
+   /Details/{id} page. The editor is also a separate page (/Create, /Edit/{id}). *@
 
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/VisitFrequencyPolicies/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.js" asp-append-version="true"></script>
+
+    @if (canResolve)
+    {
+        @* Shared L10n bridge (resolve panel), code-keyed. Rendered here (moved from the retired _DetailsQuickView) so
+           resolve.js reads it as it loads — resolve.js + _Resolve.cshtml are unchanged. *@
+        <script id="vfp-dr-l10n" type="application/json">@Html.Raw(Json.Serialize(resolveL10n))</script>
+        <link rel="stylesheet" href="~/assets/css/visit-frequency-details.css" asp-append-version="true" />
+        <script src="~/assets/js/CRM/VisitFrequencyPolicies/resolve.js" asp-append-version="true"></script>
+    }
 }

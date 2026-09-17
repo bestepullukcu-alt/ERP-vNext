@@ -77,6 +77,15 @@ public sealed class VisitFrequencyPoliciesController : Controller
     public IActionResult Edit(Guid policyId) =>
         RequirePage(ManageCanonical, ManageFallback) ?? View($"{ViewRoot}/Edit.cshtml", policyId);
 
+    // WP-FREQ-DET-B — the details view is now a SEPARATE Golden Compact page (the FREQ-C quick-view offcanvas is
+    // retired). It is a GET read shell: details.js fetches the policy read model (GET /{id}) + the DET-A detail
+    // analysis (GET /{id}/analysis) and renders header / stats / context / notes / status-flow / impact / conflicting
+    // policies. Gated on the read permission (canonical OR the documented fallback); an unauthorized user gets 403 (no
+    // page skeleton — UAS-001), exactly like the Index read gate.
+    [HttpGet("Details/{policyId:guid}")]
+    public IActionResult Details(Guid policyId) =>
+        RequirePage(ReadCanonical, ReadFallback) ?? View($"{ViewRoot}/Details.cshtml", policyId);
+
     // ---------------- Same-origin browser proxy ----------------
 
     [HttpGet("api/visit-frequency-policies")]

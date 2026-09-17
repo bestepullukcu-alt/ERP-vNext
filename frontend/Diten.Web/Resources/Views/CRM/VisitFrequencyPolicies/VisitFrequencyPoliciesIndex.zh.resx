@@ -251,4 +251,16 @@
   <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>细分与活动 — 留空表示不限制</value></data>
   <data name="ScopeGroupProductDesc" xml:space="preserve"><value>品牌与产品 — 先选品牌，再选产品</value></data>
   <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>周期段 — 基于周期的频率时必填</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>策略详情</value></data>
+  <data name="EditAction" xml:space="preserve"><value>编辑</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>状态流程</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>影响</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} 个目标适用此策略</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>每季度 {0} 次计划拜访</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>竞争此目标的策略</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} 个候选</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>此目标没有冲突的策略。</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>候选</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>个目标</value></data>
 </root>

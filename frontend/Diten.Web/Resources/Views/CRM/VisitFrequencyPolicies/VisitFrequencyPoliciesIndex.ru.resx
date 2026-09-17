@@ -251,4 +251,16 @@
   <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Сегмент и кампания — пусто = без ограничений</value></data>
   <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Бренд и продукт — сначала бренд, затем продукт</value></data>
   <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Период цикла — обязателен для частоты на основе цикла</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Детали политики</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Изменить</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Поток статуса</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Влияние</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} целей получают эту политику</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} запланированных визитов / квартал</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Политики, конкурирующие за эту цель</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} кандидатов</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Нет конкурирующих политик для этой цели.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Кандидат</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>целей</value></data>
 </root>

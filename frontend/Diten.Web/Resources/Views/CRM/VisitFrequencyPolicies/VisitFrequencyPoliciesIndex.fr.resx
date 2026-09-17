@@ -251,4 +251,16 @@
   <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Segment et campagne — laisser vide pour aucune contrainte</value></data>
   <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Marque et produit — choisissez d'abord une marque, puis un produit</value></data>
   <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Période de cycle — requise pour une fréquence basée sur le cycle</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Détails de la politique</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Modifier</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Flux d'état</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Impact</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} cibles reçoivent cette politique</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} visites planifiées / trimestre</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Politiques en concurrence pour cette cible</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} candidates</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Aucune politique concurrente pour cette cible.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Candidate</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>cibles</value></data>
 </root>
