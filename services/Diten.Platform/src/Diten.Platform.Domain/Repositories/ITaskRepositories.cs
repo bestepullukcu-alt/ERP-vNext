@@ -296,67 +296,22 @@ public interface ITaskTypeRepository
     /// <summary>Every type, retired ones included — the management screen and the uniqueness check.</summary>
     Task<IReadOnlyList<TaskType>> ListAllAsync(CancellationToken ct = default);
 
-    Task UpdateAsync(TaskType type, CancellationToken ct = default);
+    /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — expected-version write, like every other MOD-0024 edit
+    /// (see <see cref="ITaskFieldDefinitionRepository.UpdateAsync"/>, the sibling this was modelled on). Used by
+    /// BOTH the full edit and the activate/deactivate toggle — they share this one write path, so both get the
+    /// same protection.
+    /// </summary>
+    Task<bool> UpdateAsync(TaskType type, int expectedVersion, CancellationToken ct = default);
 }
 
-/// <summary>
-/// The controlled-document reference list (DCP-005 slice 2) — versions and their entries.
-///
-/// <para>⚠ <b>THERE IS NO UPDATE.</b> The write path is the import; the read path is the search. A row that
-/// could be edited here would be the second authority over a document that §6.1 exists to prevent.</para>
-/// </summary>
-public interface IDocumentReferenceListRepository
-{
-    Task<DocumentReferenceListVersion> CreateVersionAsync(
-        DocumentReferenceListVersion version, CancellationToken ct = default);
-
-    /// <summary>
-    /// The LIVE version a re-upload of identical bytes would collide with, or null.
-    ///
-    /// <para>⚠ WITHDRAWN VERSIONS DO NOT COLLIDE. That is precisely how the trap is undone: the bytes of a
-    /// version taken out of service can be loaded again, while two people importing the same file into a live
-    /// list still get the 409 that stops two "current" lists existing.</para>
-    /// </summary>
-    Task<DocumentReferenceListVersion?> FindLiveVersionByHashAsync(
-        string contentHash, CancellationToken ct = default);
-
-    Task<DocumentReferenceListVersion?> GetVersionAsync(Guid id, CancellationToken ct = default);
-
-    /// <summary>Stamp a withdrawal. There is no delete — see <c>DocumentReferenceListVersion.WithdrawnAt</c>.</summary>
-    Task UpdateVersionAsync(DocumentReferenceListVersion version, CancellationToken ct = default);
-
-    /// <summary>Newest first — the list screen and "which version did this task resolve against".</summary>
-    Task<IReadOnlyList<DocumentReferenceListVersion>> ListVersionsAsync(CancellationToken ct = default);
-
-    /// <summary>
-    /// The current version: the newest one NOT withdrawn. Null before the first import, and null again if every
-    /// version has been withdrawn — an honest "there is no list" rather than a stale one.
-    /// </summary>
-    Task<DocumentReferenceListVersion?> GetLatestVersionAsync(CancellationToken ct = default);
-
-    Task AddEntriesAsync(IReadOnlyList<DocumentReferenceEntry> entries, CancellationToken ct = default);
-
-    /// <summary>
-    /// Search WITHIN one version. Blocked rows are returned like any other — they are shown and refused, not
-    /// hidden (see <see cref="DocumentReferenceEntry.LinkableInErp"/>).
-    /// </summary>
-    Task<IReadOnlyList<DocumentReferenceEntry>> SearchAsync(
-        Guid listVersionId, string? term, int limit, CancellationToken ct = default);
-
-    /// <summary>
-    /// The rows for these UIDs within ONE version — used to freeze a citation and to resolve a task type's
-    /// governing documents.
-    ///
-    /// <para>⚠ Scoped to a version rather than "the newest matching row" on purpose. A citation records WHICH
-    /// register said this; resolving across versions would make two callers reading the same UID a moment apart
-    /// freeze two different titles, which is the failure the version id exists to rule out.</para>
-    ///
-    /// <para>A UID with no row simply does not come back. Callers must treat a short answer as an answer — the
-    /// register not listing a document is a state, not an error.</para>
-    /// </summary>
-    Task<IReadOnlyList<DocumentReferenceEntry>> GetEntriesByUidsAsync(
-        Guid listVersionId, IReadOnlyCollection<string> documentUids, CancellationToken ct = default);
-}
+// WP-DM-DCP005-DEADCODE-01 — IDocumentReferenceListRepository (DCP-005 slice 2, the CSV document reference
+// list) was removed here: its one implementation's every method had zero live callers (measured — including
+// GetEntriesByUidsAsync, whose own doc comment claimed it was "used to freeze a citation and to resolve a task
+// type's governing documents", which was stale prose from before DCP-005 Step 2 repointed both of those onto
+// the Document Master Register). The underlying document_reference_entries / document_reference_list_versions
+// collections and the DocumentReferenceListVersion / DocumentReferenceEntry entities are UNTOUCHED — a schema
+// or data decision is out of this WP's scope.
 
 /// <summary>
 /// MOD-0024 Slice ATT-1 — task attachment metadata (the binary itself lives in MOD-0262-FU01's repository,
@@ -383,6 +338,13 @@ public interface ITaskAttachmentRepository
     /// </summary>
     Task<int> CountEvidenceForChecklistItemAsync(
         Guid taskId, string checklistItemCode, CancellationToken ct = default);
+
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the <c>TaskType.RequiresDeliverableOnCompletion</c> gate's own question:
+    /// does this task have at least one LIVE Deliverable-kind attachment? A count, not a list, for the same reason
+    /// <see cref="CountEvidenceForChecklistItemAsync"/> is — the gate only ever needs "zero or more".
+    /// </summary>
+    Task<int> CountDeliverablesAsync(Guid taskId, CancellationToken ct = default);
 
     /// <summary>Marks the row deleted. The physical object is untouched — this repository never calls the
     /// storage gateway's delete; that decision belongs to the caller (it does not, per the pack: AD-6).</summary>

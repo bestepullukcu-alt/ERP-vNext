@@ -12,6 +12,13 @@ public sealed class TaskTypeEditViewModel
     public Guid Id { get; set; }
 
     /// <summary>
+    /// WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the version this model was hydrated with, carried
+    /// through the form as a hidden field and posted back as <c>ExpectedVersion</c>. Zero for a not-yet-created
+    /// type (the Create screen's own model), which the server never asks for since Create takes no version.
+    /// </summary>
+    public int Version { get; set; }
+
+    /// <summary>
     /// Tenant-unique and IMMUTABLE. The Edit screen renders it read-only; the server refuses a changed one
     /// rather than ignoring it, so the two ends agree instead of one of them being polite.
     /// </summary>
@@ -39,6 +46,23 @@ public sealed class TaskTypeEditViewModel
     public string? FunctionCode { get; set; }
 
     public bool IsQualityEvent { get; set; }
+
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — a plain full-replace bool, exactly like <see cref="IsQualityEvent"/>:
+    /// the editor draws this checkbox from the moment the field exists, so there is no pre-existing screen for a
+    /// post without it to silently reset (unlike <see cref="ReviewMeetingRequirement"/>, which is nullable for
+    /// that reason).
+    /// </summary>
+    public bool RequiresDeliverableOnCompletion { get; set; }
+
+    /// <summary>
+    /// NotAllowed | Optional | Required — a CODE value, never translated.
+    ///
+    /// <para>⚠ NULL, NOT "Optional", WHEN NOTHING WAS POSTED. The API reads null as "not asking" and keeps the
+    /// stored value; a default here would reset a Required type to Optional from any post that did not carry the
+    /// select. The form shows Optional for null, which is what the server stores for a new type.</para>
+    /// </summary>
+    public string? ReviewMeetingRequirement { get; set; }
 
     /// <summary>
     /// Controlled-document UIDs governing this type everywhere. One per line in the textarea — the document
@@ -132,6 +156,19 @@ public sealed class TaskTypeClosureOutcomeRow
     public required string RowKey { get; init; }
     public required TaskTypeClosureOutcomeViewModel Outcome { get; init; }
     public required IReadOnlyList<TaskTypeClosureOutcomeViewModel> SystemOutcomes { get; init; }
+}
+
+/// <summary>
+/// WP-DM-DCP005-KURAL4-UI-01 (sahip 2026-09-15) — create never refuses; this is the wire shape of
+/// <c>CreateTaskTypeResultDto</c> the API answers with, so the controller can tell an active save from a
+/// passively-saved one and say why.
+/// </summary>
+public sealed class CreateTaskTypeResultApiModel
+{
+    public Guid Id { get; set; }
+    public bool IsActive { get; set; }
+    public List<string>? BlockingDocuments { get; set; }
+    public bool EffectivenessUnavailable { get; set; }
 }
 
 /// <summary>

@@ -210,6 +210,22 @@ internal sealed class SmtpMessagingProvider : IMessagingProvider
             TextBody = request.BodyText ?? request.BodyTextPreview
         };
 
+        // MOD-0357 S5b — additive: request.Attachments is null for every caller that predates this field
+        // (and for EmailDispatchJob's own retry, which never has one — see MessagingProviderEmailRequest's
+        // own doc comment), so this loop runs zero times and ToMessageBody() below produces the IDENTICAL
+        // MimeMessage shape it always did.
+        if (request.Attachments is { Count: > 0 } attachments)
+        {
+            foreach (var attachment in attachments)
+            {
+                var part = builder.Attachments.Add(attachment.FileName, attachment.Content, ContentType.Parse(attachment.ContentType));
+                if (!string.IsNullOrWhiteSpace(attachment.ContentId))
+                {
+                    part.ContentId = attachment.ContentId;
+                }
+            }
+        }
+
         message.Body = builder.ToMessageBody();
         if (string.IsNullOrWhiteSpace(message.MessageId))
         {

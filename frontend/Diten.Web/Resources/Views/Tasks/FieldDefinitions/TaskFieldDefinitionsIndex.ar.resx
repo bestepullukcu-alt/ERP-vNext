@@ -33,6 +33,10 @@
   <data name="Importance" xml:space="preserve"><value>الأهمية</value></data>
   <data name="ImportanceSecondary" xml:space="preserve"><value>ثانوية</value></data>
   <data name="ImportancePrimary" xml:space="preserve"><value>أساسية</value></data>
+  <data name="Stage" xml:space="preserve"><value>وقت السؤال</value></data>
+  <data name="StageEntry" xml:space="preserve"><value>الإنشاء</value></data>
+  <data name="StageClosure" xml:space="preserve"><value>الإغلاق</value></data>
+  <data name="StageHint" xml:space="preserve"><value>يُسأل في نموذج الإنشاء/التعديل (الإنشاء)، أو فقط في نافذة الإغلاق عند إتمام المهمة أو إلغائها (الإغلاق).</value></data>
   <data name="SortOrder" xml:space="preserve"><value>الترتيب</value></data>
   <data name="OptionsSourceKind" xml:space="preserve"><value>مصدر الخيارات</value></data>
   <data name="OptionsSourceNone" xml:space="preserve"><value>لا يوجد</value></data>

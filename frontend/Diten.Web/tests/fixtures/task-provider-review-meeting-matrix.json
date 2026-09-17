@@ -1,0 +1,2606 @@
+{
+  "holder_closed_linked_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "holder_closed_linked_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "holder_closed_none_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "holder_closed_none_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "holder_open_linked_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "accept",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Accept"
+        },
+        "semanticType": "accept",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "inquire",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Inquire"
+        },
+        "semanticType": "inquire",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "return",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Return"
+        },
+        "semanticType": "return",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "TASK_DELEGATION_NOT_ALLOWED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_DelegationNotAllowed"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "REVIEW_MEETING_ALREADY_SCHEDULED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "accept",
+    "overflowActionCodes": [
+      "plan",
+      "inquire",
+      "return",
+      "reassign",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
+    }
+  },
+  "holder_open_linked_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "accept",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Accept"
+        },
+        "semanticType": "accept",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "inquire",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Inquire"
+        },
+        "semanticType": "inquire",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "return",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Return"
+        },
+        "semanticType": "return",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "TASK_DELEGATION_NOT_ALLOWED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_DelegationNotAllowed"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "REVIEW_MEETING_ALREADY_SCHEDULED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "accept",
+    "overflowActionCodes": [
+      "plan",
+      "inquire",
+      "return",
+      "reassign",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
+    }
+  },
+  "holder_open_none_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "accept",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Accept"
+        },
+        "semanticType": "accept",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "inquire",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Inquire"
+        },
+        "semanticType": "inquire",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "return",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Return"
+        },
+        "semanticType": "return",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "TASK_DELEGATION_NOT_ALLOWED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_DelegationNotAllowed"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "accept",
+    "overflowActionCodes": [
+      "plan",
+      "inquire",
+      "return",
+      "reassign",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "minutesPublished": false
+    }
+  },
+  "holder_open_none_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "accept",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Accept"
+        },
+        "semanticType": "accept",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "inquire",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Inquire"
+        },
+        "semanticType": "inquire",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "return",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Return"
+        },
+        "semanticType": "return",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "TASK_DELEGATION_NOT_ALLOWED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_DelegationNotAllowed"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "accept",
+    "overflowActionCodes": [
+      "plan",
+      "inquire",
+      "return",
+      "reassign",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "minutesPublished": false
+    }
+  },
+  "requester_closed_linked_no": null,
+  "requester_closed_linked_yes": null,
+  "requester_closed_none_no": null,
+  "requester_closed_none_yes": null,
+  "requester_open_linked_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "cancel",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Cancel"
+        },
+        "semanticType": "cancel",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": true,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "destructive"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "REVIEW_MEETING_ALREADY_SCHEDULED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "reassign",
+    "overflowActionCodes": [
+      "plan",
+      "cancel",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "viewerRelation": "initiator",
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
+    }
+  },
+  "requester_open_linked_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "cancel",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Cancel"
+        },
+        "semanticType": "cancel",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": true,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "destructive"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "REVIEW_MEETING_ALREADY_SCHEDULED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "reassign",
+    "overflowActionCodes": [
+      "plan",
+      "cancel",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "viewerRelation": "initiator",
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "meetingId": "d2d2d2d2-0000-0000-0000-0000000000d2",
+      "scheduledAt": "2026-11-01T09:00:00+00:00",
+      "minutesPublished": false
+    }
+  },
+  "requester_open_none_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "cancel",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Cancel"
+        },
+        "semanticType": "cancel",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": true,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "destructive"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": false,
+        "source": "provider",
+        "disabledReasonCode": "PERMISSION_DENIED",
+        "disabledReason": {
+          "kind": "resource",
+          "key": "WorkAggregation_ActionDisabled_PermissionDenied"
+        },
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "reassign",
+    "overflowActionCodes": [
+      "plan",
+      "cancel",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "viewerRelation": "initiator",
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "minutesPublished": false
+    }
+  },
+  "requester_open_none_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [
+      {
+        "code": "reassign",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Reassign"
+        },
+        "semanticType": "reassign",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": true,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "plan",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Plan"
+        },
+        "semanticType": "plan",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      },
+      {
+        "code": "cancel",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_Cancel"
+        },
+        "semanticType": "cancel",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": true,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "destructive"
+      },
+      {
+        "code": "scheduleReviewMeeting",
+        "label": {
+          "kind": "resource",
+          "key": "WorkAggregation_Action_ScheduleReviewMeeting"
+        },
+        "semanticType": "scheduleReviewMeeting",
+        "enabled": true,
+        "source": "provider",
+        "disabledReasonCode": null,
+        "disabledReason": null,
+        "requiresConfirmation": false,
+        "requiresReason": false,
+        "requiresEvidence": false,
+        "supportsBulk": false,
+        "riskLevel": "normal"
+      }
+    ],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": "reassign",
+    "overflowActionCodes": [
+      "plan",
+      "cancel",
+      "scheduleReviewMeeting"
+    ],
+    "assignee": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d3d3d3d3-0000-0000-0000-0000000000d3",
+      "isCurrentUser": true
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    },
+    "viewerRelation": "initiator",
+    "reviewMeetingPolicy": {
+      "requirement": "optional",
+      "minutesPublished": false
+    }
+  },
+  "thirdParty_closed_linked_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_closed_linked_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_closed_none_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_closed_none_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Done",
+    "taskLifecycle": "Done",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Done",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Done"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "closedAt": "2026-11-02T09:00:00+00:00",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_open_linked_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_open_linked_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_open_none_no": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  },
+  "thirdParty_open_none_yes": {
+    "fixtureKind": "workItem",
+    "id": "d1d1d1d1-0000-0000-0000-0000000000d1",
+    "workIntent": "task",
+    "assignmentMode": "direct",
+    "ownershipState": "assigned",
+    "admissionState": "pendingAcceptance",
+    "normalizedStatus": "Pending",
+    "taskLifecycle": "Open",
+    "executionState": "notStarted",
+    "timerState": "notApplicable",
+    "systemState": "fresh",
+    "actionDepth": "inline",
+    "title": {
+      "kind": "display",
+      "text": "Golden matrix task",
+      "locale": "und"
+    },
+    "nativeStatus": {
+      "code": "Open",
+      "label": {
+        "kind": "resource",
+        "key": "WorkAggregation_TaskStatus_Open"
+      }
+    },
+    "source": {
+      "providerCode": "tasks",
+      "providerContractVersion": "1.0",
+      "objectType": "task",
+      "objectId": "d1d1d1d1-0000-0000-0000-0000000000d1",
+      "deepLink": "/Tasks/d1d1d1d1-0000-0000-0000-0000000000d1"
+    },
+    "lifecycleOwner": "tasks",
+    "workItemCapabilities": [
+      "planning",
+      "execution",
+      "checklist",
+      "subtasks",
+      "attachments",
+      "activity"
+    ],
+    "actions": [],
+    "concurrency": {
+      "kind": "version",
+      "token": "1"
+    },
+    "waitingContext": null,
+    "escalation": null,
+    "dueAt": null,
+    "primaryActionCode": null,
+    "overflowActionCodes": [],
+    "assignee": {
+      "id": "d5d5d5d5-0000-0000-0000-0000000000d5",
+      "isCurrentUser": false
+    },
+    "requester": {
+      "id": "d4d4d4d4-0000-0000-0000-0000000000d4",
+      "isCurrentUser": false
+    },
+    "checklist": {
+      "items": [],
+      "version": 0
+    },
+    "subtasks": {
+      "mode": "full",
+      "items": []
+    },
+    "attachments": {
+      "items": []
+    },
+    "gates": {
+      "approval": {
+        "required": false,
+        "status": "notRequired"
+      },
+      "review": {
+        "required": false,
+        "status": "notRequired"
+      }
+    },
+    "priority": "Medium",
+    "activity": [],
+    "slaState": "no-sla",
+    "delegationAllowed": false,
+    "notifications": {
+      "emailEnabled": true
+    }
+  }
+}

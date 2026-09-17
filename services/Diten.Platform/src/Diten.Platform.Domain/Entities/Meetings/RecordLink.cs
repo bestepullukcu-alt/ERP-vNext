@@ -60,6 +60,30 @@ public sealed class RecordLink : TenantScopedEntity
     /// <c>TaskDependency</c> keeps it: an auditable "when."
     /// </summary>
     public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>
+    /// MOD-0357 S4 (pack §8.5, §13 K11) — set ONLY by the meeting→task bridge commands
+    /// (<c>CreateTaskFromMeetingCommand</c>), null for every other link this collection carries (S2's own
+    /// <c>agenda</c>/manual links have no client-supplied retry key to dedupe). A resubmitted bridge request
+    /// resolves to the SAME row via <c>IRecordLinkRepository.FindByIdempotencyKeyAsync</c> — mirrors
+    /// <see cref="Meeting.IdempotencyKey"/>'s own shape exactly, one level down (a link, not a meeting).
+    ///
+    /// <para><b>Not enforced as a unique index, unlike <see cref="Meeting.IdempotencyKey"/>.</b> Multiple rows
+    /// legitimately carry a null value here (every non-bridge link), and Mongo's unique index treats an explicit
+    /// null the same as any other value — a partial-filter index would be needed to allow many nulls while still
+    /// forbidding two equal non-null keys, and this slice does not add one (see the schema manifest's own note).
+    /// The check-before-create in the bridge handler is therefore the only guarantee for THIS field; the existing
+    /// six-value unique index remains the storage-level guarantee for the link itself.</para>
+    /// </summary>
+    public string? IdempotencyKey { get; set; }
+
+    /// <summary>
+    /// MOD-0357 S6 (pack K4, ADR-003 §5) — true when this link's SOURCE task was created after the meeting's
+    /// minutes had already published. Set once, at creation, by <c>CreateTaskFromMeetingHandler</c>; never
+    /// updated afterward. Lets the UI label the task "added later" without the frozen
+    /// <see cref="MeetingMinutesVersion"/> row ever being touched to record the fact.
+    /// </summary>
+    public bool CreatedAfterMinutesPublished { get; set; }
 }
 
 /// <summary>The module codes this slice actually writes or reads. Not a closed enum — see <see cref="RecordLink.SourceModuleCode"/>.</summary>
@@ -84,4 +108,14 @@ public static class RecordLinkTypes
     /// <summary>The receiving side of MOD-0024's `scheduleReviewMeeting` — a meeting opened to satisfy a task
     /// type's `reviewMeetingPolicy.required`.</summary>
     public const string ReviewMeeting = "reviewMeeting";
+
+    /// <summary>
+    /// MOD-0357 S7 (K6) — a NEW meeting scheduled as a continuation of a previous one; both
+    /// <see cref="RecordLink.SourceModuleCode"/> and <see cref="RecordLink.TargetModuleCode"/> are `"meetings"`.
+    /// Carries the request's own <see cref="RecordLink.IdempotencyKey"/> (K11), exactly like the bridge's own
+    /// links — purely so a resubmitted schedule-follow-up request is recognized. The user-facing cross-link
+    /// display never reads this row; it reads <c>Meeting.FollowUpOfMeetingId</c> directly (see
+    /// <c>GetMeetingByIdHandler</c>).
+    /// </summary>
+    public const string FollowUp = "followUp";
 }

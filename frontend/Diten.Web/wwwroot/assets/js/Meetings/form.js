@@ -226,7 +226,9 @@
         document.getElementById('dStartAt').textContent = new Date(meeting.startAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dEndAt').textContent = new Date(meeting.endAt).toLocaleString(window.CurrentLanguage || undefined);
         document.getElementById('dLocation').textContent = meeting.location || '-';
-        document.getElementById('dOrganizer').textContent = eligiblePeopleById[meeting.organizerUserId] || meeting.organizerUserId;
+        // BL-390 — an organizer id the eligible-people lookup does not resolve (deleted/test identity) must
+        // never render as the raw GUID on screen.
+        document.getElementById('dOrganizer').textContent = eligiblePeopleById[meeting.organizerUserId] || t('unknownUser');
         document.getElementById('dDescription').textContent = meeting.description || '-';
         document.getElementById('dStatus').innerHTML =
             `<span class="badge ${meeting.lifecycle === MEETING_LIFECYCLE.CANCELLED ? 'bg-label-secondary' : meeting.lifecycle === MEETING_LIFECYCLE.COMPLETED ? 'bg-label-success' : 'bg-label-info'}">${statusLabelFor(meeting.lifecycle)}</span>`;
@@ -236,21 +238,52 @@
         document.getElementById('dCancellationReasonRow')?.classList.toggle('d-none', !cancelled);
         if (cancelled) { document.getElementById('dCancellationReason').textContent = meeting.cancellationReason || '-'; }
 
+        // MOD-0357 S7 — cross-links. Shown regardless of lifecycle: a Cancelled/Completed meeting's own history
+        // (what it followed, what followed it) does not stop being true once it is no longer editable.
+        const followUpOfRow = document.getElementById('dFollowUpOfRow');
+        followUpOfRow?.classList.toggle('d-none', !meeting.followUpOfMeetingId);
+        if (meeting.followUpOfMeetingId) {
+            const link = document.getElementById('dFollowUpOfLink');
+            link.textContent = meeting.followUpOfMeetingTitle || meeting.followUpOfMeetingId;
+            link.href = `/Meetings/${meeting.followUpOfMeetingId}`;
+        }
+        const followedByRow = document.getElementById('dFollowedByRow');
+        followedByRow?.classList.toggle('d-none', !meeting.followedByMeetingId);
+        if (meeting.followedByMeetingId) {
+            const link = document.getElementById('dFollowedByLink');
+            link.textContent = meeting.followedByMeetingTitle || meeting.followedByMeetingId;
+            link.href = `/Meetings/${meeting.followedByMeetingId}`;
+        }
+
+        // MOD-0357 S7 — openable on ANY lifecycle (not gated by `editable`): continuing does not undo a
+        // cancellation, and Completed is the common case a follow-up gets scheduled from.
+        document.getElementById('btnScheduleFollowUp')?.classList.remove('d-none');
+
         // AC5 — Cancelled/Completed: editing controls are withdrawn, not merely disabled (UAS-001's own posture).
         const editable = !cancelled && !completed;
+        // MOD-0357 S6 — minutes make sense for a Scheduled meeting (drafting ahead of/during it) and a
+        // Completed one (reviewing what published) alike; only Cancelled withdraws the door, same posture as
+        // every other Cancelled/Completed control above.
+        document.getElementById('btnOpenMinutes')?.classList.toggle('d-none', cancelled);
         document.getElementById('btnEditMeeting')?.classList.toggle('d-none', !editable);
         if (editable) { document.getElementById('btnEditMeeting').href = `/Meetings/${meeting.id}/Edit`; }
         document.getElementById('btnCancelMeeting')?.classList.toggle('d-none', !editable);
         document.getElementById('btnReassignOrganizer')?.classList.toggle('d-none', !editable);
         document.getElementById('agendaAddRow')?.classList.toggle('d-none', !editable);
         document.getElementById('attendeeAddRow')?.classList.toggle('d-none', !editable);
+        document.getElementById('taskAddRow')?.classList.toggle('d-none', !editable);
 
         const attendeesList = document.getElementById('attendeesList');
         attendeesList.innerHTML = '';
         (meeting.attendees || []).forEach((a) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || a.userId} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span></span>`;
+            // BL-406 — a second badge, shown ONLY when this attendee's meeting mail permanently failed
+            // (`mailUndelivered` comes straight off the API's MeetingAttendeeDto; never inferred client-side).
+            const undeliveredBadge = a.mailUndelivered
+                ? `<span class="badge bg-label-danger ms-1">${esc(t('mailUndeliveredBadge'))}</span>`
+                : '';
+            li.innerHTML = `<span>${eligiblePeopleById[a.userId] || t('unknownUser')} <span class="badge bg-label-secondary ms-1">${invitationLabelFor(a.invitationResponse)}</span>${undeliveredBadge}</span>`;
             if (editable) {
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
@@ -270,14 +303,36 @@
         items.forEach((item) => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex align-items-center justify-content-between';
-            li.innerHTML = `<span>${item.text}</span>`;
+            // MOD-0357 S7 — a carried-forward line is marked by CarriedFromMeetingId, never inferred from
+            // RecordLinkId alone (a manually typed line later linked via "link existing task" also gets one —
+            // see AgendaItem.CarriedFromMeetingId's own doc comment). The task itself is already reachable
+            // through the Linked Tasks section below; this badge is the "why is this line already here" answer.
+            const carriedBadge = item.carriedFromMeetingId
+                ? `<span class="badge bg-label-info ms-2">${esc(t('carriedFromPreviousMeetingBadge'))}</span>`
+                : '';
+            li.innerHTML = `<span>${esc(item.text)}${carriedBadge}</span>`;
             if (editable) {
+                const rowActions = document.createElement('div');
+                rowActions.className = 'd-flex gap-1';
+                // MOD-0357 S4 — a line that already carries a RecordLink (the far end of a prepared task, or a
+                // carried-over action) offers nothing more here; the ONE task it names is reached through
+                // Linked Tasks below, never a second one from the same line.
+                if (!item.recordLinkId) {
+                    const createTaskBtn = document.createElement('button');
+                    createTaskBtn.type = 'button';
+                    createTaskBtn.className = 'btn btn-sm btn-text-primary';
+                    createTaskBtn.innerHTML = '<i class="bx bx-plus"></i>';
+                    createTaskBtn.title = t('createTaskFromAgendaItem');
+                    createTaskBtn.addEventListener('click', () => openCreateTaskDialog(item.id));
+                    rowActions.appendChild(createTaskBtn);
+                }
                 const removeBtn = document.createElement('button');
                 removeBtn.type = 'button';
                 removeBtn.className = 'btn btn-sm btn-text-danger';
                 removeBtn.innerHTML = '<i class="bx bx-x"></i>';
                 removeBtn.addEventListener('click', () => void removeAgendaItem(item.id));
-                li.appendChild(removeBtn);
+                rowActions.appendChild(removeBtn);
+                li.appendChild(rowActions);
             }
             agendaList.appendChild(li);
         });
@@ -367,7 +422,10 @@
         const attendeesResult = await window.MeetingsApi.lookupAttendees();
         const people = attendeesResult.ok ? (attendeesResult.data?.people || []) : [];
         eligiblePeopleById = {};
-        people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || p.userId; });
+        // BL-390 — the eligible-people lookup only carries ACTIVE tenant users; an organizer/attendee whose
+        // account was deactivated or removed since the meeting was created falls out of it. A `displayName`
+        // this sparse (missing) never gets backfilled with the raw id here — see dOrganizer/attendeesList above.
+        people.forEach((p) => { eligiblePeopleById[p.userId] = p.displayName || t('unknownUser'); });
         // Same shared picker as the Create form's attendee select (E2) — avatar+name(+unit) rows, and its own
         // disabled/explained state when nobody is eligible, in place of the plain list this select used to get.
         // The reassign-organizer picker no longer lives on the page at all — M2 opens it through the shared
@@ -398,6 +456,12 @@
             if (!result.ok) { window.DitenModal?.error?.({ title: t('errorOccurred'), message: window.MeetingsApi.failureMessage(result) }); return; }
             document.getElementById('newAgendaItemText').value = '';
             await reloadMeeting();
+        });
+
+        document.getElementById('btnCreateTaskFromMeeting')?.addEventListener('click', () => openCreateTaskDialog(null));
+        document.getElementById('btnLinkExistingTask')?.addEventListener('click', () => openLinkExistingTaskDialog());
+        document.getElementById('btnScheduleFollowUp')?.addEventListener('click', () => {
+            window.MeetingsFollowUpDialog.open({ meeting: currentMeeting, t });
         });
 
         /*
@@ -464,6 +528,64 @@
                 }
             });
         });
+    };
+
+    // ── S4 — the meeting↔task bridge ─────────────────────────────────────────────────────────────────────────
+
+    /*
+     * MOD-0357 S6 — the dialog body itself moved to shared/../Meetings/task-from-meeting-dialog.js, so the
+     * Minutes editor's own "Görev oluştur" (a decision, not an agenda item) opens the SAME dialog rather than a
+     * second hand-rolled copy. This stays a one-line delegation, the same shape `dialogIcon`/`dialogLook`
+     * already took when THEY moved to shared/diten-dialog.js.
+     */
+    const openCreateTaskDialog = (agendaItemId) => {
+        window.MeetingsTaskFromMeetingDialog.open({
+            meetingId: currentMeeting.id,
+            agendaItemId,
+            t,
+            onCreated: () => reloadMeeting()
+        });
+    };
+
+    /*
+     * "Link existing task" is ONE field — a search-select — so it goes through `window.showConfirm` exactly
+     * like the reassign-organizer picker above (M2), never the raw-Swal path `openCreateTaskDialog` takes.
+     */
+    const openLinkExistingTaskDialog = () => {
+        void (async () => {
+            const candidatesResult = await window.TasksApi?.linkCandidates?.(null, 20);
+            const candidates = candidatesResult?.ok ? candidatesResult.data : [];
+            // A leading BLANK entry, deliberately: a native `<select>` otherwise opens on its first real option
+            // already selected, and confirming without touching it would link a task nobody chose.
+            const taskOptions = { '': t('linkExistingTaskPlaceholder') };
+            candidates.forEach((candidate) => { taskOptions[candidate.id] = candidate.title; });
+
+            window.showConfirm(t('linkExistingTask'), async (taskId) => {
+                if (!taskId) { return; }
+                const result = await window.MeetingsApi.linkExistingTask(currentMeeting.id, taskId, null);
+                if (!result.ok) {
+                    // MEETING_TASK_ALREADY_LINKED (409) reads through the SAME reason-code bridge as every
+                    // other failure here — no special-cased sentence, the bridge already carries one for it.
+                    window.DitenModal?.error?.({ title: t('errorOccurred'), message: window.MeetingsApi.failureMessage(result) });
+                    return;
+                }
+                window.DitenModal?.success?.({ title: t('toastTaskLinked'), timer: 1200 });
+                await reloadMeeting();
+            }, {
+                subtext: '',
+                confirmButtonText: t('linkExistingTask'),
+                showInput: true,
+                inputType: 'select',
+                inputLabel: t('linkExistingTaskLabel'),
+                inputOptions: taskOptions,
+                inputValidator: (value) => (value ? null : t('linkExistingTaskRequired')),
+                didOpen: (popup) => {
+                    const box = (window.Swal && typeof window.Swal.getInput === 'function' && window.Swal.getInput())
+                        || popup.querySelector('.swal2-select');
+                    if (box) { window.DitenDialog?.bindDialogSelect2?.(box, popup, { allowClear: false }); }
+                }
+            });
+        })();
     };
 
     document.addEventListener('DOMContentLoaded', () => {

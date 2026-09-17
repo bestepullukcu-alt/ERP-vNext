@@ -126,5 +126,6 @@ public static class TaskItemMapper
                 r.DocumentUid, r.DocumentCode, r.Title, r.DocumentVersion, r.Status, r.ReferencedAt,
                 r.ListVersionId))
             .ToList(),
-        task.TaskTypeId);
+        task.TaskTypeId,
+        task.ClosureNote);
 }

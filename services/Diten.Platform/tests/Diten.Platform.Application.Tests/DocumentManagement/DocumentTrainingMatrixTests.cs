@@ -316,11 +316,15 @@ public sealed class DocumentTrainingMatrixTests
         var gateEvaluator = new DocumentReleaseGateEvaluator(register, new FakeGateEvalRepo(tenant), new FakeGateResultRepo(tenant), new FakeGateEvidenceRepo(tenant), tenant, new FakeUser(),
             Options.Create(new DocumentReleaseGateOptions()), trainingPort);
 
-        // A default entry used by assignment helpers.
+        // A default entry used by assignment helpers. DocumentLinkGovernanceGuard (consulted by both the readiness
+        // evaluator and Gate 1) requires a controlled-document relation that has passed scope compatibility
+        // validation whenever IsControlledDocument is set — a governed, properly-linked document is the default
+        // fixture shape here, same as DocumentReleaseGateTests' own SeedEntry.
         var entry = new DocumentMasterRegisterEntry
         {
             Id = Guid.NewGuid(), TenantId = TenantId, DocumentTitle = "Doc", DocumentClass = ControlledDocumentClass.Sop,
             DocumentType = DocumentType.Sop, Criticality = DocumentCriticality.Critical, IsControlledDocument = true,
+            ControlledDocumentId = Guid.NewGuid(), LinkScopeCompatibilityStatus = DocumentLinkScopeCompatibilityStatus.Compatible,
             RegisterStatus = DocumentRegisterStatus.Active
         };
         register.Items.Add(entry);

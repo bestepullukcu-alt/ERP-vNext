@@ -116,7 +116,7 @@ exists; DCP-006 OD-04 integration gaps are open). Portability is this pack's own
 | `Meeting` | `meeting_meetings` | The meeting aggregate: type, schedule, place/link, organizer, description, `FollowUpOfMeetingId` |
 | `MeetingAttendee` | `meeting_attendees` | One row per invited person: response state (invited/accepted/declined), attended/absent/excused (written only at minutes time) |
 | `AgendaItem` | `meeting_agenda_items` | One ordered agenda line; may carry a `RecordLink` (see below) when it is "prepared by a task" or "raised from a carried-over action" |
-| `MeetingMinutes` | `meeting_minutes` | The meeting's closure record — see §"Minutes as a versioned document" below |
+| ~~`MeetingMinutes`~~ | ~~`meeting_minutes`~~ | **DROPPED (CT, 2026-09-12, S6 delivery):** no parent row is written. The current minutes ARE the latest `MeetingMinutesVersion` for the meeting; a parent carrying nothing but a meeting id would be a second collection with no owner. Everything §"Minutes as a versioned document" describes lives on the version rows. |
 | `MeetingMinutesVersion` | `meeting_minutes_versions` | Append-only: draft, published, and every dated correction — never overwritten in place |
 | `Decision` | *(embedded in `MeetingMinutesVersion`)* | A decision row inside a minutes version — **not** a standalone collection; see §"Decisions are not MOD-0007" |
 | `MeetingType` | `meeting_types` | Tenant setting: agenda template, default action task type, `IsQualityRecord`, `RequiresESignature` (QA-set, default false), `AttendanceMandatory` |
@@ -711,16 +711,18 @@ MOD-0024's own equivalent gap was.
 | S2 ✅ (2026-09-11; CT doğruladı, canlı değil) | `Meeting`/`MeetingAttendee`/`AgendaItem`/`MeetingType` backend CRUD + manifest (9 izin) + meetings resolver; UI yok. Not: manifest `Nav.Module.MEETINGS` ve `Nav.Domain.MANAGEMENTGOVERNANCE` anahtarlarını 7 dilde ister (Web nav muhafızı) — ayrı l10n işi |
 | S3 ✅ (2026-09-11; CT doğruladı; canlı: ajan + CT sahibin oturumuyla — menü, liste boş durumu, oluştur formu (tür/katılımcı seçicileri boş: dev kiracısında tür ve pozisyon yok), 404 sayfası, Görev Merkezi regresyonsuz, konsol hatasız) | Screens: list (DataTable), create, edit, detail + Web proxy + gateway + 2 lookup; gündem detay sayfasında (create isteğinde alan yok); `Nav.Page.MEETINGS` 7 dil ayrı l10n işi; verifier 58/84 (boş-area yol birleştirme ve proxy mimarisi — araç sınırı); dev kiracısında pozisyon yok → seçiciler boş (BL-356) |
 | S3b | Read-only month calendar view on the meetings list (upcoming meetings by day; reuses the Task Center's `renderCalendar` once extracted — BL-365 #4). Owner decision 2026-09-11: calendar yes, kanban no (three states, no flow) |
-| S4 | Meeting → task (three moments) and task → meeting (`scheduleReviewMeeting` receiving side) |
-| S5 | Invitation: ERP-internal accept/decline + Task Center trigger |
-| S5b | `.ics` invite / change / cancel email — first step: additive `Attachments` field on `MessagingProviderEmailRequest` (CT infra, Notifications); then `IMeetingInviteMailer` attaches the `.ics` (same UID across updates; METHOD:CANCEL on cancel). Stage 1 per ADR-003 §5 |
-| S6 | Minutes: draft, publish, correct, decisions-as-rows |
-| S7 | Continuation meeting (K6 carry-forward) |
+| S4 | Meeting → task (three moments) and task → meeting (`scheduleReviewMeeting` receiving side) — ✅ delivered 2026-09-11, commit `680cb888` (WP-MG-MOD0357-S4-TASK-BRIDGE-01): preparation + on-the-spot moments (minutes-born moment → S6), link existing (agenda), receiving side of scheduleReviewMeeting with RecordLink reviewMeeting; K9 dual permissions, K11 idempotency (app-level), reviewMeetingPolicy projection fixed at optional (no TaskType field invented). Live proof waits for BL-358. |
+| S5 | Invitation: ERP-internal accept/decline + Task Center trigger — ✅ PARTIAL 2026-09-11, commit (see git log "invitations — accept or decline") (WP-MG-MOD0357-S5-INVITATION-01): respond endpoint (K5), invite/change/cancel mail via IMeetingInviteMailer (K12, never rolls back), organizer = Accepted attendee, 3 templates × 7 languages. Task Center inbox card NOT done — stop rule hit: WC-1 contract has no `meetingInvite` type / accept-decline actions (app.js glyphs are a trigger-only fixture). → S5c |
+| S5c | Task Center invite card — ✅ delivered 2026-09-12, commit `d3fa0058` (WP-MG-MOD0357-S5C-INVITE-CARD-01): WC-1 contract gains the `meetingInvite` intent + `acceptInvite`/`declineInvite` with five shape rules and eight self-tests; `MeetingWorkItemProvider` (3rd provider) + dispatcher onto S5's respond command; inbox card with a visible Decline; showcase fixture retired; CT added the real-Mongo pending-query test. Original scope:  extend the WC-1 contract (`fixture-contract.js`) with item type `meetingInvite` and action codes `acceptInvite` / `declineInvite`; add `MeetingWorkItemProvider` (4th IWorkItemProvider: my Pending invitations → inbox; accepted never becomes an İşlerim item, BL-026) and the inbox card with Accept/Decline calling `/respond`; retire the trigger-only showcase fixture. Open from S5: organizer cannot yet remove own attendee row (no backend constraint); a real invite email needs a second eligible user in dev. |
+| S5b | `.ics` invite / change / cancel email — first step: additive `Attachments` field on `MessagingProviderEmailRequest` (CT infra, Notifications); then `IMeetingInviteMailer` attaches the `.ics` (same UID across updates; METHOD:CANCEL on cancel). Stage 1 per ADR-003 §5 — ✅ delivered 2026-09-13, commit `af7e03cc` (WP-MG-MOD0357-S5B-ICS-INVITE-01): additive `Attachments` carried through the synchronous notification chain (nothing persisted), `invite.ics` on invite/change/cancel, UID = meeting id on all three, SEQUENCE = Version, METHOD REQUEST/CANCEL, octet folding. CT correction: display names are DQUOTEd parameter values (RFC 5545 §3.2, RFC 6868), not TEXT-escaped. Both closed by WP-MG-MOD0357-BL374-RETRY-FIDELITY-01 (2026-09-13): a retry replays the stored .ics; an unresolved organizer gets no .ics. Live proof via Mailpit not yet run. |
+| S6 | Minutes: draft, publish, correct, decisions-as-rows — ✅ delivered 2026-09-12, commit `23af2e58` (WP-MG-MOD0357-S6-MINUTES-01): append-only `MeetingMinutesVersion`, publish locks and sets the meeting Completed, correction demands a reason and writes v+1 while v stays byte-identical, decisions are server-numbered rows holding a RecordLinkId (never a TaskId), a task opened after publication is labelled "added later" and listed separately, own page not a tab, 7 languages. Real-Mongo test pins the unique version index. |
+| S7 | Continuation meeting (K6 carry-forward) — ✅ delivered 2026-09-12, commit `4e1be23d` (WP-MG-MOD0357-S7-FOLLOWUP-01): schedule a follow-up from a closed meeting, `followUp` RecordLink back to the source, `FollowUpOfMeetingId` on the new meeting, idempotency key (resubmit returns the same meeting), a meeting cannot be its own follow-up, 7 languages. **CT correction in the same commit:** carry-forward first counted only the agenda-ANCHORED links, so an open action the meeting itself PRODUCED (on the spot, S4, or born from a published decision, S6) had no agenda line and did not carry — the one carry-forward a management review exists for. Now anchored lines first in the source meeting's own order, then `bornFromMeeting` links by creation time, no task twice; `preparation` stays out on purpose (that work fed INTO the meeting). |
 | S8 | Meeting type setting screen — ✅ delivered 2026-09-11, commit `6bab238c` (WP-MG-MOD0357-S8-MEETING-TYPES-01): list/create/edit under `platform.meetings.types-manage`, nav-visible page MEETING_TYPES (7 languages), agenda-template pre-fill on the meeting form (K8 box 1 — code + tests; live proof waits for dev organisation data, BL-358), K8 box 2 flags default off. Also closed the Task Center dialog-helper duplication (BL-365/BL-367). |
-| S9 | `reviewMeetingPolicy.required` gate wired end-to-end against a real MOD-0024 task type |
-| S11 | Recurring meeting SERIES (weekly quality review, monthly management review): a light rule generating instances on the task engine's recurrence/Hangfire pattern, each instance chained to the previous as a follow-up (K6). Owner decision 2026-09-11 — moved INTO Stage 1 because the Blueprint scopes MOD-0357 as *cadence*; exceptions and attendee-calendar writes stay with Google (Phase 2) |
+| S9 | `reviewMeetingPolicy.required` gate wired end-to-end against a real MOD-0024 task type. **Owner decision 2026-09-13:** the decision action unlocks when the linked review meeting's minutes are PUBLISHED, not when the meeting is merely scheduled (K3 already says so; MOD-0024's checklist-engine pack said "scheduled" and is corrected on the PSS branch). Field delivered on MOD-0024's side: `TaskType.ReviewMeetingRequirement`, commit `b5eac362` (PSS branch). Remaining: the projection reads it and gates approve/signoff. **2026-09-15:** no longer waits for main — the meetings lane contains the task-engine lane (merge chain Auth ⊂ PSS ⊂ meetings), so the field and the minutes are in one tree; implementation WP-MG-MOD0357-S9-REVIEW-GATE-01. **Code 2026-09-15 `a9c40ee0` — live check pending:** `start` is never gated; `complete` and `submitReview` are disabled in the projection and refused by the server (409 REVIEW_MEETING_REQUIRED) until a linked non-cancelled review meeting has PUBLISHED minutes; one reader (`ReviewMeetingGateReader`) and one rule (`ReviewMeetingDecisionGate`). CT sabotage: submit gate skipped → 7 red. |
+| S11 | Recurring meeting SERIES (weekly quality review, monthly management review): a light rule generating instances on the task engine's recurrence/Hangfire pattern, each instance chained to the previous as a follow-up (K6). Owner decision 2026-09-11 — moved INTO Stage 1 because the Blueprint scopes MOD-0357 as *cadence*; exceptions and attendee-calendar writes stay with Google (Phase 2) — ✅ delivered 2026-09-12, commit `3587b368` (WP-MG-MOD0357-S11-MEETING-SERIES-01): `MeetingSeries` rule (type, frequency Weekly/Monthly/Quarterly/Yearly, interval, window, duration, organizer, attendees, `LeadTimeDays`, `ChainAsFollowUp`) + CRUD screen under `platform.meetings.series-manage` (7 languages, nav page MEETING_SERIES) + `MeetingSeriesSweepJob` on the existing Hangfire seam. **No third creation path:** the first instance goes through `CreateMeetingCommand`, every later one through S7's `ScheduleFollowUpMeetingCommand`, so the carry-forward and the cross-link are the same code a hand-scheduled continuation uses. The claim (`LastProcessInstanceId` under an expected-version write) happens BEFORE the create, so the failure mode is a missed occurrence, never a duplicate meeting. The organizer comes from the rule and never from `ICurrentUserContext` — a sweep has no "self" (the bug `TaskRecurrenceRule`'s own comment records). **Two switches hold the job off:** `BackgroundJobs:RegisterStandardJobs` and `EnabledJobs["Diten.Platform.MOD-0357.MeetingSeriesSweepJob"]`; production has a third, `BackgroundJobs:Enabled=false`. "The series is not generating" is a configuration question before it is a defect. **Measured by CT, not in the agent's report:** a generated instance DOES send the S5 invite mail, and because the acting user is `Guid.Empty` the mailer excludes nobody — the organizer receives an invitation to their own series meeting (BL-373). |
 | S10 | Live-session verification pass (this repo's own "green tests ≠ working" discipline — HTTP-level round
-        trips against a running Platform, not only in-memory doubles) |
+        trips against a running Platform, not only in-memory doubles) — **run 2026-09-13** (WP-MG-MOD0357-S10-LIVE-PASS-01): PASS S3, S8, S4 meeting→task, review-meeting action disabled once scheduled, S6, S7, BL-379. FAIL, fixed by CT the same day: the Task Center "schedule review meeting" click (`bea716aa`, BL-381); the S11 sweep could not run — handler missing from DI, and a disabled job stayed in Hangfire (`87f660ac`, BL-382). NOT RUN: S5/S5c invite accept-decline, S5b `.ics` in Mailpit, BL-374 retry — the dev tenant has one real user; S11 generate + no-duplicate — blocked by BL-382. Rerun those four once a second tenant user exists. **S10B rerun 2026-09-13:** S11 PASS end to end (one instance, no duplicate on a second trigger, the job gone from Hangfire after its flag was switched off). S4b FAIL on a second layer — the Task Center views did not load Meetings/api.js (fixed by CT, BL-381). BL-374 FAIL — a first-send failure was never scheduled for retry (fixed by CT). S5b partial: the generated invite .ics is correct (UID, SEQUENCE, METHOD, quoted CN). NOT RUN again: S5/S5c and the change/cancel mails — still no second position-assigned user. |
+| S12 | **Toplantı raporu ve aksiyon kaydı** (BL-396, owner decision 2026-09-14) — spec written 2026-09-14 (WP-MG-MOD0357-S12-MEETING-REPORT-PACK-01), **ready-for-dev — owner decisions 2026-09-15 (§23.13)**, full spec at §23. Content: period/type/organizer-filtered meeting list, attendance rate, decisions, open+overdue actions born from a meeting (Blueprint "Follow-up Register"). Visibility = the meeting's own rule (D3), no new hole. Export needs a real audit trail — **shares its prerequisite with MOD-0024's own Dilim 1e/BL-347 gap** (§23 "Audit trail — shared prerequisite, not a private one"); not authorized for code until that shared writer exists AND the owner approves this row's status. **2026-09-15: both hold** — `IDataExportAuditWriter` landed (`5681eaac`, BL-347) and the owner approved (§23.13); implementation WP-MG-MOD0357-S12-MEETING-REPORT-01. |
 
 Each slice needs its own go-ahead once this pack reaches `ready-for-dev`; `@orchestrator` does not run S2
 before S1's acceptance criteria are demonstrated, per the standard Phase-by-Phase discipline MOD-0024's own
@@ -794,3 +796,310 @@ Verbatim from ADR-003 §6, plus the two items ADR-003 names elsewhere in the sam
   organizer stays in the record and in every published minutes version.
 - **D5 · Retention:** minutes of quality-record types follow the controlled-document retention rule; all other
   meetings and minutes are never hard-deleted (soft delete only), no separate retention rule in Stage 1.
+
+---
+
+## 23. Slice S12 — Meeting Report & Action Register (BL-396)
+
+> **Status of this section: PROPOSED.** Written per WP-MG-MOD0357-S12-MEETING-REPORT-PACK-01 (Prompt P1 v1,
+> "yalnız paket dilimi — kod YOK"). It authorizes no code. Owner approval turns this row's status from
+> proposed to `ready-for-dev`, the same gate every other slice in §19 passed through — see §23.9.
+
+### 23.1 Scope (owner decision, BL-396, 2026-09-14)
+
+Content, verbatim from the owner's decision:
+
+- A **meeting list**, filterable by period, meeting type, and organizer.
+- **Attendance rate** per meeting (and rolled up over the filtered set).
+- **Decisions** — the `Decision` rows already embedded in each meeting's latest `MeetingMinutesVersion`
+  (§3 "Decisions are not MOD-0007"; no new entity).
+- **Open and overdue actions born from a meeting** — the Blueprint's "Follow-up Register": tasks reached via
+  `RecordLink` with `LinkType: bornFromMeeting` or `LinkType: preparation` (§23.3), task status/due date read
+  from MOD-0024, never duplicated.
+
+This is a **read/reporting slice**. It adds no new `Meeting`/`MeetingAttendee`/`AgendaItem`/`MeetingType`/
+`MeetingMinutesVersion`/`RecordLink` field and writes nothing to any of them — same posture MOD-0024's own
+work-report pack takes toward `TaskItem` (`MOD-0024-task-closure-and-reporting.md` §3: "No new persisted
+runtime object is authorized"). It is **not** a second reporting engine: §23.2–§23.5 name, by file and
+section, the exact MOD-0024 pieces this slice reuses as a pattern rather than reinvents.
+
+### 23.2 Screens
+
+One new page under the existing `/Meetings` list, mirroring `/Meetings/Types` and `/Meetings/Series`'
+own shape (§9: nav-visible children of the top-level list, each its own route, not a tab):
+
+| Route | Purpose | Nav |
+|---|---|---|
+| `/Meetings/Report` | The report screen: filter bar (period, type, organizer — same three the owner named), a summary tile row (meeting count, attendance rate, decision count, open/overdue action count — same "tile row" shape as `/Tasks/WorkReport`'s four tiles, `MOD-0024-task-closure-and-reporting.md` §11 Faz 5b), the filtered meeting list, a Decisions section, and the Action Register (open + overdue, sortable by meeting/due date/assignee) | `IsNavigationVisible: true`, `ParentPageCode: MEETINGS`, `PageType: "List"` — same manifest shape as `PageMeetingTypes`/`PageMeetingSeries` in `MeetingManifestProvider.cs` |
+
+No offcanvas, no create/edit form — this is `golden_reference: compact`'s reporting exception the same way
+MOD-0024's own work-report pack sets `golden_reference: none` (frontmatter, this pack's own line 7 stays
+`compact` for the Meeting/MeetingType/Series CRUD surfaces; S12 is a read-only page under the SAME shell,
+not a CRUD surface, so it carries no create/edit/details file trio — `_Filter.cshtml` + `_IndexL10n.cshtml`
+only, no `_DataTable.cshtml` DataTables-v2 contract since the meeting list here is filter-and-render, not a
+sortable/paginated grid the golden-reference DataTable template governs; the Action Register sub-list MAY use
+`_DataTable.cshtml` v2 on its own, since it IS a paginated grid — decided at implementation time, not here).
+
+### 23.3 Data sources and query bounds
+
+| Data | Source | Read pattern |
+|---|---|---|
+| Meeting list (period/type/organizer) | `Meeting` collection, same shape `GetMeetingList` already reads (§3 CQRS) | New query, same repository, REQUIRED period (mirrors `IWorkReportRepository`'s own required-period rule, `MOD-0024-task-closure-and-reporting.md` §12 item 19 — "no filtered read exists; a full-collection scan at scale is refused by requiring a period") |
+| Attendance rate | `MeetingAttendee.InvitationResponse`/`AttendanceStatus` per meeting in the filtered set, aggregated in the database (`Aggregate().Match().Group()`, same pattern as `WorkReportRepository`) | Derived, never authored — same "B · analytics, not a record" posture `MOD-0024-task-closure-and-reporting.md` §1 draws between closure record and work report |
+| Decisions | `MeetingMinutesVersion.Decisions[]` (embedded), latest **published** version per meeting in the filtered set — a draft's decisions are not yet real (K4: "editing a published version directly is refused"; a draft can still be corrected/abandoned) | Read-only projection; no `Decision` entity is minted (§3 already forbids it) |
+| Open + overdue actions (Follow-up Register) | `RecordLink` rows where `SourceModuleCode: "meetings"`, `SourceRecordId` ∈ {meeting ids in the filtered set}, `LinkType` ∈ `{bornFromMeeting, preparation}` — **not** `agenda` (an agenda anchor is where the line SITS, not where the task was BORN) and **not** `reviewMeeting` (that link points the other direction: a task requiring a meeting, not a meeting producing a task) | `IRecordLinkService`'s existing batched read (§3: "the SAME query shape cannot drift between the two consumers" — this makes a THIRD consumer, still through the one service, never a raw collection query) |
+| Task status/due date for each action | MOD-0024's `TaskItem` (`Lifecycle`, `DueAt`, `AssigneeUserId`), read **only** — batched by id, same discipline `RecordLinkRepositoryMongoTests.ListBySourceAsync_and_ListByTargetAsync_batch_N_ids_into_ONE_call` already pins for the S1 `relatedRecords` read | No write, ever — `Features/Tasks/**` stays protected (§6) |
+
+**Query bounds:**
+- The meeting-list, attendance and decisions reads are bounded the same way `IWorkReportRepository`'s own
+  criteria are: a **required** `From`/`To` period, no unbounded "all time" query. Meeting type and organizer
+  filters are additive `$match` clauses on an already tenant-scoped, already period-scoped pipeline.
+- The Action Register is **not** period-bound by the ACTION's own due date (an overdue action from six months
+  ago must still show as overdue) — it is bound by the filtered set of MEETINGS the action was born from
+  falling inside the period, mirroring how MOD-0024's own ageing report is anchored to the report's own edge,
+  never to "everything that ever existed" (`MOD-0024-task-closure-and-reporting.md` §12 items 28–29).
+- On-screen the meeting list and the Action Register are **paginated**; the summary tiles are the aggregated
+  totals, not a client-side sum of a page.
+- **Index:** no new collection, so no new base index family — but `meeting_record_links` needs a compound
+  index `(TenantId, SourceModuleCode, LinkType, SourceRecordId)` if `IRecordLinkService`'s existing
+  `ListBySourceAsync` does not already carry one shaped for a MULTI-id batched lookup filtered by `LinkType`
+  (S1 built it for the single-record `relatedRecords` read; S12 is the first caller that asks "every
+  `bornFromMeeting`/`preparation` link for THIS SET of meetings" — verify against the live index list before
+  `ready-for-dev`, add if missing, never query un-indexed at tenant scale).
+
+### 23.4 Action register vocabulary — tied to task lifecycle, consistent with S7 carry-forward
+
+- **Open:** the linked `TaskItem.Lifecycle` is not `Done` or `Cancelled` (the same two terminal states every
+  other MOD-0357↔MOD-0024 read already treats as closed — §16 K1 "deleting one never cascades", §7 dependency
+  table).
+- **Overdue ("geciken"):** open **and** `TaskItem.DueAt` is set and in the past (relative to "now" at query
+  time, not frozen to the filter period's own end — an action does not stop being late because the report
+  window moved past it).
+- **Closed ("kapanan"):** `Lifecycle` is `Done` or `Cancelled` — shown in the register for context/history
+  (so a reader can see "this WAS overdue and got closed", not just the currently-open set) but excluded from
+  the open/overdue tiles.
+- **Attribution — which meeting an action counts against:** the action's **origin** meeting, i.e. the
+  `SourceRecordId` of its `bornFromMeeting`/`preparation` `RecordLink` row (§23.3) — **never** the latest
+  continuation meeting it was carried into. This is the only answer consistent with S7's own design (§19 S7):
+  carry-forward writes a **new, additional** `agenda`-type link anchoring the open line onto the continuation
+  meeting's agenda; it does **not** rewrite or move the original `bornFromMeeting`/`preparation` link. An
+  action can therefore have one birth link and several later agenda-anchor links across a chain of
+  continuations — the register counts it once, against its birth, and MAY show "last carried to: {meeting}"
+  as a secondary, non-attributing column derived from the newest `agenda` link in the chain, if the owner
+  wants that detail (§23.9, open question).
+
+### 23.5 Permission model — two options, owner's call
+
+Both options land at `Scope: Tenant` regardless of which is chosen: the new page's route is `/Meetings/Report`,
+not `/Platform/…`, so `ModulePageDescriptorNormalizer.ScopeFromRoute` (`.antigravity/rules/module-self-registration-standard.md`
+§2c) derives `Tenant` automatically — no hand-classification either way.
+
+**Option A — reuse `platform.meetings.read` / `platform.meetings.read-all` (no new key).**
+- The report's own visibility rule (§23.6) is already exactly what these two keys already mean (§14 D3:
+  organizer + attendee visible with `read`, everything with `read-all`) — the report shows nothing a `read`
+  holder could not already piece together by opening each meeting one at a time; it is a faster read of the
+  same data, not a wider one.
+- Unlike MOD-0024's `platform.tasks.read`, `platform.meetings.read` carries **no** `PersonalWorkSurfaceScoped`
+  collision — Meetings is deliberately **not** a personal-work aggregator (§9: "a first-class tenant screen,
+  not a personal-work aggregator", the opposite of MOD-0024's own reason for minting
+  `platform.tasks.work-report.read` separately from `platform.tasks.read`, `MOD-0024-task-closure-and-reporting.md`
+  §12 item 20). The reason MOD-0024 split its key does not reproduce here.
+- **Trade-off, stated plainly:** `read`/`read-all` ALSO grant opening an individual meeting's own detail and
+  published minutes. Someone the owner wants to see ONLY the aggregate report/export (a QA auditor who should
+  not browse arbitrary meeting content) cannot be given that narrower grant under Option A.
+
+**Option B — mint `platform.meetings.report.read` / `platform.meetings.report.read-tenant-wide` (new keys,
+mirrors MOD-0024's own precedent exactly: `platform.tasks.work-report.read` / `.read-tenant-wide`).**
+- Gives the trade-off in Option A a real answer: a role can hold the report key without the per-meeting
+  `read` key, or vice versa.
+- Costs two more keys in a permission family that already has nine (§14) — more surface to seed, grant, and
+  keep attributed `Module=meetings`/`Scope=Tenant` (§16 K9's own evidence gate would grow by two rows).
+- Symmetric with the ONE other reporting slice in the product (MOD-0024's), which is a real argument for
+  consistency even though the collision that forced MOD-0024's hand does not itself apply here.
+
+**This pack does not choose.** Recommendation, not a decision: **Option A**, because the trade-off it accepts
+(no report-only, meeting-content-blind role) has not been asked for by anyone, and Option B's two new keys are
+a cost paid against a need not yet stated. **If the owner picks Option B, that is a new permission key and
+requires explicit owner approval before it is seeded** (module-pack-standard.md §10 "Yeni anahtar önerilirse
+sahip onayı gerektiğini açıkça yaz" — this line satisfies that instruction; the approval itself is not given
+here).
+
+### 23.6 Visibility — the meeting's own rule, no new hole
+
+The report list, the decisions, and the action register are **filtered by the same D3 rule** every other
+Meetings read already applies (§14, `MeetingEligibility.CanView`, `MeetingCommandHandlers.cs`):
+`hasReadAll || meeting.OrganizerUserId == callerUserId || attendeeUserIds.Contains(callerUserId)`. A `read`
+holder's report contains only meetings they organized or attended; a `read-all` holder's contains every
+meeting in the tenant for the filtered period. **The report never widens what a `read` holder could already
+see one meeting at a time** — it is the SAME predicate, applied as a `$match` stage instead of a per-request
+check, which is the only way a report can exist without becoming its own, second visibility system (the exact
+trap `MOD-0024-task-closure-and-reporting.md` §12 items 16–17 name for its own report: "a second scope engine
+was NOT written").
+
+The Action Register inherits this transitively: an action is listed only if its origin meeting passes the
+same `$match`. A task's OWN assignee-scope visibility (K9: "a non-attending task owner sees only the
+meeting's title and date") is irrelevant here — the register is read through the MEETING's visibility, not
+the task's; a `read-all` holder sees every open action born from every meeting, including ones whose assignee
+they could not otherwise see as a task-holder, exactly as `read-all` already means for the meeting itself.
+
+### 23.7 Export and audit trail contract
+
+**Same query, not a second one** — same discipline BL-346 states for its own export ("the file is the
+report's own rows": `ExportAsync` calls the same `ReadAsync` the numbers use). Proposed shape, mirroring
+`GET /api/v1/tasks/work-report/export?format=csv|json` file-for-file:
+
+```text
+GET /api/v1/meetings/report/export?format=csv|json&dataset=meetings|decisions|actions&{same filters as the screen}
+```
+
+`dataset` is required and picks ONE of the three grains (meetings, decisions, actions) rather than blending
+them into one file — MOD-0024's own export never mixes grains either, and a "toplantı satırı + karar satırı +
+aksiyon satırı" CSV would need three different column sets fighting for one header row.
+
+Decisions carried over from BL-346, applied identically here: same permission as the screen (no separate
+`.export` key — Option A/B above already covers read; export needs nothing beyond it), 50 000-row refusal
+(`MEETING_REPORT_EXPORT_TOO_LARGE`, same posture as `WORK_REPORT_EXPORT_TOO_LARGE` — refuse, never silently
+truncate), UTF-8 BOM, invariant-culture numbers, English column headers, a localized filename prefix
+(`toplanti-raporu_…` / `meeting-report_…`), the `Content-Disposition`/row-count header pair proxied through
+Web and Gateway unchanged, and the object-URL revoke happening in a `finally` block.
+
+**Audit trail — GxP-required (owner decision, BL-396), and it is a SHARED prerequisite, not a private one.**
+
+The root cause is BL-347, read directly: `AuditMetaAuditWriter.WriteAsync`
+(`Features/Audit/Services/AuditMetaAuditWriter.cs:54-56,72`) hardcodes every call to
+`ActorType = AuditActorType.PlatformAdministrator` and `IsPlatformGlobal = true` — it was built for genuinely
+platform-admin-triggered meta-audit events and was never meant to receive a tenant user's own action. A tenant
+user's report download recorded through it today would read "a platform administrator did this", which is a
+wrong record, not a missing one (BL-347's own framing). Separately, the GENERAL auditable-command pipeline
+(`AuditBehavior<TRequest,TResponse>.BuildAuditPlan`, `Contracts/Behaviors/AuditBehavior.cs:123-133`) resolves
+the actor correctly for a tenant vs. platform caller — but **skips every query by design** ("a query is not
+audited by default"), and an export is a `GET`. Neither existing path, as it stands today, can correctly
+record a tenant user's export.
+
+BL-347 itself names the two shapes a fix could take: (a) give `AuditMetaAuditWriter` an explicit actor-type
+input instead of hardcoding one — the caller resolves it from `ICurrentUserContext` the same way the command
+pipeline already does correctly for writes; or (b) build the query-side equivalent of `IAuditableCommand` so
+`AuditBehavior`'s currently-query-skipping branch can opt a read/export request in. This pack does not decide
+between (a)/(b) either — that choice belongs to whoever picks up BL-347, and picking one is out of S12's own
+scope (BL-396's own wording: "dışa aktarmada denetim izi ŞART → BL-347 ile aynı kiracı tarafı denetim yazıcısı
+kararına bağlı").
+
+**What this pack DOES decide: S12's export is blocked on the SAME fix BL-346/BL-347 need, and that fix should
+be built ONCE, upstream of both.** Reasoning:
+- Building a Meetings-only tenant-actor audit writer while MOD-0024's own export still has none would produce
+  TWO tenant-side audit gaps solved once and left open once, in the same product, for the same class of
+  action — the opposite of "a kiracı tarafı denetim yazıcısı" (singular, as BL-396 itself phrases it).
+- The fix is small and general (a parameter or a query-audit path on ALREADY-shared infrastructure,
+  `Features/Audit/**`) — it does not belong to either module's own repo scope, and neither MOD-0024's nor
+  MOD-0357's Protected Paths currently authorize either pack to edit `Features/Audit/**`.
+- **Therefore: the fixed tenant-side audit writer is a shared pre-slice — its own small WP, owned by whoever
+  BL-347 gets assigned to, landed BEFORE S12's export endpoint is built — not S12's own private prerequisite
+  and not something S12 builds a second, module-local copy of.** S12's non-export screens (list, tiles,
+  decisions, action register) do **not** depend on this fix and may be built and shipped independently; only
+  `GET /api/v1/meetings/report/export` is gated on it.
+
+### 23.8 7-language localization
+
+Same resx set shape as every other Meetings screen (§11, §16 "7-language l10n"): a new
+`Resources/Views/Meetings/Report/MeetingReportIndex.{en,tr,fr,es,zh,ar,ru}.resx` (or, if the report ships as a
+tab-free extension of the existing Meetings list rather than its own folder — an implementation-time call, not
+a pack-level one — the SAME shared `MeetingsIndex.*.resx` set already in place, per §5 Frontend/Repo Scope).
+Either way: one key set, seven files, `Nav.Page.MEETINGS_REPORT` (or the chosen page code) added to
+`SharedResource.*.resx` the same way every other nav-visible Meetings page already was (§19 S3/S8/S11's own
+implementation notes each record this same step), and the export's column headers stay **English**
+(BL-346's own decision, reused verbatim — §23.7).
+
+### 23.9 Acceptance criteria (testable, phase-tagged for when this becomes ready-for-dev)
+
+- [ ] The report's meeting list, attendance rate, and decisions are all derived from a REQUIRED period; no
+      unbounded query path exists (verified: the repository method signature has no default/optional period).
+- [ ] The report list for a `read`-only holder contains ONLY meetings where they are organizer or attendee;
+      a `read-all` holder's contains every tenant meeting in the period — verified by the SAME three-case test
+      shape `MeetingTwoUserFlowMongoTests`-style fixtures already use for D3 (organizer sees it, attendee sees
+      it, an unrelated third party's report has zero rows for that meeting).
+- [ ] The Action Register lists an action against its origin (`bornFromMeeting`/`preparation` link) meeting,
+      never a later continuation it was carried into — verified with a fixture that carries one open action
+      through two S7 continuations and asserts it appears exactly once, attributed to the FIRST meeting.
+- [ ] "Overdue" is computed against the query-time clock, not the filter period's own end — verified the same
+      way `MOD-0024-task-closure-and-reporting.md` §12 item 29 pins ageing-anchor behavior (two different
+      "now"s for the same data must not agree).
+- [ ] Export refuses (`MEETING_REPORT_EXPORT_TOO_LARGE`) above 50 000 rows rather than truncating; each of the
+      three `dataset` values produces a file whose columns match that grain only (no blended file).
+- [ ] Export is NOT wired until the shared tenant-side audit writer (§23.7) exists; the non-export screens ARE
+      independently testable/shippable without it.
+- [ ] `verify_datatable_page.py --area Meetings --module Report --reference compact` PASS, if the Action
+      Register sub-list is built as its own DataTables-v2 grid (§23.2's own open implementation-time call).
+- [ ] RESX parity PASS across all 7 languages; `Nav.Page.{chosen code}` present in all 7
+      `SharedResource.*.resx` files (same guard every prior nav-visible Meetings page already passed).
+- [ ] `verify_module_id.py --check-id MOD-0357 --name "Management Review & Cadence"` still exits 0 — S12 opens
+      no new identity.
+
+### 23.10 Test gate (same shape as §17, scoped to S12)
+
+- Unit: attendance-rate arithmetic, the open/overdue/closed classification, the origin-attribution rule
+  (§23.4) against an S7 fixture with two continuations.
+- Integration/HTTP: the D3 visibility three-case matrix (§23.9); cross-tenant isolation (404/empty, same as
+  §13); permission boundary for whichever of §23.5's options the owner picks; the batched `RecordLink` →
+  `TaskItem` read exercising the REAL `IRecordLinkService` (not a double), same posture §17 already commits
+  the rest of this pack to.
+- Sabotage proof (this repo's own testing discipline — §17 already commits the pack to this): a
+  source-scanning guard proving the Action Register query goes through `IRecordLinkService`, never a raw
+  `meeting_record_links` collection read, by temporarily bypassing the service and observing red, then green.
+- Frontend smoke: filter → report renders → export (once the audit prerequisite lands) round trip; RESX
+  parity; nav-guard.
+- Build PASS: `Diten.Platform`, `Diten.Web`, gateway (once routed, §23.11).
+
+### 23.11 Gateway / API routing (decision recorded, not executed)
+
+New routes, same pattern as every other MOD-0357 slice (§15): `GET /api/v1/meetings/report`,
+`GET /api/v1/meetings/report/export`. Neither exists in `ocelot.json` today and no catch-all covers them —
+required pair, authored by integration-agent, **not** here, once this slice is `ready-for-dev`.
+
+### 23.12 Out of scope
+
+- Scheduled/emailed report delivery (BL-346 excluded the same thing for Work Report; same reasoning: no
+  scheduling infrastructure exists for either report today).
+- Charts/graphics beyond the summary tiles — BL-346's own Faz 5b shipped charts because MOD-0024 already had
+  ApexCharts wired into a tenant page; whether S12 gets charts is an implementation-time UI call, not gated by
+  anything this pack decides, and is explicitly NOT required by BL-396's own content list.
+- A `Nav.Page`-level "report only" role bundle/preset — a permission-grant UX question, not this slice's.
+- Rolling the action register up into a cross-module register (MOD-0024's own Task Center, ESBP's Strategic
+  Reviews) — §20 already defers "Connecting Enterprise Strategy's 'Strategic Reviews' screens to this engine"
+  as a separate, unbuilt integration; S12 does not open that door.
+- Retention/archival of report SNAPSHOTS (as opposed to the underlying meetings/minutes, whose retention is
+  already §22 D5) — no snapshot concept exists in this slice; the report is always computed live.
+
+### 23.13 Open questions (owner / Quality decision, numbered)
+
+**Decisions recorded 2026-09-15 (owner accepted all CT recommendations):**
+1. Permission model: **Option A** — reuse `platform.meetings.read` / `platform.meetings.read-all`; no new key. Option B stays available as an additive change if a report-only role is ever needed.
+2. "Last carried to" column: **yes** — the Action Register shows origin meeting AND the continuation the open action currently sits on (secondary, non-attributing column).
+3. Draft-minutes decisions: **no** — only published minutes versions feed the report.
+4. Action Register grid: **DataTable v2** (same standard as the work report).
+5. Export file retention: CT recommendation "point-in-time, not a controlled copy" — the file carries its generation timestamp and that statement; the export itself is retained as an audit record. **Awaiting Quality confirmation**; implementation follows the recommendation unless Quality answers otherwise.
+6. Tenant-side audit writer (BL-347): **built by Infra CT as the shared prerequisite**, consumed by both MOD-0024's work report export and S12's export (WP-PSS-MOD0024-BL347-TENANT-AUDIT-WRITER-01, 2026-09-15).
+
+
+1. **Permission model (§23.5):** Option A (reuse `read`/`read-all`) or Option B (mint
+   `platform.meetings.report.*`)? Recommendation given is A; **owner decides**.
+2. **"Last carried to" column (§23.4):** does the Action Register show the current continuation an open
+   action's agenda line lives on (a secondary, non-attributing column), or does it stay silent on that and
+   show only the origin meeting? **Owner decides** — a UX/scope call, not a data-availability one; the data
+   (the newest `agenda`-type `RecordLink` in the chain) is already available either way.
+3. **Draft-minutes decisions:** §23.3 excludes a draft's decisions from the report (only published versions
+   count). Is that right, or should a QA reader be able to see draft decisions too, clearly marked as
+   unpublished? **Owner/Quality decides** — ISO 9001 §9.3.3 expects management-review outputs to be
+   *documented*, which a published minutes version already satisfies; a draft is not yet that record.
+4. **DataTable v2 for the Action Register (§23.2/§23.9):** built as its own `_DataTable.cshtml` v2 grid
+   (paginate/sort/filter via DataTables) or a simpler server-rendered list? **Implementation-time call**,
+   flagged here only so the AC checklist item is not silently skipped either way.
+5. **Retention of the export file itself** (not the underlying data, already §22 D5): does a downloaded report
+   file fall under the same GxP retention discipline as the minutes it summarizes, or is it explicitly
+   "point-in-time, not a controlled copy"? **Owner/Quality decides** — GMG-QMS-SOP-0013's own controlled-copy
+   language may already answer this; not re-derived here.
+
+**Nothing in §23.1–§23.12 was found to contradict ISO 9001 §9.3.3 (management review inputs/outputs,
+including decisions and actions, must be retained as documented information) or GMG-QMS-SOP-0013** — the
+slice's own content list (§23.1) is, if anything, a direct implementation of §9.3.3's "documented information"
+requirement for the meetings this module already governs; where GMG-QMS-SOP-0013 is silent (draft-decision
+visibility, export retention), §23.13 raises the question rather than assuming an answer.

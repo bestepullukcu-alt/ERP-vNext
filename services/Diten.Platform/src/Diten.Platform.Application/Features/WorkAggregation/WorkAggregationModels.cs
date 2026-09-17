@@ -29,6 +29,12 @@ public static class WorkAggregationReasonCodes
 
     /// <summary>An open subtask. Blocks COMPLETION only — its parent can still be started, and still cancelled.</summary>
     public const string SubtaskBlocked = "SUBTASK_BLOCKED";
+
+    /// <summary>BL-379 — a review meeting is already linked to this task; scheduling a second one is not offered.
+    /// Only reaches the reader at all because they are already this task's owner/requester (see
+    /// <c>TaskWorkItemProvider</c>'s own reviewMeetingPolicy gate) — a closed task or someone else's task never
+    /// publishes the policy or the action in the first place, so no reason code is needed for either case.</summary>
+    public const string ReviewMeetingAlreadyScheduled = "REVIEW_MEETING_ALREADY_SCHEDULED";
 }
 
 // WC-D3 (DCP-004 §2 D3) — WHY a source is missing from the board.
@@ -97,6 +103,11 @@ public static class WorkItemContract
     // workIntent
     public const string IntentApproval = "approval";
 
+    // MOD-0357 S5c — a pending meeting invitation, awaiting Accept/Decline (K5). Named "meetingInvite", not
+    // "invitation", because the frontend contract (fixture-contract.js) and app.js's own icon/chip/filter maps
+    // already spelled it this way for the trigger-only showcase this replaces — one name, not two.
+    public const string IntentMeetingInvite = "meetingInvite";
+
     // assignmentMode
     public const string AssignmentApproval = "approval";
 
@@ -147,6 +158,10 @@ public static class WorkItemContract
     // ("tasks") and to the permission namespace (platform.tasks.*) so provider, catalog and permissions cannot
     // drift apart — the workflow provider holds the same property.
     public const string ProviderCodeTasks = "tasks";
+
+    // source provider code (MOD-0357 S5c provider) — identical to the module manifest's ModuleCode ("meetings")
+    // and to the permission namespace (platform.meetings.*), same reason the two above match theirs.
+    public const string ProviderCodeMeetings = "meetings";
 
     // viewerRelation (BL-016). The C# mirror of fixture-contract.js VIEWER_RELATIONS — declared on both sides for
     // the reason slaState above is: a value spelled differently across this seam is a row in the wrong tab.
@@ -626,7 +641,54 @@ public sealed record WorkItemProjectionDto(
     /// so a silent provider's items are never dropped.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    string? ViewerRelation = null);
+    string? ViewerRelation = null,
+    /// <summary>
+    /// MOD-0357 S4 — the receiving side of the <c>scheduleReviewMeeting</c> action (pack §7). Modelled beside
+    /// <see cref="Gates"/> per that record's own doc comment.
+    ///
+    /// <para><b><c>Requirement</c> is fixed at <c>"optional"</c> in this slice, not a real decision.</b> No
+    /// <c>TaskType.ReviewMeetingPolicy</c> field exists yet to read a real <c>notAllowed</c>/<c>required</c>
+    /// value from (pack §19, "OLMAYAN" — MOD-0357-S4 does not invent one); a later slice that adds the real
+    /// per-type field changes this VALUE, never this shape. Because it is always <c>"optional"</c>, K3's own
+    /// approve/signoff-blocking clause (requirement <c>required</c> ⇒ disabled decision) never triggers this
+    /// slice — nothing here touches <c>Gates</c> or any decision action.</para>
+    ///
+    /// <para>Present on every task (unconditional, like the fixed value above); omitted only when this
+    /// provider instance was built without the record-link seam (the two optional constructor parameters are
+    /// null), so a caller that has not wired the bridge yet serializes unchanged.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemReviewMeetingPolicyDto? ReviewMeetingPolicy = null,
+    /// <summary>
+    /// A second action the shell may show ALONGSIDE the primary one, distinct from <see cref="OverflowActionCodes"/>
+    /// (the executable contract, fixture-contract.js's own <c>validatePlacement</c>, has always kept the two
+    /// separate; no C# provider had emitted this one until now). MOD-0357 S5c's own reason: "Kabul" and "Reddet"
+    /// are the whole decision an invite card asks for, and burying "Reddet" a click deeper behind a menu answers
+    /// a question the card was not asked. Trailing and optional, like every other placement field, so a
+    /// provider that says nothing about it compiles and serializes unchanged.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<string>? SecondaryActionCodes = null);
+
+/// <summary>
+/// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/
+/// ScheduledAt come from the "reviewMeeting"-type RecordLink when one exists — absent means none is scheduled
+/// yet, which is also the condition that keeps the <c>scheduleReviewMeeting</c> action offered.
+///
+/// <para>MinutesPublished (MOD-0357 S9, CT fix-up F1 2026-09-15) — whether a non-cancelled linked meeting has
+/// PUBLISHED minutes, i.e. whether the review-meeting gate is unlocked. The executable contract
+/// (fixture-contract.js, REVIEW_MEETING_REQUIRED_MUST_BLOCK_DECISION) reads exactly this field, and
+/// work-items-api.js DROPS any item the contract rejects: without it on the wire, a Required task whose minutes
+/// had published (so its decision action is enabled) would vanish from the board.</para>
+/// </summary>
+public sealed record WorkItemReviewMeetingPolicyDto(
+    string Requirement,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? MeetingId = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateTimeOffset? ScheduledAt = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    bool? MinutesPublished = null);
 
 /// <summary>
 /// WC-1 — the personal overlay, projected. Private to ONE reader: the server filters it, the client does not hide
@@ -808,7 +870,19 @@ public sealed record WorkItemActivityEntryDto(
     /// than derived client-side because the client has only the author's NAME — two people with one name would
     /// otherwise be handed each other's controls, and the handler would then refuse a button the screen offered.</para>
     /// </summary>
-    bool Editable = false);
+    bool Editable = false,
+    /// <summary>
+    /// Who this COMMENT @mentions (WP-PSS-MOD0024-FOLLOWUPS-02) — present on a comment entry only, absent on an
+    /// event and absent (never an empty array) on a comment that names nobody. Reuses <see cref="WorkItemPersonDto"/>
+    /// rather than a bare id list: the edit dialog's "already tagged" chips need a name to show, not a GUID, and
+    /// this is the SAME shape Assignee/Requester already use for the same reason (K6.3).
+    ///
+    /// <para>An unresolved id is omitted, never shown as a raw GUID — same rule as the mention-candidates
+    /// endpoint. Withdrawn comments still carry this: who was mentioned is a fact about what was said, and it
+    /// does not change because the words were later taken back.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemPersonDto>? Mentioned = null);
 
 /// <summary>
 /// What happened, as CODES rather than as a sentence (WC-1).
@@ -936,7 +1010,34 @@ public sealed record WorkItemReturnedDto(
 public sealed record WorkItemClosureDto(
     string ReasonCode,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemLabelDto? Outcome = null);
+    WorkItemLabelDto? Outcome = null,
+    /// <summary>Faz 2a — the closing narrative, in the actor's own words. Omitted, never empty-string, when none
+    /// was written.</summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    string? Note = null,
+    /// <summary>
+    /// Faz 2a — the task's CLOSURE-stage field values, in the businessContext field's own shape
+    /// (<see cref="WorkItemBusinessFieldDto"/>) so the browser needs no second renderer for the same kind of
+    /// value. Null — never an empty list — when the type asks no closure field, which is every type before this
+    /// slice and every type nobody has configured since.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemBusinessFieldDto>? Fields = null,
+    /// <summary>
+    /// Faz 2a — a COUNT and a REFERENCE into the attachments this same projection already carries under
+    /// <c>attachments.items[]</c> (pack §4: "no new container"). One entry per attachment KIND actually present
+    /// among the task's Deliverable/Evidence attachments; a kind with none is simply absent.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    IReadOnlyList<WorkItemClosureAttachmentRefDto>? Deliverables = null);
+
+/// <summary>One attachment KIND's closure-relevant tally — see <see cref="WorkItemClosureDto.Deliverables"/>.</summary>
+public sealed record WorkItemClosureAttachmentRefDto(
+    /// <summary>Deliverable | Evidence — the domain enum's own spelling, same convention
+    /// <see cref="WorkItemAttachmentDto.Kind"/> already uses.</summary>
+    string Kind,
+    int Count,
+    IReadOnlyList<string> AttachmentIds);
 
 public sealed record WorkItemClosureOutcomeDto(
     string Code,
@@ -1010,7 +1111,14 @@ public sealed record WorkItemTaskTypeDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     IReadOnlyList<WorkItemClosureOutcomeDto>? CompletionOutcomes = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null);
+    IReadOnlyList<WorkItemClosureOutcomeDto>? CancellationOutcomes = null,
+    /// <summary>
+    /// WP-PSS-MOD0024-ATTACHMENTS-UX-01 — mirrors <c>TaskType.RequiresDeliverableOnCompletion</c>. REPORTED so the
+    /// Complete window can ask for a file client-side before the write; the server enforces the same rule
+    /// independently on the transition itself (pack §12 E1 — a hidden control is presentation, the refusal is the
+    /// rule). False for every type written before this field existed.
+    /// </summary>
+    bool RequiresDeliverableOnCompletion = false);
 
 /// <summary>
 /// One reason work cannot move. <c>Label</c> names the thing in the way (a task title, so a DISPLAY label);

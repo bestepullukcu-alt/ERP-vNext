@@ -34,7 +34,9 @@ public sealed record DocumentRegisterImportPreview(
     DateTimeOffset? AlreadyImportedAt,
     string? AlreadyImportedBy);
 
-/// <summary>The commit's answer: the batch row it wrote, plus the same counts the preview promised.</summary>
+/// <summary>The commit's answer: the batch row it wrote, plus the same counts the preview promised — including
+/// <see cref="Unchanged"/> (WP-DM-DCP005-RETIRE-CSV-01, AC1), which must equal the preview's own count for the
+/// identical file: the commit no longer counts an untouched row as <see cref="Updated"/>.</summary>
 public sealed record DocumentRegisterImportCommitResult(
     Guid BatchId,
     string ContentHash,
@@ -42,6 +44,7 @@ public sealed record DocumentRegisterImportCommitResult(
     int TotalRows,
     int Created,
     int Updated,
+    int Unchanged,
     int Blocked,
     IReadOnlyList<string> Errors);
 
@@ -55,4 +58,5 @@ public sealed record DocumentRegisterImportBatchDto(
     int TotalRows,
     int Created,
     int Updated,
+    int Unchanged,
     int Blocked);

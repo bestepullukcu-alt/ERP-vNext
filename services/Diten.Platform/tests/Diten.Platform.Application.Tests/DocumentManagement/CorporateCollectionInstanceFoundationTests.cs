@@ -100,6 +100,10 @@ public sealed class CorporateCollectionInstanceFoundationTests
     [Fact]
     public void Corporate_unique_index_uses_positive_active_filter_only()
     {
+        // Index declarations moved out of MongoDbIndexConfigurations.cs (now a 32-line entry point) into
+        // per-profile manifests in commit 08cc98f0 ("the schema says which part of itself a test needs"). This
+        // index has no named constant in the new manifest — every other index in the file is a plain string
+        // literal — so the marker is the literal name rather than a constant reference.
         var repositoryRoot = FindRepositoryRoot();
         var indexSource = File.ReadAllText(Path.Combine(
             repositoryRoot,
@@ -108,10 +112,10 @@ public sealed class CorporateCollectionInstanceFoundationTests
             "src",
             "Diten.Platform.Infrastructure",
             "Persistence",
-            "Configurations",
-            "MongoDbIndexConfigurations.cs"));
+            "Schema",
+            "PlatformSchemaManifest.DocumentManagement.cs"));
         var marker = indexSource.IndexOf(
-            "Name = CorporateActiveInstanceIndexName",
+            "ux_dm_collection_instances_corporate_owner_baseline_node_active",
             StringComparison.Ordinal);
         Assert.True(marker >= 0);
         var windowStart = Math.Max(0, marker - 1200);

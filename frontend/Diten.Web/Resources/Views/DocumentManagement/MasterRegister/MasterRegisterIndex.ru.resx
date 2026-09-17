@@ -1116,6 +1116,7 @@
   <data name="HistoryActorColumn" xml:space="preserve"><value>Кем импортировано</value></data>
   <data name="HistoryAppliedAtColumn" xml:space="preserve"><value>Дата импорта</value></data>
   <data name="HistoryCountsColumn" xml:space="preserve"><value>Строки (новые / обновлённые / заблокированные)</value></data>
+  <data name="HistoryUnchangedColumn" xml:space="preserve"><value>Без изменений</value></data>
   <data name="HistoryEmpty" xml:space="preserve"><value>Импортов пока нет.</value></data>
   <data name="ImportFileRequired" xml:space="preserve"><value>Сначала выберите файл CSV.</value></data>
   <data name="ImportInvalidFileType" xml:space="preserve"><value>Принимаются только файлы .csv.</value></data>

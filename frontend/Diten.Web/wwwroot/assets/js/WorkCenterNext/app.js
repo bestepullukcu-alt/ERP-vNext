@@ -45,6 +45,16 @@
     // Mirrors TaskCommentLimits.MaxTextLength. Checked here so an over-long comment is refused before a round
     // trip; the server refuses it too, because a client-side check is a courtesy and not a rule.
     const COMMENT_MAX_LENGTH = 2000;
+    // Mirrors TaskCommentLimits.MaxMentionsPerComment (WP-PSS-MOD0024-TASK-MENTIONS-01 K4) — a courtesy check,
+    // same reasoning as the length limit above; the server enforces it regardless.
+    const COMMENT_MAX_MENTIONS = 10;
+    /*
+     * Per-task, not per-comment: one composer per task in this list, and its draft @mentions live outside the
+     * text the same way a select2 multi-value does — a separate set the composer renders as chips, cleared
+     * only when the comment is actually posted (or the composer is abandoned). Keyed by task id so `render()`
+     * re-drawing the whole list does not lose an in-progress draft's mentions.
+     */
+    const commentMentionState = new Map();
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
     const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
@@ -907,6 +917,17 @@
 
     const delegatorByName = (name) => data.delegators.find((d) => d.name === name) || null;
 
+    /*
+     * DCP-004 amendment 2026-09-15 (UAS-001 §6) — may this user create a task? Read from the permission snapshot the
+     * host view loads (_PermissionBootstrap → window.Permissions). FAIL-CLOSED: a page without the snapshot reads as
+     * "not held", so a missing partial hides the entry rather than showing a button the server will refuse.
+     * UX only — POST api/v1/tasks is the authority.
+     */
+    const TASK_CREATE_PERMISSION = 'platform.tasks.create';
+    const canCreateSelfTask = () =>
+        !!(global.Permissions && typeof global.Permissions.has === 'function'
+            && global.Permissions.has(TASK_CREATE_PERMISSION));
+
     const buildHeader = () => {
         const urgent = ownUrgentCount();
         // Current scope → the person/delegation dropdown label.
@@ -940,6 +961,7 @@
         // (issue/approval) are born in the source (spec v3 §5, note/meeting rule).
         const createItem = (val, icon, label) =>
             `<li><button type="button" class="dropdown-item wcn-dd-item" data-wcn-new="${val}"><i class="bx ${icon}"></i><span>${esc(label)}</span></button></li>`;
+        const canCreateTask = canCreateSelfTask();
 
         return `<div class="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center gap-3 mb-3 wcn-header">
             <div class="wcn-header-title">
@@ -971,7 +993,14 @@
                         <i class="icon-base bx bx-plus icon-sm me-1"></i><span>${esc(t('NewButton'))}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end wcn-dd-menu">
-                        ${createItem('task', 'bx-task', t('NewSelfTask'))}
+                        ${/*
+                           * DCP-004 amendment 2026-09-15 (UAS-001 §6) — HIDDEN, not disabled, without
+                           * platform.tasks.create. Every tenant user opens this page now and most cannot create a
+                           * task; a button that can only fail sends them into a second error. The divider below goes
+                           * with it so the menu does not open on a dangling rule. UX only: POST api/v1/tasks still
+                           * demands the key.
+                           */ ''}
+                        ${canCreateTask ? createItem('task', 'bx-task', t('NewSelfTask')) : ''}
                         ${/*
                            * ⚠ "HIZLI NOT" AND "TOPLANTI PLANLA" WERE REMOVED, NOT DISABLED (2026-08-24).
                            *
@@ -987,7 +1016,7 @@
                            * through `TasksApi.addPersonalNote` (real), and the "Onay toplantısı planla" ACTION
                            * has a contract behind it (`reviewMeetingPolicy`). Neither was touched.
                            */ ''}
-                        <li><hr class="dropdown-divider"></li>
+                        ${canCreateTask ? '<li><hr class="dropdown-divider"></li>' : ''}
                         ${createItem('source', 'bx-link-external', t('NewInSource'))}
                     </ul>
                 </div>
@@ -1044,6 +1073,22 @@
                 <strong>${esc(t('PartialBoardBanner'))}</strong>
                 <span class="wcn-partial-board-detail">${esc(detail)}</span>
             </span>
+        </div>`;
+    };
+
+    /*
+     * BL-379 — a NON-BLOCKING sibling to buildPartialBoardBanner above: that one says a SOURCE is missing,
+     * this one says some of what a source DID send could not be shown because it failed the WC-1 contract.
+     * Deliberately its own note rather than a synthesized entry in state.unavailableSources — that banner's
+     * shape is "provider + reason", and a contract rejection is neither a provider nor one of its own reasons.
+     */
+    const buildContractRejectedNote = () => {
+        const errors = state.contractRejectedErrors;
+        if (!Array.isArray(errors) || errors.length === 0) { return ''; }
+        const count = new Set(errors.map((error) => error.fixtureId)).size;
+        return `<div class="wcn-partial-board wcn-contract-rejected" role="status" aria-live="polite">
+            <i class="bx bx-error-circle"></i>
+            <span class="wcn-partial-board-text">${esc(tf('WorkItemsContractRejected', count))}</span>
         </div>`;
     };
 
@@ -1598,8 +1643,12 @@
         const onBehalfBadge = item.delegator
             ? `<span class="wcn-badge wcn-badge-delegation" title="${esc(tf('OnBehalfOf', item.delegator))}"><i class="bx bx-user-voice"></i>${esc(tf('OnBehalfShort', item.delegator))}</span>`
             : '';
+        // MOD-0357 S5c — tür · zaman · organizatör (pack), all three already flattened by toPresentation:
+        // sourceType is the MEETING's own type name (Source.ObjectType), dueAt is its start, requester is
+        // whoever organized it. No meeting-specific field was added to the wire for this — every one of the
+        // three already exists for every provider.
         const summary = item.itemType === 'meetingInvite'
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation, item.requester].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : item.summary;
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
             <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
@@ -1642,6 +1691,8 @@
     const inboxActionIcon = (action) => ({
         accept: 'bx-check', approve: 'bx-check-shield', signoff: 'bx-check-circle',
         reject: 'bx-x-circle', decline: 'bx-x-circle', cancel: 'bx-x-circle', return: 'bx-undo',
+        // MOD-0357 S5c — same tone as accept/decline above, the codes just differ (acceptInvite/declineInvite).
+        acceptInvite: 'bx-check', declineInvite: 'bx-x-circle',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         scheduleReviewMeeting: 'bx-calendar-event',
@@ -1741,6 +1792,21 @@
     const needsSourceRecovery = (item) =>
         ['stale', 'sourceUnavailable', 'reconciliationRequired'].includes(item.systemState);
 
+    /*
+     * MOD-0357 S5c — the ONE item type today whose provider actually emits `secondaryActionCodes`
+     * (pack §3: "primary=acceptInvite, secondary=declineInvite"). Every other provider's non-primary
+     * actions stay in the ··· overflow (see the comment above `actionCluster`); a meeting invite's
+     * Reddet is a plain, un-confirmed, un-reasoned action (K-series: no dialog, no reason) that the
+     * pack explicitly wants ONE VISIBLE CLICK away, not a deliberate second click behind a menu.
+     * Gated on itemType so no other provider's row shape changes.
+     */
+    const secondaryInlineAction = (item) => {
+        if (item.itemType !== 'meetingInvite') { return null; }
+        const code = (item.secondaryActionCodes || [])[0];
+        if (!code) { return null; }
+        return itemActions(item).find((action) => action.code === code) || null;
+    };
+
     // Inbox is a decision queue, not a second task-detail surface. Each row answers
     // what needs attention, why it is here and when it matters. The primary action
     // appears once; less frequent actions stay behind a compact overflow menu.
@@ -1759,16 +1825,25 @@
         // et…); every other action — including reject — lives behind the ··· overflow,
         // so a destructive choice takes a deliberate second click. Same shape in the
         // inbox rows and the Table view's İşlemler column.
+        //
+        // meetingInvite is the one exception (see secondaryInlineAction): Reddet is promoted next to
+        // Kabul et instead of into the overflow, so it is excluded from `overflow` below too.
         const primary = rowPrimaryAction(actions);
-        const overflow = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const overflow = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         const primaryButton = primary
             ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
             : '';
+        const secondaryButton = secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const overflowMenu = overflow.length
             ? `<div class="dropdown"><button type="button" class="btn btn-icon wcn-inbox-action-more dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end">${actionMenuBody(item, overflow)}</ul></div>`
             : '';
-        return `<span class="wcn-inbox-actions">${primaryButton}${overflowMenu}</span>`;
+        return `<span class="wcn-inbox-actions">${primaryButton}${secondaryButton}${overflowMenu}</span>`;
     };
 
     // Table view "İşlemler" cell — same decision-queue shape as the list rows: the
@@ -1804,7 +1879,10 @@
         }
         const actions = itemActions(item);
         const primary = rowPrimaryAction(actions);
-        const rest = actions.filter((action) => !primary || action.key !== primary.key);
+        const secondary = secondaryInlineAction(item);
+        const rest = actions
+            .filter((action) => !primary || action.key !== primary.key)
+            .filter((action) => !secondary || action.key !== secondary.key);
         const interactionLocked = state.submittingItemId === item.id;
         // Stale source → refresh is the primary; real actions come back after it clears.
         const primaryButton = needsSourceRecovery(item)
@@ -1812,9 +1890,12 @@
             : (primary
                 ? `<button type="button" class="btn btn-sm btn-label-${primary.kind} wcn-inbox-action-primary" data-wcn-action="${primary.key}" data-wcn-id="${item.id}"${interactionLocked || primary.disabled ? ' disabled' : ''}${primary.disabled && primary.disabledReason ? ` title="${esc(primary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(primary)} me-1"></i>${esc(actionLabel(primary))}</button>`
                 : '');
+        const secondaryButton = !needsSourceRecovery(item) && secondary
+            ? `<button type="button" class="btn btn-sm btn-label-${secondary.kind} wcn-inbox-action-secondary" data-wcn-action="${secondary.key}" data-wcn-id="${item.id}"${interactionLocked || secondary.disabled ? ' disabled' : ''}${secondary.disabled && secondary.disabledReason ? ` title="${esc(secondary.disabledReason)}"` : ''}><i class="bx ${inboxActionIcon(secondary)} me-1"></i>${esc(actionLabel(secondary))}</button>`
+            : '';
         const viewItem = `<li><button type="button" class="dropdown-item wcn-menu-item" data-wcn-detail="${item.id}"><i class="bx bx-show"></i><span>${esc(t('RowView'))}</span></button></li>`;
         const kebab = `<div class="dropdown"><button type="button" class="btn btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown" aria-expanded="false" title="${esc(t('ActionsLabel'))}" aria-label="${esc(t('ActionsLabel'))}"><i class="bx bx-dots-vertical-rounded icon-md"></i></button><ul class="dropdown-menu dropdown-menu-end m-0">${actionMenuBody(item, needsSourceRecovery(item) ? [] : rest, viewItem)}</ul></div>`;
-        return `<div class="d-flex align-items-center justify-content-end wcn-table-actions">${primaryButton}${kebab}</div>`;
+        return `<div class="d-flex align-items-center justify-content-end gap-1 wcn-table-actions">${primaryButton}${secondaryButton}${kebab}</div>`;
     };
 
     const inboxRowHtml = (item) => {
@@ -1909,8 +1990,10 @@
         const terminal = item.lifecycle === 'Done' || item.lifecycle === 'Cancelled';
         const typeKind = item.itemType === 'meetingInvite' ? 'meeting' : item.itemType;
         const isMeeting = item.itemType === 'meetingInvite';
+        // MOD-0357 S5c — tür · zaman (organizatör is already the row's own metaLine second half elsewhere via
+        // `item.requester`, kept here too so this card reads the same three facts the list row does).
         const metaLine = isMeeting
-            ? [item.meetingStart && item.meetingEnd ? `${item.meetingStart}–${item.meetingEnd}` : '', item.meetingLocation].filter(Boolean).join(' · ')
+            ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : [item.sourceModule, item.requester].filter(Boolean).join(' · ');
         const pinBtn = terminal ? '' : `<button type="button" class="wcn-splitcard-pin${item.pinned ? ' pinned' : ''}" data-wcn-pin="${item.id}" title="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-label="${esc(t(item.pinned ? 'Unpin' : 'Pin'))}" aria-pressed="${item.pinned}"><i class="bx ${item.pinned ? 'bxs-pin' : 'bx-pin'}"></i></button>`;
         return `<article class="card wcn-splitcard${hasPriority(item) ? ` wcn-splitcard-p-${PRIORITY_KIND[item.priority]}` : ''}${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" draggable="true" aria-label="${esc(tf('TableOpenRow', item.title))}">
@@ -4307,14 +4390,36 @@
          * Still an <input>, deliberately. Making it a textarea would change what Enter does — a behaviour
          * change wearing a styling change's clothes.
          */
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — @mention chips.
+         *
+         * MentionedUserIds is structured data the server validates (K2/K4); the chip tray is the composer's
+         * OWN reflection of that draft state, not something parsed back out of the text box. Typing "@" is a
+         * shortcut into the SAME reusable person picker (`bindDialogSelect2`) every other picker dialog in this
+         * screen already uses — no new picker widget, per the module pack's explicit instruction.
+         */
+        const mentions = commentMentionState.get(item.id) || [];
+        const chips = mentions.length
+            ? `<div class="wcn-mention-chips">${mentions.map((m) => `<span class="wcn-mention-chip">`
+                + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                + `<button type="button" class="wcn-mention-chip-remove" data-wcn-mention-remove="${esc(m.id)}" `
+                + `data-wcn-mention-task="${item.id}" aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('')}</div>`
+            : '';
+
         return `<div class="wcn-composer">
             <div class="diten-field wcn-composer-field">
                 <i class="bx bx-message-rounded diten-field-icon" aria-hidden="true"></i>
                 <input type="text" class="form-control" data-wcn-comment-input placeholder="${esc(t('CommentPlaceholder'))}">
             </div>
+            <button type="button" class="btn btn-outline-secondary wcn-composer-mention" data-wcn-mention-add="${item.id}"
+                    aria-label="${esc(t('MentionAdd'))}" title="${esc(t('MentionAdd'))}">
+                <i class="bx bx-at" aria-hidden="true"></i>
+            </button>
             <button type="button" class="btn btn-primary wcn-composer-post" data-wcn-comment-post="${item.id}">
                 <i class="bx bx-send" aria-hidden="true"></i><span>${esc(t('CommentPost'))}</span>
             </button>
+            ${chips}
         </div>`;
     };
 
@@ -4488,6 +4593,50 @@
         </section>`;
     };
 
+
+    /*
+     * ── THE CLOSURE BLOCK (MOD-0024 Task Closure & Reporting, Faz 2a) ────────────────────────────────────────
+     *
+     * The step-bar caption already prints the outcome's WORDS beside the closing date (`closedAs`, above) — this
+     * card is the REST of the envelope: the closing narrative, the CLOSURE-stage field values, and how many
+     * Deliverable/Evidence attachments this closed task carries. No card at all when none of the three exists,
+     * which is every task before this slice and every task whose type asks nothing at closure — the same
+     * "a capability with no data is not a capability worth announcing" rule every conditional card here follows.
+     *
+     * `closure.fields` arrives in `WorkItemBusinessFieldDto`'s own shape — the SAME one `businessContext` ships
+     * — so the value is read by its REAL wire name, `valueType`/`redacted` (not the `kind`/`restricted` a
+     * neighbouring helper reads; those never match this contract either, a pre-existing mismatch this slice does
+     * not touch).
+     */
+    const renderClosure = (item) => {
+        if (!isTerminal(item) || !item.closure) { return ''; }
+        const closure = item.closure;
+        const fields = closure.fields || [];
+        const deliverables = closure.deliverables || [];
+        if (!closure.note && !fields.length && !deliverables.length) { return ''; }
+
+        const fieldValue = (field) => {
+            if (field.redacted) { return `<span class="text-muted">${esc(t('RedactedValue'))}</span>`; }
+            if (field.valueType === 'boolean') { return esc(t(field.value === 'true' ? 'Yes' : 'No')); }
+            return esc(data.resolveLabel(field.value) || field.value || '—');
+        };
+        const fieldRows = fields.map((field) =>
+            `<div class="wcn-fact"><span>${esc(data.resolveLabel(field.label))}</span><strong>${fieldValue(field)}</strong></div>`
+        ).join('');
+
+        // One sentence per KIND present — "3 deliverables", never a duplicate of the attachment card's own rows.
+        const deliverableKey = { Deliverable: 'ClosureDeliverableCount', Evidence: 'ClosureEvidenceCount' };
+        const deliverableRows = deliverables
+            .map((group) => `<li>${esc(tf(deliverableKey[group.kind] || 'ClosureDeliverableCount', group.count))}</li>`)
+            .join('');
+
+        return `<section class="wcn-detail-section wcn-business-section">
+            ${sectionHead('bx-flag-alt', 'ClosureSectionTitle')}
+            ${closure.note ? `<p class="mb-3">${esc(closure.note)}</p>` : ''}
+            ${fieldRows ? `<div class="wcn-facts-grid mb-3">${fieldRows}</div>` : ''}
+            ${deliverableRows ? `<ul class="text-muted small mb-0">${deliverableRows}</ul>` : ''}
+        </section>`;
+    };
 
     const renderBusinessContext = (item) => {
         if (!hasCap(item, 'businessContext')) { return ''; }
@@ -5144,6 +5293,7 @@
             // FIRST, always: "what is this?" is the question a detail page owes its reader before "what can you
             // do about it?" — which is what the page used to open with.
             card(renderSummary(item)),
+            card(renderClosure(item)),
             card(renderBusinessContext(item)),
             card(renderSubtasks(item)),
             card(renderDependencies(item)),
@@ -6346,6 +6496,11 @@
         const quick = prim
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${prim.kind}" data-wcn-action="${prim.key}" data-wcn-id="${item.id}">${esc(t(prim.labelKey))}</button>`
             : '';
+        // MOD-0357 S5c — Reddet stays visible next to Kabul et here too (see secondaryInlineAction).
+        const sec = secondaryInlineAction(item);
+        const quickSecondary = sec
+            ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
+            : '';
         return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
@@ -6353,7 +6508,7 @@
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
             </div>
-            ${quick ? `<div class="wcn-kcard-actions">${quick}</div>` : ''}
+            ${quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : ''}
         </div>`;
     };
 
@@ -6401,8 +6556,8 @@
 
     // ── Empty states ──────────────────────────────────────────────────────────
     const emptyState = () => {
-        // Meeting invitations are trigger-only projections. They use a dedicated
-        // empty state but never enter the task-detail resolver or task lifecycle.
+        // MOD-0357 S5c — a real MeetingWorkItemProvider row now, same as any other item type; this dedicated
+        // empty state is just the nicer message for "no pending invites" over the generic one.
         if (state.typeFilter.has('meetingInvite')) {
             return `<div class="card wcn-empty">
                 <i class="bx bx-calendar-event"></i>
@@ -6685,12 +6840,20 @@
             if (state.loadState === 'loading') { root.innerHTML = renderLoadingState(); return; }
             if (state.loadState === 'error') { root.innerHTML = renderErrorState(); return; }
 
-            const item = itemById(root.dataset.wcnItemId || '');
+            const requestedId = root.dataset.wcnItemId || '';
+            const item = itemById(requestedId);
             state.selectedId = item ? item.id : null;
             if (item) { markSeen(item); }
+            // BL-379 — the requested item may be missing from state.items because the CONTRACT rejected it
+            // (fixture-contract.js), not because it does not exist. "Bulunamadı" is the wrong sentence for a
+            // row the server sent but the validator refused; a reader chasing a real, existing task deserves the
+            // more specific one.
+            const wasRejectedByContract = !item && Array.isArray(state.contractRejectedErrors)
+                && state.contractRejectedErrors.some((error) => error.fixtureId === requestedId);
+            const notFoundKey = wasRejectedByContract ? 'DetailItemRejectedByContract' : 'DetailItemNotFound';
             root.innerHTML = item
                 ? detailHtml(item)
-                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t('DetailItemNotFound'))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
+                : `<section class="card backbone-preview-section"><div class="wcn-detail-empty"><i class="bx bx-error-circle"></i><p>${esc(t(notFoundKey))}</p><a class="btn btn-label-secondary" href="${esc(listReturnUrl())}">${esc(t('DetailBackToList'))}</a></div></section>`;
             setupTimerTick();
             // Which arrow may act is derived from POSITION, after the list exists — the same rule, from the same
             // function, that the create form uses. A first row's ↑ and a last row's ↓ are disabled, and a
@@ -6736,8 +6899,8 @@
         const workspace = workspaceToolbar
             + `<div class="wcn-layout-wrap">${mainPanel}${sidePanel}</div>`;
 
-        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildDelegationBanner() + buildTabs()
-            + buildFilterRow() + workspace;
+        root.innerHTML = buildHeader() + buildPartialBoardBanner() + buildContractRejectedNote() + buildDelegationBanner()
+            + buildTabs() + buildFilterRow() + workspace;
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
@@ -6827,18 +6990,6 @@
             // Triage-inbox admission — take on a directly-assigned item; it moves
             // from the Inbox to İşlerim but stays at its current lifecycle stage.
             case 'accept':
-                if (item.itemType === 'meetingInvite') {
-                    item.dismissed = true;
-                    state.meetings.push({
-                        id: item.sourceId,
-                        title: item.title,
-                        start: item.meetingStart || '09:00',
-                        end: item.meetingEnd || '10:00',
-                        location: item.meetingLocation || '—',
-                        owner: item.requester
-                    });
-                    return 'removed';
-                }
                 item.accepted = true;
                 item.admissionState = 'admitted';
                 item.ownershipState = 'owned';
@@ -7051,9 +7202,12 @@
          *
          * This map's own comment names the lesson it then failed: a value that lives in two places and is
          * declared in neither drifts. `null` was not even in two places; it was in one, and declared as a fact.
+         *
+         * Faz 2a-rest — `closureFieldValues` rides beside them, `undefined` (never sent) for the nine actions
+         * that never collect one. `complete` is the only caller that ever supplies it.
          */
-        __default: ({ expectedVersion, reason, outcomeCode }) =>
-            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null })
+        __default: ({ expectedVersion, reason, outcomeCode, closureFieldValues }) =>
+            ({ expectedVersion, reasonCode: outcomeCode || null, note: reason || null, closureFieldValues })
     };
 
     /*
@@ -7074,6 +7228,96 @@
         if (!slot) { return []; }
         const offered = item && item.taskType && item.taskType[slot];
         return Array.isArray(offered) ? offered : [];
+    };
+
+    /*
+     * ── CLOSURE-STAGE FIELDS (Faz 2a-rest, MOD-0024 Task Closure & Reporting) ───────────────────────────────
+     *
+     * `GET /field-definitions` answers ONE catalogue to both the create form and this window — there is no
+     * second endpoint — so the applicability rule below is the SAME two clauses Tasks/form-page.js's own
+     * `applicableDefinitions` already enforces (live, active, claimed by no OTHER module), with the stage test
+     * flipped. It is written again HERE rather than shared because this page never loads form-page.js — that
+     * script also boots a create-form page nobody asked for (a `DOMContentLoaded` listener, a task-type fetch,
+     * reads of `#taskForm`) — but the TWO CLAUSES are asserted identical to form-page.js's own, by source, in
+     * `tasks-closure-fields-wcn.test.js`: a change to one without the other fails there, not in review.
+     *
+     * ⚠ MUST MIRROR `TASK_MODULE_CODE` in Tasks/form-page.js. Not imported (same reason), asserted equal by
+     * the same test.
+     */
+    const TASK_MODULE_CODE = 'tasks';
+    const closureFieldDefinitionsFor = (rows) => (rows || []).filter((definition) =>
+        definition
+        && definition.isActive !== false
+        && definition.stage === 'Closure'
+        && (!definition.appliesToModuleCode || definition.appliesToModuleCode === TASK_MODULE_CODE));
+
+    /**
+     * The full catalogue, asked fresh each time the complete dialog opens — a small, tenant-wide list, and the
+     * same freshness the create form gets on every one of ITS page loads. Never cached: an administrator who
+     * just added a required field should not have the OLD catalogue govern the very next completion.
+     */
+    const fetchClosureFieldDefinitions = async () => {
+        // Defensive, not load-bearing in production: every real host loads Tasks/api.js (app.js already leans
+        // on it elsewhere — attachmentContentUrl, assignablePeople). A minimal double that omits this method
+        // must degrade to "this type asks nothing", not throw.
+        if (typeof global.TasksApi?.fieldDefinitions !== 'function') { return []; }
+        const result = await global.TasksApi.fieldDefinitions();
+        return result.ok && Array.isArray(result.data) ? closureFieldDefinitionsFor(result.data) : [];
+    };
+
+    /*
+     * Resolve every option-driven closure field's list BEFORE rendering — the exact rule
+     * Tasks/form-page.js's `loadCustomFieldOptions` already follows for the create form, repeated here for the
+     * same "this page does not load that script" reason `closureFieldDefinitionsFor` gives.
+     */
+    const loadClosureFieldOptions = async (definitions) => {
+        const byCode = {};
+
+        const personLabels = { nameUnavailable: t('PersonNameUnavailable') };
+        let personOptions = null; // fetched at most once, and only if a Person field is actually present
+
+        await Promise.all(definitions.map(async (definition) => {
+            const kind = global.TaskForm.customFieldControlKind(definition);
+            if (kind === 'person') {
+                if (!personOptions) {
+                    // `data` IS the array — TasksApi.assignablePeople unwraps `{ people, excluded }` internally
+                    // (BL-113); a caller that re-unwraps it is the exact defect that once took the whole page
+                    // down on `people.map is not a function`.
+                    const people = await global.TasksApi.assignablePeople();
+                    personOptions = (people.ok ? people.data : []).map((row) => ({
+                        value: row.userId || row.id,
+                        label: global.TaskForm.formatPersonLabel(row, personLabels.nameUnavailable)
+                    }));
+                }
+                byCode[definition.code] = personOptions;
+                return;
+            }
+            if (kind !== 'select' && kind !== 'record') { return; }
+
+            const result = kind === 'record'
+                ? await global.TasksApi.fieldRecords(definition.code)
+                : await global.TasksApi.fieldOptions(definition.code);
+
+            if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+                byCode[definition.code] = result.data;
+                return;
+            }
+            global.console?.warn?.(
+                `[WorkCenterNext] options for closure field "${definition.code}" could not be resolved `
+                + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        }));
+
+        return byCode;
+    };
+
+    /** The server search a record-backed closure field runs — the same call form-page.js's own picker makes. */
+    const searchClosureFieldRecords = async (code, term) => {
+        const result = await global.TasksApi.fieldRecords(code, { term });
+        if (result.ok) { return result.data || []; }
+        global.console?.warn?.(
+            `[WorkCenterNext] searching records for closure field "${code}" failed `
+            + `(status ${result.status}${result.reasonCode ? `, ${result.reasonCode}` : ''}).`);
+        return [];
     };
 
     /** One outcome's words: a system outcome through the resource table, a tenant outcome as typed. */
@@ -7101,7 +7345,8 @@
     const buildTransitionBody = (actionCode, parts) =>
         (TRANSITION_BODIES[actionCode] || TRANSITION_BODIES.__default)(parts);
 
-    const submitRealTransition = async (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const submitRealTransition = async (
+        item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         const label = actionLabel(action);
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
@@ -7123,7 +7368,8 @@
             action.code,
             item.source?.providerCode,
             buildTransitionBody(
-                action.code, { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode }));
+                action.code,
+                { expectedVersion, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues }));
 
         state.submittingItemId = null;
         state.submittingActionCode = null;
@@ -7207,6 +7453,19 @@
             return;
         }
 
+        /*
+         * BL-400 (WP-PSS-MOD0024-FOLLOWUPS-02) — existing @mentions arrive PRE-FILLED, and a newly added one is
+         * sent alongside the text. Backend rule (already built and tested): the update carries the FULL
+         * replacement set, and the server notifies only whoever is NEW in it.
+         *
+         * The tray and its "@" trigger are built here, inside the shared confirm's own popup (`input.onOpen`),
+         * reusing `pickMentionAsync` — the SAME picker the compose box uses — rather than a second copy (the
+         * WP's own instruction). Local state, not `commentMentionState`: that map is the COMPOSE box's draft,
+         * and a task can have a comment being edited while an unrelated new comment is half-typed above it.
+         */
+        let mentions = (entry.mentioned || []).map((m) => ({ id: m.id, displayName: m.displayName }));
+        const originalMentionIds = mentions.map((m) => m.id).slice().sort();
+
         // The shared confirm's TEXTAREA, seeded with what the comment says now — an edit box that starts empty
         // asks the author to retype a sentence they only wanted to fix.
         sharedConfirm({
@@ -7216,13 +7475,60 @@
                 label: t('CommentEditLabel'),
                 placeholder: entry.text || '',
                 value: entry.text || '',
-                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid'))
+                validate: (value) => (String(value || '').trim() ? null : t('ErrorCommentTextInvalid')),
+                onOpen: (box, popup) => {
+                    if (!box || !popup) { return; }
+
+                    const tray = document.createElement('div');
+                    tray.className = 'wcn-mention-chips';
+                    box.insertAdjacentElement('afterend', tray);
+
+                    const addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-outline-secondary wcn-composer-mention mt-2';
+                    addBtn.setAttribute('aria-label', t('MentionAdd'));
+                    addBtn.title = t('MentionAdd');
+                    addBtn.innerHTML = '<i class="bx bx-at" aria-hidden="true"></i>';
+                    tray.insertAdjacentElement('afterend', addBtn);
+
+                    const renderTray = () => {
+                        tray.innerHTML = mentions.map((m) => `<span class="wcn-mention-chip">`
+                            + `<i class="bx bx-at" aria-hidden="true"></i>${esc(m.displayName)}`
+                            + `<button type="button" class="wcn-mention-chip-remove" data-wcn-edit-mention-remove="${esc(m.id)}" `
+                            + `aria-label="${esc(t('MentionRemove'))}" title="${esc(t('MentionRemove'))}">`
+                            + `<i class="bx bx-x" aria-hidden="true"></i></button></span>`).join('');
+                    };
+                    renderTray();
+
+                    tray.addEventListener('click', (event) => {
+                        const removeEl = event.target.closest('[data-wcn-edit-mention-remove]');
+                        if (!removeEl) { return; }
+                        const id = removeEl.getAttribute('data-wcn-edit-mention-remove');
+                        mentions = mentions.filter((m) => String(m.id) !== String(id));
+                        renderTray();
+                    });
+
+                    addBtn.addEventListener('click', async () => {
+                        if (mentions.length >= COMMENT_MAX_MENTIONS) {
+                            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+                            return;
+                        }
+                        const chosen = await pickMentionAsync(taskId, mentions.map((m) => m.id));
+                        if (!chosen) { return; }
+                        mentions = [...mentions, { id: chosen.id, displayName: chosen.displayName }];
+                        renderTray();
+                    });
+                }
             },
             onConfirm: async (value) => {
                 const text = String(value || '').trim();
-                if (!text || text === entry.text) { return; }
+                const mentionedUserIds = mentions.map((m) => m.id);
+                const mentionsChanged = JSON.stringify(mentionedUserIds.slice().sort())
+                    !== JSON.stringify(originalMentionIds);
+                if (!text || (text === entry.text && !mentionsChanged)) { return; }
                 await afterPhase2Write(
-                    await global.TasksApi.updateComment(taskId, commentId, { text }), 'ToastCommentEdited');
+                    await global.TasksApi.updateComment(taskId, commentId, { text, mentionedUserIds }),
+                    'ToastCommentEdited');
             }
         });
     };
@@ -7567,6 +7873,7 @@
         if (value.length > COMMENT_MAX_LENGTH) { toast(tf('CommentTooLong', COMMENT_MAX_LENGTH), 'error'); return; }
 
         const item = itemById(taskId);
+        const mentionedUserIds = (commentMentionState.get(taskId) || []).map((m) => m.id);
         if (!isDispatchableItem(item)) {
             /*
              * Showcase items have no engine behind them, so a comment on one is a demonstration and stays local.
@@ -7577,19 +7884,104 @@
                 item.activity.unshift({
                     actor: data.currentUser.name, kind: 'comment', text: value, atMs: data.referenceDate(item.provenance)
                 });
+                commentMentionState.delete(taskId);
                 render();
                 toast(t('ToastCommentPosted'));
             }
             return;
         }
 
-        const result = await global.TasksApi.addComment(taskId, { text: value });
+        const result = await global.TasksApi.addComment(
+            taskId, mentionedUserIds.length ? { text: value, mentionedUserIds } : { text: value });
         // A DIFFERENT key from the fixture branch above: this comment really was posted to the engine, and
         // 'ToastCommentPosted' says "(mock)" in all seven languages — correct for the local-only path, a lie
         // here.
         if (await afterPhase2Write(result, 'ToastCommentPostedReal')) {
             consumeEntryBox('data-wcn-comment-input');
+            // Cleared only on SUCCESS: a refused mention (K2/K4) must leave the draft chips exactly where the
+            // author left them, or the correction they need to make (drop one name, add a watcher first) is
+            // undone by the very refusal that asked for it.
+            commentMentionState.delete(taskId);
         }
+    };
+
+    /*
+     * WP-PSS-MOD0024-TASK-MENTIONS-01/FOLLOWUPS-02 — the @mention picker, ONE implementation for both the new
+     * comment composer and the edit dialog (BL-400 — do not write a second picker copy).
+     *
+     * Goes through `sharedConfirm`, NOT a raw `Swal.fire` — this screen already guards the exact count of raw
+     * dialogs it allows (`wcn-dialog-*` test files), because each one it does not is a chance to re-diverge in
+     * appearance from the rest of the product. One person per confirm; the trigger (button or "@") can be used
+     * again to add another, up to the cap — a repeatable single-select stays inside the shared component's
+     * existing `input: { type: 'select' }` shape rather than asking it to grow a multi-select nobody else needs.
+     *
+     * Returns the CHOSEN candidate (`{id, displayName}`) or `null` on cancel/nothing-to-offer — the caller (the
+     * composer or the edit dialog) decides what to do with it; this function knows nothing about either.
+     */
+    const pickMentionAsync = async (taskId, alreadyMentionedIds) => {
+        const res = await global.TasksApi.mentionCandidates(taskId, '');
+        const candidates = res.ok ? (res.data || []) : [];
+        if (!candidates.length) { toast(t('MentionNoCandidates'), 'info'); return null; }
+
+        const already = new Set((alreadyMentionedIds || []).map(String));
+        const offered = candidates.filter((c) => !already.has(String(c.id)));
+        if (!offered.length) { toast(t('MentionAllAlreadyAdded'), 'info'); return null; }
+
+        const options = {};
+        offered.forEach((c) => { options[c.id] = c.displayName; });
+
+        return new Promise((resolve) => {
+            sharedConfirm({
+                title: t('MentionPickerTitle'),
+                confirmText: t('MentionAddConfirm'),
+                input: {
+                    type: 'select',
+                    options,
+                    label: t('MentionPickerTitle'),
+                    placeholder: t('MentionNoneChosen'),
+                    validate: (value) => (value ? null : t('MentionNoneChosen')),
+                    onOpen: (box, popup) => { bindDialogSelect2(box, popup); }
+                },
+                onConfirm: (value) => {
+                    const chosen = offered.find((c) => String(c.id) === String(value));
+                    resolve(chosen || null);
+                },
+                onCancel: () => resolve(null)
+            });
+        });
+    };
+
+    /** The compose-box trigger: adds to the DRAFT tray beside the "+ Yeni" composer. */
+    const openMentionPicker = async (taskId) => {
+        const item = itemById(taskId);
+        if (!item || !isDispatchableItem(item)) { return; }
+
+        // The "@" that triggered this (if any) already did its job by opening the picker; it does not belong
+        // in the text too — the chip tray is where a mention lives on screen from here on.
+        const inp = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (inp && inp.value.endsWith('@')) { inp.value = inp.value.slice(0, -1); }
+
+        const existing = commentMentionState.get(taskId) || [];
+        if (existing.length >= COMMENT_MAX_MENTIONS) {
+            toast(tf('MentionLimitExceededClient', COMMENT_MAX_MENTIONS), 'error');
+            return;
+        }
+
+        const chosen = await pickMentionAsync(taskId, existing.map((m) => m.id));
+        if (!chosen) { return; }
+
+        commentMentionState.set(taskId, [...existing, { id: chosen.id, displayName: chosen.displayName }]);
+        render();
+        const refocus = document.querySelector('#wcnApp [data-wcn-comment-input]');
+        if (refocus) { refocus.focus(); }
+    };
+
+    /// Drops one draft mention chip. Never touches the server — the mention is not yet part of any posted
+    /// comment, so there is nothing for the engine to be told.
+    const removeMention = (taskId, userId) => {
+        const existing = commentMentionState.get(taskId) || [];
+        commentMentionState.set(taskId, existing.filter((m) => String(m.id) !== String(userId)));
+        render();
     };
 
     const addSubtask = async (parentId, title) => {
@@ -7667,9 +8059,10 @@
         }
     };
 
-    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode) => {
+    const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode);
+            submitRealTransition(
+                item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
             return;
         }
 
@@ -7879,6 +8272,14 @@
         }
         confirm(options.title, options.onConfirm, {
             /*
+             * WP-PSS-MOD0024-FOLLOWUPS-02 — passed straight through. `window.showConfirm` already supports a
+             * dismiss callback (`_GlobalConfirmation.cshtml`'s `Swal.fire(...).then`), but this wrapper never
+             * forwarded it, so no caller here could tell a cancel apart from doing nothing. A caller that needs
+             * to know (the @mention picker, reused for both compose and edit) can now ask for it without a
+             * second dialog implementation.
+             */
+            onCancel: options.onCancel,
+            /*
              * HTML, deliberately: the outcome sentence in front of a confirm is markup the caller already built,
              * and the wrapper renders `subtext` as HTML for exactly this.
              *
@@ -7987,9 +8388,12 @@
         });
     };
 
-    // Review meeting is a collaboration command, not a lifecycle transition. The
-    // mock applies an explicit replacement projection after Calendar returns.
-    const applyReviewMeeting = (item, whenStr, label) => {
+    /*
+     * MOD-0357 S4 — review meeting is a collaboration command, not a lifecycle transition. A SHOWCASE fixture
+     * has no backing record anywhere (WC-D2's own rule, above), so it keeps the local demonstration this action
+     * always drew: an explicit replacement projection, applied here and nowhere else.
+     */
+    const applyReviewMeetingFixture = (item, whenStr, label) => {
         const [date, time] = String(whenStr).split(' ');
         const startTime = time || '09:00';
         const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
@@ -8024,15 +8428,64 @@
         toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
     };
 
-    const openMeetingScheduler = (item, action) => {
-        const label = actionLabel(action);
-        if (!global.Swal) { applyReviewMeeting(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-        // Same journey as the plan dialog above, and for the same reason: one value, so one confirmation.
+    // BL-… precedent (Platform/Workflow/workflow.api.js) — the caller-supplied idempotency key this bridge's own
+    // K11 needs; MeetingsController never derives one for THIS endpoint the way meeting create derives its own.
+    const newIdempotencyKey = () => {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') { return crypto.randomUUID(); }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            const v = c === 'x' ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+        });
+    };
+
+    /*
+     * A REAL task: posts to MOD-0357's own bridge endpoint (K3) and re-reads the projection, exactly the
+     * `submitRealTransition` shape above — nothing applied optimistically, the refreshed projection is the only
+     * source of the new state, and it is the projection that drops `scheduleReviewMeeting` once the write lands
+     * (TaskWorkItemProvider, S4).
+     */
+    const submitReviewMeeting = async (item, meetingTypeId, whenStr) => {
+        const [date, time] = String(whenStr).split(' ');
+        const startTime = time || '09:00';
+        const endHour = String(Math.min(23, parseInt(startTime, 10) + 1)).padStart(2, '0');
+        const endMinute = startTime.slice(3) || '00';
+
+        state.submittingItemId = item.id;
+        state.submittingActionCode = 'scheduleReviewMeeting';
+        render();
+
+        const result = await global.MeetingsApi.scheduleReviewMeetingForTask(item.id, {
+            meetingTypeId,
+            startAt: `${date}T${startTime}:00`,
+            endAt: `${date}T${endHour}:${endMinute}:00`,
+            title: null,
+            idempotencyKey: newIdempotencyKey()
+        });
+
+        state.submittingItemId = null;
+        state.submittingActionCode = null;
+
+        if (!result.ok) {
+            render();
+            toast(global.MeetingsApi.failureMessage(result), 'error');
+            return;
+        }
+
+        await loadWorkItems();
+        render();
+        toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+    };
+
+    // The date/time step, shared by both the fixture path and the real one — only what happens ON CONFIRM
+    // differs, via `onWhenChosen`. `subtextText` arrives ALREADY resolved — each caller reads its own key by a
+    // literal `t(...)` call, which is what the l10n guard (wcn-dialog-seven-defects.test.js) scans app.js for.
+    const openMeetingDateTimePicker = (item, action, label, subtextText, onWhenChosen) => {
         const seed = item.dueAt || data.todayIso;
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
-            subtext: esc(t('MeetingWhenSubtext')),
+            subtext: esc(subtextText),
             icon: inboxActionIcon(action),
             confirmText: t('PlanConfirm'),
             input: {
@@ -8051,7 +8504,51 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (value) { applyReviewMeeting(item, String(value).replace('T', ' '), label); }
+                if (value) { onWhenChosen(String(value).replace('T', ' ')); }
+            }
+        });
+    };
+
+    const openMeetingScheduler = async (item, action) => {
+        const label = actionLabel(action);
+
+        if (isFixtureShowcase(item)) {
+            if (!global.showConfirm) { applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
+            openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
+                (whenStr) => applyReviewMeetingFixture(item, whenStr, label));
+            return;
+        }
+
+        // A REAL task needs a REAL meeting type — the receiving side's own CreateMeetingRequest requires one
+        // (pack §7); there is no per-type default to fall back to here the way the meeting→task direction has.
+        const typesResult = await global.MeetingsApi.lookupTypes();
+        if (!typesResult.ok) {
+            toast(global.MeetingsApi.failureMessage(typesResult), 'error');
+            return;
+        }
+        const types = Array.isArray(typesResult.data) ? typesResult.data : [];
+        if (types.length === 0) {
+            toast(t('MeetingNoTypesAvailable'), 'error');
+            return;
+        }
+        const typeOptions = {};
+        types.forEach((type) => { typeOptions[type.id] = type.name; });
+
+        sharedConfirm({
+            title: label,
+            subtext: esc(t('MeetingTypeSubtext')),
+            icon: inboxActionIcon(action),
+            confirmText: t('PlanConfirm'),
+            input: {
+                type: 'select',
+                label: t('MeetingTypeLabel'),
+                options: typeOptions,
+                validate: (value) => (value ? null : t('MeetingTypeLabel'))
+            },
+            onConfirm: (meetingTypeId) => {
+                if (!meetingTypeId) { return; }
+                openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
+                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr));
             }
         });
     };
@@ -8381,7 +8878,10 @@
 
     const uploadAttachment = async (taskId, payload) => {
         const result = await global.TasksApi.addAttachment(taskId, payload);
-        await afterPhase2Write(result, 'ToastAttachmentAdded');
+        // Returned so a caller that must NOT proceed on failure (the Complete window's own upload-then-transition
+        // sequence, WP-PSS-MOD0024-ATTACHMENTS-UX-01) can tell. Every EARLIER caller ignored the return value, so
+        // this is additive.
+        return afterPhase2Write(result, 'ToastAttachmentAdded');
     };
 
     const removeAttachmentRow = async (taskId, attachmentId) => {
@@ -8711,8 +9211,36 @@
          * product declares.
          */
         const closureOutcomes = closureOutcomesFor(item, action);
-        if (closureOutcomes.length) {
+        /*
+         * Faz 2a-rest — fetched ONLY for `complete` (the pack's own boundary: the cancel window never offers
+         * these fields), and only a catalogue read — nothing is asked of the server until the dialog confirms.
+         * An empty result (no closure field configured, the state every type is in before this slice and every
+         * type nobody has touched since) falls straight through to the SAME branches below, byte for byte.
+         */
+        const closureFields = action.code === 'complete' ? await fetchClosureFieldDefinitions() : [];
+        /*
+         * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — "Çıktı / Kanıt ekle", in the SAME raw dialog (BL-146 exception:
+         * `sharedConfirm` supports a textarea and nothing else, so a file input needs this route regardless of
+         * whether the type has closure outcomes or fields). NEVER for `cancel` — calling work off asks for
+         * nothing to attach.
+         */
+        const canAttachOnComplete = action.code === 'complete' && isDispatchableItem(item);
+        const existingAttachments = Array.isArray(item.attachments?.items) ? item.attachments.items : [];
+        const deliverableRequired = canAttachOnComplete
+            && !!item.taskType?.requiresDeliverableOnCompletion
+            && !existingAttachments.some((a) => a.kind === 'Deliverable');
+        if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
             if (!global.Swal) { return; }
+
+            /*
+             * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
+             * here because this branch now answers for EVERY complete on a dispatchable item, not only the ones
+             * with a closure outcome or field configured, and this dialog replaces that one for those calls.
+             */
+            const stillOpen = action.code === 'complete' ? openRequiredItems(item) : [];
+            const requiredWarning = stillOpen.length
+                ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
+                : '';
 
             const outcomeOptions = closureOutcomes
                 .map((outcome) => `<option value="${esc(outcome.code)}">${esc(outcomeText(outcome))}</option>`)
@@ -8728,18 +9256,56 @@
                 return chosen && chosen.requiresReason ? t('ClosureReasonLabelRequired') : t('ClosureReasonLabel');
             };
 
-            global.Swal.fire(Object.assign({
-                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
-                    + '<span>' + esc(actionLabel(action)) + '</span>',
-                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
-                    + `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
+            /*
+             * Faz 2a-rest — the outcome select/reason box are drawn ONLY when the type actually has outcomes;
+             * the fields container is drawn ONLY when it has closure fields. A type with just one of the two
+             * gets just that one half, never an empty control for the other.
+             */
+            const outcomeBlock = closureOutcomes.length
+                ? `<label class="form-label d-block text-start" for="wcnClosureOutcome">`
                     + `${esc(t('ClosureOutcomeLabel'))}</label>`
                     + `<select id="wcnClosureOutcome" class="form-select">`
                     + `<option value="">${esc(t('ClosureOutcomePlaceholder'))}</option>${outcomeOptions}</select>`
                     + `<label class="form-label d-block text-start" id="wcnClosureReasonLabel" `
                     + `for="wcnClosureReason">${esc(labelFor(''))}</label>`
                     + `<textarea id="wcnClosureReason" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`,
+                    + `placeholder="${esc(t('ClosureReasonPlaceholder'))}"></textarea>`
+                : '';
+            // The REAL renderer's own row markup lands inside this row on open — see didOpen below.
+            const fieldsBlock = closureFields.length
+                ? `<div class="row g-3 text-start" id="wcnClosureFieldsRow"></div>`
+                : '';
+
+            /*
+             * "Çıktı / Kanıt ekle" — a file plus its kind, Deliverable by default (this is the CLOSING act; a
+             * plain "Attachment" reads as instructions, which is the create form's own affordance, not this
+             * one). The label itself says "required" when the type's flag has nothing to point at yet, so the
+             * requirement is read before it can be missed rather than discovered from a refusal after confirm.
+             */
+            const attachmentBlock = canAttachOnComplete
+                ? `<label class="form-label d-block text-start" for="wcnCompleteAttachFile">`
+                    + `${esc(t(deliverableRequired ? 'CompleteAttachFileRequiredLabel' : 'CompleteAttachFileLabel'))}</label>`
+                    + `<input type="file" id="wcnCompleteAttachFile" class="form-control">`
+                    + `<label class="form-label d-block text-start" for="wcnCompleteAttachKind">`
+                    + `${esc(t('AttachmentKindLabel'))}</label>`
+                    + `<select id="wcnCompleteAttachKind" class="form-select">`
+                    + `<option value="Deliverable" selected>${esc(attachmentKindLabel('Deliverable'))}</option>`
+                    + `<option value="Evidence">${esc(attachmentKindLabel('Evidence'))}</option>`
+                    + `</select>`
+                : '';
+
+            // Resolved BEFORE the dialog opens: `renderCustomFields` either offers an option-driven field
+            // complete or not at all, and there is no later moment to hand it a list that was still in flight.
+            const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
+
+            global.Swal.fire(Object.assign({
+                title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
+                    + '<span>' + esc(actionLabel(action)) + '</span>',
+                html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + requiredWarning
+                    + outcomeBlock
+                    + fieldsBlock
+                    + attachmentBlock,
                 showCancelButton: true,
                 confirmButtonText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
                 cancelButtonText: t('DialogDismiss'),
@@ -8758,10 +9324,34 @@
                             if (label) { label.textContent = labelFor(picker.value); }
                         });
                     }
+
+                    // Faz 2a-rest — the SAME renderer the create form uses, reached through the SAME shared
+                    // script (Tasks/form.js, already loaded by this view). Never a second one (YAPMA).
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    if (fieldsRow && closureFields.length) {
+                        /*
+                         * ⚠ `TasksL10n.t`, NOT this dialog's OWN `t`. These four are the create form's OWN
+                         * vocabulary for the SAME renderer — already loaded here (`Tasks/index.l10n.js`, before
+                         * `Tasks/api.js`, in both Index.cshtml and Details.cshtml) — and duplicating them into
+                         * WorkCenterNextIndex's resx would be a second place for one translation to live.
+                         */
+                        const formT = (key) => global.TasksL10n?.t?.(key) ?? key;
+                        global.TaskForm.renderCustomFields(fieldsRow, closureFields, closureFieldOptions, {
+                            optionPlaceholder: formT('customFieldOptionPlaceholder'),
+                            booleanYes: formT('customFieldBooleanYes'),
+                            booleanNo: formT('customFieldBooleanNo'),
+                            recordSearchPlaceholder: formT('customFieldRecordSearchPlaceholder'),
+                            // Labels a TENANT typed, and labels the type's own closure-outcome dictionary
+                            // already resolves through THIS dialog's `t` — a resource-keyed field label is the
+                            // one case needing a translator, and it is WCN's own strings it would ever name.
+                            translate: t
+                        });
+                        global.TaskForm.enhanceSelects?.(fieldsRow, { searchRecords: searchClosureFieldRecords });
+                    }
                 },
                 preConfirm: () => {
                     const outcomeCode = String(document.getElementById('wcnClosureOutcome')?.value || '').trim();
-                    if (!outcomeCode) {
+                    if (closureOutcomes.length && !outcomeCode) {
                         global.Swal.showValidationMessage(t('ClosureOutcomeRequired'));
                         return false;
                     }
@@ -8781,12 +9371,64 @@
                         return false;
                     }
 
-                    return { outcomeCode, reason };
+                    /*
+                     * Faz 2a-rest — the SAME COURTESY for closure fields: the server enforces
+                     * TASK_CLOSURE_FIELD_REQUIRED independently (a client can always reach the dispatch route
+                     * without this dialog), so a client-side miss here costs nothing but a round trip.
+                     */
+                    const fieldsRow = document.getElementById('wcnClosureFieldsRow');
+                    let closureFieldValues;
+                    if (fieldsRow && closureFields.length) {
+                        const values = global.TaskForm.readCustomFieldValues(fieldsRow, closureFields);
+                        const { valid, errors } = global.TaskForm.validateCustomFields(closureFields, values);
+                        if (!valid) {
+                            global.Swal.showValidationMessage(t('ClosureFieldRequired'));
+                            const missing = closureFields.find((definition) => errors.includes(definition.code));
+                            if (missing) {
+                                document.querySelector(`[data-custom-field="${missing.code}"]`)?.focus?.();
+                            }
+                            return false;
+                        }
+                        closureFieldValues = values.map((value) => ({
+                            definitionCode: value.definitionCode, valueType: value.valueType, value: value.value
+                        }));
+                    }
+
+                    /*
+                     * The client-side half of the SAME gate `TransitionTaskItemHandler` enforces
+                     * (TASK_DELIVERABLE_REQUIRED): a courtesy, not the rule — the engine refuses the write on its
+                     * own if this dialog is ever bypassed.
+                     */
+                    let attachment = null;
+                    if (canAttachOnComplete) {
+                        const file = document.getElementById('wcnCompleteAttachFile')?.files?.[0] || null;
+                        if (deliverableRequired && !file) {
+                            global.Swal.showValidationMessage(t('CompleteAttachFileRequired'));
+                            return false;
+                        }
+                        if (file) {
+                            attachment = { file, kind: document.getElementById('wcnCompleteAttachKind')?.value || 'Deliverable' };
+                        }
+                    }
+
+                    return { outcomeCode, reason, closureFieldValues, attachment };
                 }
-            }, dialogLook())).then((res) => {
-                if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, undefined, undefined, res.value.outcomeCode);
+            }, dialogLook())).then(async (res) => {
+                if (!res.isConfirmed || !res.value) { return; }
+                /*
+                 * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
+                 * upload must not complete the task: the reader asked for both, and completing anyway would
+                 * silently drop the half that failed. `uploadAttachment` is the SAME call the paperclip on the
+                 * detail page and its own dialog use (YAPMA: never a second upload path) — it already shows its
+                 * own toast and refreshes the board, so a failure here has already been reported to the reader.
+                 */
+                if (res.value.attachment) {
+                    const uploaded = await uploadAttachment(item.id, res.value.attachment);
+                    if (!uploaded) { return; }
                 }
+                applyAction(
+                    item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
+                    res.value.closureFieldValues);
             });
             return;
         }
@@ -8985,6 +9627,21 @@
             event.preventDefault();
             const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
             if (post) { await postComment(post.getAttribute('data-wcn-comment-post'), event.target.value); }
+            return;
+        }
+        /*
+         * WP-PSS-MOD0024-TASK-MENTIONS-01 — typing "@" is a SHORTCUT into the same picker the toolbar button
+         * opens, not an inline-text autocomplete. The character is removed from the box the moment the picker
+         * opens: the chip tray is where a mention lives on screen, and a bare "@" left sitting in the text would
+         * be a leftover from a control that already did its job.
+         */
+        if (event.key === '@' && event.target.matches && event.target.matches('[data-wcn-comment-input]')) {
+            const post = document.querySelector('#wcnApp [data-wcn-comment-post]');
+            const taskId = post && post.getAttribute('data-wcn-comment-post');
+            if (taskId) {
+                event.preventDefault();
+                await openMentionPicker(taskId);
+            }
             return;
         }
         if (event.key === 'Enter' && event.target.matches && event.target.matches('[data-diten-check-input]')) {
@@ -9209,7 +9866,8 @@
         const newEl = event.target.closest('[data-wcn-new]');
         if (newEl) {
             const kind = newEl.getAttribute('data-wcn-new');
-            if (kind === 'task') { openSelfTask(); }
+            // The entry is not rendered without the key; this refuses a stale menu the same way (UAS-001 §6).
+            if (kind === 'task') { if (canCreateSelfTask()) { openSelfTask(); } }
             else if (kind === 'source') { openCreateInSource(); }
             return;
         }
@@ -9521,6 +10179,18 @@
                 commentWithdrawEl.getAttribute('data-wcn-comment-withdraw'));
             return;
         }
+        const mentionAddEl = event.target.closest('[data-wcn-mention-add]');
+        if (mentionAddEl) {
+            await openMentionPicker(mentionAddEl.getAttribute('data-wcn-mention-add'));
+            return;
+        }
+        const mentionRemoveEl = event.target.closest('[data-wcn-mention-remove]');
+        if (mentionRemoveEl) {
+            removeMention(
+                mentionRemoveEl.getAttribute('data-wcn-mention-task'),
+                mentionRemoveEl.getAttribute('data-wcn-mention-remove'));
+            return;
+        }
         const commentEl = event.target.closest('[data-wcn-comment-post]');
         if (commentEl) {
             const inp = document.querySelector('#wcnApp [data-wcn-comment-input]');
@@ -9738,6 +10408,31 @@
      */
     let loadGeneration = 0;
 
+    /*
+     * BL-414 — the id the detail page was opened for, or '' on the list page. Read from the same server-rendered
+     * attribute (Details.cshtml) renderUnsafe resolves its item by.
+     */
+    const requestedDetailId = () => {
+        const root = document.getElementById('wcnApp');
+        return root && root.dataset.wcnPage === 'detail' ? (root.dataset.wcnItemId || '') : '';
+    };
+
+    /*
+     * BL-414 — the ONE item the detail page was opened for, when the list just read does not hold it.
+     *
+     * Null when there is nothing to ask (the list page; an item already on the list; an id the contract already
+     * rejected from the list, whose BL-379 sentence is the more specific one) and null when the server has no
+     * item for this reader. The server answers a missing and an unreadable task with the same 404, so both leave
+     * the page's not-found answer exactly as it was.
+     */
+    const readDetailItemMissingFrom = async (api, result) => {
+        const id = requestedDetailId();
+        if (!id || result.items.some((item) => item.id === id)) { return null; }
+        if (Array.isArray(result.errors) && result.errors.some((error) => error.fixtureId === id)) { return null; }
+        const single = await api.fetchWorkItem(id);
+        return single.status === api.STATUS.OK ? single : null;
+    };
+
     const loadWorkItems = async () => {
         const generation = ++loadGeneration;
         const isStale = () => generation !== loadGeneration;
@@ -9790,12 +10485,45 @@
         // A newer read has been issued while this one was in flight: its answer is the current one, and this
         // answer describes a state that no longer exists. Drop it without touching the screen.
         if (isStale()) { return; }
+        /*
+         * BL-414 — THE DETAIL PAGE IS THE TASK'S RECORD VIEW, NOT A WINDOW ONTO MY LIST.
+         *
+         * MEASURED: this page resolved its item ONLY out of the list above, and that list holds the reader's own
+         * work (assigned, own-pool, opened). Every other reader the task read rule admits — a watcher, a mentioned
+         * person, a manager with scope, a read-all holder — got "not found" here while /Tasks/{id} opened for them.
+         * So did a manager opening a subordinate's task from Ekibim: this page boots without the list's URL state
+         * (boot skips hydrateStateFromUrl, openDetailPage carries no scope), so it always reads the SELF list.
+         *
+         * So when the list does not hold the requested id, the page asks the server for that ONE item. The fetched
+         * item joins state.items on THIS page only — the detail page draws no list, so no tab and no scope gains a
+         * row, and a write's re-read (which comes back through here) fetches it again.
+         */
+        const detailRead = result.status === api.STATUS.OK ? await readDetailItemMissingFrom(api, result) : null;
+        if (isStale()) { return; }
         if (result.status === api.STATUS.OK) {
-            state.items = result.items;
+            state.items = detailRead && detailRead.item ? result.items.concat([detailRead.item]) : result.items;
             // WC-D3 — a PARTIAL board is a success with rows on it, not an error state. The list is kept and the
             // gap is stated; collapsing this into loadError would throw away rows that did arrive, which is the
             // very failure the backend change stopped doing.
             state.unavailableSources = result.unavailableSources || [];
+            /*
+             * BL-379 — a board that silently drops contract-invalid items is the exact defect this closes. The
+             * validator (fixture-contract.js) is never loosened and a rejected item never joins state.items, but
+             * the drop can no longer be silent: every rejection is named on the console (fixtureId + code, so a
+             * specific row can be traced) and counted for a non-blocking on-screen note (buildContractRejectedNote).
+             */
+            // BL-414 — an item fetched by id that the contract refuses is reported on the SAME channel as a list row.
+            const rejected = (Array.isArray(result.errors) ? result.errors : [])
+                .concat((detailRead && detailRead.errors) || []);
+            if (rejected.length > 0) {
+                rejected.forEach((error) => {
+                    console.warn(
+                        `[WorkCenterNext] work item rejected by contract: fixtureId=${error.fixtureId} code=${error.code}`);
+                });
+                state.contractRejectedErrors = rejected;
+            } else {
+                state.contractRejectedErrors = [];
+            }
             // Triggers/meetings/notes have no provider yet — they stay empty until one lands (DEC-1).
             state.triggers = [];
             state.meetings = [];
@@ -9806,6 +10534,7 @@
             // Nothing arrived at all, so there is no partial board to qualify — the error state speaks for the
             // whole read. A stale banner from the previous load would be describing data that is no longer here.
             state.unavailableSources = [];
+            state.contractRejectedErrors = [];
             state.loadState = 'error';
             state.loadError = result.status; // forbidden | unauthorized | unavailable | error
         }
@@ -9822,14 +10551,16 @@
      */
     // `bootstrap` joins the list because the subtask quick-edit panel is an offcanvas: without it the row
     // click does nothing at all, which is the same silent failure as a missing TasksApi.
-    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap'];
+    // `MeetingsApi` joins it for the review-meeting scheduler (S10B live pass): a host view that forgot
+    // assets/js/Meetings/api.js left that dialog dead with no message at all.
+    const WRITE_DEPENDENCIES = ['TasksApi', 'TaskForm', 'bootstrap', 'MeetingsApi'];
 
     const reportMissingWriteDependencies = () => {
         const missing = WRITE_DEPENDENCIES.filter((name) => !global[name]);
         if (!missing.length) { return; }
         console.error(
             `[WorkCenterNext] Missing required script(s): ${missing.join(', ')}. Every write on this page will `
-            + 'fail silently. The host view must load assets/js/Tasks/api.js and assets/js/Tasks/form.js '
+            + 'fail silently. The host view must load assets/js/Tasks/api.js, assets/js/Tasks/form.js and assets/js/Meetings/api.js '
             + '(see Views/WorkCenterNext/Index.cshtml).');
     };
 

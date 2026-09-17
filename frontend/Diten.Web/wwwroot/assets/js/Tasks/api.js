@@ -72,6 +72,11 @@
         ORGANIZATION_UNIT_UNRESOLVED: 'errorOrganizationUnitUnresolved',
         TASK_ALREADY_CLAIMED: 'errorAlreadyClaimed',
         POSITION_NOT_ASSIGNABLE: 'errorPositionNotAssignable',
+        // BL-355 — an organization unit named directly in the request: does not exist in this tenant, or exists
+        // but is not the caller's to file into. Reached only by a client posting straight to the API; the create
+        // form never sends this field (pack §12 K6).
+        TASK_ORGANIZATION_UNIT_NOT_FOUND: 'errorOrganizationUnitNotFound',
+        TASK_ORGANIZATION_UNIT_OUT_OF_SCOPE: 'errorOrganizationUnitOutOfScope',
         // MOD-0024's own refusals.
         TASK_CONCURRENCY_CONFLICT: 'errorConcurrencyRefreshed',
         CHECKLIST_INCOMPLETE: 'errorChecklistIncomplete',
@@ -84,6 +89,13 @@
          * and "start it first" is exactly that.
          */
         TASK_INVALID_STATE: 'errorTaskInvalidState',
+        /*
+         * Faz 2a-rest — a CLOSURE-stage field marked Required was not supplied. Reached only when the closure
+         * window's own client-side check (ClosureFieldRequired, in WorkCenterNextIndex's own resx) is somehow
+         * skipped — a stale screen, the dispatch route hit directly — so the server's refusal still reads as a
+         * sentence rather than "an error occurred".
+         */
+        TASK_CLOSURE_FIELD_REQUIRED: 'errorClosureFieldRequired',
         // Commenting on a closed task, and a comment that is empty or over the length limit.
         TASK_COMMENT_TASK_CLOSED: 'errorCommentTaskClosed',
         TASK_COMMENT_TEXT_INVALID: 'errorCommentTextInvalid',
@@ -92,6 +104,10 @@
         // missing half of twice already.
         TASK_COMMENT_NOT_AUTHOR: 'errorCommentNotAuthor',
         TASK_COMMENT_WITHDRAWN: 'errorCommentWithdrawn',
+        // WP-PSS-MOD0024-TASK-MENTIONS-01 — mapped the moment the codes were written, not after somebody reads
+        // "İşlem sırasında bir hata oluştu" for a limit or a visibility rule they can actually act on.
+        TASK_MENTION_NOT_VISIBLE: 'errorMentionNotVisible',
+        TASK_MENTION_LIMIT_EXCEEDED: 'errorMentionLimitExceeded',
         /*
          * BL-351 — TASK_ASSIGNEE_NOT_ASSIGNABLE is NOT mapped here. It is the SAME server code for two
          * different refusals: the assignment guard (assign/reassign, mapped below beside its siblings) and
@@ -387,6 +403,15 @@
             });
         },
         decisionMakers: () => request('GET', '/decision-makers'),
+        /** MOD-0357 S4 — the "link an existing task" dialog's own search box. `data` is already the plain
+         * array (`TaskLinkCandidateDto[]`), never wrapped — unlike {@link assignablePeople} above. */
+        linkCandidates: (term, limit) => {
+            const params = new URLSearchParams();
+            if (term) { params.set('term', term); }
+            if (limit) { params.set('limit', String(limit)); }
+            const query = params.toString();
+            return request('GET', query ? `/link-candidates?${query}` : '/link-candidates');
+        },
         /*
          * BL-023 — is this person ABOVE me? Asked so the submit button can say what it will DO before it is
          * pressed. The server answers from the same reporting-chain scope it uses when it opens the request, so
@@ -408,17 +433,25 @@
         // and two people reordering at once interleave into an order neither of them chose.
         reorderChecklist: (taskId, payload) => request('PUT', `/${taskId}/checklist/order`, payload),
         // Comments are POST-only, deliberately: they are immutable, so there is no update or delete to call.
+        // `payload` may carry `mentionedUserIds` (WP-PSS-MOD0024-TASK-MENTIONS-01 K1-K4) alongside `text`.
         addComment: (taskId, payload) => request('POST', `/${taskId}/comments`, payload),
         /*
          * ⚠ THIS LINE USED TO SAY: "Comments are POST-only, deliberately: they are immutable, so there is no
          * update or delete to call." That decision is not gone, it is COMPLETED — the compromise it was waiting
          * for is the trail. An edit stamps `editedAt` and the feed shows it; a withdrawal is a TOMBSTONE that
          * clears the words and keeps the row. Only the author may call either; the server decides that.
+         *
+         * `payload.mentionedUserIds` is the FULL replacement set for this comment, not a delta — the server
+         * diffs it against what is already stored and only notifies whoever is newly named.
          */
         updateComment: (taskId, commentId, payload) =>
             request('PUT', `/${taskId}/comments/${encodeURIComponent(commentId)}`, payload),
         withdrawComment: (taskId, commentId) =>
             request('DELETE', `/${taskId}/comments/${encodeURIComponent(commentId)}`),
+        // Who the @ picker may offer for THIS task (K2) — assignee, pool, creator, watchers, parent holder.
+        // Never the whole tenant directory: an id this endpoint does not offer is refused server-side too.
+        mentionCandidates: (taskId, query) =>
+            request('GET', `/${taskId}/mention-candidates?q=${encodeURIComponent(query || '')}`),
 
         // ── The personal overlay (WC-1) ──────────────────────────────────────
         //

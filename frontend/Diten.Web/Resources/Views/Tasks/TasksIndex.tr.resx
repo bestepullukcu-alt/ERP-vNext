@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>Seçilen pozisyon görev alamaz. Aktif bir pozisyon seçin.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>Bu görevi başka biri sizden önce değiştirdi. Ekran güncel durumla yenilendi.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>Zorunlu bir kontrol listesi maddesi hâlâ işaretli değil, görev tamamlanamaz.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>Zorunlu bir kapanış alanı hâlâ boş, görev tamamlanamaz.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>Belirtilen organizasyon birimi bulunamadı.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>O organizasyon birimi kapsam dışında.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>Bu görevin bağlı olduğu bir görev henüz bitmedi, bu yüzden ilerleyemez.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>Bir alt görev hâlâ açık, bu yüzden bu görev henüz tamamlanamaz.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>Bu görev kapandı, artık yorum yazılamaz.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>İzleyiciler</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>Kontrol listesi</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>Bu görevin adımları. Maddeler görev açıldıktan sonra işaretlenir; engelleyici bir madde tamamlanmadan görev kapanmaz.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>Ekler</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>Bu göreve ait dosyalar — açarken gereken talimat, ya da hemen kaydedilecek kanıt ve çıktı. Görev oluşturulduktan sonra yüklenir.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>Dosya</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>Tür</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>Ek</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>Kanıt</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>Çıktı</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>Dosya ekle</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>Kaldır</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>Görev oluşturuldu — bazı dosyalar yüklenemedi</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>Görev oluşturuldu, ancak aşağıdaki dosyalar yüklenemedi. Görevin kendi Ekler kartından tekrar ekleyin:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>Göreve git</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>Madde yaz ve Enter'a bas</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>Ekle</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>Seviyeyi değiştirmek için etikete tıklayın. Şablon listesi henüz yok.</value></data>
@@ -200,6 +215,12 @@
   </data>
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>Bu yorum zaten kaldırılmış.</value>
+  </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>Bahsettiğiniz kişilerden biri bu görevi göremiyor. Önce onu izleyici olarak ekleyin.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>Bir yorumda en fazla 10 kişi etiketlenebilir.</value>
   </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>Bu kişi burada belirtilemez.</value>

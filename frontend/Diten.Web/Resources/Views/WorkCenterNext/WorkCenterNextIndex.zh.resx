@@ -237,8 +237,8 @@
     <value>处理</value>
   </data>
   <data name="RowView" xml:space="preserve"><value>查看</value></data>
-  <data name="ActReviewMeeting" xml:space="preserve"><value>安排审批会议</value></data>
-  <data name="ToastReviewMeeting" xml:space="preserve"><value>审批会议已安排：{0}</value></data>
+  <data name="ActReviewMeeting" xml:space="preserve"><value>安排审查会议</value></data>
+  <data name="ToastReviewMeeting" xml:space="preserve"><value>审查会议已安排：{0}</value></data>
   <data name="IsTitleElimination" xml:space="preserve"><value>编制公司间抵销表</value></data>
   <data name="IsSummaryElimination" xml:space="preserve"><value>合并前抵销公司间余额。</value></data>
   <data name="IsTitlePricingRegression" xml:space="preserve"><value>排查定价规则回归问题</value></data>
@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>会议日期和时间</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>会议类型</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>选择要安排的会议类型。</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>尚未配置任何会议类型。请管理员添加一个。</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>此操作会在"会议"模块中创建一个与此任务关联的真实会议。</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>第三季度结账复核</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>发送</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>提及某人</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>移除提及</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>提及人员</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>请至少选择一人。</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>此任务目前还没有可提及的人。</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>所有可提及的人都已添加。</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>一条评论最多可提及 {0} 人。</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>发布前请输入内容</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>协作与记录</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>工作项详情</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>找不到请求的工作项。</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>该工作项未能显示，因为它未通过契约验证。</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>返回工作中心</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>您对此项目的权限已结束。</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>必需的依赖项尚未完成。</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>审批：{objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>待处理</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>等待审批</value>
@@ -1542,6 +1582,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>等待中…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>安排审查会议</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>接受</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>拒绝</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>退回</value>
@@ -1895,6 +1944,12 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>仍有子任务未完成</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>已安排审查会议</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>在关联审查会议的纪要发布之前,此决定将保持锁定状态。</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>清单已更新。</value>
   </data>
@@ -2158,6 +2213,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>部分数据源未响应——此列表可能不完整。</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>由于契约错误，{0} 个工作项无法显示。</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>部分数据源未响应，因此该计数可能不完整。</value>
   </data>
@@ -2203,6 +2261,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>结束方式：{0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>已附加 {0} 个交付物。</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>已附加 {0} 个证据文件。</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>这项工作是如何结束的？</value>
   </data>
@@ -2223,6 +2290,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>该结果需要填写原因。</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>完成任务前必须填写此字段。</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>已按要求完成</value>
@@ -2274,6 +2344,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>由 {0} 上传 · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>附件已添加。</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>附件已移除。</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>添加交付物或证据文件（可选）</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>此任务类型要求提供交付物文件</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>请先选择文件，再完成此任务。</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>添加证明文件</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} 个证明文件</value></data>
 </root>

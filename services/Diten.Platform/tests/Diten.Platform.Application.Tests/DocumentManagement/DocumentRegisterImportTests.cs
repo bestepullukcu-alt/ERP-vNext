@@ -211,8 +211,52 @@ public sealed class DocumentRegisterImportTests
         Assert.Equal("qa.import@diten.test", batch.Actor);
         Assert.Equal(2, batch.TotalRows);
         Assert.Equal(2, batch.Created);
+        Assert.Equal(0, batch.Updated);
+        Assert.Equal(0, batch.Unchanged);
         Assert.Equal(1, batch.Blocked);
         Assert.Equal(TenantId, batch.TenantId);
+    }
+
+    /// <summary>
+    /// WP-DM-DCP005-RETIRE-CSV-01, AC1 — the WP's own acceptance test, verbatim: import the SAME CSV twice; the
+    /// SECOND preview's forecast and the SECOND commit's actual result must report identical counts. Before this
+    /// WP they diverged on this exact scenario: the preview said "0 to update / N unchanged" while the commit
+    /// (had it not already been refused by content-hash idempotency) would have written and counted N updates.
+    /// This test goes around that idempotency refusal on purpose — a NEW, byte-different file describing the
+    /// SAME already-committed rows — so the comparison lands on the counting logic itself, not on the "already
+    /// applied" guard.
+    /// </summary>
+    [Fact]
+    public async Task Preview_counts_and_commit_counts_agree_for_the_same_unchanged_rows()
+    {
+        var h = Setup();
+        var first = Csv(
+            Row("UID-1", "C-1", "Doc One", "Draft", linkable: true),
+            Row("UID-2", "C-2", "Doc Two", "Draft", linkable: true));
+        await h.Commit.Handle(new CommitDocumentRegisterImportCommand(
+            "r1.csv", first, DocumentReferenceListParserHash(first), Corr), CancellationToken.None);
+
+        // A second, byte-different file (different bytes → a fresh hash, so idempotency never engages) describing
+        // the exact same two rows, unchanged. The folder_id/folder_path columns vary the bytes without touching
+        // any field DocumentRegisterIngestMapping.Apply/WouldChange actually compares (DM-1 maps identity +
+        // lifecycle + blocked-reason only — folder is explicitly out of scope, see Apply's own doc comment).
+        var second = Csv(
+            Row("UID-1", "C-1", "Doc One", "Draft", linkable: true).Replace(",F1,/f1,", ",F9,/f9,"),
+            Row("UID-2", "C-2", "Doc Two", "Draft", linkable: true).Replace(",F1,/f1,", ",F9,/f9,"));
+
+        var previewResponse = await h.DryRun.Handle(
+            new DryRunDocumentRegisterImportCommand("r2.csv", second, Corr), CancellationToken.None);
+        var preview = previewResponse.Data!;
+
+        var commitResponse = await h.Commit.Handle(new CommitDocumentRegisterImportCommand(
+            "r2.csv", second, preview.ContentHash, Corr), CancellationToken.None);
+        var commit = commitResponse.Data!;
+
+        Assert.Equal(preview.Created, commit.Created);
+        Assert.Equal(preview.Updated, commit.Updated);
+        Assert.Equal(preview.Unchanged, commit.Unchanged);
+        Assert.Equal(0, preview.Updated);
+        Assert.Equal(2, preview.Unchanged);
     }
 
     // ── Cross-tenant isolation ─────────────────────────────────────────────

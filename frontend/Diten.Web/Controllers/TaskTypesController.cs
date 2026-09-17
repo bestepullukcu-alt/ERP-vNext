@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Diten.Web.Models;
 using Diten.Web.Models.TaskTypes;
+using Diten.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -91,7 +92,14 @@ public sealed class TaskTypesController : Controller
             var response = await _httpClient.PostAsJsonAsync($"{_gatewayUrl}{ApiPath}", ToCreatePayload(model), _jsonOptions);
             if (response.IsSuccessStatusCode)
             {
-                TempData["SuccessMessage"] = _sharedLocalizer["RecordCreated"].Value;
+                // Kural 4 v2 (sahip 2026-09-15) — create never refuses for a document reason; the response is
+                // 201 either way, and CARRIES whether it landed active.
+                var payload = await response.Content.ReadFromJsonAsync<GatewayResponse<CreateTaskTypeResultApiModel>>(_jsonOptions);
+                TempData["SuccessMessage"] = BuildCreateSuccessMessage(
+                    payload?.Data,
+                    _sharedLocalizer["RecordCreated"].Value,
+                    _localizer["InfoTaskTypeSavedInactiveUnverified"].Value,
+                    _localizer["InfoTaskTypeSavedInactiveBlockedDocuments"].Value);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -104,6 +112,31 @@ public sealed class TaskTypesController : Controller
         }
 
         return View($"{ViewRoot}/Create.cshtml", model);
+    }
+
+    /// <summary>
+    /// WP-DM-DCP005-KURAL4-UI-01 (sahip 2026-09-15) — create's own message picks itself from the SUCCESSFUL
+    /// response body, not from a ModelState error: <see cref="CreateTaskTypeResultApiModel.IsActive"/> false
+    /// means "saved, but look" — either specific documents blocked it, or the register could not be reached at
+    /// all (<see cref="CreateTaskTypeResultApiModel.EffectivenessUnavailable"/>), and those are DIFFERENT
+    /// sentences (one names the problem, the other says "try again"). Pure strings in, pure string out — no
+    /// localizer dependency, so this is testable without standing up DI.
+    /// </summary>
+    internal static string BuildCreateSuccessMessage(
+        CreateTaskTypeResultApiModel? data, string recordCreatedText, string unverifiedText, string blockedDocumentsText)
+    {
+        if (data is null || data.IsActive)
+        {
+            return recordCreatedText;
+        }
+
+        if (data.EffectivenessUnavailable)
+        {
+            return unverifiedText;
+        }
+
+        var blocking = data.BlockingDocuments is { Count: > 0 } ? string.Join(", ", data.BlockingDocuments) : null;
+        return blocking is null ? blockedDocumentsText : $"{blockedDocumentsText} {blocking}";
     }
 
     [HttpGet("Edit/{id:guid}")]
@@ -269,9 +302,11 @@ public sealed class TaskTypesController : Controller
         gqmsDomain = Nullable(model.GqmsDomain),
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
+        reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion
     };
 
     /// <summary>
@@ -292,9 +327,14 @@ public sealed class TaskTypesController : Controller
         gqmsDomain = Nullable(model.GqmsDomain),
         functionCode = Nullable(model.FunctionCode),
         isQualityEvent = model.IsQualityEvent,
+        reviewMeetingRequirement = Nullable(model.ReviewMeetingRequirement),
         groupDocuments = SplitDocuments(model.GroupDocumentsText),
         localDocuments = (object?)null,
-        closureOutcomes = ClosureOutcomesPayload(model)
+        closureOutcomes = ClosureOutcomesPayload(model),
+        requiresDeliverableOnCompletion = model.RequiresDeliverableOnCompletion,
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the version this SAME model was hydrated with on
+        // the GET that drew this form (a hidden field, see TaskTypeEditViewModel.Version).
+        expectedVersion = model.Version
     };
 
     /// <summary>
@@ -386,7 +426,21 @@ public sealed class TaskTypesController : Controller
         ["TASK_TYPE_CODE_IMMUTABLE"] = "ErrorCodeImmutable",
         ["TASK_TYPE_CODE_TAKEN"] = "ErrorCodeTaken",
         ["TASK_TYPE_CLASSIFICATION_INVALID"] = "ErrorClassificationInvalid",
-        ["TASK_TYPE_FUNCTION_CODE_INVALID"] = "ErrorFunctionCodeInvalid"
+        ["TASK_TYPE_FUNCTION_CODE_INVALID"] = "ErrorFunctionCodeInvalid",
+        ["TASK_TYPE_REVIEW_MEETING_REQUIREMENT_INVALID"] = "ErrorReviewMeetingRequirementInvalid",
+        // WP-PSS-MOD0024-TASK-TYPE-CONCURRENCY-01 (BL-375) — the SAME code TaskFieldDefinition's own edit gets
+        // on a stale write (TaskReasonCodes.ConcurrencyConflict is not a new code, per YAPMA).
+        ["TASK_CONCURRENCY_CONFLICT"] = "ErrorConcurrencyConflict",
+        // WP-DM-DCP005-KURAL4-UI-01 (Kural 4 v2, sahip 2026-09-15) — reached ONLY from editing an ALREADY-ACTIVE
+        // type's bound documents (create never fails with this code any more, and /active is a separate client-JS
+        // surface — see index.js's OWN mapping of the identical wire code to a DIFFERENT sentence, "bu tür aktif
+        // edilemez" vs. this edit-time "bu türe bağlanamaz"). Same reason code, two contexts, two sentences —
+        // deliberately not one shared key, because "cannot activate" and "cannot attach to an active type" are
+        // different facts to the reader even though the server answers both with task_type_enable_blocked_documents.
+        ["task_type_enable_blocked_documents"] = "ErrorTaskTypeActiveDocumentBlocked",
+        // Shared with index.js's own /active mapping — identical wording either way ("could not verify, try again"
+        // is the same sentence whether it was activation or an edit that could not reach the register).
+        ["task_type_enable_register_unavailable"] = "ErrorTaskTypeEnableRegisterUnavailable"
     };
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)
@@ -406,7 +460,13 @@ public sealed class TaskTypesController : Controller
         }
         catch { }
 
+        // BL-398 — ASP.NET's OWN 400 (a body that never reached a handler) is a ProblemDetails, not the
+        // Platform envelope; unread, its raw JSON was printed on the page. Shared reader, see
+        // GatewayProblemDetailsReader.
         var raw = await response.Content.ReadAsStringAsync();
+        if (GatewayProblemDetailsReader.TryReadErrors(raw, out var problemErrors))
+            return problemErrors.Count > 0 ? problemErrors : [_sharedLocalizer["GatewayError"].Value];
+
         return [string.IsNullOrWhiteSpace(raw) ? _sharedLocalizer["GatewayError"].Value : raw];
     }
 

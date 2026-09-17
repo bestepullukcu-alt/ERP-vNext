@@ -231,10 +231,13 @@
         if (item.viewerRelation === 'initiator') { return 'baslattiklarim'; }
         if (item.admissionState === 'pendingClaim' || item.admissionState === 'pendingOffer') { return 'havuz'; }
         if (item.admissionState === 'pendingAcceptance') { return 'inbox'; }
-        // Act-directly intents (approval/review/issue/exception) awaiting the viewer's
-        // first decision live in the Inbox even though they are 'admitted' (no accept
-        // gate) — they are resolved on the spot (approve/signoff/resolve), not owned work.
-        if (['approval', 'review', 'issue', 'exception'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
+        // Act-directly intents (approval/review/issue/exception/meetingInvite) awaiting the viewer's
+        // first decision live in the Inbox even though they are 'admitted'/'notApplicable' (no accept
+        // gate) — they are resolved on the spot (approve/signoff/resolve/acceptInvite), not owned work.
+        // MOD-0357 S5c, K5 (BL-026): a Pending invite is exactly the kind of item this line exists for — a
+        // decision waiting on the reader — and the alternative (falling through to `islerim`) is the defect
+        // this rule closes: an invite is not owned work, and never becomes an İşlerim item.
+        if (['approval', 'review', 'issue', 'exception', 'meetingInvite'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
         return 'islerim';
     };
     const segmentFor = (item) => {
@@ -258,7 +261,7 @@
         kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
             : ['approve', 'complete', 'resolve', 'signoff', 'submitReview'].includes(action.code) ? 'success'
                 : action.code === 'requestInfo' ? 'warning'
-                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' ? 'primary'
+                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' || action.code === 'acceptInvite' ? 'primary'
                         : 'secondary',
         primary: false,
         enabled: action.enabled,
@@ -275,7 +278,13 @@
          * field at all, so a real `plan` action would otherwise never open the picker; only a raw fixture that
          * happened to set `input: 'date'` would, and none ever did. This is what actually wires the picker up.
          */
-        input: action.input || (action.code === 'plan' ? 'date' : null),
+        input: action.input
+            || (action.code === 'plan' ? 'date' : null)
+            // S10 live pass (2026-09-13): the same gap for the review meeting. The server's action carries no `input`,
+            // so a real `scheduleReviewMeeting` never reached openMeetingScheduler and fell through to the generic
+            // dispatch (400 WORK_ITEM_ACTION_UNKNOWN). The S4 test read the scheduler's source text, never a real
+            // action — wcn-review-meeting-action-input.test.js now feeds the provider's golden output through here.
+            || (action.code === 'scheduleReviewMeeting' ? 'meeting' : null),
         /*
          * Where the action HAPPENS: 'inline' acts here, 'deeplink' sends the reader to the source. Carried
          * through because getActions needs it — a closed item may still offer "open in source" while offering
@@ -283,8 +292,8 @@
          * item-level `actionDepth` default itself, exactly the way the contract resolves it.
          */
         depth: action.depth || null,
-        role: ['reject', 'return', 'declineMeeting'].includes(action.code) ? 'reject'
-            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'submitReview'].includes(action.code) ? 'accept'
+        role: ['reject', 'return', 'declineMeeting', 'declineInvite'].includes(action.code) ? 'reject'
+            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'acceptInvite', 'submitReview'].includes(action.code) ? 'accept'
                 : null
     });
     const allFixtureGroups = () => {
