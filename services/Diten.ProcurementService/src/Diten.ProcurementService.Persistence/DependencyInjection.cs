@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IRequisitionRepository, RequisitionRepository>();
         services.AddScoped<IPurchaseOrderRepository, PurchaseOrderRepository>();
         services.AddScoped<IGrnRepository, GrnRepository>();
+        services.AddScoped<IInvoiceMatchRepository, InvoiceMatchRepository>();
 
         // PRODUCT-MASTER (MOD-0290) consume seam — progressive integration (0290 bu dilimde bağlı değil).
         // Varsayılan permissive (hard-fail etmez); gerçek 0290 gateway'i bağlanınca bu kayıt değiştirilir.
@@ -53,6 +54,12 @@ public static class DependencyInjection
         // sonraki wiring — bu kayıt değiştirilir, GRN kodu DEĞİŞMEZ (contract sınırı, AD-2/§8). Shadow stock YOK:
         // stok yalnız INVENTORY POST /movements ile artar; GRN yalnız dönen inventoryTransactionId referansını saklar.
         services.AddSingleton<IInventoryPostingClient, MockInventoryPostingClient>();
+
+        // TOLERANCE POLICY (MOD-0143) seam — 3-way match toleransı POLICY-DRIVEN (ASSUMPTION-P2P-01). Varsayılan
+        // ZeroToleranceMatchPolicy: eşikler (0) BU SEAM'DE yaşar, match mantığında DEĞİL; herhangi bir sapma →
+        // exception (fail-closed). Gerçek Finance/EA tolerans policy servisi bağlanınca yalnız bu kayıt değişir,
+        // runThreeWayMatch kodu DEĞİŞMEZ. IProductReferenceValidator / IInventoryPostingClient deseninin aynısı.
+        services.AddSingleton<IMatchTolerancePolicy, ZeroToleranceMatchPolicy>();
 
         services.AddScoped<IModuleSeedDataInitializer, NoOpModuleSeedDataInitializer>();
 
