@@ -182,6 +182,9 @@
   <data name="ScopeGroupProduct" xml:space="preserve"><value>Продукт</value></data>
   <data name="ScopeGroupPeriod" xml:space="preserve"><value>Период</value></data>
   <data name="ScopePickBrandFirst" xml:space="preserve"><value>Сначала выберите бренд</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>без ограничений</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Сначала выберите цикл</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>все цели</value></data>
   <data name="ScopeClear" xml:space="preserve"><value>Очистить область</value></data>
   <data name="FreqResolvedLabel" xml:space="preserve"><value>Итоговая частота</value></data>
   <data name="EffectiveNote" xml:space="preserve"><value>Если дата окончания не указана, политика действует бессрочно; при конфликте побеждает более новая дата начала для той же цели.</value></data>

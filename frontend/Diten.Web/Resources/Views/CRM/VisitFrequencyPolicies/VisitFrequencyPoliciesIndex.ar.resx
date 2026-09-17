@@ -182,6 +182,9 @@
   <data name="ScopeGroupProduct" xml:space="preserve"><value>المنتج</value></data>
   <data name="ScopeGroupPeriod" xml:space="preserve"><value>الفترة</value></data>
   <data name="ScopePickBrandFirst" xml:space="preserve"><value>اختر علامة تجارية أولاً</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>بلا قيد</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>اختر دورة أولاً</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>جميع الأهداف</value></data>
   <data name="ScopeClear" xml:space="preserve"><value>مسح النطاق</value></data>
   <data name="FreqResolvedLabel" xml:space="preserve"><value>الإيقاع المحسوب</value></data>
   <data name="EffectiveNote" xml:space="preserve"><value>إذا تُرك تاريخ الانتهاء فارغًا فإن السياسة سارية إلى أجل غير مسمى؛ وعند التعارض يفوز تاريخ بدء أحدث لنفس الهدف.</value></data>

@@ -182,6 +182,9 @@
   <data name="ScopeGroupProduct" xml:space="preserve"><value>Ürün</value></data>
   <data name="ScopeGroupPeriod" xml:space="preserve"><value>Dönem</value></data>
   <data name="ScopePickBrandFirst" xml:space="preserve"><value>Önce marka seçin</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>kısıtlama yok</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Önce cycle seçin</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>tüm hedefler</value></data>
   <data name="ScopeClear" xml:space="preserve"><value>Kapsamı temizle</value></data>
   <data name="FreqResolvedLabel" xml:space="preserve"><value>Çözülen cadence</value></data>
   <data name="EffectiveNote" xml:space="preserve"><value>Bitiş boş bırakılırsa politika süresiz geçerlidir; aynı hedefe daha yeni bir başlangıç tarihi çakışmada öne geçer.</value></data>

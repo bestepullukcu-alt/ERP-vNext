@@ -182,6 +182,9 @@
   <data name="ScopeGroupProduct" xml:space="preserve"><value>Produit</value></data>
   <data name="ScopeGroupPeriod" xml:space="preserve"><value>Période</value></data>
   <data name="ScopePickBrandFirst" xml:space="preserve"><value>Choisissez d'abord une marque</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>aucune restriction</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Choisissez d'abord un cycle</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>toutes les cibles</value></data>
   <data name="ScopeClear" xml:space="preserve"><value>Effacer la portée</value></data>
   <data name="FreqResolvedLabel" xml:space="preserve"><value>Cadence résolue</value></data>
   <data name="EffectiveNote" xml:space="preserve"><value>Si la date de fin est vide, la politique est valable indéfiniment ; en cas de conflit, une date de début plus récente pour la même cible l'emporte.</value></data>

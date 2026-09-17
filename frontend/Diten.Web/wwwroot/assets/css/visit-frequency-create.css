@@ -482,22 +482,36 @@
     margin-top: 14px;
 }
 .vfp-create-scope .vfp-scope-group {
-    margin-bottom: 14px;
+    margin-bottom: 18px;
+}
+/* WP-FREQ-F8 — sub-group heading: a title-case bold title with an INLINE muted description on the same line, and a
+   bottom divider under the whole head (was an uppercase heading + a block description line, no divider). */
+.vfp-create-scope .vfp-scope-group-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    padding-bottom: 7px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--vfp-card-border);
 }
 .vfp-create-scope .vfp-scope-group-title {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--vfp-muted);
-    margin-bottom: 4px;
+    color: var(--vfp-heading);
 }
-/* WP-FREQ-F7 — a plain-language line under each uppercase scope sub-heading. */
+/* WP-FREQ-F8 — the description now sits inline beside the title. */
 .vfp-create-scope .vfp-scope-group-desc {
     font-size: 11.5px;
     line-height: 1.45;
     color: var(--vfp-muted);
-    margin-bottom: 10px;
+}
+/* WP-FREQ-F8 — Saha alanı cell: TerritoryModel + TerritoryNode side by side (was stacked). The model→node cascade
+   in form.js is unchanged; only the two selects' layout moved. */
+.vfp-create-scope .vfp-territory-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 /* WP-FREQ-F7 — the payload field-name hint beside each scope field label (monospace via the target-section rule). */
 .vfp-create-scope .vfp-code-hint {
@@ -508,18 +522,43 @@
 .vfp-create-scope .vfp-product-hint {
     color: var(--bs-warning-text-emphasis, var(--vfp-muted));
 }
-.vfp-create-scope .vfp-scope-footer {
+/* WP-FREQ-F8 — the KAPSAM summary is now a bordered box (subtle fill + border): an uppercase label, the chips (or an
+   "all targets" fallback while empty) and a right-aligned "clear scope" button. #vfpScopeChips / #vfpScopeClear ids are
+   unchanged, so form.js's chip render + clear toggle keep working as-is. */
+.vfp-create-scope .vfp-scope-summary {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-top: 8px;
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--vfp-card-border);
+    border-radius: 8px;
+}
+.vfp-create-scope .vfp-scope-summary-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--vfp-muted);
+}
+.vfp-create-scope .vfp-scope-all {
+    font-size: 12px;
+    color: var(--vfp-muted);
+}
+/* the "all targets" fallback disappears as soon as at least one scope chip is rendered */
+.vfp-create-scope .vfp-scope-chips:not(:empty) ~ .vfp-scope-all {
+    display: none;
+}
+.vfp-create-scope .vfp-scope-summary .vfp-scope-clear {
+    margin-left: auto;
 }
 .vfp-create-scope .vfp-scope-chips {
     display: flex;
     gap: 6px;
     flex-wrap: wrap;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
 }
 .vfp-create-scope .vfp-chip {
     display: inline-flex;

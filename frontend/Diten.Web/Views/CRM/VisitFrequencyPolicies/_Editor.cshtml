@@ -223,66 +223,92 @@
                             <span class="vfp-scope-toggle-label">@Localizer["ScopeToggle"]</span>
                             <span class="vfp-scope-hint">@Localizer["ScopeOptionalNote"]</span>
                         </button>
+                        @* WP-FREQ-F8 — scope sub-groups now use the mockup layout: a title-case bold heading with an
+                           INLINE muted description on the same line and a bottom divider (`.vfp-scope-group-head`); the
+                           app field pattern (`form-label fw-medium` + `form-select`); the Saha alanı cell puts model|node
+                           SIDE BY SIDE (`.vfp-territory-pair`, cascade model→node unchanged); a static "no constraint"
+                           hint under each unconstrained select; and a bordered KAPSAM summary box. Every select id
+                           (vfpBusinessUnit/vfpTerritoryModel/vfpTerritoryNode/vfpSegment/vfpCampaign/vfpBrand/vfpProduct/
+                           vfpCyclePeriod) plus #vfpScopeChips/#vfpScopeClear/#vfpProductHint are PRESERVED — form.js reads
+                           them by id, and cascade/buildPayload are untouched. *@
                         <div class="vfp-scope-body vfp-hidden" id="vfpScopeBody">
                             <div class="vfp-scope-group">
-                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupOrg"]</div>
-                                <div class="vfp-scope-group-desc">@Localizer["ScopeGroupOrgDesc"]</div>
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupOrg"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupOrgDesc"]</span>
+                                </div>
                                 <div class="vfp-grid">
                                     <div>
-                                        <label class="vfp-label" for="vfpBusinessUnit">@Localizer["FieldBusinessUnit"] <span class="vfp-code-hint">BusinessUnit</span></label>
+                                        <label class="form-label fw-medium" for="vfpBusinessUnit">@Localizer["FieldBusinessUnit"] <span class="vfp-code-hint">BusinessUnit</span></label>
                                         <select class="form-select" id="vfpBusinessUnit"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
                                     </div>
                                     <div>
-                                        <label class="vfp-label" for="vfpTerritoryModel">@Localizer["FieldTerritory"] <span class="vfp-code-hint">TerritoryNodeId</span></label>
-                                        <select class="form-select mb-2" id="vfpTerritoryModel"></select>
-                                        <select class="form-select" id="vfpTerritoryNode"></select>
+                                        <label class="form-label fw-medium" for="vfpTerritoryModel">@Localizer["FieldTerritory"] <span class="vfp-code-hint">TerritoryNodeId</span></label>
+                                        <div class="vfp-territory-pair">
+                                            <select class="form-select" id="vfpTerritoryModel"></select>
+                                            <select class="form-select" id="vfpTerritoryNode"></select>
+                                        </div>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="vfp-scope-group">
-                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupScope"]</div>
-                                <div class="vfp-scope-group-desc">@Localizer["ScopeGroupScopeDesc"]</div>
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupScope"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupScopeDesc"]</span>
+                                </div>
                                 <div class="vfp-grid">
                                     <div>
-                                        <label class="vfp-label" for="vfpSegment">@Localizer["FieldSegment"] <span class="vfp-code-hint">SegmentId</span></label>
+                                        <label class="form-label fw-medium" for="vfpSegment">@Localizer["FieldSegment"] <span class="vfp-code-hint">SegmentId</span></label>
                                         <select class="form-select" id="vfpSegment"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
                                         <div class="vfp-error" id="vfpSegmentError"></div>
                                     </div>
                                     <div>
-                                        <label class="vfp-label" for="vfpCampaign">@Localizer["FieldCampaign"] <span class="vfp-code-hint">CampaignId</span></label>
+                                        <label class="form-label fw-medium" for="vfpCampaign">@Localizer["FieldCampaign"] <span class="vfp-code-hint">CampaignId</span></label>
                                         <select class="form-select" id="vfpCampaign"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
                                         <div class="vfp-error" id="vfpCampaignError"></div>
                                     </div>
                                 </div>
                             </div>
                             <div class="vfp-scope-group">
-                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupProduct"]</div>
-                                <div class="vfp-scope-group-desc">@Localizer["ScopeGroupProductDesc"]</div>
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupProduct"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupProductDesc"]</span>
+                                </div>
                                 <div class="vfp-grid">
                                     <div>
-                                        <label class="vfp-label" for="vfpBrand">@Localizer["FieldBrand"] <span class="vfp-code-hint">BrandId</span></label>
+                                        <label class="form-label fw-medium" for="vfpBrand">@Localizer["FieldBrand"] <span class="vfp-code-hint">BrandId</span></label>
                                         <select class="form-select" id="vfpBrand"></select>
+                                        <div class="vfp-help">@Localizer["NoConstraint"]</div>
                                     </div>
                                     <div>
-                                        <label class="vfp-label" for="vfpProduct">@Localizer["FieldProduct"] <span class="vfp-code-hint">ProductId</span></label>
+                                        <label class="form-label fw-medium" for="vfpProduct">@Localizer["FieldProduct"] <span class="vfp-code-hint">ProductId</span></label>
                                         <select class="form-select" id="vfpProduct" disabled></select>
                                         <div class="vfp-help vfp-product-hint" id="vfpProductHint">@Localizer["ScopePickBrandFirst"]</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="vfp-scope-group">
-                                <div class="vfp-scope-group-title">@Localizer["ScopeGroupPeriod"]</div>
-                                <div class="vfp-scope-group-desc">@Localizer["ScopeGroupPeriodDesc"]</div>
+                                <div class="vfp-scope-group-head">
+                                    <span class="vfp-scope-group-title">@Localizer["ScopeGroupPeriod"]</span>
+                                    <span class="vfp-scope-group-desc">@Localizer["ScopeGroupPeriodDesc"]</span>
+                                </div>
                                 <div class="vfp-grid">
                                     <div>
-                                        <label class="vfp-label" for="vfpCyclePeriod">@Localizer["FieldCyclePeriod"] <span class="vfp-code-hint">CyclePeriodId</span></label>
+                                        <label class="form-label fw-medium" for="vfpCyclePeriod">@Localizer["FieldCyclePeriod"] <span class="vfp-code-hint">CyclePeriodId</span></label>
                                         <select class="form-select" id="vfpCyclePeriod"></select>
+                                        <div class="vfp-help">@Localizer["ScopePickCyclePeriodFirst"]</div>
                                         <div class="vfp-error" id="vfpCyclePeriodError"></div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="vfp-scope-footer">
+                            <div class="vfp-scope-summary">
+                                <span class="vfp-scope-summary-label">@Localizer["Scope"]</span>
                                 <div class="vfp-scope-chips" id="vfpScopeChips"></div>
+                                <span class="vfp-scope-all">@Localizer["ScopeAllTargets"]</span>
                                 <button type="button" class="vfp-scope-clear vfp-hidden" id="vfpScopeClear">@Localizer["ScopeClear"]</button>
                             </div>
                         </div>
