@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>included in planning</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>stopped for now</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>read-only, not deleted</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>most specific</value></data>
+  <data name="Broadest" xml:space="preserve"><value>broadest</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>There is no delete. Closing is done with Archive; the record stays readable in history and is not evaluated by the planning engine.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>What will this policy do?</value></data>
   <data name="Scope" xml:space="preserve"><value>Scope</value></data>

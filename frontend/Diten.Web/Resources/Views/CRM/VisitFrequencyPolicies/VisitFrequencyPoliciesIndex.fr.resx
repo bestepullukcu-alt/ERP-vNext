@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>incluse dans la planification</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>suspendue pour l'instant</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>lecture seule, non supprimée</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>le plus spécifique</value></data>
+  <data name="Broadest" xml:space="preserve"><value>le plus large</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>Il n'y a pas de suppression. La clôture se fait par archivage ; l'enregistrement reste consultable dans l'historique et n'est pas évalué par le moteur de planification.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>Que fera cette politique ?</value></data>
   <data name="Scope" xml:space="preserve"><value>Portée</value></data>

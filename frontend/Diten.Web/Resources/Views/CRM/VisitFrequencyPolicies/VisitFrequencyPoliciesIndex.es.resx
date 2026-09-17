@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>entra en la planificación</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>detenida por ahora</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>solo lectura, no eliminada</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>más específico</value></data>
+  <data name="Broadest" xml:space="preserve"><value>más amplio</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>No hay eliminación. El cierre se realiza con Archivar; el registro permanece legible en el historial y no lo evalúa el motor de planificación.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>¿Qué hará esta política?</value></data>
   <data name="Scope" xml:space="preserve"><value>Alcance</value></data>

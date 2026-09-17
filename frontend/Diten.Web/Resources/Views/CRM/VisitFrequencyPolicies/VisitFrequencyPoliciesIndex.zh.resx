@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>纳入规划</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>暂时停用</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>只读，未删除</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>最具体</value></data>
+  <data name="Broadest" xml:space="preserve"><value>最宽泛</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>没有删除。关闭通过归档完成；记录在历史中保持可读，且不会被规划引擎评估。</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>此政策将做什么？</value></data>
   <data name="Scope" xml:space="preserve"><value>范围</value></data>

@@ -39,6 +39,9 @@
         ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
         ["Selected"] = Localizer["Selected"].Value,
         ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        // target-type chip specificity subtext (first = most specific, last = broadest)
+        ["MostSpecific"] = Localizer["MostSpecific"].Value,
+        ["Broadest"] = Localizer["Broadest"].Value,
         ["FreqSentenceEmpty"] = Localizer["FreqSentenceEmpty"].Value,
         ["Required"] = Localizer["Required"].Value,
         ["TargetRequired"] = Localizer["TargetRequired"].Value,
@@ -179,7 +182,7 @@
                     </div>
                     <p class="vfp-section-help">@Localizer["EditorHelpTarget"]</p>
                     <label class="vfp-label">@Localizer["FieldTargetType"] <span class="vfp-req">*</span></label>
-                    <div class="vfp-cardgrid" id="vfpTargetTypeCards"></div>
+                    <div class="vfp-chipgrid" id="vfpTargetTypeCards"></div>
                     <label class="vfp-label mt-3" for="vfpTargetPicker">@Localizer["FieldTarget"] <span class="vfp-req">*</span></label>
                     <div class="vfp-help mb-1">@Localizer["TargetPickHint"]</div>
                     <div id="vfpTargetPicker"></div>

@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>مُدرجة في التخطيط</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>متوقفة حاليًا</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>للقراءة فقط، غير محذوفة</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>الأكثر تحديدًا</value></data>
+  <data name="Broadest" xml:space="preserve"><value>الأوسع نطاقًا</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>لا يوجد حذف. يتم الإغلاق عبر الأرشفة؛ يبقى السجل قابلاً للقراءة في السجل التاريخي ولا يُقيَّم بواسطة محرك التخطيط.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>ماذا ستفعل هذه السياسة؟</value></data>
   <data name="Scope" xml:space="preserve"><value>النطاق</value></data>

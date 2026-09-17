@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>plana giriyor</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>şimdilik durduruldu</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>okunur, silinmez</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>en spesifik</value></data>
+  <data name="Broadest" xml:space="preserve"><value>en geniş</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>Silme yok. Kapatma Archive ile yapılır; kayıt geçmişte okunur kalır ve planlama motoru tarafından değerlendirilmez.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>Bu politika ne yapacak?</value></data>
   <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>

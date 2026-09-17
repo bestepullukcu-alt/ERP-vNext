@@ -140,6 +140,29 @@
                 ${it.help ? `<span class="vfp-radio-help">${esc(it.help)}</span>` : ''}
             </label>`).join('');
     };
+    // Target-type DISPLAY order (specificity, narrow → broad). This is a display-only transform: the vocabulary itself
+    // still comes from /contract; unknown codes keep their contract order after the known ones. The first rendered chip
+    // (most specific) and last chip (broadest) carry a small subtext.
+    const TARGET_SPECIFICITY = ['account-contact-link', 'contact', 'account', 'campaign-target', 'concept-node', 'territory-node', 'audience-profile', 'segment'];
+    const orderTargetTypes = codes => {
+        const list = (codes || []).slice();
+        const rank = c => { const i = TARGET_SPECIFICITY.indexOf(c); return i === -1 ? TARGET_SPECIFICITY.length : i; };
+        return list.map((c, i) => ({ c, i })).sort((a, b) => (rank(a.c) - rank(b.c)) || (a.i - b.i)).map(x => x.c);
+    };
+    // compact flex-wrap chips for the target type (specificity order + most-specific/broadest subtext)
+    const renderTargetChips = (host, codes) => {
+        if (!host) return;
+        const ordered = orderTargetTypes(codes);
+        host.innerHTML = ordered.map((code, idx) => {
+            const sub = idx === 0 ? t('MostSpecific', '') : (idx === ordered.length - 1 ? t('Broadest', '') : '');
+            return `
+            <label class="vfp-chip-card">
+                <input type="radio" class="vfp-radio-input" name="vfpTargetType" value="${esc(code)}">
+                <span class="vfp-chip-title">${esc(t(`TargetType_${code}`, humanize(code)))}</span>
+                ${sub ? `<span class="vfp-chip-sub">${esc(sub)}</span>` : ''}
+            </label>`;
+        }).join('');
+    };
     const checkedValue = name => FORM.querySelector(`input[name="${name}"]:checked`)?.value || '';
     const setChecked = (name, value) => {
         const input = FORM.querySelector(`input[name="${name}"][value="${(window.CSS && CSS.escape) ? CSS.escape(value) : value}"]`);
@@ -150,10 +173,8 @@
     const buildOnce = () => {
         if (built) return;
 
-        // target type cards
-        renderCards(el('vfpTargetTypeCards'),
-            (vocab.targetTypes || []).map(code => ({ value: code, title: t(`TargetType_${code}`, humanize(code)) })),
-            'vfpTargetType');
+        // target type chips (compact, specificity-ordered, most-specific/broadest subtext)
+        renderTargetChips(el('vfpTargetTypeCards'), vocab.targetTypes || []);
 
         // priority band cards — CONTRACT bands (code + weight); smaller wins. Sorted by weight ascending (strongest
         // first). The description is the F1 Band_{code}_Desc phrase.
@@ -354,12 +375,16 @@
         updatePanel();
     };
     const configureLifecycleForMode = () => {
-        // create: only draft/active are meaningful — hide inactive/archived rows. edit (non-archived): all four.
+        // All four rows stay VISIBLE. create: only draft/active are selectable — inactive/archived shown disabled/faded
+        // (a new record cannot be created inactive or archived). edit (non-archived): all four selectable.
         const rows = FORM.querySelectorAll('#vfpLifecycle .vfp-life-row');
         rows.forEach(r => {
             const s = r.dataset.status;
-            const hide = currentMode === 'create' && (s === 'inactive' || s === 'archived');
-            r.classList.toggle('vfp-hidden', hide);
+            const disabled = currentMode === 'create' && (s === 'inactive' || s === 'archived');
+            r.classList.remove('vfp-hidden');
+            r.classList.toggle('vfp-life-disabled', disabled);
+            const input = r.querySelector('input');
+            if (input) input.disabled = disabled;
         });
     };
     const updateFooter = () => {

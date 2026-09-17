@@ -194,6 +194,9 @@
   <data name="LifecycleActiveHelp" xml:space="preserve"><value>участвует в планировании</value></data>
   <data name="LifecycleInactiveHelp" xml:space="preserve"><value>пока приостановлена</value></data>
   <data name="LifecycleArchivedHelp" xml:space="preserve"><value>только чтение, не удалена</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>наиболее конкретный</value></data>
+  <data name="Broadest" xml:space="preserve"><value>самый широкий</value></data>
   <data name="LifecycleNote" xml:space="preserve"><value>Удаления нет. Закрытие выполняется через архивирование; запись остаётся доступной для чтения в истории и не оценивается движком планирования.</value></data>
   <data name="SummaryTitle" xml:space="preserve"><value>Что сделает эта политика?</value></data>
   <data name="Scope" xml:space="preserve"><value>Область</value></data>
