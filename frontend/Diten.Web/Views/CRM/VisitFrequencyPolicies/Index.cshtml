@@ -203,24 +203,29 @@
     <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["ArchiveVsDeleteNote"]</small>
 </div>
 
-@* Tabbed console: the policy list + (permission-gated) the read-only resolve/çözümleme panel (FREQ-C). *@
-<div class="nav-align-top mb-3">
-    <ul class="nav nav-pills gap-2 flex-wrap" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-policies" role="tab">
-                <i class="bx bx-list-ul me-1"></i>@Localizer["PoliciesTab"]
-            </button>
-        </li>
-        @if (canResolve)
-        {
+@* Tabbed console: the policy list + (permission-gated) the read-only resolve/çözümleme panel (FREQ-C).
+   WP-FREQ-DET-J — the tab strip is wrapped in the WorkCenter tab-card surface (card + card-body p-3 + wcn-tabcard;
+   pills use wcn-tabs + bordered compact wc-tab-compact). CSS is global (backbone-custom.css); the Bootstrap
+   data-bs-toggle="tab" switch, tab ids (#tab-policies/#tab-resolve), canResolve gate and content are unchanged. *@
+<section class="card mb-3 wcn-tabcard">
+    <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
+        <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-resolve" role="tab">
-                    <i class="bx bx-target-lock me-1"></i>@Localizer["ResolveTab"]
+                <button type="button" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center active" data-bs-toggle="tab" data-bs-target="#tab-policies" role="tab">
+                    <i class="bx bx-list-ul wc-tab-icon me-md-1"></i>@Localizer["PoliciesTab"]
                 </button>
             </li>
-        }
-    </ul>
-</div>
+            @if (canResolve)
+            {
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center" data-bs-toggle="tab" data-bs-target="#tab-resolve" role="tab">
+                        <i class="bx bx-target-lock wc-tab-icon me-md-1"></i>@Localizer["ResolveTab"]
+                    </button>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
 
 <div class="tab-content p-0">
     <div class="tab-pane fade show active" id="tab-policies" role="tabpanel">
