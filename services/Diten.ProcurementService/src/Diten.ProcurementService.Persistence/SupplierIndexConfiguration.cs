@@ -1,4 +1,5 @@
 using Diten.ProcurementService.Domain.Entities;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace Diten.ProcurementService.Persistence;
@@ -34,9 +35,10 @@ public static class SupplierIndexConfiguration
                 {
                     Name = "ux_tenant_le_taxid",
                     Unique = true,
+                    // MongoDB partial index: $ne/$not YASAK. `$type: string` null ve missing TaxId'yi
+                    // dışlar (yalnız dolu string TaxId + silinmemiş kayıtlar unique). Runtime-verified.
                     PartialFilterExpression = Builders<Supplier>.Filter.And(
-                        Builders<Supplier>.Filter.Exists(x => x.TaxId),
-                        Builders<Supplier>.Filter.Ne(x => x.TaxId, null),
+                        Builders<Supplier>.Filter.Type(x => x.TaxId, BsonType.String),
                         Builders<Supplier>.Filter.Eq(x => x.IsDeleted, false))
                 }),
 
