@@ -5890,6 +5890,39 @@ Kanban olduğu için oralara dokunulmadı.
 İstenen: üç yerin her biri ölçülür; etiketi ad gibi gösteren varsa aynı bayraklarla kapatılır, kanıtı test olur.
 Gelecek gerileme riski: düşük (yalnız gösterim).
 
+---
+
+### BL-430
+
+**Eksik ikon adı ekrana dolu bir kare çiziyor — "Görev Merkezi geçici olarak kullanılamıyor" sayfasında canlıda görüldü**
+
+DURUM: AÇIK · BULAN: sahip (canlı önizleme, 2026-09-18) · KAYIT: 2026-09-18
+
+Ölçüldü: Kiracı kabuğu ikonları `assets/vendor/fonts/iconify-icons.css` ile yüklüyor. Bu yöntemde `.bx` kutusu
+`background-color: currentColor` alıp şekli `mask-image: var(--svg)` ile kesiyor; `--svg` değişkenini ikonun kendi
+sınıfı tanımlıyor. İkon sınıfı sette YOKSA maske tanımsız kalır ve kutu rengiyle **dolu bir kare** olarak boyanır.
+Sahibin gördüğü turuncu kare budur: hata ekranı `unavailable` durumunda `bx-cloud-off` kullanıyor (`app.js`
+`LOAD_ERROR_STATES`), ve `bx-cloud-off` `iconify-icons.css`'te yok. Renk `.wcn-system-error > i`'nin
+`var(--bs-danger)` değeri, boyut 2.5rem.
+
+Sette bulunmayan diğer adlar (tarandı, `wwwroot/assets/js/**`):
+- Kare çizen gerçek ikon adları: `bx-cloud-off`, `bx-flag-alt`, `bx-hospital`, `bx-x-square`
+- İkon değil, boxicons'ın yardımcı sınıfları: `bx-spin` (dönme), `bx-lg` (boyut) — iconify ile sessizce hiçbir şey
+  yapmıyorlar; ör. `bx bx-loader-alt bx-spin` dönmüyor.
+
+İstenen:
+1. Dört ikon adı sette var olan karşılıklarıyla değiştirilir ya da ikonlar sete eklenir; hata ekranı için sette duran
+   `bx-wifi-off` uygun bir karşılık.
+2. `bx-spin` / `bx-lg` yerine projenin kendi yolu kullanılır (dönme için mevcut spinner deseni, boyut için CSS).
+3. Koruma testi: `wwwroot/assets/js/**` içinde geçen her `bx-*` sınıfı ikon setinde tanımlı olmalı; değilse test
+   kırmızı. Bugün hiçbir test bunu yakalamıyor.
+4. Aynı turda hata ekranının yerleşimi gözden geçirilir (ikon başlığa çok yakın; "Tekrar dene" düğmesinin yeri).
+
+Gelecek gerileme riski: düşük (ikon adları + koruma testi; davranış değişmez).
+İlgili: BL-427 (aynı ekranın başlığı yanlış anahtardan geliyor).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
