@@ -5840,6 +5840,56 @@ DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 3b/4) · KAYIT: 2026-09-18
 
 ---
 
+### BL-428
+
+**Durum raporu ve kanıt standardı: elle yazılan yüzdeler yerine üretilen tablo**
+
+DURUM: AÇIK · BULAN: CT (MVP6 lojistik raporu incelemesi) · KAYIT: 2026-09-18 · SAHİP KARARI: 2026-09-18 onaylandı
+
+Ölçüldü: Tedarik zinciri durum raporu "bounded runtime %22,2 — 2/9" gibi satırlar taşıyordu. "bounded runtime" ve
+"bounded CT kabulü" terimleri depoda hiçbir yerde tanımlı değil (`AGENTS.md`, `.antigravity/rules/**`,
+`docs/guides/operations/control-tower-sop.md`: sıfır eşleşme). Kanıt bağlantıları başka bir makinedeki kopyayı
+(`/Users/natig/Projects/ERP-vNext-recovery/...`) ve bir `/private/tmp/...` yolunu gösteriyordu; ikisi de bizde
+açılamıyor. Depo ölçümü: `origin/feature/mvp6-logistics` (`4a8d4d4b`) MOD-0183 sevkiyat kodunu (42 dosya,
+`ShipmentsController`) ve 68 kanıt dosyasını taşıyor; MOD-0184 (Carrier) için tek satır kod yok; iki CT karar kaydı
+depoda yok; dal main'in 1 commit önünde, **400 commit gerisinde**; o daldaki dokuz paketin sekizi hâlâ `draft`
+(MOD-0184 dahil, ki rapor onu "E4, CT kabul" diye gösteriyordu). Sonuç: rapor doğrulanamıyor ve sayılar depodaki
+durumla uyuşmuyor.
+
+İstenen:
+1. **Durum/portföy raporu şablonu** (SOP'a yeni bölüm, §22'nin yanına): sabit sütunlar — modül · kapsam cümlesi ·
+   kanıt seviyesi (E0–E5) · kanıtın yeri (`depo-yolu@commit`) · CT kararı (§29'daki hangi Done) · sıradaki tek eksik.
+   Yüzde ancak altındaki liste ile birlikte yazılır.
+2. **Kanıt kuralı** (`.antigravity/rules/`): kanıt depoya işlenir ve gönderilir, `docs/records/audits/<yyyy-ay>/`
+   altında durur, `yol@commit` diye gösterilir. Kişisel makine yolu, `/tmp` ve gönderilmemiş dal kanıt sayılmaz.
+3. **Bayatlık kuralı**: kanıt koşusundan önce dal ana dalla senkronlanır; rapor dalın kaç commit geride olduğunu yazar.
+4. **Terim disiplini**: yeni statü adı uydurulmaz; yalnız E0–E5 ve §29 Done seviyeleri. Yeni terim önce SOP'a yazılır.
+5. **CT karar kaydı künyesi**: her karar kaydının başına dört satırlık künye (modül/iş paketi, kanıt seviyesi, karar,
+   commit) — makine okuyabilsin diye.
+6. **`scripts/status_report.sh`**: paket `status:` alanlarını, karar kaydı künyelerini ve git'teki geri kalmışlığı
+   okuyup 1. maddedeki tabloyu üretir. Geliştirici tablo yazmaz, betiği çalıştırır.
+
+Gelecek gerileme riski: düşük (belge + salt-okuyan betik; üretim koduna dokunmaz). 1–4 tek başına da işe yarar ama
+elle yazım sürer; asıl kolaylık 6'dan gelir.
+
+---
+
+### BL-429
+
+**"Ad bilgisi yok" etiketi Görev Merkezi'nin başka üç yerinde de gerçek ad gibi kullanılıyor olabilir**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+Ölçüldü: `toPresentation`'ın `personName()`'i sunucu `displayName` göndermediğinde `PersonNameUnavailable`
+etiketini ("Ad bilgisi yok") döndürüyor; bu bir ad değil, adın bilinmediğini söyleyen cümle. Kanban kartı bunu ad
+sanıp baş harf üretiyordu; Dilim 4'te `assigneeNameKnown`/`requesterNameKnown` bayrakları eklenerek düzeltildi.
+Aynı `item.assignee || item.requester` doğruluk denetimi deseni Kanban DIŞINDA da duruyor: liste satırı çipi
+(`app.js:1591`), detay sayfası atanan alanı (`:2994-2995`) ve devir kartı (`:4711`). Bu WP'nin kapsamı yalnız
+Kanban olduğu için oralara dokunulmadı.
+
+İstenen: üç yerin her biri ölçülür; etiketi ad gibi gösteren varsa aynı bayraklarla kapatılır, kanıtı test olur.
+Gelecek gerileme riski: düşük (yalnız gösterim).
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
