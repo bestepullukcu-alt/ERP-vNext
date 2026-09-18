@@ -12,6 +12,7 @@ using Diten.Platform.Application.Features.Audit.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.Audit.Queries;
 using Diten.Platform.Application.Features.Audit.Services;
 using Diten.Platform.Application.Features.Audit.Validators;
+using Diten.Platform.Common.Authorization;
 using Diten.Platform.Common.Tenancy;
 using Diten.Platform.Domain.Entities.Audit;
 using Diten.Platform.Domain.Enums;
@@ -24,6 +25,10 @@ namespace Diten.Platform.Application.Tests.Audit;
 
 public sealed class AuditPhase5ApiSurfaceTests
 {
+    /// <summary>BL-421 — the authenticated caller every append test acts as, unless a case says otherwise.</summary>
+    private static readonly PrincipalStub TenantUserCaller =
+        new(isAuthenticated: true, actorType: "tenant_user", userId: Guid.Parse("42142142-0000-4000-8000-0000000000e1"));
+
     [Fact]
     public async Task Export_ShouldDefensivelyRedactSensitiveStateAndMetadata()
     {
@@ -154,7 +159,7 @@ public sealed class AuditPhase5ApiSurfaceTests
         var service = new CapturingAuditService(AuditAppendResult.Queued("audit:1"));
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
-        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
         var request = CreateAppendRequest(tenantId) with
         {
             Metadata = new Dictionary<string, object?>
@@ -177,6 +182,8 @@ public sealed class AuditPhase5ApiSurfaceTests
         Assert.Equal(AuditOperation.Execute, captured.Operation);
         Assert.Equal("Diten.HcmService", captured.SourceService);
         Assert.Equal("MOD-0251", captured.SourceModule);
+        Assert.Equal(AuditActorType.TenantUser, captured.ActorType);
+        Assert.Equal(TenantUserCaller.UserId, captured.ActorId);
         Assert.DoesNotContain(captured.Metadata.Keys, key => key.Contains("password", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -187,7 +194,7 @@ public sealed class AuditPhase5ApiSurfaceTests
         var service = new CapturingAuditService(AuditAppendResult.Queued("audit:missing"));
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
-        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
 
         var action = await controller.Append(new GovernedAuditAppendRequest(), CancellationToken.None);
 
@@ -206,7 +213,7 @@ public sealed class AuditPhase5ApiSurfaceTests
         var service = new CapturingAuditService(AuditAppendResult.Queued("audit:unsafe"));
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
-        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
 
         var action = await controller.Append(CreateAppendRequest(tenantId) with
         {
@@ -229,7 +236,7 @@ public sealed class AuditPhase5ApiSurfaceTests
         var service = new CapturingAuditService(AuditAppendResult.Queued("audit:tenant"));
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
-        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
 
         var action = await controller.Append(CreateAppendRequest(Guid.NewGuid()), CancellationToken.None);
 
@@ -247,7 +254,7 @@ public sealed class AuditPhase5ApiSurfaceTests
         var service = new CapturingAuditService(AuditAppendResult.EnqueueFailed("audit:failed", "Audit enqueue failed. ErrorType=TimeoutException"));
         var tenantContext = new TenantContext();
         tenantContext.SetTenant(tenantId);
-        var controller = new PlatformAuditAppendController(service, tenantContext);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
 
         var action = await controller.Append(CreateAppendRequest(tenantId), CancellationToken.None);
 
@@ -257,6 +264,61 @@ public sealed class AuditPhase5ApiSurfaceTests
         Assert.True(response.IsSuccessful);
         Assert.Equal("EnqueueFailed", response.Data!.Status);
         Assert.True(response.Data.ShouldBlockBusinessCommand);
+    }
+
+    [Fact]
+    public async Task PlatformAuditAppendController_RecordsTheCallerFromTheToken_WhenTheBodyNamesNoActor()
+    {
+        // BL-421 — an omitted actor is the caller, handed to the audit service explicitly rather than left for it to guess.
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:caller"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var controller = new PlatformAuditAppendController(service, tenantContext, TenantUserCaller);
+
+        var action = await controller.Append(
+            CreateAppendRequest(tenantId) with { ActorType = null, ActorId = null },
+            CancellationToken.None);
+
+        Assert.IsType<CreatedResult>(action);
+        var captured = Assert.Single(service.Requests);
+        Assert.Equal(AuditActorType.TenantUser, captured.ActorType);
+        Assert.Equal(TenantUserCaller.UserId, captured.ActorId);
+    }
+
+    public static TheoryData<string, bool, string?, bool> UnnameablePrincipals() => new()
+    {
+        { "authenticated with an unrecognised actor type", true, "wp_unrecognised_actor", true },
+        { "authenticated with no actor type", true, null, true },
+        { "tenant user whose token carries no user id", true, "tenant_user", false },
+        { "not authenticated", false, null, true }
+    };
+
+    [Theory]
+    [MemberData(nameof(UnnameablePrincipals))]
+    public async Task PlatformAuditAppendController_RefusesAPrincipalTheRecordCannotName(
+        string caseName,
+        bool isAuthenticated,
+        string? actorType,
+        bool hasUserId)
+    {
+        // BL-421 — Unknown is refused explicitly (403 actor_unresolved) and the audit service is never asked.
+        var tenantId = Guid.NewGuid();
+        var service = new CapturingAuditService(AuditAppendResult.Queued("audit:unnamed"));
+        var tenantContext = new TenantContext();
+        tenantContext.SetTenant(tenantId);
+        var principal = new PrincipalStub(isAuthenticated, actorType, hasUserId ? TenantUserCaller.UserId : Guid.Empty);
+        var controller = new PlatformAuditAppendController(service, tenantContext, principal);
+
+        var action = await controller.Append(
+            CreateAppendRequest(tenantId) with { ActorType = null, ActorId = null },
+            CancellationToken.None);
+
+        var forbidden = Assert.IsType<ObjectResult>(action);
+        Assert.True(forbidden.StatusCode == 403, $"{caseName}: expected 403, got {forbidden.StatusCode}");
+        var response = Assert.IsType<Response<GovernedAuditAppendResponse>>(forbidden.Value);
+        Assert.Contains(GovernedAuditAppendValidation.ActorUnresolved, response.Errors);
+        Assert.Empty(service.Requests);
     }
 
     private static string? PermissionFor(string methodName)
@@ -277,7 +339,7 @@ public sealed class AuditPhase5ApiSurfaceTests
             CorrelationId = Guid.NewGuid(),
             RequestType = "employee.approved",
             ActorType = AuditActorType.TenantUser.ToString(),
-            ActorId = Guid.NewGuid(),
+            ActorId = TenantUserCaller.UserId,
             TargetTenantId = targetTenantId,
             Category = AuditCategory.System.ToString(),
             EntityType = "Employee",
@@ -342,6 +404,25 @@ public sealed class AuditPhase5ApiSurfaceTests
             Requests.Add(request);
             return Task.FromResult(AuditAppendResult.Queued($"meta:{Requests.Count}"));
         }
+    }
+
+    /// <summary>BL-421 — the caller as <c>JwtTenantAuthorizationContext</c> exposes it; only what the append reads.</summary>
+    private sealed class PrincipalStub(bool isAuthenticated, string? actorType, Guid userId) : ITenantAuthorizationContext
+    {
+        public Guid TenantId => Guid.Empty;
+        public Guid UserId => userId;
+        public string? ActorType => actorType;
+        public bool IsAuthenticated => isAuthenticated;
+        public bool IsPlatformAdmin => false;
+        public IReadOnlyList<string> PermissionKeys => [];
+        public IReadOnlyList<Guid> RoleIds => [];
+        public IReadOnlyList<string> RoleNames => [];
+        public IReadOnlyList<Guid> OrgUnitIds => [];
+        public IReadOnlyList<Guid> PositionIds => [];
+        public Guid? LegalEntityId => null;
+        public string? Country => null;
+        public IReadOnlyList<Guid> ManagerChain => [];
+        public Task InitializeAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
     private sealed class CapturingAuditService : IAuditService

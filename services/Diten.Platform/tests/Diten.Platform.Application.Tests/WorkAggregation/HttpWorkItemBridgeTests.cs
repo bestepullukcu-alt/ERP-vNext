@@ -321,6 +321,8 @@ public sealed class HttpWorkItemBridgeTests
         var action = Assert.Single(item.Actions);
         Assert.False(action.Enabled);
         Assert.Equal(WorkAggregationReasonCodes.PermissionDenied, action.DisabledReasonCode);
+        // BL-379 — a disabled action must carry a reason LABEL too, or the browser drops the whole item.
+        Assert.Equal("WorkAggregation_ActionDisabled_PermissionDenied", action.DisabledReason?.Key);
     }
 
     /// <summary>

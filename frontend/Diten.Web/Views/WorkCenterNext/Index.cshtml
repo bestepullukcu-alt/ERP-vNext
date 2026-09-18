@@ -20,12 +20,19 @@
 <partial name="~/Views/Tasks/_QuickCreateOffcanvas.cshtml" />
 
 @section Scripts {
+    @* DCP-004 amendment 2026-09-15 — every tenant user opens this page now, so app.js must know which create actions
+       the user holds (UAS-001 §6: "+ Yeni ▸ Görev" is hidden without platform.tasks.create). UX only; the server
+       re-checks every key. Loaded first so window.Permissions exists before app.js renders the header. *@
+    <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
     @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/api.js" asp-append-version="true"></script>
+    <!-- S10B live pass (2026-09-13): app.js calls MeetingsApi for "schedule review meeting"; without this script the
+         scheduler threw on an undefined global and the dialog silently never opened. -->
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-tags.js" asp-append-version="true"></script>
     <script src="~/assets/js/shared/diten-checkitem.js" asp-append-version="true"></script>
     @* The date fields' picker. Tasks/form.js binds NO date itself — its enhanceDates delegates here and

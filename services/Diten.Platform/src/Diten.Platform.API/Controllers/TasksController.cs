@@ -414,6 +414,19 @@ public sealed class TasksController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    /// <summary>
+    /// Who the comment box's @ picker may offer for THIS task (WP-PSS-MOD0024-TASK-MENTIONS-01 K2). READ-guarded
+    /// like the comment endpoints themselves — the relationship check that actually decides candidacy is
+    /// per-candidate, inside the handler, via <c>ITaskReadAccessPolicy</c>.
+    /// </summary>
+    [HttpGet("{id:guid}/mention-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetMentionCandidates(Guid id, [FromQuery] string? q, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new GetTaskMentionCandidatesQuery(id, q, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     // ── The personal overlay (WC-1) ──────────────────────────────────────────
     //
     // All three are guarded by READ, not Update, and the reason is the same for each: a private note or a snooze
@@ -500,69 +513,35 @@ public sealed class TasksController : CustomBaseController
     // Each route has to be listed on the Diten.Web proxy too: one that exists here and not there answers 404
     // before the request leaves the web tier, which is how `inquire` shipped unreachable.
 
-    // ── DCP-005 slice 2: the controlled-document reference list ──────────
+    // ── DCP-005 slice 2's CSV screen (BL-369, retired here) ───────────────
+    //
+    // ⚠ WP-DM-DCP005-RETIRE-CSV-01 — document-list/dry-run, /import, /versions/{id}/withdraw, /versions and
+    // /search (5 endpoints) were removed together with the /Tasks/DocumentList screen that was their only
+    // caller (confirmed: a repo-wide search found no other consumer of any of the five).
+    //
+    // ⚠ WP-DM-DCP005-DEADCODE-01 — the command/query handlers those 5 endpoints called (DryRun/Import/Withdraw
+    // in Handlers/CommandHandlers/DocumentReferenceListHandlers.cs; GetDocumentReferenceListVersionsHandler and
+    // SearchDocumentReferencesHandler in Handlers/QueryHandlers/DocumentReferenceListQueryHandlers.cs), their
+    // command/query records, request/DTO records and IDocumentReferenceListRepository (interface, Mongo
+    // implementation, DI registration) had zero remaining callers once these endpoints were gone — measured by
+    // repo-wide search, not inferred from a green build — and were deleted in that follow-up. What is left in
+    // place, deliberately: the document_reference_entries / document_reference_list_versions Mongo collections
+    // and the DocumentReferenceListVersion / DocumentReferenceEntry entities (a schema/data decision, outside
+    // both WPs' scope — tenants may hold real imported data in them), DocumentReferenceListParser (the register
+    // import under DocumentManagementMasterRegister reuses it directly), and TaskPermissions.DocumentListRead /
+    // .DocumentListImport (removing either from the Auth permission catalog is a separate, Control-Tower-owned
+    // step). DocumentListRead stays enforced below (SearchDocumentCitations, GetTaskTypeGoverningDocuments).
 
     /// <summary>
-    /// Read the register WITHOUT storing it: how many rows, how many citable, which columns are unread, and
-    /// whether these exact bytes are already a stored version. Same two-step the folder taxonomy import uses.
+    /// MOD-0357 S4 — the "link an existing task" picker's typeahead. Guarded by <c>Read</c> alone: choosing a
+    /// task to link is not managing it, the same posture the meeting-type dropdown already takes for Meetings.
     /// </summary>
-    [HttpPost("document-list/dry-run")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> DryRunDocumentList(
-        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(new DryRunDocumentReferenceListCommand(request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>Store the register as a new list VERSION.</summary>
-    [HttpPost("document-list/import")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> ImportDocumentList(
-        [FromBody] ImportDocumentReferenceListRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(new ImportDocumentReferenceListCommand(request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>
-    /// Take a list version out of service.
-    ///
-    /// ⚠ THERE IS NO DELETE ROUTE, deliberately: a closed task may have resolved against this version, so the
-    /// row and its history stay. Guarded by IMPORT, not Read — deciding what the tenant may cite is the same
-    /// authority as replacing it.
-    /// </summary>
-    [HttpPut("document-list/versions/{id:guid}/withdraw")]
-    [HasPermission(TaskPermissions.DocumentListImport)]
-    public async Task<IActionResult> WithdrawDocumentListVersion(
-        Guid id, [FromBody] WithdrawDocumentListVersionRequest request, CancellationToken ct)
-    {
-        var response = await _mediator.Send(
-            new WithdrawDocumentListVersionCommand(id, request, CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>Every import, newest first — "which list did this task resolve against".</summary>
-    [HttpGet("document-list/versions")]
-    [HasPermission(TaskPermissions.DocumentListRead)]
-    public async Task<IActionResult> GetDocumentListVersions(CancellationToken ct)
-    {
-        var response = await _mediator.Send(new GetDocumentReferenceListVersionsQuery(CorrelationId), ct);
-        return CreateActionResultInstance(response);
-    }
-
-    /// <summary>
-    /// Search the current list.
-    ///
-    /// ⚠ Guarded by <c>Read</c>, like the task-type picker and for the same reason: citing a procedure is
-    /// ordinary work, importing the register is not.
-    /// </summary>
-    [HttpGet("document-list/search")]
-    [HasPermission(TaskPermissions.DocumentListRead)]
-    public async Task<IActionResult> SearchDocumentList(
+    [HttpGet("lookups/link-candidates")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> GetLinkCandidates(
         [FromQuery] string? term, [FromQuery] int limit, CancellationToken ct)
     {
-        var response = await _mediator.Send(new SearchDocumentReferencesQuery(term, limit, CorrelationId), ct);
+        var response = await _mediator.Send(new GetTaskLinkCandidatesQuery(term, limit, CorrelationId), ct);
         return CreateActionResultInstance(response);
     }
 

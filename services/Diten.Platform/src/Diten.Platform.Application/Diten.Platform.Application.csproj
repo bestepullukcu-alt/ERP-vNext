@@ -12,6 +12,10 @@
     <PackageReference Include="MediatR" Version="12.3.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <!-- BL-406 — the ops-only "permanently failed" counter (Diten.Platform.API.Observability already carries
+         prometheus-net.AspNetCore for its own background-job counters; the plain prometheus-net metrics API this
+         handler needs lives in the base package, matching that dependency's pinned version). -->
+    <PackageReference Include="prometheus-net" Version="8.2.1" />
   </ItemGroup>
 
   <ItemGroup>

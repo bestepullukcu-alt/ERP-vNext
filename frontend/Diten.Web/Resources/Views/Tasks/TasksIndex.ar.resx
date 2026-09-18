@@ -106,6 +106,9 @@
   <data name="ErrorPositionNotAssignable" xml:space="preserve"><value>لا يمكن للوظيفة المحددة استلام المهام. اختر وظيفة نشطة.</value></data>
   <data name="ErrorConcurrencyRefreshed" xml:space="preserve"><value>غيّر شخص آخر هذه المهمة قبلك. تم تحديث الشاشة بالحالة الحالية.</value></data>
   <data name="ErrorChecklistIncomplete" xml:space="preserve"><value>لم يتم تحديد عنصر مطلوب في قائمة التحقق، لذا لا يمكن إكمال المهمة.</value></data>
+  <data name="ErrorClosureFieldRequired" xml:space="preserve"><value>حقل إغلاق مطلوب لا يزال فارغًا، فلا يمكن إتمام المهمة.</value></data>
+  <data name="ErrorOrganizationUnitNotFound" xml:space="preserve"><value>لم يتم العثور على وحدة المؤسسة المحددة.</value></data>
+  <data name="ErrorOrganizationUnitOutOfScope" xml:space="preserve"><value>تلك الوحدة التنظيمية خارج نطاقك.</value></data>
   <data name="ErrorDependencyBlocked" xml:space="preserve"><value>لم تنتهِ بعد مهمة تعتمد عليها هذه المهمة، لذا لا يمكنها المضي قدمًا.</value></data>
   <data name="ErrorSubtaskBlocked" xml:space="preserve"><value>ما تزال إحدى المهام الفرعية مفتوحة، لذا لا يمكن إكمال هذه المهمة بعد.</value></data>
   <data name="ErrorCommentTaskClosed" xml:space="preserve"><value>أُغلقت هذه المهمة، لذا لم يعد بالإمكان التعليق عليها.</value></data>
@@ -150,6 +153,18 @@
   <data name="CardWatchersTitle" xml:space="preserve"><value>المتابعون</value></data>
   <data name="CardChecklistTitle" xml:space="preserve"><value>قائمة التحقق</value></data>
   <data name="CardChecklistDescription" xml:space="preserve"><value>خطوات هذه المهمة. تُعلَّم البنود بعد إنشاء المهمة؛ والبند المانع يمنع إغلاقها.</value></data>
+  <data name="CardAttachmentsTitle" xml:space="preserve"><value>المرفقات</value></data>
+  <data name="CardAttachmentsDescription" xml:space="preserve"><value>ملفات هذه المهمة — تعليمات فتحها، أو دليل ومخرج يُحفظ فورًا. تُرفع بعد إنشاء المهمة.</value></data>
+  <data name="AttachmentFileLabel" xml:space="preserve"><value>الملف</value></data>
+  <data name="AttachmentKindLabel" xml:space="preserve"><value>النوع</value></data>
+  <data name="AttachmentKindAttachment" xml:space="preserve"><value>مرفق</value></data>
+  <data name="AttachmentKindEvidence" xml:space="preserve"><value>دليل</value></data>
+  <data name="AttachmentKindDeliverable" xml:space="preserve"><value>مخرج</value></data>
+  <data name="AttachmentAddButton" xml:space="preserve"><value>إضافة ملف</value></data>
+  <data name="AttachmentRemoveButton" xml:space="preserve"><value>إزالة</value></data>
+  <data name="AttachmentUploadPartialTitle" xml:space="preserve"><value>تم إنشاء المهمة — تعذّر رفع بعض الملفات</value></data>
+  <data name="AttachmentUploadPartialBody" xml:space="preserve"><value>تم إنشاء المهمة، لكن تعذّر رفع الملفات التالية. أضفها مرة أخرى من بطاقة المرفقات الخاصة بالمهمة:</value></data>
+  <data name="AttachmentUploadRetryLink" xml:space="preserve"><value>الانتقال إلى المهمة</value></data>
   <data name="ChecklistAddPlaceholder" xml:space="preserve"><value>اكتب بندًا واضغط Enter</value></data>
   <data name="ChecklistAddButton" xml:space="preserve"><value>إضافة</value></data>
   <data name="ChecklistAddHint" xml:space="preserve"><value>انقر على الوسم لتغيير المستوى. لا توجد قائمة قوالب بعد.</value></data>
@@ -200,6 +215,12 @@
   </data>
   <data name="ErrorCommentWithdrawn" xml:space="preserve">
     <value>سُحب هذا التعليق بالفعل.</value>
+  </data>
+  <data name="ErrorMentionNotVisible" xml:space="preserve">
+    <value>أحد الأشخاص الذين أشرت إليهم لا يمكنه رؤية هذه المهمة. أضفه أولاً كمراقب.</value>
+  </data>
+  <data name="ErrorMentionLimitExceeded" xml:space="preserve">
+    <value>يمكن أن يشير التعليق إلى 10 أشخاص كحد أقصى.</value>
   </data>
   <data name="ErrorWaitingOnNotAssignable" xml:space="preserve">
     <value>لا يمكن ذكر هذا الشخص هنا.</value>

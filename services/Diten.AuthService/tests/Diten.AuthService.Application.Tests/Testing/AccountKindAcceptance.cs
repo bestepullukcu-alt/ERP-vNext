@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using Diten.AuthService.Application.Common;
@@ -108,7 +109,9 @@ public static class AccountKindAcceptance
         string CreatorToken,
         string NoPermissionToken);
 
-    public sealed class AuthTestHost : IAsyncLifetime
+    // BL-412 — not sealed: SelfRegistrationTestHost derives from it to replace ONE outbound network edge (the Platform
+    // login-settings HTTP call) inside the same locked start window. Nothing else about the host changes.
+    public class AuthTestHost : IAsyncLifetime
     {
         // C1/C3 §3 — env vars are process-global, so two hosts starting in the same process CANNOT be allowed to
         // interleave their env-var mutation windows. [Collection("AccountKindAcceptance")] already serializes every
@@ -178,6 +181,15 @@ public static class AccountKindAcceptance
         /// fails. Not part of the fixture's external contract.
         /// </summary>
         internal Func<WebApplicationFactory<Program>, Task>? DisposeFactoryHookForTesting { get; set; }
+
+        /// <summary>
+        /// BL-412 — additive, test-only seam applied through <c>ConfigureTestServices</c> while the host is built inside
+        /// the start lock. The base host changes nothing. A derived host may replace an OUTBOUND network edge (e.g. a
+        /// Platform HTTP call) — never the Mongo settings, the JWT secret or anything the pre-flight checks guard.
+        /// </summary>
+        protected virtual void ConfigureTestServices(IServiceCollection services)
+        {
+        }
 
         /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
@@ -283,6 +295,9 @@ public static class AccountKindAcceptance
                     _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
                     {
                         builder.UseEnvironment("Development");
+                        // BL-412 — additive seam, a no-op for every host but SelfRegistrationTestHost. Applied here, inside
+                        // the same lock hold as the env overrides, so a derived host can never build against other settings.
+                        Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.ConfigureTestServices(builder, ConfigureTestServices);
                     });
 
                     // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
@@ -694,5 +709,54 @@ public static class AccountKindAcceptance
             PmoToken: await TokenFor(pmo, pmoRole),
             CreatorToken: await TokenFor(creator, creatorRole),
             NoPermissionToken: await TokenFor(noPermission, null));
+    }
+
+    // ── WP-INFRA-AUTH-DISPLAY-LABEL-01 additive fixture ─────────────────────────────────────────────────
+
+    /// <summary>Four disposable subjects for the display-label endpoint's edge cases; see <see cref="SeedDisplayLabelSubjectsAsync"/>.</summary>
+    public sealed record DisplayLabelSubjects(SeedUser Unnamed, SeedUser Whitespace, SeedUser EmailUserName, SeedUser LongName);
+
+    // xUnit constructs a new UserDisplayLabelEndpointTests instance per test method, but the host (IClassFixture) is
+    // shared across all of them — so this seeds the four subjects into the host's ALREADY-seeded tenant exactly once,
+    // no matter how many times InitializeAsync calls it for that same host.
+    private static readonly ConditionalWeakTable<AuthTestHost, Task<DisplayLabelSubjects>> DisplayLabelSubjectsCache = new();
+
+    public static Task<DisplayLabelSubjects> SeedDisplayLabelSubjectsAsync(AuthTestHost host) =>
+        DisplayLabelSubjectsCache.GetValue(host, static h => SeedDisplayLabelSubjectsCoreAsync(h));
+
+    private static async Task<DisplayLabelSubjects> SeedDisplayLabelSubjectsCoreAsync(AuthTestHost host)
+    {
+        var tenantId = host.Seeded.TenantId;
+        var stamp = Guid.NewGuid().ToString("N")[..8];
+
+        using var scope = host.Factory.Services.CreateScope();
+        var sp = scope.ServiceProvider;
+        sp.GetRequiredService<TenantContext>().SetTenant(tenantId);
+
+        var users = sp.GetRequiredService<IUserRepository>();
+        var hasher = sp.GetRequiredService<IPasswordHasher>();
+
+        async Task<SeedUser> NewSubject(string slug, string first, string last, string? userName = null)
+        {
+            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(DisposablePassword), first, last, tenantId);
+            user.ConfirmEmail();
+            user.SetAccountKind(AccountKind.Human);
+            if (userName is not null)
+            {
+                user.SetUserName(userName);
+            }
+
+            var created = await users.CreateAsync(user, CancellationToken.None);
+            return new SeedUser(created.Id, created.Email, created.FirstName, created.LastName);
+        }
+
+        var unnamed = await NewSubject("displaylabel-unnamed", "", "");
+        var whitespace = await NewSubject("displaylabel-whitespace", "  ", "\t");
+        var emailUserName = await NewSubject(
+            "displaylabel-emailusername", "", "",
+            userName: $"displaylabel-emailusername.{stamp}@acceptance.invalid");
+        var longName = await NewSubject("displaylabel-longname", new string('a', 150), new string('b', 150));
+
+        return new DisplayLabelSubjects(unnamed, whitespace, emailUserName, longName);
     }
 }

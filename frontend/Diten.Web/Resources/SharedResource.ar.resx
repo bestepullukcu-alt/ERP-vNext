@@ -812,6 +812,8 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>تعريفات الحقول</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>الاجتماعات</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>أنواع الاجتماعات</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>سلاسل الاجتماعات</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>تقرير الاجتماعات</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>ليس لديك حق الوصول إلى {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>اطلب من المسؤول منحك صلاحية الوصول إلى هذه الصفحة.</value></data>
   <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>رأس المال البشري</value></data>

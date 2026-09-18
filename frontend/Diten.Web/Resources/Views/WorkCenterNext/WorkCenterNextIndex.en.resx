@@ -895,6 +895,18 @@
   <data name="MeetingWhenLabel" xml:space="preserve">
     <value>Meeting date and time</value>
   </data>
+  <data name="MeetingTypeLabel" xml:space="preserve">
+    <value>Meeting type</value>
+  </data>
+  <data name="MeetingTypeSubtext" xml:space="preserve">
+    <value>Choose which type of meeting to schedule.</value>
+  </data>
+  <data name="MeetingNoTypesAvailable" xml:space="preserve">
+    <value>No meeting types are set up yet. Ask an administrator to add one.</value>
+  </data>
+  <data name="MeetingScheduleSubtext" xml:space="preserve">
+    <value>This creates a real meeting in Meetings, linked to this task.</value>
+  </data>
   <data name="MeetingTitlePlaceholder" xml:space="preserve">
     <value>Q3 close review</value>
   </data>
@@ -1014,6 +1026,30 @@
   </data>
   <data name="CommentPost" xml:space="preserve">
     <value>Post</value>
+  </data>
+  <data name="MentionAdd" xml:space="preserve">
+    <value>Mention someone</value>
+  </data>
+  <data name="MentionRemove" xml:space="preserve">
+    <value>Remove mention</value>
+  </data>
+  <data name="MentionPickerTitle" xml:space="preserve">
+    <value>Mention people</value>
+  </data>
+  <data name="MentionAddConfirm" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="MentionNoneChosen" xml:space="preserve">
+    <value>Choose at least one person.</value>
+  </data>
+  <data name="MentionNoCandidates" xml:space="preserve">
+    <value>There is nobody to mention on this task yet.</value>
+  </data>
+  <data name="MentionAllAlreadyAdded" xml:space="preserve">
+    <value>Everyone who can be mentioned is already added.</value>
+  </data>
+  <data name="MentionLimitExceededClient" xml:space="preserve">
+    <value>A comment may mention at most {0} people.</value>
   </data>
   <data name="CommentTextRequired" xml:space="preserve">
     <value>Write something before posting</value>
@@ -1374,6 +1410,7 @@
   <data name="DetailTabCollaboration" xml:space="preserve"><value>Collaboration and records</value></data>
   <data name="DetailPageTitle" xml:space="preserve"><value>Work item details</value></data>
   <data name="DetailItemNotFound" xml:space="preserve"><value>The requested work item could not be found.</value></data>
+  <data name="DetailItemRejectedByContract" xml:space="preserve"><value>This work item could not be shown because it failed contract validation.</value></data>
   <data name="DetailBackToList" xml:space="preserve"><value>Back to Work Center</value></data>
   <data name="ActionDisabledAuthorityEnded" xml:space="preserve"><value>Your authority for this item has ended.</value></data>
   <data name="ActionDisabledDependencyBlocked" xml:space="preserve"><value>A required dependency is incomplete.</value></data>
@@ -1434,6 +1471,9 @@
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 July 2026, 14:00–15:00 · Teams · Organizer: Deniz Koç</value></data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approval: {objectType} {objectId}</value>
+  </data>
+  <data name="WorkAggregation_NativeStatus_Pending" xml:space="preserve">
+    <value>Pending</value>
   </data>
   <data name="WorkAggregation_NativeStatus_WaitingApproval" xml:space="preserve">
     <value>Waiting for approval</value>
@@ -1542,6 +1582,15 @@
   </data>
   <data name="WorkAggregation_Action_Inquire" xml:space="preserve">
     <value>Waiting on…</value>
+  </data>
+  <data name="WorkAggregation_Action_ScheduleReviewMeeting" xml:space="preserve">
+    <value>Schedule review meeting</value>
+  </data>
+  <data name="WorkAggregation_Action_AcceptInvite" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="WorkAggregation_Action_DeclineInvite" xml:space="preserve">
+    <value>Decline</value>
   </data>
   <data name="WorkAggregation_Action_Return" xml:space="preserve">
     <value>Return</value>
@@ -1895,6 +1944,12 @@
   <data name="WorkAggregation_ActionDisabled_SubtaskBlocked" xml:space="preserve">
     <value>A subtask is still open</value>
   </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingAlreadyScheduled" xml:space="preserve">
+    <value>A review meeting is already scheduled</value>
+  </data>
+  <data name="WorkAggregation_ActionDisabled_ReviewMeetingRequired" xml:space="preserve">
+    <value>This decision is locked until the linked review meeting's minutes are published.</value>
+  </data>
   <data name="ToastChecklistUpdated" xml:space="preserve">
     <value>Checklist updated.</value>
   </data>
@@ -2158,6 +2213,9 @@
   <data name="PartialBoardBanner" xml:space="preserve">
     <value>Some sources did not respond — this list may be incomplete.</value>
   </data>
+  <data name="WorkItemsContractRejected" xml:space="preserve">
+    <value>{0} work item(s) could not be shown due to a contract error.</value>
+  </data>
   <data name="PartialCountHint" xml:space="preserve">
     <value>Some sources did not respond, so this count may be incomplete.</value>
   </data>
@@ -2203,6 +2261,15 @@
   <data name="StepClosedAs" xml:space="preserve">
     <value>Closed as: {0}</value>
   </data>
+  <data name="ClosureSectionTitle" xml:space="preserve">
+    <value>Closure</value>
+  </data>
+  <data name="ClosureDeliverableCount" xml:space="preserve">
+    <value>{0} deliverable(s) attached.</value>
+  </data>
+  <data name="ClosureEvidenceCount" xml:space="preserve">
+    <value>{0} evidence file(s) attached.</value>
+  </data>
   <data name="ClosureOutcomeLabel" xml:space="preserve">
     <value>How did this end?</value>
   </data>
@@ -2223,6 +2290,9 @@
   </data>
   <data name="ClosureReasonRequired" xml:space="preserve">
     <value>This outcome requires a reason.</value>
+  </data>
+  <data name="ClosureFieldRequired" xml:space="preserve">
+    <value>This field is required before the task can be completed.</value>
   </data>
   <data name="WorkAggregation_ClosureOutcome_CompletedAsRequested" xml:space="preserve">
     <value>Completed as requested</value>
@@ -2274,6 +2344,9 @@
   <data name="AttachmentUploadedBy" xml:space="preserve"><value>Uploaded by {0} · {1}</value></data>
   <data name="ToastAttachmentAdded" xml:space="preserve"><value>Attachment added.</value></data>
   <data name="ToastAttachmentRemoved" xml:space="preserve"><value>Attachment removed.</value></data>
+  <data name="CompleteAttachFileLabel" xml:space="preserve"><value>Add a deliverable or evidence file (optional)</value></data>
+  <data name="CompleteAttachFileRequiredLabel" xml:space="preserve"><value>This task's type requires a deliverable file</value></data>
+  <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choose a file before completing this task.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Add evidence</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} evidence file(s)</value></data>
 </root>

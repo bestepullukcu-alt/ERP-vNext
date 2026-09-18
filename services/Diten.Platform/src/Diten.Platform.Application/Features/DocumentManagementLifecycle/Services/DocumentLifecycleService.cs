@@ -71,7 +71,7 @@ public sealed class DocumentLifecycleService
         }
 
         if (entry.LifecycleStatus == ControlledDocumentLifecycleStatus.ApprovedPendingEffective
-            && !string.Equals(entry.ApprovalEvidenceStatus, "Complete", StringComparison.OrdinalIgnoreCase))
+            && !IsApprovalEvidenceReadyForEffective(entry.ApprovalEvidenceStatus))
         {
             warnings.Add("Approval evidence must be Complete before the document can become Effective.");
             state = state with { CanMarkEffective = false };
@@ -131,19 +131,13 @@ public sealed class DocumentLifecycleService
         var warnings = new List<string>();
 
         // MOD-0029-FU09 seam: when an approval-gate adapter is present it may block InReview → ApprovedPendingEffective
-        // (only when the approval-required policy is switched on; otherwise the adapter allows it).
+        // (only when the approval-required policy is switched on; otherwise the adapter allows it). No adapter means
+        // no approval gating (see IApprovedPendingEffectiveGate's own contract) — backward compatible with FU08-only
+        // tenants where FU09 has not been wired up.
         if (target == ControlledDocumentLifecycleStatus.ApprovedPendingEffective
-            && from == ControlledDocumentLifecycleStatus.InReview)
+            && from == ControlledDocumentLifecycleStatus.InReview
+            && _approvalGate is not null)
         {
-            if (_approvalGate is null)
-            {
-                return Fail(
-                    "Approval gate is unavailable; the document cannot enter Approved-pending-effective.",
-                    409,
-                    LifecycleReasonCodes.ApprovalIncomplete,
-                    correlationId);
-            }
-
             var block = await _approvalGate.EvaluateAsync(entry, ct);
             if (block is not null)
             {
@@ -212,7 +206,17 @@ public sealed class DocumentLifecycleService
             return Fail("The last release-gate evaluation is Blocked; the document cannot become Effective.", 409, LifecycleReasonCodes.ReleaseGateBlocked, correlationId);
         }
 
-        if (!string.Equals(entry.ApprovalEvidenceStatus, "Complete", StringComparison.OrdinalIgnoreCase))
+        // FU09 evidence, FAIL-CLOSED (BL-380, sahip 2026-09-15 — Kalite teyidi bekliyor): only Complete and
+        // NotRequired — the two passing members of ApprovalEvidenceState — let a document become Effective. Every
+        // other written value blocks, including one a future enum member would add (a deny-list of the negative
+        // members would let that new member through silently) — and, as of BL-380, including an UNEVALUATED
+        // (null/empty) status. The FU08-era "warn, don't block" behavior for an unevaluated status (CT 2026-09-13,
+        // superseding 0f71a237's own MarkEffective_without_evidence_or_gate_succeeds_with_warnings) let a document
+        // whose approval evidence was never even computed become Effective — GetStateAsync already called that
+        // "not ready" while this guard let it through; IsApprovalEvidenceReadyForEffective is now the ONE place
+        // both read the same answer from, so the two can never diverge again the way they just did. If Kalite's
+        // confirmation differs, this one method is the only place that needs to change.
+        if (!IsApprovalEvidenceReadyForEffective(entry.ApprovalEvidenceStatus))
         {
             return Fail("Approval evidence must be Complete before the document can become Effective.", 409, LifecycleReasonCodes.ApprovalEvidenceMissing, correlationId);
         }
@@ -318,6 +322,15 @@ public sealed class DocumentLifecycleService
             CorrelationId = correlationId,
             CreatedBy = _currentUser.ActorName
         }, ct);
+
+    /// <summary>BL-380 (sahip 2026-09-15, Kalite teyidi bekliyor) — the SOLE definition of "approval evidence is
+    /// ready for Effective". Both the write guard (<see cref="ApplyMarkEffectiveGuardsAsync"/>) and the read-side
+    /// hint (<see cref="GetStateAsync"/>) call this SAME method so they cannot diverge again: Complete and
+    /// NotRequired are the only two passing <see cref="ApprovalEvidenceState"/> members; every other value —
+    /// INCLUDING an unevaluated null/empty status — is not ready.</summary>
+    private static bool IsApprovalEvidenceReadyForEffective(string? approvalEvidenceStatus) =>
+        string.Equals(approvalEvidenceStatus, nameof(ApprovalEvidenceState.Complete), StringComparison.OrdinalIgnoreCase)
+        || string.Equals(approvalEvidenceStatus, nameof(ApprovalEvidenceState.NotRequired), StringComparison.OrdinalIgnoreCase);
 
     private static bool RequiresReason(ControlledDocumentLifecycleStatus target) =>
         target is ControlledDocumentLifecycleStatus.Suspended

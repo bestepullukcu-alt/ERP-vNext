@@ -87,6 +87,11 @@
                     <th>@Localizer["HistoryActorColumn"]</th>
                     <th>@Localizer["HistoryAppliedAtColumn"]</th>
                     <th>@Localizer["HistoryCountsColumn"]</th>
+                    @* WP-DM-DCP005-RETIRE-CSV-01, AC1 — its own column, not folded into the combined
+                       new/updated/blocked string: Unchanged is the count that PROVES the commit's counting bug
+                       is fixed (a byte-identical re-import now reports N here and 0 under Updated), so it reads
+                       as its own fact rather than a fourth number appended to an unrelated one. *@
+                    <th>@Localizer["HistoryUnchangedColumn"]</th>
                 </tr>
             </thead>
         </table>

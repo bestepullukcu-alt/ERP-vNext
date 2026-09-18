@@ -1,0 +1,28 @@
+@using Diten.Web.Views.Meetings.Series
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MeetingSeriesIndex> Localizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+@if (!Perms.Has("platform.meetings.series-manage"))
+{
+    <partial name="_AccessDenied" model="@Localizer["MeetingSeriesTitle"].Value" />
+    return;
+}
+
+<partial name="~/Views/Meetings/Series/_Form.cshtml" />
+
+@section Scripts {
+    <partial name="~/Views/Meetings/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/index.l10n.js" asp-append-version="true"></script>
+    <partial name="~/Views/Meetings/Series/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Meetings/series/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>
+    <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/api.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Meetings/series/form.js" asp-append-version="true"></script>
+}

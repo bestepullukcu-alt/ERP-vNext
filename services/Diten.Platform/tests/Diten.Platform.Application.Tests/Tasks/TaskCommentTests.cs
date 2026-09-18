@@ -355,6 +355,9 @@ public sealed class TaskCommentTests
                 new FakeTenantContext(TaskTestData.Tenant),
                 Watchers,
                 Notifications,
+                // Mentions are out of scope for this file (TaskMentionTests owns them) — no request here ever
+                // carries MentionedUserIds, so this policy's answer is never consulted.
+                new AlwaysAdmitReadAccessPolicy(),
                 Microsoft.Extensions.Logging.Abstractions.NullLogger<AddTaskCommentHandler>.Instance);
 
             var correlation = new CorrelationContext();

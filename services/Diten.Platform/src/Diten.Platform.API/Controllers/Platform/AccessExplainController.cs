@@ -1,5 +1,6 @@
 using Diten.Platform.API.Authorization.Explain;
 using Diten.Platform.API.Controllers.Common;
+using Diten.Platform.API.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +28,7 @@ public sealed class AccessExplainController : CustomBaseController
     /// </summary>
     [Authorize]
     [HttpGet("me")]
+    [LoginOnly("Explains the caller's own access; no subject or tenant parameter. The route is an /api/platform admin path, so the tenant middleware admits platform actors only.")]
     public async Task<IActionResult> ExplainMyAccess(
         [FromQuery] string? permissionKey,
         [FromQuery] string? moduleCode,

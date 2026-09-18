@@ -1,0 +1,46 @@
+@using Diten.Web.Views.Meetings.MinutesEditor
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<MinutesEditorIndex> Localizer
+
+@* MOD-0357 S6 — this screen's OWN l10n payload (window.MinutesEditorL10n). Shared/common keys (Back, Save,
+   Cancel, the reason-code bridge sentences, …) stay in the general Meetings payload (window.MeetingsL10n),
+   loaded alongside this one — same posture MeetingTypes/_IndexL10n.cshtml already takes.
+   Contract marker: id="minutes-editor-l10n". *@
+<script id="minutes-editor-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        MinutesTitle = Localizer["MinutesTitle"].Value,
+        MeetingTitleLabel = Localizer["MeetingTitleLabel"].Value,
+        StatusDraft = Localizer["StatusDraft"].Value,
+        StatusPublishedPrefix = Localizer["StatusPublishedPrefix"].Value,
+        SaveDraft = Localizer["SaveDraft"].Value,
+        Publish = Localizer["Publish"].Value,
+        PublishCorrection = Localizer["PublishCorrection"].Value,
+        AttendanceSection = Localizer["AttendanceSection"].Value,
+        NoAttendeesHint = Localizer["NoAttendeesHint"].Value,
+        AttendancePresent = Localizer["AttendancePresent"].Value,
+        AttendanceAbsent = Localizer["AttendanceAbsent"].Value,
+        AttendanceExcused = Localizer["AttendanceExcused"].Value,
+        DecisionsSection = Localizer["DecisionsSection"].Value,
+        AddDecision = Localizer["AddDecision"].Value,
+        RemoveDecision = Localizer["RemoveDecision"].Value,
+        NoDecisionsHint = Localizer["NoDecisionsHint"].Value,
+        DecisionTextPlaceholder = Localizer["DecisionTextPlaceholder"].Value,
+        DecidedByLabel = Localizer["DecidedByLabel"].Value,
+        DecidedByPlaceholder = Localizer["DecidedByPlaceholder"].Value,
+        CreateTaskFromDecision = Localizer["CreateTaskFromDecision"].Value,
+        AddedLaterBadge = Localizer["AddedLaterBadge"].Value,
+        HistorySection = Localizer["HistorySection"].Value,
+        HistoryDraftLabel = Localizer["HistoryDraftLabel"].Value,
+        HistoryPublishedPrefix = Localizer["HistoryPublishedPrefix"].Value,
+        HistoryCorrectionOfPrefix = Localizer["HistoryCorrectionOfPrefix"].Value,
+        PublishConfirmTitle = Localizer["PublishConfirmTitle"].Value,
+        PublishConfirmText = Localizer["PublishConfirmText"].Value,
+        CorrectionReasonLabel = Localizer["CorrectionReasonLabel"].Value,
+        CorrectionReasonPlaceholder = Localizer["CorrectionReasonPlaceholder"].Value,
+        CorrectionReasonRequired = Localizer["CorrectionReasonRequired"].Value,
+        ToastDraftSaved = Localizer["ToastDraftSaved"].Value,
+        ToastPublished = Localizer["ToastPublished"].Value,
+        ToastCorrected = Localizer["ToastCorrected"].Value
+    })
+</script>

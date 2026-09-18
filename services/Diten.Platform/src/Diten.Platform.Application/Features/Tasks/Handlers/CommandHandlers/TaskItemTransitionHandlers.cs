@@ -214,7 +214,22 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
 
     /// <summary>WC-4 — the shared notification path; see ITaskNotificationService for the four rules it holds.</summary>
     private readonly ITaskNotificationService _notifications;
+
+    /// <summary>Faz 2a — gates CLOSURE-stage field values; see <see cref="ITaskFieldDefinitionService.ValidateClosureFieldsAsync"/>.</summary>
+    private readonly ITaskFieldDefinitionService _fieldDefinitions;
+    private readonly ITaskAttachmentRepository _attachments;
     private readonly ILogger<TransitionTaskItemHandler> _logger;
+
+    /// <summary>MOD-0357 S9 (owner, 2026-09-13) — the shared review-meeting gate re-check; see the type's own
+    /// doc comment. Independent of <see cref="_workflowGate"/>: this never touches MOD-0023.
+    ///
+    /// <para>OPTIONAL for the same reason every other MOD-0357 seam on sibling constructors in this feature is:
+    /// every test written before S9 constructs this handler directly and predates the parameter. A null reader
+    /// fails CLOSED exactly like <see cref="_workflowGate"/>'s own outage case — but only a task whose TYPE says
+    /// Required ever asks it anything, and no pre-S9 test's task type does, so the compatibility is real, not
+    /// just compiled: nothing pre-S9 exercises the branch that would notice.</para>
+    /// </summary>
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
 
     public TransitionTaskItemHandler(
         ITaskItemRepository tasks,
@@ -226,18 +241,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         ITaskDependencyRepository dependencies,
         ITaskTypeRepository types,
         ITaskNotificationService notifications,
-        ILogger<TransitionTaskItemHandler> logger)
+        ITaskFieldDefinitionService fieldDefinitions,
+        ITaskAttachmentRepository attachments,
+        ILogger<TransitionTaskItemHandler> logger,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _logger = logger;
         _notifications = notifications;
         _dependencies = dependencies;
         _types = types;
+        _fieldDefinitions = fieldDefinitions;
+        _attachments = attachments;
         _tasks = tasks;
         _lifecycle = lifecycle;
         _currentUser = currentUser;
         _checklists = checklists;
         _checklistService = checklistService;
         _workflowGate = workflowGate;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     /// <summary>Which half of the outcome dictionary this transition is closing into, or null when it closes
@@ -313,6 +334,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                     "A blocking checklist item is still open.",
                     409, TaskReasonCodes.ChecklistIncomplete, command.CorrelationId);
             }
+
+            /*
+             * WP-PSS-MOD0024-ATTACHMENTS-UX-01 — the SAME shape as the checklist evidence gate (ATT-1): a type
+             * flag read once, enforced HERE (not only in the projection, which merely disables the client's
+             * button — pack §12 E1) and checked by a COUNT, not a list. Absent type (no TaskTypeId, or a type
+             * that no longer resolves) never gates — there is nothing configured to ask for.
+             */
+            var taskType = task.TaskTypeId is { } typeId ? await _types.GetByIdAsync(typeId, ct) : null;
+            if (taskType is { RequiresDeliverableOnCompletion: true })
+            {
+                var deliverableCount = await _attachments.CountDeliverablesAsync(task.Id, ct);
+                if (deliverableCount == 0)
+                {
+                    return Response<NoContent>.Fail(
+                        "This task's type requires a deliverable file before it can be completed.",
+                        409, TaskReasonCodes.DeliverableRequired, command.CorrelationId);
+                }
+            }
         }
 
         /*
@@ -360,6 +399,24 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                     gate.BlockingReasonCode ?? TaskReasonCodes.ApprovalPending,
                     command.CorrelationId);
             }
+        }
+
+        // ── Review-meeting gate (MOD-0357 S9, owner 2026-09-13; CT fix-up F1 2026-09-15) ────────────────
+        // An INDEPENDENT check, deliberately its own `if` block rather than folded into the approval gate above:
+        // the two ask different questions of different systems (MOD-0023's own decision vs. a RecordLink read
+        // this module owns), and merging them would make one look like a special case of the other.
+        //
+        // Asked on → Done ONLY — the task's own DECISION. Never on → InProgress: scheduling and holding the review
+        // meeting is part of the work, so starting (or resuming) must stay possible while the minutes are still to
+        // come. The other decision path, submit-for-review, asks the same rule in SubmitTaskForReviewHandler.
+        //
+        // AFTER the approval gate so the reason matches the projection's precedence (approval first, then the
+        // review meeting). Never calls IWorkflowTransitionGate or ITaskApprovalService: a LOCAL MOD-0024
+        // precondition, not a second approval engine — see ReviewMeetingDecisionGate.
+        if (command.Target == TaskLifecycle.Done
+            && await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*
@@ -524,6 +581,33 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
             }
         }
 
+        /*
+         * Faz 2a — THE CLOSING NARRATIVE AND THE CLOSURE-STAGE FIELDS. Both ask only of `complete`/`cancel`;
+         * every other transition leaves `ClosureNote` and `FieldValues` exactly as it found them.
+         */
+        string? closureNote = null;
+        IReadOnlyList<TaskFieldValue>? closureFieldValues = null;
+        if (ClosureDispositionFor(command.Target) is not null)
+        {
+            closureNote = string.IsNullOrWhiteSpace(command.Request.Note) ? null : command.Request.Note.Trim();
+            if (closureNote is { Length: > TaskFieldLimits.MaxDescriptionLength })
+            {
+                return Response<NoContent>.Fail(
+                    $"The closing note exceeds {TaskFieldLimits.MaxDescriptionLength} characters.",
+                    400, TaskReasonCodes.ClosureNoteTooLong, command.CorrelationId);
+            }
+
+            var closureFields = await _fieldDefinitions.ValidateClosureFieldsAsync(
+                command.Request.ClosureFieldValues, task.FieldValues, ct);
+            if (!closureFields.IsValid)
+            {
+                return Response<NoContent>.Fail(
+                    closureFields.Message!, 400, closureFields.ReasonCode!, command.CorrelationId);
+            }
+
+            closureFieldValues = closureFields.Values;
+        }
+
         var previousLifecycle = task.Lifecycle;
         task.Lifecycle = command.Target;
         /*
@@ -553,18 +637,38 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         task.Declare(
             KindFor(previousLifecycle, command.Target),
             _currentUser.UserId,
-            reason: null,
+            // Faz 2a — THE COPY IN THE TRANSITION LOG. Every other act that carries a reason in the actor's own
+            // words (wait, return, reassign) leaves one on its TaskTransition entry; closing a task never did —
+            // MEASURED: this line read `reason: null` unconditionally, so a closing note reached the task and
+            // stopped there. `closureNote` is null for every transition but complete/cancel, so nothing changes
+            // for plan/start/resume/submit-for-review, which never carried a Note worth keeping anyway.
+            reason: closureNote,
             reasonCode: command.Request.ReasonCode);
+
+        if (closureFieldValues is not null)
+        {
+            // Faz 2a — MERGE, never replace. Entry-stage values (and any closure value from an earlier failed
+            // attempt whose code is not in THIS payload) are left exactly as they were.
+            var closureCodes = closureFieldValues
+                .Select(value => value.DefinitionCode)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+            task.FieldValues = task.FieldValues
+                .Where(value => !closureCodes.Contains(value.DefinitionCode))
+                .Concat(closureFieldValues)
+                .ToList();
+        }
 
         switch (command.Target)
         {
             case TaskLifecycle.Done:
                 task.CompletedAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.Cancelled:
                 task.CancelledAt = DateTimeOffset.UtcNow;
                 task.ClosureReasonCode = command.Request.ReasonCode;
+                task.ClosureNote = closureNote;
                 break;
             case TaskLifecycle.InProgress when task.StartAt is null:
                 task.StartAt = DateTimeOffset.UtcNow;
@@ -747,13 +851,23 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
     private readonly ITaskApprovalService _reviewStates;
     private readonly ILogger<SubmitTaskForReviewHandler> _logger;
 
+    /// <summary>MOD-0357 S9 (CT fix-up F1, 2026-09-15) — submitting for review is a DECISION the review-meeting
+    /// gate holds back, so this handler asks the same shared rule TransitionTaskItemHandler asks on → Done (see
+    /// <see cref="ReviewMeetingDecisionGate"/>). OPTIONAL for the same reason as that handler's own seam: every
+    /// test written before this constructs the handler directly. A null seam fails CLOSED — but only for a task
+    /// that carries a type, and no pre-existing submit test's task does.</summary>
+    private readonly ITaskTypeRepository? _types;
+    private readonly IReviewMeetingGateReader? _reviewMeetingGate;
+
     public SubmitTaskForReviewHandler(
         ITaskItemRepository tasks,
         ITaskLifecycleService lifecycle,
         ICurrentUserContext currentUser,
         ITaskReviewService reviews,
         ITaskApprovalService reviewStates,
-        ILogger<SubmitTaskForReviewHandler> logger)
+        ILogger<SubmitTaskForReviewHandler> logger,
+        ITaskTypeRepository? types = null,
+        IReviewMeetingGateReader? reviewMeetingGate = null)
     {
         _reviewStates = reviewStates;
         _tasks = tasks;
@@ -761,6 +875,8 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
         _currentUser = currentUser;
         _reviews = reviews;
         _logger = logger;
+        _types = types;
+        _reviewMeetingGate = reviewMeetingGate;
     }
 
     public async Task<Response<NoContent>> Handle(SubmitTaskForReviewCommand command, CancellationToken ct)
@@ -818,6 +934,20 @@ public sealed class SubmitTaskForReviewHandler : IRequestHandler<SubmitTaskForRe
             return Response<NoContent>.Fail(
                 "This transition is not allowed in the task's current state.",
                 409, reasonCode ?? TaskReasonCodes.InvalidState, command.CorrelationId);
+        }
+
+        /*
+         * Review-meeting gate (MOD-0357 S9, CT fix-up F1 2026-09-15) — the same shared rule → Done asks in
+         * TransitionTaskItemHandler: a type that requires a review meeting cannot hand its work to a reviewer until
+         * a non-cancelled linked meeting has published minutes. Applies to a resubmission after a refusal too, so
+         * the projection's hint and this refusal agree on every path that leads here.
+         *
+         * BEFORE TryStartReviewAsync, and that placement is the approval boundary: a refused submit opens no
+         * MOD-0023 instance, so nothing is left behind in MOD-0023 and no review outcome is touched.
+         */
+        if (await ReviewMeetingDecisionGate.BlocksDecisionAsync(task, _types, _reviewMeetingGate, ct))
+        {
+            return ReviewMeetingDecisionGate.Refusal(command.CorrelationId);
         }
 
         /*

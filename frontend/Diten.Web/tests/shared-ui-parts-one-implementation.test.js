@@ -96,9 +96,12 @@ describe("WP-WC-SHARED-UI-01 — the person picker, dialog adapter and related-r
       .toEqual(["shared/diten-person-picker.js"]);
   });
 
-  it("Meetings/form.js and Governance/RoleAssignments/index.js call the shared adapter rather than redeclaring it", () => {
+  it("Meetings/form.js, Meetings/series/form.js and Governance/RoleAssignments/index.js call the shared adapter rather than redeclaring it", () => {
+    // MOD-0357 S11 — the series create/edit form needs the SAME organizer/attendee searchable pickers Meetings'
+    // own Details page uses; it calls the shared adapter too, rather than becoming a third local copy.
     const { delegating } = declarations("buildSearchableDropdownAdapter");
-    expect(delegating).toEqual(["Governance/RoleAssignments/index.js", "Meetings/form.js"].sort());
+    expect(delegating).toEqual(
+      ["Governance/RoleAssignments/index.js", "Meetings/form.js", "Meetings/series/form.js"].sort());
   });
 
   it("relatedRecordRow / renderRelatedRows are real declarations only in shared/diten-related-records.js", () => {

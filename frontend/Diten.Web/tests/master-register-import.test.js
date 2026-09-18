@@ -65,6 +65,8 @@ describe("Document Master Register import wizard", () => {
             PreviewCitableNo: "Not citable", ImportFileRequired: "Select a CSV file first.",
             ImportInvalidFileType: "Only .csv files are accepted.", AlreadyImportedWarning: "Already imported on {0} by {1}.",
             CommitImport: "Commit import", CommitSucceeded: "Import committed.",
+            Step2Preview: "Preview", ReasonAlreadyApplied: "This exact file was already imported.",
+            PreviewFailed: "The preview could not be completed.", PreviewErrors: "Row errors",
         };
         window.showToast = vi.fn();
         window.showConfirm = vi.fn();
@@ -226,5 +228,98 @@ describe("Document Master Register import wizard", () => {
         // Swap the file WITHOUT re-previewing — the change handler disables commit again.
         setFile(csvFile("second.csv"));
         expect(document.getElementById("btnRegisterImportCommit").disabled).toBe(true);
+    });
+
+    /*
+     * WP-DM-DCP005-RETIRE-CSV-01, AC2 — a commit-time 409 IMPORT_ALREADY_APPLIED is the SAME fact the preview
+     * already reported as a warning a moment earlier (this is the ordinary CT-observed path: preview → commit →
+     * repeat preview → repeat commit). It must stay a warning, carry the localized parameterized sentence the
+     * preview already knew, and never print the server's raw English detail text.
+     */
+    describe("a commit-time 409 IMPORT_ALREADY_APPLIED", () => {
+        const previewAlreadyImported = () => global.fetch.mockResolvedValueOnce({
+            ok: true,
+            json: async () => ({
+                isSuccessful: true,
+                data: {
+                    fileName: "register.csv", contentHash: "abc123", totalRows: 5, created: 0, updated: 0,
+                    unchanged: 5, blocked: 0, citableByQualityDecisionYes: 5, citableByQualityDecisionNo: 0,
+                    missingColumns: [], errors: [], lifecycleDistribution: { Draft: 5 },
+                    alreadyImported: true, alreadyImportedAt: "2026-09-01T00:00:00Z", alreadyImportedBy: "qa@diten.test",
+                },
+            }),
+        });
+
+        it("keeps the warning badge and shows the localized, parameterized sentence — never the raw server text", async () => {
+            setFile(csvFile());
+            runScript();
+            previewAlreadyImported();
+            document.getElementById("btnRegisterImportPreview").click();
+            await flush(); await flush();
+
+            global.fetch.mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    isSuccessful: false,
+                    reason_code: "IMPORT_ALREADY_APPLIED",
+                    // The raw server sentence — MUST NOT reach the screen in any form.
+                    errors: ["This exact file was already imported on 2026-09-01T00:00:00.0000000Z by qa@diten.test."],
+                }),
+            });
+            window.showConfirm.mockImplementation((_msg, onConfirm) => onConfirm());
+            document.getElementById("btnRegisterImportCommit").click();
+            await flush(); await flush();
+
+            const badge = document.getElementById("registerImportSummaryBadge");
+            // MUTATION GUARD: dropping this special case sends the badge to bg-label-danger instead.
+            expect(badge.className).not.toContain("bg-label-danger");
+            expect(badge.className).toContain("bg-label-warning");
+
+            const alert = document.getElementById("registerImportAlreadyAppliedAlert");
+            expect(alert.classList.contains("d-none")).toBe(false);
+            expect(alert.textContent).toContain("qa@diten.test");
+            expect(alert.textContent).not.toContain("2026-09-01T00:00:00.0000000Z"); // the raw ISO instant
+
+            const findings = document.getElementById("registerImportSummaryFindings").textContent;
+            expect(findings, "the raw server sentence leaked into the screen").not.toContain(
+                "This exact file was already imported on 2026-09-01T00:00:00.0000000Z");
+            expect(findings, "Row errors' must not appear for this reason code").not.toContain("Row errors");
+        });
+
+        it("falls back to the generic localized sentence when the commit outruns its own preview (race)", async () => {
+            // A preview that said NOT already imported, then a 409 anyway — someone else committed in between.
+            setFile(csvFile());
+            runScript();
+            global.fetch.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    isSuccessful: true,
+                    data: {
+                        fileName: "register.csv", contentHash: "abc123", totalRows: 5, created: 5, updated: 0,
+                        unchanged: 0, blocked: 0, citableByQualityDecisionYes: 5, citableByQualityDecisionNo: 0,
+                        missingColumns: [], errors: [], lifecycleDistribution: {}, alreadyImported: false,
+                        alreadyImportedAt: null, alreadyImportedBy: null,
+                    },
+                }),
+            });
+            document.getElementById("btnRegisterImportPreview").click();
+            await flush(); await flush();
+
+            global.fetch.mockResolvedValueOnce({
+                ok: false,
+                json: async () => ({
+                    isSuccessful: false,
+                    reason_code: "IMPORT_ALREADY_APPLIED",
+                    errors: ["This exact file was already imported on 2026-09-02T00:00:00.0000000Z by someone.else."],
+                }),
+            });
+            window.showConfirm.mockImplementation((_msg, onConfirm) => onConfirm());
+            document.getElementById("btnRegisterImportCommit").click();
+            await flush(); await flush();
+
+            const alert = document.getElementById("registerImportAlreadyAppliedAlert");
+            expect(alert.classList.contains("d-none")).toBe(false);
+            expect(alert.textContent).toBe("This exact file was already imported.");
+        });
     });
 });

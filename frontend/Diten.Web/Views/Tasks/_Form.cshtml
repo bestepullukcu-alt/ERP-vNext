@@ -335,13 +335,6 @@
                        has removed that exact dead control more than once. Tracked as its own backlog item. *@
                     <div id="taskChecklistAddRow"></div>
 
-                    @* MOD-0024 Slice ATT-1 — attachments (evidence included) are a write on the TASK's own
-                       attachment list, and there is no task yet on this form: `AddTaskAttachmentHandler` takes
-                       a TaskItemId, which this page has not been issued. Rather than a wholesale rewrite hazard
-                       (the same reason the checklist editor itself is create-only, see the comment above), this
-                       stays a single sentence: attach files once the task exists, on its own detail page. *@
-                    <p class="form-text mb-2">@Localizer["ChecklistAttachmentsAfterSaveHint"]</p>
-
                     @* THE PAPERCLIP'S PROMISE, said out loud.
 
                        `EvidenceRequired` has been on the model since Phase 1; enforcement (Slice ATT-1) and the
@@ -362,6 +355,44 @@
                     <div class="alert alert-secondary dt-inline-alert diten-checkitem-evidencehint d-none" role="note"
                          data-diten-check-evidence-hint>
                         <i class="bx bx-paperclip"></i><span>@Localizer["ChecklistEvidenceHint"]</span>
+                    </div>
+                </div>
+            </section>
+
+            @* WP-PSS-MOD0024-ATTACHMENTS-UX-01 — files staged HERE never touch the server until the task exists:
+               `AddTaskAttachmentHandler` takes a TaskItemId this page does not have until `TasksApi.create`
+               answers. The submit handler creates the task first, then uploads each staged file in order against
+               the new id — never a multipart create, the server's create contract is unchanged. Create-only, for
+               the same reason the checklist editor is: an edit posts no attachment list, so this would take
+               whatever staged here silently nowhere on save. Removed outright on the edit page (see bindMode). *@
+            <section class="card mb-4" id="taskAttachmentsCard">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-1">
+                        <i class="bx bx-paperclip"></i>@Localizer["CardAttachmentsTitle"]
+                        <span class="wcn-count-inline d-none" data-task-attachment-count></span>
+                    </h6>
+                    <p class="card-section-desc mb-4">@Localizer["CardAttachmentsDescription"]</p>
+
+                    <ul class="task-attachments-pending" id="taskAttachmentsPending"></ul>
+
+                    <div class="row g-3 align-items-end" id="taskAttachmentAddRow">
+                        <div class="col-md-6">
+                            <label class="form-label" for="taskAttachmentFile">@Localizer["AttachmentFileLabel"]</label>
+                            <input type="file" id="taskAttachmentFile" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" for="taskAttachmentKind">@Localizer["AttachmentKindLabel"]</label>
+                            <select id="taskAttachmentKind" class="select2 form-select">
+                                <option value="Attachment" selected>@Localizer["AttachmentKindAttachment"]</option>
+                                <option value="Evidence">@Localizer["AttachmentKindEvidence"]</option>
+                                <option value="Deliverable">@Localizer["AttachmentKindDeliverable"]</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-label-primary w-100" data-task-attachment-add>
+                                <i class="bx bx-plus"></i> @Localizer["AttachmentAddButton"]
+                            </button>
+                        </div>
                     </div>
                 </div>
             </section>

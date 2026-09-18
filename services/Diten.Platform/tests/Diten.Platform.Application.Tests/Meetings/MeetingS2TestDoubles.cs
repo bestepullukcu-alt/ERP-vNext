@@ -1,8 +1,10 @@
 using Diten.Platform.Application.Common;
 using Diten.Platform.Application.Contracts;
+using Diten.Platform.Application.Features.Meetings.Services;
 using Diten.Platform.Application.Features.Tasks;
 using Diten.Platform.Application.Features.Tasks.Queries;
 using Diten.Platform.Domain.Entities.Meetings;
+using Diten.Platform.Domain.Enums.Meetings;
 using Diten.Platform.Domain.Repositories;
 using MediatR;
 
@@ -70,12 +72,22 @@ internal sealed class FakeMeetingRepository : IMeetingRepository
 
     public Task<bool> AnyByMeetingTypeIdAsync(Guid meetingTypeId, CancellationToken ct = default)
         => Task.FromResult(_items.Any(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingTypeId == meetingTypeId));
+
+    public Task<Meeting?> FindByFollowUpOfMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.FollowUpOfMeetingId == meetingId)
+            .OrderBy(x => x.CreatedAt)
+            .FirstOrDefault());
 }
 
 internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
 {
     private readonly List<MeetingAttendee> _items = [];
     public Guid Tenant { get; init; }
+
+    public IReadOnlyList<MeetingAttendee> Items => _items;
+
+    public void Seed(MeetingAttendee attendee) => _items.Add(attendee);
 
     public Task<MeetingAttendee> CreateAsync(MeetingAttendee attendee, CancellationToken ct = default)
     {
@@ -100,6 +112,117 @@ internal sealed class FakeMeetingAttendeeRepository : IMeetingAttendeeRepository
         var item = _items.FirstOrDefault(x => x.Id == id);
         if (item is not null) { item.IsDeleted = true; }
         return Task.CompletedTask;
+    }
+
+    public Task UpdateInvitationResponseAsync(Guid id, InvitationResponse response, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.Id == id);
+        if (item is not null) { item.InvitationResponse = response; }
+        return Task.CompletedTask;
+    }
+
+    public Task<IReadOnlyList<MeetingAttendee>> ListPendingByUserIdAsync(Guid userId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingAttendee>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted
+                              && x.UserId == userId && x.InvitationResponse == InvitationResponse.Pending).ToList());
+
+    public Task UpdateAttendanceStatusAsync(Guid meetingId, Guid userId, AttendanceStatus status, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);
+        if (item is not null) { item.AttendanceStatus = status; }
+        return Task.CompletedTask;
+    }
+
+    public Task<bool> MarkMailUndeliveredAsync(Guid meetingId, Guid userId, DateTimeOffset failedAt, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId && x.UserId == userId);
+        if (item is null) { return Task.FromResult(false); }
+        item.MailUndeliveredAt = failedAt;
+        return Task.FromResult(true);
+    }
+}
+
+/// <summary>MOD-0357 S6 — in-memory double for <see cref="IMeetingMinutesVersionRepository"/>. No unique-index
+/// enforcement here (that guarantee is proven against a REAL Mongo, in <c>MeetingMinutesVersionMongoTests</c>) —
+/// this fake exists to test the COMMAND HANDLERS' own logic in isolation, the same division of labour every
+/// other Fake*Repository in this suite already draws.</summary>
+internal sealed class FakeMeetingMinutesVersionRepository : IMeetingMinutesVersionRepository
+{
+    private readonly List<MeetingMinutesVersion> _items = [];
+    public Guid Tenant { get; init; }
+
+    public void Seed(MeetingMinutesVersion version) => _items.Add(version);
+
+    /// <summary>What THIS repository currently has stored for <paramref name="id"/>, before any in-flight
+    /// caller mutation — the "before" half of a source-guard test that watches <c>UpdateAsync</c> calls.</summary>
+    public MinutesStatus? StoredStatusOf(Guid id) => _items.FirstOrDefault(x => x.Id == id)?.Status;
+
+    /// <summary>
+    /// A real Mongo read deserializes a NEW object every call; a fake that hands back the SAME reference lets a
+    /// handler's in-place field mutation retroactively corrupt what this repository "has stored", which is
+    /// exactly backwards for a test that watches for an update against an ALREADY-published row (measured: the
+    /// naive version of this fake made <c>PublishMinutesHandler</c>'s own `latest.Status = Published;` — set
+    /// BEFORE its own `UpdateAsync` call — appear to have already been stored as Published, because `latest`
+    /// WAS the stored object). Every read below returns one of these instead.
+    /// </summary>
+    private static MeetingMinutesVersion Clone(MeetingMinutesVersion source) => new()
+    {
+        Id = source.Id, TenantId = source.TenantId, CreatedBy = source.CreatedBy, CreatedAt = source.CreatedAt,
+        UpdatedAt = source.UpdatedAt, UpdatedBy = source.UpdatedBy, IsDeleted = source.IsDeleted, Version = source.Version,
+        MeetingId = source.MeetingId, VersionNumber = source.VersionNumber, Status = source.Status,
+        Attendance = source.Attendance.Select(a => new MinutesAttendanceRecord { AttendeeUserId = a.AttendeeUserId, Status = a.Status }).ToList(),
+        Decisions = source.Decisions.Select(d => new MinutesDecision { Code = d.Code, Text = d.Text, DecidedByUserId = d.DecidedByUserId, RecordLinkId = d.RecordLinkId }).ToList(),
+        ActionReferences = [.. source.ActionReferences],
+        PublishedAtUtc = source.PublishedAtUtc, PublishedByUserId = source.PublishedByUserId,
+        CorrectionOfVersionNumber = source.CorrectionOfVersionNumber, CorrectionReason = source.CorrectionReason
+    };
+
+    public Task<MeetingMinutesVersion?> TryCreateAsync(MeetingMinutesVersion version, CancellationToken ct = default)
+    {
+        if (_items.Any(x => x.TenantId == version.TenantId && !x.IsDeleted
+                             && x.MeetingId == version.MeetingId && x.VersionNumber == version.VersionNumber))
+        {
+            return Task.FromResult<MeetingMinutesVersion?>(null);
+        }
+
+        _items.Add(Clone(version));
+        return Task.FromResult<MeetingMinutesVersion?>(version);
+    }
+
+    public Task<MeetingMinutesVersion?> GetLatestByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
+            .OrderByDescending(x => x.VersionNumber)
+            .Select(Clone)
+            .FirstOrDefault());
+
+    public Task<IReadOnlyList<MeetingMinutesVersion>> ListByMeetingIdAsync(Guid meetingId, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingMinutesVersion>>(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && x.MeetingId == meetingId)
+            .OrderByDescending(x => x.VersionNumber)
+            .Select(Clone)
+            .ToList());
+
+    public Task<IReadOnlyList<MeetingMinutesVersion>> ListPublishedByMeetingIdsAsync(
+        IReadOnlyCollection<Guid> meetingIds, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingMinutesVersion>>(_items
+            .Where(x => x.TenantId == Tenant && !x.IsDeleted && meetingIds.Contains(x.MeetingId)
+                        && x.Status == MinutesStatus.Published)
+            .Select(Clone)
+            .ToList());
+
+    public Task<bool> UpdateAsync(MeetingMinutesVersion version, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _items.FirstOrDefault(x => x.Id == version.Id && x.TenantId == Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        _items.Remove(stored);
+        version.Version = expectedVersion + 1;
+        _items.Add(Clone(version));
+        return Task.FromResult(true);
     }
 }
 
@@ -185,6 +308,103 @@ internal sealed class FakeMeetingTypeRepository : IMeetingTypeRepository
         var item = _items.FirstOrDefault(x => x.Id == id);
         if (item is not null) { item.IsDeleted = true; }
         return Task.CompletedTask;
+    }
+}
+
+/// <summary>MOD-0357 S11 — in-memory double for <see cref="IMeetingSeriesRepository"/>, the same shape
+/// <see cref="FakeMeetingTypeRepository"/> already takes.</summary>
+internal sealed class FakeMeetingSeriesRepository : IMeetingSeriesRepository
+{
+    private readonly List<MeetingSeries> _items = [];
+    public Guid Tenant { get; init; }
+
+    public void Seed(MeetingSeries series) => _items.Add(series);
+
+    public Task<MeetingSeries> CreateAsync(MeetingSeries series, CancellationToken ct = default)
+    {
+        _items.Add(series);
+        return Task.FromResult(series);
+    }
+
+    public Task<MeetingSeries?> GetByIdAsync(Guid id, CancellationToken ct = default)
+        => Task.FromResult(_items.FirstOrDefault(x => x.Id == id && x.TenantId == Tenant && !x.IsDeleted));
+
+    public Task<IReadOnlyList<MeetingSeries>> ListAllAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingSeries>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted).OrderBy(x => x.Name, StringComparer.Ordinal).ToList());
+
+    public Task<IReadOnlyList<MeetingSeries>> ListActiveAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<MeetingSeries>>(
+            _items.Where(x => x.TenantId == Tenant && !x.IsDeleted && x.IsActive)
+                .OrderBy(x => x.Name, StringComparer.Ordinal).ToList());
+
+    public Task<MeetingSeries?> FindByNameAsync(string name, CancellationToken ct = default)
+        => Task.FromResult(_items.FirstOrDefault(x => x.TenantId == Tenant && !x.IsDeleted && x.Name == name));
+
+    public Task<bool> UpdateAsync(MeetingSeries series, int expectedVersion, CancellationToken ct = default)
+    {
+        var stored = _items.FirstOrDefault(x => x.Id == series.Id && x.TenantId == Tenant && !x.IsDeleted);
+        if (stored is null || stored.Version != expectedVersion)
+        {
+            return Task.FromResult(false);
+        }
+
+        series.Version = expectedVersion + 1;
+        if (!ReferenceEquals(stored, series))
+        {
+            _items.Remove(stored);
+            _items.Add(series);
+        }
+
+        return Task.FromResult(true);
+    }
+
+    public Task DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var item = _items.FirstOrDefault(x => x.Id == id);
+        if (item is not null) { item.IsDeleted = true; }
+        return Task.CompletedTask;
+    }
+}
+
+/// <summary>S5 — records every call so a test can assert WHO was mailed and WHICH event, without a real
+/// <c>INotificationEventDispatchAdapter</c>. <see cref="NextResult"/> is read at call time, not fixed at
+/// construction, so a K12 test can flip it to a failure mid-scenario.</summary>
+internal sealed class FakeMeetingInviteMailer : IMeetingInviteMailer
+{
+    public sealed record Call(string Kind, Guid MeetingId, IReadOnlyList<Guid> RecipientUserIds, Guid ActingUserId);
+
+    public List<Call> Calls { get; } = [];
+    public MeetingInviteDeliveryResult NextResult { get; set; } = new(Sent: true, Failed: false, Reason: null);
+
+    public Task<MeetingInviteDeliveryResult> SendInviteAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("invite", meeting, recipients, actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendChangeAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("change", meeting, recipients, actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendCancelAsync(
+        Meeting meeting, string meetingTypeName, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId, CancellationToken ct = default)
+        => Record("cancel", meeting, recipients, actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendRemovedAsync(
+        Meeting meeting, string meetingTypeName, MeetingAttendee removedAttendee, Guid actingUserId, CancellationToken ct = default)
+        => Record("removed", meeting, [removedAttendee], actingUserId);
+
+    public Task<MeetingInviteDeliveryResult> SendOrganizerReassignedAsync(
+        Meeting meeting, string meetingTypeName, Guid newOrganizerUserId, Guid actingUserId, CancellationToken ct = default)
+    {
+        Calls.Add(new Call("organizer-reassigned", meeting.Id, [newOrganizerUserId], actingUserId));
+        return Task.FromResult(NextResult);
+    }
+
+    private Task<MeetingInviteDeliveryResult> Record(
+        string kind, Meeting meeting, IReadOnlyList<MeetingAttendee> recipients, Guid actingUserId)
+    {
+        Calls.Add(new Call(kind, meeting.Id, recipients.Select(r => r.UserId).ToList(), actingUserId));
+        return Task.FromResult(NextResult);
     }
 }
 

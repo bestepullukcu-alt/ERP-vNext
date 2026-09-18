@@ -58,6 +58,15 @@ public sealed class MeetingsController : Controller
         return View("~/Views/Meetings/Edit.cshtml");
     }
 
+    // ── S6 — Minutes editor (Compact satellite screen, own page not a tab — pack §5 :323) ────
+
+    [HttpGet("{id:guid}/Minutes")]
+    public IActionResult MinutesEditor(Guid id)
+    {
+        ViewData["MeetingId"] = id.ToString();
+        return View("~/Views/Meetings/MinutesEditor/Index.cshtml");
+    }
+
     // ── S8 — Meeting Types (Compact satellite settings screen, pack §5 :323) ──
 
     [HttpGet("MeetingTypes")]
@@ -72,6 +81,26 @@ public sealed class MeetingsController : Controller
         ViewData["MeetingTypeId"] = id.ToString();
         return View("~/Views/Meetings/MeetingTypes/Edit.cshtml");
     }
+
+    // ── S11 — Meeting Series (Compact satellite settings screen, pack §19) ────
+
+    [HttpGet("Series")]
+    public IActionResult MeetingSeriesIndex() => View("~/Views/Meetings/Series/Index.cshtml");
+
+    [HttpGet("Series/Create")]
+    public IActionResult MeetingSeriesCreate() => View("~/Views/Meetings/Series/Create.cshtml");
+
+    [HttpGet("Series/{id:guid}/Edit")]
+    public IActionResult MeetingSeriesEdit(Guid id)
+    {
+        ViewData["MeetingSeriesId"] = id.ToString();
+        return View("~/Views/Meetings/Series/Edit.cshtml");
+    }
+
+    // ── S12 (pack §23) — the meeting report & action register ────────────────
+
+    [HttpGet("Report")]
+    public IActionResult ReportIndex() => View("~/Views/Meetings/Report/Index.cshtml");
 
     // ── Same-origin API proxy ────────────────────────────────────────────────
 
@@ -127,6 +156,49 @@ public sealed class MeetingsController : Controller
     public Task<IActionResult> ApiGetLinkedTasks(Guid id)
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: false);
 
+    // S5, K5 — Accept/Decline.
+    [HttpPost("api/{id:guid}/respond")]
+    public Task<IActionResult> ApiRespond(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/respond", readBody: true);
+
+    // ── S6 — minutes (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────────────────────
+
+    [HttpGet("api/{id:guid}/minutes")]
+    public Task<IActionResult> ApiGetMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes", readBody: false);
+
+    [HttpPut("api/{id:guid}/minutes/draft")]
+    public Task<IActionResult> ApiSaveMinutesDraft(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/draft", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/publish")]
+    public Task<IActionResult> ApiPublishMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/publish", readBody: true);
+
+    [HttpPost("api/{id:guid}/minutes/correct")]
+    public Task<IActionResult> ApiCorrectPublishedMinutes(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/minutes/correct", readBody: true);
+
+    // ── S7 — continuation scheduling (mirrors Platform's MeetingsController.cs 1:1) ────────────────────────
+
+    [HttpPost("api/{id:guid}/follow-up")]
+    public Task<IActionResult> ApiScheduleFollowUp(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/follow-up", readBody: true);
+
+    // ── S4 — the meeting↔task bridge (mirrors Platform's MeetingsController.cs 1:1) ─────────────────────────
+
+    [HttpPost("api/{id:guid}/tasks")]
+    public Task<IActionResult> ApiCreateTaskFromMeeting(Guid id)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks", readBody: true);
+
+    [HttpPost("api/{id:guid}/tasks/{taskId:guid}/link")]
+    public Task<IActionResult> ApiLinkExistingTask(Guid id, Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/{id}/tasks/{taskId}/link", readBody: true);
+
+    [HttpPost("api/tasks/{taskId:guid}/schedule-review-meeting")]
+    public Task<IActionResult> ApiScheduleReviewMeetingForTask(Guid taskId)
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/tasks/{taskId}/schedule-review-meeting", readBody: true);
+
     [HttpGet("api/lookups/attendees")]
     public Task<IActionResult> ApiLookupAttendees()
         => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/lookups/attendees", readBody: false);
@@ -157,6 +229,48 @@ public sealed class MeetingsController : Controller
     [HttpDelete("api/types/{id:guid}")]
     public Task<IActionResult> ApiTypesDelete(Guid id)
         => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/types/{id}", readBody: false);
+
+    // ── S11 — Meeting Series CRUD proxy (series-manage only; "series" never matches {id:guid}, same
+    // disambiguation the S8 "types" sub-route already relies on) ─────────────────────────────────────
+
+    [HttpGet("api/series")]
+    public Task<IActionResult> ApiSeriesList()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/series", readBody: false);
+
+    [HttpGet("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesGet(Guid id)
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: false);
+
+    [HttpPost("api/series")]
+    public Task<IActionResult> ApiSeriesCreate()
+        => ProxyAsync(HttpMethod.Post, $"{_gatewayUrl}/api/v1/meetings/series", readBody: true);
+
+    [HttpPut("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesUpdate(Guid id)
+        => ProxyAsync(HttpMethod.Put, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: true);
+
+    [HttpDelete("api/series/{id:guid}")]
+    public Task<IActionResult> ApiSeriesDelete(Guid id)
+        => ProxyAsync(HttpMethod.Delete, $"{_gatewayUrl}/api/v1/meetings/series/{id}", readBody: false);
+
+    // ── S12 (pack §23) — meeting report & its export. The whole query string is forwarded WHOLE
+    // (from/to/meetingTypeId/organizerUserId are Platform's contract, not this tier's) — re-listing them here
+    // is how a parameter gets dropped silently, the same lesson TasksController's own work-report proxy
+    // already states. ────────────────────────────────────────────────────────────────────────────────────
+
+    [HttpGet("api/report")]
+    public Task<IActionResult> ApiReport()
+        => ProxyAsync(HttpMethod.Get, $"{_gatewayUrl}/api/v1/meetings/report" + Request.QueryString.Value, readBody: false);
+
+    /// <summary>The report's own rows, as a file — <see cref="ProxyFileAsync"/> (the work report's own file-relay
+    /// pattern), with <c>locale</c> appended from <c>window.CurrentLanguage</c> if the caller did not already
+    /// send one (pack §23.13/5 — the one disclaimer sentence the export carries).</summary>
+    [HttpGet("api/report/export")]
+    public Task<IActionResult> ApiReportExport()
+        => ProxyFileAsync($"{_gatewayUrl}/api/v1/meetings/report/export" + Request.QueryString.Value, MeetingReportExportRowCountHeader);
+
+    /// <summary>How many rows the file carries — the work report's own <c>X-Work-Report-Export-Row-Count</c>, renamed.</summary>
+    public const string MeetingReportExportRowCountHeader = "X-Meeting-Report-Export-Row-Count";
 
     // ── Proxy plumbing (identical to TasksController's own) ──────────────────
 
@@ -208,6 +322,63 @@ public sealed class MeetingsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Meetings proxy failed for {Method} {TargetUrl}.", method, targetUrl);
+            return StatusCode(
+                StatusCodes.Status503ServiceUnavailable,
+                new { message = "Meetings dependency unavailable." });
+        }
+    }
+
+    /// <summary>S12 (pack §23.7) — the file-download relay, mirroring <c>TasksController.ProxyFileAsync</c>
+    /// (the work report's own pattern, itself following the audit export's) exactly: a non-success upstream
+    /// response (400/403/503) is relayed as JSON verbatim — including the 503
+    /// <c>DATA_EXPORT_AUDIT_NOT_RECORDED</c> the export handler answers when BL-347's audit write fails — never
+    /// wrapped into a file.</summary>
+    private async Task<IActionResult> ProxyFileAsync(string targetUrl, string rowCountHeaderName)
+    {
+        if (!TryCreateTenantRequest(HttpMethod.Get, targetUrl, out var request))
+        {
+            return Unauthorized(new { message = "Unauthorized" });
+        }
+
+        try
+        {
+            using (request)
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.SendAsync(
+                    request, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new ContentResult
+                    {
+                        Content = await response.Content.ReadAsStringAsync(HttpContext.RequestAborted),
+                        ContentType = response.Content.Headers.ContentType?.ToString() ?? "application/json",
+                        StatusCode = (int)response.StatusCode
+                    };
+                }
+
+                var content = await response.Content.ReadAsByteArrayAsync(HttpContext.RequestAborted);
+                var contentType = response.Content.Headers.ContentType?.ToString() ?? "application/octet-stream";
+                var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                    ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                    ?? "export";
+
+                if (response.Headers.TryGetValues(rowCountHeaderName, out var rowCount))
+                {
+                    Response.Headers[rowCountHeaderName] = rowCount.FirstOrDefault();
+                }
+
+                return File(content, contentType, fileName);
+            }
+        }
+        catch (OperationCanceledException) when (HttpContext.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Meetings file proxy failed for {TargetUrl}.", targetUrl);
             return StatusCode(
                 StatusCodes.Status503ServiceUnavailable,
                 new { message = "Meetings dependency unavailable." });

@@ -232,7 +232,10 @@ public sealed class TaskWaitingAndCancelAuthorityTests
             // Not blocked: these tests are about the cancel-authority rule, not the approval gate, and cancelling
             // never consults the gate anyway (it is not "this work proceeds").
             new FakeWorkflowTransitionGate(), new FakeTaskDependencyRepository(), new FakeTaskTypeRepository(),
-            new FakeTaskNotificationService(), NullLogger<TransitionTaskItemHandler>.Instance);
+            new FakeTaskNotificationService(),
+            new TaskFieldDefinitionService(new FakeTaskFieldDefinitionRepository(), TaskRecordSourceDoubles.None, TaskActors.PermitAll()),
+            new FakeTaskAttachmentRepository(),
+            NullLogger<TransitionTaskItemHandler>.Instance);
 
     private static TaskWorkItemProvider Provider(FakeTaskItemRepository tasks)
         => new(tasks,

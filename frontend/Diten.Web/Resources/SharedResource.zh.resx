@@ -812,6 +812,8 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>字段定义</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>会议</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>会议类型</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>会议系列</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>会议报告</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>您无权访问{0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>请联系管理员为您授予此页面的访问权限。</value></data>
   <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>人力资本</value></data>

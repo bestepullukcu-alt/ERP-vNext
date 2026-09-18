@@ -813,6 +813,8 @@
   <data name="Nav.Page.ORGANIZATIONFIELDDEFINITIONS" xml:space="preserve"><value>Définitions de champs</value></data>
   <data name="Nav.Page.MEETINGS" xml:space="preserve"><value>Réunions</value></data>
   <data name="Nav.Page.MEETINGTYPES" xml:space="preserve"><value>Types de réunion</value></data>
+  <data name="Nav.Page.MEETINGSERIES" xml:space="preserve"><value>Séries de réunions</value></data>
+  <data name="Nav.Page.MEETINGREPORT" xml:space="preserve"><value>Rapport de réunion</value></data>
   <data name="AccessDeniedTitle" xml:space="preserve"><value>Vous n'avez pas accès à {0}</value></data>
   <data name="AccessDeniedMessage" xml:space="preserve"><value>Demandez à votre administrateur de vous accorder l'accès à cette page.</value></data>
   <data name="Nav.Module.HUMANCAPITAL" xml:space="preserve"><value>Capital humain</value></data>
