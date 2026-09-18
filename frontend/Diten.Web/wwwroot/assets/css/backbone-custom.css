@@ -5783,6 +5783,12 @@ tags.diten-tags .tagify__input {
 .wcn-kcard-title { font-size: .8125rem; font-weight: 600; margin-block-end: .375rem; }
 .wcn-kcard-chips { display: flex; flex-wrap: wrap; gap: .25rem; }
 .wcn-kcard-actions { margin-block-start: .5rem; display: flex; gap: .375rem; }
+/* WP-WCN-KANBAN-01 Dilim 3b — a card mid-drop: no handle (see kanbanCard's own `processing` guard on
+   data-wcn-draggable), dimmed so the reader reads it as busy rather than idle, cursor back to default since
+   there is nothing left to grab. */
+.wcn-kcard-processing { opacity: .6; cursor: default; }
+.wcn-kcard-processing-note { margin-block-start: .5rem; display: flex; align-items: center; gap: .375rem;
+    font-size: .75rem; color: var(--bs-secondary-color); }
 
 /* Calendar (read-only deadline clustering) --------------------------------- */
 .wcn-cal-head { display: flex; align-items: center; justify-content: space-between; margin-block-end: .625rem; flex-wrap: wrap; gap: .5rem; }

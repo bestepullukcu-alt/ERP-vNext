@@ -1075,6 +1075,18 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Solo lectura — el estado cambia en el origen; aquí solo plan/fijado personal.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>¿Qué acción debería ejecutarse?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Elige una acción.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Procesando…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Movido al historial</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Mes anterior</value>
   </data>

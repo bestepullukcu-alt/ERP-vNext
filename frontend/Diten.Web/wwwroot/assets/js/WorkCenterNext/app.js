@@ -6524,9 +6524,9 @@
     };
 
 
-    // ── Kanban view — columns by status. WP-WCN-KANBAN-01 Dilim 3a: a card is now draggable when it has at
-    // least one ENABLED action whose targetStatus leads to a DIFFERENT column (see kanbanDragTargets below);
-    // dropping still does nothing until Dilim 3b wires the drop handler to performAction. ─────────────────────
+    // ── Kanban view — columns by status. A card is draggable when it has at least one ENABLED action whose
+    // targetStatus leads to a DIFFERENT column (see kanbanDragTargets below); dropping runs that action through
+    // performAction, the same address a button press reaches (WP-WCN-KANBAN-01 Dilim 3b, see bindKanbanDrag).
     const kanbanCard = (item) => {
         const prim = primaryAction(item);
         const quick = prim
@@ -6537,15 +6537,22 @@
         const quickSecondary = sec
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
             : '';
-        const draggable = kanbanDragTargets(item).length > 0;
-        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        // WP-WCN-KANBAN-01 Dilim 3b — the SAME `state.submittingItemId` every other action-in-flight lock in
+        // this file already reads (submitRealTransition/applyAction set it, performAction's own guard refuses a
+        // second action on the same item while it is set). A processing card offers no handle: neither a second
+        // drag nor a second drop-triggered action can start on it before the first one resolves.
+        const processing = state.submittingItemId === item.id;
+        const draggable = !processing && kanbanDragTargets(item).length > 0;
+        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}${processing ? ' wcn-kcard-processing' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
                 ${chip('module', 'bx-cube', item.sourceModule)}
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
             </div>
-            ${quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : ''}
+            ${processing
+                ? `<div class="wcn-kcard-processing-note" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>${esc(t('KanbanProcessing'))}</span></div>`
+                : (quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : '')}
         </div>`;
     };
 
@@ -7862,9 +7869,10 @@
     };
 
     /*
-     * WP-WCN-KANBAN-01 Dilim 3a — sürükleme başlar, sütunlar izin verir ya da soluklaşır. Dropping runs NO
-     * action yet (Dilim 3b wires that to performAction); this binding only computes which columns a card COULD
-     * move to and greys the rest, exactly how a real drop will read them once it exists.
+     * WP-WCN-KANBAN-01 Dilim 3a/3b — sürükleme başlar, sütunlar izin verir ya da soluklaşır, ve bırakınca
+     * gerçek işlem çalışır (Dilim 3b): the drop resolves to the same `performAction` a button press would call
+     * — one candidate runs it directly, two or more open a picker — and its own outcome (done/refused/
+     * cancelled) is what decides what the reader sees next; nothing here re-implements that.
      *
      * İşlerim/Başlattıklarım only — Havuz and Geçmiş keep today's read-only board (CT decision 2026-09-17) — and
      * never in the Team scope: a colleague's work is not this reader's to drag.
@@ -7910,17 +7918,105 @@
                     const col = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
                     return !!col && !col.classList.contains('wcn-kcol-pale');
                 },
-                onEnd: () => {
+                onEnd: (event) => {
                     // The trailing click a real drag's mouseup fires next must not reopen the card's detail
                     // page — cleared on the next tick, well after that click would already have run.
                     kanbanDragSuppressClick = true;
                     global.setTimeout(() => { kanbanDragSuppressClick = false; }, 0);
-                    // No drop action runs yet (Dilim 3b). Re-rendering from the untouched projection both clears
-                    // every wcn-kcol-pale class and title this drag added and puts the card back where it
-                    // started — there is nothing optimistic here to undo.
+
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    const targetCol = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    const targetStatus = targetCol ? targetCol.getAttribute('data-wcn-status') : null;
+
+                    /*
+                     * WP-WCN-KANBAN-01 Dilim 3b — NO OPTIMISTIC MOVE. The card is redrawn back into its own
+                     * column from the untouched projection BEFORE anything below runs — clearing every
+                     * wcn-kcol-pale class and title the drag added, exactly as Dilim 3a already did. Whatever
+                     * happens next (a run, a picker, nothing) starts from the server's own truth, never from
+                     * wherever Sortable's own DOM manipulation left the card mid-drag.
+                     */
                     render();
+
+                    if (!item || !targetStatus || targetStatus === item.status) { return; }
+
+                    const candidates = (item.actions || [])
+                        .filter((a) => a.enabled && a.targetStatus && kanbanColumnKey(a.targetStatus) === targetStatus);
+                    // onMove already refuses a drop on a column with no allowed action — this is the defensive
+                    // twin for whatever reaches onEnd anyway (a fallback drag path with no onMove gate, a stale
+                    // pale class). Silent: the card is already back where it started.
+                    if (!candidates.length) { return; }
+
+                    if (candidates.length === 1) {
+                        runKanbanDrop(item, candidates[0]);
+                        return;
+                    }
+                    openKanbanActionPicker(item, candidates);
                 }
             });
+        });
+    };
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3b — the SAME address a button press reaches: `performAction(item, action.key)`.
+     * Its own outcome decides everything from here:
+     *   done     — submitRealTransition already re-read the projection and re-rendered; the only thing left is
+     *              the Kanban-specific sentence when the card left the active board for Geçmiş.
+     *   refused  — submitRealTransition already re-rendered (the card is back in its own column) and already
+     *              toasted the server's own localized reason (TasksApi.failureMessage) — nothing to add.
+     *   cancelled — a dialog the action opened (e.g. a reason box) was dismissed; silent, nothing to add.
+     * A REJECTED promise is not a modelled outcome — TasksApi's own fetch wrapper fails closed into `{ ok:
+     * false, reasonCode: 'UNAVAILABLE' }` rather than throwing, so a rejection here is an unexpected bug or a
+     * genuine network-level throw. Either way `state.submittingItemId` must not survive it — a card `render()`
+     * never got to clear would stay "processing" forever, undraggable, for a request that already died.
+     */
+    // The wire's own spelling (TaskLifecycleService: "Done"/"Cancelled"), not the column key — targetStatus on
+    // the action is never "In Progress"-with-a-space to begin with (see kanbanColumnKey).
+    const KANBAN_HISTORY_STATUSES = ['Done', 'Cancelled'];
+
+    const runKanbanDrop = (item, action) => {
+        performAction(item, action.key).then((result) => {
+            if (result && result.outcome === 'done' && KANBAN_HISTORY_STATUSES.includes(action.targetStatus)) {
+                toast(t('KanbanMovedToHistory'));
+            }
+        }).catch((error) => {
+            console.error('WorkCenterNext Kanban drop failed.', error);
+            state.submittingItemId = null;
+            state.submittingActionCode = null;
+            toast(t('ErrorTitle'), 'error');
+            render();
+        });
+    };
+
+    /*
+     * The picker for a column TWO OR MORE enabled actions lead to. Reuses `sharedConfirm`'s existing `select`
+     * input — the SAME shape `openMeetingScheduler`'s meeting-type step already draws — rather than inventing a
+     * new dialog kind for one more list of choices. Esc and an outside click are `sharedConfirm`'s own existing
+     * dismissal (no `onCancel` is passed, so a dismissal is the silent no-op Dilim 3b asks for; the card is
+     * already back in its own column from the `render()` `onEnd` ran before opening this).
+     */
+    const openKanbanActionPicker = (item, candidates) => {
+        if (!global.Swal) { return; }
+        const options = {};
+        candidates.forEach((a) => { options[a.code] = actionLabel(a); });
+        sharedConfirm({
+            title: t('KanbanActionPickerTitle'),
+            icon: 'question',
+            // ConfirmProceed ("Evet, uygula") — the product's own generic confirm button, already in all seven
+            // languages. `PlanConfirm` ("Tarihi Ayarla") was the wrong dialog's text, left over from copying
+            // openDatePicker's shape rather than its meaning.
+            confirmText: t('ConfirmProceed'),
+            input: {
+                type: 'select',
+                label: t('KanbanActionPickerTitle'),
+                options,
+                // Its own sentence, not the dialog's title repeated: the title asks the question, this says
+                // what an EMPTY answer is missing.
+                validate: (value) => (value ? null : t('KanbanActionPickerRequired'))
+            },
+            onConfirm: (code) => {
+                const chosen = candidates.find((a) => a.code === code);
+                if (chosen) { runKanbanDrop(item, chosen); }
+            }
         });
     };
 

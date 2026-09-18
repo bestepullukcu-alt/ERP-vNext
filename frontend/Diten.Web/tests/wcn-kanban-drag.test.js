@@ -217,7 +217,10 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
     onStart({ item: cardEl });
     expect(app().querySelectorAll(".wcn-kcol-pale").length, "onStart did not pale anything").toBeGreaterThan(0);
 
-    onEnd({});
+    // Dropped back on its OWN column (real SortableJS always reports where the pointer released) — Dilim 3b's
+    // own "own column" no-op, so nothing runs; this test is only about the pale cleanup.
+    const ownBody = app().querySelector('.wcn-kcol[data-wcn-status="Pending"] .wcn-kcol-body');
+    onEnd({ item: cardEl, to: ownBody });
     expect(app().querySelectorAll(".wcn-kcol-pale").length).toBe(0);
     // The card is back in its own (only) column — no action ran, nothing moved for real.
     expect(app().querySelector(`.wcn-kcol[data-wcn-status="Pending"] [data-wcn-row="${id(1)}"]`)).not.toBeNull();
@@ -249,9 +252,11 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
     await tick();
     expect(clicked(), "the control click never reached openDetailPage — the test proves nothing").toBe(true);
 
-    // The drag itself.
+    // The drag itself — dropped back on its own column, so Dilim 3b's own no-op applies and no action runs
+    // (this test is only about the trailing click, not the drop).
     const { onEnd } = sortableCalls[0].options;
-    onEnd({});
+    const ownBody = app().querySelector('.wcn-kcol[data-wcn-status="Pending"] .wcn-kcol-body');
+    onEnd({ item: cardEl(), to: ownBody });
 
     global.sessionStorage.clear();
     cardEl().dispatchEvent(new global.window.MouseEvent("click", { bubbles: true, cancelable: true }));
@@ -370,5 +375,352 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
 
     expect(sortableCalls.length, "the Team scope's board bound Sortable — a colleague's work is not this reader's to drag").toBe(0);
     delete global.fetch;
+  });
+});
+
+/*
+ * WP-WCN-KANBAN-01 Dilim 3b — a drop RUNS the action, through the same address a button press reaches
+ * (`performAction(item, action.key)`). This file stubs the SAME two network seams `wcn-action-outcome-stitch`
+ * already stubs (`WorkCenterNextApi.dispatchAction`, `WorkCenterNextApi.fetchWorkItems`) and drives the drop
+ * through the fake Sortable's `onStart`/`onEnd`, exactly as Dilim 3a's own tests do.
+ */
+describe("Kanban drop runs the action (Dilim 3b)", () => {
+  const id = (n) => `eeeeeeee-0000-0000-0000-${String(n).padStart(12, "0")}`;
+
+  const action = (overrides) => Object.assign({
+    code: "start",
+    label: { kind: "display", text: "Başlat", locale: "und" },
+    semanticType: "start",
+    enabled: true,
+    source: "provider",
+    disabledReasonCode: null,
+    disabledReason: null,
+    requiresConfirmation: false,
+    requiresReason: false,
+    requiresEvidence: false,
+    supportsBulk: false,
+    riskLevel: "normal",
+    targetStatus: null
+  }, overrides);
+
+  const task = (n, { status = "Pending", actions } = {}) => ({
+    fixtureKind: "workItem",
+    id: id(n),
+    workIntent: "task",
+    assignmentMode: "direct",
+    ownershipState: "owned",
+    admissionState: "admitted",
+    normalizedStatus: status,
+    taskLifecycle: status === "Pending" ? "Open" : status,
+    executionState: status === "InProgress" ? "active" : "notStarted",
+    timerState: "notApplicable",
+    systemState: "fresh",
+    actionDepth: "inline",
+    title: { kind: "display", text: `Kart ${n}`, locale: "und" },
+    nativeStatus: { code: status, label: { kind: "display", text: status, locale: "und" } },
+    source: {
+      providerCode: "tasks", providerContractVersion: "1.0", objectType: "task",
+      objectId: id(n), deepLink: `/Tasks/${id(n)}`
+    },
+    lifecycleOwner: "tasks",
+    workItemCapabilities: ["execution"],
+    actions,
+    primaryActionCode: actions[0]?.code || null,
+    overflowActionCodes: [],
+    concurrency: { kind: "version", token: "1" },
+    waitingContext: status === "Waiting" ? { type: "externalInformation", waitingOn: null } : null,
+    escalation: null,
+    dueAt: null
+  });
+
+  let sortableCalls;
+  const fakeSortable = () => {
+    sortableCalls = [];
+    global.Sortable = {
+      create: (el, options) => {
+        const instance = { el, options };
+        sortableCalls.push(instance);
+        return instance;
+      }
+    };
+  };
+
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  let dispatched;
+  let dispatchResult;
+  let fetchWorkItemsCalls;
+  let toasted;
+
+  const boot = async (items) => {
+    fakeSortable();
+    await bootSurface({
+      rootAttrs: 'data-wcn-page="list"', items,
+      wcn: { t: (key) => key, tf: (key, ...args) => `${key}:${args.join(",")}`, tn: (key) => key }
+    });
+    app().querySelector('[data-wcn-tab="islerim"]').click();
+    await tick();
+    app().querySelector('[data-wcn-view="kanban"]').click();
+    await tick();
+
+    dispatched = null;
+    dispatchResult = { ok: true, status: 204 };
+    global.WorkCenterNextApi.dispatchAction = async (itemId, actionCode, providerCode, body) => {
+      dispatched = { itemId, actionCode, providerCode, body };
+      return dispatchResult;
+    };
+    fetchWorkItemsCalls = 0;
+    const realFetch = global.WorkCenterNextApi.fetchWorkItems;
+    global.WorkCenterNextApi.fetchWorkItems = (...args) => {
+      fetchWorkItemsCalls += 1;
+      return realFetch(...args);
+    };
+    // The product's own toast seam (MOD-0013) — recorded rather than rendered, matching every other test in
+    // this suite that asserts on what the reader is TOLD (toast() is a no-op without this: `global.showToast?.`).
+    toasted = [];
+    global.showToast = (message, type) => { toasted.push({ message, type }); };
+    // `inquire` fetches the assignable-people list BEFORE its reason dialog even opens (WAITING_ON_ACTIONS) —
+    // unrelated to what any of these tests are about, so it is stubbed empty here rather than per-test.
+    global.TasksApi = global.TasksApi || {};
+    global.TasksApi.assignablePeople = async () => ({ ok: true, data: [] });
+  };
+
+  const drop = (cardEl, targetStatus) => {
+    const { onStart, onEnd } = sortableCalls[0].options;
+    onStart({ item: cardEl });
+    const body = app().querySelector(`.wcn-kcol[data-wcn-status="${targetStatus}"] .wcn-kcol-body`);
+    onEnd({ item: cardEl, to: body });
+  };
+
+  afterEach(() => { delete global.Sortable; delete global.Swal; delete global.showConfirm; });
+
+  it("one enabled action: performAction runs with the right code, the card returns to the DOM, and the board re-reads from the server", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })]
+    });
+    await boot([t1]);
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+
+    drop(cardEl, "In Progress");
+    await tick();
+
+    expect(dispatched, "performAction never reached the dispatch endpoint").not.toBeNull();
+    expect(dispatched.actionCode).toBe("start");
+    expect(dispatched.itemId).toBe(id(1));
+    expect(app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`), "the card vanished from the DOM").not.toBeNull();
+    expect(fetchWorkItemsCalls, "the board never re-read the projection after a successful drop").toBeGreaterThan(0);
+  });
+
+  it("two enabled actions: the picker opens with both labels; choosing one runs it; Esc runs nothing", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [
+        action({ code: "start", targetStatus: "Waiting", enabled: true, label: { kind: "display", text: "Başlat", locale: "und" } }),
+        action({ code: "inquire", targetStatus: "Waiting", enabled: true, requiresReason: false, label: { kind: "display", text: "Bilgi bekle", locale: "und" } })
+      ]
+    });
+    await boot([t1]);
+    let seenOptions = null;
+    let seenOnCancel;
+    let seenConfirmText;
+    let seenValidator;
+    global.Swal = {};
+    // `_GlobalConfirmation.cshtml`'s own real dismiss guard is `typeof options.onCancel === 'function'` — when
+    // it is not, a dismissal (Esc / outside click) calls NOTHING, silently, by construction. So the proof that
+    // "Esc runs nothing" is that `openKanbanActionPicker` never hands the picker an `onCancel` to call in the
+    // first place — there is no path from a dismissal to an action, not merely one this stub chose not to take.
+    global.showConfirm = (title, callback, opts) => {
+      seenOptions = opts.inputOptions;
+      seenOnCancel = opts.onCancel;
+      seenConfirmText = opts.confirmButtonText;
+      seenValidator = opts.inputValidator;
+      // never call `callback` or `opts.onCancel` — this simulates the dialog sitting open, undecided.
+    };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "Waiting");
+    await tick();
+
+    expect(seenOptions, "the picker never opened for two candidates").not.toBeNull();
+    expect(Object.keys(seenOptions).sort()).toEqual(["inquire", "start"]);
+    expect(Object.values(seenOptions)).toEqual(expect.arrayContaining(["Başlat", "Bilgi bekle"]));
+    // The harness's `t` echoes the key back — so this checks it is the PICKER's own confirm/validation keys,
+    // not `PlanConfirm` (a different dialog's "Tarihi Ayarla") or the title repeated as the empty-answer reason.
+    expect(seenConfirmText, "the confirm button is not using ConfirmProceed").toBe("ConfirmProceed");
+    expect(seenValidator(""), "an empty answer does not name its own reason").toBe("KanbanActionPickerRequired");
+    expect(dispatched, "a candidate ran before any was chosen").toBeNull();
+    expect(typeof seenOnCancel, "a dismissal has a path to run something after all").not.toBe("function");
+  });
+
+  it("two enabled actions: choosing one from the picker runs exactly that one", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [
+        action({ code: "start", targetStatus: "Waiting", enabled: true }),
+        action({ code: "inquire", targetStatus: "Waiting", enabled: true })
+      ]
+    });
+    await boot([t1]);
+    global.Swal = {};
+    global.showConfirm = (title, callback) => { callback("inquire"); };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "Waiting");
+    await tick();
+
+    expect(dispatched, "the chosen candidate never ran").not.toBeNull();
+    expect(dispatched.actionCode).toBe("inquire");
+  });
+
+  it("refused: the card stays in its own column and the localized reason is toasted (no new text — TasksApi.failureMessage)", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })]
+    });
+    await boot([t1]);
+    dispatchResult = { ok: false, status: 409, reasonCode: "TASK_CONCURRENCY_CONFLICT" };
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+
+    drop(cardEl, "In Progress");
+    await tick();
+
+    expect(dispatched, "the drop never dispatched at all").not.toBeNull();
+    // The card is back in ITS OWN column (Pending) — the drop was refused, nothing moved for real.
+    expect(app().querySelector('.wcn-kcol[data-wcn-status="Pending"] .wcn-kcard')).not.toBeNull();
+    expect(app().querySelector('.wcn-kcol[data-wcn-status="In Progress"] .wcn-kcard')).toBeNull();
+    // A toast fired — submitRealTransition's own existing path (global.TasksApi.failureMessage), not new text —
+    // and it is an ERROR toast, not the generic success default.
+    expect(toasted.length, "no error was ever surfaced to the reader").toBeGreaterThan(0);
+    expect(toasted[toasted.length - 1].type).toBe("error");
+  });
+
+  it("cancelled: dismissing a reason dialog the dropped action opened stays silent — no toast, no dispatch", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "inquire", targetStatus: "Waiting", enabled: true, requiresReason: true })]
+    });
+    await boot([t1]);
+    global.Swal = { fire: () => Promise.resolve({ isConfirmed: false }) };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "Waiting");
+    await tick();
+    await tick();
+
+    expect(dispatched, "a dismissed reason dialog still dispatched").toBeNull();
+  });
+
+  it("dropping on Tamamlandı/İptal shows the 'Geçmiş'e taşındı' notice on success", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "cancel", targetStatus: "Cancelled", enabled: true, riskLevel: "destructive" })]
+    });
+    await boot([t1]);
+    global.Swal = {};
+    global.showConfirm = (title, callback) => { callback(); };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "Cancelled");
+    await tick();
+
+    expect(dispatched, "cancel never dispatched").not.toBeNull();
+    expect(dispatched.actionCode).toBe("cancel");
+    expect(toasted.some((t) => t.message === "KanbanMovedToHistory"),
+      "no 'moved to Geçmiş' notice was shown").toBe(true);
+  });
+
+  it("a REFUSED drop onto Tamamlandı/İptal never shows 'Geçmiş'e taşındı' — the card never actually left", async () => {
+    // Sabotage-guarded: a drop onto a terminal column can be dispatched and still be refused (a stale
+    // concurrency token, a gate the button path would have hit too). Showing "moved to Geçmiş" then would be a
+    // lie — the card is still sitting right here, in its own column.
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "cancel", targetStatus: "Cancelled", enabled: true, riskLevel: "destructive" })]
+    });
+    await boot([t1]);
+    dispatchResult = { ok: false, status: 409, reasonCode: "TASK_CONCURRENCY_CONFLICT" };
+    global.Swal = {};
+    global.showConfirm = (title, callback) => { callback(); };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "Cancelled");
+    await tick();
+
+    expect(dispatched, "cancel never dispatched").not.toBeNull();
+    expect(toasted.some((t) => t.message === "KanbanMovedToHistory"),
+      "a REFUSED drop still claimed the card moved to Geçmiş").toBe(false);
+    expect(app().querySelector('.wcn-kcol[data-wcn-status="Pending"] .wcn-kcard'),
+      "the card is not back in its own column").not.toBeNull();
+  });
+
+  it("a card mid-drop cannot be picked up again until performAction resolves", async () => {
+    // Sabotage-guarded: removing `!processing &&` from kanbanCard's `draggable` computation leaves a card
+    // pickable while its own drop is still in flight — a second drag or drop-triggered action could start on
+    // the SAME card before the first one is done.
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })]
+    });
+    await boot([t1]);
+    let resolveDispatch;
+    global.WorkCenterNextApi.dispatchAction = () => new Promise((resolve) => { resolveDispatch = resolve; });
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "In Progress");
+    await tick();
+
+    const midFlightCard = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    expect(midFlightCard, "the card vanished instead of showing 'processing'").not.toBeNull();
+    expect(midFlightCard.classList.contains("wcn-kcard-processing"), "no processing state was shown").toBe(true);
+    expect(midFlightCard.hasAttribute("data-wcn-draggable"),
+      "a card mid-drop can still be picked up again").toBe(false);
+    // The library's OWN selectors, not merely a class for a human to notice: Sortable itself refuses to start a
+    // drag on an element that fails `draggable` or matches `filter`, so the attribute's absence is what
+    // actually locks the card, on every list this binding creates.
+    const lastBinding = sortableCalls[sortableCalls.length - 1].options;
+    expect(lastBinding.draggable).toBe('.wcn-kcard[data-wcn-draggable="1"]');
+    expect(lastBinding.filter).toBe('.wcn-kcard:not([data-wcn-draggable="1"])');
+
+    resolveDispatch({ ok: true, status: 204 });
+    await tick();
+    await tick();
+
+    const cardAfter = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    expect(cardAfter.classList.contains("wcn-kcard-processing"), "the processing state never cleared").toBe(false);
+    expect(cardAfter.hasAttribute("data-wcn-draggable"), "the card never became draggable again").toBe(true);
+  });
+
+  it("a rejected promise (network failure) clears the processing state instead of leaving the card stuck", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })]
+    });
+    await boot([t1]);
+    global.WorkCenterNextApi.dispatchAction = async () => { throw new Error("network exploded"); };
+
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    drop(cardEl, "In Progress");
+    await tick();
+    await tick();
+
+    const cardAfter = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    expect(cardAfter, "the card vanished instead of coming back").not.toBeNull();
+    expect(cardAfter.classList.contains("wcn-kcard-processing"), "the card is stuck in 'processing' forever").toBe(false);
+    expect(cardAfter.hasAttribute("data-wcn-draggable"), "a stuck card cannot be picked up again").toBe(true);
+    expect(toasted.some((t) => t.type === "error"), "no error was ever surfaced").toBe(true);
+  });
+
+  it("speaks the three new keys in all seven languages", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const web = (...p) => path.resolve(__dirname, "..", ...p);
+    ["en", "tr", "fr", "es", "zh", "ar", "ru"].forEach((lang) => {
+      const resx = fs.readFileSync(
+        web("Resources", "Views", "WorkCenterNext", `WorkCenterNextIndex.${lang}.resx`), "utf8");
+      ["KanbanActionPickerTitle", "KanbanProcessing", "KanbanMovedToHistory"].forEach((key) => {
+        expect(resx, `${lang} is missing ${key}`).toContain(`name="${key}"`);
+      });
+    });
   });
 });
