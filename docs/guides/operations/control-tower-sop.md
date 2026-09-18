@@ -1212,6 +1212,23 @@ Report evidence pointer içermeli; “works” tek başına kanıt değildir.
 
 ---
 
+## 22.1 Çok modüllü durum raporu
+
+§22 tek bir iş paketini anlatır. **Birden çok modülün durumunu** bildiren rapor ayrıdır ve biçimi
+`.antigravity/rules/status-reporting-and-evidence.md` (REP-001) ile sabittir. Özet:
+
+- Tek tablo, sabit sütunlar: modül · kapsam cümlesi · kanıt seviyesi (§23) · kanıtın yeri (`yol@commit`) ·
+  CT kararı (§29'daki Done seviyesi) · sıradaki tek eksik.
+- Yüzde tek başına yazılmaz; ancak altındaki satır listesiyle birlikte anlam taşır.
+- Kanıt depoda durur ve gönderilmiş olur. Kişisel makine yolu, `/tmp` ve yerelde kalmış dal kanıt değildir.
+- Kanıt koşusundan önce dal ana dalla senkronlanır; rapor kaç commit geride olduğunu yazar.
+- Yeni statü adı uydurulmaz: yalnız `E0`–`E5`, §29 Done seviyeleri ve module pack durumları kullanılır.
+- Tabloyu `scripts/status_report.py` üretir; betiğin bulamadığı hücre `kayıt yok` yazar ve CT o satırı `E0` sayar.
+
+Bu biçimde olmayan çok modüllü raporun sayıları CT tarafından **okunmaz**; biçim istenir.
+
+---
+
 # 23. Evidence sufficiency modeli
 
 | Level | Kanıt | Kullanım |
