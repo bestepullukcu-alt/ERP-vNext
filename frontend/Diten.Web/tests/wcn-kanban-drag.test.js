@@ -29,7 +29,7 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
     targetStatus: null
   }, overrides);
 
-  const task = (n, { status = "Pending", actions } = {}) => ({
+  const task = (n, { status = "Pending", actions, assignee, requester } = {}) => ({
     fixtureKind: "workItem",
     id: id(n),
     workIntent: "task",
@@ -56,7 +56,9 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
     concurrency: { kind: "version", token: "1" },
     waitingContext: status === "Waiting" ? { type: "externalInformation", waitingOn: null } : null,
     escalation: null,
-    dueAt: null
+    dueAt: null,
+    assignee: assignee || null,
+    requester: requester || null
   });
 
   let sortableCalls;
@@ -87,6 +89,80 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
   };
 
   afterEach(() => { delete global.Sortable; });
+
+  // ── the person footer (WP-WCN-KANBAN-01 Dilim 4) ─────────────────────────────────────────────────────────
+
+  /*
+   * Sabotage-guarded: remove the footer entirely and this goes red. The circle is
+   * DitenPersonPicker.personInitials's OWN initials logic (two words → first+last letter), never a hand-typed
+   * guess, and the projection carries only a display-name string here (mock-data's personName) — no photo, so
+   * this is the only avatar shape the card could ever draw honestly.
+   */
+  it("draws the assignee's initials and name below the card", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })],
+      assignee: { id: "u-1", displayName: "Ayşe Yılmaz", isCurrentUser: false }
+    });
+    await boot([t1]);
+
+    const person = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"] .wcn-kcard-person`);
+    expect(person, "no person footer was drawn for an assigned task").not.toBeNull();
+    expect(person.textContent).toContain("Ayşe Yılmaz");
+    expect(person.querySelector(".wcn-kcard-avatar").textContent).toBe("AY");
+  });
+
+  it("falls back to the requester when nobody has claimed the work yet", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "claim", targetStatus: null })],
+      assignee: null,
+      requester: { id: "u-2", displayName: "Deniz Koç", isCurrentUser: false }
+    });
+    await boot([t1]);
+
+    const person = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"] .wcn-kcard-person`);
+    expect(person, "no person footer was drawn for the requester fallback").not.toBeNull();
+    expect(person.textContent).toContain("Deniz Koç");
+  });
+
+  it("draws no person footer when the projection carries neither — no data is invented", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "claim", targetStatus: null })],
+      assignee: null,
+      requester: null
+    });
+    await boot([t1]);
+
+    const card = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    expect(card.querySelector(".wcn-kcard-person")).toBeNull();
+  });
+
+  /*
+   * CT fix, WP-WCN-KANBAN-01 Dilim 4 correction round — the REAL projection shape today: the server has no
+   * user-directory seam, so an assignee/requester with no resolvable identity arrives as a person object with
+   * no displayName. mock-data's personName() then leaves the translated "name unavailable" LABEL in
+   * item.assignee, which is truthy — a card that only checked "is this string non-empty" (the original Dilim 4
+   * code) drew that label's initials as if it were a real person's. Sabotage: remove the
+   * assigneeNameKnown/requesterNameKnown gate in kanbanCard (fall back to a plain truthy check) and this test
+   * goes red.
+   */
+  it("draws no person footer when the assignee exists but the server sent no display name", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "claim", targetStatus: null })],
+      assignee: { id: "u-3", isCurrentUser: false },
+      requester: null
+    });
+    await boot([t1]);
+
+    const card = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    expect(
+      card.querySelector(".wcn-kcard-person"),
+      "the name-unavailable label was drawn as if it were a person"
+    ).toBeNull();
+  });
 
   // ── which cards get a handle ────────────────────────────────────────────────────────────────────────────
 
@@ -125,6 +201,92 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
 
     const card = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
     expect(card.hasAttribute("data-wcn-draggable")).toBe(false);
+  });
+
+  // ── the dragged clone does not trail the pointer ────────────────────────────────────────────────────────
+
+  /*
+   * CT fix, WP-WCN-KANBAN-01 Dilim 4 correction round — `.wcn-kcard`'s own hover/select `transition: all .12s
+   * ease` was also applying to Sortable's `forceFallback` clone (the element that follows the mouse), so the
+   * card visibly trailed .12s behind the pointer on every drag. jsdom does not compute a cascade against an
+   * external stylesheet, so this pins two things a screen cannot show here: that app.js actually asks Sortable
+   * for a named class on the dragged clone (a real behaviour check, via the captured `options`), and that
+   * backbone-custom.css turns the transition off for that class. Sabotage: delete either the `fallbackClass`
+   * line from app.js's Kanban `Sortable.create` call or the `.wcn-kcard-dragging` rule from the CSS, and one of
+   * these two goes red.
+   */
+  it("names a class for Sortable's dragged clone, so the CSS can turn its transition off", async () => {
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "start", targetStatus: "InProgress", enabled: true })]
+    });
+    await boot([t1]);
+
+    expect(sortableCalls.length).toBeGreaterThan(0);
+    expect(
+      sortableCalls[0].options.fallbackClass,
+      "the Kanban Sortable binding no longer names a class for its dragged clone"
+    ).toBe("wcn-kcard-dragging");
+  });
+
+  /*
+   * CT fix, Dilim 4 correction round — `.diten-opt-avatar` (backbone-custom.css:8726) sets the SAME three
+   * size properties at the SAME specificity (0,1,0) as `.wcn-kcard-avatar` and is declared LATER in the file,
+   * so it was winning the cascade and the card drew a 2rem avatar instead of the intended 1.5rem one.
+   * Sabotage: drop `.wcn-kcard-avatar` back to a single-class selector (undoing the `.diten-opt-avatar.` prefix
+   * that raises its specificity to 0,2,0) and this goes red.
+   */
+  it("wins the avatar-size cascade against .diten-opt-avatar's later, equal-specificity rule", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"),
+      "utf8"
+    ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+    expect(css, "no rule raises .wcn-kcard-avatar's specificity above .diten-opt-avatar's").toMatch(
+      /\.diten-opt-avatar\.wcn-kcard-avatar\s*\{[^}]*inline-size:\s*1\.5rem/
+    );
+  });
+
+  it("turns the dragged clone's transition off in CSS, so it does not trail the pointer", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"),
+      "utf8"
+    ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+    expect(css, "no .wcn-kcard-dragging rule turns the transition off").toMatch(
+      /\.wcn-kcard-dragging\s*\{[^}]*transition:\s*none/
+    );
+  });
+
+  /*
+   * CT fix, Dilim 4 correction round — hover/selected used to REPLACE `.wcn-kcard`'s base `box-shadow` outright:
+   * hover with a hardcoded light-only `rgba(0, 0, 0, .1)` (invisible over a dark-theme card, since core.css's
+   * dark block pairs a DIFFERENT rgba with --bs-box-shadow-lg) and `.selected` with only its ring, dropping the
+   * resting elevation for as long as either state held. Both now STACK the theme's own `--bs-box-shadow`/
+   * `--bs-box-shadow-lg` with their own addition instead. Sabotage: put the old hardcoded rgba back on
+   * `:hover`, or drop `var(--bs-box-shadow)` from `.selected`'s rule, and this goes red.
+   */
+  it("stacks the base shadow under hover and selected instead of replacing it", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"),
+      "utf8"
+    ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+    expect(css, "no rgba(0, 0, 0 hardcoded shadow should remain on the Kanban card").not.toMatch(
+      /\.wcn-kcard:hover\s*\{[^}]*rgba\(0,\s*0,\s*0/
+    );
+    expect(css, ".wcn-kcard:hover no longer stacks the theme's own base shadow").toMatch(
+      /\.wcn-kcard:hover\s*\{[^}]*var\(--bs-box-shadow\)[^}]*var\(--bs-box-shadow-lg\)/
+    );
+    expect(css, ".wcn-kcard.selected no longer stacks the theme's own base shadow under its ring").toMatch(
+      /\.wcn-kcard\.selected\s*\{[^}]*var\(--bs-box-shadow\)[^}]*color-mix/
+    );
   });
 
   // ── the columns a drag allows or pales ───────────────────────────────────────────────────────────────────
@@ -403,7 +565,7 @@ describe("Kanban drop runs the action (Dilim 3b)", () => {
     targetStatus: null
   }, overrides);
 
-  const task = (n, { status = "Pending", actions } = {}) => ({
+  const task = (n, { status = "Pending", actions, assignee, requester } = {}) => ({
     fixtureKind: "workItem",
     id: id(n),
     workIntent: "task",
@@ -430,7 +592,9 @@ describe("Kanban drop runs the action (Dilim 3b)", () => {
     concurrency: { kind: "version", token: "1" },
     waitingContext: status === "Waiting" ? { type: "externalInformation", waitingOn: null } : null,
     escalation: null,
-    dueAt: null
+    dueAt: null,
+    assignee: assignee || null,
+    requester: requester || null
   });
 
   let sortableCalls;

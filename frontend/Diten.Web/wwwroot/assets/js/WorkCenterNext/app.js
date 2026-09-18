@@ -6543,6 +6543,32 @@
         // drag nor a second drop-triggered action can start on it before the first one resolves.
         const processing = state.submittingItemId === item.id;
         const draggable = !processing && kanbanDragTargets(item).length > 0;
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 — the person the demo card's "assigned" row becomes here, measured against
+         * what toPresentation ACTUALLY carries (mock-data.js personName): `item.assignee`/`item.requester` are
+         * already-resolved display-name strings, never person objects, and never avatar image URLs — this
+         * projection has no photo, so the circle is always initials, never an <img>. The assignee (who is
+         * DOING the work) is shown; the requester only stands in when nobody holds it yet (an unclaimed pool
+         * card). Comment/attachment COUNTS from the demo card are not drawn at all: the projection carries
+         * `attachments.items` (a list to render or count elsewhere) and a `checklist`/`subtasks` shape, but no
+         * standalone comment-count field — inventing one here would be drawing data that does not exist.
+         *
+         * CT fix — `item.assignee`/`item.requester` are NOT always a name: mock-data.js's personName() can leave
+         * the translated "name unavailable" LABEL in that string when the person exists but the server sent no
+         * displayName (today's real projection, with no user-directory seam). A truthy-string check drew that
+         * label as if it were someone's name. `assigneeNameKnown`/`requesterNameKnown` are recorded by
+         * toPresentation BEFORE it overwrites the person object with either the name or the label, so this reads
+         * that fact instead of pattern-matching the rendered text.
+         */
+        const personName = (item.assigneeNameKnown && item.assignee)
+            ? item.assignee
+            : (item.requesterNameKnown && item.requester) ? item.requester : '';
+        const personRow = personName
+            ? `<div class="wcn-kcard-person" title="${esc(personName)}">
+                <span class="diten-opt-avatar wcn-kcard-avatar" aria-hidden="true">${esc(personInitials(personName))}</span>
+                <span>${esc(personName)}</span>
+            </div>`
+            : '';
         return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}${processing ? ' wcn-kcard-processing' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
@@ -6553,6 +6579,7 @@
             ${processing
                 ? `<div class="wcn-kcard-processing-note" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>${esc(t('KanbanProcessing'))}</span></div>`
                 : (quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : '')}
+            ${personRow}
         </div>`;
     };
 
@@ -7896,6 +7923,13 @@
                 draggable: '.wcn-kcard[data-wcn-draggable="1"]',
                 filter: '.wcn-kcard:not([data-wcn-draggable="1"])',
                 ghostClass: 'wcn-kcard-ghost',
+                // CT fix, WP-WCN-KANBAN-01 Dilim 4 correction round — `forceFallback` means Sortable repositions
+                // this clone on every mousemove; `.wcn-kcard`'s own `transition: all .12s ease` (the hover/
+                // select animation) was applying to it too, so the clone visibly trailed .12s behind the
+                // pointer. Naming our own class here (rather than leaning on Sortable's default
+                // `fallbackClass: 'sortable-fallback'`) keeps the CSS hook self-documenting and independent of
+                // the library's own defaults. See backbone-custom.css's `.wcn-kcard-dragging` rule.
+                fallbackClass: 'wcn-kcard-dragging',
                 onStart: (event) => {
                     const item = itemById(event.item.getAttribute('data-wcn-row'));
                     if (!item) { return; }

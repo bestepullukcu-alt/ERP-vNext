@@ -384,6 +384,17 @@
          * reports 'Owner' — the common case, and the one this flag has to keep saying yes to.
          */
         item.raisedByViewer = !!item.requester?.isCurrentUser;
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 CT fix — RECORDED BEFORE personName() OVERWRITES THE OBJECT, for the same
+         * reason raisedByViewer is captured above it. `personName()` can return the TRANSLATED LABEL
+         * ("Ad bilgisi yok" / PersonNameUnavailable) when the person exists but the server sent no displayName —
+         * that label is not a name, and a renderer that only checks "is this string non-empty" (the Kanban
+         * card's person footer did) mistakes the label for a real person and draws initials for someone who
+         * isn't in the projection. Downstream code must ask THIS, never compare the rendered string to the
+         * label text (a locale change would silently break that comparison anyway).
+         */
+        item.assigneeNameKnown = !!(item.assignee?.displayName || item.assignee?.isCurrentUser);
+        item.requesterNameKnown = !!(item.requester?.displayName || item.requester?.isCurrentUser);
         // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
         // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
         // name-unavailable label for anyone else. Never render a raw user GUID.

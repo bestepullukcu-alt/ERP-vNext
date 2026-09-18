@@ -5810,6 +5810,36 @@ DURUM: AÇIK · BULAN: WP-INFRA-AUDIT-APPEND-ACTOR-AND-ESCALATION-CLOCK-01 · KA
 
 ---
 
+### BL-425
+
+**Yönetişim iş kuyruğu panosu (Views/ManagementGovernance/WorkQueue.cshtml) gerçek veriye ve yetkiye bağlı değil**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+`Views/ManagementGovernance/WorkQueue.cshtml` + `mg-page.js` bugün bellekte üretilen sahte veriyle çalışıyor: görev tablosuna (TaskItem/WorkAggregation) bağlı değil, denetleyici sınıfında `[Authorize]` yok, ekran metinleri yalnız İngilizce (7 dil değil), "Closed" sütunu hiçbir zaman dolmuyor (hiçbir yazma yolu onu doldurmuyor). Önce gerçek veri (WorkAggregation projeksiyonuna bağlanmak) ve yetki (uygun `[Authorize]`/izin) gelmeli; pano bundan sonra Görev Merkezi'nin Kanban bileşeninin (WP-WCN-KANBAN-01) salt-okunur bir modu olarak gelebilir — sütun/kart/sürükleme görünümünü ikinci kez yazmak yerine aynı bileşeni okuma-yalnız açmak. Gelecek gerileme riski: düşük (eklemeli; mevcut Görev Merkezi Kanban davranışına dokunmuyor).
+
+---
+
+### BL-426
+
+**Görev Merkezi ilk yükleme ekranı iskelet (skeleton) olmalı, spinner kartı değil**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+Ölçülen (bu worktree'de bu düzeltme turunda yeniden ölçüldü, satırlar güncel): ilk yüklemede sayfa, ortada spinner + "İşleriniz yükleniyor" başlığı + üç gri çubuklu bir kart gösteriyor (`app.js` `renderLoadingState` :6787; kendi `.wcn-skeleton` sınıfı, `backbone-custom.css` :7892-7893). Sayfanın gerçek şekli (sekme şeridi, filtre/segment çubuğu, seçili görünüme göre liste satırları / pano sütunları / takvim ızgarası) yüklenirken hiç görünmüyor; veri gelince düzen birden değişiyor. Platformun ortak iskelet dili (`.backbone-skeleton` + `.skeleton-row`, `backbone-custom.css` :347-368) burada kullanılmıyor — Work Report ekranı bu dili doğru şekilde yeniden kullanıyor ve kendi `⚠ NO NEW SKELETON LANGUAGE` notunu taşıyor (`backbone-custom.css` :9499-9501: bloklar `.shimmer` + `.skeleton-row`, yalnız BOYUTLAR ekrana özel), bu Görev Merkezi'nin izleyeceği canlı örnek. İstenen: ilk yüklemede spinner kartı yerine sayfanın kendi şeklinde bir iskelet (sekmeler, filtre çubuğu, seçili görünüme göre satır/sütun/takvim yerleri), ortak sınıflarla; yazma sonrası yeniden okumada iskelet değil mevcut içerik kalmalı (`state.loadState` TEK yerde `'loading'` olarak atanıyor — yalnız ilk yüklemede, `app.js` :10770 — dosyada başka hiçbir yeniden-okuma yolu bu satırı tekrar çağırmıyor; kural zaten korunuyor, yeni iskelet de aynı kurala uymalı); `role=status` metni kalmalı; `prefers-reduced-motion`'da animasyon olmamalı; Takvim görünümü geldiğinde aynı kural ona da uygulanmalı. Gelecek gerileme riski: düşük (yalnız yükleme görünümü; veri yolu değişmez).
+
+---
+
+### BL-427
+
+**`ErrorTitle` anahtarı Görev Merkezi'nde genel eylem-hatası bildirimi olarak kullanılıyor ama metni sayfanın YÜKLENEMEDİĞİNİ söylüyor**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 3b/4) · KAYIT: 2026-09-18
+
+Ölçüldü (bu düzeltme turunda satırlar yeniden doğrulandı): `WorkCenterNextIndex.*.resx`'te `ErrorTitle` = "Görev Merkezi yüklenemedi" — `renderErrorState`'in (`app.js:6847`) sayfa hiç yüklenemediğinde gösterdiği başlık, komşu anahtarı `ErrorDesc` = "Filtreleriniz korundu. Çalışma alanını yeniden yüklemek için tekrar deneyin." ile birlikte. Ancak `t('ErrorTitle')` `app.js`'te 6 ayrı yerde, sayfa gayet yüklüyken tek bir EYLEMİN başarısız olduğu anlarda genel hata tostu olarak çağrılıyor (`app.js:5580,8019,8475,8549,9246,10932` — biri artık Kanban bırakma akışının ağ-hatası dalı, WP-WCN-KANBAN-01 Dilim 3b `runKanbanDrop`'un `.catch`'i). Beşi TEK BAŞINA (`toast(t('ErrorTitle'), 'error')`); altıncısı (`:9246`) tek başına DEĞİL — bir 403 koşulunda `NoAccessTitle`'a düşen bir üçlü operatörün ELSE dalı (`result.status === 403 ? t('NoAccessTitle') : t('ErrorTitle')`), yani orada `ErrorTitle` yalnız 403-DIŞI eylem hatalarında çağrılıyor. Bir sürükle-bırağın ağ hatasında kullanıcı "Görev Merkezi yüklenemedi" okuyor — sayfa yüklü, yalnız o işlem başarısız oldu. Genel eylem-hatası için ayrı bir anahtar açılmalı (7 dil, gerçek çeviri, ör. "İşlem tamamlanamadı") ve altı çağrı yeri ona geçirilmeli (`:9246`'daki ELSE dalı dahil, `NoAccessTitle` dalına dokunmadan); `ErrorTitle`/`ErrorDesc` çifti yalnız gerçek sayfa-yükleme hatasında (`renderErrorState`) kalmalı. Gelecek gerileme riski: düşük (yalnız metin/anahtar; davranış değişmiyor).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
