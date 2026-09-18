@@ -263,6 +263,37 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
   });
 
   /*
+   * Owner request — the dragged clone tilts a few degrees, Sneat's own dragged-card behaviour. Sortable's
+   * `forceFallback` mode positions this exact clone with `transform: translate3d(...)` on every mousemove
+   * (bindKanbanDrag); a `.wcn-kcard-dragging { transform: rotate(...) }` rule would REPLACE that translate
+   * outright and the card would stop tracking the pointer mid-drag. This asserts the independent `rotate`
+   * property is used instead (composes with `transform`, never overwrites it) and that no rule anywhere writes
+   * `transform: rotate` on the dragging class. Sabotage: change `rotate: 3deg` to `transform: rotate(3deg)` and
+   * this goes red.
+   */
+  it("tilts the dragged clone with the independent `rotate` property, never with `transform: rotate`", () => {
+    const fs = require("fs");
+    const path = require("path");
+    const css = fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"),
+      "utf8"
+    ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+    expect(css, "no .wcn-kcard-dragging rule sets the independent rotate property").toMatch(
+      /\.wcn-kcard-dragging\s*\{[^}]*rotate:\s*[\d.]+deg/
+    );
+    expect(css, "a rotate() transform on .wcn-kcard-dragging would fight Sortable's own translate3d").not.toMatch(
+      /\.wcn-kcard-dragging\s*\{[^}]*transform:\s*rotate/
+    );
+    expect(css, "the dragged clone's shadow does not step up one level").toMatch(
+      /\.wcn-kcard-dragging\s*\{[^}]*var\(--bs-box-shadow\)[^}]*var\(--bs-box-shadow-lg\)/
+    );
+    expect(css, "prefers-reduced-motion no longer turns the tilt off").toMatch(
+      /prefers-reduced-motion:\s*reduce\s*\)\s*\{[^]*?\.wcn-kcard-dragging\s*\{[^}]*rotate:\s*none/
+    );
+  });
+
+  /*
    * CT fix, Dilim 4 correction round — hover/selected used to REPLACE `.wcn-kcard`'s base `box-shadow` outright:
    * hover with a hardcoded light-only `rgba(0, 0, 0, .1)` (invisible over a dark-theme card, since core.css's
    * dark block pairs a DIFFERENT rgba with --bs-box-shadow-lg) and `.selected` with only its ring, dropping the
@@ -537,6 +568,118 @@ describe("Kanban drag (Dilim 3a — columns allow or pale, dropping does nothing
 
     expect(sortableCalls.length, "the Team scope's board bound Sortable — a colleague's work is not this reader's to drag").toBe(0);
     delete global.fetch;
+  });
+
+  /*
+   * WP-WCN-KANBAN-01 Dilim 5 — the owner tried the live board and found the drop zone unreachable: the column
+   * body sat at its own content height (~3rem) inside a column the row had already stretched taller, so the
+   * extra space belonged to no element and a drop landed nowhere once the page scrolled. This block proves the
+   * three fixes directly: the body's own fill rule (CSS), the raised Sortable insert threshold (options), and
+   * that an ALLOWED column now marks itself during a drag instead of only the refused ones dimming. Nested
+   * inside the same describe as `boot`/`fakeSortable`/`task`/`action` — those are closures over THIS describe's
+   * callback, not module-level, so this block reuses them rather than redefining its own copies.
+   */
+  describe("drop-zone reach and target legibility (Dilim 5)", () => {
+  const cssText = () => {
+    const fs = require("fs");
+    const path = require("path");
+    return fs.readFileSync(
+      path.resolve(__dirname, "..", "wwwroot", "assets", "css", "backbone-custom.css"),
+      "utf8"
+    ).replace(/\/\*[\s\S]*?\*\//g, "");
+  };
+
+  // Sabotage: drop `flex: 1 1 auto` from `.wcn-kcol-body` (revert to the old content-height body) and this
+  // goes red — the body would sit at its own height again, not the column's stretched height.
+  it("the column body fills the stretched column instead of sitting at its own content height", () => {
+    const css = cssText();
+    expect(css, "no flex: 1 1 auto rule fills the column body").toMatch(
+      /\.wcn-kcol-body\s*\{[^}]*flex:\s*1 1 auto/
+    );
+    // The fill only works because the row stretches every column to the tallest one first.
+    expect(css, "the board row no longer stretches its columns to equal height").toMatch(
+      /\.wcn-kboard\s*\{[^}]*align-items:\s*stretch/
+    );
+  });
+
+  // Sabotage: drop the emptyInsertThreshold option from bindKanbanDrag's Sortable.create call and this goes
+  // red — the library falls back to its own 5px default, the exact gap the owner's live test could not hit.
+  it("raises Sortable's empty-list insert threshold off the library's 5px default", async () => {
+    fakeSortable();
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "cancel", targetStatus: "Cancelled", enabled: true })]
+    });
+    await boot([t1]);
+    expect(sortableCalls.length).toBeGreaterThan(0);
+    sortableCalls.forEach((call) => {
+      expect(call.options.emptyInsertThreshold, "a bound Kanban list kept the library's 5px default").toBeGreaterThan(5);
+    });
+  });
+
+  // Sabotage: remove the `col.classList.add('wcn-kcol-target')` branch in bindKanbanDrag's onStart (fall
+  // through to the pale branch, or to nothing) and this goes red — no column would read as a valid target,
+  // only as "not yet ruled out" by elimination.
+  it("marks an ALLOWED column as a target during drag, not only the refused ones as pale", async () => {
+    fakeSortable();
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [
+        action({ code: "start", targetStatus: "InProgress", enabled: true }),
+        action({ code: "cancel", targetStatus: "Cancelled", enabled: true })
+      ]
+    });
+    await boot([t1]);
+
+    const { onStart } = sortableCalls[0].options;
+    const cardEl = app().querySelector(`.wcn-kcard[data-wcn-row="${id(1)}"]`);
+    onStart({ item: cardEl });
+
+    const colByStatus = (status) => app().querySelector(`.wcn-kcol[data-wcn-status="${status}"]`);
+    expect(colByStatus("In Progress").classList.contains("wcn-kcol-target")).toBe(true);
+    expect(colByStatus("Cancelled").classList.contains("wcn-kcol-target")).toBe(true);
+    // Refused and own columns are never also marked as a target.
+    expect(colByStatus("Waiting").classList.contains("wcn-kcol-target")).toBe(false);
+    expect(colByStatus("Pending").classList.contains("wcn-kcol-target")).toBe(false);
+  });
+
+  // Sabotage: revert `.wcn-kcol-dropzone .wcn-kcol-head`'s font-weight to 600 and this goes red — the drop
+  // zone heading would again read as a lighter word beside the real columns' 700-weight ones.
+  it("gives the drop-zone heading the same weight as a real column heading, in CSS", () => {
+    const css = cssText();
+    expect(css, "the drop-zone heading no longer shares .wcn-kcol-head's 700 weight").not.toMatch(
+      /\.wcn-kcol-dropzone \.wcn-kcol-head\s*\{[^}]*font-weight:\s*600/
+    );
+    expect(css, ".wcn-kcol-head's own weight must stay 700 for the drop-zone heading to inherit it").toMatch(
+      /\.wcn-kcol-head\s*\{[^}]*font-weight:\s*700/
+    );
+  });
+
+  // The idle "drop here" hint, in the caller's own language, with the column name filled into the {0} slot —
+  // proves the localized template is wired, not just present in the resx.
+  it("draws the idle drop-zone hint with the column's own translated name filled in", async () => {
+    fakeSortable();
+    const t1 = task(1, {
+      status: "Pending",
+      actions: [action({ code: "cancel", targetStatus: "Cancelled", enabled: true })]
+    });
+    await bootSurface({
+      rootAttrs: 'data-wcn-page="list"', items: [t1],
+      wcn: {
+        t: (key) => (key === "KanbanDropHint" ? "Drop here: {0}" : key),
+        tf: (key, ...args) => `${key}:${args.join(",")}`,
+        tn: (key) => key
+      }
+    });
+    app().querySelector('[data-wcn-tab="islerim"]').click();
+    await tick();
+    app().querySelector('[data-wcn-view="kanban"]').click();
+    await tick();
+
+    const doneZone = app().querySelector('.wcn-kcol-dropzone[data-wcn-status="Cancelled"] .wcn-kcol-drophint');
+    expect(doneZone, "no idle hint was drawn in the Cancelled drop zone").not.toBeNull();
+    expect(doneZone.textContent).toBe("Drop here: StatusCancelled");
+  });
   });
 });
 

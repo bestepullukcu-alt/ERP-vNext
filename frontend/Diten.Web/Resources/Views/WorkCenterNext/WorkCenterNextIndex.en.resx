@@ -1087,6 +1087,9 @@
   <data name="KanbanMovedToHistory" xml:space="preserve">
     <value>Moved to History</value>
   </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Drop here: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Previous month</value>
   </data>

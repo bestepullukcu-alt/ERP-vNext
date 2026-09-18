@@ -221,12 +221,14 @@ describe("② the board's columns are the flow, on every tab", () => {
     // KEYS, the same thing every other label assertion in this file checks.
     const dropZoneLabels = dropZones.map((el) => el.querySelector(".wcn-kcol-head span").textContent.trim());
     expect(dropZoneLabels).toEqual(["StatusDone", "StatusCancelled"]);
-    // A drop zone is cardless: an EMPTY body (WP-WCN-KANBAN-01 Dilim 3a — Sortable needs a list to bind and a
-    // region to accept a drop into), never a card, never a count badge (it would always read 0).
+    // A drop zone is cardless: never a card, never a count badge (it would always read 0). WP-WCN-KANBAN-01
+    // Dilim 5 draws one thing inside the body now — the idle "drop here" hint — so the body is no longer
+    // literally empty, but it is still exactly ONE element and that element is the hint, not a card.
     dropZones.forEach((el) => {
       const body = el.querySelector(".wcn-kcol-body");
-      expect(body, "a drop zone needs an empty body for Sortable to bind to").not.toBeNull();
-      expect(body.children.length).toBe(0);
+      expect(body, "a drop zone needs a body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length, "only the idle hint lives here, never a second element").toBe(1);
+      expect(body.querySelector(".wcn-kcol-drophint")).not.toBeNull();
       expect(el.querySelector(".wcn-kcard")).toBeNull();
       expect(el.querySelector(".wcn-kcol-count")).toBeNull();
     });
@@ -317,8 +319,9 @@ describe("② the board's columns are the flow, on every tab", () => {
     expect(labels).toEqual(["StatusDone", "StatusCancelled"]);
     dropZones.forEach((el) => {
       const body = el.querySelector(".wcn-kcol-body");
-      expect(body, "a drop zone needs an empty body for Sortable to bind to").not.toBeNull();
-      expect(body.children.length).toBe(0);
+      expect(body, "a drop zone needs a body for Sortable to bind to").not.toBeNull();
+      expect(body.children.length, "only the idle hint lives here, never a second element").toBe(1);
+      expect(body.querySelector(".wcn-kcol-drophint")).not.toBeNull();
       expect(el.querySelector(".wcn-kcard")).toBeNull();
       expect(el.querySelector(".wcn-kcol-count")).toBeNull();
     });

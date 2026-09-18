@@ -5761,18 +5761,54 @@ tags.diten-tags .tagify__input {
    `.kanban-item` (a white/paper card, rounded, shadowed, deepening on hover) — both re-expressed here in the
    theme's own `--bs-paper-bg`/`--bs-box-shadow`, which the vendor core.css already pairs per light/dark theme,
    so neither had to be redeclared. ------------------------------------------------------------------------- */
-.wcn-kboard { display: flex; gap: .875rem; overflow-x: auto; padding-block-end: .5rem; }
+/* `align-items: stretch` is the flex default already, spelled out here because it is load-bearing: it is the
+   ONLY reason every `.wcn-kcol` in the row shares the tallest column's height, which `.wcn-kcol-body`'s own
+   `flex: 1 1 auto` below then relies on to fill. Drop either half and a short column's body goes back to
+   fitting its own content instead of the row. */
+.wcn-kboard { display: flex; align-items: stretch; gap: .875rem; overflow-x: auto; padding-block-end: .5rem; }
 /* Zeminsiz (no background) — the demo's own `.kanban-board { background: transparent }`. */
 .wcn-kcol { flex: 0 0 17rem; display: flex; flex-direction: column; background: transparent; border-radius: .5rem; }
+/* WP-WCN-KANBAN-01 Dilim 5 — one step up (was .8125rem): a column heading read as body text once the column
+   itself lost its background (Dilim 4). The drop-zone heading below is sized off THIS rule (no font-size of
+   its own), so both move together. */
 .wcn-kcol-head { display: flex; align-items: center; justify-content: space-between; padding: .625rem .75rem;
-    font-size: .8125rem; font-weight: 700; color: var(--bs-heading-color); border-block-end: 1px solid var(--bs-border-color); }
-.wcn-kcol-count { font-size: .6875rem; padding: .0625rem .375rem; border-radius: 1rem; background: var(--bs-card-bg); color: var(--bs-secondary-color); }
-.wcn-kcol-body { display: flex; flex-direction: column; gap: .5rem; padding: .5rem; min-block-size: 3rem; }
+    font-size: .875rem; font-weight: 700; color: var(--bs-heading-color); border-block-end: 1px solid var(--bs-border-color); }
+/* Matches `.wcn-tabs .wcn-tab-count`'s own type scale (size/weight/roundedness/padding) — same shape, same
+   pill — because it sits in the same job (a count beside a label) three lines below on the same screen. The
+   COLOR stays neutral on purpose, unlike the tab count's red: the tab badge means "N things are waiting on
+   you"; this one means "N cards are in this column" — a plain quantity, not a summons, and painting it red
+   would claim urgency this number was never carrying. */
+.wcn-kcol-count { font-size: .625rem; font-weight: 600; line-height: 1.1; padding: .0625rem .35rem; border-radius: 50rem;
+    background: var(--bs-card-bg); color: var(--bs-secondary-color); }
+/* `flex: 1 1 auto` is the Dilim 5 fix: without it the body sat at its own content height inside a column
+   `align-items: stretch` had already stretched, so the extra space below a short card list belonged to no
+   element and a drop there landed nowhere. Now the body itself claims that space, in every column, not only
+   the drop zones. `min-block-size` stays — raised from 3rem to roughly one minimal card's height (padding
+   1.75rem + a title line + a person line, measured off `.wcn-kcard`) — so a drop zone that starts out empty on
+   an otherwise-short board still has somewhere sizeable to catch a card, instead of collapsing to a sliver. */
+.wcn-kcol-body { display: flex; flex-direction: column; gap: .5rem; padding: .5rem; flex: 1 1 auto; min-block-size: 4.5rem;
+    position: relative; }
 /* WP-WCN-KANBAN-01 Dilim 2 — İşlerim/Başlattıklarım's thin, cardless Tamamlandı/İptal drop zones. Narrower than
    a real column and dashed rather than solid, so the eye reads "target", not "empty list waiting to fill up". */
 .wcn-kcol-dropzone { flex-basis: 8rem; border: 1px dashed var(--bs-border-color); background: transparent; }
 .wcn-kcol-dropzone .wcn-kcol-head { justify-content: center; border-block-end: none; color: var(--bs-secondary-color);
-    font-weight: 600; text-align: center; }
+    text-align: center; }
+/* Dilim 5 — the drop-zone heading now carries the SAME weight (700) as every other column heading; only its
+   color stays secondary/muted (set above), which is enough on its own to read as "quieter", without also
+   reading as "smaller word". A 600-weight heading next to 700-weight ones read as a typo, not a deliberate
+   quieter tone. */
+/* The idle hint inside an empty drop zone — "Tamamlandı'ya bırak" — centered where a card would otherwise
+   start. `pointer-events: none` so it never intercepts the drop it is naming; it is removed from the DOM (not
+   just hidden) the moment a card lands, by the same `render()` that redraws everything else on drop. */
+.wcn-kcol-drophint { position: absolute; inset-inline: .5rem; top: 50%; transform: translateY(-50%); margin: 0;
+    text-align: center; font-size: .75rem; color: var(--bs-secondary-color); pointer-events: none; }
+/* Dilim 5 — the column a dragged card COULD land in, drawn during the drag only (`onStart`/`onEnd` toggle this,
+   same lifecycle as `.wcn-kcol-pale` below). Today only the refused columns dimmed; a reader had to infer the
+   allowed ones by elimination. The ring uses the same primary-tinted mix `.wcn-kcard.selected` already reads,
+   so "you can drop here" uses a color the board has already taught the eye to mean "active/selected", not a
+   third accent invented for this one state. */
+.wcn-kcol.wcn-kcol-target { box-shadow: inset 0 0 0 2px color-mix(in sRGB, var(--bs-primary) 45%, transparent); }
+.wcn-kcol.wcn-kcol-target.wcn-kcol-dropzone { border-color: var(--bs-primary); border-style: solid; }
 /* The card: white/paper, rounded, shadowed — `--bs-paper-bg` and `--bs-box-shadow` are the SAME pair the demo
    card reads, already themed light/dark by core.css. A hairline border stands in for the demo's shadow-only
    edge: a shadow alone all but vanishes over a dark page background, and this keeps the card legible there too
@@ -5796,7 +5832,14 @@ tags.diten-tags .tagify__input {
    trailed .12s behind the pointer on every move. `transition: none` turns off ONLY the animation, not any
    other declaration; the card's drag/drop behaviour is unchanged. */
 .wcn-kcard-ghost { opacity: .4; transition: none; }
-.wcn-kcard-dragging { transition: none; }
+/* Owner request — the Sneat demo's own dragged-card tilt. Sortable, in `forceFallback` mode (see
+   bindKanbanDrag), positions this exact clone with its own `transform: translate3d(...)` on every mousemove; a
+   `transform: rotate(...)` here would REPLACE that translate, not add to it, and the card would stop following
+   the pointer. `rotate` is the independent CSS property (not the `transform` function) — it composes with
+   whatever `transform` the library is already writing instead of overwriting it, which is exactly why it is
+   used here rather than a wrapper element (no extra DOM node, no extra place for the two to drift apart).
+   Shadow goes up one step the same way `:hover`/`.selected` already do: STACKED base + `-lg`, not replaced. */
+.wcn-kcard-dragging { transition: none; rotate: 3deg; box-shadow: var(--bs-box-shadow), var(--bs-box-shadow-lg); }
 /* The column a dragged card could NOT land in — dimmed and, on the dropzone shape, still dashed underneath. */
 .wcn-kcol.wcn-kcol-pale { opacity: .45; }
 .wcn-kcol.wcn-kcol-pale .wcn-kcol-body { pointer-events: none; }
@@ -7956,6 +7999,9 @@ tags.diten-tags .tagify__input {
 @media (prefers-reduced-motion: reduce) {
     .wcn-row, .wcn-quick, .wcn-scopebtn, .wcn-viewbtn, .wcn-tr { transition: none; }
     .wcn-skeleton span { animation: none; }
+    /* The dragged-card tilt is motion, not layout — turning it off here leaves Sortable's own
+       `translate3d` positioning (still `transform`, untouched) and the shadow step exactly as they are. */
+    .wcn-kcard-dragging { rotate: none; }
 }
 /* ─────────────────────────────────────────────────────────────────────────────
    DitenTree — reusable hierarchy component (Views/Shared/_Tree.cshtml +

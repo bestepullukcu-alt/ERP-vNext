@@ -6346,9 +6346,14 @@
                 // and a "0" beside Tamamlandı/İptal reads as a real, countable column rather than a target.
                 // The empty `.wcn-kcol-body` is WP-WCN-KANBAN-01 Dilim 3a: Sortable needs a list to bind and a
                 // region to accept a drop into, even though no card is ever rendered inside it.
+                // Dilim 5 — the idle hint ("Tamamlandı'ya bırak"), centered in the zone that is ALWAYS empty
+                // today (see the comment above: no card is ever rendered here before Dilim 3b's projection
+                // exists). One localized template with a `{0}` slot for the column's own already-translated
+                // label, the same `.replace('{0}', …)` convention `document-references.js` already uses — the
+                // sentence can be built in whatever order a language needs around the column name.
                 return `<div class="wcn-kcol wcn-kcol-dropzone" data-wcn-status="${esc(col.status)}">
                     <header class="wcn-kcol-head"><span>${esc(col.label)}</span></header>
-                    <div class="wcn-kcol-body"></div>
+                    <div class="wcn-kcol-body"><p class="wcn-kcol-drophint">${esc(t('KanbanDropHint').replace('{0}', col.label))}</p></div>
                 </div>`;
             }
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
@@ -7930,6 +7935,13 @@
                 // `fallbackClass: 'sortable-fallback'`) keeps the CSS hook self-documenting and independent of
                 // the library's own defaults. See backbone-custom.css's `.wcn-kcard-dragging` rule.
                 fallbackClass: 'wcn-kcard-dragging',
+                // Dilim 5 — a bare list under one minimal card's worth of content used the library's own 5px
+                // default (measured: `emptyInsertThreshold: 5` in sortable.js), which made the empty drop
+                // zones (and any short column) hard to land a card in without hunting for that exact 5px band.
+                // 48 is `.wcn-kcol-body`'s own new `min-block-size` (4.5rem = 72px at the 16px root, ~48px at
+                // the smaller end of the page's actual root-font range) — the threshold now covers roughly the
+                // zone's own guaranteed empty height, not an arbitrary bigger number.
+                emptyInsertThreshold: 48,
                 onStart: (event) => {
                     const item = itemById(event.item.getAttribute('data-wcn-row'));
                     if (!item) { return; }
@@ -7940,7 +7952,14 @@
                         // where it already is is not a move to refuse. (Sabotage-guarded: remove this line and
                         // a card's own column greys itself out from under it.)
                         if (status === item.status) { return; }
-                        if (allowed.has(status)) { return; }
+                        if (allowed.has(status)) {
+                            // Dilim 5 — the column WAS only ever marked by elimination (not pale = allowed);
+                            // a reader had to check every other column to know one was a valid target. Now the
+                            // allowed column says so itself. (Sabotage-guarded: remove this line and no column
+                            // ever reads as a target, only as "not yet ruled out".)
+                            col.classList.add('wcn-kcol-target');
+                            return;
+                        }
                         col.classList.add('wcn-kcol-pale');
                         // A pale column whose ONE reason is a disabled action's own refusal explains itself —
                         // the same localized sentence the button would have shown, read from the wire.

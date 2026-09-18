@@ -1087,6 +1087,9 @@
   <data name="KanbanMovedToHistory" xml:space="preserve">
     <value>تم النقل إلى السجل</value>
   </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>أفلت هنا: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>الشهر السابق</value>
   </data>
