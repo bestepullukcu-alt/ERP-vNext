@@ -1,0 +1,205 @@
+openapi: 3.1.0
+info:
+  title: SOURCING
+  description: >
+    MOD-0145 Sourcing (RFQ/RFP) — MVP-2 Procurement SoR.
+    SoR: RFx events, bids, evaluations, award decisions.
+    RFx yayınla → davetli supplier'lar (MOD-0140 consume) teklif verir → değerlendirme/skor →
+    award (kazanan). Award çıktısı MOD-0141 requisition/PO'ya beslenebilir (downstream).
+    Ürün kimliği MOD-0290'dan (consume). Tenant + Legal-Entity scoped; server-resolved.
+    Parasal alanlar Decimal (string); float YASAK.
+  version: 1.0.0
+  x-status: REVIEW
+  x-owner: MOD-0145
+  x-authored-by: control-tower
+  x-min-contract: SOURCING-BUNDLE
+  x-consumes: [SUPPLIER, PRODUCT-MASTER]
+servers: [{ url: /api/sourcing }]
+security: [{ bearerAuth: [] }]
+paths:
+  /events:
+    post:
+      operationId: createRfxEvent
+      summary: RFx (RFQ/RFP) etkinliği oluştur (draft)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RfxUpsert' }
+            example:
+              type: RFQ
+              title: "Hammadde ikmali Q4"
+              closesAt: "2026-10-15T17:00:00Z"
+              invitedSupplierIds: [SUP-2001, SUP-2002]
+              lines: [{ itemId: b1f2c3d4-0000-0000-0000-000000000001, quantity: "100.000", uomId: BOX }]
+      responses:
+        '201': { description: RFx oluşturuldu, content: { application/json: { schema: { $ref: '#/components/schemas/RfxEvent' } } } }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    get:
+      operationId: listRfxEvents
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/RfxStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: RFx sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/RfxEvent' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+  /events/{rfxId}:
+    get:
+      operationId: getRfxEvent
+      parameters: [{ name: rfxId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: RFx, content: { application/json: { schema: { $ref: '#/components/schemas/RfxEvent' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /events/{rfxId}/publish:
+    post:
+      operationId: publishRfxEvent
+      summary: RFx yayınla (davetli supplier'lara açılır)
+      parameters:
+        - { name: rfxId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200': { description: Yayınlandı, content: { application/json: { schema: { $ref: '#/components/schemas/RfxEvent' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /events/{rfxId}/bids:
+    post:
+      operationId: submitBid
+      summary: Teklif ver (supplier bid; MOD-0140 consume)
+      parameters:
+        - { name: rfxId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BidUpsert' }
+            example:
+              supplierId: SUP-2001
+              lines: [{ itemId: b1f2c3d4-0000-0000-0000-000000000001, unitPrice: "12.5000", leadTimeDays: 14 }]
+      responses:
+        '201': { description: Teklif kaydedildi, content: { application/json: { schema: { $ref: '#/components/schemas/Bid' } } } }
+        '404': { $ref: '#/components/responses/UnknownReference' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    get:
+      operationId: listBids
+      parameters: [{ name: rfxId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200':
+          description: Teklif listesi
+          content: { application/json: { schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/Bid' } }, contractVersion: { type: string } } } } }
+  /events/{rfxId}/award:
+    post:
+      operationId: awardRfxEvent
+      summary: Kazanan seç (award decision; evaluation skoruna dayalı)
+      parameters:
+        - { name: rfxId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [awardedBidId]
+              properties:
+                awardedBidId: { type: string }
+                rationale: { type: string, nullable: true }
+            example: { awardedBidId: BID-9001, rationale: "en düşük TCO" }
+      responses:
+        '200': { description: Award kaydedildi, content: { application/json: { schema: { $ref: '#/components/schemas/AwardDecision' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    RfxStatus: { type: string, enum: [Draft, Published, Evaluating, Awarded, Cancelled, Closed] }
+    RfxType: { type: string, enum: [RFQ, RFP, RFI] }
+    RfxLine:
+      type: object
+      required: [itemId, quantity, uomId]
+      properties:
+        itemId: { type: string, format: uuid, description: "MOD-0290 consume" }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+    RfxUpsert:
+      type: object
+      required: [type, title, lines]
+      properties:
+        type: { $ref: '#/components/schemas/RfxType' }
+        title: { type: string }
+        closesAt: { type: string, format: date-time, nullable: true }
+        invitedSupplierIds: { type: array, items: { type: string }, nullable: true }
+        lines: { type: array, items: { $ref: '#/components/schemas/RfxLine' } }
+    RfxEvent:
+      type: object
+      properties:
+        rfxId: { type: string }
+        type: { $ref: '#/components/schemas/RfxType' }
+        title: { type: string }
+        status: { $ref: '#/components/schemas/RfxStatus' }
+        closesAt: { type: string, format: date-time, nullable: true }
+        invitedSupplierIds: { type: array, items: { type: string }, nullable: true }
+        lines: { type: array, items: { $ref: '#/components/schemas/RfxLine' } }
+        contractVersion: { type: string }
+    BidLine:
+      type: object
+      required: [itemId, unitPrice]
+      properties:
+        itemId: { type: string, format: uuid }
+        unitPrice: { $ref: '#/components/schemas/Decimal' }
+        leadTimeDays: { type: integer, nullable: true }
+    BidUpsert:
+      type: object
+      required: [supplierId, lines]
+      properties:
+        supplierId: { type: string, description: "MOD-0140 SUPPLIER consume" }
+        lines: { type: array, items: { $ref: '#/components/schemas/BidLine' } }
+    Bid:
+      type: object
+      properties:
+        bidId: { type: string }
+        rfxId: { type: string }
+        supplierId: { type: string }
+        lines: { type: array, items: { $ref: '#/components/schemas/BidLine' } }
+        evaluationScore: { $ref: '#/components/schemas/Decimal' }
+        contractVersion: { type: string }
+    AwardDecision:
+      type: object
+      properties:
+        rfxId: { type: string }
+        awardedBidId: { type: string }
+        awardedSupplierId: { type: string }
+        rationale: { type: string, nullable: true }
+        decidedAt: { type: string, format: date-time }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    NotFound:
+      description: Kayıt bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: NOT_FOUND, message: "rfx bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownReference:
+      description: supplier (0140) veya item (0290) bilinmiyor (fail-closed)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_REFERENCE, message: "supplier/item bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }
+    StateConflict:
+      description: Geçersiz durum geçişi (ör. yayınlanmamış RFx'e teklif; kapanmış RFx'e teklif)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATE, message: "rfx yayında değil / kapalı", correlationId: req-3 }, contractVersion: v1 } } }
+    Unprocessable:
+      description: İş kuralı/validation ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "en az bir satır zorunlu", correlationId: req-4 }, contractVersion: v1 } } }

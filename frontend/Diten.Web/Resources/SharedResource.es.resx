@@ -860,4 +860,26 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Registro de certificaciones verificadas</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Participantes verificados</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>Analítica de la fuerza laboral</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Compras</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Proveedores</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Proveedores</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Proveedores</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Abastecimiento</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Abastecimiento</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>No se admite la actualización de un RFx; cree un RFx nuevo o gestiónelo mediante publicación, oferta y adjudicación.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Solicitudes</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Solicitudes</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Órdenes de compra</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Órdenes de compra</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>No se admite la actualización de una solicitud; cree una nueva solicitud o envíe esta para aprobación.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>No se admite la actualización de una orden de compra; cree una nueva orden de compra o apruebe esta.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Conciliación de facturas</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Captura de facturas y conciliación de 3 vías</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Contratos</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Contratación y biblioteca de cláusulas</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Solo se pueden actualizar los contratos en borrador; un contrato activado se gestiona mediante acciones de ciclo de vida, no ediciones.</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>No se admite la edición de un GRN; una recepción contabilizada se corrige con un movimiento de reversión, no con una edición.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>No se admite actualizar una factura; corríjala volviendo a ejecutar la conciliación de 3 vías o resolviendo su excepción, no mediante una edición.</value></data>
 </root>

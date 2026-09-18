@@ -1,6 +1,7 @@
 using Diten.HumanCapitalService.Application;
 using Diten.HumanCapitalService.Infrastructure;
 using Diten.HumanCapitalService.Persistence;
+using Diten.BuildingBlocks.Security.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -29,7 +30,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 

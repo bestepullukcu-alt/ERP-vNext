@@ -1,0 +1,63 @@
+@using Diten.Web.Views.Procurement.InvoiceMatch
+@using Diten.Web.Models.DataTable
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<InvoiceMatchIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = Localizer["InvoiceMatchTitle"].Value;
+    Layout = "_LayoutTenantShell";
+}
+
+@* UAS-001 — signed in but no read permission: draw the 403 surface INSIDE the shell and NOTHING else
+   (no title, no card, no empty table, no action button). No redirect. Server [HasPermission] stays authoritative. *@
+@if (!Perms.Has("procurement.invoice-match.read"))
+{
+    <partial name="_AccessDenied" model="@Localizer["InvoiceMatchTitle"].Value" />
+    return;
+}
+
+@{
+    var bulkActionBar = new DataTableBulkActionBarViewModel
+    {
+        SelectedText = SharedLocalizer["SelectedCount"].Value,
+        ClearSelectionText = SharedLocalizer["ClearSelection"].Value,
+        Actions =
+        [
+            new DataTableActionItemViewModel
+            {
+                Key = "delete",
+                Text = SharedLocalizer["BulkDelete"].Value,
+                Icon = "bx bx-trash",
+                ButtonClass = "btn btn-label-danger",
+                ConfirmKey = "BulkDeleteConfirm",
+                Endpoint = "/api/invoice-match/invoices/bulk",
+                Method = "DELETE"
+            }
+        ]
+    };
+}
+
+@* ① Inline Filter partial *@
+@* Contract marker: <partial name="_Filter" /> *@
+<partial name="~/Views/Procurement/InvoiceMatch/_Filter.cshtml" />
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["InvoiceMatchTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+</div>
+
+@* ② Bulk Action Bar *@
+<partial name="~/Views/Shared/Components/DataTable/_BulkActionBar.cshtml" model="bulkActionBar" />
+
+@* ③ DataTable Card — the exception queue (GET /exceptions), the only list surface in the MATCH contract. *@
+@* Contract markers are rendered by _DataTable.cshtml: id="skeleton-loader", <table id="dt-invoice-match" data-dt-standard="v2"> *@
+<partial name="~/Views/Procurement/InvoiceMatch/_DataTable.cshtml" />
+
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/Procurement/InvoiceMatch/_IndexL10n.cshtml" />
+    <script src="~/assets/js/Procurement/InvoiceMatch/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/Procurement/InvoiceMatch/index.js" asp-append-version="true"></script>
+}

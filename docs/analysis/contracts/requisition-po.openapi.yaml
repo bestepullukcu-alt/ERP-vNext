@@ -1,0 +1,208 @@
+openapi: 3.1.0
+info:
+  title: REQUISITION-PO
+  description: >
+    MOD-0141 Requisition & Purchase Orders — MVP-2 Procurement SoR.
+    SoR: requisitions, purchase orders, approval trail, PO lifecycle events.
+    Requisition → (approval) → PurchaseOrder → (GRN 0142 tüketir; MOD-0189 MRP requirement önerir).
+    Ürün kimliği MOD-0290'dan (consume), tedarikçi MOD-0140'tan (consume). Stok TUTMAZ.
+    Tenant + Legal-Entity scoped; TenantId/LegalEntityId server-resolved (payload'da yok).
+    Parasal alanlar Decimal (string); float YASAK; para birimi LE base currency.
+  version: 1.0.0
+  x-status: REVIEW              # freeze-ready; owner+consumer review pending (K16)
+  x-owner: MOD-0141
+  x-authored-by: control-tower
+  x-min-contract: PO-BUNDLE
+  x-consumes: [PRODUCT-MASTER, SUPPLIER]
+servers: [{ url: /api }]
+security: [{ bearerAuth: [] }]
+paths:
+  /requisitions:
+    post:
+      operationId: createRequisition
+      summary: Satın alma talebi oluştur (draft)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RequisitionUpsert' }
+            example:
+              lines:
+                - { itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, quantity: "100.000", uomId: BOX, needBy: "2026-10-01" }
+              justification: "üretim hammadde ikmali"
+      responses:
+        '201': { description: Talep oluşturuldu, content: { application/json: { schema: { $ref: '#/components/schemas/Requisition' } } } }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    get:
+      operationId: listRequisitions
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/RequisitionStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Talep sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Requisition' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+  /requisitions/{requisitionId}:
+    get:
+      operationId: getRequisition
+      parameters: [{ name: requisitionId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Talep, content: { application/json: { schema: { $ref: '#/components/schemas/Requisition' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /requisitions/{requisitionId}/submit:
+    post:
+      operationId: submitRequisition
+      summary: Talebi onaya gönder (MOD-0023 Workflow)
+      parameters:
+        - { name: requisitionId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200': { description: Onaya gönderildi, content: { application/json: { schema: { $ref: '#/components/schemas/Requisition' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /purchase-orders:
+    post:
+      operationId: createPurchaseOrder
+      summary: PO oluştur (onaylı requisition'dan veya doğrudan; supplier + item consume)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PurchaseOrderUpsert' }
+            example:
+              supplierId: SUP-2001
+              requisitionId: REQ-3001
+              currency: TRY
+              lines:
+                - { itemId: b1f2c3d4-0000-0000-0000-000000000001, skuId: c3d4e5f6-0000-0000-0000-000000000002, quantity: "100.000", uomId: BOX, unitPrice: "12.5000" }
+      responses:
+        '201': { description: PO oluşturuldu, content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
+        '404': { $ref: '#/components/responses/UnknownSupplierOrItem' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    get:
+      operationId: listPurchaseOrders
+      parameters:
+        - { name: supplierId, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/PoStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: PO sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/PurchaseOrder' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+  /purchase-orders/{poId}:
+    get:
+      operationId: getPurchaseOrder
+      parameters: [{ name: poId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: PO (GRN 0142 poId/poLineId ile bunu okur), content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /purchase-orders/{poId}/approve:
+    post:
+      operationId: approvePurchaseOrder
+      summary: PO onayla (Approved → GRN'e açık)
+      parameters:
+        - { name: poId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200': { description: Onaylandı, content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    RequisitionStatus: { type: string, enum: [Draft, Submitted, Approved, Rejected, Converted, Cancelled] }
+    PoStatus: { type: string, enum: [Draft, Approved, PartiallyReceived, Received, Closed, Cancelled] }
+    RequisitionLine:
+      type: object
+      required: [itemId, quantity, uomId]
+      properties:
+        itemId: { type: string, format: uuid, description: "MOD-0290 consume; kimlik uydurulmaz" }
+        skuId: { type: string, format: uuid, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        needBy: { type: string, format: date, nullable: true }
+    RequisitionUpsert:
+      type: object
+      required: [lines]
+      properties:
+        lines: { type: array, items: { $ref: '#/components/schemas/RequisitionLine' } }
+        justification: { type: string, nullable: true }
+    Requisition:
+      type: object
+      properties:
+        requisitionId: { type: string }
+        status: { $ref: '#/components/schemas/RequisitionStatus' }
+        lines: { type: array, items: { $ref: '#/components/schemas/RequisitionLine' } }
+        justification: { type: string, nullable: true }
+        workflowInstanceId: { type: string, nullable: true }
+        contractVersion: { type: string }
+    PoLine:
+      type: object
+      required: [itemId, quantity, uomId, unitPrice]
+      properties:
+        poLineId: { type: string, description: "GRN 0142 poLineId ile eşleşir" }
+        itemId: { type: string, format: uuid }
+        skuId: { type: string, format: uuid, nullable: true }
+        quantity: { $ref: '#/components/schemas/Decimal' }
+        uomId: { type: string }
+        unitPrice: { $ref: '#/components/schemas/Decimal' }
+        lineAmount: { $ref: '#/components/schemas/Decimal' }
+    PurchaseOrderUpsert:
+      type: object
+      required: [supplierId, currency, lines]
+      properties:
+        supplierId: { type: string, description: "MOD-0140 SUPPLIER consume" }
+        requisitionId: { type: string, nullable: true }
+        currency: { type: string, description: "LE base currency" }
+        lines: { type: array, items: { $ref: '#/components/schemas/PoLine' } }
+        sourceSystem: { type: string, nullable: true }
+        externalRef: { type: string, nullable: true }
+    PurchaseOrder:
+      type: object
+      properties:
+        poId: { type: string }
+        supplierId: { type: string }
+        requisitionId: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/PoStatus' }
+        currency: { type: string }
+        lines: { type: array, items: { $ref: '#/components/schemas/PoLine' } }
+        totalAmount: { $ref: '#/components/schemas/Decimal' }
+        workflowInstanceId: { type: string, nullable: true }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    NotFound:
+      description: Kayıt bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: NOT_FOUND, message: "kayıt bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownSupplierOrItem:
+      description: supplier (0140) veya item (0290) bilinmiyor (fail-closed, uydurma yok)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_REFERENCE, message: "supplier/item bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }
+    StateConflict:
+      description: Geçersiz durum geçişi (ör. onaylı PO tekrar onaylanamaz)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATE, message: "geçersiz durum geçişi", correlationId: req-3 }, contractVersion: v1 } } }
+    Unprocessable:
+      description: İş kuralı/validation ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "en az bir satır zorunlu", correlationId: req-4 }, contractVersion: v1 } } }

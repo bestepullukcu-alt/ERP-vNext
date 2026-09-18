@@ -1,0 +1,16 @@
+@model Diten.Web.Models.Procurement.Requisitions.RequisitionsEditViewModel
+@using Diten.Web.Views.Procurement.Requisitions
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<RequisitionsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Procurement/Requisitions/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Procurement/Requisitions/form.js" asp-append-version="true"></script>
+}
