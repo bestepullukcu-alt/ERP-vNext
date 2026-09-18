@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>Заказы на закупку</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Заказы на закупку: закажите утверждённую потребность у поставщиков, оцените строки и утвердите.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Добавить заказ</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить заказ</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Добавить заказ</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить заказ</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="PoId" xml:space="preserve"><value>Номер заказа</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Поставщик</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Итоговая сумма</value></data>
+  <data name="Currency" xml:space="preserve"><value>Валюта</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>Сведения о заказе</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Строки заказа</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>Выберите поставщика</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>Поставщик проверяется по справочнику поставщиков (fail-closed).</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>Ссылка на заявку</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>напр. REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>Необязательная ссылка на утверждённую заявку.</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>напр. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Валюта должна совпадать с базовой валютой юридического лица.</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Номер позиции</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>напр. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>Номер SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>напр. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>напр. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Ед. изм.</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>напр. BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Цена за единицу</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>напр. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Сумма строки</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Требуется хотя бы одна строка (позиция, количество, единица измерения, цена). Суммы строк и итог рассчитываются сервером.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Система-источник</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>напр. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>напр. ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждён</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>Частично получен</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>Получен</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>Закрыт</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>Отменён</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>Утвердить этот заказ на закупку? Утверждённые заказы открыты для приёмки товаров.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>Заказ на закупку утверждён.</value></data>
+</root>

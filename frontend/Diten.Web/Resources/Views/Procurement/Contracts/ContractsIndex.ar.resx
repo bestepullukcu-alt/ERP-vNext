@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>العقود ومكتبة البنود</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>عقود الشراء والتوريد: اربط موردًا وترسية، وأرفق البنود، وأدر دورة الحياة من المسودة إلى النشط.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة عقد</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل العقد</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة عقد</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل العقد</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="ContractId" xml:space="preserve"><value>رقم العقد</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>مثال: اتفاقية إطارية للمواد الخام 2026</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>المورد</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>اختر أو اكتب معرّف المورد</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>يتم التحقق من معرّفات الموردين مقابل البيانات الرئيسية للموردين (fail-closed).</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / الترسية</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>مثال: RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>اختياري؛ يتم التحقق منه مقابل ترسية التوريد عند تقديمه.</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>اختياري؛ يجب أن يكون في تاريخ البدء أو بعده.</value></data>
+  <data name="Currency" xml:space="preserve"><value>العملة</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>مثال: USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>اتركه فارغًا لاستخدام العملة الأساسية للكيان القانوني.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>قيد المراجعة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>منتهٍ</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>مُنهى</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>تفاصيل العقد</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>البنود</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>الأدلة</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>رقم البند</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>مثال: CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>انحراف</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>ملاحظات الانحراف</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>صف الانحراف عن البند القياسي</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>استشهد بالبنود القياسية من المكتبة؛ وأشر إلى أي انحراف عن النص القياسي.</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>مراجع الأدلة</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>أضف معرّفات مراجع الأدلة</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>مراجع المستندات فقط (MOD-0029/0031)؛ لا يتم تخزين الملفات الثنائية هنا.</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>يمكن تعديل عقود المسودة فقط. تُدار العقود المفعّلة عبر إجراءات دورة الحياة.</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>سجل الموافقة</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>مثيل سير العمل</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>تفعيل</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>إنهاء</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>هل تريد تفعيل هذا العقد وبدء سجل الموافقة الخاص به؟</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>هل تريد إنهاء هذا العقد النشط؟ لا يمكن التراجع عن ذلك.</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>تم تفعيل العقد.</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>تم إنهاء العقد.</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>مكتبة البنود</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>رقم البند</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>الفئة</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>مثال: شروط الدفع</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>العنوان</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>مثال: دفع خلال 30 يومًا</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>النص</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>أدخل نص البند القياسي</value></data>
+  <data name="AddClause" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>تمت إضافة البند إلى المكتبة.</value></data>
+</root>

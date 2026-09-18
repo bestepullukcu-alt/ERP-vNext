@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GrnTitle" xml:space="preserve"><value>Приёмка (GRN)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Акты приёмки товаров: регистрируйте фактическую приёмку по заказу на закупку и проводите каждую строку на склад.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Зарегистрировать приёмку</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Изменить GRN</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Зарегистрировать приёмку</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Изменить GRN</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="GrnId" xml:space="preserve"><value>№ GRN</value></data>
+  <data name="PoId" xml:space="preserve"><value>Заказ на закупку</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>напр. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>Необязательная ссылка на исходный заказ на закупку.</value></data>
+  <data name="ReceivedAt" xml:space="preserve"><value>Дата приёмки</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusPosted" xml:space="preserve"><value>Проведён</value></data>
+  <data name="StatusReversed" xml:space="preserve"><value>Сторнирован</value></data>
+  <data name="ReceiptSection" xml:space="preserve"><value>Детали приёмки</value></data>
+  <data name="WarehouseId" xml:space="preserve"><value>Склад</value></data>
+  <data name="WarehouseIdPlaceholder" xml:space="preserve"><value>напр. wh-01</value></data>
+  <data name="LocationId" xml:space="preserve"><value>Ячейка</value></data>
+  <data name="LocationIdPlaceholder" xml:space="preserve"><value>напр. loc-A-12-3</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Строки приёмки</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Добавить строку</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>ID товара</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>напр. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>ID SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>напр. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineSkuLevel" xml:space="preserve"><value>Уровень SKU</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Выберите</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>Глобальный SKU</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>Локальный SKU</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Готовая продукция</value></data>
+  <data name="LineLotNumber" xml:space="preserve"><value>Номер партии</value></data>
+  <data name="LineLotNumberPlaceholder" xml:space="preserve"><value>напр. L2026-0455</value></data>
+  <data name="LineSerialIds" xml:space="preserve"><value>Серийные номера</value></data>
+  <data name="LineSerialIdsPlaceholder" xml:space="preserve"><value>Серийные номера через запятую</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Количество</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>напр. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>Ед. изм.</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>напр. BOX</value></data>
+  <data name="LineToStockStatus" xml:space="preserve"><value>Статус запаса</value></data>
+  <data name="StockAvailable" xml:space="preserve"><value>Доступно</value></data>
+  <data name="StockQualityInspection" xml:space="preserve"><value>Контроль качества</value></data>
+  <data name="StockQuarantine" xml:space="preserve"><value>Карантин</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>Строка ЗЗ</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>напр. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Требуется хотя бы одна строка (товар, SKU, уровень, количество, единица измерения, статус запаса).</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Интеграция</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Исходная система</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>напр. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Внешняя ссылка</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>напр. ERP-GRN-9001</value></data>
+  <data name="LineInventoryTransactionId" xml:space="preserve"><value>Складская проводка</value></data>
+  <data name="LineLotId" xml:space="preserve"><value>Партия</value></data>
+  <data name="InventoryRefHint" xml:space="preserve"><value>Идентификаторы складской проводки и партии — это ссылки только для чтения на систему учёта запасов; остаток запасов хранится в складском модуле, а не в GRN.</value></data>
+  <data name="ActionReverse" xml:space="preserve"><value>Сторнировать</value></data>
+  <data name="ConfirmReverse" xml:space="preserve"><value>Сторнировать этот GRN? Будет проведено обратное складское движение.</value></data>
+  <data name="ReverseSuccess" xml:space="preserve"><value>GRN сторнирован.</value></data>
+</root>

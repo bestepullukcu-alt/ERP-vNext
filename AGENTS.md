@@ -84,9 +84,12 @@ module pack `approved` / `ready-for-dev` olduktan ve açık kullanıcı onayı v
 | MDM Service | 5059 | `services/Diten.MdmService/src/Diten.MdmService.Api` |
 | HCM Service | 5060 | `services/Diten.HcmService/src/Diten.HcmService.Api` |
 | SupplyChain Service | 5061 | `services/Diten.SupplyChainService/src/Diten.SupplyChainService.Api` |
+| Procurement Service | 5065 | `services/Diten.ProcurementService/src/Diten.ProcurementService.Api` |
 | MongoDB | 27017 | yerel çalışmalı |
 
 > **Not (2026-09-11):** Mikroservis bandı 5011–5060'tan **5061'e uzatıldı** — `SupplyChain Service` (DCP-009, supply-chain-execution domain, kullanıcı onaylı). Sonraki mikroservisler 5062+ kullanır.
+> **Not (2026-09-16, revize 2026-09-17):** `Procurement Service` (DCP-010, procurement domain, kullanıcı onaylı) **port 5065**. İlk atama 5062'ydi; 2026-09-17 ölçümünde 5062 çakışması bulundu (OD-5): 5062'yi `Diten.DataKnowledgeService` (çalışıyor) + `Diten.PpmService` (config) kullanıyor; 5063 `HumanCapitalService`, 5064 `TalentEcosystemService`. En yeni servis (Procurement, henüz fleet'te çalışmıyor) en düşük boş porta (**5065**) taşındı — çalışan/başka-domain servisleri bozulmadı. **Sonraki mikroservisler 5066+ kullanır.**
+> ⚠ **Drift (EA reconciliation gerek):** yukarıdaki tablo `PpmService (5062)`, `DataKnowledgeService (5062, çalışıyor)`, `HumanCapitalService (5063)`, `TalentEcosystemService (5064)` satırlarını içermiyor; bu servisler §3 port authority'sine kayıtlı değil ve 5062 config-seviyesinde Ppm+Procurement tarafından çift-talep edildi. Bu satırların canonical port tahsisi + §3'e eklenmesi ilgili domain owner'lar/EA kararıdır (procurement sınırı dışı).
 
 **Kural:** Frontend (5001) asla doğrudan servis portlarına (5056/5057/5058) istek atmaz. Her istek Gateway (5000) üzerinden geçer.
 

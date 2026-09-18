@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="ContractsTitle" xml:space="preserve"><value>Contracting &amp; Clause Library</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Procurement and sourcing contracts: link a supplier and award, attach clauses, and manage the lifecycle from draft to active.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Add Contract</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Contract</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Add Contract</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Contract</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="ContractId" xml:space="preserve"><value>Contract ID</value></data>
+  <data name="ContractTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ContractTitlePlaceholder" xml:space="preserve"><value>e.g. 2026 Raw Material Framework Agreement</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Supplier</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>Select or type a supplier ID</value></data>
+  <data name="SupplierIdHint" xml:space="preserve"><value>Supplier IDs are validated against the supplier master (fail-closed).</value></data>
+  <data name="RfxId" xml:space="preserve"><value>RFx / Award</value></data>
+  <data name="RfxIdPlaceholder" xml:space="preserve"><value>e.g. RFX-4001</value></data>
+  <data name="RfxIdHint" xml:space="preserve"><value>Optional; validated against the sourcing award when provided.</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="EffectiveToHint" xml:space="preserve"><value>Optional; must be on or after the effective start date.</value></data>
+  <data name="Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>e.g. USD</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Leave empty to use the legal entity base currency.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="StatusInReview" xml:space="preserve"><value>In Review</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Active</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="StatusTerminated" xml:space="preserve"><value>Terminated</value></data>
+  <data name="ContractSection" xml:space="preserve"><value>Contract Details</value></data>
+  <data name="ClausesSection" xml:space="preserve"><value>Clauses</value></data>
+  <data name="EvidenceSection" xml:space="preserve"><value>Evidence</value></data>
+  <data name="AddClauseRef" xml:space="preserve"><value>Add Clause</value></data>
+  <data name="ClauseRefClauseId" xml:space="preserve"><value>Clause ID</value></data>
+  <data name="ClauseRefClauseIdPlaceholder" xml:space="preserve"><value>e.g. CL-PAYMENT-30</value></data>
+  <data name="ClauseRefDeviation" xml:space="preserve"><value>Deviation</value></data>
+  <data name="ClauseRefDeviationText" xml:space="preserve"><value>Deviation Notes</value></data>
+  <data name="ClauseRefDeviationTextPlaceholder" xml:space="preserve"><value>Describe the deviation from the standard clause</value></data>
+  <data name="ClausesHint" xml:space="preserve"><value>Reference standard clauses from the library; flag any deviation from the standard text.</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Evidence References</value></data>
+  <data name="EvidenceRefsPlaceholder" xml:space="preserve"><value>Add evidence reference IDs</value></data>
+  <data name="EvidenceRefsHint" xml:space="preserve"><value>Document references only (MOD-0029/0031); binaries are not stored here.</value></data>
+  <data name="EditDraftOnlyNotice" xml:space="preserve"><value>Only draft contracts can be edited. Activated contracts are managed through lifecycle actions.</value></data>
+  <data name="ApprovalSection" xml:space="preserve"><value>Approval Trail</value></data>
+  <data name="WorkflowInstanceId" xml:space="preserve"><value>Workflow Instance</value></data>
+  <data name="ActionActivate" xml:space="preserve"><value>Activate</value></data>
+  <data name="ActionTerminate" xml:space="preserve"><value>Terminate</value></data>
+  <data name="ConfirmActivate" xml:space="preserve"><value>Activate this contract and start its approval trail?</value></data>
+  <data name="ConfirmTerminate" xml:space="preserve"><value>Terminate this active contract? This cannot be undone.</value></data>
+  <data name="ActivateSuccess" xml:space="preserve"><value>Contract activated.</value></data>
+  <data name="TerminateSuccess" xml:space="preserve"><value>Contract terminated.</value></data>
+  <data name="ClauseLibrary" xml:space="preserve"><value>Clause Library</value></data>
+  <data name="ClauseId" xml:space="preserve"><value>Clause ID</value></data>
+  <data name="ClauseCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="ClauseCategoryPlaceholder" xml:space="preserve"><value>e.g. Payment Terms</value></data>
+  <data name="ClauseTitle" xml:space="preserve"><value>Title</value></data>
+  <data name="ClauseTitlePlaceholder" xml:space="preserve"><value>e.g. Net 30 payment</value></data>
+  <data name="ClauseBody" xml:space="preserve"><value>Body</value></data>
+  <data name="ClauseBodyPlaceholder" xml:space="preserve"><value>Enter the standard clause text</value></data>
+  <data name="AddClause" xml:space="preserve"><value>Add Clause</value></data>
+  <data name="ClauseCreated" xml:space="preserve"><value>Clause added to the library.</value></data>
+</root>

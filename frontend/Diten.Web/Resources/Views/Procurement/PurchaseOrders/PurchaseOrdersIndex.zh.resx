@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>采购订单</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>采购订单：向供应商下达已批准的需求、为明细定价并审批。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增采购订单</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑采购订单</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增采购订单</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑采购订单</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="PoId" xml:space="preserve"><value>订单编号</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>供应商</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>总金额</value></data>
+  <data name="Currency" xml:space="preserve"><value>币种</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>订单信息</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>订单明细</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>集成</value></data>
+  <data name="AddLine" xml:space="preserve"><value>添加明细</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>选择供应商</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>供应商将依据供应商主数据进行校验（fail-closed）。</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>申请引用</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>例如：REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>对已批准申请的可选引用。</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>例如：TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>币种必须与法人实体的基准币种一致。</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>物料编号</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>例如：b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>SKU 编号</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>例如：c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>例如：100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>单位</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>例如：BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>单价</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>例如：12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>行金额</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>至少需要一行（物料、数量、计量单位、单价）。行金额与总额由服务器计算。</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>例如：SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>外部引用</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>例如：ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>已批准</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>部分收货</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>已收货</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>已关闭</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>已取消</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>批准</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>批准此采购订单？已批准的订单将开放收货。</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>采购订单已批准。</value></data>
+</root>

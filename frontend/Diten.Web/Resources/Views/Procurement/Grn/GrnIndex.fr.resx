@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="GrnTitle" xml:space="preserve"><value>Réception (BR)</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Bons de réception : enregistrez les réceptions physiques par rapport à une commande et postez chaque ligne en stock.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Enregistrer une réception</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Modifier le BR</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Enregistrer une réception</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Modifier le BR</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Voir</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="GrnId" xml:space="preserve"><value>N° BR</value></data>
+  <data name="PoId" xml:space="preserve"><value>Commande d'achat</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>ex. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>Lien facultatif vers la commande d'achat amont.</value></data>
+  <data name="ReceivedAt" xml:space="preserve"><value>Reçu le</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Brouillon</value></data>
+  <data name="StatusPosted" xml:space="preserve"><value>Posté</value></data>
+  <data name="StatusReversed" xml:space="preserve"><value>Contre-passé</value></data>
+  <data name="ReceiptSection" xml:space="preserve"><value>Détails de la réception</value></data>
+  <data name="WarehouseId" xml:space="preserve"><value>Entrepôt</value></data>
+  <data name="WarehouseIdPlaceholder" xml:space="preserve"><value>ex. wh-01</value></data>
+  <data name="LocationId" xml:space="preserve"><value>Emplacement</value></data>
+  <data name="LocationIdPlaceholder" xml:space="preserve"><value>ex. loc-A-12-3</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Lignes de réception</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Ajouter une ligne</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>ID article</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>ex. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>ID SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>ex. c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineSkuLevel" xml:space="preserve"><value>Niveau SKU</value></data>
+  <data name="SelectPlaceholder" xml:space="preserve"><value>Sélectionner</value></data>
+  <data name="SkuLevelGsku" xml:space="preserve"><value>SKU global</value></data>
+  <data name="SkuLevelLsku" xml:space="preserve"><value>SKU local</value></data>
+  <data name="SkuLevelFinishedGood" xml:space="preserve"><value>Produit fini</value></data>
+  <data name="LineLotNumber" xml:space="preserve"><value>Numéro de lot</value></data>
+  <data name="LineLotNumberPlaceholder" xml:space="preserve"><value>ex. L2026-0455</value></data>
+  <data name="LineSerialIds" xml:space="preserve"><value>Numéros de série</value></data>
+  <data name="LineSerialIdsPlaceholder" xml:space="preserve"><value>Séries séparées par des virgules</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>ex. 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>UdM</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>ex. BOX</value></data>
+  <data name="LineToStockStatus" xml:space="preserve"><value>Statut de stock</value></data>
+  <data name="StockAvailable" xml:space="preserve"><value>Disponible</value></data>
+  <data name="StockQualityInspection" xml:space="preserve"><value>Contrôle qualité</value></data>
+  <data name="StockQuarantine" xml:space="preserve"><value>Quarantaine</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>Ligne CA</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>ex. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>Au moins une ligne est requise (article, SKU, niveau, quantité, unité de mesure, statut de stock).</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Intégration</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Système source</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>ex. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>Référence externe</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>ex. ERP-GRN-9001</value></data>
+  <data name="LineInventoryTransactionId" xml:space="preserve"><value>Mouvement de stock</value></data>
+  <data name="LineLotId" xml:space="preserve"><value>Lot</value></data>
+  <data name="InventoryRefHint" xml:space="preserve"><value>Les identifiants de mouvement de stock et de lot sont des références en lecture seule au système de référence des stocks ; le solde de stock réside dans les stocks, pas dans le BR.</value></data>
+  <data name="ActionReverse" xml:space="preserve"><value>Contre-passer</value></data>
+  <data name="ConfirmReverse" xml:space="preserve"><value>Contre-passer ce BR ? Un mouvement de stock d'annulation sera posté.</value></data>
+  <data name="ReverseSuccess" xml:space="preserve"><value>BR contre-passé.</value></data>
+</root>

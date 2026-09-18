@@ -1,0 +1,45 @@
+@using Diten.Web.Views.Procurement.Sourcing
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SourcingIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+<div id="inlineFilterHost">
+    <div class="collapse" id="inlineFilterCollapse">
+        <div class="pt-0 pb-3">
+            <form class="m-0" id="filterForm" data-no-tracker>
+                <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
+
+                    @* Filter Chip: Status (Multi-select) — RfxStatus enum *@
+                    <div class="filter-chip filter-status">
+                        <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            <option value="Draft">@Localizer["StatusDraft"]</option>
+                            <option value="Published">@Localizer["StatusPublished"]</option>
+                            <option value="Evaluating">@Localizer["StatusEvaluating"]</option>
+                            <option value="Awarded">@Localizer["StatusAwarded"]</option>
+                            <option value="Cancelled">@Localizer["StatusCancelled"]</option>
+                            <option value="Closed">@Localizer["StatusClosed"]</option>
+                        </select>
+                    </div>
+
+                    @* Filter Chip: RFx Type (Multi-select) — RfxType enum *@
+                    <div class="filter-chip filter-type">
+                        <select id="filterType" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Type"]">
+                            <option value="RFQ">@Localizer["TypeRFQ"]</option>
+                            <option value="RFP">@Localizer["TypeRFP"]</option>
+                            <option value="RFI">@Localizer["TypeRFI"]</option>
+                        </select>
+                    </div>
+
+                    <div class="ms-auto d-flex gap-3">
+                        <button type="button" class="btn btn-sm btn-primary" id="btnFilterApply">
+                            @SharedLocalizer["Apply"]
+                        </button>
+                        <button type="reset" class="btn btn-sm btn-label-danger" id="btnFilterReset">
+                            @SharedLocalizer["Reset"]
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

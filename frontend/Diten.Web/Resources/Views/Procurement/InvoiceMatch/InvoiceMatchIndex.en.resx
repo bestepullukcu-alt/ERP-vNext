@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InvoiceMatchTitle" xml:space="preserve"><value>Invoice Capture &amp; 3-Way Match</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Capture supplier invoices against a PO and run the 3-way match (PO ↔ GRN ↔ Invoice); unmatched invoices land in the exception queue.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>Capture Invoice</value></data>
+  <data name="EditItem" xml:space="preserve"><value>Edit Invoice</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>Capture Invoice</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>Edit Invoice</value></data>
+  <data name="QuickView" xml:space="preserve"><value>View</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="InvoiceId" xml:space="preserve"><value>Invoice ID</value></data>
+  <data name="PoId" xml:space="preserve"><value>Purchase Order</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>e.g. PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>The upstream purchase order this invoice is matched against.</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>Reason</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>Supplier</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>e.g. SUP-2001</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>Invoice Number</value></data>
+  <data name="InvoiceNumberPlaceholder" xml:space="preserve"><value>e.g. INV-2026-771</value></data>
+  <data name="Currency" xml:space="preserve"><value>Currency</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>e.g. TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>Must match the purchase order currency (mismatch is rejected).</value></data>
+  <data name="InvoiceSection" xml:space="preserve"><value>Invoice</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>Invoice Lines</value></data>
+  <data name="AddLine" xml:space="preserve"><value>Add Line</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>Item ID</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>e.g. b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>e.g. 100.000</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>Unit Price</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>e.g. 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>Line Amount</value></data>
+  <data name="LineAmountPlaceholder" xml:space="preserve"><value>e.g. 1250.0000</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>PO Line</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>e.g. 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>At least one line is required; each line needs an item, quantity and unit price. Amounts are decimals, never floats.</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>Integration</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>Source System</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>e.g. SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>External Reference</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>e.g. ERP-INV-9001</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>Total Amount</value></data>
+  <data name="MoneyHint" xml:space="preserve"><value>Amounts are decimal strings (float is not used); the total is computed by the server.</value></data>
+  <data name="StatusCaptured" xml:space="preserve"><value>Captured</value></data>
+  <data name="StatusMatched" xml:space="preserve"><value>Matched</value></data>
+  <data name="StatusMatchedWithinTolerance" xml:space="preserve"><value>Matched (within tolerance)</value></data>
+  <data name="StatusException" xml:space="preserve"><value>Exception</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>Rejected</value></data>
+  <data name="StatusClearedForPayment" xml:space="preserve"><value>Cleared for Payment</value></data>
+  <data name="ExStatusOpen" xml:space="preserve"><value>Open</value></data>
+  <data name="ExStatusResolved" xml:space="preserve"><value>Resolved</value></data>
+  <data name="ReasonQtyMismatch" xml:space="preserve"><value>Quantity Mismatch</value></data>
+  <data name="ReasonPriceMismatch" xml:space="preserve"><value>Price Mismatch</value></data>
+  <data name="ReasonAmountMismatch" xml:space="preserve"><value>Amount Mismatch</value></data>
+  <data name="ReasonNoReceipt" xml:space="preserve"><value>No Receipt</value></data>
+  <data name="ReasonNoPo" xml:space="preserve"><value>No Purchase Order</value></data>
+  <data name="ReasonDuplicateInvoice" xml:space="preserve"><value>Duplicate Invoice</value></data>
+  <data name="ReasonCurrencyMismatch" xml:space="preserve"><value>Currency Mismatch</value></data>
+  <data name="ActionRunMatch" xml:space="preserve"><value>Run 3-Way Match</value></data>
+  <data name="ConfirmRunMatch" xml:space="preserve"><value>Run the 3-way match for this invoice against its PO and goods receipts?</value></data>
+  <data name="MatchSuccess" xml:space="preserve"><value>3-way match completed.</value></data>
+  <data name="ActionResolve" xml:space="preserve"><value>Resolve</value></data>
+  <data name="ResolveTitle" xml:space="preserve"><value>Resolve Exception</value></data>
+  <data name="ResolveDecisionLabel" xml:space="preserve"><value>Decision</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>Approve</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>Reject</value></data>
+  <data name="DecisionToleranceOverride" xml:space="preserve"><value>Tolerance Override</value></data>
+  <data name="ResolveSuccess" xml:space="preserve"><value>Exception resolved.</value></data>
+  <data name="MatchResultSection" xml:space="preserve"><value>Match Result</value></data>
+  <data name="MatchResultHint" xml:space="preserve"><value>Run the 3-way match to evaluate this invoice against its PO and goods receipts; variances outside tolerance open an exception.</value></data>
+  <data name="MatchResultLabel" xml:space="preserve"><value>Result</value></data>
+  <data name="VarianceField" xml:space="preserve"><value>Field</value></data>
+  <data name="VarianceExpected" xml:space="preserve"><value>Expected</value></data>
+  <data name="VarianceActual" xml:space="preserve"><value>Actual</value></data>
+  <data name="VarianceWithinTolerance" xml:space="preserve"><value>Within Tolerance</value></data>
+  <data name="ExceptionSection" xml:space="preserve"><value>Exception</value></data>
+  <data name="ExceptionId" xml:space="preserve"><value>Exception ID</value></data>
+  <data name="WithinToleranceYes" xml:space="preserve"><value>Yes</value></data>
+  <data name="WithinToleranceNo" xml:space="preserve"><value>No</value></data>
+</root>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="InvoiceMatchTitle" xml:space="preserve"><value>发票采集与三方匹配</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>根据采购订单采集供应商发票并运行三方匹配（采购订单 ↔ 收货单 ↔ 发票）；未匹配的发票进入异常队列。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>采集发票</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑发票</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>采集发票</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑发票</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="InvoiceId" xml:space="preserve"><value>发票编号</value></data>
+  <data name="PoId" xml:space="preserve"><value>采购订单</value></data>
+  <data name="PoIdPlaceholder" xml:space="preserve"><value>例如 PO-5001</value></data>
+  <data name="PoIdHint" xml:space="preserve"><value>此发票据以匹配的上游采购订单。</value></data>
+  <data name="ReasonCode" xml:space="preserve"><value>原因</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>供应商</value></data>
+  <data name="SupplierIdPlaceholder" xml:space="preserve"><value>例如 SUP-2001</value></data>
+  <data name="InvoiceNumber" xml:space="preserve"><value>发票号码</value></data>
+  <data name="InvoiceNumberPlaceholder" xml:space="preserve"><value>例如 INV-2026-771</value></data>
+  <data name="Currency" xml:space="preserve"><value>货币</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>例如 TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>必须与采购订单货币一致（不一致将被拒绝）。</value></data>
+  <data name="InvoiceSection" xml:space="preserve"><value>发票</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>发票行</value></data>
+  <data name="AddLine" xml:space="preserve"><value>添加行</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>项目编号</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>例如 b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>数量</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>例如 100.000</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>单价</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>例如 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>行金额</value></data>
+  <data name="LineAmountPlaceholder" xml:space="preserve"><value>例如 1250.0000</value></data>
+  <data name="LinePoLineId" xml:space="preserve"><value>采购订单行</value></data>
+  <data name="LinePoLineIdPlaceholder" xml:space="preserve"><value>例如 3</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>至少需要一行；每行需要项目、数量和单价。金额为定点小数，绝不使用浮点数。</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>集成</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>例如 SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>外部引用</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>例如 ERP-INV-9001</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>总金额</value></data>
+  <data name="MoneyHint" xml:space="preserve"><value>金额为定点小数字符串（不使用浮点数）；总额由服务器计算。</value></data>
+  <data name="StatusCaptured" xml:space="preserve"><value>已采集</value></data>
+  <data name="StatusMatched" xml:space="preserve"><value>已匹配</value></data>
+  <data name="StatusMatchedWithinTolerance" xml:space="preserve"><value>已匹配（容差内）</value></data>
+  <data name="StatusException" xml:space="preserve"><value>异常</value></data>
+  <data name="StatusRejected" xml:space="preserve"><value>已拒绝</value></data>
+  <data name="StatusClearedForPayment" xml:space="preserve"><value>可付款</value></data>
+  <data name="ExStatusOpen" xml:space="preserve"><value>未处理</value></data>
+  <data name="ExStatusResolved" xml:space="preserve"><value>已解决</value></data>
+  <data name="ReasonQtyMismatch" xml:space="preserve"><value>数量不符</value></data>
+  <data name="ReasonPriceMismatch" xml:space="preserve"><value>价格不符</value></data>
+  <data name="ReasonAmountMismatch" xml:space="preserve"><value>金额不符</value></data>
+  <data name="ReasonNoReceipt" xml:space="preserve"><value>无收货</value></data>
+  <data name="ReasonNoPo" xml:space="preserve"><value>无采购订单</value></data>
+  <data name="ReasonDuplicateInvoice" xml:space="preserve"><value>重复发票</value></data>
+  <data name="ReasonCurrencyMismatch" xml:space="preserve"><value>货币不符</value></data>
+  <data name="ActionRunMatch" xml:space="preserve"><value>运行三方匹配</value></data>
+  <data name="ConfirmRunMatch" xml:space="preserve"><value>是否对该发票运行与其采购订单和收货单的三方匹配？</value></data>
+  <data name="MatchSuccess" xml:space="preserve"><value>三方匹配已完成。</value></data>
+  <data name="ActionResolve" xml:space="preserve"><value>解决</value></data>
+  <data name="ResolveTitle" xml:space="preserve"><value>解决异常</value></data>
+  <data name="ResolveDecisionLabel" xml:space="preserve"><value>决定</value></data>
+  <data name="DecisionApprove" xml:space="preserve"><value>批准</value></data>
+  <data name="DecisionReject" xml:space="preserve"><value>拒绝</value></data>
+  <data name="DecisionToleranceOverride" xml:space="preserve"><value>容差覆盖</value></data>
+  <data name="ResolveSuccess" xml:space="preserve"><value>异常已解决。</value></data>
+  <data name="MatchResultSection" xml:space="preserve"><value>匹配结果</value></data>
+  <data name="MatchResultHint" xml:space="preserve"><value>运行三方匹配以将此发票与其采购订单和收货单进行核对；超出容差的差异将生成异常。</value></data>
+  <data name="MatchResultLabel" xml:space="preserve"><value>结果</value></data>
+  <data name="VarianceField" xml:space="preserve"><value>字段</value></data>
+  <data name="VarianceExpected" xml:space="preserve"><value>预期</value></data>
+  <data name="VarianceActual" xml:space="preserve"><value>实际</value></data>
+  <data name="VarianceWithinTolerance" xml:space="preserve"><value>容差内</value></data>
+  <data name="ExceptionSection" xml:space="preserve"><value>异常</value></data>
+  <data name="ExceptionId" xml:space="preserve"><value>异常编号</value></data>
+  <data name="WithinToleranceYes" xml:space="preserve"><value>是</value></data>
+  <data name="WithinToleranceNo" xml:space="preserve"><value>否</value></data>
+</root>
