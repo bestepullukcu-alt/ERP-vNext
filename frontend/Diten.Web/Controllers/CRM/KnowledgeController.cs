@@ -245,6 +245,69 @@ public sealed class KnowledgeController : Controller
         return Json(await LoadGlobalProductOptionsAsync(ct));
     }
 
+    // WP-MOD0162-SUBJECT-UI(-2): MDM Global Product selector for the Subject provenance picker. Read-only, MDM-owned
+    // permission on the gateway. Returns { disabled:false, options:[{value,label}] } or a { disabled:true, reason }
+    // marker (mirrors KnowledgeConceptsController) so the picker never shows a silent empty list — the custom-subject
+    // path stays usable when MDM is unavailable. Client-driven (search + paging): the browser searches the 177-row
+    // master by typing; pageSize is clamped to the MDM cap of 100 (a pageSize=200 request is a hard 400).
+    [HttpGet("api/global-product-options")]
+    public async Task<IActionResult> GlobalProductOptions(CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/global-products/selector{BuildGlobalProductSelectorQuery()}", null, ct);
+        if (response is null) return Json(new { disabled = true, reason = "GlobalProductPickerUnavailable" });
+        if ((int)response.StatusCode == 404) return Json(new { disabled = true, reason = "GlobalProductEndpointMissing" });
+        if ((int)response.StatusCode == 403) return Json(new { disabled = true, reason = "GlobalProductPermissionMissing" });
+        if (!response.IsSuccessStatusCode) return Json(new { disabled = true, reason = "GlobalProductPickerUnavailable" });
+        return Json(new { disabled = false, options = ParseGlobalProductOptions(await response.Content.ReadAsStringAsync(ct)) });
+    }
+
+    // Resolves one Global Product id to { value, label } so an edit can render a stored link that is off the selector's
+    // first page (EnsureGlobalProductSelected pattern). label is null on a miss — the caller keeps the raw id so the
+    // reference still round-trips.
+    [HttpGet("api/global-product-options/{productId:guid}")]
+    public async Task<IActionResult> GlobalProductOption(Guid productId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        return Json(new { value = productId.ToString(), label = await ResolveGlobalProductLabelAsync(productId.ToString(), ct) });
+    }
+
+    // Builds the MDM selector query from the client's search/paging, clamping pageSize to the MDM cap of 100 so a
+    // pageSize>100 request (the old hardcoded 200) can never reach MDM and 400 the picker into "unavailable".
+    private string BuildGlobalProductSelectorQuery()
+    {
+        var q = Request.Query;
+        var search = q["search"].ToString();
+        var pageNumber = int.TryParse(q["pageNumber"], out var pn) && pn > 0 ? pn : 1;
+        var pageSize = int.TryParse(q["pageSize"], out var ps) ? Math.Clamp(ps, 1, 100) : 100;
+        var query = $"?pageNumber={pageNumber}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(search)) query += $"&search={Uri.EscapeDataString(search)}";
+        return query;
+    }
+
+    private List<KnowledgeOptionViewModel> ParseGlobalProductOptions(string body)
+    {
+        var options = new List<KnowledgeOptionViewModel>();
+        try
+        {
+            using var doc = JsonDocument.Parse(body);
+            if (!doc.RootElement.TryGetProperty("data", out var data)) return options;
+            JsonElement items;
+            if (data.ValueKind == JsonValueKind.Array) items = data;
+            else if (data.ValueKind == JsonValueKind.Object && data.TryGetProperty("items", out var it)) items = it;
+            else return options;
+            foreach (var el in items.EnumerateArray())
+            {
+                if (el.ValueKind != JsonValueKind.Object) continue;
+                var id = GetFirstString(el, "id", "globalProductId");
+                if (string.IsNullOrWhiteSpace(id)) continue;
+                options.Add(new KnowledgeOptionViewModel { Value = id!, Label = GlobalProductLabel(el) ?? id! });
+            }
+        }
+        catch (Exception ex) { _logger.LogWarning(ex, "Knowledge global-product option parse failed."); }
+        return options.OrderBy(o => o.Label, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
     [HttpGet("api/contents")]
     public Task<IActionResult> ContentList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/knowledge/contents{Request.QueryString}", ReadPermission, ct, ReadFallback);
@@ -312,6 +375,18 @@ public sealed class KnowledgeController : Controller
     [HttpPost("api/audience-profiles/{profileId:guid}/unarchive")]
     public Task<IActionResult> UnarchiveProfile(Guid profileId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/audience-profiles/{profileId}/unarchive", null, SubjectManagePermission, ct, ManagePermission, ManageFallback);
+
+    // WP-MOD0162-AUD-UI: read-only MOD-0048 published values for the AudienceProfile dimension builder (axis =
+    // reference-set code → its published ValueCodes; the browser stores the stable ValueCode and resolves the display
+    // name live). scope_key is the JWT tenant (never taken from the client). Same gate as the profile list so any user
+    // who can open the profile form can populate its reference axes.
+    [HttpGet("api/reference-data/{setCode}/values")]
+    public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
+    {
+        var tenantId = GetTenantId() ?? string.Empty;
+        var path = $"/api/v1/reference-data/sets/{Uri.EscapeDataString(setCode)}/published-values?scope_key={Uri.EscapeDataString(tenantId)}";
+        return ProxyGetAsync(path, SubjectReadPermission, ct, ReadPermission, ReadFallback);
+    }
 
     // ---------------- helpers ----------------
 
@@ -518,7 +593,10 @@ public sealed class KnowledgeController : Controller
     private async Task<List<KnowledgeOptionViewModel>> LoadGlobalProductOptionsAsync(CancellationToken ct)
     {
         var options = new List<KnowledgeOptionViewModel>();
-        var response = await SendGatewayAsync(HttpMethod.Get, "/api/global-products/selector?pageSize=200", null, ct);
+        // pageSize=100 is the MDM cap (a 200 request is a hard 400). The content form still loads a single page for its
+        // name-lookup; an off-page value is restored by EnsureGlobalProductSelectedAsync. (Full search is the Subject
+        // picker's ajax job, WP-MOD0162-SUBJECT-UI-2.)
+        var response = await SendGatewayAsync(HttpMethod.Get, "/api/global-products/selector?pageSize=100", null, ct);
         if (response is null || !response.IsSuccessStatusCode) return options;
         try
         {

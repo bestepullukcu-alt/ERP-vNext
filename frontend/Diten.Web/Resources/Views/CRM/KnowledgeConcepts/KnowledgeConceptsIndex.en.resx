@@ -177,9 +177,31 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>No steps in this branch yet.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>Min</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>Max</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Moderator roles</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderator</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Audience</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Comma-separated references</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Select a moderator role</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>Select audience profiles</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Who presents this chain.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Target audience profiles for this chain.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Concept type</value></data>
   <data name="NewVersion" xml:space="preserve"><value>New version</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>branch(es)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>High</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Medium</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Low</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>One concept leads to / opens the next</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Requires the target as a prerequisite</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Addresses a need or problem</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Provides evidence for the target</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Belongs to / is part of the target</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>A custom relationship type</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Directed edge (from source to target)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Two-way / equivalent link</value></data>
+  <data name="Prev" xml:space="preserve"><value>Previous</value></data>
+  <data name="Next" xml:space="preserve"><value>Next</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Branch</value></data>
+  <data name="Steps" xml:space="preserve"><value>steps</value></data>
+  <data name="AddStep" xml:space="preserve"><value>New step</value></data>
+  <data name="Details" xml:space="preserve"><value>Details</value></data>
 </root>

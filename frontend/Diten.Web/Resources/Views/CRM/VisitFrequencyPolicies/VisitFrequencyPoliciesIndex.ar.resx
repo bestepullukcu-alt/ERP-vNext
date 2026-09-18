@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>سياسات تكرار الزيارة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>حدّد سياسات دورة الاتصال / تكرار الزيارة — كم مرة ينبغي زيارة الهدف.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>الأرشفة تُبقي السياسة كسجل قابل للقراءة؛ الحذف يزيلها من قائمة العمل. كلاهما إجراء ناعم.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>السياسات</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>التحليل</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>ستتوفر لوحة التحليل في تحديث لاحق.</value></data>
+  <data name="Code" xml:space="preserve"><value>الرمز</value></data>
+  <data name="Name" xml:space="preserve"><value>الاسم</value></data>
+  <data name="Target" xml:space="preserve"><value>الهدف</value></data>
+  <data name="Frequency" xml:space="preserve"><value>التكرار</value></data>
+  <data name="Priority" xml:space="preserve"><value>الأولوية</value></data>
+  <data name="Source" xml:space="preserve"><value>المصدر</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>سياسة جديدة</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>سيتوفر محرّر السياسات في تحديث لاحق.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>سيتوفر عرض التفاصيل في تحديث لاحق.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="Archive" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>أرشفة هذه السياسة؟ ستبقى قابلة للقراءة كسجل.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>حذف هذه السياسة؟ ستتم إزالتها من القائمة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة السياسة.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد سياسات تكرار بعد.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>لكل</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_active" xml:space="preserve"><value>نشط</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>حفظ</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>الهدف</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>السياق</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>التحكم في التكرار</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>أولوية التعارض</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>فترة السريان</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>رمز ثابت واسم معروض لهذه السياسة.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>على من تنطبق السياسة. اختر نوعًا ثم الهدف.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>المصدر والنطاق اختياريان. اتركه فارغًا لعدم التقييد.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>عدد الزيارات المطلوبة لكل فترة.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>عند تداخل سياستين، يفوز الوزن الأصغر.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>متى تكون هذه السياسة سارية. اترك النهاية فارغة لسريان غير محدد.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>ملاحظات حرة. مطلوبة للتكرار المخصص.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>رمز السياسة</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>اسم السياسة</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>الوصف</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>الحالة</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>نوع الهدف</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>الهدف</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>المنطقة</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>الشريحة</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>الحملة</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>العلامة التجارية</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>فترة الدورة</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>نوع التكرار</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>الزيارات المطلوبة</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>الفترة</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>المصدر</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>ملاحظات</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— لا شيء —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>اختر النموذج</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>اختر العقدة</value></data>
+  <data name="Selected" xml:space="preserve"><value>محدد</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>أدخل المعرف (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>لا يمكن تغيير الرمز والهدف بعد الإنشاء.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>من أين جاء هذا التكرار. مصدر فقط — لا يؤثر على التكرار.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>يُقرأ كـ</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>حدد عددًا وفترة.</value></data>
+  <data name="Required" xml:space="preserve"><value>مطلوب</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>اختر هدفًا.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>مطلوب معرف صالح.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>يجب أن يكون أكبر من صفر.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>هذه الفترة غير صالحة للتكرار المختار.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>اختر نطاق أولوية.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>لا يمكن أن تسبق النهاية البداية.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>يتطلب التكرار القائم على الدورة فترة دورة.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>مطلوب حملة.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>مطلوب شريحة لمصدر التقسيم.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>يتطلب التكرار المخصص ملاحظات.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>يرجى تصحيح الحقول المميزة.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>تعذر تجهيز المحرر.</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>يتجاوز كل شيء</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>مستوى الحملة</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>قياسي</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>أساسي</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>الملاذ الأخير</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>يتجاوز جميع القواعد الأخرى، بما في ذلك قواعد الحملة والشريحة.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>يأخذ الأولوية على القواعد القياسية خلال فترة الحملة.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>المستوى الموصى به لقواعد الشريحة والهدف العادية.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>التردد الأساسي على مستوى المنطقة؛ القواعد الأضيق تتجاوزه.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>ينطبق فقط عندما لا تتطابق أي قاعدة أخرى.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>يوم</value></data>
+  <data name="Period_week" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="Period_month" xml:space="preserve"><value>شهر</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>ربع سنة</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>دورة</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>فترة مخصصة</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>بلا تاريخ انتهاء</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>سجل التدقيق</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>أُنشئ</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>حُدّث</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>تم إنشاء المسودة</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>تم النشر</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>تم التعطيل</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>تمت إعادة التفعيل</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>تم تغيير الوزن</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>التقييم التالي</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>عقدة المفهوم</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>مدخلات التحليل</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>النتيجة</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>السياق الاختياري يضيّق التطابق. اتركه فارغًا لتجاهله.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>ساري اعتبارًا من</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>تحليل</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>معاينة للقراءة فقط — التحليل لا يكتب أي شيء.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>اختر هدفًا واضغط تحليل.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>جارٍ التحليل…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>السياسة المختارة</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>السياسات المرشحة</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>لا توجد سياسات مرشحة.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>رموز السبب</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>سبب الاختيار</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>لا توجد سياسة تحكم هذا الهدف في هذا السياق.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>الخصوصية</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>مختارة</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>مستبعدة</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>اختر نوع الهدف.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>محلولة</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>غير معروفة</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>غير قابلة للتطبيق</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>تم تحليل سياسة التكرار</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>التكرار غير معروف</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>لا توجد سياسة مطابقة</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>السياسة غير سارية في هذا التاريخ</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>السياسة غير نشطة</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>السياسة مؤرشفة</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>تعادل في نطاق الأولوية — حُسم بمعرّف ثابت</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>اختيرت حسب الأولوية</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>اختيرت حسب الخصوصية</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>اختيرت حسب أحدث تاريخ سريان</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>سياق الحملة مفقود</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>سياق الشريحة مفقود</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>سياق الدورة مفقود</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>نطاق العمل غير متطابق</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>سياق موقع جهة الاتصال غائب</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>سياسة</value></data>
+  <data name="Validity" xml:space="preserve"><value>الصلاحية</value></data>
+  <data name="Weight" xml:space="preserve"><value>الوزن</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>محدد بمدة</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>صالح دون انتهاء</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>قرار الحملة</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>فريق التقسيم</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>أُدخل يدويًا</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>من النظام القديم</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>قاعدة عمل آلية</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>مدير الميدان</value></data>
+  <data name="Source_other" xml:space="preserve"><value>أخرى</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>تعديل السياسة</value></data>
+  <data name="BackToList" xml:space="preserve"><value>العودة إلى القائمة</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>هذه السياسة مؤرشفة وللقراءة فقط؛ لا يمكن تعديلها.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>ملاحظة داخلية — لا يقرأها محرك التخطيط.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>القوائم تأتي من تعريفات النظام</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>ابحث واختر من القائمة</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>أين يتم تطبيقها؟</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>اختياري — أي حقل يُترك فارغًا يعني “الكل”</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>المؤسسة</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>اختر علامة تجارية أولاً</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>بلا قيد</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>اختر دورة أولاً</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>جميع الأهداف</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>مسح النطاق</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>الإيقاع المحسوب</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>إذا تُرك تاريخ الانتهاء فارغًا فإن السياسة سارية إلى أجل غير مسمى؛ وعند التعارض يفوز تاريخ بدء أحدث لنفس الهدف.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>في حال حدوث تعارض</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>إذا انطبقت قاعدة أخرى على نفس الهدف، فإن هذا الاختيار يحدد أيهما يفوز.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>وزن هذه القاعدة</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>من أين تأتي هذه القاعدة؟</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>غير مُدرجة في التخطيط</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>مُدرجة في التخطيط</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>متوقفة حاليًا</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>للقراءة فقط، غير محذوفة</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>الأكثر تحديدًا</value></data>
+  <data name="Broadest" xml:space="preserve"><value>الأوسع نطاقًا</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>لا يوجد حذف. يتم الإغلاق عبر الأرشفة؛ يبقى السجل قابلاً للقراءة في السجل التاريخي ولا يُقيَّم بواسطة محرك التخطيط.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>ماذا ستفعل هذه السياسة؟</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>عند الحفظ</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>قبل الحفظ</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>حفظ وتفعيل</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ كمسودة</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>إلغاء النشر</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>زيارات</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>بلا قيد</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>قيود</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>سيتم تخطيط أهداف "{name}" بمعدل {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>على كامل النطاق</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>هذه السياسة</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>جاهز</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>تحذيرات</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>تم اختيار الهدف</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>التردد صالح</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>الفترة متسقة</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>تم تضييق النطاق</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>لا قيد على النطاق</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>تم اختيار وزن التعارض</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>ستبقى مسودة</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>سيتم نشرها</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>سيتم إلغاء نشرها</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>سيتم أرشفتها</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>لم يتم بعد اختيار السجل الذي تُطبَّق عليه.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>لم يكتمل التردد بعد.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>اختر كلاً من التردد والفترة.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>تُطبَّق هذه السياسة على كل سجلات هذا النوع من الأهداف.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>اختر نطاق وزن التعارض.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>لا تدخل القواعد المسودّة في الخطة؛ انشرها عندما تكون جاهزة.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>تُنشَر القاعدة وتدخل في الخطة.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>يُحتفَظ بالقاعدة لكنها لم تعد مطبَّقة.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>تُسحَب القاعدة وتصبح للقراءة فقط.</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>جميع وحدات الأعمال</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>مستقل عن الشريحة</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>مستقل عن الحملة</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>جميع العلامات التجارية</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>جميع المنتجات</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>جميع فترات الدورة</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>الهدف — على من ينطبق</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>التكرار — القيمة الفعلية</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>أي سجل</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>تغيير…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>وحدة العمل والمنطقة — اتركه فارغًا لعدم التقييد</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>الشريحة والحملة — اتركه فارغًا لعدم التقييد</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>العلامة والمنتج — اختر العلامة أولاً ثم المنتج</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>فترة الدورة — مطلوبة للتكرار القائم على الدورة</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>تفاصيل السياسة</value></data>
+  <data name="EditAction" xml:space="preserve"><value>تعديل</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>تدفق الحالة</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>الأثر</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} هدفًا يتلقى هذه السياسة</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} زيارة مخططة / ربع سنوي</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>السياسات المتنافسة على هذا الهدف</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} مرشح</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>لا توجد سياسات متعارضة لهذا الهدف.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>مرشح</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>هدف</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>شريحة</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>حساب</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>جهة اتصال</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>هدف الحملة</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>أضيق نطاق</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>أوسع نطاق</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>عمّن تسأل؟</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>اختر هدفًا؛ سنعرض عدد الزيارات المخصصة له حاليًا ومن أي قاعدة تأتي.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>من / ماذا</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>طبيب — في مستشفى محدد</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>طبيب — كل المستشفيات</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>مؤسسة/حساب</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>ارتباط شخص-مؤسسة</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>كل الأهداف في شريحة</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>هدف الحملة</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>منطقة إقليمية</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>عقدة مفهوم</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>ملف الجمهور</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>السجل</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>تغيير</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>الفترة</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>التاريخ</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>عرض التكرار</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>القاعدة بسيطة</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>إذا انطبقت أكثر من سياسة على هدف، يفوز الأضيق نطاقًا: القاعدة الخاصة بشخص تتغلب على قاعدة الحملة، وقاعدة الحملة تتغلب على قاعدة الشريحة. عند تساوي النطاق تفوز الأولوية الأعلى، وعند تساوي الأولوية يفوز أحدث تاريخ بدء.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>الإجابة</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} زيارة {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>لا يوجد تكرار محدد</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>تعارض</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>غير قابل للتطبيق</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>يوميًا</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>أسبوعيًا</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>شهريًا</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>كل ربع سنة</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>لكل دورة</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>لكل فترة حملة</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>لكل فترة مخصصة</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>تم العثور على قاعدة مطابقة لهذا الهدف؛ وطُبِّقت الأضيق نطاقًا.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>لا توجد سياسة تطابق هذا الهدف؛ يستخدم المخطط الإعداد الافتراضي للنظام.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>قاعدتان تتشاركان النطاق نفسه؛ طُبِّقت الأعلى أولوية. قد ترغب في مراجعة الأخرى.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>لا ينطبق الحل على هذا الطلب.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>توجد قواعد تطابق الهدف، لكن التاريخ الذي اخترته يقع خارج نطاق سريان أيٍّ منها.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>لا توجد قاعدة سارية في هذا التاريخ</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>نتيجة واضحة</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>تم حل التعارض</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>خارج النطاق الزمني</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>القاعدة التي تحدد هذا التكرار</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>فتح السياسة</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>قواعد أخرى تطابق هذا الهدف</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>مرتبة من الأضيق إلى الأوسع</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>لا توجد قواعد أخرى تطابق هذا الهدف.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>مُختارة</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>خارج النطاق الزمني</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>غير مُفعَّلة</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>احتياطية</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>القاعدة موجودة لكنها غير سارية في التاريخ الذي اخترته.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>طُبّقت قاعدة ذات نطاق أضيق، لذا لم تُستخدم هذه القاعدة.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>قاعدة منطقة/شريحة، نطاقها أوسع من القواعد الأضيق.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>تُطبّق هذه القاعدة كخيار احتياطي عند عدم وجود قاعدة أضيق.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>اختيرت لأنها القاعدة ذات النطاق الأضيق.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>اختيرت حسب الأولوية.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>غير صالحة في السياق المحدد ({0} مفقود).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>جميع الأهداف في الشريحة</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>ماذا ينبغي أن أفعل؟</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>لا حاجة لأي إجراء</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>سيطبّق المخطط هذا التكرار على هذا الهدف.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>إذا بدا التكرار خاطئًا</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>افتح القاعدة المُطبَّقة وغيّر عدد الزيارات، أو أرشِف القاعدة.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>قاعدتان تتشاركان النطاق نفسه</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>لحل دائم، ضيّق نطاق إحداهما أو اخفض أولويتها.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>لا مشكلة في الوقت الحالي</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>يستخدم المخطط القاعدة الأعلى أولوية؛ ويستمر إنشاء الخطة.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>هذا الهدف غير مُغطّى</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>يُنصح بتعريف قاعدة احتياطية على مستوى الشريحة أو الإقليم.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>حل سريع</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>سياسة واحدة للشريحة تغطي كل الأهداف ضمنها.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>غير قابل للتطبيق</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>الحل غير صالح لهذا النوع من الأهداف.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>خاص بالشخص</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>مفهوم</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>إقليم</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>الجمهور</value></data>
+</root>

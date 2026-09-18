@@ -105,7 +105,7 @@ internal static class ConceptChainTemplateRules
     public static IReadOnlyList<Guid> BranchTypeIds(IReadOnlyList<ConceptChainBranchInput> branches)
         => branches.SelectMany(b => b.Steps).Select(s => s.ConceptTypeId).Distinct().ToList();
 
-    /// <summary>Maps the branch input to the embedded domain value objects (trimming the opaque config refs).</summary>
+    /// <summary>Maps the branch input to the embedded domain value objects (structure only — no step-level refs).</summary>
     public static List<ConceptChainBranch> ToDomain(IReadOnlyList<ConceptChainBranchInput>? branches)
         => (branches ?? Array.Empty<ConceptChainBranchInput>()).Select(b => new ConceptChainBranch
         {
@@ -116,14 +116,49 @@ internal static class ConceptChainTemplateRules
             {
                 ConceptTypeId = s.ConceptTypeId,
                 MinSelection = s.MinSelection,
-                MaxSelection = s.MaxSelection,
-                AllowedRoleRefs = TrimRefs(s.AllowedRoleRefs),
-                AudienceDimensionRefs = TrimRefs(s.AudienceDimensionRefs)
+                MaxSelection = s.MaxSelection
             }).ToList()
         }).ToList();
 
-    private static List<string> TrimRefs(IReadOnlyList<string>? refs)
-        => (refs ?? Array.Empty<string>()).Select(r => r?.Trim() ?? string.Empty).Where(r => r.Length > 0).ToList();
+    // ─── SCMM-10 (WP-A) template-level Moderator / ForWhom ───────────────────
+
+    /// <summary>Trims the moderator role type; blank → null (vocabulary is validated by the reference set, WP-B — the
+    /// backend only stores a trimmed, non-empty value).</summary>
+    public static string? NormalizeModerator(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>Distinct, non-empty for-whom ids (order-insensitive config list).</summary>
+    public static List<Guid> NormalizeForWhom(IReadOnlyList<Guid>? ids)
+        => (ids ?? Array.Empty<Guid>()).Where(id => id != Guid.Empty).Distinct().ToList();
+
+    /// <summary>ForWhom guard (400 message or null): every supplied AudienceProfile id must exist and be non-archived.
+    /// Empty list is valid. Fail-closed and run BEFORE persist (the <c>ValidateSubjectAsync</c> pattern).</summary>
+    public static async Task<string?> ValidateForWhomAsync(
+        IAudienceProfileRepository profiles,
+        Guid tenantId,
+        IReadOnlyList<Guid> forWhomAudienceProfileIds,
+        CancellationToken cancellationToken)
+    {
+        foreach (var id in forWhomAudienceProfileIds)
+        {
+            var profile = await profiles.GetByIdAsync(tenantId, id, cancellationToken);
+            if (profile is null)
+            {
+                return $"ForWhomAudienceProfileIds references an audience profile that does not exist ({id}).";
+            }
+
+            if (profile.IsArchived())
+            {
+                return $"ForWhomAudienceProfileIds cannot reference an archived audience profile ({id}).";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Order-insensitive set equality of two for-whom id lists — the template-level freeze guard.</summary>
+    public static bool ForWhomEqual(IReadOnlyCollection<Guid> a, IReadOnlyCollection<Guid> b)
+        => a.Count == b.Count && new HashSet<Guid>(a).SetEquals(b);
 
     /// <summary>Structural equality of two branch lists — the freeze guard: a published template's branch structure is
     /// frozen exactly like <c>OrderedConceptTypes</c>.</summary>
@@ -152,9 +187,7 @@ internal static class ConceptChainTemplateRules
                 var sy = y.Steps[j];
                 if (sx.ConceptTypeId != sy.ConceptTypeId
                     || sx.MinSelection != sy.MinSelection
-                    || sx.MaxSelection != sy.MaxSelection
-                    || !sx.AllowedRoleRefs.SequenceEqual(sy.AllowedRoleRefs)
-                    || !sx.AudienceDimensionRefs.SequenceEqual(sy.AudienceDimensionRefs))
+                    || sx.MaxSelection != sy.MaxSelection)
                 {
                     return false;
                 }
@@ -172,6 +205,7 @@ public sealed class CreateConceptChainTemplateHandler
     private readonly IActorContext _actor;
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
+    private readonly IAudienceProfileRepository _audienceProfiles;
     private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptChainTemplateHandler(
@@ -179,12 +213,14 @@ public sealed class CreateConceptChainTemplateHandler
         IActorContext actor,
         IConceptChainTemplateRepository templates,
         IConceptTypeRepository types,
+        IAudienceProfileRepository audienceProfiles,
         IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _types = types;
+        _audienceProfiles = audienceProfiles;
         _audit = audit;
     }
 
@@ -234,6 +270,16 @@ public sealed class CreateConceptChainTemplateHandler
             }
         }
 
+        // SCMM-10 (WP-A, D-d) — every for-whom AudienceProfile ref must exist and be non-archived (fail-closed, pre-persist).
+        var moderatorRoleType = ConceptChainTemplateRules.NormalizeModerator(request.ModeratorRoleType);
+        var forWhom = ConceptChainTemplateRules.NormalizeForWhom(request.ForWhomAudienceProfileIds);
+        var forWhomError = await ConceptChainTemplateRules.ValidateForWhomAsync(
+            _audienceProfiles, tenantId, forWhom, cancellationToken);
+        if (forWhomError is not null)
+        {
+            return Response<Guid>.Fail(forWhomError, 400);
+        }
+
         // V13 — a published version must not overlap another published version of the same code.
         var status = ConceptChainStatuses.Normalize(request.Status);
         if (string.Equals(status, ConceptChainStatuses.Published, StringComparison.OrdinalIgnoreCase))
@@ -259,6 +305,8 @@ public sealed class CreateConceptChainTemplateHandler
             Description = KnowledgeValidation.Trim(request.Description),
             OrderedConceptTypes = request.OrderedConceptTypes.ToList(),
             Branches = ConceptChainTemplateRules.ToDomain(request.Branches),
+            ModeratorRoleType = moderatorRoleType,
+            ForWhomAudienceProfileIds = forWhom,
             Status = status,
             ChainVersion = string.IsNullOrWhiteSpace(request.ChainVersion) ? "1.0" : request.ChainVersion.Trim(),
             EffectiveFrom = request.EffectiveFrom,
@@ -288,6 +336,7 @@ public sealed class UpdateConceptChainTemplateHandler
     private readonly IActorContext _actor;
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
+    private readonly IAudienceProfileRepository _audienceProfiles;
 
     private readonly IKnowledgeConceptAuditPublisher? _audit;
 
@@ -296,12 +345,14 @@ public sealed class UpdateConceptChainTemplateHandler
         IActorContext actor,
         IConceptChainTemplateRepository templates,
         IConceptTypeRepository types,
+        IAudienceProfileRepository audienceProfiles,
         IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _types = types;
+        _audienceProfiles = audienceProfiles;
         _audit = audit;
     }
 
@@ -349,12 +400,21 @@ public sealed class UpdateConceptChainTemplateHandler
         var newBranches = ConceptChainTemplateRules.ToDomain(request.Branches);
         var branchesChanged = !ConceptChainTemplateRules.BranchesEqual(entity.Branches, newBranches);
 
-        // A published version freezes its sequence AND its branch structure — changing either needs a new version.
+        // SCMM-10 (WP-A, D-f) — the template-level Moderator / ForWhom freeze alongside the spine + branches.
+        var newModerator = ConceptChainTemplateRules.NormalizeModerator(request.ModeratorRoleType);
+        var newForWhom = ConceptChainTemplateRules.NormalizeForWhom(request.ForWhomAudienceProfileIds);
+        var moderatorChanged = !string.Equals(
+            entity.ModeratorRoleType ?? string.Empty, newModerator ?? string.Empty, StringComparison.Ordinal);
+        var forWhomChanged = !ConceptChainTemplateRules.ForWhomEqual(entity.ForWhomAudienceProfileIds, newForWhom);
+
+        // A published version freezes its sequence, its branch structure AND its template-level Moderator / ForWhom —
+        // changing any of them needs a new version.
         var sequenceChanged = !entity.OrderedConceptTypes.SequenceEqual(request.OrderedConceptTypes);
-        if (entity.IsPublished() && (sequenceChanged || branchesChanged))
+        if (entity.IsPublished() && (sequenceChanged || branchesChanged || moderatorChanged || forWhomChanged))
         {
             return Response<bool>.Fail(
-                "OrderedConceptTypes and Branches are frozen on a published template; create a new version to change them.",
+                "OrderedConceptTypes, Branches, ModeratorRoleType and ForWhomAudienceProfileIds are frozen on a "
+                + "published template; create a new version to change them.",
                 409);
         }
 
@@ -379,6 +439,19 @@ public sealed class UpdateConceptChainTemplateHandler
             }
         }
 
+        // SCMM-10 (WP-A, D-d) — when the for-whom set changes, every new ref must exist and be non-archived
+        // (fail-closed, pre-persist). Unchanged sets are not re-validated, so a no-op update never fails on a ref that
+        // was archived after this template first referenced it.
+        if (forWhomChanged)
+        {
+            var forWhomError = await ConceptChainTemplateRules.ValidateForWhomAsync(
+                _audienceProfiles, tenantId, newForWhom, cancellationToken);
+            if (forWhomError is not null)
+            {
+                return Response<bool>.Fail(forWhomError, 400);
+            }
+        }
+
         // V13 — publishing must not overlap another published version of the same code.
         var status = ConceptChainStatuses.Normalize(request.Status ?? entity.Status);
         if (string.Equals(status, ConceptChainStatuses.Published, StringComparison.OrdinalIgnoreCase))
@@ -400,6 +473,8 @@ public sealed class UpdateConceptChainTemplateHandler
         entity.Description = KnowledgeValidation.Trim(request.Description);
         entity.OrderedConceptTypes = request.OrderedConceptTypes.ToList();
         entity.Branches = newBranches;
+        entity.ModeratorRoleType = newModerator;
+        entity.ForWhomAudienceProfileIds = newForWhom;
         entity.Status = status;
         if (!string.IsNullOrWhiteSpace(request.ChainVersion))
         {

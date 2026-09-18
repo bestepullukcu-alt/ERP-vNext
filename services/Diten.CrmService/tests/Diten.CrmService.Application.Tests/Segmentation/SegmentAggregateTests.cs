@@ -18,10 +18,20 @@ public sealed class SegmentAggregateTests
 {
     private readonly FakeSegmentRepository _segments = new();
     private readonly FakeProductReferenceValidator _references = new();
+    private readonly FakeUserDisplayNameResolver _displayNames = new();
+    private readonly Territory.FakeTerritoryNodeRepo _territoryNodes = new();
 
     private CreateSegmentHandler Create(Guid tenant = default) => new(
         SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
         new NullActorContext(), _segments, _references);
+
+    private CreateSegmentHandler CreateAs(IActorContext actor, Guid tenant = default) => new(
+        SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
+        actor, _segments, _references);
+
+    private GetSegmentByIdHandler GetById(Guid tenant = default) => new(
+        SegmentTestDoubles.Tenant(tenant == default ? SegmentTestDoubles.TenantA : tenant),
+        _segments, _displayNames, _territoryNodes);
 
     private UpdateSegmentHandler Update() => new(
         SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantA), new NullActorContext(), _segments, _references);
@@ -223,7 +233,7 @@ public sealed class SegmentAggregateTests
         var created = await Create().Handle(NewSegment(), default);
 
         var get = await new GetSegmentByIdHandler(
-                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments)
+                SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments, _displayNames, _territoryNodes)
             .Handle(new GetSegmentByIdQuery(created.Data), default);
         Assert.Equal(404, get.StatusCode);
 
@@ -231,6 +241,120 @@ public sealed class SegmentAggregateTests
                 SegmentTestDoubles.Tenant(SegmentTestDoubles.TenantB), _segments)
             .Handle(new ListSegmentsQuery(null, null, null, null, null, null, true), default);
         Assert.Empty(list.Data!.Items);
+    }
+
+    [Fact]
+    public async Task Detail_resolves_the_provenance_actor_to_a_display_name_in_one_bulk_call()
+    {
+        // WP-SEG-DETAILS6: CreatedBy carries the actor's `sub` (a user id). The detail read resolves it to a display
+        // name via a SINGLE bulk call, and the raw *By id is preserved alongside the additive *ByName.
+        var actorId = Guid.NewGuid();
+        _displayNames.Names[actorId] = "S. Aydın";
+
+        var created = await CreateAs(new FixedActorContext(actorId.ToString())).Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Equal(actorId.ToString(), get.Data!.CreatedBy);
+        Assert.Equal("S. Aydın", get.Data.CreatedByName);
+        // One bulk call, asking only for the distinct provenance ids (never one call per field).
+        Assert.Equal(1, _displayNames.Calls);
+        Assert.Contains(actorId, _displayNames.LastRequestedIds);
+        Assert.Equal(_displayNames.LastRequestedIds.Count, _displayNames.LastRequestedIds.Distinct().Count());
+    }
+
+    [Fact]
+    public async Task Detail_is_fail_closed_when_a_provenance_actor_cannot_be_resolved()
+    {
+        // The resolver holds no name (AuthService unreachable / unknown id): the name stays null so the UI shows a date
+        // only, and the raw id is never lost.
+        var actorId = Guid.NewGuid();
+
+        var created = await CreateAs(new FixedActorContext(actorId.ToString())).Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Equal(actorId.ToString(), get.Data!.CreatedBy);
+        Assert.Null(get.Data.CreatedByName);
+    }
+
+    [Fact]
+    public async Task Detail_makes_no_resolver_call_when_there_is_no_provenance_actor()
+    {
+        // NullActorContext leaves CreatedBy null: there is nothing to resolve, so no network call is made at all.
+        var created = await Create().Handle(NewSegment(), default);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(created.Data), default);
+
+        Assert.True(get.IsSuccessful);
+        Assert.Null(get.Data!.CreatedByName);
+        Assert.Equal(0, _displayNames.Calls);
+    }
+
+    [Fact]
+    public async Task Detail_resolves_territory_node_ids_to_names_additively_without_touching_values()
+    {
+        // WP-SEG-DETAILS8: a territory.node criterion stores the raw node id. The detail read reverse-resolves it to the
+        // node name (ONE bulk lookup) and hangs it off the ADDITIVE ValueLabels map; the stored Values are unchanged.
+        var nodeId = Guid.NewGuid();
+        _territoryNodes.Items.Add(new TerritoryNode
+        {
+            Id = nodeId,
+            TenantId = SegmentTestDoubles.TenantA,
+            ModelId = Guid.NewGuid(),
+            Name = "Marmara",
+            TerritoryCode = "TR-MAR"
+        });
+
+        var segment = SegmentTestBuilders.Segment(
+            SegmentTestDoubles.TenantA,
+            subjectType: SegmentSubjectTypes.Contact,
+            criteria: SegmentTestBuilders.Criteria(SegmentTestBuilders.Predicate(
+                SegmentAttributeCatalog.TerritoryNode, SegmentOperators.In, SegmentValueTypes.Guid,
+                new[] { nodeId.ToString() })));
+        _segments.Rows.Add(segment);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(segment.Id), default);
+
+        Assert.True(get.IsSuccessful);
+        var predicate = get.Data!.Criteria.Single(n => n.AttributeCode == SegmentAttributeCatalog.TerritoryNode);
+        Assert.NotNull(predicate.ValueLabels);
+        Assert.Equal("Marmara", predicate.ValueLabels![nodeId.ToString()]);
+        // The raw id is preserved verbatim — the label is display-only and never rewrites the stored value.
+        Assert.Equal(new[] { nodeId.ToString() }, predicate.Values);
+    }
+
+    [Fact]
+    public async Task Detail_leaves_the_territory_node_label_absent_when_the_node_belongs_to_another_tenant()
+    {
+        // Fail-closed + tenant isolation: a node owned by TenantB is invisible to TenantA's lookup, so no label is
+        // fabricated and the reader keeps hiding the raw id.
+        var nodeId = Guid.NewGuid();
+        _territoryNodes.Items.Add(new TerritoryNode
+        {
+            Id = nodeId,
+            TenantId = SegmentTestDoubles.TenantB,
+            ModelId = Guid.NewGuid(),
+            Name = "Marmara",
+            TerritoryCode = "TR-MAR"
+        });
+
+        var segment = SegmentTestBuilders.Segment(
+            SegmentTestDoubles.TenantA,
+            subjectType: SegmentSubjectTypes.Contact,
+            criteria: SegmentTestBuilders.Criteria(SegmentTestBuilders.Predicate(
+                SegmentAttributeCatalog.TerritoryNode, SegmentOperators.In, SegmentValueTypes.Guid,
+                new[] { nodeId.ToString() })));
+        _segments.Rows.Add(segment);
+
+        var get = await GetById().Handle(new GetSegmentByIdQuery(segment.Id), default);
+
+        Assert.True(get.IsSuccessful);
+        var predicate = get.Data!.Criteria.Single(n => n.AttributeCode == SegmentAttributeCatalog.TerritoryNode);
+        Assert.True(predicate.ValueLabels is null || predicate.ValueLabels.Count == 0);
+        Assert.Equal(new[] { nodeId.ToString() }, predicate.Values);
     }
 
     [Fact]

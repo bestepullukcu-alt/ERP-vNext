@@ -1,0 +1,99 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+
+@* Code-keyed L10n bridge for the VisitFrequencyPolicies console. The frequency-policy VOCABULARY itself (target /
+   frequency / period / source codes) is NOT hardcoded here — it comes from the FU03 /contract endpoint and index.js
+   humanizes each code; only the lifecycle status labels (a closed, structural set) are shipped as localized strings. *@
+<script id="vfp-l10n" type="application/json">
+    @Json.Serialize(new
+    {
+        // table chrome
+        Actions = Localizer["Actions"].Value,
+        Filter = SharedLocalizer["Filter"].Value,
+        Apply = SharedLocalizer["Apply"].Value,
+        Reset = SharedLocalizer["Reset"].Value,
+        ShowAll = SharedLocalizer["ShowAll"].Value,
+        Search = SharedLocalizer["Search"].Value,
+        Export = SharedLocalizer["Export"].Value,
+        ColumnVisibility = SharedLocalizer["ColumnVisibility"].Value,
+        SaveView = SharedLocalizer["SaveView"].Value,
+        Status = SharedLocalizer["Status"].Value,
+        // columns
+        Code = Localizer["Code"].Value,
+        Name = Localizer["Name"].Value,
+        Policy = Localizer["Policy"].Value,
+        Target = Localizer["Target"].Value,
+        Frequency = Localizer["Frequency"].Value,
+        Validity = Localizer["Validity"].Value,
+        Weight = Localizer["Weight"].Value,
+        Priority = Localizer["Priority"].Value,
+        Source = Localizer["Source"].Value,
+        // list frequency subtitle + validity open-ended (EffectiveTo empty)
+        FreqBounded = Localizer["FreqBounded"].Value,
+        FreqOpenEnded = Localizer["FreqOpenEnded"].Value,
+        ValidityOpenEnded = Localizer["ValidityOpenEnded"].Value,
+        // row + toolbar actions
+        NewPolicy = Localizer["NewPolicy"].Value,
+        Details = SharedLocalizer["Details"].Value,
+        QuickView = Localizer["QuickView"].Value,
+        Edit = SharedLocalizer["EditRecord"].Value,
+        Archive = Localizer["Archive"].Value,
+        Delete = SharedLocalizer["Delete"].Value,
+        // confirmations + toasts
+        ArchiveConfirm = Localizer["ArchiveConfirm"].Value,
+        DeleteConfirm = Localizer["DeleteConfirm"].Value,
+        RecordArchived = Localizer["RecordArchived"].Value,
+        RecordDeleted = SharedLocalizer["RecordDeleted"].Value,
+        // states
+        EmptyState = Localizer["EmptyState"].Value,
+        ErrorState = Localizer["ErrorState"].Value,
+        Loading = SharedLocalizer["Loading"].Value,
+        NotAvailable = SharedLocalizer["NotAvailable"].Value,
+        PerPeriod = Localizer["PerPeriod"].Value,
+        // lifecycle status labels (closed structural set)
+        statusLabels = new
+        {
+            draft = Localizer["Status_draft"].Value,
+            active = Localizer["Status_active"].Value,
+            inactive = Localizer["Status_inactive"].Value,
+            archived = Localizer["Status_archived"].Value
+        },
+        // AĞIRLIK — priority band DISPLAY labels keyed by contract band CODE (same closed set the FREQ-B/FREQ-C
+        // views ship). The bands + their integer weights still arrive from /contract at runtime; index.js maps a
+        // stored weight to its code and labels it here (humanized/raw-number fallback), never a hardcoded band vocab.
+        bandLabels = new Dictionary<string, string>
+        {
+            ["override-all"] = Localizer["Band_override-all"].Value,
+            ["campaign-level"] = Localizer["Band_campaign-level"].Value,
+            ["standard"] = Localizer["Band_standard"].Value,
+            ["baseline"] = Localizer["Band_baseline"].Value,
+            ["last-resort"] = Localizer["Band_last-resort"].Value
+        },
+        // FREKANS — period DISPLAY labels keyed by contract period CODE. Codes still come from the /contract
+        // vocabulary; index.js labels each through this map (humanized fallback), never a hardcoded period vocab.
+        periodLabels = new Dictionary<string, string>
+        {
+            ["day"] = Localizer["Period_day"].Value,
+            ["week"] = Localizer["Period_week"].Value,
+            ["month"] = Localizer["Period_month"].Value,
+            ["quarter"] = Localizer["Period_quarter"].Value,
+            ["cycle"] = Localizer["Period_cycle"].Value,
+            ["campaign-period"] = Localizer["Period_campaign-period"].Value,
+            ["custom"] = Localizer["Period_custom"].Value
+        },
+        // KAYNAK — source DISPLAY labels keyed by contract source CODE. Codes still come from the /contract
+        // vocabulary; index.js labels each through this map (humanized fallback), never a hardcoded source vocab.
+        sourceLabels = new Dictionary<string, string>
+        {
+            ["campaign"] = Localizer["Source_campaign"].Value,
+            ["segmentation"] = Localizer["Source_segmentation"].Value,
+            ["manual"] = Localizer["Source_manual"].Value,
+            ["legacy-import"] = Localizer["Source_legacy-import"].Value,
+            ["business-rule"] = Localizer["Source_business-rule"].Value,
+            ["manager-override"] = Localizer["Source_manager-override"].Value,
+            ["other"] = Localizer["Source_other"].Value
+        }
+    })
+</script>

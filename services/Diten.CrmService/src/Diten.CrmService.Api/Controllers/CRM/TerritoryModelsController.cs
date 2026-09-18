@@ -78,6 +78,19 @@ public sealed class TerritoryModelsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new SoftDeleteDraftTerritoryModelCommand(id, request?.Reason, request?.CorrelationId), cancellationToken));
 
+    // ---- TerritoryNode reverse lookup (WP-SEG-DETAILS8, cross-model bulk READ) ----
+    //
+    // A consumer that holds only node ids (a MOD-0167 segment criterion stores the node id, not its parent model)
+    // resolves them to {id, name, modelId, code} here in ONE read. It sits under the EXISTING
+    // `/api/crm/territory-models/{everything}` Gateway wildcard (literal "nodes/by-ids" can never match the `{id:guid}`
+    // routes above), so it needs no ocelot.json change — the same "no new Gateway route" choice FU08 made. Read-only:
+    // the territory aggregate/write path is untouched.
+
+    [HttpGet("nodes/by-ids")]
+    [HasPermission(TerritoryPermissions.NodeRead)]
+    public async Task<IActionResult> NodesByIds([FromQuery] string? ids, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetTerritoryNodesByIdsQuery(ids), cancellationToken));
+
     // ---- TerritoryNode (model-scoped) ----
 
     [HttpGet("{id:guid}/nodes")]

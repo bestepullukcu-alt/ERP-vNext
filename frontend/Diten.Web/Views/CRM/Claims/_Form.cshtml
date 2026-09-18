@@ -1,0 +1,183 @@
+@model Diten.Web.Models.CRM.ClaimEditViewModel
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    // The governed body (text / qualifiers / applicability / evidence / component refs) is frozen once the claim is
+    // approved (the backend 409s a body change) and an archived claim cannot be updated at all — in both cases the body
+    // controls render read-only. For an approved claim the stored body values are still POSTED (hidden mirrors below)
+    // so the round-trip stays byte-identical and the backend sees no body change.
+    var bodyReadOnly = Model.IsApproved || Model.IsArchived;
+    var isEdit = Model.ClaimId != Guid.Empty;
+}
+
+@* Hidden mirrors for a read-only governed body: multi-value lists cannot post from a disabled <select>, so the exact
+   stored values ride along as hidden inputs. This keeps an approved-claim save (name / description / effective window /
+   version only) from tripping the body-freeze guard. *@
+@functions {
+    void RenderHidden(string name, IEnumerable<string> values)
+    {
+        foreach (var v in values)
+        {
+            <input type="hidden" name="@name" value="@v" />
+        }
+    }
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+<input type="hidden" asp-for="ClaimId" />
+<input type="hidden" asp-for="IsApproved" />
+<input type="hidden" asp-for="IsArchived" />
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+
+        @* Card 1 — Identity & governed wording *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ClaimCode" class="form-label fw-medium">@Localizer["ClaimCode"] <span class="text-danger">*</span></label>
+                        <input asp-for="ClaimCode" class="form-control" readonly="@isEdit" maxlength="120" required />
+                        <span asp-validation-for="ClaimCode" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["ClaimCodeNote"]</small>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ClaimName" class="form-label fw-medium">@Localizer["ClaimName"] <span class="text-danger">*</span></label>
+                        <input asp-for="ClaimName" class="form-control" readonly="@Model.IsArchived" maxlength="240" required />
+                        <span asp-validation-for="ClaimName" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="ClaimVersion" class="form-label fw-medium">@Localizer["ClaimVersion"]</label>
+                        <input asp-for="ClaimVersion" class="form-control" readonly="@Model.IsArchived" maxlength="60" />
+                    </div>
+                    @if (!Model.IsApproved && !Model.IsArchived)
+                    {
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Status" class="form-label fw-medium">@Localizer["Status"]</label>
+                            <select asp-for="Status" class="select2 form-select">
+                                @foreach (var s in Model.Statuses)
+                                {
+                                    <option value="@s" selected="@(s == Model.Status)">@Localizer["Status_" + s]</option>
+                                }
+                            </select>
+                            <small class="text-muted">@Localizer["StatusEditableNote"]</small>
+                        </div>
+                    }
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
+                        <textarea asp-for="Description" class="form-control" rows="2" maxlength="2000" readonly="@Model.IsArchived"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="ClaimText" class="form-label fw-medium">@Localizer["ClaimText"] <span class="text-danger">*</span></label>
+                        <textarea asp-for="ClaimText" class="form-control" rows="4" required readonly="@bodyReadOnly"></textarea>
+                        <span asp-validation-for="ClaimText" class="text-danger small mt-1"></span>
+                        <small class="text-muted">@Localizer["ClaimTextNote"]</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Card 2 — Applicability (where the claim applies) *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ApplicabilitySection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="claimProductRefs">@Localizer["ProductRefs"]</label>
+                        <select id="claimProductRefs" name="ProductRefs" class="claim-tags form-select" multiple readonly="@bodyReadOnly" @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var v in Model.ProductRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                        @if (bodyReadOnly) { RenderHidden("ProductRefs", Model.ProductRefs); }
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="claimMarketRefs">@Localizer["MarketRefs"]</label>
+                        <select id="claimMarketRefs" name="MarketRefs" class="claim-tags form-select" multiple @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var v in Model.MarketRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                        @if (bodyReadOnly) { RenderHidden("MarketRefs", Model.MarketRefs); }
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fw-medium" for="claimAudienceRefs">@Localizer["AudienceRefs"]</label>
+                        <select id="claimAudienceRefs" name="AudienceRefs" class="claim-tags form-select" multiple @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var v in Model.AudienceRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                        @if (bodyReadOnly) { RenderHidden("AudienceRefs", Model.AudienceRefs); }
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="EligibilityPolicyId" class="form-label fw-medium">@Localizer["EligibilityPolicyId"]</label>
+                        <input asp-for="EligibilityPolicyId" class="form-control font-monospace" readonly="@bodyReadOnly"
+                               placeholder="00000000-0000-0000-0000-000000000000" />
+                        <small class="text-muted">@Localizer["EligibilityPolicyIdNote"]</small>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["RefsTagHint"]</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-12 col-lg-4">
+
+        @* Card 3 — Effective window *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["EffectiveSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@Model.EffectiveFrom.ToString("yyyy-MM-dd")" required readonly="@Model.IsArchived" />
+                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" readonly="@Model.IsArchived" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Card 4 — Governed body: qualifiers + evidence + components *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ComponentsSection"]</h6>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="claimQualifiers">@Localizer["Qualifiers"]</label>
+                        <select id="claimQualifiers" name="Qualifiers" class="claim-tags form-select" multiple @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var v in Model.Qualifiers) { <option value="@v" selected>@v</option> }
+                        </select>
+                        @if (bodyReadOnly) { RenderHidden("Qualifiers", Model.Qualifiers); }
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="claimEvidenceRefs">@Localizer["EvidenceRefs"]</label>
+                        <select id="claimEvidenceRefs" name="EvidenceRefs" class="claim-tags form-select" multiple @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var v in Model.EvidenceRefs) { <option value="@v" selected>@v</option> }
+                        </select>
+                        @if (bodyReadOnly) { RenderHidden("EvidenceRefs", Model.EvidenceRefs); }
+                        <small class="text-muted">@Localizer["EvidenceRefsNote"]</small>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium" for="claimComponentRefs">@Localizer["ComponentRefs"]</label>
+                        <select id="claimComponentRefs" name="ComponentRefs" class="claim-picker form-select" multiple
+                                data-placeholder="@Localizer["ComponentPickerPlaceholder"]" @(bodyReadOnly ? "disabled" : "")>
+                            @foreach (var o in Model.ComponentOptions)
+                            {
+                                var selected = Model.ComponentRefs.Any(r => r.ToString() == o.Value);
+                                <option value="@o.Value" selected="@selected">@o.Label@(o.IsInactive ? " ⚠" : "")</option>
+                            }
+                        </select>
+                        @if (bodyReadOnly)
+                        {
+                            RenderHidden("ComponentRefs", Model.ComponentRefs.Select(r => r.ToString()));
+                        }
+                        <small class="text-muted">@Localizer["ComponentRefsNote"]</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

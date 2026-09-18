@@ -1,0 +1,73 @@
+@using Diten.Web.Views.CRM.ContentSets
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ContentSetsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["ContentStudioTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var setId = ViewData["ContentSetId"]?.ToString();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            <span id="wsSetName">@Localizer["ContentStudioTitle"]</span>
+            <span id="wsStatusBadge" class="badge bg-label-primary d-none"></span>
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/ContentSets">@Localizer["SetsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary" id="wsSetCode">-</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/ContentSets" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        <button type="button" id="btnApplyEligibility" class="btn btn-label-info">
+            <i class="bx bx-check-shield me-1"></i>@Localizer["ApplyEligibility"]
+        </button>
+        <button type="button" id="btnCloneSet" class="btn btn-label-primary">
+            <i class="bx bx-copy me-1"></i>@Localizer["CloneSet"]
+        </button>
+        <button type="button" id="btnArchiveSet" class="btn btn-label-warning">
+            <i class="bx bx-archive-in me-1"></i>@Localizer["ArchiveSet"]
+        </button>
+    </div>
+</div>
+
+<div id="wsError" class="alert alert-danger d-none" role="alert"></div>
+<div id="wsArchivedBanner" class="alert alert-secondary d-none" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedSetReadOnly"]</div>
+
+@* Pinned composition (template + scope) — read-only provenance. *@
+<div class="card mb-4">
+    <div class="card-body p-4">
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <small class="text-muted d-block">@Localizer["Template"]</small>
+                <span id="wsTemplate" class="fw-medium">-</span>
+            </div>
+            <div class="col-12 col-md-6">
+                <small class="text-muted d-block">@Localizer["Scope"]</small>
+                <span id="wsScope" class="fw-medium">-</span>
+            </div>
+        </div>
+        <small class="text-muted d-block mt-2"><i class="bx bx-lock-alt me-1"></i>@Localizer["PinnedNote"]</small>
+    </div>
+</div>
+
+@* Eligibility snapshot summary (populated after apply-eligibility). *@
+<div id="wsEligibilitySummary" class="alert alert-info d-none" role="alert"></div>
+
+@* Arrangement skeleton — one card per template step; workspace.js renders it. *@
+<div id="workspace" data-set-id="@setId">
+    <div id="wsLoading" class="text-center text-muted py-5">
+        <div class="spinner-border spinner-border-sm me-2" role="status"></div>@Localizer["Loading"]
+    </div>
+    <div id="wsArrangement" class="d-none"></div>
+</div>
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/ContentSets/_WorkspaceL10n.cshtml" />
+    <script src="~/assets/js/CRM/ContentSets/workspace.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/ContentSets/workspace.js" asp-append-version="true"></script>
+}

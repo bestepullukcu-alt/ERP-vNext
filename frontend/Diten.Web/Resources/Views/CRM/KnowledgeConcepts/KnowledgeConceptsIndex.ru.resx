@@ -177,9 +177,31 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>В этой ветви пока нет шагов.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>Мин</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>Макс</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Роли модератора</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Модератор</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Аудитория</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Ссылки через запятую</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Выберите роль модератора</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>Выберите профили аудитории</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Кто представляет эту цепочку.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Целевые профили аудитории для этой цепочки.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Тип концепта</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>ветв(и)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Высокий</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Средний</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Низкий</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Одно понятие ведёт к следующему</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Требует цель как предварительное условие</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Отвечает на потребность или проблему</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Служит доказательством для цели</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Принадлежит / является частью цели</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Пользовательский тип связи</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Направленное ребро (от источника к цели)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Двусторонняя / эквивалентная связь</value></data>
+  <data name="Prev" xml:space="preserve"><value>Назад</value></data>
+  <data name="Next" xml:space="preserve"><value>Вперёд</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Ветвь</value></data>
+  <data name="Steps" xml:space="preserve"><value>шагов</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Новый шаг</value></data>
+  <data name="Details" xml:space="preserve"><value>Подробности</value></data>
 </root>

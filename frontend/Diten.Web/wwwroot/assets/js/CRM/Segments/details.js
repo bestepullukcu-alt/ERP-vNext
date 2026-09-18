@@ -4,6 +4,11 @@
  * The preview PERSISTS NOTHING. It is a report computed on demand, which is why it is a button and not a stored
  * number: a member count on a segment document would be a second, quietly ageing source of truth.
  * Eliminated candidates are shown WITH their reason, so nobody has to guess why someone is missing.
+ *
+ * WP-SEG-DETAILS — the markup this file writes was ported to the mockup's `segd-*` row/chip language (avatar + name +
+ * secondary line + verdict/mode badge). The BEHAVIOUR is unchanged: the 3-state segment-type toggle, the SAVED
+ * `/resolve` fetch (no fake setTimeout, no fixed count), the manual-member load and the lifecycle actions all stay.
+ * The idle → running → result state machine only toggles server-rendered blocks; every number comes from the API.
  */
 (function (window, document) {
     'use strict';
@@ -15,7 +20,26 @@
     const segmentId = (memberHost || previewHost)?.dataset.segmentId;
     if (!segmentId) return;
 
+    // WP-SEG-DETAILS3: an ACTIVE segment resolves saved membership (/resolve — full verdict + excluded). A DRAFT segment
+    // is refused by /resolve ("segment_not_active"), so it previews its RULE instead (SEG-C /preview — no segmentId and
+    // no active state needed). The subject/match-mode/criteria travel from the server-rendered attributes + JSON below,
+    // exactly the stored rule, never fabricated. /preview carries only a count + a member sample (no verdict/excluded).
+    const segmentStatus = (previewHost?.dataset.segmentStatus || '').trim();
+    const previewSubjectType = (previewHost?.dataset.subjectType || 'contact').trim();
+    const previewMatchMode = (previewHost?.dataset.matchMode || 'all').trim();
+    let previewCriteria = [];
+    try { previewCriteria = JSON.parse(document.getElementById('segmentPreviewCriteria')?.textContent || '[]'); }
+    catch (e) { previewCriteria = []; }
+
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+
+    /** Two-letter avatar from a display name, honorifics dropped, falling back to the id when the name is absent. */
+    const initials = (name, id) => {
+        const clean = String(name ?? '').replace(/\b(Prof\.?|Do[çc]\.?|Dr\.?|Assoc\.?|Asst\.?)\s*/gi, '').trim();
+        const parts = clean.split(/\s+/).filter(Boolean);
+        if (parts.length === 0) return String(id ?? '?').slice(0, 2).toUpperCase();
+        return parts.slice(-2).map(w => w[0]).join('').toUpperCase();
+    };
 
     const segmentType = (document.querySelector('.segments-details')?.dataset.segmentType || '').trim();
 
@@ -26,15 +50,49 @@
      *   hybrid  -> both
      */
     const applySegmentTypeVisibility = () => {
-        document.getElementById('resolvePreview')?.classList.toggle('d-none', segmentType === 'static');
-        document.getElementById('manualMembersBlock')?.classList.toggle('d-none', segmentType === 'dynamic');
+        document.getElementById('resolveSection')?.classList.toggle('segd-hidden', segmentType === 'static');
+        document.getElementById('manualMembersBlock')?.classList.toggle('segd-hidden', segmentType === 'dynamic');
     };
 
-    /** A readable label with the id kept as quiet provenance underneath - never the id alone. */
-    const subjectCell = (displayName, subjectId) => displayName
-        ? `<div class="fw-medium text-heading">${esc(displayName)}</div>
-           <div class="text-muted small">${esc(subjectId)}</div>`
-        : `<div class="text-muted small">${esc(subjectId)}</div>`;
+    /** avatar + name — the readable label. The manual list keeps the id as provenance underneath (showSubId), while the
+     *  resolve/preview member tables drop the bare GUID line (WP-SEG-DETAILS5 §3): the name alone is enough there. */
+    const personCell = (displayName, subjectId, extraAvatarClass, showSubId = true) => `
+        <span class="segd-col-person">
+            <span class="segd-avatar ${extraAvatarClass || ''}">${esc(initials(displayName, subjectId))}</span>
+            <span class="segd-person-body">
+                <span class="segd-name">${esc(displayName || subjectId || '—')}</span>
+                ${showSubId && displayName ? `<span class="segd-subid segd-mono">${esc(subjectId)}</span>` : ''}
+            </span>
+        </span>`;
+
+    // WP-SEG-DETAILS5 §4: the SEG-F secondary label ("Specialty · Workplace") is split into two columns. No separator ->
+    // the whole value is the Specialty and the Workplace shows "—". Reuses .segd-col-secondary (no CSS change).
+    const secondaryCells = raw => {
+        const parts = String(raw ?? '').split(' · ');
+        const specialty = (parts[0] || '').trim() || '—';
+        const workplace = parts.length > 1 ? (parts.slice(1).join(' · ').trim() || '—') : '—';
+        return `<span class="segd-col-secondary">${esc(specialty)}</span><span class="segd-col-secondary">${esc(workplace)}</span>`;
+    };
+
+    // WP-SEG-DETAILS5 §5: the recomputed-on-every-call footer + "Open the full result". The full-result link re-runs the
+    // SAME endpoint at its maximum (no new page, no backend): /resolve raises the paging limit, /preview is already at its
+    // sample cap. When even that maximum is shorter than the total, a quiet cap note replaces the link.
+    const renderResolveFooter = (shown, total, atMax) => {
+        const foot = document.getElementById('resolveFooter');
+        if (!foot) return;
+        const showing = String(L.ShowingFirstOfMembers || 'Showing the first {0} of {1} members.')
+            .replace('{0}', Number(shown).toLocaleString())
+            .replace('{1}', Number(total).toLocaleString());
+        const more = shown < total;
+        const tail = more
+            ? (atMax
+                ? `<span class="segd-full-cap">${esc(L.SampleCapNote || '')}</span>`
+                : `<button type="button" class="segd-ghost-btn js-open-full">${esc(L.OpenFullResult || 'Open the full result')}</button>`)
+            : '';
+        foot.innerHTML = `<span>${esc(showing)} ${esc(L.NothingStoredRecomputed || '')}</span>${tail}`;
+    };
+
+    const verdictClass = v => v === 'member' ? 'segd-badge-ok' : v === 'unknown' ? 'segd-badge-unknown' : 'segd-badge-no';
 
     const envelope = async response => {
         const body = await response.json().catch(() => ({}));
@@ -42,6 +100,12 @@
         return body.data;
     };
 
+    const setStatMembers = value => {
+        const el = document.getElementById('statMembersValue');
+        if (el) el.textContent = value;
+    };
+
+    // ---- Manual membership rows (static / hybrid) --------------------------------------------------------------
     const loadMembers = async () => {
         const body = document.getElementById('detailsMemberBody');
         if (!body) return;
@@ -51,29 +115,50 @@
             }));
             const items = data?.items || [];
             body.innerHTML = items.length === 0
-                ? `<tr><td colspan="6" class="text-muted">${esc(L.EmptyState || '')}</td></tr>`
+                ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
                 : items.map(m => `
-                    <tr class="${m.isArchived ? 'opacity-50' : ''}">
-                        <td class="fw-medium text-heading">${esc(m.subjectDisplayName || '—')}</td>
-                        <td class="text-muted small">${esc(m.subjectId)}</td>
-                        <td><span class="badge bg-label-${m.membershipMode === 'manual-include' ? 'success' : 'danger'}">${esc(m.membershipMode)}</span></td>
-                        <td>${esc(m.selectionReason)}</td>
-                        <td>${esc(String(m.effectiveFrom || '').slice(0, 10))}</td>
-                        <td>${m.isArchived ? esc(L.Yes || 'Yes') : esc(L.No || 'No')}</td>
-                    </tr>`).join('');
+                    <div class="segd-row ${m.isArchived ? 'is-archived' : ''}">
+                        ${personCell(m.subjectDisplayName, m.subjectId, m.membershipMode === 'manual-exclude' ? 'segd-avatar-out' : '')}
+                        <span class="segd-col-secondary">${esc(m.subjectSecondaryLabel || '—')}</span>
+                        <span class="segd-col-mode"><span class="segd-badge ${m.membershipMode === 'manual-include' ? 'segd-badge-ok' : 'segd-badge-no'}">${esc(m.membershipMode)}</span></span>
+                        <span class="segd-col-reason"><span class="segd-reason-text">${esc(m.selectionReason || '')}</span></span>
+                        <span class="segd-col-from">${esc(String(m.effectiveFrom || '').slice(0, 10))}</span>
+                    </div>`).join('');
+
+            // counts: kept-in / kept-out, from the loaded rows (active only) — honest, not a stored number.
+            const active = items.filter(m => !m.isArchived);
+            const keptIn = active.filter(m => m.membershipMode === 'manual-include').length;
+            const keptOut = active.filter(m => m.membershipMode === 'manual-exclude').length;
+            const inEl = document.getElementById('manualKeptIn');
+            const outEl = document.getElementById('manualKeptOut');
+            if (inEl) inEl.textContent = keptIn;
+            if (outEl) outEl.textContent = keptOut;
+            // For a static segment the membership IS the kept-in list, so that is the "Members" stat.
+            if (segmentType === 'static') setStatMembers(keptIn.toLocaleString());
         } catch (error) {
-            body.innerHTML = `<tr><td colspan="6" class="text-danger">${esc(error.message || L.ErrorState)}</td></tr>`;
+            body.innerHTML = `<div class="segd-error-row">${esc(error.message || L.ErrorState)}</div>`;
         }
     };
 
-    const runResolve = async () => {
-        const summary = document.getElementById('resolveSummary');
-        const table = document.getElementById('resolveMembers');
-        const body = document.getElementById('resolveMembersBody');
-        if (!summary || !table || !body) return;
+    // ---- Resolve preview (dynamic / hybrid) — SAVED /resolve, persists nothing --------------------------------
+    const setResolveState = state => {
+        document.getElementById('resolveIdle')?.classList.toggle('segd-hidden', state !== 'idle');
+        document.getElementById('resolveRunning')?.classList.toggle('segd-hidden', state !== 'running');
+        document.getElementById('resolveResult')?.classList.toggle('segd-hidden', state !== 'done');
+    };
 
-        summary.classList.remove('d-none');
-        summary.innerHTML = `<span class="text-muted">${esc(L.Loading || '')}</span>`;
+    // full === true is the "Open the full result" path (WP-SEG-DETAILS5 §5): the SAME /resolve endpoint at its paging
+    // ceiling (1000, the handler's MaxLimit) instead of the default sample page. No new page, no backend.
+    const runResolve = async (full = false) => {
+        const summary = document.getElementById('resolveSummary');
+        const memberBody = document.getElementById('resolveMembersBody');
+        const excludedWrap = document.getElementById('resolveExcluded');
+        const excludedBody = document.getElementById('resolveExcludedBody');
+        const btn = document.getElementById('btnResolve');
+        if (!summary || !memberBody) return;
+
+        setResolveState('running');
+        if (btn) btn.disabled = true;
 
         try {
             const response = await fetch(`${endpoint}/segments/${segmentId}/resolve`, {
@@ -81,38 +166,145 @@
                 credentials: 'same-origin',
                 headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
                 // includeExcluded: an elimination must be as visible as an acceptance.
-                body: JSON.stringify({ limit: 100, offset: 0, includeExcluded: true })
+                body: JSON.stringify({ limit: full ? 1000 : 100, offset: 0, includeExcluded: true })
             });
 
             const data = await envelope(response);
-            const rows = (data.members || []).concat(data.excluded || []);
+            const members = data.members || [];
+            const excluded = data.excluded || [];
+            const fromManual = members.filter(m => String(m.membershipSource || '').startsWith('manual')).length;
+
+            setStatMembers(Number(data.matchedCount ?? members.length).toLocaleString());
 
             summary.innerHTML = `
-                <div class="d-flex flex-wrap gap-3">
-                    <span class="badge bg-label-primary">${esc(L.CandidateCount || 'Candidates')}: ${esc(data.candidateCount)}</span>
-                    <span class="badge bg-label-success">${esc(L.MatchedCount || 'Members')}: ${esc(data.matchedCount)}</span>
-                    <span class="badge bg-label-warning">${esc(L.ExcludedCount || 'Excluded')}: ${esc(data.excludedCount)}</span>
-                    ${data.segmentEffective ? '' : `<span class="badge bg-label-secondary">${esc((data.reasonCodes || []).join(', '))}</span>`}
-                    <span class="text-muted small">${esc(L.MembershipNeverStoredHelp || '')}</span>
-                </div>`;
+                <span class="segd-chip-stat segd-chip-included"><span class="segd-chip-value">${esc(Number(data.matchedCount ?? 0).toLocaleString())}</span><span class="segd-chip-label">${esc(L.MatchedCount || 'Members')}</span></span>
+                <span class="segd-chip-stat segd-chip-dropped"><span class="segd-chip-value">${esc(Number(data.excludedCount ?? 0).toLocaleString())}</span><span class="segd-chip-label">${esc(L.ExcludedCount || 'Excluded')}</span></span>
+                <span class="segd-chip-stat segd-chip-manual"><span class="segd-chip-value">${esc(fromManual.toLocaleString())}</span><span class="segd-chip-label">${esc(L.FromManual || 'from manual rows')}</span></span>
+                ${data.segmentEffective === false ? `<span class="segd-chip-stat"><span class="segd-chip-label">${esc((data.reasonCodes || []).join(', '))}</span></span>` : ''}
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }))}</span>`;
 
-            table.classList.toggle('d-none', rows.length === 0);
-            body.innerHTML = rows.map(m => `
-                <tr>
-                    <td>${subjectCell(m.subjectDisplayName, m.subjectId)}</td>
-                    <td><span class="badge bg-label-${m.verdict === 'member' ? 'success' : m.verdict === 'unknown' ? 'secondary' : 'danger'}">${esc(m.verdict)}</span></td>
-                    <td>${esc(m.membershipSource || '—')}</td>
-                    <td class="small">${esc((m.reasonCodes || []).join(', '))}</td>
-                </tr>`).join('');
+            // A genuine 0 is a result, not a failure: the summary chips still show "0 included" and this line names it
+            // (fetch/HTTP errors take the catch path below and render a visible segd-error-row instead).
+            // Active resolve KEEPS verdict/source/reasons — they carry real /resolve output (WP-SEG-DETAILS5 §2).
+            memberBody.innerHTML = members.length === 0
+                ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
+                : members.map(m => `
+                    <div class="segd-row">
+                        ${personCell(m.subjectDisplayName, m.subjectId, '', false)}
+                        ${secondaryCells(m.subjectSecondaryLabel)}
+                        <span class="segd-col-verdict"><span class="segd-badge ${verdictClass(m.verdict)}">${esc(m.verdict)}</span></span>
+                        <span class="segd-col-source">${esc(m.membershipSource || '—')}</span>
+                        <span class="segd-col-reasons segd-mono">${esc((m.reasonCodes || []).join(', '))}</span>
+                    </div>`).join('');
+
+            // Footer: N shown of the matched total, with "Open the full result" until the paging ceiling is reached.
+            renderResolveFooter(members.length, Number(data.matchedCount ?? members.length), full);
+
+            if (excludedWrap && excludedBody) {
+                excludedWrap.classList.toggle('segd-hidden', excluded.length === 0);
+                excludedBody.innerHTML = excluded.map(x => `
+                    <div class="segd-row">
+                        <span class="segd-x-name">${esc(x.subjectDisplayName || x.subjectId || '—')}</span>
+                        <span class="segd-x-secondary">${esc(x.subjectSecondaryLabel || '—')}</span>
+                        <span class="segd-x-code segd-mono">${esc((x.reasonCodes || []).join(', '))}</span>
+                    </div>`).join('');
+            }
+
+            setResolveState('done');
         } catch (error) {
             // A 422 here is the ceiling refusing to hand back a partial list, not a crash: the message says so.
-            summary.innerHTML = `<span class="text-danger">${esc(error.message || L.ErrorState)}</span>`;
-            table.classList.add('d-none');
+            summary.innerHTML = `<div class="segd-error-row">${esc(error.message || L.ErrorState)}</div>`;
+            memberBody.innerHTML = '';
+            if (excludedWrap) excludedWrap.classList.add('segd-hidden');
+            setResolveState('done');
+        } finally {
+            if (btn) btn.disabled = false;
         }
     };
 
+    // ---- Draft reach preview (draft dynamic/hybrid) — SEG-C /preview, no active state, persists nothing ---------
+    // The active /resolve path above is UNCHANGED. This is its draft twin: /preview accepts the unsaved rule directly,
+    // so a draft shows a real reach ("N members" + a member sample) instead of the /resolve "segment_not_active" wall.
+    // full === true is the "Open the full result" path (WP-SEG-DETAILS5 §5): /preview carries no paging field, so it is
+    // re-run at its fixed sample cap; when the total exceeds that cap the footer shows the cap note instead of the link.
+    const runDraftPreview = async (full = false) => {
+        const summary = document.getElementById('resolveSummary');
+        const memberBody = document.getElementById('resolveMembersBody');
+        const excludedWrap = document.getElementById('resolveExcluded');
+        const btn = document.getElementById('btnResolve');
+        if (!summary || !memberBody) return;
+
+        setResolveState('running');
+        if (btn) btn.disabled = true;
+        // /preview has no verdict/excluded surface (count + sample only), so the dropped-candidates block stays hidden.
+        excludedWrap?.classList.add('segd-hidden');
+
+        try {
+            const response = await fetch(`${endpoint}/preview`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    subjectType: previewSubjectType,
+                    matchMode: previewMatchMode || 'all',
+                    criteria: previewCriteria,
+                    effectiveAt: null
+                })
+            });
+
+            const data = await envelope(response);
+            const total = Number(data.totalCount ?? 0);
+            const sample = data.sampleMembers || [];
+
+            setStatMembers(total.toLocaleString());
+
+            // Included count + resolved-at + the draft caveat: this is today's data and not an audience until activated.
+            summary.innerHTML = `
+                <span class="segd-chip-stat segd-chip-included"><span class="segd-chip-value">${esc(total.toLocaleString())}</span><span class="segd-chip-label">${esc(L.MatchedCount || 'Members')}</span></span>
+                <span class="segd-resolvedat">${esc(new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }))}</span>
+                <span class="segd-draft-note">${esc(L.DraftPreviewNote || '')}</span>`;
+
+            // A genuine 0 is a result, not a failure (fetch/HTTP errors take the catch path and render an error row).
+            // Draft preview DROPS verdict/source/reasons: /preview carries none, so an empty column would be a lie
+            // (WP-SEG-DETAILS5 §2). Only name + Specialty + Workplace.
+            memberBody.innerHTML = sample.length === 0
+                ? `<div class="segd-empty-row">${esc(L.NoMembers || L.EmptyState || '')}</div>`
+                : sample.map(m => `
+                    <div class="segd-row">
+                        ${personCell(m.displayName, m.subjectId, '', false)}
+                        ${secondaryCells(m.subjectSecondaryLabel)}
+                    </div>`).join('');
+
+            // Footer: N sampled of the total reach, with "Open the full result" while the total exceeds the cap.
+            renderResolveFooter(sample.length, total, full);
+
+            setResolveState('done');
+        } catch (error) {
+            summary.innerHTML = `<div class="segd-error-row">${esc(error.message || L.ErrorState)}</div>`;
+            memberBody.innerHTML = '';
+            excludedWrap?.classList.add('segd-hidden');
+            setResolveState('done');
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    };
+
+    // ---- Stored-rule JSON toggle -------------------------------------------------------------------------------
+    const toggleStoredJson = btn => {
+        const pre = document.getElementById('storedJson');
+        if (!pre) return;
+        const nowHidden = pre.classList.toggle('segd-hidden');
+        btn.textContent = nowHidden ? (btn.dataset.showLabel || '') : (btn.dataset.hideLabel || '');
+    };
+
     document.addEventListener('click', event => {
-        if (event.target.closest('#btnResolve')) { event.preventDefault(); void runResolve(); return; }
+        if (event.target.closest('#btnResolve')) { event.preventDefault(); void (segmentStatus === 'active' ? runResolve() : runDraftPreview()); return; }
+
+        // WP-SEG-DETAILS5 §5: re-run the same endpoint at its maximum. Same routing as the Resolve button.
+        if (event.target.closest('.js-open-full')) { event.preventDefault(); void (segmentStatus === 'active' ? runResolve(true) : runDraftPreview(true)); return; }
+
+        const jsonBtn = event.target.closest('#btnToggleJson');
+        if (jsonBtn) { event.preventDefault(); toggleStoredJson(jsonBtn); return; }
 
         const activate = event.target.closest('.js-activate-segment');
         if (activate) {

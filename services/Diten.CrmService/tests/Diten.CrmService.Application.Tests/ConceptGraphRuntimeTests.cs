@@ -44,6 +44,7 @@ public sealed class ConceptGraphRuntimeTests
         public FakeRelationshipRepo Relationships { get; } = new();
         public FakeTemplateRepo Templates { get; } = new();
         public FakeLinkRepo Links { get; } = new();
+        public FakeProfileRepo Profiles { get; } = new();
         public Guid TenantId { get; }
 
         public Fixture(Guid tenant) => TenantId = tenant;
@@ -71,9 +72,9 @@ public sealed class ConceptGraphRuntimeTests
         public ListConceptRelationshipsHandler ListRels() => new(Tenant(TenantId), Relationships);
 
         public CreateConceptChainTemplateHandler CreateTemplate()
-            => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
+            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles);
         public UpdateConceptChainTemplateHandler UpdateTemplate()
-            => new(Tenant(TenantId), new NullActorContext(), Templates, Types);
+            => new(Tenant(TenantId), new NullActorContext(), Templates, Types, Profiles);
         public GetConceptChainTemplateHandler GetTemplate() => new(Tenant(TenantId), Templates);
 
         public CreateKnowledgeContentConceptLinkHandler CreateLink()
@@ -101,6 +102,18 @@ public sealed class ConceptGraphRuntimeTests
             };
             Subjects.Items.Add(s);
             return s.Id;
+        }
+
+        public Guid SeedAudienceProfile(bool archived = false)
+        {
+            var p = new AudienceProfile
+            {
+                TenantId = TenantId, ProfileCode = "AP-" + Guid.NewGuid().ToString("N")[..6],
+                ProfileName = "Audience", Status = archived ? TaxonomyStatuses.Archived : TaxonomyStatuses.Active,
+                EffectiveFrom = Jan1, ArchivedAt = archived ? Jan1 : null
+            };
+            Profiles.Items.Add(p);
+            return p.Id;
         }
 
         public async Task<Guid> SeedType(Guid subjectId, string code = "T1")
@@ -889,7 +902,7 @@ public sealed class ConceptGraphRuntimeTests
 
     // ---------------- SCMM-10 (③) ConceptChainTemplate branched extend ----------------
 
-    [Fact] // 51  branched structure persists + reads back with cardinality + moderator/for-whom refs
+    [Fact] // 51  branched structure persists + reads back with cardinality (structure only, no step-level refs)
     public async Task Branched_template_round_trips()
     {
         var fx = new Fixture(TenantA);
@@ -900,7 +913,7 @@ public sealed class ConceptGraphRuntimeTests
         {
             new ConceptChainBranchInput("BR1", new[]
             {
-                new ConceptChainStepInput(t1, 1, 2, new[] { "role:moderator" }, new[] { "aud:cardiology" }),
+                new ConceptChainStepInput(t1, 1, 2),
                 new ConceptChainStepInput(t2, 0, null)
             }, "Primary", 0)
         };
@@ -914,8 +927,6 @@ public sealed class ConceptGraphRuntimeTests
         Assert.Equal(2, br.Steps.Count);
         Assert.Equal(1, br.Steps[0].MinSelection);
         Assert.Equal(2, br.Steps[0].MaxSelection);
-        Assert.Contains("role:moderator", br.Steps[0].AllowedRoleRefs);       // moderator axis
-        Assert.Contains("aud:cardiology", br.Steps[0].AudienceDimensionRefs); // for-whom axis
         Assert.Null(br.Steps[1].MaxSelection);                                // unbounded stays null (no engine fills it)
     }
 
@@ -993,7 +1004,7 @@ public sealed class ConceptGraphRuntimeTests
         var t2 = await fx.SeedType(s, "T2");
         var audit = new CapturingConceptAudit();
         var handler = new CreateConceptChainTemplateHandler(
-            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, audit);
+            Tenant(TenantA), new NullActorContext(), fx.Templates, fx.Types, fx.Profiles, audit);
 
         var draft = await handler.Handle(new CreateConceptChainTemplateCommand(
             s, "CHN-A", "A", new[] { t1, t2 }, Jan1), default);
@@ -1007,6 +1018,134 @@ public sealed class ConceptGraphRuntimeTests
             s, "CHN-B", "B", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published), default);
         Assert.Equal(201, published.StatusCode);
         Assert.Equal(ConceptGraphReasonCodes.ChainTemplatePublished, audit.Events[^1].Event);
+    }
+
+    // ---------------- SCMM-10 (WP-A) template-level Moderator / ForWhom ----------------
+
+    [Fact] // 57  template-level ModeratorRoleType + ForWhomAudienceProfileIds map, persist and read back
+    public async Task Template_moderator_and_forwhom_round_trip()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var ap1 = fx.SeedAudienceProfile();
+        var ap2 = fx.SeedAudienceProfile();
+
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-M1", "Chain M1", new[] { t1, t2 }, Jan1,
+            ModeratorRoleType: " position ", ForWhomAudienceProfileIds: new[] { ap1, ap2 }), default);
+        Assert.Equal(201, created.StatusCode);
+
+        var dto = (await fx.GetTemplate().Handle(new GetConceptChainTemplateQuery(created.Data), default)).Data!;
+        Assert.Equal("position", dto.ModeratorRoleType);              // trimmed
+        Assert.Equal(new[] { ap1, ap2 }.OrderBy(x => x), dto.ForWhomAudienceProfileIds.OrderBy(x => x));
+    }
+
+    [Fact] // 58  ForWhom referencing a non-existent AudienceProfile is rejected before persist (400)
+    public async Task Template_forwhom_missing_profile_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-M2", "Chain M2", new[] { t1, t2 }, Jan1,
+            ForWhomAudienceProfileIds: new[] { Guid.NewGuid() }), default);
+        Assert.Equal(400, r.StatusCode);
+        Assert.Empty(fx.Templates.Items);                            // nothing persisted (fail-closed)
+    }
+
+    [Fact] // 59  ForWhom referencing an archived AudienceProfile is rejected (400)
+    public async Task Template_forwhom_archived_profile_returns_400()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var archived = fx.SeedAudienceProfile(archived: true);
+
+        var r = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-M3", "Chain M3", new[] { t1, t2 }, Jan1,
+            ForWhomAudienceProfileIds: new[] { archived }), default);
+        Assert.Equal(400, r.StatusCode);
+        Assert.Empty(fx.Templates.Items);
+    }
+
+    [Fact] // 60  publish freezes the template-level Moderator / ForWhom — changing either returns 409
+    public async Task Published_template_moderator_or_forwhom_change_returns_409()
+    {
+        var fx = new Fixture(TenantA);
+        var s = fx.SeedSubject();
+        var t1 = await fx.SeedType(s, "T1");
+        var t2 = await fx.SeedType(s, "T2");
+        var ap1 = fx.SeedAudienceProfile();
+        var ap2 = fx.SeedAudienceProfile();
+
+        var created = await fx.CreateTemplate().Handle(new CreateConceptChainTemplateCommand(
+            s, "CHN-M4", "Chain M4", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ModeratorRoleType: "position", ForWhomAudienceProfileIds: new[] { ap1 }), default);
+        Assert.Equal(201, created.StatusCode);
+
+        // changing the moderator on a published template → 409
+        var moderatorChange = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            created.Data, "Chain M4", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ModeratorRoleType: "client", ForWhomAudienceProfileIds: new[] { ap1 }), default);
+        Assert.Equal(409, moderatorChange.StatusCode);
+
+        // changing the for-whom set on a published template → 409
+        var forWhomChange = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            created.Data, "Chain M4", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ModeratorRoleType: "position", ForWhomAudienceProfileIds: new[] { ap1, ap2 }), default);
+        Assert.Equal(409, forWhomChange.StatusCode);
+
+        // an unchanged Moderator / ForWhom (reordered set) is NOT a freeze violation
+        var noChange = await fx.UpdateTemplate().Handle(new UpdateConceptChainTemplateCommand(
+            created.Data, "Chain M4 renamed", new[] { t1, t2 }, Jan1, Status: ConceptChainStatuses.Published,
+            ModeratorRoleType: "position", ForWhomAudienceProfileIds: new[] { ap1 }), default);
+        Assert.Equal(200, noChange.StatusCode);
+    }
+
+    [Fact] // 61  persistence: ForWhom List<Guid> round-trips as string-subtype GUIDs and a legacy step-ref element is
+           //     ignored on read (read-time migration for the removed step-level refs)
+    public void ClassMap_forwhom_guid_round_trip_and_legacy_step_refs_ignored()
+    {
+        Diten.CrmService.Persistence.DependencyInjection.EnsureClassMapsForTests();
+        Assert.True(MongoDB.Bson.Serialization.BsonClassMap.IsClassMapRegistered(typeof(ConceptChainTemplate)));
+        Assert.True(MongoDB.Bson.Serialization.BsonClassMap.IsClassMapRegistered(typeof(ConceptChainStep)));
+
+        var ap = Guid.NewGuid();
+        var typeId = Guid.NewGuid();
+        var template = new ConceptChainTemplate
+        {
+            TenantId = Guid.NewGuid(),
+            SubjectId = Guid.NewGuid(),
+            ChainCode = "CHN-RT",
+            ChainName = "Round trip",
+            OrderedConceptTypes = new List<Guid> { typeId },
+            ModeratorRoleType = "system-auto",
+            ForWhomAudienceProfileIds = new List<Guid> { ap },
+            Branches = new List<ConceptChainBranch>
+            {
+                new() { BranchCode = "BR1", Steps = new List<ConceptChainStep> { new() { ConceptTypeId = typeId } } }
+            }
+        };
+
+        var doc = MongoDB.Bson.BsonExtensionMethods.ToBsonDocument(template);
+        // ForWhom + the step's ConceptTypeId serialize as string GUIDs, not binary sub-type 4.
+        Assert.Equal(MongoDB.Bson.BsonType.String, doc["ForWhomAudienceProfileIds"].AsBsonArray[0].BsonType);
+        var stepDoc = doc["Branches"].AsBsonArray[0].AsBsonDocument["Steps"].AsBsonArray[0].AsBsonDocument;
+        Assert.Equal(MongoDB.Bson.BsonType.String, stepDoc["ConceptTypeId"].BsonType);
+
+        // Simulate a legacy pre-WP-A branch document that still carries the removed step-level refs.
+        stepDoc["AllowedRoleRefs"] = new MongoDB.Bson.BsonArray { "role:moderator" };
+        stepDoc["AudienceDimensionRefs"] = new MongoDB.Bson.BsonArray { "aud:cardiology" };
+
+        var back = MongoDB.Bson.Serialization.BsonSerializer.Deserialize<ConceptChainTemplate>(doc);
+        Assert.Equal("system-auto", back.ModeratorRoleType);
+        Assert.Equal(ap, Assert.Single(back.ForWhomAudienceProfileIds));           // GUID survives the round trip
+        Assert.Equal(typeId, back.Branches[0].Steps[0].ConceptTypeId);            // legacy refs ignored, step still reads
     }
 
     // ============================================================ in-memory fakes
@@ -1181,6 +1320,21 @@ public sealed class ConceptGraphRuntimeTests
         public Task<AudienceProfile?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
             => Task.FromResult<AudienceProfile?>(null);
         public Task InsertAsync(AudienceProfile e, CancellationToken ct) => Task.CompletedTask;
+        public Task UpdateAsync(AudienceProfile e, CancellationToken ct) => Task.CompletedTask;
+    }
+
+    // SCMM-10 (WP-A) — backing store for the template-level ForWhom existence guard.
+    private sealed class FakeProfileRepo : IAudienceProfileRepository
+    {
+        public List<AudienceProfile> Items { get; } = new();
+        public Task<AudienceProfile?> GetByIdAsync(Guid t, Guid id, CancellationToken ct)
+            => Task.FromResult(Items.FirstOrDefault(x => x.TenantId == t && x.Id == id && !x.IsDeleted));
+        public Task<IReadOnlyList<AudienceProfile>> ListAsync(Guid t, CancellationToken ct)
+            => Task.FromResult((IReadOnlyList<AudienceProfile>)Items.Where(x => x.TenantId == t && !x.IsDeleted).ToList());
+        public Task<AudienceProfile?> GetActiveByCodeAsync(Guid t, string code, CancellationToken ct)
+            => Task.FromResult(Items.FirstOrDefault(
+                x => x.TenantId == t && !x.IsDeleted && !x.IsArchived() && x.ProfileCode == code));
+        public Task InsertAsync(AudienceProfile e, CancellationToken ct) { Items.Add(e); return Task.CompletedTask; }
         public Task UpdateAsync(AudienceProfile e, CancellationToken ct) => Task.CompletedTask;
     }
 }

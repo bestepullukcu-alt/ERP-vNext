@@ -177,9 +177,31 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>Bu dalda henüz adım yok.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>En az</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>En çok</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Moderatör rolleri</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderatör</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Hedef kitle</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Virgülle ayrılmış referanslar</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Moderatör rolü seçin</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>Hedef kitle profillerini seçin</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Bu zinciri kimin sunacağı.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Bu zincirin hedef kitle profilleri.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Kavram tipi</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Yeni versiyon</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>dal</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Yüksek</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Orta</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Düşük</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Bir kavram diğerine götürür/yol açar</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Ön koşul olarak hedefi gerektirir</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Bir ihtiyacı/sorunu adresler</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Hedefi kanıtlar</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Hedefe aittir / parçasıdır</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Özel bir ilişki türü</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Yönlü kenar (kaynaktan hedefe)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Çift yönlü / eşdeğer bağ</value></data>
+  <data name="Prev" xml:space="preserve"><value>Önceki</value></data>
+  <data name="Next" xml:space="preserve"><value>Sonraki</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Dal</value></data>
+  <data name="Steps" xml:space="preserve"><value>adım</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Yeni adım</value></data>
+  <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
 </root>

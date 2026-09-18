@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aún no hay registros.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivadas</value></data>
+  <data name="Active" xml:space="preserve"><value>Activas</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar..</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activa</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Template" xml:space="preserve"><value>Plantilla</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="Components" xml:space="preserve"><value>Componentes</value></data>
+  <data name="Claims" xml:space="preserve"><value>Alegaciones</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Referencias de producto</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Referencias de mercado</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Referencias de audiencia</value></data>
+  <data name="Channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Idioma</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Escriba un valor y pulse Intro para añadir cada referencia.</value></data>
+  <data name="SetsTitle" xml:space="preserve"><value>Conjuntos de contenido</value></data>
+  <data name="ContentStudioTitle" xml:space="preserve"><value>Estudio de contenido</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Borradores de ensamblaje: componentes + alegaciones dispuestos en una plantilla de composición dentro de un alcance opcional.</value></data>
+  <data name="DraftNote" xml:space="preserve"><value>Son borradores modificables. Congelar, renderizar y publicar son etapas posteriores.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>Código de conjunto</value></data>
+  <data name="SetName" xml:space="preserve"><value>Nombre de conjunto</value></data>
+  <data name="CreateSet" xml:space="preserve"><value>Crear conjunto</value></data>
+  <data name="EditSet" xml:space="preserve"><value>Editar conjunto</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>Abrir espacio de trabajo</value></data>
+  <data name="CloneSet" xml:space="preserve"><value>Clonar a borrador</value></data>
+  <data name="CloneSetCodePrompt" xml:space="preserve"><value>Nuevo código de conjunto para el clon:</value></data>
+  <data name="CloneSetNamePrompt" xml:space="preserve"><value>Nuevo nombre de conjunto (opcional):</value></data>
+  <data name="RecordCloned" xml:space="preserve"><value>Borrador clonado.</value></data>
+  <data name="ArchiveSet" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveSetConfirm" xml:space="preserve"><value>¿Archivar este conjunto de contenido? Es una acción de ciclo de vida suave; permanece legible.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Conjunto de contenido archivado.</value></data>
+  <data name="ArchivedSetReadOnly" xml:space="preserve"><value>Este conjunto de contenido está archivado y es de solo lectura.</value></data>
+  <data name="CompositionSection" xml:space="preserve"><value>Composición</value></data>
+  <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>Buscar una plantilla de composición...</value></data>
+  <data name="TemplatePinNote" xml:space="preserve"><value>La versión de la plantilla se fija al crear el conjunto.</value></data>
+  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>Buscar un alcance de contenido (opcional)...</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>Opcional. Su versión se fija al seleccionarla.</value></data>
+  <data name="PinnedNote" xml:space="preserve"><value>La plantilla y el alcance se fijan por versión al seleccionarlos; no se cambian aquí.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>Sin alcance</value></data>
+  <data name="ApplyEligibility" xml:space="preserve"><value>Aplicar elegibilidad</value></data>
+  <data name="EligibilityApplied" xml:space="preserve"><value>Instantánea de elegibilidad actualizada.</value></data>
+  <data name="EligibilitySummary" xml:space="preserve"><value>Elegibilidad (última ejecución):</value></data>
+  <data name="Eligible" xml:space="preserve"><value>Elegible</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Bloqueado</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Sin resolver</value></data>
+  <data name="NotEvaluated" xml:space="preserve"><value>Sin evaluar</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>Añadir componente</value></data>
+  <data name="AddClaim" xml:space="preserve"><value>Añadir alegación</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>Buscar un componente de contenido...</value></data>
+  <data name="ClaimPickerPlaceholder" xml:space="preserve"><value>Buscar una alegación...</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Position" xml:space="preserve"><value>Posición</value></data>
+  <data name="UpdatePosition" xml:space="preserve"><value>Actualizar posición</value></data>
+  <data name="Branch" xml:space="preserve"><value>Rama</value></data>
+  <data name="Step" xml:space="preserve"><value>Paso</value></data>
+  <data name="Min" xml:space="preserve"><value>Mín</value></data>
+  <data name="Max" xml:space="preserve"><value>Máx</value></data>
+  <data name="EmptyArrangement" xml:space="preserve"><value>Esta plantilla no tiene pasos que organizar.</value></data>
+  <data name="NoComponents" xml:space="preserve"><value>Aún no hay componentes en esta ranura.</value></data>
+  <data name="NoClaims" xml:space="preserve"><value>Aún no hay alegaciones en esta ranura.</value></data>
+  <data name="AddedOn" xml:space="preserve"><value>Añadido</value></data>
+  <data name="NeedsAssessmentWarn" xml:space="preserve"><value>La fuente de este componente cambió — la traducción necesita evaluación.</value></data>
+</root>

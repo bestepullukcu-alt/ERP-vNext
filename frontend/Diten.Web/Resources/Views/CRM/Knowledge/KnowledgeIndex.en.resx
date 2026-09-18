@@ -126,4 +126,27 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>Dimensions</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>Add axis</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>Target this audience by reference-data axes (or a custom axis).</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>No axes yet — this profile targets everyone.</value></data>
+  <data name="Axis" xml:space="preserve"><value>Axis</value></data>
+  <data name="Values" xml:space="preserve"><value>Values</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>Remove axis</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>deprecated</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>Account type</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>Contact type</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>Medical specialty</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>Select values</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Axis code (e.g. region)</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Type a value, press Enter</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>Subject source</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>From a Global Product</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>Custom</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>Select a Global Product</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Links the Subject to its MDM master and pre-fills the name (editable).</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>The Global Product list is unavailable; enter a custom subject.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>The Global Product service is not available; enter a custom subject.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>You don't have permission to browse Global Products; enter a custom subject.</value></data>
 </root>

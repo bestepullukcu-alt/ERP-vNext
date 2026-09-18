@@ -1,0 +1,87 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+
+@* WP-FREQ-DET-H — the read-only Çözümleme / "Frekans Kontrolü" panel ("how often should THIS target be visited?").
+   Mockup 3-card layout (task-create standard): LEFT "Kimi soruyorsunuz?" (a friendly scenario dropdown → targetType +
+   context, a record picker, cycle-period + effectiveAt, "Frekansı göster") · RIGHT-TOP "CEVAP" (a single big verdict +
+   the winning rule + the "diğer kurallar" ladder) · RIGHT-BOTTOM "NE YAPMALIYIM?" (steps derived from the verdict).
+
+   It calls the ready GET /resolve (IncludeDiagnostics=true) and shows exactly what the backend returns — no verdict,
+   vocabulary or recommendation is invented here, and the endpoint is GET/read-only so nothing is ever written. Behaviour
+   + the shared L10n bridge live in resolve.js / the Index bridge (vfp-dr-l10n); this file is markup only. Rendered in
+   place of the resolve-tab, only for a resolve-permitted user. *@
+
+<div class="row g-4 vfp-detail-scope" id="vfpResolvePanel">
+    @* ── SOL: Kimi soruyorsunuz? (girdi) ───────────────────────────────────────── *@
+    <div class="col-12 col-lg-4">
+        <section class="card h-100">
+            <div class="card-body p-4">
+                <h6 class="text-heading fw-semibold mb-1">@Localizer["ResolveWhoTitle"]</h6>
+                <p class="vfp-rs-who-desc">@Localizer["ResolveWhoDesc"]</p>
+
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="vfpRsScenario">@Localizer["ResolveScenarioLabel"] <span class="text-danger">*</span></label>
+                    <select id="vfpRsScenario" class="form-select"></select>
+                </div>
+
+                @* WP-FREQ-DET-I — Kayıt as the editor "Hangi kayıt" pattern: form.js-style app select in #vfpRsTargetPicker
+                   when empty, the picked chip in #vfpRsTargetPicked once chosen (resolve.js showPicked). The picker's
+                   [data-role="targetId"] control (id vfpRsTargetId) is unchanged, so targetId/context stay intact. *@
+                <div class="mb-3">
+                    <label class="form-label fw-medium" for="vfpRsTargetPicker">@Localizer["ResolveRecordLabel"] <span class="text-danger">*</span></label>
+                    <div id="vfpRsTargetPicker"></div>
+                    <div class="vfp-rs-picked" id="vfpRsTargetPicked"></div>
+                </div>
+
+                @* scenario-driven context (e.g. the doctor-in-hospital scenario reveals a Saha alanı picker) *@
+                <div id="vfpRsScenarioContext" class="mb-3 d-none"></div>
+
+                @* WP-FREQ-DET-I — Dönem/Tarih as app fields (form-label fw-medium + diten-field icon + form-select/date). *@
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-medium" for="vfpRsCyclePeriod">@Localizer["ResolveCyclePeriod"]</label>
+                        <div class="diten-field">
+                            <i class="bx bx-calendar-event diten-field-icon" aria-hidden="true"></i>
+                            <select id="vfpRsCyclePeriod" class="form-select"></select>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-medium" for="vfpRsEffectiveAt">@Localizer["ResolveDateLabel"]</label>
+                        <div class="diten-field">
+                            <i class="bx bx-calendar diten-field-icon" aria-hidden="true"></i>
+                            <input id="vfpRsEffectiveAt" type="date" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="vfpRsRun" class="btn btn-primary w-100 mb-3">
+                    <i class="bx bx-target-lock me-1"></i>@Localizer["ResolveShowFrequency"]
+                </button>
+
+                <div class="vfp-rs-simple">
+                    <div class="vfp-rs-simple-title">@Localizer["ResolveRuleSimpleTitle"]</div>
+                    <div class="vfp-rs-simple-body">@Localizer["ResolveRuleSimpleBody"]</div>
+                </div>
+
+                <div class="vfp-rs-note mt-3"><i class="bx bx-lock-alt"></i><span>@Localizer["ResolveReadOnlyNote"]</span></div>
+            </div>
+        </section>
+    </div>
+
+    @* ── SAĞ: CEVAP + NE YAPMALIYIM ────────────────────────────────────────────── *@
+    <div class="col-12 col-lg-8">
+        <div id="vfpRsResultEmpty" class="card">
+            <div class="card-body p-4">
+                <div class="vfp-rs-empty">@Localizer["ResolveResultEmpty"]</div>
+            </div>
+        </div>
+        <div id="vfpRsRunning" class="card d-none">
+            <div class="card-body p-4">
+                <div class="vfp-rs-empty"><span class="vfp-dv-spinner"></span></div>
+            </div>
+        </div>
+        @* CEVAP + NE YAPMALIYIM cards are built by resolve.js from the real /resolve payload. *@
+        <div id="vfpRsResult" class="d-none"></div>
+    </div>
+</div>

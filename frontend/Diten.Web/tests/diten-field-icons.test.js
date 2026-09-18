@@ -589,7 +589,6 @@ const KNOWN_NO_ICONS = [
   "CRM/Accounts/_RelationshipOffcanvas.cshtml",
   "CRM/Campaigns/_TargetCreateEditOffcanvas.cshtml",
   "CRM/KnowledgeConcepts/_RelationshipCreateEditOffcanvas.cshtml",
-  "CRM/KnowledgeConcepts/_TemplateCreateEditOffcanvas.cshtml",
   "CRM/KnowledgeConcepts/_TypeCreateEditOffcanvas.cshtml",
   "CRM/TerritoryManagement/_CreateEditOffcanvas.cshtml",
   "CRM/TerritoryManagement/_CreateNodeOffcanvas.cshtml",

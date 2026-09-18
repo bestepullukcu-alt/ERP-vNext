@@ -116,6 +116,20 @@ public sealed class SegmentsController : CustomBaseController
                 request?.IncludeExcluded ?? false),
             cancellationToken));
 
+    /// <summary>Previews the reach of a DRAFT (unsaved) rule: total, per-condition funnel and a bounded member sample.
+    /// A POST that writes NOTHING and carries no segmentId — the rule is in the body. It runs on the same
+    /// <c>crm.segment.resolve</c> key as <c>/resolve</c>, because a sample of members is member identity (PII).</summary>
+    [HttpPost("api/crm/segments/preview")]
+    // Canonical crm.segment.resolve: a member sample is PII, so previewing a draft's reach needs the resolve key, not
+    // mere read. Under the documented DEV-ONLY fallback resolve collapses onto read (see SegmentPermissions).
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Preview(
+        [FromBody] PreviewSegmentReachRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new PreviewSegmentReachQuery(
+                request.SubjectType, request.MatchMode, MapCriteria(request.Criteria), request.EffectiveAt),
+            cancellationToken));
+
     [HttpPost("api/crm/segments/{segmentId:guid}/membership/evaluate")]
     [HasPermission(Perms.ReadFallback)]
     public async Task<IActionResult> Evaluate(

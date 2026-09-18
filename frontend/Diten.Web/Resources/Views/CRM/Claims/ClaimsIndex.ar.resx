@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>حرِّر نص الادعاء الخاضع للحوكمة مع مؤهلاته وقابلية تطبيقه وأدلته ومكوناته القابلة لإعادة الاستخدام.</value></data>
+  <data name="ApprovalFreezeNote" xml:space="preserve"><value>تؤدي الموافقة على الادعاء إلى تجميد متنه الخاضع للحوكمة (النص والمؤهلات وقابلية التطبيق والأدلة والمكونات)؛ ويتطلب أي تغيير عندئذٍ إصدارًا جديدًا.</value></data>
+  <data name="ClaimCode" xml:space="preserve"><value>رمز الادعاء</value></data>
+  <data name="ClaimName" xml:space="preserve"><value>اسم الادعاء</value></data>
+  <data name="ClaimVersion" xml:space="preserve"><value>الإصدار</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
+  <data name="Approved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>إنشاء ادعاء</value></data>
+  <data name="EditClaim" xml:space="preserve"><value>تعديل الادعاء</value></data>
+  <data name="ApproveClaim" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ApproveClaimConfirm" xml:space="preserve"><value>هل تعتمد هذا الادعاء؟ سيتم تجميد متنه الخاضع للحوكمة، وأي تغيير لاحق يتطلب إصدارًا جديدًا.</value></data>
+  <data name="ArchiveClaim" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveClaimConfirm" xml:space="preserve"><value>هل تؤرشف هذا الادعاء؟ هذا إجراء دورة حياة مرن؛ ويظل قابلاً للقراءة.</value></data>
+  <data name="RecordApproved" xml:space="preserve"><value>تم اعتماد الادعاء.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة الادعاء.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد ادعاءات بعد.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث..</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية والنص</value></data>
+  <data name="ClaimCodeNote" xml:space="preserve"><value>مفتاح عمل ثابت مشترك بين إصدارات الادعاء الواحد.</value></data>
+  <data name="ClaimText" xml:space="preserve"><value>نص الادعاء</value></data>
+  <data name="ClaimTextNote" xml:space="preserve"><value>النص الخاضع للحوكمة. يُجمَّد بمجرد اعتماد الادعاء.</value></data>
+  <data name="ApplicabilitySection" xml:space="preserve"><value>قابلية التطبيق</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>مراجع المنتج</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>مراجع السوق</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>مراجع الجمهور</value></data>
+  <data name="EligibilityPolicyId" xml:space="preserve"><value>معرّف سياسة الأهلية</value></data>
+  <data name="EligibilityPolicyIdNote" xml:space="preserve"><value>مرجع اختياري لسياسة أهلية؛ لا يتم أي تقييم هنا.</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>اكتب قيمة واضغط Enter لإضافة كل مرجع.</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>نافذة السريان</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>المتن الخاضع للحوكمة</value></data>
+  <data name="Qualifiers" xml:space="preserve"><value>المؤهلات</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>مراجع الأدلة</value></data>
+  <data name="EvidenceRefsNote" xml:space="preserve"><value>مراجع أدلة معتمة؛ تُخزَّن كما هي (دون تحليل).</value></data>
+  <data name="ComponentRefs" xml:space="preserve"><value>المكونات</value></data>
+  <data name="ComponentRefsNote" xml:space="preserve"><value>محتوى معرفي قابل لإعادة الاستخدام يُشار إليه بالمعرّف (إعادة استخدام فقط؛ لا يتم إنشاء مكوّن جديد).</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>اختر المكونات...</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>يحمل الإنشاء والتعديل حالة مسودة أو غير نشط؛ استخدم اعتماد وأرشفة لتلك التحولات.</value></data>
+  <data name="ArchivedClaimReadOnly" xml:space="preserve"><value>هذا الادعاء مؤرشف وللقراءة فقط.</value></data>
+  <data name="Passive" xml:space="preserve"><value>سلبي</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>معاينة الادعاء</value></data>
+  <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>هذا الادعاء معتمد: المتن الخاضع للحوكمة مجمَّد. أنشئ إصدارًا جديدًا لتغيير النص.</value></data>
+</root>

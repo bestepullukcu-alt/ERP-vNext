@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Политики частоты визитов</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Задайте политики цикла звонков / частоты визитов — как часто следует посещать цель.</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>Архивирование сохраняет политику как читаемую историю; Удаление убирает её из рабочего списка. Оба действия мягкие.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Политики</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>Разрешение</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>Панель разрешения появится в следующем обновлении.</value></data>
+  <data name="Code" xml:space="preserve"><value>Код</value></data>
+  <data name="Name" xml:space="preserve"><value>Название</value></data>
+  <data name="Target" xml:space="preserve"><value>Цель</value></data>
+  <data name="Frequency" xml:space="preserve"><value>Частота</value></data>
+  <data name="Priority" xml:space="preserve"><value>Приоритет</value></data>
+  <data name="Source" xml:space="preserve"><value>Источник</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>Новая политика</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>Редактор политик появится в следующем обновлении.</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>Подробный просмотр появится в следующем обновлении.</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="Archive" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Архивировать эту политику? Она останется читаемой как история.</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>Удалить эту политику? Она будет убрана из списка.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Политика архивирована.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Пока нет политик частоты.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>в</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Активна</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивна</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>Архивирована</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>Цель</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>Контекст</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>Управление частотой</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>Приоритет конфликта</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>Период действия</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>Стабильный код и отображаемое имя для этой политики.</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>К кому применяется политика. Выберите тип, затем цель.</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>Необязательные происхождение и область. Оставьте пустым без ограничений.</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>Сколько визитов требуется за период.</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>При пересечении двух политик побеждает меньший вес.</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>Когда политика действует. Оставьте конец пустым для бессрочного действия.</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>Свободные примечания. Обязательны для пользовательской частоты.</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>Код политики</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>Название политики</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>Описание</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>Статус</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>Тип цели</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>Цель</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>Территория</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>Кампания</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Бренд</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>Период цикла</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>Тип частоты</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>Требуемые визиты</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>Период</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>Источник</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>Примечания</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— нет —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>Выберите модель</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>Выберите узел</value></data>
+  <data name="Selected" xml:space="preserve"><value>Выбрано</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>Введите id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>Код и цель нельзя изменить после создания.</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>Откуда взялась эта частота. Только происхождение — не влияет на частоту.</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>Читается как</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>Задайте число и период.</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>Выберите цель.</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>Требуется корректный id.</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>Должно быть больше нуля.</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>Этот период недопустим для выбранной частоты.</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>Выберите диапазон приоритета.</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>Конец не может быть раньше начала.</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>Для частоты по циклу требуется период цикла.</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>Требуется кампания.</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>Для источника сегментации требуется сегмент.</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>Пользовательская частота требует примечаний.</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>Исправьте выделенные поля.</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>Не удалось подготовить редактор.</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>Превыше всего</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>Уровень кампании</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>Стандарт</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>Базовый</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>Крайняя мера</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>Переопределяет все прочие правила, включая правила кампаний и сегментов.</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>Имеет приоритет над стандартными правилами в период кампании.</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>Рекомендуемый уровень для обычных правил сегментов и целей.</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>Базовая частота для всего региона; более узкие правила её переопределяют.</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>Применяется, только если не подходит ни одно другое правило.</value></data>
+  <data name="Period_day" xml:space="preserve"><value>День</value></data>
+  <data name="Period_week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="Period_month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>Квартал</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>Цикл</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>Особый период</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>Без даты окончания</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>Журнал аудита</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>Создано</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>Черновик создан</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>Деактивировано</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>Повторно активировано</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>Вес изменён</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>Архивировано</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>Следующая оценка</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>Узел концепции</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>Входные данные разрешения</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>Результат</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>Необязательный контекст сужает совпадение. Оставьте пустым, чтобы игнорировать.</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>Действует на дату</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>Разрешить</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>Предпросмотр только для чтения — разрешение ничего не записывает.</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>Выберите цель и нажмите «Разрешить».</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Разрешение…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>Выбранная политика</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>Политики-кандидаты</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>Нет политик-кандидатов.</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>Коды причин</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>Причина выбора</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>Ни одна политика не управляет этой целью в данном контексте.</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>Специфичность</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>Выбрана</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>Отклонена</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>Выберите тип цели.</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>Разрешено</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>Конфликт</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>Политика частоты разрешена</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>Частота неизвестна</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>Нет подходящей политики</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>Политика не действует на эту дату</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>Политика неактивна</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>Политика архивирована</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>Ничья в полосе приоритета — разрешено по стабильному id</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>Выбрана по приоритету</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>Выбрана по специфичности</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>Выбрана по самой поздней дате начала действия</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>Отсутствует контекст кампании</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>Отсутствует контекст сегмента</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>Отсутствует контекст цикла</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>Несоответствие бизнес-области</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>Отсутствует контекст местоположения контакта</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>Политика</value></data>
+  <data name="Validity" xml:space="preserve"><value>Срок действия</value></data>
+  <data name="Weight" xml:space="preserve"><value>Вес</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>бессрочно</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>ограничено периодом</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>действует бессрочно</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>Решение кампании</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>Команда сегментации</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>Введено вручную</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>Из старой системы</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>Автоматическое бизнес-правило</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>Полевой менеджер</value></data>
+  <data name="Source_other" xml:space="preserve"><value>Прочее</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>Изменить политику</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Назад к списку</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>Эта политика заархивирована и доступна только для чтения; её нельзя редактировать.</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>Внутренняя заметка — движок планирования её не читает.</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>Списки берутся из системных определений</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>Найдите и выберите из списка</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>Где она применяется?</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>необязательно — любое пустое поле означает «все»</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>Организация</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>Область</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>Сначала выберите бренд</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>без ограничений</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>Сначала выберите цикл</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>все цели</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>Очистить область</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>Итоговая частота</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>Если дата окончания не указана, политика действует бессрочно; при конфликте побеждает более новая дата начала для той же цели.</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>При конфликте</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>Если к той же цели применяется другое правило, этот выбор определяет, какое из них победит.</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>Вес этого правила</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>Откуда взято это правило?</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>не участвует в планировании</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>участвует в планировании</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>пока приостановлена</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>только чтение, не удалена</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>наиболее конкретный</value></data>
+  <data name="Broadest" xml:space="preserve"><value>самый широкий</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>Удаления нет. Закрытие выполняется через архивирование; запись остаётся доступной для чтения в истории и не оценивается движком планирования.</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>Что сделает эта политика?</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>При сохранении</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>Перед сохранением</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>Сохранить и активировать</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить как черновик</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>Снять с публикации</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>визитов</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>без ограничений</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>огранич.</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>Цели «{name}» будут запланированы с частотой {cadence} — {scope}.</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>по всей области</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Эта политика</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>готово</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>предупр.</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>Цель выбрана</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>Частота корректна</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>Период согласован</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>Область сужена</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>Нет ограничения области</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>Вес конфликта выбран</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>Останется черновиком</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>Будет опубликована</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>Будет снята с публикации</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>Будет заархивирована</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>Ещё не выбрана запись, к которой она применяется.</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>Частота ещё не заполнена.</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>Выберите и частоту, и период.</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>Эта политика применяется ко всем записям этого типа цели.</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>Выберите диапазон веса конфликта.</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>Черновые правила не входят в план; опубликуйте их, когда будете готовы.</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>Правило публикуется и входит в план.</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>Правило сохраняется, но больше не применяется.</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>Правило выводится из эксплуатации и становится только для чтения.</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>Все бизнес-единицы</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>Независимо от сегмента</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>Независимо от кампании</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>Все бренды</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>Все продукты</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>Все периоды цикла</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>ЦЕЛЬ — К КОМУ ПРИМЕНЯЕТСЯ</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>ЧАСТОТА — ФАКТИЧЕСКОЕ ЗНАЧЕНИЕ</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>Какая запись</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>Изменить…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>Бизнес-единица и территория — пусто = без ограничений</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>Сегмент и кампания — пусто = без ограничений</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>Бренд и продукт — сначала бренд, затем продукт</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>Период цикла — обязателен для частоты на основе цикла</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>Детали политики</value></data>
+  <data name="EditAction" xml:space="preserve"><value>Изменить</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>Поток статуса</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>Влияние</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} целей получают эту политику</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>{0} запланированных визитов / квартал</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>Политики, конкурирующие за эту цель</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} кандидатов</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>Нет конкурирующих политик для этой цели.</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>Кандидат</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>целей</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>Сегмент</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>Организация</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>Контакт</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>Цель кампании</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>самая узкая область</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>самая широкая область</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>О ком вы спрашиваете?</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>Выберите цель; мы покажем, сколько визитов ей сейчас назначено и из какого правила это следует.</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>Кто / что</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>Врач — в конкретной больнице</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>Врач — все больницы</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>Организация/аккаунт</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>Связь человек–организация</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>Все цели в сегменте</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>Цель кампании</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>Территориальная зона</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>Узел концепции</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>Профиль аудитории</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>Запись</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>изменить</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>Период</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>Дата</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>Показать частоту</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>Правило простое</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>Если цели соответствует несколько политик, побеждает самая узкая: правило для конкретного человека важнее правила кампании, а правило кампании важнее правила сегмента. При равном охвате побеждает более высокий приоритет, а при равном приоритете — самая свежая дата начала.</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>Ответ</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{0} визита {1}</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>Частота не задана</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>Конфликт</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>в день</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>в неделю</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>в месяц</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>в квартал</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>за цикл</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>за период кампании</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>за пользовательский период</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>Для этой цели найдено подходящее правило; применено самое узкое.</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>Ни одна политика не соответствует этой цели; планировщик использует системное значение по умолчанию.</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>Два правила имели одинаковый охват; применено с более высоким приоритетом. Возможно, стоит проверить другое.</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>Разрешение не применяется к этому запросу.</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>Есть правила, подходящие для цели, но выбранная дата не попадает в срок действия ни одного из них.</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>На эту дату нет действующего правила</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>чёткий результат</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>конфликт разрешён</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>вне срока</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>Правило, задающее эту частоту</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>Открыть политику</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>Другие правила, подходящие для этой цели</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>от узкого к широкому</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>Других подходящих правил для этой цели нет.</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>выбрано</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>вне срока</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>не действует</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>резерв</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>Правило существует, но не действует на выбранную вами дату.</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>Применилось правило с более узкой областью, поэтому это правило не использовалось.</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>Правило региона/сегмента — шире по охвату, чем более узкие правила.</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>Это правило применяется как запасное, если более узкого правила нет.</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>Выбрано, так как это правило с самой узкой областью.</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>Выбрано по приоритету.</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>Недействительно в выбранном контексте (отсутствует {0}).</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>Все цели в сегменте</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>Что мне делать?</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>Ничего делать не нужно</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>Планировщик применит эту частоту к цели.</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>Если частота кажется неверной</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>Откройте применённое правило и измените число визитов или заархивируйте правило.</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>Два правила с одинаковым охватом</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>Для устойчивого решения сузьте охват одного или понизьте его приоритет.</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>Пока проблемы нет</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>Планировщик использует правило с более высоким приоритетом; планирование продолжается.</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>Эта цель не охвачена</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>Стоит задать резервное правило на уровне сегмента или территории.</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>Быстрое решение</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>Одна политика для сегмента охватывает все входящие в него цели.</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>Неприменимо</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>Разрешение недействительно для этого типа цели.</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>Для конкретного человека</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>Концепция</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>Территория</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>Аудитория</value></data>
+</root>

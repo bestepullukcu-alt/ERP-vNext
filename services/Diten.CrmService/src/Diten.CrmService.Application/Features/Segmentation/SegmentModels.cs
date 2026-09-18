@@ -65,7 +65,14 @@ public sealed record SegmentDetailDto(
     DateTimeOffset CreatedAt,
     string? CreatedBy,
     DateTimeOffset? UpdatedAt,
-    string? UpdatedBy);
+    string? UpdatedBy,
+    // WP-SEG-DETAILS6 — ADDITIVE, nullable display names for the timeline. The raw *By ids (the user's `sub`) stay
+    // exactly as they were; these are the resolved labels the reader fills in via ONE bulk AuthService call, and each
+    // is null when the id could not be resolved (fail-closed) so the UI shows a date without a fabricated name.
+    // Appended LAST with null defaults so the mapper's positional projection is unchanged.
+    string? CreatedByName = null,
+    string? ActivatedByName = null,
+    string? UpdatedByName = null);
 
 /// <summary>One node of the embedded criteria tree as it is read back. Flat list plus ParentNodeId (D2).</summary>
 public sealed record SegmentCriteriaNodeDto(
@@ -80,7 +87,13 @@ public sealed record SegmentCriteriaNodeDto(
     IReadOnlyDictionary<string, string> Parameters,
     bool Negate,
     int SortOrder,
-    string? Label);
+    string? Label,
+    // WP-SEG-DETAILS8 — ADDITIVE, nullable value → display-name map for entity-picker (territory-node) values. The stored
+    // Values stay exactly as they were (raw node ids); this only carries the resolved label so a reader can show
+    // "Territory is any of Marmara" instead of a GUID. Populated ONLY for territory.node criteria, only when the reverse
+    // lookup resolved the id (fail-closed: an unresolved id is simply absent, never fabricated). Appended LAST with a
+    // null default so the mapper's positional projection is unchanged.
+    IReadOnlyDictionary<string, string>? ValueLabels = null);
 
 /// <summary>One node of the criteria tree as it is WRITTEN. NodeId is optional on input: a create supplies none and
 /// the runtime assigns them, so the caller can never forge or reuse an id from another segment.</summary>
@@ -134,14 +147,19 @@ public static class SegmentMembershipSources
 /// less visible than an acceptance.
 /// <para><see cref="SubjectDisplayName"/> is a display label carried on the candidate projection (no extra read). It
 /// is never a source of truth and no rule is evaluated against it — a consumer that needs the real name resolves it
-/// from the owning master, exactly as <c>TargetCustomer.SubjectDisplayName</c> already documents.</para></summary>
+/// from the owning master, exactly as <c>TargetCustomer.SubjectDisplayName</c> already documents.</para>
+/// <para><see cref="SubjectSecondaryLabel"/> (WP-SEG-D) is an ADDITIVE, nullable second display line derived from the
+/// SAME candidate projection (contact → specialty, account → type, optionally " · city") at no extra read. It is a
+/// display label only; it is null for a manual/static member that never passed through the candidate projection. It is
+/// appended LAST so the existing positional fields, their order and their meaning are unchanged.</para></summary>
 public sealed record SegmentMemberDto(
     Guid SubjectId,
     string SubjectType,
     string? SubjectDisplayName,
     string Verdict,
     string MembershipSource,
-    IReadOnlyList<string> ReasonCodes);
+    IReadOnlyList<string> ReasonCodes,
+    string? SubjectSecondaryLabel = null);
 
 /// <summary>
 /// The output of <c>resolve</c>. Deterministic for an unchanged source data set: same member set, same order
@@ -216,11 +234,15 @@ public sealed record SegmentAttributeCatalogDto(
 
 /// <summary>One published attribute. <c>Class</c> is the evaluation class (N/J/D); <c>DeclaredClass</c> adds the "+X"
 /// marker when the VALUE is additionally proven cross-service.
+/// <para><c>Domain</c> is the presentation-only business grouping (the optgroup a criteria editor renders the attribute
+/// under, e.g. doctor-profile / consent / workplace). It is descriptive metadata only — it never affects validation or
+/// evaluation, so an older UI that ignores it behaves exactly as before.</para>
 /// <para><c>ValueSource</c> (P1a) tells an editor where a legitimate value comes from — a published MOD-0048 set, a
 /// closed enum, another aggregate's picker, or genuinely free text. It is descriptive: the runtime still accepts any
 /// value the validator allows, so an older UI that ignores it behaves exactly as before.</para></summary>
 public sealed record SegmentAttributeDto(
     string AttributeCode,
+    string Domain,
     string Class,
     string DeclaredClass,
     string Source,
@@ -231,7 +253,8 @@ public sealed record SegmentAttributeDto(
     IReadOnlyList<string> SubjectTypes,
     bool RequiresCrossServiceValueValidation,
     string? CrossServiceReferenceKind,
-    SegmentAttributeValueSourceDto ValueSource);
+    SegmentAttributeValueSourceDto ValueSource,
+    IReadOnlyDictionary<string, SegmentAttributeValueSourceDto>? ParameterValueSources = null);
 
 /// <summary>Where an authored value legitimately comes from. <c>kind</c> is the discriminator the UI branches on;
 /// only the field matching that kind is populated.</summary>
@@ -269,6 +292,53 @@ public sealed record SegmentResolutionResult(
     int CandidateCount,
     int TotalMemberCount,
     IReadOnlyList<SegmentMemberDto> Members);
+
+/// <summary>
+/// The output of the DRAFT-rule <c>preview</c> — the live reach rail. It is a REPORT that persists nothing, produced by
+/// the same resolver <c>/resolve</c> uses, only aimed at an in-memory rule instead of a stored one.
+/// <para><see cref="TotalCount"/> is what the saved rule would resolve to (the resolver's matched count), so a draft
+/// preview and the eventual <c>/resolve</c> of the same rule agree by construction. <see cref="ConditionCounts"/> counts
+/// each predicate on its OWN (a one-condition rule): the funnel of "N match this alone" that a matchMode=all rule then
+/// narrows. <see cref="SampleMembers"/> is a bounded sample (never the whole list — that is what <c>/resolve</c> paging
+/// is for). When the rule is so wide it breaches the candidate ceiling the endpoint answers <b>422</b>, never a partial
+/// number, exactly as <c>/resolve</c> does.</para>
+/// </summary>
+public sealed record SegmentReachPreviewDto(
+    string SubjectType,
+    string MatchMode,
+    DateTimeOffset EffectiveAt,
+    int TotalCount,
+    int SampleLimit,
+    int MaxCandidateSet,
+    IReadOnlyList<SegmentReachConditionDto> ConditionCounts,
+    IReadOnlyList<SegmentReachSampleMemberDto> SampleMembers,
+    DateTimeOffset ResolvedAt,
+    string ResolverVersion);
+
+/// <summary>One predicate of the draft rule, counted as if it were the ONLY condition. <see cref="NodeId"/> echoes the
+/// id the caller sent for that node (or the runtime-assigned one when the caller omitted it), so the reach rail can line
+/// each count up with the editor row it came from.
+/// <para><see cref="CapExceeded"/> is true when THIS predicate alone is wider than the candidate ceiling: the honest
+/// answer is "more than <see cref="SegmentReachPreviewDto.MaxCandidateSet"/>", and <see cref="Count"/> then carries that
+/// ceiling as a floor rather than a precise, and false, total.</para></summary>
+public sealed record SegmentReachConditionDto(
+    Guid NodeId,
+    string? AttributeCode,
+    string? Label,
+    int Count,
+    bool CapExceeded);
+
+/// <summary>One sampled member of the draft rule's reach. It carries only what the resolver already projects onto a
+/// member at no extra read — the id and a display label. It is a preview sample, not a member export: the real member
+/// list (with paging) is a saved segment's <c>/resolve</c>.
+/// <para><see cref="SubjectSecondaryLabel"/> (WP-SEG-D) is the ADDITIVE, nullable second display line copied verbatim
+/// from the resolved member (contact → specialty, account → type, optionally " · city"), so the sample can show it
+/// under the name instead of a raw id. Appended last; existing fields are unchanged.</para></summary>
+public sealed record SegmentReachSampleMemberDto(
+    Guid SubjectId,
+    string SubjectType,
+    string? DisplayName,
+    string? SubjectSecondaryLabel = null);
 
 /// <summary>List envelope for the segment grid. Total is the count BEFORE paging, so a UI never has to guess.</summary>
 public sealed record SegmentListDto(IReadOnlyList<SegmentListItemDto> Items, int Total);

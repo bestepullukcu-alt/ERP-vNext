@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.Knowledge.Concept;
 using Diten.CrmService.Application.Features.Knowledge.Content.Commands;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
@@ -253,6 +254,12 @@ public sealed class CreateKnowledgeContentHandler : IRequestHandler<CreateKnowle
             CreatedBy = _actor.ActorName
         };
 
+        // SCMM-13: a plainly-created content is its own single-language component (its own source), matching what the
+        // read-time migration would derive for a legacy row.
+        content.ContentSetId = content.Id;
+        content.IsSourceLanguage = true;
+        content.TranslationStatus = ContentTranslationStatuses.Current;
+
         await _repository.InsertAsync(content, cancellationToken);
         return Response<Guid>.Success(content.Id, 201);
     }
@@ -267,6 +274,7 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
     private readonly ITopicRepository _topics;
     private readonly IAudienceProfileRepository _profiles;
     private readonly IConceptNodeRepository _conceptNodes;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public UpdateKnowledgeContentHandler(
         ITenantContext tenant,
@@ -275,7 +283,8 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         ISubjectRepository subjects,
         ITopicRepository topics,
         IAudienceProfileRepository profiles,
-        IConceptNodeRepository conceptNodes)
+        IConceptNodeRepository conceptNodes,
+        IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
         _actor = actor;
@@ -284,6 +293,7 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         _topics = topics;
         _profiles = profiles;
         _conceptNodes = conceptNodes;
+        _audit = audit;
     }
 
     public async Task<Response<bool>> Handle(UpdateKnowledgeContentCommand request, CancellationToken cancellationToken)
@@ -343,6 +353,12 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
             }
         }
 
+        // SCMM-13: decide BEFORE mutation whether the source's governed BODY changed. Content-affecting = the wording /
+        // body / references (Summary, ContentBodyRef, ContentAssetRef, FileRef, Url). A metadata-only edit — title
+        // rename, tags, classification, effective window, status, version — deliberately does NOT open translation
+        // assessment (docx: "a source edit opens translation assessment"; a rename is not a source edit of the body).
+        var bodyChanged = ContentBodyChanged(content, request);
+
         // ContentCode is immutable — renaming goes through ContentTitle.
         var now = DateTimeOffset.UtcNow;
         content.ContentTitle = request.ContentTitle.Trim();
@@ -372,7 +388,52 @@ public sealed class UpdateKnowledgeContentHandler : IRequestHandler<UpdateKnowle
         content.UpdatedBy = _actor.ActorName;
 
         await _repository.UpdateAsync(content, cancellationToken);
+
+        // SCMM-13 source-edit trigger: a content-affecting edit to the SOURCE variant opens translation assessment on
+        // every non-archived target of the same logical component. Fires only when the edited row is the source and the
+        // body actually changed; a legacy self-source row has no targets, so this is a no-op there.
+        if (content.IsSourceLanguage && bodyChanged)
+        {
+            await OpenTranslationAssessmentAsync(tenantId, content, now, cancellationToken);
+        }
+
         return Response<bool>.Success(true);
+    }
+
+    // The five content-affecting (governed-body) fields. Compared trimmed/ordinal against the stored row.
+    private static bool ContentBodyChanged(KnowledgeContent current, UpdateKnowledgeContentCommand request)
+        => !SameText(current.Summary, request.Summary)
+           || !SameText(current.ContentBodyRef, request.ContentBodyRef)
+           || !SameText(current.ContentAssetRef, request.ContentAssetRef)
+           || !SameText(current.FileRef, request.FileRef)
+           || !SameText(current.Url, request.Url);
+
+    private static bool SameText(string? a, string? b)
+        => string.Equals(KnowledgeValidation.Trim(a), KnowledgeValidation.Trim(b), StringComparison.Ordinal);
+
+    private async Task OpenTranslationAssessmentAsync(
+        Guid tenantId, KnowledgeContent source, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var siblings = await _repository.ListAsync(tenantId, cancellationToken);
+        foreach (var target in siblings.Where(c =>
+            c.ContentSetId == source.ContentSetId
+            && c.Id != source.Id
+            && !c.IsSourceLanguage
+            && !c.IsArchived()
+            && !string.Equals(c.TranslationStatus, ContentTranslationStatuses.NeedsAssessment, StringComparison.Ordinal)))
+        {
+            target.TranslationStatus = ContentTranslationStatuses.NeedsAssessment;
+            target.UpdatedAt = now;
+            target.UpdatedBy = _actor.ActorName;
+            await _repository.UpdateAsync(target, cancellationToken);
+
+            if (_audit is not null)
+            {
+                await _audit.PublishAsync(KnowledgeReasonCodes.ContentTranslationAssessmentOpened, tenantId,
+                    KnowledgeConceptAuditEntities.KnowledgeContent, target.Id, target.Version, target.ContentCode,
+                    cancellationToken);
+            }
+        }
     }
 }
 

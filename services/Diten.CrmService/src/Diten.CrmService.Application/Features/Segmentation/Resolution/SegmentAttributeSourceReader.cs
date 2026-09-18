@@ -40,7 +40,8 @@ public sealed class SegmentAttributeSourceReader : ISegmentAttributeSourceReader
         Segment segment,
         IReadOnlyList<SegmentSubjectSnapshot> candidates,
         DateTimeOffset effectiveAt,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        IReadOnlyList<SegmentLinkProjection>? preloadedLinks = null)
     {
         var predicates = segment.Criteria.Where(n => n.IsPredicate()).ToList();
         var sets = candidates.ToDictionary(
@@ -79,8 +80,10 @@ public sealed class SegmentAttributeSourceReader : ISegmentAttributeSourceReader
             SegmentAttributeCatalog.TerritoryModel
         });
 
-        IReadOnlyList<SegmentLinkProjection> links = Array.Empty<SegmentLinkProjection>();
-        if (needsLinks || (needsTerritory && isContactSegment))
+        // WP-SEG-F: reuse the resolver's bulk link read when it supplied one (contact sample workplace), so the link
+        // source is still touched exactly once. Only read here when nothing was preloaded AND the rule actually needs it.
+        IReadOnlyList<SegmentLinkProjection> links = preloadedLinks ?? Array.Empty<SegmentLinkProjection>();
+        if (preloadedLinks is null && (needsLinks || (needsTerritory && isContactSegment)))
         {
             links = await _candidates.LoadLinksAsync(
                 tenantId, segment.SubjectType, subjectIds, cancellationToken);

@@ -136,4 +136,127 @@
   <data name="Verdict" xml:space="preserve"><value>Veredicto</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="OpIs" xml:space="preserve"><value>es</value></data>
+  <data name="OpIsNot" xml:space="preserve"><value>no es</value></data>
+  <data name="OpIsAnyOf" xml:space="preserve"><value>es cualquiera de</value></data>
+  <data name="OpIsNoneOf" xml:space="preserve"><value>no es ninguno de</value></data>
+  <data name="OpContains" xml:space="preserve"><value>contiene</value></data>
+  <data name="OpMoreThan" xml:space="preserve"><value>es mayor que</value></data>
+  <data name="OpAtLeast" xml:space="preserve"><value>es al menos</value></data>
+  <data name="OpLessThan" xml:space="preserve"><value>es menor que</value></data>
+  <data name="OpAtMost" xml:space="preserve"><value>es como máximo</value></data>
+  <data name="OpBetween" xml:space="preserve"><value>está entre</value></data>
+  <data name="OpIsEmpty" xml:space="preserve"><value>está vacío</value></data>
+  <data name="OpIsSet" xml:space="preserve"><value>tiene valor</value></data>
+  <data name="DomainDoctorProfile" xml:space="preserve"><value>Perfil del médico</value></data>
+  <data name="DomainConsent" xml:space="preserve"><value>Consentimiento</value></data>
+  <data name="DomainWorkplace" xml:space="preserve"><value>Lugar de trabajo</value></data>
+  <data name="DomainCommercial" xml:space="preserve"><value>Comercial</value></data>
+  <data name="DomainActivity" xml:space="preserve"><value>Actividad</value></data>
+  <data name="DomainInstitution" xml:space="preserve"><value>Institución</value></data>
+  <data name="DomainOther" xml:space="preserve"><value>Otro</value></data>
+  <data name="SourceReferenceSet" xml:space="preserve"><value>Conjunto de referencia</value></data>
+  <data name="SourceCatalogList" xml:space="preserve"><value>Lista del catálogo</value></data>
+  <data name="SourcePicker" xml:space="preserve"><value>Selector</value></data>
+  <data name="SourceFreeText" xml:space="preserve"><value>Texto libre</value></data>
+  <data name="BoolTrue" xml:space="preserve"><value>Sí</value></data>
+  <data name="BoolFalse" xml:space="preserve"><value>No</value></data>
+  <data name="OrTypeValue" xml:space="preserve"><value>o escriba un valor</value></data>
+  <data name="BlockMatchEvery" xml:space="preserve"><value>TODAS</value></data>
+  <data name="BlockMatchAny" xml:space="preserve"><value>CUALQUIERA</value></data>
+  <data name="BlockNode" xml:space="preserve"><value>Bloque</value></data>
+  <data name="BlockMatchLabel" xml:space="preserve"><value>coincide</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Añadir condición</value></data>
+  <data name="RemoveBlock" xml:space="preserve"><value>Eliminar bloque</value></data>
+  <data name="AddBlock" xml:space="preserve"><value>Añadir bloque</value></data>
+  <data name="AndAlso" xml:space="preserve"><value>Y ADEMÁS</value></data>
+  <data name="AndAlsoHelp" xml:space="preserve"><value>cada bloque también debe coincidir</value></data>
+  <data name="SubjectNounAccount" xml:space="preserve"><value>Cuentas</value></data>
+  <data name="SubjectNounContact" xml:space="preserve"><value>Contactos</value></data>
+  <data name="ReadsWhere" xml:space="preserve"><value>donde</value></data>
+  <data name="ReadsAs" xml:space="preserve"><value>Se lee como</value></data>
+  <data name="JoinerAnd" xml:space="preserve"><value>y</value></data>
+  <data name="JoinerOr" xml:space="preserve"><value>o</value></data>
+  <data name="AnyValuePlaceholder" xml:space="preserve"><value>cualquier valor</value></data>
+  <data name="MatchThisAlone" xml:space="preserve"><value>coinciden solo con esto</value></data>
+  <data name="ReachSection" xml:space="preserve"><value>A quién alcanza ahora</value></data>
+  <data name="ReachIdleHelp" xml:space="preserve"><value>Añada una condición para ver a quién alcanza.</value></data>
+  <data name="ReachTotalLabel" xml:space="preserve"><value>alcanzados ahora</value></data>
+  <data name="ReachSampleLabel" xml:space="preserve"><value>Miembros de muestra</value></data>
+  <data name="ReachTooWide" xml:space="preserve"><value>La regla es demasiado amplia para la vista previa: acótela.</value></data>
+  <data name="ReachNoSample" xml:space="preserve"><value>Aún no hay miembros para mostrar.</value></data>
+  <data name="ActivationChecklist" xml:space="preserve"><value>Lista de comprobación de activación</value></data>
+  <data name="ChecklistName" xml:space="preserve"><value>Nombre indicado</value></data>
+  <data name="ChecklistRule" xml:space="preserve"><value>Al menos una condición</value></data>
+  <data name="ChecklistReach" xml:space="preserve"><value>Alcanza al menos un miembro</value></data>
+  <data name="ChecklistEffective" xml:space="preserve"><value>Fecha de inicio indicada</value></data>
+  <data name="TemplatesTitle" xml:space="preserve"><value>Empezar con una plantilla</value></data>
+  <data name="ShowStoredRule" xml:space="preserve"><value>Mostrar la regla almacenada</value></data>
+  <data name="MatchModeDerivedHelp" xml:space="preserve"><value>Los bloques siempre se combinan con Y ADEMÁS.</value></data>
+  <data name="TplSpecialty" xml:space="preserve"><value>Médicos por especialidad</value></data>
+  <data name="TplAccountType" xml:space="preserve"><value>Cuentas por tipo</value></data>
+  <data name="TplConsentReachable" xml:space="preserve"><value>Alcanzables por consentimiento</value></data>
+  <data name="TplHasCoverage" xml:space="preserve"><value>Con cobertura de territorio</value></data>
+  <data name="Section1Title" xml:space="preserve"><value>¿Qué es este segmento?</value></data>
+  <data name="Section1Help" xml:space="preserve"><value>Ponle nombre, elige a quién agrupa y cómo se decide la pertenencia.</value></data>
+  <data name="Section2Title" xml:space="preserve"><value>¿Quién pertenece a él?</value></data>
+  <data name="Section2Help" xml:space="preserve"><value>Cree la regla. Los bloques se combinan siempre con Y ADEMÁS.</value></data>
+  <data name="Section3Title" xml:space="preserve"><value>Excepciones y validez</value></data>
+  <data name="Section3Help" xml:space="preserve"><value>Personas que siempre se incluyen o nunca se incluyen, y cuándo el segmento es utilizable.</value></data>
+  <data name="SubjectSectionLabel" xml:space="preserve"><value>¿A quién agrupa?</value></data>
+  <data name="SubjectPillContact" xml:space="preserve"><value>Médicos / contactos</value></data>
+  <data name="SubjectPillAccount" xml:space="preserve"><value>Instituciones / cuentas</value></data>
+  <data name="MembershipSectionLabel" xml:space="preserve"><value>¿Cómo se decide la pertenencia?</value></data>
+  <data name="MembershipRuleTitle" xml:space="preserve"><value>Por una regla</value></data>
+  <data name="MembershipRuleHelp" xml:space="preserve"><value>Los miembros se determinan a partir de una regla y se mantienen actualizados automáticamente.</value></data>
+  <data name="MembershipListTitle" xml:space="preserve"><value>Por una lista fija</value></data>
+  <data name="MembershipListHelp" xml:space="preserve"><value>Usted elige a las personas; la lista solo cambia cuando usted la cambia.</value></data>
+  <data name="MembershipHybridTitle" xml:space="preserve"><value>Una regla, con excepciones</value></data>
+  <data name="MembershipHybridHelp" xml:space="preserve"><value>Una regla decide el núcleo, más las personas que siempre o nunca se incluyen.</value></data>
+  <data name="BlockToggleEvery" xml:space="preserve"><value>todas</value></data>
+  <data name="BlockToggleAny" xml:space="preserve"><value>cualquiera</value></data>
+  <data name="BlockHeadLead" xml:space="preserve"><value>Incluir personas donde</value></data>
+  <data name="BlockHeadTail" xml:space="preserve"><value>la condición siguiente sea verdadera</value></data>
+  <data name="ValuePick" xml:space="preserve"><value>Elige uno o varios</value></data>
+  <data name="ValueSet" xml:space="preserve"><value>Establecer en</value></data>
+  <data name="ValueLabel" xml:space="preserve"><value>Valor</value></data>
+  <data name="HowStoredTitle" xml:space="preserve"><value>Cómo se almacena</value></data>
+  <data name="PreviewSample50" xml:space="preserve"><value>Previsualizar muestra de 50</value></data>
+  <data name="ChecklistFreezeNote" xml:space="preserve"><value>Activar congela esta regla como una nueva versión. Los cambios del borrador nunca afectan a las campañas activas.</value></data>
+  <data name="EmptyRuleHelp" xml:space="preserve"><value>Empieza desde una audiencia común o añade tu primera condición.</value></data>
+  <data name="AddBlockLong" xml:space="preserve"><value>+ Añadir otro bloque — las personas también deben cumplirlo</value></data>
+  <data name="WhatAnswersSection" xml:space="preserve"><value>Qué responde este segmento</value></data>
+  <data name="ReadsStatic" xml:space="preserve"><value>La pertenencia es la lista fija escrita a mano de abajo: nada se deriva de los datos.</value></data>
+  <data name="ReadsDynamic" xml:space="preserve"><value>Los miembros son quienes la regla guardada selecciona de los datos en vivo: la lista nunca se almacena.</value></data>
+  <data name="ReadsHybrid" xml:space="preserve"><value>Los miembros son quienes la regla selecciona, más las personas incluidas a mano y menos las excluidas a mano.</value></data>
+  <data name="HideStoredRule" xml:space="preserve"><value>Ocultar la regla guardada</value></data>
+  <data name="ResolveIdleTitle" xml:space="preserve"><value>La pertenencia no se ha resuelto en esta sesión</value></data>
+  <data name="ResolveIdleHelp" xml:space="preserve"><value>La resolución lee datos en vivo según la regla guardada y no almacena nada. Los candidatos descartados se listan con el motivo.</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>Resolviendo la pertenencia con datos en vivo…</value></data>
+  <data name="DroppedCandidates" xml:space="preserve"><value>Candidatos descartados</value></data>
+  <data name="DroppedCandidatesIntro" xml:space="preserve"><value>Por qué no entró cada candidato</value></data>
+  <data name="DraftPreviewNote" xml:space="preserve"><value>Este segmento sigue siendo un borrador: el recuento refleja los datos de hoy y no puede usarse como audiencia hasta que se active.</value></data>
+  <data name="SecondaryLabel" xml:space="preserve"><value>Especialidad · lugar de trabajo</value></data>
+  <data name="FromManual" xml:space="preserve"><value>de filas manuales</value></data>
+  <data name="KeptIn" xml:space="preserve"><value>incluidos</value></data>
+  <data name="KeptOut" xml:space="preserve"><value>excluidos</value></data>
+  <data name="TimelineCreated" xml:space="preserve"><value>Creado</value></data>
+  <data name="TimelineNotActivated" xml:space="preserve"><value>Aún no activado</value></data>
+  <data name="TimelineUsable" xml:space="preserve"><value>Utilizable</value></data>
+  <data name="TimelineSupersedes" xml:space="preserve"><value>Reemplaza la versión anterior</value></data>
+  <data name="NoEndDate" xml:space="preserve"><value>sin fecha de fin</value></data>
+  <data name="StoredNoteTitleStatic" xml:space="preserve"><value>Qué se almacena</value></data>
+  <data name="StoredNoteTitleDynamic" xml:space="preserve"><value>Por qué cambia el número</value></data>
+  <data name="StoredNoteBodyStatic" xml:space="preserve"><value>Solo se almacenan las filas escritas a mano y sus motivos. Los consumidores apuntan al segmento en lugar de copiar los nombres.</value></data>
+  <data name="StoredNoteBodyDynamic" xml:space="preserve"><value>El segmento almacena la regla, nunca una lista de miembros. Cada resolución vuelve a leer datos en vivo, por lo que el recuento cambia con los datos.</value></data>
+  <data name="ClassificationNote" xml:space="preserve"><value>El modo de coincidencia decide cómo se combinan los bloques de nivel superior de la regla.</value></data>
+  <data name="ConsumersSection" xml:space="preserve"><value>Usado como audiencia por</value></data>
+  <data name="ConsumersNoneYet" xml:space="preserve"><value>Ninguno todavía</value></data>
+  <data name="ConsumersNote" xml:space="preserve"><value>Todavía ninguna campaña o conjunto de contenido apunta a este segmento. Los consumidores se enumerarán aquí cuando lo referencien.</value></data>
+  <data name="Specialty" xml:space="preserve"><value>Especialidad</value></data>
+  <data name="Workplace" xml:space="preserve"><value>Lugar de trabajo</value></data>
+  <data name="ShowingFirstOfMembers" xml:space="preserve"><value>Mostrando los primeros {0} de {1} miembros.</value></data>
+  <data name="NothingStoredRecomputed" xml:space="preserve"><value>Aquí no se almacena nada: el resultado se recalcula en cada llamada.</value></data>
+  <data name="OpenFullResult" xml:space="preserve"><value>Abrir el resultado completo</value></data>
+  <data name="SampleCapNote" xml:space="preserve"><value>Este es el máximo que devuelve esta vista. Refine la regla para acotar el resultado.</value></data>
 </root>

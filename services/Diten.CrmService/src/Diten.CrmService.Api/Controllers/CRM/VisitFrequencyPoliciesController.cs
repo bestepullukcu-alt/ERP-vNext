@@ -22,8 +22,9 @@ namespace Diten.CrmService.Api.Controllers.CRM;
 /// (<c>crm.territory.read</c> for reads/resolve, <c>crm.territory.model.manage</c> for writes). The fallback widens
 /// nothing — every FU03 guard still runs. Follow-up: MOD-0165-FU-RBAC.
 /// </para>
-/// <b>There is no delete endpoint.</b> Closing a policy is Archive, so history stays readable. The <c>resolve</c>
-/// endpoint is GET/read-only and performs no writes.
+/// <b>Delete is a soft-delete (WP-FREQ-A), DISTINCT from Archive.</b> Archive closes a policy as readable history
+/// (status=archived, still listed); delete (IsDeleted=true) removes it from the list + resolve working set. Neither is
+/// a hard delete. The <c>resolve</c> endpoint is GET/read-only and performs no writes.
 /// </summary>
 [Authorize]
 public sealed class VisitFrequencyPoliciesController : CustomBaseController
@@ -87,6 +88,15 @@ public sealed class VisitFrequencyPoliciesController : CustomBaseController
     public async Task<IActionResult> Get(Guid policyId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new GetVisitFrequencyPolicyQuery(policyId), cancellationToken));
 
+    /// <summary>
+    /// WP-FREQ-DET-A — read-only DETAY ANALİZ for one policy: target impact (per-type count + quarterly projection) and
+    /// the conflict outcome (FU03 resolve engine REUSED for the policy's own target + context). NEVER writes.
+    /// </summary>
+    [HttpGet("api/crm/visit-frequency-policies/{policyId:guid}/analysis")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Analysis(Guid policyId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetVisitFrequencyPolicyAnalysisQuery(policyId), cancellationToken));
+
     // ---------------- Writes ----------------
 
     [HttpPost("api/crm/visit-frequency-policies")]
@@ -116,4 +126,12 @@ public sealed class VisitFrequencyPoliciesController : CustomBaseController
     [HasPermission(Perms.ManageFallback)]
     public async Task<IActionResult> Archive(Guid policyId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(new ArchiveVisitFrequencyPolicyCommand(policyId), cancellationToken));
+
+    /// <summary>Soft-deletes a policy (WP-FREQ-A additive): IsDeleted=true + DeletedAt/By, so it leaves the list and
+    /// the resolve working set. DISTINCT from <see cref="Archive"/> (which keeps the row as readable history). Not a
+    /// hard delete — the document remains in Mongo and every read filters IsDeleted=false.</summary>
+    [HttpPost("api/crm/visit-frequency-policies/{policyId:guid}/delete")]
+    [HasPermission(Perms.ManageFallback)]
+    public async Task<IActionResult> Delete(Guid policyId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new DeleteVisitFrequencyPolicyCommand(policyId), cancellationToken));
 }

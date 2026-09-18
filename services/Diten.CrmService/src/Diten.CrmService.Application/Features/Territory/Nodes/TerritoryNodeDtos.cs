@@ -31,6 +31,11 @@ public sealed record TerritoryNodeDto(
 
 public sealed record TerritoryHierarchyDto(Guid ModelId, IReadOnlyList<TerritoryNodeDto> Nodes);
 
+/// <summary>WP-SEG-DETAILS8 — the minimal reverse-lookup projection of a node: just enough for a consumer that holds a
+/// node id to render its name and (re)establish the parent-model context. No lifecycle, coverage or micro-zone detail —
+/// this is a label resolver, not the node read.</summary>
+public sealed record TerritoryNodeLookupDto(Guid Id, string Name, Guid ModelId, string Code);
+
 public static class TerritoryNodeMapper
 {
     private static bool IsExpired(TerritoryNode node)
