@@ -7663,6 +7663,24 @@ tags.diten-tags .tagify__input {
     margin-block: 0.875rem 0.25rem;
 }
 
+/* ── A LONE BUTTON SITS ON THE CONTENT EDGE (2026-09-21, owner report) ─────
+   MEASURED on the invite-link dialog, live: the title, the description, the field and the action row all
+   started at x=95, and the single "Kapat" button started at x=111 — 16px in from everything above it.
+
+   IT IS NOT THE PACKAGE, IT IS THE THEME'S GAP RULE MEETING A DIALOG IT NEVER MET. The theme's own
+   `sweetalert2.css` spaces buttons with `.swal2-actions button + button { margin-inline-start: 1rem }`, and
+   SweetAlert does not REMOVE the buttons a dialog declined — it leaves `.swal2-cancel` and `.swal2-deny` in
+   the DOM carrying `style="display: none"`. So the only visible button is still somebody's next sibling, and
+   still pays for a gap with nothing on the other side of it.
+
+   ⚠ WHY THIS SELECTOR AND NOT A SMALLER ONE: the margin is only ever wrong when the button BEFORE it is
+   hidden, and that is exactly what is matched. A dialog with two real buttons keeps the theme's spacing — and
+   in any case the package lays that row out with `justify-content: space-between`, which pushes the pair to
+   opposite ends where a 16px inset on the right-hand one changes nothing anyone can see. */
+.swal2-container .swal2-modal.swal2-popup .swal2-actions button[style*="display: none"] + button {
+    margin-inline-start: 0;
+}
+
 /* ── THE DIALOG'S SELECT2 IS A FIELD LIKE THE OTHERS ───────────────────────
    MEASURED, and it is what the owner photographed: the chosen/placeholder text rendered at 18px while the
    textarea beside it, its own label's field, and every control on the page behind it were at 15px. select2
