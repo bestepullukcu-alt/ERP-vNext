@@ -369,6 +369,23 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     margin-bottom: 0;
 }
 
+/* ── ONE LOADING LANGUAGE AT A TIME (2026-09-21, owner report) ─────────────
+   While a list loads for the FIRST time the skeleton above the table is the answer, so the theme's spinning
+   cube is suppressed for that one table. MEASURED before this rule: both ran together — grey placeholder rows
+   with a cube spinning on top of them, and DataTables' own English "Loading..." in the body behind both.
+
+   ⚠ SCOPED TO THE FIRST LOAD, AND TO ONE TABLE. `dt-defaults.js` puts `.dt-first-load` on that table's wrapper
+   in `preXhr` and takes it off in `initComplete`. Every later request — filter, page, search, reload — keeps
+   the cube it has always had, because by then the rows are on screen and turning them back into grey blocks
+   reads as going backwards.
+
+   Both spellings are listed on purpose: the processing element is `div.dt-processing` in DataTables 2 and
+   `.dataTables_processing` in 1.x, and this product still has tables on both. */
+.dt-first-load div.dt-processing,
+.dt-first-load .dataTables_processing {
+    display: none !important;
+}
+
 /* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
    (light / dark / bordered skin) drives every surface. The panel background uses
    the SAME variable as the list-page body; the header & section cards use the card

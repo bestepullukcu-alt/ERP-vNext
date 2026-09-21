@@ -501,6 +501,28 @@ window.DtDefaults = (function () {
     function create(userConfig) {
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
+
+        /*
+         * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
+         *
+         * MEASURED: this file ran BOTH indicators on every request. `preXhr` faded the page's
+         * `#skeleton-loader` in, and `processing: true` drew the theme's `sk-fold` cube on top of it — so a
+         * list opened with grey placeholder rows AND a spinning cube over them. The owner saw the cube and
+         * asked which one is correct; the product had already answered in CSS ("NO NEW SKELETON LANGUAGE",
+         * backbone-custom.css) and in 226 views that carry the skeleton markup.
+         *
+         * THE RULE, and why each half of it:
+         *   · FIRST load — the page is empty and its shape is known, so the SKELETON speaks and the cube is
+         *     suppressed. A placeholder in the shape of the answer is what stops the layout jumping when the
+         *     answer arrives.
+         *   · EVERY LATER load (filter, page, search, reload) — the rows are already on screen. Replacing them
+         *     with grey blocks reads as going backwards, so the skeleton stays down and the cube is the busy
+         *     signal, exactly as it is today.
+         *
+         * Per TABLE, not per page: `create` runs once for each table, so this flag cannot leak between two
+         * tables on one screen.
+         */
+        var firstLoadDone = false;
         merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || sharedL10n().Search || 'Search...';
 
         // DataTables i18n mapping. Each slot left undefined is a slot DataTables fills with its own English —
@@ -511,6 +533,13 @@ window.DtDefaults = (function () {
         var infoEmpty = dtText('DtInfoEmpty');
         var infoFiltered = dtText('DtInfoFiltered');
         var emptyTable = dtText('DtEmptyTable');
+        /*
+         * ⚠ AND THE THIRD VOICE GOES QUIET. Left unset, DataTables writes its own English "Loading..." into the
+         * body while the skeleton is drawn above it — an untranslated sentence on every list in the product.
+         * The skeleton already says "this is loading", so the row says nothing rather than saying it in the
+         * wrong language. No new resource key: there is nothing to translate.
+         */
+        merged.language.loadingRecords = merged.language.loadingRecords || '';
         if (noRecords) merged.language.zeroRecords = noRecords;
         if (info) merged.language.info = info;
         if (infoEmpty) merged.language.infoEmpty = infoEmpty;
@@ -570,10 +599,14 @@ window.DtDefaults = (function () {
             };
         }
 
-        // AJAX isteği başladığında skeleton'ı göster (Eğer varsa)
+        // İlk yüklemede iskelet konuşur; sonraki isteklerde ekrandaki satırlar durur ve küp devreye girer.
         var originalPreXhr = merged.preXhr;
         merged.preXhr = function (settings, data) {
-            $('#skeleton-loader').fadeIn(100);
+            if (!firstLoadDone) {
+                $('#skeleton-loader').fadeIn(100);
+                // The cube lives inside the table's own wrapper; the class hides it for this table alone.
+                $(settings && settings.nTableWrapper).addClass('dt-first-load');
+            }
             if (typeof originalPreXhr === 'function') {
                 originalPreXhr.call(this, settings, data);
             }
@@ -582,6 +615,8 @@ window.DtDefaults = (function () {
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
+            firstLoadDone = true;
+            $(settings && settings.nTableWrapper).removeClass('dt-first-load');
             $('#skeleton-loader').fadeOut(300);
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {
