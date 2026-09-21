@@ -2,6 +2,8 @@ using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.StrategyTemplate.Commands;
+using Diten.CrmService.Application.Features.StrategyTemplate.Rules;
+using Diten.CrmService.Application.Features.StrategyTemplate.Services;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -23,19 +25,22 @@ public sealed class UpdateStrategyTemplateHandler : IRequestHandler<UpdateStrate
     private readonly IStrategyTemplateRepository _templates;
     private readonly StrategyTemplateBindingValidator _bindings;
     private readonly IStrategyTemplateProductReferenceValidator _references;
+    private readonly StrategyTemplateScopeWriteValidator _scope;
 
     public UpdateStrategyTemplateHandler(
         ITenantContext tenant,
         IActorContext actor,
         IStrategyTemplateRepository templates,
         StrategyTemplateBindingValidator bindings,
-        IStrategyTemplateProductReferenceValidator references)
+        IStrategyTemplateProductReferenceValidator references,
+        StrategyTemplateScopeWriteValidator scope)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _bindings = bindings;
         _references = references;
+        _scope = scope;
     }
 
     public async Task<Response<bool>> Handle(
@@ -106,8 +111,23 @@ public sealed class UpdateStrategyTemplateHandler : IRequestHandler<UpdateStrate
             return Response<bool>.Fail(StrategyTemplateWriteGuards.ToErrors(shapeFailure), shapeFailure.StatusCode);
         }
 
+        // WP-ST-SCOPE — scope is EDITABLE metadata, not a binding: it is re-validated on EVERY update (even on a frozen
+        // play, where the four binding lists cannot move) and never gated by the freeze guard. The stored play is passed
+        // as `current` so the governed business-unit check runs only when the reference actually CHANGED — a pre-scope
+        // code stays editable. Fail-closed BEFORE the replace: on a 503 from MDM the stored play is untouched.
+        var scopeResult = await _scope.ValidateAsync(
+            request.ScopeType, request.CountryScope, request.LegalEntityId, request.BusinessUnitId,
+            template, cancellationToken);
+        if (scopeResult.Failure is { } scopeFailure)
+        {
+            return Response<bool>.Fail(
+                new[] { scopeFailure.ReasonCode, scopeFailure.Error }, scopeFailure.StatusCode);
+        }
+
         template.TemplateName = request.TemplateName.Trim();
-        template.BusinessUnitId = StrategyTemplateValidation.Trim(request.BusinessUnitId);
+        // One place applies the address (create + update), so they cannot drift. This replaces the old opaque
+        // BusinessUnitId assignment: Apply sets ScopeType / CountryScope / LegalEntityId / BusinessUnitId together.
+        StrategyTemplateScopeRules.Apply(template, scopeResult.Scope!);
         template.Description = StrategyTemplateValidation.Trim(request.Description);
         template.Notes = StrategyTemplateValidation.Trim(request.Notes);
         template.EffectiveFrom = request.EffectiveFrom;

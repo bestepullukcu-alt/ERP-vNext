@@ -24,7 +24,7 @@ public sealed class StrategyTemplateBindingValidationTests
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
         new NullActorContext(), _templates,
         new StrategyTemplateBindingValidator(_segments, _policies, _paths, _journeys),
-        _references);
+        _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private static void AssertCode(string expected, IReadOnlyList<string>? errors)
     {

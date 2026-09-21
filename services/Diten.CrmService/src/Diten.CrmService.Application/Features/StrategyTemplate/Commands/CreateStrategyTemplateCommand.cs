@@ -22,4 +22,10 @@ public sealed record CreateStrategyTemplateCommand(
     IReadOnlyList<StrategyTemplateSegmentBindingInput>? SegmentBindings,
     StrategyTemplateFrequencyIntentInput? FrequencyIntent,
     IReadOnlyList<StrategyTemplateProductLineInput>? ProductLines,
-    IReadOnlyList<StrategyTemplateContentBindingInput>? ContentBindings) : IRequest<Response<Guid>>;
+    IReadOnlyList<StrategyTemplateContentBindingInput>? ContentBindings,
+    // WP-ST-SCOPE — the play's scope (tenant / country / legal-entity / business-unit). Optional with defaults so a
+    // caller written against the pre-scope contract keeps compiling: an absent ScopeType with a BusinessUnitId derives
+    // to business-unit and with nothing to tenant, exactly the context those callers already had.
+    string? ScopeType = null,
+    string? CountryScope = null,
+    Guid? LegalEntityId = null) : IRequest<Response<Guid>>;

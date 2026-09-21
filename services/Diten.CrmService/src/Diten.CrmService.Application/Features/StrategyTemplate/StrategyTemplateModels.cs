@@ -19,7 +19,12 @@ public sealed record StrategyTemplateListItemDto(
     Guid VersionLineageId,
     bool Superseded,
     Guid? SupersededByTemplateId,
+    string ScopeType,
+    string EffectiveScopeType,
+    string? CountryScope,
+    Guid? LegalEntityId,
     string? BusinessUnitId,
+    string? ScopeRef,
     string? Description,
     DateTimeOffset EffectiveFrom,
     DateTimeOffset? EffectiveTo,
@@ -51,7 +56,12 @@ public sealed record StrategyTemplateDetailDto(
     Guid VersionLineageId,
     bool Superseded,
     Guid? SupersededByTemplateId,
+    string ScopeType,
+    string EffectiveScopeType,
+    string? CountryScope,
+    Guid? LegalEntityId,
     string? BusinessUnitId,
+    string? ScopeRef,
     string? Description,
     string? Notes,
     DateTimeOffset EffectiveFrom,
@@ -227,3 +237,33 @@ public sealed record StrategyTemplateContentBindingViewDto(
     bool Archived,
     bool Published,
     int SortOrder);
+
+// ---------------------------------------------------------------------------------------------------------------
+// WP-ST-SCOPE — the cascading scope selector's read model. A deliberate mirror of the campaign's, three feeds and three
+// readiness flags, so an author is never shown a silent empty dropdown with no way to act. A hardcoded fallback list is
+// forbidden in all three cases.
+// ---------------------------------------------------------------------------------------------------------------
+
+/// <summary>WP-ST-SCOPE — one selectable value for a scope level.</summary>
+public sealed record StrategyTemplateScopeOptionDto(string Value, string Label);
+
+/// <summary>
+/// WP-ST-SCOPE — one round trip for the cascading scope selector: the levels, the governed country values, the tenant's
+/// referenceable legal entities, and the business units its territory plans cover.
+/// <para><b>Three sources, three separate readiness flags.</b> An empty list because a reference set is unpublished, an
+/// empty list because MDM is unreachable, and an empty list because no plan matches are three different situations. A UI
+/// that cannot tell them apart shows the author a silent empty dropdown and no way to act, so each is reported on its
+/// own.</para>
+/// <para><c>BusinessUnitFromTerritory</c> says whether the business-unit list is the Territory-derived narrowing or the
+/// full published vocabulary it falls back to when no plan matches — which keeps business-unit plays authorable before
+/// their field plan exists.</para>
+/// </summary>
+public sealed record StrategyTemplateScopeOptionsDto(
+    IReadOnlyList<string> ScopeTypes,
+    IReadOnlyList<StrategyTemplateScopeOptionDto> Countries,
+    bool CountrySetPublished,
+    IReadOnlyList<StrategyTemplateScopeOptionDto> LegalEntities,
+    bool LegalEntityLookupAvailable,
+    IReadOnlyList<StrategyTemplateScopeOptionDto> BusinessUnits,
+    bool BusinessUnitSetPublished,
+    bool BusinessUnitFromTerritory);

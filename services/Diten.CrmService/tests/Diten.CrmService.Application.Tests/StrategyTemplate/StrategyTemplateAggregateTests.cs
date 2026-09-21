@@ -28,11 +28,11 @@ public sealed class StrategyTemplateAggregateTests
 
     private CreateStrategyTemplateHandler Create(Guid tenant = default) => new(
         StrategyTemplateTestDoubles.Tenant(tenant == default ? StrategyTemplateTestDoubles.TenantA : tenant),
-        new NullActorContext(), _templates, Bindings(), _references);
+        new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private UpdateStrategyTemplateHandler Update() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
-        new NullActorContext(), _templates, Bindings(), _references);
+        new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private ArchiveStrategyTemplateHandler Archive() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),

@@ -26,11 +26,11 @@ public sealed class StrategyTemplateFailClosedTests
 
     private CreateStrategyTemplateHandler Create() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
-        new NullActorContext(), _templates, Bindings(), _references);
+        new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private UpdateStrategyTemplateHandler Update() => new(
         StrategyTemplateTestDoubles.Tenant(StrategyTemplateTestDoubles.TenantA),
-        new NullActorContext(), _templates, Bindings(), _references);
+        new NullActorContext(), _templates, Bindings(), _references, StrategyTemplateTestDoubles.DefaultScope());
 
     private Guid Segment() => _segments.Add(StrategyTemplateTestDoubles.TenantA).Id;
 

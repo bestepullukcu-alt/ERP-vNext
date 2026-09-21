@@ -115,6 +115,53 @@ public static class StrategyContentRefTypes
     public static string Normalize(string? value) => value?.Trim().ToLowerInvariant() ?? string.Empty;
 }
 
+/// <summary>
+/// MOD-0167 FU04 (WP-ST-SCOPE) — the levels a play can live at. A deliberate MIRROR of the campaign's scope levels: the
+/// same four names, the same precedence, so a reader of both modules learns ONE mental model.
+/// <para><b>Mirrored, not shared.</b> No code is imported from <see cref="CampaignScopeTypes"/> or the cycle-period
+/// rules, because the three scopes do not mean the same thing: a period's scope is immutable identity, while a campaign's
+/// and a play's are editable attributes. Sharing one implementation would forbid a divergence that is already true.</para>
+/// <para>In-domain and fail-closed: an unknown value is refused (400), never quietly read as <see cref="Tenant"/>.
+/// CRM has no <c>organization-unit</c> level, exactly as the campaign and the cycle period have none.</para>
+/// </summary>
+public static class StrategyTemplateScopeTypes
+{
+    /// <summary>The whole tenant. A scope of its OWN, not the absence of one.</summary>
+    public const string Tenant = "tenant";
+
+    /// <summary>One country, referenced by an ISO alpha-2 code from the governed reference set.</summary>
+    public const string Country = "country";
+
+    /// <summary>One MDM legal entity, referenced by id and proved referenceable before persistence.</summary>
+    public const string LegalEntity = "legal-entity";
+
+    /// <summary>One business unit, referenced by a published MOD-0048 <c>business-unit</c> value code.</summary>
+    public const string BusinessUnit = "business-unit";
+
+    /// <summary>Resolution precedence, MOST SPECIFIC FIRST — the same order the campaign and cycle-period resolvers walk.
+    /// Defined once here; no second if/else chain restates it.</summary>
+    public static readonly IReadOnlyList<string> ByPrecedence =
+        new[] { BusinessUnit, LegalEntity, Country, Tenant };
+
+    public static readonly IReadOnlyList<string> All = ByPrecedence;
+
+    public static bool IsKnown(string? value)
+        => value is not null && All.Contains(value.Trim().ToLowerInvariant(), StringComparer.Ordinal);
+
+    public static string Normalize(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant();
+}
+
+/// <summary>Published ceilings for the play scope write path. The business-unit ceiling reuses the existing
+/// <see cref="StrategyTemplateLimits.MaxBusinessUnitIdLength"/> so the scope reference and the shape check can never
+/// disagree about how long a business-unit code may be.</summary>
+public static class StrategyTemplateScopeLimits
+{
+    /// <summary>ISO alpha-2, so exactly two characters.</summary>
+    public const int CountryScopeLength = 2;
+
+    public const int MaxBusinessUnitIdLength = StrategyTemplateLimits.MaxBusinessUnitIdLength;
+}
+
 /// <summary>Canonical machine-readable error codes returned in the response envelope, so a UI (and the smoke script)
 /// can branch on the code rather than on a message.</summary>
 public static class StrategyTemplateErrorCodes
@@ -144,6 +191,41 @@ public static class StrategyTemplateErrorCodes
     public const string DependencyUnavailable = "strategy_dependency_unavailable";
     public const string BindingsFrozen = "bindings_frozen";
 
+    // ---- WP-ST-SCOPE - play scope. Nothing is silent: an unpublished SET and an unknown VALUE get different codes
+    // because one is fixed by an operator and the other by retyping, and "the dependency said no" is never conflated
+    // with "the dependency did not answer". A deliberate mirror of the campaign's scope reason codes.
+
+    /// <summary>The supplied ScopeType is not one of the four known levels.</summary>
+    public const string ScopeTypeUnknown = "strategy_scope_type_unknown";
+
+    /// <summary>The level named needs a reference that was not supplied.</summary>
+    public const string ScopeReferenceRequired = "strategy_scope_reference_required";
+
+    /// <summary>More than one scope reference was supplied. Refused rather than silently narrowed - dropping a value the
+    /// author typed would let them believe they filed the play somewhere they did not.</summary>
+    public const string ScopeAmbiguous = "strategy_scope_ambiguous";
+
+    /// <summary>CountryScope is not an ISO alpha-2 code.</summary>
+    public const string ScopeCountryInvalid = "strategy_country_invalid";
+
+    /// <summary>The governed reference set backing a scope level is not published yet - an operator must publish it.
+    /// Deliberately distinct from "value unknown", which the author fixes themselves.</summary>
+    public const string ScopeReferenceSetUnpublished = "strategy_scope_reference_set_unpublished";
+
+    /// <summary>The country code is not in the governed set.</summary>
+    public const string ScopeCountryUnknown = "strategy_country_unknown";
+
+    /// <summary>The business-unit code is not in the published set. Raised only when the reference CHANGES, so a play
+    /// carrying a pre-scope code stays editable.</summary>
+    public const string ScopeBusinessUnitUnknown = "strategy_business_unit_unknown";
+
+    /// <summary>MDM answered, and the legal entity does not exist, is not active, or may not be referenced.</summary>
+    public const string ScopeLegalEntityNotReferenceable = "strategy_legal_entity_not_referenceable";
+
+    /// <summary>MDM did not answer. 503 with nothing persisted - we do not KNOW, so we must not tell the author their
+    /// input was wrong.</summary>
+    public const string ScopeLegalEntityValidationUnavailable = "strategy_legal_entity_validation_unavailable";
+
     public static readonly IReadOnlyList<string> All = new[]
     {
         SegmentReferenceNotFound, SegmentArchived, SegmentSubjectTypeMismatch, SegmentNotActive,
@@ -151,7 +233,10 @@ public static class StrategyTemplateErrorCodes
         FrequencyPolicyTargetMismatch, ContentReferenceNotFound, ContentNotPublished, ContentArchived,
         ContentBindingDuplicate, ProductReferenceNotFound, ProductLineDuplicate, SkuReferenceNotFound,
         SkuAllocationDuplicate, SkuAllocationTotalInvalid, SkuAllocationModeMismatch, LineWeightPartiallySpecified,
-        LineWeightTotalInvalid, ReferenceFanoutExceeded, DependencyUnavailable, BindingsFrozen
+        LineWeightTotalInvalid, ReferenceFanoutExceeded, DependencyUnavailable, BindingsFrozen,
+        ScopeTypeUnknown, ScopeReferenceRequired, ScopeAmbiguous, ScopeCountryInvalid, ScopeReferenceSetUnpublished,
+        ScopeCountryUnknown, ScopeBusinessUnitUnknown, ScopeLegalEntityNotReferenceable,
+        ScopeLegalEntityValidationUnavailable
     };
 }
 

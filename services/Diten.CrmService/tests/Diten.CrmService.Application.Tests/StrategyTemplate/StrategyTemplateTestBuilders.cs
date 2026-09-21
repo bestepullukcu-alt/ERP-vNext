@@ -14,20 +14,27 @@ internal static class StrategyTemplateTestBuilders
         string subjectType = StrategyTemplateSubjectTypes.Contact,
         StrategyTemplateFrequencyIntentInput? frequency = null,
         IReadOnlyList<StrategyTemplateProductLineInput>? productLines = null,
-        IReadOnlyList<StrategyTemplateContentBindingInput>? contentBindings = null)
+        IReadOnlyList<StrategyTemplateContentBindingInput>? contentBindings = null,
+        string? scopeType = null,
+        string? countryScope = null,
+        Guid? legalEntityId = null,
+        string? businessUnitId = null)
         => new(
             code,
             "Cardiology core play",
             subjectType,
             StrategyTemplateTestDoubles.Past,
             null,
-            null,
+            businessUnitId,
             null,
             null,
             new[] { Segment(segmentId) },
             frequency ?? NoFrequency(),
             productLines,
-            contentBindings);
+            contentBindings,
+            scopeType,
+            countryScope,
+            legalEntityId);
 
     public static StrategyTemplateSegmentBindingInput Segment(Guid segmentId, int sortOrder = 10)
         => new(segmentId, StrategySegmentBindingRoles.Primary, sortOrder, null);

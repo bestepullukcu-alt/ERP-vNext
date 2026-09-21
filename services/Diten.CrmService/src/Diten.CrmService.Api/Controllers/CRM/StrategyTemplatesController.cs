@@ -43,6 +43,19 @@ public sealed class StrategyTemplatesController : CustomBaseController
                 templateStatus, subjectType, businessUnitId, templateCode, segmentId, search, includeArchived),
             cancellationToken));
 
+    /// <summary>WP-ST-SCOPE — the cascading scope selector's option source (country / legal-entity / territory-BU feed,
+    /// three readiness flags). A READ: it decides nothing about what may be saved. This sub-path is covered by the FU04
+    /// gateway <c>/{everything}</c> route, so no new ocelot route is needed.</summary>
+    [HttpGet("api/crm/strategy-templates/scope-options")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> ScopeOptions(
+        [FromQuery] string? country,
+        [FromQuery] DateTimeOffset? startDate,
+        [FromQuery] DateTimeOffset? endDate,
+        CancellationToken cancellationToken = default)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetStrategyTemplateScopeOptionsQuery(country, startDate, endDate), cancellationToken));
+
     [HttpGet("api/crm/strategy-templates/{templateId:guid}")]
     [HasPermission(Perms.ReadFallback)]
     public async Task<IActionResult> Get(Guid templateId, CancellationToken cancellationToken)
@@ -61,7 +74,8 @@ public sealed class StrategyTemplatesController : CustomBaseController
                 MapSegments(request.SegmentBindings),
                 request.FrequencyIntent?.ToInput(),
                 MapProducts(request.ProductLines),
-                MapContents(request.ContentBindings)),
+                MapContents(request.ContentBindings),
+                request.ScopeType, request.CountryScope, request.LegalEntityId),
             cancellationToken));
 
     [HttpPut("api/crm/strategy-templates/{templateId:guid}")]
@@ -77,7 +91,8 @@ public sealed class StrategyTemplatesController : CustomBaseController
                 request.FrequencyIntent?.ToInput(),
                 MapProducts(request.ProductLines),
                 MapContents(request.ContentBindings),
-                request.ExpectedVersion),
+                request.ExpectedVersion,
+                request.ScopeType, request.CountryScope, request.LegalEntityId),
             cancellationToken));
 
     [HttpPost("api/crm/strategy-templates/{templateId:guid}/activate")]

@@ -190,6 +190,11 @@ public static class DependencyInjection
         // reports bindings only: no MicroTarget, no VisitFrequencyPolicy, no CampaignTarget is ever produced here.
         services.AddScoped<IStrategyTemplateRepository, StrategyTemplateRepository>();
         services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateBindingValidator>();
+        // WP-ST-SCOPE - the play scope write gate. Scoped like every other write-path component; it holds the shared
+        // read-only reference/MDM seams (reused from the campaign/cycle-period path) and no repository. The scope-options
+        // handler is a MediatR handler, auto-registered by assembly scan; its seams are already registered above/in
+        // Infrastructure (IReferenceDataCatalogReader, ICyclePeriodLegalEntityCatalog, ITerritoryBusinessUnitCatalog).
+        services.AddScoped<Application.Features.StrategyTemplate.Services.StrategyTemplateScopeWriteValidator>();
         services.AddScoped<
             Application.Features.StrategyTemplate.Binding.IStrategyTemplateReader,
             Application.Features.StrategyTemplate.Binding.StrategyTemplateReader>();
@@ -776,6 +781,11 @@ public static class DependencyInjection
         {
             map.GetMemberMap(t => t.VersionLineageId).SetSerializer(stringGuid);
             map.GetMemberMap(t => t.SupersededByTemplateId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            // WP-ST-SCOPE - the legal-entity scope reference is a new Guid FK, so it takes the same string-Guid
+            // convention as every other CRM FK. Without this it would store as binary (sub-type 4) while any by-ref
+            // filter serializes a string, and the scope lookup would silently return nothing (the new-field class-map
+            // trap). CountryScope / BusinessUnitId / ScopeType are strings and AutoMap handles them.
+            map.GetMemberMap(t => t.LegalEntityId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
         if (!BsonClassMap.IsClassMapRegistered(typeof(StrategyTemplateSegmentBinding)))
         {

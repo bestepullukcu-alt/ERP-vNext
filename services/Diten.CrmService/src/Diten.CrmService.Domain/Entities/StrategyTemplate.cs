@@ -43,7 +43,38 @@ public sealed class StrategyTemplate : EntityBase
     /// <summary>Filled server-side when a newer version is activated. A superseded version stays readable.</summary>
     public Guid? SupersededByTemplateId { get; set; }
 
-    /// <summary>Opaque MOD-0048 business-unit code (non-empty string check only; no master read).</summary>
+    /// <summary>
+    /// MOD-0167 FU04 (WP-ST-SCOPE) — which LEVEL this play lives at: <see cref="StrategyTemplateScopeTypes"/>
+    /// (tenant / country / legal-entity / business-unit). Exactly one of <see cref="CountryScope"/> /
+    /// <see cref="LegalEntityId"/> / <see cref="BusinessUnitId"/> carries the reference; none of them at <c>tenant</c>.
+    /// <para><b>A deliberate MIRROR of the campaign's scope, not a reuse of it.</b> Like a campaign's (and unlike a cycle
+    /// period's) this scope is an EDITABLE attribute, not immutable identity: a play filed under the wrong business unit
+    /// is simply corrected, even on a frozen/active version — freezing only guards the four BINDING lists, never this
+    /// metadata (analysis §3 "editable attribute", exactly as today's opaque <see cref="BusinessUnitId"/> already is).</para>
+    /// <para>Rows written before WP-ST-SCOPE carry no value here and are NOT migrated: <see cref="EffectiveScopeType"/>
+    /// derives it on read (a business unit -> business-unit, otherwise -> tenant), which is the context those plays
+    /// already had. Scope is DATA, not authorization: no read is filtered by it and no permission is derived from it.</para>
+    /// </summary>
+    public string ScopeType { get; set; } = string.Empty;
+
+    /// <summary>The reference when <see cref="ScopeType"/> is <c>country</c>: an ISO alpha-2 code from the governed
+    /// <c>COUNTRY_CODES</c> set, upper-cased so "TR" and "tr" can never become two addresses. Null at every other
+    /// scope type.</summary>
+    public string? CountryScope { get; set; }
+
+    /// <summary>The reference when <see cref="ScopeType"/> is <c>legal-entity</c>: an MDM legal entity proved
+    /// referenceable through a fail-closed cross-service check BEFORE anything is persisted. Only the id is kept — a
+    /// copied name would go stale the moment MDM changes it. Null at every other scope type.</summary>
+    public Guid? LegalEntityId { get; set; }
+
+    /// <summary>
+    /// The reference when <see cref="ScopeType"/> is <c>business-unit</c> — a MOD-0048 published <c>business-unit</c>
+    /// value code.
+    /// <para><b>WP-ST-SCOPE narrowed what this field means.</b> It was an opaque context code validated only as a
+    /// non-empty string; it is now the business-unit scope reference and is validated against the same published set
+    /// MOD-0151 Territory validates against — but ONLY when the value CHANGES, so a play carrying a pre-scope code
+    /// stays editable (a play must not become uneditable because someone wants to fix its description).</para>
+    /// </summary>
     public string? BusinessUnitId { get; set; }
 
     public string? Description { get; set; }
@@ -93,6 +124,52 @@ public sealed class StrategyTemplate : EntityBase
     /// <summary>Effective at the instant. Read-only helper; produces nothing and decides nothing.</summary>
     public bool IsEffectiveAt(DateTimeOffset at)
         => EffectiveFrom <= at && (EffectiveTo is null || at <= EffectiveTo);
+
+    /// <summary>
+    /// WP-ST-SCOPE — the reference belonging to <see cref="ScopeType"/>, normalised. <c>null</c> for the tenant scope,
+    /// which is a scope of its OWN rather than the absence of one. A deliberate mirror of the campaign's <c>ScopeRef</c>.
+    /// </summary>
+    public string? ScopeRef() => EffectiveScopeType() switch
+    {
+        StrategyTemplateScopeTypes.Country => NormalizeScopeValue(CountryScope)?.ToUpperInvariant(),
+        StrategyTemplateScopeTypes.LegalEntity => LegalEntityId?.ToString("D"),
+        StrategyTemplateScopeTypes.BusinessUnit => NormalizeScopeValue(BusinessUnitId),
+        _ => null
+    };
+
+    /// <summary>
+    /// WP-ST-SCOPE — <see cref="ScopeType"/>, or the pre-scope level derived from <see cref="BusinessUnitId"/> when the
+    /// row predates the field. Read-only and idempotent: it never writes, so a legacy play keeps behaving exactly as it
+    /// did until something else edits it. There is no backfill script anywhere.
+    /// </summary>
+    public string EffectiveScopeType()
+        => StrategyTemplateScopeTypes.IsKnown(ScopeType)
+            ? StrategyTemplateScopeTypes.Normalize(ScopeType)
+            : NormalizeScopeValue(BusinessUnitId) is null
+                ? StrategyTemplateScopeTypes.Tenant
+                : StrategyTemplateScopeTypes.BusinessUnit;
+
+    /// <summary>
+    /// WP-ST-SCOPE invariant: exactly the reference belonging to <see cref="ScopeType"/> is present and the other two
+    /// are null (all three null for <c>tenant</c>). Every pre-scope row satisfies this too.
+    /// </summary>
+    public bool HasConsistentScope()
+    {
+        var hasCountry = NormalizeScopeValue(CountryScope) is not null;
+        var hasLegalEntity = LegalEntityId is { } id && id != Guid.Empty;
+        var hasBusinessUnit = NormalizeScopeValue(BusinessUnitId) is not null;
+
+        return EffectiveScopeType() switch
+        {
+            StrategyTemplateScopeTypes.Tenant => !hasCountry && !hasLegalEntity && !hasBusinessUnit,
+            StrategyTemplateScopeTypes.Country => hasCountry && !hasLegalEntity && !hasBusinessUnit,
+            StrategyTemplateScopeTypes.LegalEntity => hasLegalEntity && !hasCountry && !hasBusinessUnit,
+            StrategyTemplateScopeTypes.BusinessUnit => hasBusinessUnit && !hasCountry && !hasLegalEntity,
+            _ => false
+        };
+    }
+
+    private static string? NormalizeScopeValue(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 }
 
 /// <summary>
