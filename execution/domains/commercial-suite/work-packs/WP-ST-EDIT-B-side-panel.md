@@ -45,9 +45,16 @@ KORU/YAPMA: backend DEĞİŞMEZ; 2a KAPSAM cascade + binding-builder(segment/ür
 DOĞRULA (E2): cd C:\Users\user\Desktop\ERP-vNext; dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Release --nologo → 201/0; git diff Create/Edit/_Form(+_SidePanel)+form.js+css+resx; CrmService/Liste/Detay diff yok. Ayrı commit ("feat(strategy): WP-ST-EDIT-B — Düzenle sağ panel (özet+BÖLÜMLER checklist+yaşam döngüsü) + frekans info-box (MOD-0167-FU04)" + son satır Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: canlı özet/checklist binding-builder state'ini bozuyorsa; layout submit akışını kırıyorsa; kapsam dışına (backend/liste/detay) taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-21) → **ACCEPTED (E2)**
 ```
-- İzole worktree → Web.Tests 201/0; git diff Create/Edit/_Form/form.js/css/resx; sağ panel canlı özet+checklist+lifecycle (VFP aynası); frekans info-box; binding-builder/2a-cascade/submit korundu; backend/liste/detay dokunulmadı.
+Commit: 58944fba · Agent: PASS · CT: ACCEPTED E2 (izole temiz build) · /c/tmp/ct-steditb-verify @58944fba
+```
+- ✅ **Kapsam (15 dosya, +1043/−36):** Create/Edit.cshtml(iki-kolon) + _SidePanel.cshtml(YENİ) + _Form.cshtml(+9 sadece frekans info-box) + form.js(**+183/−0 saf additive**) + strategy-create.css(YENİ) + _IndexL10n + 7 resx. **CrmService/Liste/Detay/details.js/index.js/Controller/ViewModel TEMİZ** ✓.
+- ✅ **VFP editör aynası:** iki-kolon `.st-editor-layout` + sağ sticky `_SidePanel`; "BU OYUN NE YAPACAK" canlı özet (NEREDE/KİM/NE SIKLIKTA/NE/HİKAYE + cümle + 4 stat tile) form durumundan türetilir; BÖLÜMLER checklist (Kimlik/Kapsam/Segmentler/Frekans/Ürün+SKU%/İçerik/MDM doğrulaması → ✓/!/– + "N/M hazır" + ilerleme çubuğu, gerçek kurallar: SKU%=100&satır-ağırlığı=100, ≥1 segment vb.); YAŞAM DÖNGÜSÜ (Kaydet/Taslak kaydet aynı `form="strategyTemplateForm"` MVC POST; Yeni sürüm/Arşivle mevcut endpoint'ler — yeni backend yok).
+- ✅ **Frekans info-box:** "Ziyaret Sıklığı Politikaları'nda yönetilir — işaretçi" + "Politikaları aç ↗" → /CRM/VisitFrequencyPolicies; frekans alan mantığı değişmedi.
+- ✅ **KORU=0:** 2a KAPSAM cascade + segment/frekans/ürün/içerik binding-builder + SKU%/homojen/pinned + submit/create-update akışı korundu (form.js additive-only); dondurulmuş (`AreBindingsFrozen`) salt-okunur korundu.
+- ✅ **Build+test (CT izole, Release):** Diten.Web.Tests **201/0**.
+- ⏳ E4: Düzenle iki-kolon + canlı özet/checklist + info-box. **Razor+resx+css → FLEET RESTART.**
+
+**WP-ST-EDIT-B KOMPLE (Faz 2b). Düzenle sayfası TAM. Kalan: Faz 3 (Detay — KAPSAM salt-okunur + sürüm geçmişi + Kampanyada kullan).**
 ```
