@@ -146,4 +146,55 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>Зависимость не ответила, поэтому список не загружен.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Нет подходящего территориального плана, показан полный опубликованный список.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>Разрешённая область</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>Что сделает эта стратегия?</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>ГДЕ</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>КТО</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>КАК ЧАСТО</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>ЧТО</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>ИСТОРИЯ</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>сегментов</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>строк товаров</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>вес %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>материалов</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>Разделы</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>Область</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>Сегменты</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>Частота</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>Товары + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>Контент</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>Проверка MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>Активно</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>Замораживает текущую стратегию и открывает новую копию</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate сам по себе ничего не создаёт — он связывает сегмент, политику частоты визитов, товары и утверждённый контент в один шаблон. Исполнение происходит через CyclePeriod и Campaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>Частота управляется в политиках частоты визитов</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — это поле только для справки. Реальная частота визитов хранится по цели/сегменту в отдельном модуле.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>Открыть политики ↗</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» нацелена на {who} с {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Эта стратегия</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>Не указано</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>Привязано к политике</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>Заявленное намерение</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} визитов / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} готово</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>Требуются код и имя.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>Весь арендатор — область не сужена.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>Привяжите хотя бы один сегмент.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>Привязано сегментов: {n}.</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>Указатель пуст — это необязательно.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>Привязано к политике частоты визитов.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>Заявленное намерение (необязательное).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>Намерение по частоте неполное.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>Добавьте хотя бы одну строку товара.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>Распределение SKU не равно 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>Строк товаров: {n}.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>Контент необязателен.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>Привязано материалов: {n}.</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Среда выполнения проверит после выбора товара.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>Во всех строках выбран товар.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>В некоторых строках нет товара.</value></data>
 </root>

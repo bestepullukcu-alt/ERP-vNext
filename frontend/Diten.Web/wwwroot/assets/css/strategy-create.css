@@ -1,0 +1,276 @@
+/**
+ * WP-ST-EDIT-B — StrategyTemplate Create/Edit two-column editor + right sticky panel (MOD-0167-FU04, frontend only).
+ *
+ * Mirrors the VisitFrequencyPolicies editor (visit-frequency-create.css .vfp-create-scope): a two-column layout with a
+ * sticky right panel that carries a live "BU OYUN NE YAPACAK?" summary, a "BÖLÜMLER" checklist and the "YAŞAM DÖNGÜSÜ"
+ * actions, plus the Frekans info-box. Everything is nested under `.st-editor-scope` so nothing leaks to the app shell,
+ * and the neutrals bind to the theme-aware Bootstrap variables (light/dark). The accent is `--bs-primary`; the only
+ * literal white left is a foreground on an accent fill. The existing _Form card chrome carries no `st-*` class and is
+ * left completely alone.
+ */
+
+.st-editor-scope {
+    --st-accent: var(--bs-primary);
+    --st-accent-soft: rgba(var(--bs-primary-rgb), 0.10);
+    --st-accent-border: rgba(var(--bs-primary-rgb), 0.28);
+    --st-card-bg: var(--bs-card-bg);
+    --st-card-border: var(--bs-border-color);
+    --st-muted: var(--bs-secondary-color);
+    --st-text: var(--bs-body-color);
+    --st-ok: var(--bs-success);
+    --st-warn: var(--bs-warning);
+    --st-track: var(--bs-secondary-bg);
+}
+
+/* ── two-column layout ─────────────────────────────────────────────────────── */
+.st-editor-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+.st-editor-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.st-editor-side {
+    flex: 0 0 320px;
+    max-width: 320px;
+}
+.st-side-sticky {
+    position: sticky;
+    top: 78px;
+}
+@media (max-width: 991.98px) {
+    .st-editor-layout { flex-direction: column; }
+    .st-editor-side { flex-basis: auto; max-width: none; width: 100%; }
+    .st-side-sticky { position: static; }
+}
+
+/* ── panel cards ───────────────────────────────────────────────────────────── */
+.st-side-panel .st-card {
+    border: 1px solid var(--st-card-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.st-card-head {
+    padding: 12px 15px 10px;
+    border-bottom: 1px solid var(--st-card-border);
+}
+.st-card-kicker {
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--st-muted);
+    font-weight: 600;
+}
+
+/* ── recipe (NEREDE / KİM / …) ─────────────────────────────────────────────── */
+.st-recipe {
+    margin: 0 0 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.st-recipe-row {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin: 0;
+}
+.st-recipe-row dt {
+    flex: 0 0 66px;
+    font-size: 9.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--st-muted);
+    font-weight: 600;
+    margin: 0;
+}
+.st-recipe-row dd {
+    margin: 0;
+    min-width: 0;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--st-text);
+    word-break: break-word;
+}
+.st-recipe-sentence {
+    margin: 11px 0 0;
+    padding-top: 10px;
+    border-top: 1px dashed var(--st-card-border);
+    font-size: 12.5px;
+    color: var(--st-muted);
+}
+.st-recipe-sentence:empty { display: none; }
+
+/* ── stat tiles (2×2) ──────────────────────────────────────────────────────── */
+.st-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--st-card-border);
+}
+.st-stat {
+    padding: 11px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.st-stat:nth-child(odd) { border-right: 1px solid var(--st-card-border); }
+.st-stat:nth-child(n+3) { border-top: 1px solid var(--st-card-border); }
+.st-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--st-text);
+    font-variant-numeric: tabular-nums;
+}
+.st-stat-value.is-off { color: var(--st-warn); }
+.st-stat-label {
+    font-size: 11px;
+    color: var(--st-muted);
+}
+
+/* ── checklist (BÖLÜMLER) ──────────────────────────────────────────────────── */
+.st-sections-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+}
+.st-ready-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--st-track);
+    color: var(--st-muted);
+}
+.st-ready-pill.is-ready {
+    background: rgba(var(--bs-success-rgb), 0.14);
+    color: var(--st-ok);
+}
+.st-ready-track {
+    height: 4px;
+    border-radius: 3px;
+    background: var(--st-track);
+    margin-bottom: 11px;
+    overflow: hidden;
+}
+.st-ready-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
+    background: var(--st-accent);
+    transition: width 0.2s ease;
+}
+.st-ready-bar.is-ready { background: var(--st-ok); }
+.st-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.st-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+.st-check-icon {
+    flex: 0 0 auto;
+    font-size: 15px;
+    line-height: 1.25;
+    color: var(--st-muted);
+}
+.st-check.is-ok .st-check-icon { color: var(--st-ok); }
+.st-check.is-warn .st-check-icon { color: var(--st-warn); }
+.st-check.is-neutral .st-check-icon { color: var(--st-muted); }
+.st-check-body { min-width: 0; display: flex; flex-direction: column; }
+.st-check-title { font-size: 12.5px; font-weight: 600; color: var(--st-text); }
+.st-check-detail {
+    font-size: 11.5px;
+    color: var(--st-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.st-check-detail:empty { display: none; }
+
+/* ── lifecycle actions (YAŞAM DÖNGÜSÜ) ─────────────────────────────────────── */
+.st-life-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--st-track);
+    border: 1px solid var(--st-card-border);
+    border-radius: 6px;
+    margin-bottom: 11px;
+}
+.st-life-tab {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--st-muted);
+    border-radius: 4px;
+}
+.st-life-tab.is-current {
+    background: var(--st-card-bg);
+    color: var(--st-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.st-life-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.st-life-divider {
+    height: 1px;
+    background: var(--st-card-border);
+    margin: 3px 0;
+}
+.st-life-newversion {
+    text-align: left;
+    line-height: 1.25;
+}
+.st-life-newversion-title { display: block; font-weight: 600; }
+.st-life-newversion-sub {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--st-muted);
+}
+.st-side-foot {
+    padding: 11px 13px;
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--st-card-border);
+    border-radius: 6px;
+    color: var(--st-muted);
+    font-size: 11.5px;
+}
+
+/* ── frekans info-box (in the left _Form frequency section) ─────────────────── */
+.st-editor-scope .st-freq-info {
+    display: flex;
+    gap: 10px;
+    padding: 11px 12px;
+    margin-bottom: 13px;
+    background: var(--st-accent-soft);
+    border: 1px solid var(--st-accent-border);
+    border-radius: 6px;
+}
+.st-freq-info-dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--st-accent);
+}
+.st-freq-info-body { min-width: 0; font-size: 12.5px; }
+.st-freq-info-strong { font-weight: 600; color: var(--st-text); }
+.st-freq-info-text { color: var(--st-muted); }
+.st-freq-info-link { margin-left: 3px; font-weight: 600; white-space: nowrap; }

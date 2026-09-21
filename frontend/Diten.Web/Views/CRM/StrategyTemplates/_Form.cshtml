@@ -132,6 +132,15 @@
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["FrequencyIntentHelp"]</small>
+                @* WP-ST-EDIT-B — frequency is a POINTER only: the real cadence lives in the Visit Frequency Policies
+                   module (MOD-0165). This info-box states that and links out; the frequency FIELD logic is unchanged. *@
+                <div class="st-freq-info" role="note">
+                    <span class="st-freq-info-dot" aria-hidden="true"></span>
+                    <div class="st-freq-info-body">
+                        <span class="st-freq-info-strong">@Localizer["FreqInfoStrong"]</span><span class="st-freq-info-text">@Localizer["FreqInfoBody"]</span>
+                        <a href="/CRM/VisitFrequencyPolicies" class="st-freq-info-link" target="_blank" rel="noopener">@Localizer["FreqInfoLink"]</a>
+                    </div>
+                </div>
                 <div class="row g-3" id="frequencyEditor">
                     <div class="col-12 col-md-4">
                         <label class="form-label fw-medium" for="frequencyMode">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>

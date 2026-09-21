@@ -146,4 +146,55 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>La dependencia no respondió, por lo que no se pudo cargar esta lista.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Ningún plan territorial coincide, por lo que se muestra la lista publicada completa.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>Ámbito resuelto</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>¿Qué hará esta jugada?</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>DÓNDE</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>QUIÉN</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>FRECUENCIA</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>QUÉ</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>HISTORIA</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>segmentos</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>líneas de producto</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>peso %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>contenidos</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>Secciones</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>Segmentos</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>Frecuencia</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>Productos + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>Contenido</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>Validación MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>Borrador</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>Activo</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>Congela la jugada actual y abre una copia nueva</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>Una StrategyTemplate no produce nada por sí sola: vincula un segmento, una política de frecuencia de visita, productos y contenido aprobado en una sola plantilla. La ejecución ocurre a través de CyclePeriod y Campaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>La frecuencia se gestiona en las Políticas de frecuencia de visita</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — este campo es solo una referencia. La frecuencia de visita real se guarda por objetivo/segmento en un módulo aparte.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>Abrir políticas ↗</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» se dirige a {who} con {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Esta jugada</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>Sin especificar</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>Vinculado a una política</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>Intención declarada</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} visitas / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} listo</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>Se requieren código y nombre.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>Todo el inquilino — alcance no restringido.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>Vincula al menos un segmento.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>{n} segmento(s) vinculado(s).</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>El puntero está vacío — es opcional.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>Vinculado a una política de frecuencia de visita.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>Intención declarada (no vinculante).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>La intención de frecuencia está incompleta.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>Añade al menos una línea de producto.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>La asignación de SKU no es 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} línea(s) de producto.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>El contenido es opcional.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>{n} contenido(s) vinculado(s).</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>El runtime valida cuando se elige un producto.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>Todas las líneas tienen un producto.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Algunas líneas no tienen producto.</value></data>
 </root>

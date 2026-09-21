@@ -613,6 +613,188 @@
     // Belt-and-braces before the metadata/binding sync runs: only the selected level's reference reaches the payload.
     form.addEventListener('submit', clearUnselectedScopeRefs);
 
+    // ---------------- WP-ST-EDIT-B right sticky panel (live summary + BÖLÜMLER checklist + YAŞAM DÖNGÜSÜ) --------------
+    // READ-ONLY over the form: every value is DERIVED from the real form state (state.* + the live DOM). It never writes
+    // a binding, never touches buildPayload / the scope cascade / submit, and the two save buttons submit the existing
+    // MVC form through form="strategyTemplateForm". New version / Archive reuse the existing template endpoints.
+    const panelEl = () => document.getElementById('stChecklist');
+
+    // The scope "NEREDE" phrase, read the same way renderResolvedScope reads it (type label + selected reference name).
+    const scopePhrase = () => {
+        const level = (scopeTypeEl?.value || '').trim();
+        if (!level) return '';
+        const typeLabel = L['ScopeType_' + level] || level;
+        let refLabel = '';
+        if (level === 'country') refLabel = countryEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        else if (level === 'legal-entity') refLabel = legalEntityEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        else if (level === 'business-unit') refLabel = businessUnitEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        return refLabel ? `${typeLabel} — ${refLabel}` : typeLabel;
+    };
+
+    const subjectWord = () => {
+        const st = el('SubjectType')?.value || cfg.subjectType || '';
+        if (st === 'contact') return L.SubjectTypeContact || st;
+        if (st === 'account') return L.SubjectTypeAccount || st;
+        return st;
+    };
+
+    const weightSum = () => round2(state.products.reduce((s, l) => s + (Number(l.lineWeightPercentage) || 0), 0));
+    const skuLinesConsistent = () => state.products.every(l =>
+        (l.skuAllocationMode || 'product-only') !== 'sku-allocated' || lineTotal(l) === total100);
+
+    const frequencyPhrase = () => {
+        const f = state.frequency || { mode: 'none' };
+        if (f.mode === 'policy-reference') {
+            const hit = (options.policy || []).find(o => o.id === f.visitFrequencyPolicyId);
+            return hit ? hit.text : (L.FrequencyPolicyRef || L.FrequencyPolicy || '');
+        }
+        if (f.mode === 'declared-intent') {
+            if (f.frequencyType && Number(f.requiredVisitCount) > 0 && f.periodType) {
+                return (L.VisitsPerPeriodTpl || '{count} / {period}')
+                    .replace('{count}', String(f.requiredVisitCount))
+                    .replace('{period}', String(f.periodType));
+            }
+            return L.FrequencyDeclared || '';
+        }
+        return L.FrequencyNone || (L.RecipeNone || '—');
+    };
+
+    const setRecipe = (id, value) => { const n = el(id); if (n) n.textContent = value || (L.RecipeNone || '—'); };
+
+    const setCheck = (key, state3, detail) => {
+        const row = document.querySelector(`.st-check[data-check="${key}"]`);
+        if (!row) return;
+        row.classList.remove('is-ok', 'is-warn', 'is-neutral');
+        row.classList.add(state3 === 'ok' ? 'is-ok' : state3 === 'warn' ? 'is-warn' : 'is-neutral');
+        const icon = row.querySelector('.st-check-icon');
+        if (icon) {
+            icon.classList.remove('bx-check-circle', 'bx-error-circle', 'bx-minus-circle');
+            icon.classList.add(state3 === 'ok' ? 'bx-check-circle' : state3 === 'warn' ? 'bx-error-circle' : 'bx-minus-circle');
+        }
+        const d = row.querySelector('.st-check-detail');
+        if (d) d.textContent = detail || '';
+    };
+
+    function updateSidePanel() {
+        if (!panelEl()) return;
+
+        const nSeg = state.segments.length;
+        const nProd = state.products.length;
+        const nContent = state.contents.length;
+        const wsum = weightSum();
+        const skuOk = skuLinesConsistent();
+        const code = norm(el('TemplateCode')?.value);
+        const name = norm(el('TemplateName')?.value);
+
+        // ── recipe (BU OYUN NE YAPACAK) ──
+        setRecipe('stRecipeWhere', scopePhrase());
+        setRecipe('stRecipeWho', nSeg > 0 ? `${nSeg} ${L.StatSegments || ''} · ${subjectWord()}`.trim() : '');
+        setRecipe('stRecipeHowOften', frequencyPhrase());
+        setRecipe('stRecipeWhat', nProd > 0 ? `${nProd} ${L.StatProductLines || ''} · Σ${wsum}%` : '');
+        setRecipe('stRecipeStory', nContent > 0 ? `${nContent} ${L.StatContents || ''}` : '');
+
+        const sentenceBox = el('stSummarySentence');
+        if (sentenceBox) {
+            if (name) {
+                sentenceBox.textContent = (L.SummarySentenceTpl || '"{name}" — {who} · {what} · {howoften}')
+                    .replace('{name}', name)
+                    .replace('{who}', nSeg > 0 ? `${nSeg} ${L.StatSegments || ''} (${subjectWord()})` : subjectWord())
+                    .replace('{what}', nProd > 0 ? `${nProd} ${L.StatProductLines || ''}` : '—')
+                    .replace('{howoften}', frequencyPhrase());
+            } else {
+                sentenceBox.textContent = '';
+            }
+        }
+
+        // ── stat tiles ──
+        const setStat = (id, v, off) => { const n = el(id); if (n) { n.textContent = v; n.classList.toggle('is-off', !!off); } };
+        setStat('stStatSegments', String(nSeg));
+        setStat('stStatProducts', String(nProd));
+        setStat('stStatWeight', `${wsum}`, nProd > 0 && wsum !== total100);
+        setStat('stStatContents', String(nContent));
+
+        // ── checklist (BÖLÜMLER) ──
+        setCheck('identity', code && name ? 'ok' : 'warn', code && name ? name : (L.ChkIdentityEmptyDesc || ''));
+        setCheck('scope', 'ok', scopePhrase() || (L.ChkScopeTenantDesc || ''));
+        setCheck('segments', nSeg > 0 ? 'ok' : 'warn',
+            nSeg > 0 ? (L.ChkSegmentsCountDesc || '{n}').replace('{n}', String(nSeg)) : (L.ChkSegmentsEmptyDesc || ''));
+
+        const fmode = (state.frequency || {}).mode || 'none';
+        if (fmode === 'none') setCheck('frequency', 'neutral', L.ChkFrequencyNoneDesc || '');
+        else if (fmode === 'policy-reference') {
+            const has = !!norm(state.frequency.visitFrequencyPolicyId);
+            setCheck('frequency', has ? 'ok' : 'warn', has ? (L.ChkFrequencyPolicyDesc || '') : (L.ChkFrequencyIncompleteDesc || ''));
+        } else {
+            const ok = !!state.frequency.frequencyType && Number(state.frequency.requiredVisitCount) > 0 && !!state.frequency.periodType;
+            setCheck('frequency', ok ? 'ok' : 'warn', ok ? (L.ChkFrequencyDeclaredDesc || '') : (L.ChkFrequencyIncompleteDesc || ''));
+        }
+
+        if (nProd === 0) setCheck('products', 'warn', L.ChkProductsEmptyDesc || '');
+        else if (wsum !== total100 || !skuOk) setCheck('products', 'warn', L.ChkProductsWeightOffDesc || '');
+        else setCheck('products', 'ok', (L.ChkProductsOkDesc || '{n}').replace('{n}', String(nProd)));
+
+        if (nContent === 0) setCheck('content', 'neutral', L.ChkContentEmptyDesc || '');
+        else setCheck('content', 'ok', (L.ChkContentCountDesc || '{n}').replace('{n}', String(nContent)));
+
+        if (nProd === 0) setCheck('mdm', 'neutral', L.ChkMdmNeutralDesc || '');
+        else if (state.products.every(l => norm(l.globalProductId))) setCheck('mdm', 'ok', L.ChkMdmOkDesc || '');
+        else setCheck('mdm', 'warn', L.ChkMdmMissingDesc || '');
+
+        // ── ready counter + bar (over the 6 content sections; a neutral/optional row is not a blocker) ──
+        const navKeys = ['identity', 'scope', 'segments', 'frequency', 'products', 'content'];
+        const done = navKeys.filter(k => !document.querySelector(`.st-check[data-check="${k}"]`)?.classList.contains('is-warn')).length;
+        const total = navKeys.length;
+        const pill = el('stReadyPill');
+        if (pill) {
+            pill.textContent = (L.ReadyCountTpl || '{done}/{total}').replace('{done}', String(done)).replace('{total}', String(total));
+            pill.classList.toggle('is-ready', done === total);
+        }
+        const bar = el('stReadyBar');
+        if (bar) {
+            bar.style.width = `${Math.round((done / total) * 100)}%`;
+            bar.classList.toggle('is-ready', done === total);
+        }
+    }
+
+    // Live updates: field edits bubble to the form; add/remove clicks mutate state then re-render, so a microtask-delayed
+    // refresh picks up the new state. Neither path touches buildPayload / the binding builders.
+    form.addEventListener('change', updateSidePanel);
+    form.addEventListener('input', updateSidePanel);
+    document.addEventListener('click', event => {
+        if (event.target.closest('#btnAddSegmentBinding, #btnAddProductLine, #btnAddContentBinding, .js-remove, .js-remove-sku, .js-add-sku')) {
+            setTimeout(updateSidePanel, 0);
+        }
+    });
+
+    // YAŞAM DÖNGÜSÜ — New version / Archive reuse the existing template endpoints (no new backend), exactly as details.js.
+    el('btnPanelNewVersion')?.addEventListener('click', async () => {
+        const id = el('btnPanelNewVersion').dataset.id;
+        const run = async () => {
+            try {
+                const created = await envelope(await fetch(`${endpoint}/templates/${id}/new-version`, {
+                    method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' }
+                }));
+                window.location.href = created ? `/CRM/StrategyTemplates/Edit/${created}` : '/CRM/StrategyTemplates';
+            } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
+        };
+        if (window.showConfirm) window.showConfirm(L.NewVersionConfirm, run, { type: 'question', confirmButtonText: L.NewVersion });
+        else run();
+    });
+    el('btnPanelArchive')?.addEventListener('click', () => {
+        const id = el('btnPanelArchive').dataset.id;
+        const run = async () => {
+            try {
+                await envelope(await fetch(`${endpoint}/templates/${id}/archive`, {
+                    method: 'POST', credentials: 'same-origin', headers: { Accept: 'application/json' }
+                }));
+                window.showToast?.(L.RecordArchived, 'success');
+                setTimeout(() => { window.location.href = '/CRM/StrategyTemplates'; }, 350);
+            } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
+        };
+        if (window.showConfirm) window.showConfirm(L.ArchiveStrategyTemplateConfirm, run, { type: 'warning', confirmButtonText: L.ArchiveStrategyTemplate });
+        else run();
+    });
+
     const init = async () => {
         renderAll();
         await loadScopeOptions();
@@ -621,6 +803,7 @@
         if (window.flatpickr) {
             document.querySelectorAll('.flatpickr-date').forEach(node => window.flatpickr(node, { dateFormat: 'Y-m-d' }));
         }
+        updateSidePanel();
     };
 
     init();

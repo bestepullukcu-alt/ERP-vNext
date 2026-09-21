@@ -146,4 +146,55 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>لم تستجب التبعية، لذا تعذر تحميل هذه القائمة.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>لا توجد خطة إقليمية مطابقة، لذا تُعرض القائمة المنشورة الكاملة.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>النطاق المحلول</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>ماذا ستفعل هذه الخطة؟</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>أين</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>من</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>كم مرة</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>ماذا</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>القصة</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>شرائح</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>أسطر المنتجات</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>الوزن %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>محتويات</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>الأقسام</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>الهوية</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>الشرائح</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>التكرار</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>المنتجات + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>المحتوى</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>التحقق من MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>دورة الحياة</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>مسودة</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>نشط</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>يُجمّد الخطة الحالية ويفتح نسخة جديدة</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>لا ينتج StrategyTemplate شيئًا بمفرده — بل يربط شريحة وسياسة تكرار زيارة ومنتجات ومحتوى معتمد في قالب واحد. يتم التنفيذ عبر CyclePeriod وCampaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>تُدار التكرار في سياسات تكرار الزيارة</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — هذا الحقل مرجعي فقط. يُحفظ تكرار الزيارة الفعلي لكل هدف/شريحة في وحدة منفصلة.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>فتح السياسات ↗</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» يستهدف {who} عبر {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>هذه الخطة</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>غير محدد</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>مرتبط بسياسة</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>نية معلنة</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} زيارة / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} جاهز</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>الرمز والاسم مطلوبان.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>المستأجر بالكامل — لم يُضيَّق النطاق.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>اربط شريحة واحدة على الأقل.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>تم ربط {n} شريحة.</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>المؤشر فارغ — هذا اختياري.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>مرتبط بسياسة تكرار زيارة.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>نية معلنة (غير مُلزِمة).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>نية التكرار غير مكتملة.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>أضف سطر منتج واحدًا على الأقل.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>توزيع SKU ليس 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} سطر منتج.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>المحتوى اختياري.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>تم ربط {n} محتوى.</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>يتحقق التشغيل بمجرد اختيار منتج.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>جميع الأسطر تحتوي على منتج.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>بعض الأسطر بلا منتج.</value></data>
 </root>

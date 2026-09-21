@@ -146,4 +146,55 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>依赖服务未响应，无法加载此列表。</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>没有匹配的区域计划，因此显示完整的已发布列表。</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>已解析范围</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>此策略将做什么？</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>在哪里</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>谁</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>频率</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>什么</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>内容</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>细分</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>产品行</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>权重 %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>内容</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>各部分</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>标识</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>范围</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>细分</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>频率</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>产品 + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>内容</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>MDM 校验</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>启用</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>冻结当前策略并打开新副本</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate 本身不产生任何内容——它将细分、拜访频率策略、产品和已批准内容绑定到一个模板中。执行通过 CyclePeriod 和 Campaign 完成。</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>频率在拜访频率策略中管理</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — 此字段仅供参考。真实拜访频率按目标/细分保存在单独的模块中。</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>打开策略 ↗</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>“{name}”面向 {who}，使用 {what} — {howoften}。</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>此策略</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>未指定</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>已绑定策略</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>声明的意图</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} 次拜访 / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} 就绪</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>需要代码和名称。</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>整个租户——范围未收窄。</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>至少绑定一个细分。</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>已绑定 {n} 个细分。</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>指针为空——此项可选。</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>已绑定拜访频率策略。</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>声明的意图（非约束）。</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>频率意图不完整。</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>至少添加一个产品行。</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>SKU 分配不等于 100%。</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} 个产品行。</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>内容为可选。</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>已绑定 {n} 个内容。</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>选择产品后由运行时校验。</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>所有行均已选产品。</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>部分行未选产品。</value></data>
 </root>

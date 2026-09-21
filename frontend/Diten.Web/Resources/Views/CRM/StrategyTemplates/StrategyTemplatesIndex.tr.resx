@@ -146,4 +146,55 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>Bağımlılık cevap vermedi, bu liste yüklenemedi.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Eşleşen bir saha planı yok, bu yüzden yayınlanmış tam liste gösteriliyor.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>Çözümlenen kapsam</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>Bu oyun ne yapacak?</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>NEREDE</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>KİM</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>NE SIKLIKTA</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>NE</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>HİKAYE</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>segment</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>ürün satırı</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>ağırlık %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>içerik</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>Bölümler</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>Segmentler</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>Frekans</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>Ürün + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>İçerik</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>MDM doğrulaması</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>Yaşam döngüsü</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>Taslak</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>Aktif</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Taslak kaydet</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>Mevcut oyunu dondurur, yeni bir kopya açılır</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate kendisi hiçbir şey üretmez — Segment, ziyaret sıklığı politikası, ürün ve onaylı içeriği tek bağlayıcı şablonda birleştirir. Uygulama CyclePeriod ve Campaign üzerinden yapılır.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>Frekans, Ziyaret Sıklığı Politikaları'nda yönetilir</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — bu alan yalnızca referanstır. Gerçek ziyaret sıklığı hedef/segment bazında ayrı modülde tutulur.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>Politikaları aç ↗</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" — {who} için {what}, {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Bu oyun</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>Belirtilmedi</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>Politikaya bağlı</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>Beyan edilen niyet</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} ziyaret / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} hazır</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>Kod ve ad gerekli.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>Tüm kiracı — kapsam daraltılmadı.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>En az bir segment bağlayın.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>{n} segment bağlı.</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>İşaretçi boş — bu opsiyoneldir.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>Ziyaret sıklığı politikasına bağlı.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>Beyan edilen niyet (bağlayıcı değil).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>Frekans niyeti eksik.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>En az bir ürün hattı ekleyin.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>SKU dağılımı %100 değil.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} ürün hattı.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>İçerik opsiyonel.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>{n} içerik bağlı.</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Ürün seçilince çalışma zamanı doğrular.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>Tüm hatlarda ürün seçili.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Bazı hatlarda ürün seçilmedi.</value></data>
 </root>
