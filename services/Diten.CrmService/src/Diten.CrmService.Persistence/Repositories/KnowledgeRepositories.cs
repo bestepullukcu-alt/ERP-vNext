@@ -25,13 +25,23 @@ public sealed class KnowledgeContentRepository : IKnowledgeContentRepository
         => Builders<KnowledgeContent>.Filter.Where(c => c.TenantId == tenantId && !c.IsDeleted);
 
     public async Task<KnowledgeContent?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken cancellationToken)
-        => await _collection
+    {
+        var row = await _collection
             .Find(Tenant(tenantId) & Builders<KnowledgeContent>.Filter.Eq(c => c.Id, id))
             .FirstOrDefaultAsync(cancellationToken);
+        // SCMM-13 read-time migration: a pre-variant row becomes its own single-language source on read.
+        row?.EnsureVariantDefaults();
+        return row;
+    }
 
     public async Task<IReadOnlyList<KnowledgeContent>> ListAsync(Guid tenantId, CancellationToken cancellationToken)
     {
         var rows = await _collection.Find(Tenant(tenantId)).ToListAsync(cancellationToken);
+        foreach (var row in rows)
+        {
+            row.EnsureVariantDefaults();
+        }
+
         return rows.OrderByDescending(c => c.CreatedAt).ToList();
     }
 

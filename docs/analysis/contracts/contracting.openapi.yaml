@@ -1,0 +1,180 @@
+openapi: 3.1.0
+info:
+  title: CONTRACTING
+  description: >
+    MOD-0144 Contracting & Clause Library — MVP-2 Procurement SoR.
+    SoR: sourcing/procurement contracts, clause deviations (reference).
+    Sözleşme + clause library + clause deviation + approval. Award (MOD-0145) veya
+    supplier (MOD-0140) bağlanabilir; evidence/retention MOD-0029/0031 üzerinden (binary burada tutulmaz).
+    Tenant + Legal-Entity scoped; server-resolved. Parasal alanlar Decimal (string); float YASAK.
+  version: 1.0.0
+  x-status: REVIEW
+  x-owner: MOD-0144
+  x-authored-by: control-tower
+  x-min-contract: CLM-CONTRACT-BUNDLE
+  x-consumes: [SUPPLIER, SOURCING]
+servers: [{ url: /api/contracts }]
+security: [{ bearerAuth: [] }]
+paths:
+  /:
+    post:
+      operationId: createContract
+      summary: Sözleşme oluştur (draft; supplier/award bağlanır, clause seçilir)
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContractUpsert' }
+            example:
+              supplierId: SUP-2001
+              rfxId: RFX-4001
+              title: "2026 Hammadde Çerçeve Sözleşmesi"
+              effectiveFrom: "2026-10-01"
+              effectiveTo: "2027-09-30"
+              currency: TRY
+              clauses: [{ clauseId: CL-PAYMENT-30, deviation: false }]
+      responses:
+        '201': { description: Sözleşme oluşturuldu, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
+        '404': { $ref: '#/components/responses/UnknownReference' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    get:
+      operationId: listContracts
+      parameters:
+        - { name: supplierId, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/ContractStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Sözleşme sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Contract' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+  /{contractId}:
+    get:
+      operationId: getContract
+      parameters: [{ name: contractId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Sözleşme, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /{contractId}/activate:
+    post:
+      operationId: activateContract
+      summary: Sözleşmeyi onayla/aktifle (approval trail; clause deviation onayı dahil)
+      parameters:
+        - { name: contractId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200': { description: Aktif, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /clauses:
+    get:
+      operationId: listClauseLibrary
+      summary: Clause library (standart clause'lar)
+      parameters:
+        - { name: category, in: query, required: false, schema: { type: string } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Clause sayfası
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Clause' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
+    post:
+      operationId: createClause
+      summary: Clause library'ye standart clause ekle
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ClauseUpsert' } } }
+      responses:
+        '201': { description: Clause eklendi, content: { application/json: { schema: { $ref: '#/components/schemas/Clause' } } } }
+        '409': { $ref: '#/components/responses/DuplicateClause' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+components:
+  securitySchemes: { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } }
+  parameters:
+    IdempotencyKey: { name: Idempotency-Key, in: header, required: true, schema: { type: string } }
+  schemas:
+    Decimal: { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    ContractStatus: { type: string, enum: [Draft, InReview, Active, Expired, Terminated] }
+    ClauseRef:
+      type: object
+      required: [clauseId]
+      properties:
+        clauseId: { type: string, description: "clause library referansı" }
+        deviation: { type: boolean, nullable: true, description: "standart clause'tan sapma var mı" }
+        deviationText: { type: string, nullable: true }
+    ContractUpsert:
+      type: object
+      required: [supplierId, title, effectiveFrom]
+      properties:
+        supplierId: { type: string, description: "MOD-0140 consume" }
+        rfxId: { type: string, nullable: true, description: "MOD-0145 award bağlanabilir" }
+        title: { type: string }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date, nullable: true }
+        currency: { type: string, nullable: true, description: "LE base currency" }
+        clauses: { type: array, items: { $ref: '#/components/schemas/ClauseRef' }, nullable: true }
+        evidenceRefs: { type: array, items: { type: string }, nullable: true, description: "MOD-0029/0031 Evidence; binary burada değil" }
+    Contract:
+      type: object
+      properties:
+        contractId: { type: string }
+        supplierId: { type: string }
+        rfxId: { type: string, nullable: true }
+        title: { type: string }
+        status: { $ref: '#/components/schemas/ContractStatus' }
+        effectiveFrom: { type: string, format: date }
+        effectiveTo: { type: string, format: date, nullable: true }
+        currency: { type: string, nullable: true }
+        clauses: { type: array, items: { $ref: '#/components/schemas/ClauseRef' } }
+        workflowInstanceId: { type: string, nullable: true }
+        contractVersion: { type: string }
+    ClauseUpsert:
+      type: object
+      required: [category, title, body]
+      properties:
+        category: { type: string }
+        title: { type: string }
+        body: { type: string }
+    Clause:
+      type: object
+      properties:
+        clauseId: { type: string }
+        category: { type: string }
+        title: { type: string }
+        body: { type: string }
+        contractVersion: { type: string }
+    Error:
+      type: object
+      properties:
+        error: { type: object, properties: { code: { type: string }, message: { type: string }, correlationId: { type: string } } }
+        contractVersion: { type: string }
+  responses:
+    NotFound:
+      description: Kayıt bulunamadı
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: NOT_FOUND, message: "sözleşme bulunamadı", correlationId: req-1 }, contractVersion: v1 } } }
+    UnknownReference:
+      description: supplier (0140) veya rfx (0145) bilinmiyor (fail-closed)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: UNKNOWN_REFERENCE, message: "supplier/rfx bulunamadı", correlationId: req-2 }, contractVersion: v1 } } }
+    DuplicateClause:
+      description: Aynı category+title clause zaten var
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: DUPLICATE_CLAUSE, message: "clause zaten var", correlationId: req-3 }, contractVersion: v1 } } }
+    StateConflict:
+      description: Geçersiz durum geçişi (ör. aktif sözleşme tekrar aktifleştirilemez)
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: INVALID_STATE, message: "geçersiz durum geçişi", correlationId: req-4 }, contractVersion: v1 } } }
+    Unprocessable:
+      description: İş kuralı/validation ihlali
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' }, example: { error: { code: VALIDATION_FAILED, message: "effectiveFrom zorunlu", correlationId: req-5 }, contractVersion: v1 } } }

@@ -23,7 +23,7 @@ public static class ConceptGraphMapper
 
     public static ConceptChainTemplateDto ToDto(ConceptChainTemplate c) => new(
         c.Id, c.SubjectId, c.ChainCode, c.ChainName, c.Description, c.OrderedConceptTypes.ToList(),
-        ToBranchDtos(c), c.Status,
+        ToBranchDtos(c), c.ModeratorRoleType, c.ForWhomAudienceProfileIds.ToList(), c.Status,
         c.ChainVersion, c.EffectiveFrom, c.EffectiveTo,
         c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.ArchivedAt, c.ArchivedBy, c.IsArchived());
 
@@ -37,8 +37,7 @@ public static class ConceptGraphMapper
             return c.Branches.Select(b => new ConceptChainBranchDto(
                 b.BranchCode, b.BranchName, b.SortOrder,
                 b.Steps.Select(s => new ConceptChainStepDto(
-                    s.ConceptTypeId, s.MinSelection, s.MaxSelection,
-                    s.AllowedRoleRefs.ToList(), s.AudienceDimensionRefs.ToList())).ToList())).ToList();
+                    s.ConceptTypeId, s.MinSelection, s.MaxSelection)).ToList())).ToList();
         }
 
         if (c.OrderedConceptTypes.Count == 0)
@@ -47,7 +46,7 @@ public static class ConceptGraphMapper
         }
 
         var steps = c.OrderedConceptTypes
-            .Select(id => new ConceptChainStepDto(id, 1, 1, Array.Empty<string>(), Array.Empty<string>()))
+            .Select(id => new ConceptChainStepDto(id, 1, 1))
             .ToList();
         return new[] { new ConceptChainBranchDto("B1", null, 0, steps) };
     }

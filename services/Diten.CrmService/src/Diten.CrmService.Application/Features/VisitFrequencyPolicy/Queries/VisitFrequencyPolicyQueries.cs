@@ -14,6 +14,11 @@ public sealed record ListVisitFrequencyPoliciesQuery(
 
 public sealed record GetVisitFrequencyPolicyQuery(Guid PolicyId) : IRequest<Response<VisitFrequencyPolicyDto>>;
 
+/// <summary>WP-FREQ-DET-A read-only detail analysis for one policy: target impact (count + quarterly projection) plus
+/// the conflict outcome (FU03 resolve engine REUSED for the policy's own target + context). Never writes.</summary>
+public sealed record GetVisitFrequencyPolicyAnalysisQuery(Guid PolicyId)
+    : IRequest<Response<VisitFrequencyPolicyAnalysisDto>>;
+
 /// <summary>Read-only resolve query — "how often should this target be visited?". Never writes. Context ids are
 /// supplied by the caller; membership/traversal is never computed here.</summary>
 public sealed record ResolveVisitFrequencyPolicyQuery(

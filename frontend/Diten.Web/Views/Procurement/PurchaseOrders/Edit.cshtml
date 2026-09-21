@@ -1,0 +1,16 @@
+@model Diten.Web.Models.Procurement.PurchaseOrders.PurchaseOrdersEditViewModel
+@using Diten.Web.Views.Procurement.PurchaseOrders
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<PurchaseOrdersIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["FormTitleEdit"].Value;
+    Layout = "_LayoutTenantShell";
+    ViewData["FormMode"] = "edit";
+}
+
+<partial name="~/Views/Procurement/PurchaseOrders/_Form.cshtml" model="Model" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/Procurement/PurchaseOrders/form.js" asp-append-version="true"></script>
+}

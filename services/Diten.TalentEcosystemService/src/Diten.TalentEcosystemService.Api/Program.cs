@@ -1,6 +1,7 @@
 using Diten.TalentEcosystemService.Application;
 using Diten.TalentEcosystemService.Infrastructure;
 using Diten.TalentEcosystemService.Persistence;
+using Diten.BuildingBlocks.Security.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -28,7 +29,7 @@ builder.Services
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret ?? string.Empty)),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = JwtValidationDefaults.ClockSkew
         };
     });
 

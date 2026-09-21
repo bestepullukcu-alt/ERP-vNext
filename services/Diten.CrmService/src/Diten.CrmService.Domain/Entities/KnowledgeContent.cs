@@ -89,12 +89,52 @@ public sealed class KnowledgeContent : EntityBase
 
     public List<KnowledgeExternalReference> ExternalReferences { get; set; } = new();
 
+    // ---- SCMM-13 (docx §13) language-variant linkage --------------------------------------------------------------
+    // "Source and target language variants are distinct versioned records under a shared logical component." The
+    // logical component is <see cref="ContentSetId"/>; source + every target translation share it. Each variant stays a
+    // distinct record (own Id / ContentCode / LanguageCode / ContentVersion). Exactly one variant per set is the source
+    // and at most one active (non-archived) variant exists per language. This is an ADDITIVE extension of the FU02
+    // component (D02c reuse) — no new aggregate.
+
+    /// <summary>Logical component this variant belongs to (source + its translations share it). A legacy row (this
+    /// field unset / <see cref="Guid.Empty"/>) is its own single-language component — see <see cref="EnsureVariantDefaults"/>.</summary>
+    public Guid ContentSetId { get; set; }
+
+    /// <summary>True on the one source-language variant of the set; false on a translation target.</summary>
+    public bool IsSourceLanguage { get; set; }
+
+    /// <summary><see cref="ContentTranslationStatuses"/> — <c>current</c> on the source and on an up-to-date target;
+    /// <c>needs_assessment</c> on a target after the source's governed body changed (docx: "a source edit opens
+    /// translation assessment").</summary>
+    public string TranslationStatus { get; set; } = ContentTranslationStatuses.Current;
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
     public string? ArchivedBy { get; set; }
 
     public bool IsArchived() => ArchivedAt is not null;
+
+    /// <summary>SCMM-13 READ-TIME MIGRATION (idempotent). A row written before variant linkage existed has no
+    /// <see cref="ContentSetId"/> (deserializes to <see cref="Guid.Empty"/>): it is its own single-language component,
+    /// so it becomes its own source (<c>ContentSetId = Id</c>, <c>IsSourceLanguage = true</c>, <c>TranslationStatus =
+    /// current</c>). Also normalises a blank translation status to <c>current</c>. Applied at the read boundary
+    /// (repository), never rewriting history until the row is next saved. Safe to call repeatedly.</summary>
+    public void EnsureVariantDefaults()
+    {
+        if (ContentSetId == Guid.Empty)
+        {
+            ContentSetId = Id;
+            IsSourceLanguage = true;
+            TranslationStatus = ContentTranslationStatuses.Current;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(TranslationStatus))
+        {
+            TranslationStatus = ContentTranslationStatuses.Current;
+        }
+    }
 
     /// <summary>Available for consumption: published status AND effective at the instant. Read-only helper; this class
     /// draws no visit/route/recommendation conclusion.</summary>
@@ -176,6 +216,25 @@ public static class KnowledgeContentStatuses
         => string.IsNullOrWhiteSpace(value) ? Draft : value.Trim().ToLowerInvariant();
 }
 
+/// <summary>SCMM-13 translation status of a language variant. In-domain (structural) — validated here, never through an
+/// unpublished reference set. <c>current</c>: up to date with its source (and the source itself). <c>needs_assessment</c>:
+/// a target whose source's governed body changed after it was translated (docx: "a source edit opens translation
+/// assessment"). There is no auto-translation and no silent state change; the transition back to <c>current</c> is the
+/// explicit mark-assessed command.</summary>
+public static class ContentTranslationStatuses
+{
+    public const string Current = "current";
+    public const string NeedsAssessment = "needs_assessment";
+
+    public static readonly IReadOnlyList<string> All = new[] { Current, NeedsAssessment };
+
+    public static bool IsValid(string? value)
+        => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
+
+    public static string Normalize(string? value)
+        => string.IsNullOrWhiteSpace(value) ? Current : value.Trim().ToLowerInvariant();
+}
+
 /// <summary>How the content was authored. In-domain (structural).</summary>
 public static class KnowledgeContentSources
 {
@@ -207,6 +266,11 @@ public static class KnowledgeReasonCodes
     public const string ContentUpdated = "knowledge_content_updated";
     public const string ContentArchived = "knowledge_content_archived";
     public const string ContentDuplicateCode = "knowledge_content_duplicate_code";
+
+    // SCMM-13 language-variant lifecycle.
+    public const string ContentVariantCreated = "knowledge_content_variant_created";
+    public const string ContentTranslationAssessmentOpened = "knowledge_content_translation_assessment_opened";
+    public const string ContentTranslationAssessed = "knowledge_content_translation_assessed";
 
     public const string SubjectCreated = "knowledge_subject_created";
     public const string SubjectUpdated = "knowledge_subject_updated";

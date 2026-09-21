@@ -99,7 +99,8 @@
             mdm: window.ApiBaseUrl,
             deven: window.ApiBaseUrl,
             auth: window.ApiBaseUrl,
-            platform: window.ApiBaseUrl
+            platform: window.ApiBaseUrl,
+            procurement: window.ApiBaseUrl
         };
         window.CurrentLanguage = "@currentCulture";
         window.CurrentUser = @Html.Raw(currentUserJson);
@@ -287,6 +288,101 @@
                             </a>
                         </li>
                     @* ══ LEGACY-NAV-END ═══════════════════════════════════════════════════════════════════ *@
+                    }
+
+                    @* MOD-0140/0145/0141 — Procurement (tenant shell). The PROCUREMENT domain header renders once
+                       for any procurement read permission; each module link is INDIVIDUALLY gated (UAS-001: no link,
+                       no skeleton, for users without that module's read permission). Active-state via
+                       ViewContext.RouteData controller name. Reuses Nav.Domain.PROCUREMENT (not duplicated).
+                       ASSUMPTION-P2P-FE-03: header gate broadened from suppliers-only to any procurement read so a
+                       user holding only requisitions/purchase-orders read still sees the section; the Suppliers and
+                       Sourcing links keep their own per-permission gates unchanged. *@
+                    @if (Perms.Has("procurement.suppliers.read")
+                        || Perms.Has("procurement.sourcing.read")
+                        || Perms.Has("procurement.requisitions.read")
+                        || Perms.Has("procurement.purchase-orders.read")
+                        || Perms.Has("procurement.grn.read")
+                        || Perms.Has("procurement.invoice-match.read")
+                        || Perms.Has("procurement.contracts.read"))
+                    {
+                        <li class="menu-header small text-uppercase">
+                            <span class="menu-header-text">@SharedLocalizer["Nav.Domain.PROCUREMENT"]</span>
+                        </li>
+                        @if (Perms.Has("procurement.suppliers.read"))
+                        {
+                            <li class="menu-item @(activeController == "Suppliers" ? "active" : "")">
+                                <a href="/Suppliers" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-store"></i>
+                                    <div>@SharedLocalizer["Nav.Module.SUPPLIERS"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0145 — Procurement / Sourcing (RFQ/RFP), tenant shell. Link shown only with the
+                           sourcing read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.sourcing.read"))
+                        {
+                            <li class="menu-item @(activeController == "Sourcing" ? "active" : "")">
+                                <a href="/Sourcing" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-collection"></i>
+                                    <div>@SharedLocalizer["Nav.Module.SOURCING"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0141 — Procurement / Requisitions (tenant shell). Link shown only with the requisitions
+                           read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.requisitions.read"))
+                        {
+                            <li class="menu-item @(activeController == "Requisitions" ? "active" : "")">
+                                <a href="/Requisitions" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-clipboard"></i>
+                                    <div>@SharedLocalizer["Nav.Module.REQUISITIONS"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0141 — Procurement / Purchase Orders (tenant shell). Link shown only with the
+                           purchase-orders read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.purchase-orders.read"))
+                        {
+                            <li class="menu-item @(activeController == "PurchaseOrders" ? "active" : "")">
+                                <a href="/PurchaseOrders" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-cart"></i>
+                                    <div>@SharedLocalizer["Nav.Module.PURCHASEORDERS"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0142 — Procurement / Receiving (GRN), tenant shell. Link shown only with the grn
+                           read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.grn.read"))
+                        {
+                            <li class="menu-item @(activeController == "Grn" ? "active" : "")">
+                                <a href="/Grn" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-package"></i>
+                                    <div>@SharedLocalizer["Nav.Module.GRN"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0143 — Procurement / Invoice Capture & 3-Way Match (tenant shell). Link shown only with the
+                           invoice-match read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.invoice-match.read"))
+                        {
+                            <li class="menu-item @(activeController == "InvoiceMatch" ? "active" : "")">
+                                <a href="/InvoiceMatch" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-check-double"></i>
+                                    <div>@SharedLocalizer["Nav.Module.INVOICEMATCH"]</div>
+                                </a>
+                            </li>
+                        }
+                        @* MOD-0144 — Procurement / Contracting & Clause Library (tenant shell). Link shown only with the
+                           contracts read permission (UAS-001). Active-state via ViewContext.RouteData controller name. *@
+                        @if (Perms.Has("procurement.contracts.read"))
+                        {
+                            <li class="menu-item @(activeController == "Contracts" ? "active" : "")">
+                                <a href="/Contracts" class="menu-link">
+                                    <i class="menu-icon tf-icons bx bx-file"></i>
+                                    <div>@SharedLocalizer["Nav.Module.CONTRACTS"]</div>
+                                </a>
+                            </li>
+                        }
                     }
 
                     @* MOD-0285 — dynamic "Modules" section (AUGMENT). Self-registered/entitled modules whose page

@@ -80,6 +80,10 @@ internal sealed class FakeTerritoryNodeRepo : ITerritoryNodeRepository
         => Task.FromResult((IReadOnlyList<TerritoryNode>)Items
             .Where(n => n.TenantId == tenantId && n.ModelId == modelId && !n.IsDeleted).ToList());
 
+    public Task<IReadOnlyList<TerritoryNode>> ListByIdsAsync(Guid tenantId, IReadOnlyCollection<Guid> ids, CancellationToken ct)
+        => Task.FromResult((IReadOnlyList<TerritoryNode>)Items
+            .Where(n => n.TenantId == tenantId && !n.IsDeleted && ids.Contains(n.Id)).ToList());
+
     public Task<bool> WouldCreateCycleAsync(Guid tenantId, Guid modelId, Guid nodeId, Guid candidateParentId, CancellationToken ct)
         => Task.FromResult(CycleAnswer);
 

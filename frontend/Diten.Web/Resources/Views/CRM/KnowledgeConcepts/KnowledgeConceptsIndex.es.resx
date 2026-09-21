@@ -177,9 +177,31 @@
   <data name="BranchStepsEmpty" xml:space="preserve"><value>Aún no hay pasos en esta rama.</value></data>
   <data name="MinSelection" xml:space="preserve"><value>Mín</value></data>
   <data name="MaxSelection" xml:space="preserve"><value>Máx</value></data>
-  <data name="Moderator" xml:space="preserve"><value>Roles de moderador</value></data>
+  <data name="Moderator" xml:space="preserve"><value>Moderador</value></data>
   <data name="ForWhom" xml:space="preserve"><value>Audiencia</value></data>
   <data name="RefsCommaHint" xml:space="preserve"><value>Referencias separadas por comas</value></data>
+  <data name="ModeratorPlaceholder" xml:space="preserve"><value>Seleccione un rol de moderador</value></data>
+  <data name="ForWhomPlaceholder" xml:space="preserve"><value>Seleccione perfiles de audiencia</value></data>
+  <data name="ModeratorHint" xml:space="preserve"><value>Quién presenta esta cadena.</value></data>
+  <data name="ForWhomHint" xml:space="preserve"><value>Perfiles de audiencia objetivo de esta cadena.</value></data>
+  <data name="ConceptType" xml:space="preserve"><value>Tipo de concepto</value></data>
   <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
   <data name="BranchCountLabel" xml:space="preserve"><value>rama(s)</value></data>
+  <data name="PriorityHigh" xml:space="preserve"><value>Alta</value></data>
+  <data name="PriorityMedium" xml:space="preserve"><value>Media</value></data>
+  <data name="PriorityLow" xml:space="preserve"><value>Baja</value></data>
+  <data name="RelTypeDesc_leads-to" xml:space="preserve"><value>Un concepto lleva/conduce al siguiente</value></data>
+  <data name="RelTypeDesc_requires" xml:space="preserve"><value>Requiere el objetivo como requisito previo</value></data>
+  <data name="RelTypeDesc_addresses" xml:space="preserve"><value>Aborda una necesidad o un problema</value></data>
+  <data name="RelTypeDesc_evidences" xml:space="preserve"><value>Aporta evidencia para el objetivo</value></data>
+  <data name="RelTypeDesc_belongs-to" xml:space="preserve"><value>Pertenece a / forma parte del objetivo</value></data>
+  <data name="RelTypeDesc_custom" xml:space="preserve"><value>Un tipo de relación personalizado</value></data>
+  <data name="DirectionDesc_outbound" xml:space="preserve"><value>Arista dirigida (de origen a destino)</value></data>
+  <data name="DirectionDesc_bidirectional" xml:space="preserve"><value>Enlace bidireccional / equivalente</value></data>
+  <data name="Prev" xml:space="preserve"><value>Anterior</value></data>
+  <data name="Next" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="BranchLabel" xml:space="preserve"><value>Rama</value></data>
+  <data name="Steps" xml:space="preserve"><value>pasos</value></data>
+  <data name="AddStep" xml:space="preserve"><value>Nuevo paso</value></data>
+  <data name="Details" xml:space="preserve"><value>Detalles</value></data>
 </root>

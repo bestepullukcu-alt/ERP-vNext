@@ -206,6 +206,17 @@ public sealed class SegmentsController : Controller
             HttpMethod.Post, $"/api/crm/segments/{segmentId}/membership/evaluate", body,
             ResolvePermission, ct, ReadPermission, ReadFallback);
 
+    /// <summary>The DRAFT-rule reach preview (SEG-C). A POST that writes NOTHING and carries no segmentId — the
+    /// unsaved criteria travel in the body, and the response is the live "who this reaches now" report (total,
+    /// per-condition funnel and a bounded member sample). It runs on the same <c>crm.segment.resolve</c> key as
+    /// <c>/resolve</c> because a member sample is member identity (PII); under the documented DEV-ONLY fallback that
+    /// collapses onto read.</summary>
+    [HttpPost("api/preview")]
+    public Task<IActionResult> Preview([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(
+            HttpMethod.Post, "/api/crm/segments/preview", body,
+            ResolvePermission, ct, ReadPermission, ReadFallback);
+
     [HttpGet("api/segments/{segmentId:guid}/targets")]
     public Task<IActionResult> TargetList(Guid segmentId, CancellationToken ct) =>
         ProxyGetAsync(
@@ -296,6 +307,15 @@ public sealed class SegmentsController : Controller
     public Task<IActionResult> TerritoryNodes(Guid modelId, CancellationToken ct) =>
         ProxyGetAsync(
             $"/api/crm/territory-models/{modelId}/nodes{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
+
+    /// <summary>WP-SEG-DETAILS8 — territory.node reverse lookup by ids (?ids=guid,guid). Edit uses it to re-establish the
+    /// model context for a saved node so the model+node cascade comes back SELECTED instead of showing a raw id. It reuses
+    /// the MOD-0151 bulk read that lives under the existing territory-models Gateway wildcard, so no new Gateway route is
+    /// added; nothing is written.</summary>
+    [HttpGet("api/territory-nodes")]
+    public Task<IActionResult> TerritoryNodesByIds(CancellationToken ct) =>
+        ProxyGetAsync(
+            $"/api/crm/territory-models/nodes/by-ids{Request.QueryString}", "crm.territory.read", ct, ReadFallback);
 
     /// <summary>consent.scope-product picker. Existing MDM product list.</summary>
     [HttpGet("api/mdm-products")]

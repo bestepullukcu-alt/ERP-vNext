@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aún no hay registros.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivadas</value></data>
+  <data name="Active" xml:space="preserve"><value>Activas</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar..</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Vista previa</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Activa</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Template" xml:space="preserve"><value>Plantilla</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="Components" xml:space="preserve"><value>Componentes</value></data>
+  <data name="Claims" xml:space="preserve"><value>Alegaciones</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Referencias de producto</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Referencias de mercado</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Referencias de audiencia</value></data>
+  <data name="Channel" xml:space="preserve"><value>Canal</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Idioma</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Escriba un valor y pulse Intro para añadir cada referencia.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>Alcances de contenido</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Contexto/alcance reutilizable para el ensamblaje de contenido: referencias de producto, mercado y audiencia, con canal, idioma y período opcionales.</value></data>
+  <data name="ReusableNote" xml:space="preserve"><value>Defina un alcance una vez y refiéncielo desde muchos conjuntos de contenido (fijado por versión).</value></data>
+  <data name="ScopeCode" xml:space="preserve"><value>Código de alcance</value></data>
+  <data name="ScopeCodeNote" xml:space="preserve"><value>Clave de negocio estable, compartida entre las versiones de un alcance.</value></data>
+  <data name="ScopeName" xml:space="preserve"><value>Nombre de alcance</value></data>
+  <data name="ScopeVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="CreateScope" xml:space="preserve"><value>Crear alcance</value></data>
+  <data name="EditScope" xml:space="preserve"><value>Editar alcance</value></data>
+  <data name="ArchiveScope" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveScopeConfirm" xml:space="preserve"><value>¿Archivar este alcance? Es una acción de ciclo de vida suave; permanece legible.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Registro archivado.</value></data>
+  <data name="ArchivedScopeReadOnly" xml:space="preserve"><value>Este alcance está archivado y es de solo lectura.</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Referencias</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>Canal, idioma y período</value></data>
+  <data name="PeriodFrom" xml:space="preserve"><value>Período desde</value></data>
+  <data name="PeriodTo" xml:space="preserve"><value>Período hasta</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Activa</value></data>
+</root>

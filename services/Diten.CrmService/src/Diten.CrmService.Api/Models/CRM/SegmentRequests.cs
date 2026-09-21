@@ -101,3 +101,12 @@ public sealed record EvaluateSegmentMembershipRequest(
     string SubjectType,
     Guid SubjectId,
     DateTimeOffset? EffectiveAt);
+
+/// <summary>A DRAFT (unsaved) rule to preview the reach of. It carries no <c>SegmentId</c> and no <c>SegmentType</c>: a
+/// preview is always a dynamic rule (a static segment's reach is just its manual list), and nothing here is persisted.
+/// The criteria tree is the same shape the editor sends on create — the runtime assigns the real node ids.</summary>
+public sealed record PreviewSegmentReachRequest(
+    string SubjectType,
+    string MatchMode,
+    List<SegmentCriteriaNodeRequest>? Criteria,
+    DateTimeOffset? EffectiveAt);

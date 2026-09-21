@@ -1,0 +1,283 @@
+@model Diten.Web.Models.Procurement.InvoiceMatch.InvoiceMatchEditViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.Views.Procurement.InvoiceMatch.InvoiceMatchIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@inject Diten.Web.Services.IPermissionSnapshot Perms
+@{
+    ViewData["Title"] = SharedLocalizer["Details"].Value;
+    Layout = "_LayoutTenantShell";
+
+    var status = Model.Status ?? "Captured";
+    var statusClass = status switch
+    {
+        "Captured" => "bg-label-secondary",
+        "Matched" => "bg-label-success",
+        "MatchedWithinTolerance" => "bg-label-info",
+        "Exception" => "bg-label-danger",
+        "Rejected" => "bg-label-warning",
+        "ClearedForPayment" => "bg-label-primary",
+        _ => "bg-label-primary"
+    };
+    var statusText = status switch
+    {
+        "Captured" => Localizer["StatusCaptured"].Value,
+        "Matched" => Localizer["StatusMatched"].Value,
+        "MatchedWithinTolerance" => Localizer["StatusMatchedWithinTolerance"].Value,
+        "Exception" => Localizer["StatusException"].Value,
+        "Rejected" => Localizer["StatusRejected"].Value,
+        "ClearedForPayment" => Localizer["StatusClearedForPayment"].Value,
+        _ => status
+    };
+
+    // Lifecycle actions (UAS-001: no button without the permission).
+    // Run-Match runs the 3-way match; Resolve is offered only when an OPEN exception exists for this invoice.
+    var canMatch = Perms.Has("procurement.invoice-match.match");
+    var canResolve = Perms.Has("procurement.invoice-match.resolve-exception") && !string.IsNullOrWhiteSpace(Model.ExceptionId);
+}
+
+<div class="invoice-match-details" data-invoice-id="@Model.InvoiceId" data-exception-id="@Model.ExceptionId">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@SharedLocalizer["Details"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="/InvoiceMatch">@Localizer["InvoiceMatchTitle"]</a>
+                    </li>
+                    <li class="breadcrumb-item active text-primary">@SharedLocalizer["Details"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/InvoiceMatch" class="btn btn-label-secondary">
+                @SharedLocalizer["Back"]
+            </a>
+            @if (canMatch)
+            {
+                <button type="button" class="btn btn-primary" id="btnRunMatch">
+                    <i class="bx bx-check-double me-1"></i>@Localizer["ActionRunMatch"]
+                </button>
+            }
+            @if (canResolve)
+            {
+                <button type="button" class="btn btn-warning" id="btnResolveException">
+                    <i class="bx bx-git-merge me-1"></i>@Localizer["ActionResolve"]
+                </button>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+    <!-- Main Column (Left) -->
+    <div class="col-12 col-lg-8 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["InvoiceSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-hash"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["InvoiceId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.InvoiceId) ? "-" : Model.InvoiceId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-check-shield"></i>
+                        <div>
+                            <div class="backbone-preview-label">@SharedLocalizer["Status"]</div>
+                            <div class="mt-1"><span class="badge @statusClass">@statusText</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-store"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SupplierId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.SupplierId) ? "-" : Model.SupplierId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-cart"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["PoId"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.PoId) ? "-" : Model.PoId)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-receipt"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["InvoiceNumber"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.InvoiceNumber) ? "-" : Model.InvoiceNumber)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-dollar-circle"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["Currency"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.Currency) ? "-" : Model.Currency)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-calculator"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["TotalAmount"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.TotalAmount) ? "-" : Model.TotalAmount)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LinesSection"]</h6>
+            @if (Model.Lines is { Count: > 0 })
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["LineItemId"]</th>
+                                <th>@Localizer["LineQuantity"]</th>
+                                <th>@Localizer["LineUnitPrice"]</th>
+                                <th>@Localizer["LineAmount"]</th>
+                                <th>@Localizer["LinePoLineId"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in Model.Lines)
+                            {
+                                <tr>
+                                    <td class="text-break"><code>@(string.IsNullOrWhiteSpace(line.ItemId) ? "-" : line.ItemId)</code></td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.Quantity) ? "-" : line.Quantity)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.UnitPrice) ? "-" : line.UnitPrice)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.LineAmount) ? "-" : line.LineAmount)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.PoLineId) ? "-" : line.PoLineId)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mt-2 mb-0">@Localizer["MoneyHint"]</p>
+            }
+            else
+            {
+                <p class="text-muted mb-0">@SharedLocalizer["NotAvailable"]</p>
+            }
+        </section>
+
+        @* Non-section card (not counted in the _Form↔Details section parity map): 3-way match outcome. *@
+        <div class="card p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["MatchResultSection"]</h6>
+            <p class="text-muted mb-3">@Localizer["MatchResultHint"]</p>
+            <div id="matchOutcome" class="d-none">
+                <div class="mb-3">
+                    <span class="backbone-preview-label">@Localizer["MatchResultLabel"]</span>
+                    <span class="badge bg-label-primary ms-2" id="matchResultBadge"></span>
+                </div>
+                <div class="table-responsive d-none" id="matchVariancesWrap">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["VarianceField"]</th>
+                                <th>@Localizer["VarianceExpected"]</th>
+                                <th>@Localizer["VarianceActual"]</th>
+                                <th>@Localizer["VarianceWithinTolerance"]</th>
+                                <th>@Localizer["LinePoLineId"]</th>
+                            </tr>
+                        </thead>
+                        <tbody id="matchVariancesBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Column (Right) -->
+    <div class="col-12 col-lg-4 d-flex flex-column gap-4">
+        <section class="card backbone-preview-section p-4">
+            <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IntegrationSection"]</h6>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-data"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["SourceSystem"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.SourceSystem) ? "-" : Model.SourceSystem)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="backbone-preview-field">
+                        <i class="bx bx-link"></i>
+                        <div>
+                            <div class="backbone-preview-label">@Localizer["ExternalRef"]</div>
+                            <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ExternalRef) ? "-" : Model.ExternalRef)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* Non-section card: exception queue entry for this invoice (from GET /exceptions). *@
+        @if (!string.IsNullOrWhiteSpace(Model.ExceptionId))
+        {
+            <div class="card p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ExceptionSection"]</h6>
+                <div class="backbone-preview-field mb-3">
+                    <i class="bx bx-error-circle"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["ExceptionId"]</div>
+                        <div class="backbone-preview-value mt-1">@Model.ExceptionId</div>
+                    </div>
+                </div>
+                <div class="backbone-preview-field">
+                    <i class="bx bx-category"></i>
+                    <div>
+                        <div class="backbone-preview-label">@Localizer["ReasonCode"]</div>
+                        <div class="backbone-preview-value mt-1">@(string.IsNullOrWhiteSpace(Model.ExceptionReason) ? "-" : Model.ExceptionReason)</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script id="invoice-match-details-l10n" type="application/json">
+        @Json.Serialize(new
+        {
+            ActionRunMatch = Localizer["ActionRunMatch"].Value,
+            ConfirmRunMatch = Localizer["ConfirmRunMatch"].Value,
+            MatchSuccess = Localizer["MatchSuccess"].Value,
+            ActionResolve = Localizer["ActionResolve"].Value,
+            ResolveTitle = Localizer["ResolveTitle"].Value,
+            ResolveDecisionLabel = Localizer["ResolveDecisionLabel"].Value,
+            DecisionApprove = Localizer["DecisionApprove"].Value,
+            DecisionReject = Localizer["DecisionReject"].Value,
+            DecisionToleranceOverride = Localizer["DecisionToleranceOverride"].Value,
+            ResolveSuccess = Localizer["ResolveSuccess"].Value,
+            ResultMatched = Localizer["StatusMatched"].Value,
+            ResultMatchedWithinTolerance = Localizer["StatusMatchedWithinTolerance"].Value,
+            ResultException = Localizer["StatusException"].Value,
+            Yes = Localizer["WithinToleranceYes"].Value,
+            No = Localizer["WithinToleranceNo"].Value,
+            AreYouSure = SharedLocalizer["AreYouSure"].Value,
+            RecordSaved = SharedLocalizer["RecordSaved"].Value,
+            ErrorOccurred = SharedLocalizer["ErrorOccurred"].Value,
+            NotAvailable = SharedLocalizer["NotAvailable"].Value
+        })
+    </script>
+    <script src="~/assets/js/Procurement/InvoiceMatch/details.js" asp-append-version="true"></script>
+}

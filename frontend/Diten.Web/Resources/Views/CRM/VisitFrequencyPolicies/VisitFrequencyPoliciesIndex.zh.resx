@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="PoliciesTitle" xml:space="preserve"><value>拜访频率策略</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>定义呼叫周期／拜访频率策略——目标应多久拜访一次。</value></data>
+  <data name="ArchiveVsDeleteNote" xml:space="preserve"><value>归档将策略保留为可读历史；删除将其从工作列表中移除。两者均为软操作。</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>策略</value></data>
+  <data name="ResolveTab" xml:space="preserve"><value>解析</value></data>
+  <data name="ResolvePlaceholder" xml:space="preserve"><value>解析面板将在后续更新中提供。</value></data>
+  <data name="Code" xml:space="preserve"><value>代码</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Target" xml:space="preserve"><value>目标</value></data>
+  <data name="Frequency" xml:space="preserve"><value>频率</value></data>
+  <data name="Priority" xml:space="preserve"><value>优先级</value></data>
+  <data name="Source" xml:space="preserve"><value>来源</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="NewPolicy" xml:space="preserve"><value>新建策略</value></data>
+  <data name="EditorPlaceholder" xml:space="preserve"><value>策略编辑器将在后续更新中提供。</value></data>
+  <data name="DetailsPlaceholder" xml:space="preserve"><value>详情视图将在后续更新中提供。</value></data>
+  <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
+  <data name="Archive" xml:space="preserve"><value>归档</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>归档此策略？它将作为历史记录保持可读。</value></data>
+  <data name="DeleteConfirm" xml:space="preserve"><value>删除此策略？它将从列表中移除。</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>策略已归档。</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>暂无频率策略。</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>出错了，请重试。</value></data>
+  <data name="PerPeriod" xml:space="preserve"><value>每</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>草稿</value></data>
+  <data name="Status_active" xml:space="preserve"><value>启用</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>停用</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>已归档</value></data>
+  <!-- WP-FREQ-B editor -->
+  <data name="EditorSave" xml:space="preserve"><value>保存</value></data>
+  <data name="EditorSectionIdentity" xml:space="preserve"><value>标识</value></data>
+  <data name="EditorSectionTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="EditorSectionContext" xml:space="preserve"><value>上下文</value></data>
+  <data name="EditorSectionFrequency" xml:space="preserve"><value>频率控制</value></data>
+  <data name="EditorSectionPriority" xml:space="preserve"><value>冲突优先级</value></data>
+  <data name="EditorSectionSource" xml:space="preserve"><value>来源</value></data>
+  <data name="EditorSectionEffective" xml:space="preserve"><value>生效期间</value></data>
+  <data name="EditorSectionNotes" xml:space="preserve"><value>备注</value></data>
+  <data name="EditorHelpIdentity" xml:space="preserve"><value>此策略的稳定代码和显示名称。</value></data>
+  <data name="EditorHelpTarget" xml:space="preserve"><value>策略适用于谁。先选类型，再选目标。</value></data>
+  <data name="EditorHelpContext" xml:space="preserve"><value>可选的来源和范围。留空表示不限制。</value></data>
+  <data name="EditorHelpFrequency" xml:space="preserve"><value>每个周期需要多少次拜访。</value></data>
+  <data name="EditorHelpPriority" xml:space="preserve"><value>两条策略重叠时，权重较小者胜出。</value></data>
+  <data name="EditorHelpEffective" xml:space="preserve"><value>此策略何时生效。结束留空表示长期有效。</value></data>
+  <data name="EditorHelpNotes" xml:space="preserve"><value>自由备注。自定义频率时必填。</value></data>
+  <data name="FieldPolicyCode" xml:space="preserve"><value>策略代码</value></data>
+  <data name="FieldPolicyName" xml:space="preserve"><value>策略名称</value></data>
+  <data name="FieldDescription" xml:space="preserve"><value>描述</value></data>
+  <data name="FieldStatus" xml:space="preserve"><value>状态</value></data>
+  <data name="FieldTargetType" xml:space="preserve"><value>目标类型</value></data>
+  <data name="FieldTarget" xml:space="preserve"><value>目标</value></data>
+  <data name="FieldBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="FieldTerritory" xml:space="preserve"><value>区域</value></data>
+  <data name="FieldSegment" xml:space="preserve"><value>细分</value></data>
+  <data name="FieldCampaign" xml:space="preserve"><value>活动</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>品牌</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="FieldCyclePeriod" xml:space="preserve"><value>周期期段</value></data>
+  <data name="FieldFrequencyType" xml:space="preserve"><value>频率类型</value></data>
+  <data name="FieldRequiredVisitCount" xml:space="preserve"><value>所需拜访次数</value></data>
+  <data name="FieldPeriodType" xml:space="preserve"><value>周期</value></data>
+  <data name="FieldSource" xml:space="preserve"><value>来源</value></data>
+  <data name="FieldEffectiveFrom" xml:space="preserve"><value>生效自</value></data>
+  <data name="FieldEffectiveTo" xml:space="preserve"><value>生效至</value></data>
+  <data name="FieldNotes" xml:space="preserve"><value>备注</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
+  <data name="ContextNone" xml:space="preserve"><value>— 无 —</value></data>
+  <data name="SelectTerritoryModel" xml:space="preserve"><value>选择模型</value></data>
+  <data name="SelectTerritoryNode" xml:space="preserve"><value>选择节点</value></data>
+  <data name="Selected" xml:space="preserve"><value>已选择</value></data>
+  <data name="TargetIdManual" xml:space="preserve"><value>输入 id (GUID)</value></data>
+  <data name="TargetLockNote" xml:space="preserve"><value>创建后代码和目标不可更改。</value></data>
+  <data name="SourceNote" xml:space="preserve"><value>此频率的来源。仅为溯源 — 不影响频率。</value></data>
+  <data name="FreqReadsAsLabel" xml:space="preserve"><value>读作</value></data>
+  <data name="FreqSentenceEmpty" xml:space="preserve"><value>请设置次数和周期。</value></data>
+  <data name="Required" xml:space="preserve"><value>必填</value></data>
+  <data name="TargetRequired" xml:space="preserve"><value>请选择一个目标。</value></data>
+  <data name="TargetIdInvalid" xml:space="preserve"><value>需要有效的 id。</value></data>
+  <data name="CountPositive" xml:space="preserve"><value>必须大于零。</value></data>
+  <data name="PeriodComboInvalid" xml:space="preserve"><value>此周期对所选频率无效。</value></data>
+  <data name="BandRequired" xml:space="preserve"><value>请选择一个优先级档位。</value></data>
+  <data name="EffectiveOrder" xml:space="preserve"><value>结束不能早于开始。</value></data>
+  <data name="CycleRequired" xml:space="preserve"><value>基于周期的频率需要一个周期期段。</value></data>
+  <data name="CampaignRequired" xml:space="preserve"><value>需要一个活动。</value></data>
+  <data name="SegmentRequired" xml:space="preserve"><value>细分来源需要一个细分。</value></data>
+  <data name="NotesRequired" xml:space="preserve"><value>自定义频率需要备注。</value></data>
+  <data name="FixErrors" xml:space="preserve"><value>请修正高亮的字段。</value></data>
+  <data name="ContractUnavailable" xml:space="preserve"><value>无法准备编辑器。</value></data>
+  <data name="Band_override-all" xml:space="preserve"><value>凌驾一切</value></data>
+  <data name="Band_campaign-level" xml:space="preserve"><value>活动级别</value></data>
+  <data name="Band_standard" xml:space="preserve"><value>标准</value></data>
+  <data name="Band_baseline" xml:space="preserve"><value>基准</value></data>
+  <data name="Band_last-resort" xml:space="preserve"><value>最后手段</value></data>
+  <data name="Band_override-all_Desc" xml:space="preserve"><value>覆盖包括活动和细分规则在内的所有其他规则。</value></data>
+  <data name="Band_campaign-level_Desc" xml:space="preserve"><value>在活动期间优先于标准规则。</value></data>
+  <data name="Band_standard_Desc" xml:space="preserve"><value>常规细分和目标规则的推荐级别。</value></data>
+  <data name="Band_baseline_Desc" xml:space="preserve"><value>区域范围的基础频率；更具体的规则会覆盖它。</value></data>
+  <data name="Band_last-resort_Desc" xml:space="preserve"><value>仅当没有其他规则匹配时才生效。</value></data>
+  <data name="Period_day" xml:space="preserve"><value>天</value></data>
+  <data name="Period_week" xml:space="preserve"><value>周</value></data>
+  <data name="Period_month" xml:space="preserve"><value>月</value></data>
+  <data name="Period_quarter" xml:space="preserve"><value>季度</value></data>
+  <data name="Period_cycle" xml:space="preserve"><value>周期</value></data>
+  <data name="Period_campaign-period" xml:space="preserve"><value>活动周期</value></data>
+  <data name="Period_custom" xml:space="preserve"><value>自定义周期</value></data>
+  <!-- WP-FREQ-C details quick-view + resolve panel -->
+  <data name="NoEndDate" xml:space="preserve"><value>无结束日期</value></data>
+  <data name="DetailTrail" xml:space="preserve"><value>审计记录</value></data>
+  <data name="DetailCreated" xml:space="preserve"><value>已创建</value></data>
+  <data name="DetailUpdated" xml:space="preserve"><value>已更新</value></data>
+  <data name="DetailArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Tl_created" xml:space="preserve"><value>已创建草稿</value></data>
+  <data name="Tl_published" xml:space="preserve"><value>已发布</value></data>
+  <data name="Tl_deactivated" xml:space="preserve"><value>已停用</value></data>
+  <data name="Tl_reactivated" xml:space="preserve"><value>已重新启用</value></data>
+  <data name="Tl_weight_changed" xml:space="preserve"><value>权重已更改</value></data>
+  <data name="Tl_archived" xml:space="preserve"><value>已归档</value></data>
+  <data name="Tl_next_eval" xml:space="preserve"><value>下次评估</value></data>
+  <data name="FieldConceptNode" xml:space="preserve"><value>概念节点</value></data>
+  <data name="FieldAudienceProfile" xml:space="preserve"><value>受众画像</value></data>
+  <data name="ResolveInputSection" xml:space="preserve"><value>解析输入</value></data>
+  <data name="ResolveResultSection" xml:space="preserve"><value>结果</value></data>
+  <data name="ResolveContextHelp" xml:space="preserve"><value>可选上下文可缩小匹配范围。留空则忽略。</value></data>
+  <data name="ResolveEffectiveAt" xml:space="preserve"><value>生效日期</value></data>
+  <data name="ResolveAction" xml:space="preserve"><value>解析</value></data>
+  <data name="ResolveReadOnlyNote" xml:space="preserve"><value>只读预览——解析不会写入任何内容。</value></data>
+  <data name="ResolveResultEmpty" xml:space="preserve"><value>选择一个目标并点击"解析"。</value></data>
+  <data name="ResolveRunning" xml:space="preserve"><value>正在解析…</value></data>
+  <data name="ResolveSelectedPolicy" xml:space="preserve"><value>所选策略</value></data>
+  <data name="ResolveCandidates" xml:space="preserve"><value>候选策略</value></data>
+  <data name="ResolveNoCandidates" xml:space="preserve"><value>没有候选策略。</value></data>
+  <data name="ResolveReasonCodes" xml:space="preserve"><value>原因代码</value></data>
+  <data name="ResolveSelectionReason" xml:space="preserve"><value>选择原因</value></data>
+  <data name="ResolveNoSelected" xml:space="preserve"><value>在此上下文中没有策略管辖该目标。</value></data>
+  <data name="ResolveSpecificity" xml:space="preserve"><value>具体性</value></data>
+  <data name="ResolveSelectedBadge" xml:space="preserve"><value>已选中</value></data>
+  <data name="ResolveEliminated" xml:space="preserve"><value>已淘汰</value></data>
+  <data name="ResolveTargetTypeRequired" xml:space="preserve"><value>请选择目标类型。</value></data>
+  <data name="Verdict_resolved" xml:space="preserve"><value>已解析</value></data>
+  <data name="Verdict_unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="Verdict_conflict" xml:space="preserve"><value>冲突</value></data>
+  <data name="Verdict_not_applicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="Reason_frequency_policy_resolved" xml:space="preserve"><value>已解析频率策略</value></data>
+  <data name="Reason_frequency_unknown" xml:space="preserve"><value>频率未知</value></data>
+  <data name="Reason_no_matching_policy" xml:space="preserve"><value>没有匹配的策略</value></data>
+  <data name="Reason_policy_not_effective" xml:space="preserve"><value>策略在此日期未生效</value></data>
+  <data name="Reason_policy_inactive" xml:space="preserve"><value>策略未激活</value></data>
+  <data name="Reason_policy_archived" xml:space="preserve"><value>策略已归档</value></data>
+  <data name="Reason_policy_conflict" xml:space="preserve"><value>优先级带并列——按稳定 id 解析</value></data>
+  <data name="Reason_policy_selected_by_priority" xml:space="preserve"><value>按优先级选择</value></data>
+  <data name="Reason_policy_selected_by_specificity" xml:space="preserve"><value>按具体性选择</value></data>
+  <data name="Reason_policy_selected_by_latest_effective_from" xml:space="preserve"><value>按最新生效日期选择</value></data>
+  <data name="Reason_campaign_context_missing" xml:space="preserve"><value>缺少活动上下文</value></data>
+  <data name="Reason_segment_context_missing" xml:space="preserve"><value>缺少细分上下文</value></data>
+  <data name="Reason_cycle_context_missing" xml:space="preserve"><value>缺少周期上下文</value></data>
+  <data name="Reason_business_scope_mismatch" xml:space="preserve"><value>业务范围不匹配</value></data>
+  <data name="Reason_contact_location_context_absent" xml:space="preserve"><value>缺少联系人位置上下文</value></data>
+  <!-- WP-FREQ-E list console (mockup columns + subtitles) -->
+  <data name="Policy" xml:space="preserve"><value>策略</value></data>
+  <data name="Validity" xml:space="preserve"><value>有效期</value></data>
+  <data name="Weight" xml:space="preserve"><value>权重</value></data>
+  <data name="ValidityOpenEnded" xml:space="preserve"><value>无限期</value></data>
+  <data name="FreqBounded" xml:space="preserve"><value>限期</value></data>
+  <data name="FreqOpenEnded" xml:space="preserve"><value>长期有效</value></data>
+  <data name="Source_campaign" xml:space="preserve"><value>活动决策</value></data>
+  <data name="Source_segmentation" xml:space="preserve"><value>细分团队</value></data>
+  <data name="Source_manual" xml:space="preserve"><value>手动录入</value></data>
+  <data name="Source_legacy-import" xml:space="preserve"><value>来自旧系统</value></data>
+  <data name="Source_business-rule" xml:space="preserve"><value>自动业务规则</value></data>
+  <data name="Source_manager-override" xml:space="preserve"><value>现场经理</value></data>
+  <data name="Source_other" xml:space="preserve"><value>其他</value></data>
+  <!-- WP-FREQ-F2 editor page -->
+  <data name="EditPolicy" xml:space="preserve"><value>编辑政策</value></data>
+  <data name="BackToList" xml:space="preserve"><value>返回列表</value></data>
+  <data name="ArchivedReadonly" xml:space="preserve"><value>此政策已归档，为只读，无法编辑。</value></data>
+  <data name="NotesHelp" xml:space="preserve"><value>内部备注 — 规划引擎不会读取。</value></data>
+  <data name="TargetListsNote" xml:space="preserve"><value>列表来自系统定义</value></data>
+  <data name="TargetPickHint" xml:space="preserve"><value>从列表中搜索并选择</value></data>
+  <data name="ScopeToggle" xml:space="preserve"><value>适用范围？</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>可选 — 留空的字段表示“全部”</value></data>
+  <data name="ScopeGroupOrg" xml:space="preserve"><value>组织</value></data>
+  <data name="ScopeGroupScope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeGroupProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ScopeGroupPeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="ScopePickBrandFirst" xml:space="preserve"><value>请先选择品牌</value></data>
+  <data name="NoConstraint" xml:space="preserve"><value>无限制</value></data>
+  <data name="ScopePickCyclePeriodFirst" xml:space="preserve"><value>请先选择周期</value></data>
+  <data name="ScopeAllTargets" xml:space="preserve"><value>所有目标</value></data>
+  <data name="ScopeClear" xml:space="preserve"><value>清除范围</value></data>
+  <data name="FreqResolvedLabel" xml:space="preserve"><value>解析后的频率</value></data>
+  <data name="EffectiveNote" xml:space="preserve"><value>若结束日期留空，政策将无限期有效；发生冲突时，同一目标中较新的生效日期优先。</value></data>
+  <data name="EditorSectionConflict" xml:space="preserve"><value>发生冲突时</value></data>
+  <data name="ConflictIntro" xml:space="preserve"><value>如果另一条规则也适用于同一目标，此选择决定哪条胜出。</value></data>
+  <data name="ConflictWeightLabel" xml:space="preserve"><value>此规则的权重</value></data>
+  <data name="ConflictSourceLabel" xml:space="preserve"><value>此规则来自何处？</value></data>
+  <data name="LifecycleTitle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="LifecycleDraftHelp" xml:space="preserve"><value>不纳入规划</value></data>
+  <data name="LifecycleActiveHelp" xml:space="preserve"><value>纳入规划</value></data>
+  <data name="LifecycleInactiveHelp" xml:space="preserve"><value>暂时停用</value></data>
+  <data name="LifecycleArchivedHelp" xml:space="preserve"><value>只读，未删除</value></data>
+  <!-- WP-FREQ-F3 target chip subtext -->
+  <data name="MostSpecific" xml:space="preserve"><value>最具体</value></data>
+  <data name="Broadest" xml:space="preserve"><value>最宽泛</value></data>
+  <data name="LifecycleNote" xml:space="preserve"><value>没有删除。关闭通过归档完成；记录在历史中保持可读，且不会被规划引擎评估。</value></data>
+  <data name="SummaryTitle" xml:space="preserve"><value>此政策将做什么？</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="SummaryOnSaveLabel" xml:space="preserve"><value>保存后</value></data>
+  <data name="ChecklistTitle" xml:space="preserve"><value>保存前</value></data>
+  <data name="SaveActivate" xml:space="preserve"><value>保存并激活</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存为草稿</value></data>
+  <data name="SaveInactive" xml:space="preserve"><value>取消发布</value></data>
+  <data name="ArchiveAction" xml:space="preserve"><value>归档</value></data>
+  <data name="VisitsWord" xml:space="preserve"><value>次访问</value></data>
+  <data name="ScopeNoConstraint" xml:space="preserve"><value>无限制</value></data>
+  <data name="ScopeConstraintUnit" xml:space="preserve"><value>项限制</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" 的目标将按 {cadence} 安排 — {scope}。</value></data>
+  <data name="SummaryScopeAll" xml:space="preserve"><value>适用于全部范围</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>此政策</value></data>
+  <data name="ChecklistReady" xml:space="preserve"><value>就绪</value></data>
+  <data name="ChecklistWarnWord" xml:space="preserve"><value>条警告</value></data>
+  <data name="ChkTarget" xml:space="preserve"><value>已选择目标</value></data>
+  <data name="ChkFrequency" xml:space="preserve"><value>频率有效</value></data>
+  <data name="ChkPeriod" xml:space="preserve"><value>周期一致</value></data>
+  <data name="ChkScopeNarrowed" xml:space="preserve"><value>范围已缩小</value></data>
+  <data name="ChkScopeNone" xml:space="preserve"><value>无范围限制</value></data>
+  <data name="ChkWeight" xml:space="preserve"><value>已选择冲突权重</value></data>
+  <data name="ChkWillDraft" xml:space="preserve"><value>将保持草稿</value></data>
+  <data name="ChkWillActive" xml:space="preserve"><value>将被发布</value></data>
+  <data name="ChkWillInactive" xml:space="preserve"><value>将取消发布</value></data>
+  <data name="ChkWillArchived" xml:space="preserve"><value>将被归档</value></data>
+  <data name="ChkTargetEmptyDesc" xml:space="preserve"><value>尚未选择适用的记录。</value></data>
+  <data name="ChkFreqEmptyDesc" xml:space="preserve"><value>频率尚未填写完整。</value></data>
+  <data name="ChkPeriodEmptyDesc" xml:space="preserve"><value>请同时选择频率和周期。</value></data>
+  <data name="ChkScopeAllDesc" xml:space="preserve"><value>此策略适用于该目标类型的所有记录。</value></data>
+  <data name="ChkWeightEmptyDesc" xml:space="preserve"><value>请选择一个冲突权重等级。</value></data>
+  <data name="ChkWillDraftDesc" xml:space="preserve"><value>草稿规则不会进入计划；准备就绪后再发布。</value></data>
+  <data name="ChkWillActiveDesc" xml:space="preserve"><value>规则将上线并进入计划。</value></data>
+  <data name="ChkWillInactiveDesc" xml:space="preserve"><value>规则将保留但不再应用。</value></data>
+  <data name="ChkWillArchivedDesc" xml:space="preserve"><value>规则将停用并变为只读。</value></data>
+  <data name="ScopeAllBusinessUnits" xml:space="preserve"><value>所有业务单元</value></data>
+  <data name="ScopeSegmentIndependent" xml:space="preserve"><value>与细分无关</value></data>
+  <data name="ScopeCampaignIndependent" xml:space="preserve"><value>与活动无关</value></data>
+  <data name="ScopeAllBrands" xml:space="preserve"><value>所有品牌</value></data>
+  <data name="ScopeAllProducts" xml:space="preserve"><value>所有产品</value></data>
+  <data name="ScopeAllCyclePeriods" xml:space="preserve"><value>所有周期段</value></data>
+  <!-- WP-FREQ-F7 target section (mockup + app field/font) -->
+  <data name="EditorSectionTargetLong" xml:space="preserve"><value>目标 — 适用对象</value></data>
+  <data name="EditorSectionFrequencyLong" xml:space="preserve"><value>频率 — 实际值</value></data>
+  <data name="TargetPickedWhich" xml:space="preserve"><value>选择记录</value></data>
+  <data name="TargetChange" xml:space="preserve"><value>更改…</value></data>
+  <data name="ScopeGroupOrgDesc" xml:space="preserve"><value>业务单元与区域 — 留空表示不限制</value></data>
+  <data name="ScopeGroupScopeDesc" xml:space="preserve"><value>细分与活动 — 留空表示不限制</value></data>
+  <data name="ScopeGroupProductDesc" xml:space="preserve"><value>品牌与产品 — 先选品牌，再选产品</value></data>
+  <data name="ScopeGroupPeriodDesc" xml:space="preserve"><value>周期段 — 基于周期的频率时必填</value></data>
+  <!-- WP-FREQ-DET-B details separate page -->
+  <data name="DetailPageTitle" xml:space="preserve"><value>策略详情</value></data>
+  <data name="EditAction" xml:space="preserve"><value>编辑</value></data>
+  <data name="StatusFlowTitle" xml:space="preserve"><value>状态流程</value></data>
+  <data name="ImpactTitle" xml:space="preserve"><value>影响</value></data>
+  <data name="ImpactTargetsLine" xml:space="preserve"><value>{0} 个目标适用此策略</value></data>
+  <data name="ImpactVisitsLine" xml:space="preserve"><value>每季度 {0} 次计划拜访</value></data>
+  <data name="ConflictsTitle" xml:space="preserve"><value>竞争此目标的策略</value></data>
+  <data name="ConflictsCandidateCount" xml:space="preserve"><value>{0} 个候选</value></data>
+  <data name="ConflictsEmpty" xml:space="preserve"><value>此目标没有冲突的策略。</value></data>
+  <data name="CandidateBadge" xml:space="preserve"><value>候选</value></data>
+  <data name="TargetsWord" xml:space="preserve"><value>个目标</value></data>
+  <data name="TargetType_segment" xml:space="preserve"><value>细分</value></data>
+  <data name="TargetType_account" xml:space="preserve"><value>客户</value></data>
+  <data name="TargetType_contact" xml:space="preserve"><value>联系人</value></data>
+  <data name="TargetType_campaign-target" xml:space="preserve"><value>活动目标</value></data>
+  <data name="SpecNarrowest" xml:space="preserve"><value>最小范围</value></data>
+  <data name="SpecBroadest" xml:space="preserve"><value>最大范围</value></data>
+  <data name="ResolveWhoTitle" xml:space="preserve"><value>您要查询谁？</value></data>
+  <data name="ResolveWhoDesc" xml:space="preserve"><value>选择一个目标；我们会显示它当前分配到多少次拜访，以及来自哪条规则。</value></data>
+  <data name="ResolveScenarioLabel" xml:space="preserve"><value>谁 / 什么</value></data>
+  <data name="ResolveScenario_contact_territory" xml:space="preserve"><value>某位医生 — 在特定医院</value></data>
+  <data name="ResolveScenario_contact" xml:space="preserve"><value>某位医生 — 所有医院</value></data>
+  <data name="ResolveScenario_account" xml:space="preserve"><value>某个机构/客户</value></data>
+  <data name="ResolveScenario_account-contact-link" xml:space="preserve"><value>人员—机构关联</value></data>
+  <data name="ResolveScenario_segment" xml:space="preserve"><value>某个细分中的所有目标</value></data>
+  <data name="ResolveScenario_campaign-target" xml:space="preserve"><value>活动目标</value></data>
+  <data name="ResolveScenario_territory-node" xml:space="preserve"><value>辖区区域</value></data>
+  <data name="ResolveScenario_concept-node" xml:space="preserve"><value>概念节点</value></data>
+  <data name="ResolveScenario_audience-profile" xml:space="preserve"><value>受众画像</value></data>
+  <data name="ResolveRecordLabel" xml:space="preserve"><value>记录</value></data>
+  <data name="ResolveChange" xml:space="preserve"><value>更改</value></data>
+  <data name="ResolveCyclePeriod" xml:space="preserve"><value>周期</value></data>
+  <data name="ResolveDateLabel" xml:space="preserve"><value>日期</value></data>
+  <data name="ResolveShowFrequency" xml:space="preserve"><value>显示频率</value></data>
+  <data name="ResolveRuleSimpleTitle" xml:space="preserve"><value>规则很简单</value></data>
+  <data name="ResolveRuleSimpleBody" xml:space="preserve"><value>如果一个目标匹配到多条策略，范围最窄的获胜：针对个人的规则优先于活动规则，活动规则又优先于细分规则。范围相同时优先级高者获胜，优先级相同时开始日期最新者获胜。</value></data>
+  <data name="ResolveAnswerLabel" xml:space="preserve"><value>答案</value></data>
+  <data name="ResolveHeadlineResolved" xml:space="preserve"><value>{1}{0} 次拜访</value></data>
+  <data name="ResolveHeadlineUnknown" xml:space="preserve"><value>未定义频率</value></data>
+  <data name="ResolveHeadlineConflict" xml:space="preserve"><value>冲突</value></data>
+  <data name="ResolveHeadlineNotApplicable" xml:space="preserve"><value>不适用</value></data>
+  <data name="ResolveCadence_day" xml:space="preserve"><value>每日</value></data>
+  <data name="ResolveCadence_week" xml:space="preserve"><value>每周</value></data>
+  <data name="ResolveCadence_month" xml:space="preserve"><value>每月</value></data>
+  <data name="ResolveCadence_quarter" xml:space="preserve"><value>每季度</value></data>
+  <data name="ResolveCadence_cycle" xml:space="preserve"><value>每周期</value></data>
+  <data name="ResolveCadence_campaign-period" xml:space="preserve"><value>每活动周期</value></data>
+  <data name="ResolveCadence_custom" xml:space="preserve"><value>每自定义周期</value></data>
+  <data name="ResolveExplainResolved" xml:space="preserve"><value>为该目标找到匹配规则；已应用范围最窄的一条。</value></data>
+  <data name="ResolveExplainUnknown" xml:space="preserve"><value>没有策略匹配该目标；计划程序将使用系统默认值。</value></data>
+  <data name="ResolveExplainConflict" xml:space="preserve"><value>有两条规则处于相同范围；已应用优先级较高的一条。您可能需要检查另一条。</value></data>
+  <data name="ResolveExplainNotApplicable" xml:space="preserve"><value>解析不适用于此请求。</value></data>
+  <data name="ResolveExplainDateOut" xml:space="preserve"><value>有与目标匹配的规则，但您所选的日期不在任何规则的生效范围内。</value></data>
+  <data name="ResolveHeadlineDateOut" xml:space="preserve"><value>该日期没有生效的规则</value></data>
+  <data name="ResolveVerdictBadge_resolved" xml:space="preserve"><value>明确结果</value></data>
+  <data name="ResolveVerdictBadge_conflict" xml:space="preserve"><value>冲突已解决</value></data>
+  <data name="ResolveVerdictBadge_dateout" xml:space="preserve"><value>不在日期范围</value></data>
+  <data name="ResolveVerdictBadge_unknown" xml:space="preserve"><value>未知</value></data>
+  <data name="ResolveWinnerTitle" xml:space="preserve"><value>设定此频率的规则</value></data>
+  <data name="ResolveOpenPolicy" xml:space="preserve"><value>打开策略</value></data>
+  <data name="ResolveLadderTitle" xml:space="preserve"><value>匹配该目标的其他规则</value></data>
+  <data name="ResolveLadderSort" xml:space="preserve"><value>从窄到宽排序</value></data>
+  <data name="ResolveLadderEmpty" xml:space="preserve"><value>没有其他规则匹配该目标。</value></data>
+  <data name="ResolveTagSelected" xml:space="preserve"><value>已选中</value></data>
+  <data name="ResolveTagNotEffective" xml:space="preserve"><value>不在日期范围</value></data>
+  <data name="ResolveTagInactive" xml:space="preserve"><value>未生效</value></data>
+  <data name="ResolveTagFallback" xml:space="preserve"><value>后备</value></data>
+  <data name="ResolveWhyNotEffective" xml:space="preserve"><value>该规则存在，但在所选日期不生效。</value></data>
+  <data name="ResolveWhySpecificityLost" xml:space="preserve"><value>因存在范围更窄的规则，此规则未被采用。</value></data>
+  <data name="ResolveWhyBroader" xml:space="preserve"><value>区域/细分规则，范围比更窄的规则更广。</value></data>
+  <data name="ResolveWhyLastResort" xml:space="preserve"><value>当找不到更窄的规则时，此规则作为兜底生效。</value></data>
+  <data name="ResolveWhySelSpecificity" xml:space="preserve"><value>因是范围最窄的规则而被选中。</value></data>
+  <data name="ResolveWhySelPriority" xml:space="preserve"><value>按优先级选中。</value></data>
+  <data name="ResolveWhyContextMissing" xml:space="preserve"><value>在所选上下文中无效（缺少{0}）。</value></data>
+  <data name="ResolveCandSegmentAll" xml:space="preserve"><value>该细分中的所有目标</value></data>
+  <data name="ResolveNextTitle" xml:space="preserve"><value>我该怎么做？</value></data>
+  <data name="ResolveDo_resolved_1" xml:space="preserve"><value>无需操作</value></data>
+  <data name="ResolveDo_resolved_1d" xml:space="preserve"><value>计划程序将对该目标应用此频率。</value></data>
+  <data name="ResolveDo_resolved_2" xml:space="preserve"><value>如果频率看起来不对</value></data>
+  <data name="ResolveDo_resolved_2d" xml:space="preserve"><value>打开已应用的规则并修改拜访次数，或归档该规则。</value></data>
+  <data name="ResolveDo_conflict_1" xml:space="preserve"><value>两条规则处于相同范围</value></data>
+  <data name="ResolveDo_conflict_1d" xml:space="preserve"><value>要彻底解决，请缩小其中一条的范围或降低其优先级。</value></data>
+  <data name="ResolveDo_conflict_2" xml:space="preserve"><value>目前没有问题</value></data>
+  <data name="ResolveDo_conflict_2d" xml:space="preserve"><value>计划程序使用优先级较高的规则；计划照常生成。</value></data>
+  <data name="ResolveDo_unknown_1" xml:space="preserve"><value>该目标未被覆盖</value></data>
+  <data name="ResolveDo_unknown_1d" xml:space="preserve"><value>建议在细分或辖区级别定义一条后备规则。</value></data>
+  <data name="ResolveDo_unknown_2" xml:space="preserve"><value>快速解决</value></data>
+  <data name="ResolveDo_unknown_2d" xml:space="preserve"><value>为该细分设置一条策略即可覆盖其下所有目标。</value></data>
+  <data name="ResolveDo_na_1" xml:space="preserve"><value>不适用</value></data>
+  <data name="ResolveDo_na_1d" xml:space="preserve"><value>解析对该目标类型无效。</value></data>
+  <data name="TargetType_account-contact-link" xml:space="preserve"><value>针对个人</value></data>
+  <data name="TargetType_concept-node" xml:space="preserve"><value>概念</value></data>
+  <data name="TargetType_territory-node" xml:space="preserve"><value>辖区</value></data>
+  <data name="TargetType_audience-profile" xml:space="preserve"><value>受众</value></data>
+</root>

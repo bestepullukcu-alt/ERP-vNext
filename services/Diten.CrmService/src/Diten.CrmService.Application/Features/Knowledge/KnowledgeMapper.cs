@@ -41,7 +41,11 @@ public static class KnowledgeMapper
         c.UpdatedBy,
         c.ArchivedAt,
         c.ArchivedBy,
-        c.IsArchived());
+        c.IsArchived(),
+        // SCMM-13: the repository read boundary already applied EnsureVariantDefaults, so these project as migrated.
+        c.ContentSetId,
+        c.IsSourceLanguage,
+        c.TranslationStatus);
 
     public static SubjectDto ToDto(SubjectEntity s) => new(
         s.Id,

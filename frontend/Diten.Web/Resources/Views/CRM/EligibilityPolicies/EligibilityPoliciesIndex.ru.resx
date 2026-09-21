@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Политик пока нет.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск..</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Предпросмотр</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Период действия</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Выберите...</value></data>
+  <data name="PoliciesTitle" xml:space="preserve"><value>Политики допустимости</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Составляйте политики допустимости (условия контекста) и оценивайте контекст относительно политики.</value></data>
+  <data name="FailClosedNote" xml:space="preserve"><value>Оценка дизъюнктна и fail-closed — недопустимый результат всегда показывает причину.</value></data>
+  <data name="PoliciesTab" xml:space="preserve"><value>Политики</value></data>
+  <data name="EvaluateTab" xml:space="preserve"><value>Оценить</value></data>
+  <data name="PolicyCode" xml:space="preserve"><value>Код политики</value></data>
+  <data name="PolicyCodeNote" xml:space="preserve"><value>Устойчивый бизнес-ключ, общий для версий одной политики.</value></data>
+  <data name="PolicyName" xml:space="preserve"><value>Название политики</value></data>
+  <data name="PolicyVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="CreatePolicy" xml:space="preserve"><value>Создать политику</value></data>
+  <data name="EditPolicy" xml:space="preserve"><value>Редактировать политику</value></data>
+  <data name="ArchivePolicy" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchivePolicyConfirm" xml:space="preserve"><value>Архивировать эту политику? Это мягкое действие; она остаётся доступной для чтения.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Политика архивирована.</value></data>
+  <data name="ArchivedPolicyReadOnly" xml:space="preserve"><value>Эта политика в архиве и доступна только для чтения.</value></data>
+  <data name="PublishedPolicyReadOnly" xml:space="preserve"><value>Эта политика опубликована: её условия заморожены и здесь доступны только для просмотра.</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Только авторские состояния (черновик/на проверке/неактивно). Публикация — отдельный этап.</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusReview" xml:space="preserve"><value>На проверке</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="StatusPublished" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_review" xml:space="preserve"><value>На проверке</value></data>
+  <data name="Status_approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="Status_published" xml:space="preserve"><value>Опубликовано</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="Status_archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Conditions" xml:space="preserve"><value>Условия</value></data>
+  <data name="ConditionsSection" xml:space="preserve"><value>Условия</value></data>
+  <data name="ConditionsNote" xml:space="preserve"><value>Каждое условие включает или исключает значения измерения контекста. Обязательное условие блокирует при отсутствии измерения.</value></data>
+  <data name="ConditionsEmpty" xml:space="preserve"><value>Нет условий — политика соответствует любому контексту.</value></data>
+  <data name="AddCondition" xml:space="preserve"><value>Добавить условие</value></data>
+  <data name="Dimension" xml:space="preserve"><value>Измерение</value></data>
+  <data name="Match" xml:space="preserve"><value>Соответствие</value></data>
+  <data name="Values" xml:space="preserve"><value>Значения</value></data>
+  <data name="Required" xml:space="preserve"><value>Обязательно</value></data>
+  <data name="Remove" xml:space="preserve"><value>Удалить</value></data>
+  <data name="Match_includes" xml:space="preserve"><value>Включает</value></data>
+  <data name="Match_excludes" xml:space="preserve"><value>Исключает</value></data>
+  <data name="Dim_audience" xml:space="preserve"><value>Аудитория</value></data>
+  <data name="Dim_product" xml:space="preserve"><value>Продукт</value></data>
+  <data name="Dim_market" xml:space="preserve"><value>Рынок</value></data>
+  <data name="Dim_channel" xml:space="preserve"><value>Канал</value></data>
+  <data name="Dim_language" xml:space="preserve"><value>Язык</value></data>
+  <data name="Dim_period" xml:space="preserve"><value>Период</value></data>
+  <data name="EvaluateInputSection" xml:space="preserve"><value>Входные данные оценки</value></data>
+  <data name="EvaluateResultSection" xml:space="preserve"><value>Результат</value></data>
+  <data name="Policy" xml:space="preserve"><value>Политика</value></data>
+  <data name="PolicyPickerPlaceholder" xml:space="preserve"><value>Найдите политику...</value></data>
+  <data name="Context" xml:space="preserve"><value>Контекст</value></data>
+  <data name="AddContext" xml:space="preserve"><value>Добавить измерение</value></data>
+  <data name="PinnedSelections" xml:space="preserve"><value>Закреплённые выборы</value></data>
+  <data name="PinnedPlaceholder" xml:space="preserve"><value>Необязательно — записывается в журнал оценки</value></data>
+  <data name="EvaluateAt" xml:space="preserve"><value>Оценить на (дата)</value></data>
+  <data name="EvaluateAction" xml:space="preserve"><value>Оценить</value></data>
+  <data name="EvaluateReadOnlyNote" xml:space="preserve"><value>Только чтение — оценка ничего не сохраняет.</value></data>
+  <data name="EvaluateResultEmpty" xml:space="preserve"><value>Выберите политику и контекст, затем оцените.</value></data>
+  <data name="State" xml:space="preserve"><value>Состояние</value></data>
+  <data name="Reason" xml:space="preserve"><value>Причина</value></data>
+  <data name="Eligible" xml:space="preserve"><value>Допустимо</value></data>
+  <data name="Blocked" xml:space="preserve"><value>Заблокировано</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>Не определено</value></data>
+  <data name="BlockingLevelContext" xml:space="preserve"><value>Заблокировано на уровне: контекст (отсутствует обязательное измерение)</value></data>
+  <data name="BlockingLevelPolicy" xml:space="preserve"><value>Заблокировано на уровне: политика (нарушено условие)</value></data>
+  <data name="SelectPolicyFirst" xml:space="preserve"><value>Сначала выберите политику.</value></data>
+  <data name="ContextRequired" xml:space="preserve"><value>Добавьте хотя бы одно измерение контекста со значениями.</value></data>
+</root>

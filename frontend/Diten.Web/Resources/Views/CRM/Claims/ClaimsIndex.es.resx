@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Alegaciones</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Redacte el texto regulado de las alegaciones con sus calificadores, aplicabilidad, evidencias y componentes reutilizables.</value></data>
+  <data name="ApprovalFreezeNote" xml:space="preserve"><value>Aprobar una alegación congela su cuerpo regulado (texto, calificadores, aplicabilidad, evidencia, componentes); un cambio requiere entonces una nueva versión.</value></data>
+  <data name="ClaimCode" xml:space="preserve"><value>Código de alegación</value></data>
+  <data name="ClaimName" xml:space="preserve"><value>Nombre de alegación</value></data>
+  <data name="ClaimVersion" xml:space="preserve"><value>Versión</value></data>
+  <data name="Status" xml:space="preserve"><value>Estado</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
+  <data name="Approved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado el</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Crear alegación</value></data>
+  <data name="EditClaim" xml:space="preserve"><value>Editar alegación</value></data>
+  <data name="ApproveClaim" xml:space="preserve"><value>Aprobar</value></data>
+  <data name="ApproveClaimConfirm" xml:space="preserve"><value>¿Aprobar esta alegación? Su cuerpo regulado quedará congelado; un cambio posterior requerirá una nueva versión.</value></data>
+  <data name="ArchiveClaim" xml:space="preserve"><value>Archivar</value></data>
+  <data name="ArchiveClaimConfirm" xml:space="preserve"><value>¿Archivar esta alegación? Es una acción de ciclo de vida suave; permanece legible.</value></data>
+  <data name="RecordApproved" xml:space="preserve"><value>Alegación aprobada.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Alegación archivada.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aún no hay alegaciones.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Algo salió mal. Inténtelo de nuevo.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivadas</value></data>
+  <data name="Active" xml:space="preserve"><value>Activas</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar..</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Mostrar todo</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Visibilidad de columnas</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Aprobada</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Archivada</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Borrador</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Inactiva</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad y redacción</value></data>
+  <data name="ClaimCodeNote" xml:space="preserve"><value>Clave de negocio estable, compartida entre las versiones de una alegación.</value></data>
+  <data name="ClaimText" xml:space="preserve"><value>Texto de la alegación</value></data>
+  <data name="ClaimTextNote" xml:space="preserve"><value>El texto regulado. Se congela una vez aprobada la alegación.</value></data>
+  <data name="ApplicabilitySection" xml:space="preserve"><value>Aplicabilidad</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Referencias de producto</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Referencias de mercado</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Referencias de audiencia</value></data>
+  <data name="EligibilityPolicyId" xml:space="preserve"><value>Id de política de elegibilidad</value></data>
+  <data name="EligibilityPolicyIdNote" xml:space="preserve"><value>Referencia opcional a una política de elegibilidad; aquí no se realiza ninguna evaluación.</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Escriba un valor y pulse Intro para añadir cada referencia.</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Ventana de vigencia</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Cuerpo regulado</value></data>
+  <data name="Qualifiers" xml:space="preserve"><value>Calificadores</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Referencias de evidencia</value></data>
+  <data name="EvidenceRefsNote" xml:space="preserve"><value>Referencias de evidencia opacas; se almacenan tal cual (sin resolución).</value></data>
+  <data name="ComponentRefs" xml:space="preserve"><value>Componentes</value></data>
+  <data name="ComponentRefsNote" xml:space="preserve"><value>Contenido de conocimiento reutilizable referenciado por id (solo reutilización; no se crea ningún componente nuevo).</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>Seleccionar componentes...</value></data>
+  <data name="Description" xml:space="preserve"><value>Descripción</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Crear y editar admiten borrador o inactiva; use Aprobar y Archivar para esas transiciones.</value></data>
+  <data name="ArchivedClaimReadOnly" xml:space="preserve"><value>Esta alegación está archivada y es de solo lectura.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar los registros seleccionados?</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Vista previa de la alegación</value></data>
+  <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Esta alegación está aprobada: el cuerpo regulado está congelado. Cree una nueva versión para cambiar el texto.</value></data>
+</root>

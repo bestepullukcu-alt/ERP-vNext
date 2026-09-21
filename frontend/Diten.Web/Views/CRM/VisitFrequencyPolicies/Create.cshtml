@@ -1,0 +1,18 @@
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["NewPolicy"].Value;
+    ViewData["Mode"] = "create";
+    Layout = "_LayoutTenantShell";
+}
+
+<partial name="~/Views/CRM/VisitFrequencyPolicies/_Editor.cshtml" />
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/visit-frequency-create.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/form.js" asp-append-version="true"></script>
+}

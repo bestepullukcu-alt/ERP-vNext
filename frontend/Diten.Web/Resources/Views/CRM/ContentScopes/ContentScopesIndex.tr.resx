@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>Durum</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
+  <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz kayıt yok.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti. Lütfen tekrar deneyin.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor...</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlenenleri dahil et</value></data>
+  <data name="Active" xml:space="preserve"><value>Aktif</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ayrıntıları görüntüle</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
+  <data name="Search" xml:space="preserve"><value>Ara..</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümünü Göster</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü Kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütun Görünürlüğü</value></data>
+  <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Önizleme</value></data>
+  <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili kayıtlar silinsin mi?</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>Aktif</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Pasif</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="Template" xml:space="preserve"><value>Şablon</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="Components" xml:space="preserve"><value>Bileşenler</value></data>
+  <data name="Claims" xml:space="preserve"><value>İddialar</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Ürün Referansları</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Pazar Referansları</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Kitle Referansları</value></data>
+  <data name="Channel" xml:space="preserve"><value>Kanal</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>Dil</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Bir değer yazıp her referansı eklemek için Enter'a basın.</value></data>
+  <data name="ScopesTitle" xml:space="preserve"><value>İçerik Kapsamları</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>İçerik montajı için yeniden kullanılabilir bağlam/kapsam: ürün, pazar ve kitle referansları + opsiyonel kanal, dil ve dönem.</value></data>
+  <data name="ReusableNote" xml:space="preserve"><value>Bir kapsamı bir kez tanımlayın, birçok içerik setinden referans verin (sürüme sabitlenir).</value></data>
+  <data name="ScopeCode" xml:space="preserve"><value>Kapsam Kodu</value></data>
+  <data name="ScopeCodeNote" xml:space="preserve"><value>Bir kapsamın sürümleri arasında paylaşılan kararlı iş anahtarı.</value></data>
+  <data name="ScopeName" xml:space="preserve"><value>Kapsam Adı</value></data>
+  <data name="ScopeVersion" xml:space="preserve"><value>Sürüm</value></data>
+  <data name="CreateScope" xml:space="preserve"><value>Kapsam Oluştur</value></data>
+  <data name="EditScope" xml:space="preserve"><value>Kapsamı Düzenle</value></data>
+  <data name="ArchiveScope" xml:space="preserve"><value>Arşivle</value></data>
+  <data name="ArchiveScopeConfirm" xml:space="preserve"><value>Bu kapsam arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; okunabilir kalır.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="ArchivedScopeReadOnly" xml:space="preserve"><value>Bu kapsam arşivli ve salt okunur.</value></data>
+  <data name="ReferencesSection" xml:space="preserve"><value>Referanslar</value></data>
+  <data name="ContextSection" xml:space="preserve"><value>Kanal, Dil ve Dönem</value></data>
+  <data name="PeriodFrom" xml:space="preserve"><value>Dönem Başlangıcı</value></data>
+  <data name="PeriodTo" xml:space="preserve"><value>Dönem Bitişi</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="Status_active" xml:space="preserve"><value>Aktif</value></data>
+</root>

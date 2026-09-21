@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="SuppliersTitle" xml:space="preserve"><value>供应商</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>供应商主数据，包含准入、KYC、制裁筛查与文档跟踪。</value></data>
+  <data name="AddNew" xml:space="preserve"><value>新增供应商</value></data>
+  <data name="EditItem" xml:space="preserve"><value>编辑供应商</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>新增供应商</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>编辑供应商</value></data>
+  <data name="QuickView" xml:space="preserve"><value>查看</value></data>
+  <data name="Actions" xml:space="preserve"><value>操作</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>供应商编号</value></data>
+  <data name="Name" xml:space="preserve"><value>名称</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>例如：Medip-Kim 制药公司</value></data>
+  <data name="Country" xml:space="preserve"><value>国家/地区</value></data>
+  <data name="CountryPlaceholder" xml:space="preserve"><value>例如：tr</value></data>
+  <data name="TaxId" xml:space="preserve"><value>税号</value></data>
+  <data name="TaxIdPlaceholder" xml:space="preserve"><value>例如：1234567890</value></data>
+  <data name="PrimaryContact" xml:space="preserve"><value>主要联系人</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>活动</value></data>
+  <data name="StatusOnHold" xml:space="preserve"><value>暂停</value></data>
+  <data name="StatusBlocked" xml:space="preserve"><value>已封锁</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>停用</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>标识</value></data>
+  <data name="OnboardingSection" xml:space="preserve"><value>准入</value></data>
+  <data name="ContactSection" xml:space="preserve"><value>主要联系人</value></data>
+  <data name="SourcingSection" xml:space="preserve"><value>采购来源</value></data>
+  <data name="KycLegalName" xml:space="preserve"><value>KYC 法定名称</value></data>
+  <data name="KycLegalNamePlaceholder" xml:space="preserve"><value>例如：Medip-Kim 制药公司</value></data>
+  <data name="KycRegistrationNo" xml:space="preserve"><value>注册号</value></data>
+  <data name="KycRegistrationNoPlaceholder" xml:space="preserve"><value>例如：TR-00099</value></data>
+  <data name="DocumentType" xml:space="preserve"><value>文档类型</value></data>
+  <data name="DocumentTypePlaceholder" xml:space="preserve"><value>例如：完税证明</value></data>
+  <data name="SubmitForApproval" xml:space="preserve"><value>提交审批</value></data>
+  <data name="ContactType" xml:space="preserve"><value>联系人类型</value></data>
+  <data name="ContactTypePrimary" xml:space="preserve"><value>主要</value></data>
+  <data name="ContactTypeBilling" xml:space="preserve"><value>账务</value></data>
+  <data name="ContactTypeQuality" xml:space="preserve"><value>质量</value></data>
+  <data name="ContactTypeLogistics" xml:space="preserve"><value>物流</value></data>
+  <data name="ContactEmail" xml:space="preserve"><value>电子邮箱</value></data>
+  <data name="ContactEmailPlaceholder" xml:space="preserve"><value>例如：sales@supplier.example</value></data>
+  <data name="ContactPhone" xml:space="preserve"><value>电话</value></data>
+  <data name="ContactPhonePlaceholder" xml:space="preserve"><value>例如：+90 212 000 0000</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>来源系统</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>例如：SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>外部参考</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>例如：ERP-SUP-2001</value></data>
+  <data name="OnboardingStatus" xml:space="preserve"><value>准入状态</value></data>
+  <data name="KycOutcome" xml:space="preserve"><value>KYC 结果</value></data>
+  <data name="SanctionsOutcome" xml:space="preserve"><value>制裁筛查结果</value></data>
+</root>

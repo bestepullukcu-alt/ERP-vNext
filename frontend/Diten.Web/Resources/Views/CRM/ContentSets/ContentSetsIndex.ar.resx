@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="Cancel" xml:space="preserve"><value>إلغاء</value></data>
+  <data name="Save" xml:space="preserve"><value>حفظ</value></data>
+  <data name="Archived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>لا توجد سجلات بعد.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما. يرجى المحاولة مرة أخرى.</value></data>
+  <data name="Filter" xml:space="preserve"><value>تصفية</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
+  <data name="No" xml:space="preserve"><value>لا</value></data>
+  <data name="Yes" xml:space="preserve"><value>نعم</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>تضمين المؤرشفة</value></data>
+  <data name="Active" xml:space="preserve"><value>نشط</value></data>
+  <data name="View" xml:space="preserve"><value>عرض</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>عرض التفاصيل</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>هل أنت متأكد؟</value></data>
+  <data name="Search" xml:space="preserve"><value>بحث..</value></data>
+  <data name="Export" xml:space="preserve"><value>تصدير</value></data>
+  <data name="Reset" xml:space="preserve"><value>إعادة تعيين</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>عرض الكل</value></data>
+  <data name="SaveView" xml:space="preserve"><value>حفظ العرض</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>إظهار الأعمدة</value></data>
+  <data name="Apply" xml:space="preserve"><value>تطبيق</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>معاينة</value></data>
+  <data name="Passive" xml:space="preserve"><value>سلبي</value></data>
+  <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>حذف جماعي</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>حذف السجلات المحددة؟</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>الهوية</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>غير نشط</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="Template" xml:space="preserve"><value>القالب</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="Components" xml:space="preserve"><value>المكونات</value></data>
+  <data name="Claims" xml:space="preserve"><value>الادعاءات</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>مراجع المنتج</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>مراجع السوق</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>مراجع الجمهور</value></data>
+  <data name="Channel" xml:space="preserve"><value>القناة</value></data>
+  <data name="LanguageCode" xml:space="preserve"><value>اللغة</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>اكتب قيمة واضغط Enter لإضافة كل مرجع.</value></data>
+  <data name="SetsTitle" xml:space="preserve"><value>مجموعات المحتوى</value></data>
+  <data name="ContentStudioTitle" xml:space="preserve"><value>استوديو المحتوى</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>مسودات التجميع: مكونات + ادعاءات مرتبة على قالب تكوين ضمن نطاق اختياري.</value></data>
+  <data name="DraftNote" xml:space="preserve"><value>هذه مسودات قابلة للتعديل. التجميد والعرض والإصدار مراحل لاحقة.</value></data>
+  <data name="SetCode" xml:space="preserve"><value>رمز المجموعة</value></data>
+  <data name="SetName" xml:space="preserve"><value>اسم المجموعة</value></data>
+  <data name="CreateSet" xml:space="preserve"><value>إنشاء مجموعة</value></data>
+  <data name="EditSet" xml:space="preserve"><value>تعديل المجموعة</value></data>
+  <data name="OpenWorkspace" xml:space="preserve"><value>فتح مساحة العمل</value></data>
+  <data name="CloneSet" xml:space="preserve"><value>استنساخ كمسودة</value></data>
+  <data name="CloneSetCodePrompt" xml:space="preserve"><value>رمز مجموعة جديد للنسخة:</value></data>
+  <data name="CloneSetNamePrompt" xml:space="preserve"><value>اسم مجموعة جديد (اختياري):</value></data>
+  <data name="RecordCloned" xml:space="preserve"><value>تم استنساخ المسودة.</value></data>
+  <data name="ArchiveSet" xml:space="preserve"><value>أرشفة</value></data>
+  <data name="ArchiveSetConfirm" xml:space="preserve"><value>هل تؤرشف مجموعة المحتوى هذه؟ إجراء دورة حياة مرن؛ تظل قابلة للقراءة.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>تمت أرشفة مجموعة المحتوى.</value></data>
+  <data name="ArchivedSetReadOnly" xml:space="preserve"><value>مجموعة المحتوى هذه مؤرشفة وللقراءة فقط.</value></data>
+  <data name="CompositionSection" xml:space="preserve"><value>التكوين</value></data>
+  <data name="TemplatePickerPlaceholder" xml:space="preserve"><value>ابحث عن قالب تكوين...</value></data>
+  <data name="TemplatePinNote" xml:space="preserve"><value>يُثبَّت إصدار القالب عند إنشاء المجموعة.</value></data>
+  <data name="ScopePickerPlaceholder" xml:space="preserve"><value>ابحث عن نطاق محتوى (اختياري)...</value></data>
+  <data name="ScopeOptionalNote" xml:space="preserve"><value>اختياري. يُثبَّت إصداره عند الاختيار.</value></data>
+  <data name="PinnedNote" xml:space="preserve"><value>القالب والنطاق مثبَّتان بالإصدار وقت الاختيار — لا يتم تغييرهما هنا.</value></data>
+  <data name="NoScope" xml:space="preserve"><value>بلا نطاق</value></data>
+  <data name="ApplyEligibility" xml:space="preserve"><value>تطبيق الأهلية</value></data>
+  <data name="EligibilityApplied" xml:space="preserve"><value>تم تحديث لقطة الأهلية.</value></data>
+  <data name="EligibilitySummary" xml:space="preserve"><value>الأهلية (آخر تشغيل):</value></data>
+  <data name="Eligible" xml:space="preserve"><value>مؤهل</value></data>
+  <data name="Blocked" xml:space="preserve"><value>محظور</value></data>
+  <data name="Unresolved" xml:space="preserve"><value>غير محسوم</value></data>
+  <data name="NotEvaluated" xml:space="preserve"><value>لم يُقيَّم</value></data>
+  <data name="AddComponent" xml:space="preserve"><value>إضافة مكون</value></data>
+  <data name="AddClaim" xml:space="preserve"><value>إضافة ادعاء</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>ابحث عن مكوّن محتوى...</value></data>
+  <data name="ClaimPickerPlaceholder" xml:space="preserve"><value>ابحث عن ادعاء...</value></data>
+  <data name="Remove" xml:space="preserve"><value>إزالة</value></data>
+  <data name="Position" xml:space="preserve"><value>الموضع</value></data>
+  <data name="UpdatePosition" xml:space="preserve"><value>تحديث الموضع</value></data>
+  <data name="Branch" xml:space="preserve"><value>الفرع</value></data>
+  <data name="Step" xml:space="preserve"><value>الخطوة</value></data>
+  <data name="Min" xml:space="preserve"><value>الأدنى</value></data>
+  <data name="Max" xml:space="preserve"><value>الأقصى</value></data>
+  <data name="EmptyArrangement" xml:space="preserve"><value>لا يحتوي هذا القالب على خطوات للترتيب.</value></data>
+  <data name="NoComponents" xml:space="preserve"><value>لا توجد مكونات في هذه الفتحة بعد.</value></data>
+  <data name="NoClaims" xml:space="preserve"><value>لا توجد ادعاءات في هذه الفتحة بعد.</value></data>
+  <data name="AddedOn" xml:space="preserve"><value>أُضيف</value></data>
+  <data name="NeedsAssessmentWarn" xml:space="preserve"><value>تغيَّر مصدر هذا المكوّن — تحتاج الترجمة إلى تقييم.</value></data>
+</root>

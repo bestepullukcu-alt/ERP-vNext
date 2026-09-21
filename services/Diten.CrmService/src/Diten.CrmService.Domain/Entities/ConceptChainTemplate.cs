@@ -27,10 +27,23 @@ public sealed class ConceptChainTemplate : EntityBase
     public List<Guid> OrderedConceptTypes { get; set; } = new();
 
     /// <summary>SCMM-10 (③, RM2) — optional parallel-branch structure. Each branch is an ordered concept-type sequence
-    /// with per-position cardinality (min/max), moderator/allowed-role refs and for-whom audience-dimension refs. Empty
-    /// on legacy templates (they use <see cref="OrderedConceptTypes"/> only). Frozen alongside the spine once published.
-    /// This is STRUCTURE ONLY — no engine advances, assigns or evaluates it (D8); the refs are config, not membership.</summary>
+    /// with per-position cardinality (min/max). Empty on legacy templates (they use <see cref="OrderedConceptTypes"/>
+    /// only). Frozen alongside the spine once published. This is STRUCTURE ONLY — no engine advances, assigns or
+    /// evaluates it (D8).</summary>
     public List<ConceptChainBranch> Branches { get; set; } = new();
+
+    /// <summary>SCMM-10 (WP-A, D-a/D-b) — template-level delivery role: WHO presents the whole chain (the "book"). A
+    /// <c>content-moderator-role</c> ValueCode (<c>position</c> / <c>client</c> / <c>system-auto</c>) — the vocabulary is
+    /// reference-driven (WP-B); the backend only stores a trimmed, non-empty value. Null = unspecified. Frozen alongside
+    /// the spine once published (D-f). Config only — no engine resolves a role or assigns a moderator (D8). Phase 2 will
+    /// add a <c>ModeratorPositionRef</c> when this is <c>position</c>.</summary>
+    public string? ModeratorRoleType { get; set; }
+
+    /// <summary>SCMM-10 (WP-A, D-a/D-d) — template-level target audience: FOR WHOM the whole chain is intended. Zero or
+    /// more <see cref="AudienceProfile"/> references (reuse of the reference-driven profiles). Empty = unspecified. Each
+    /// id is validated (exists + non-archived) before persist; frozen alongside the spine once published (D-f). Config
+    /// only — a reference, never a membership evaluation (D8).</summary>
+    public List<Guid> ForWhomAudienceProfileIds { get; set; } = new();
 
     /// <summary><see cref="ConceptChainStatuses"/> — draft / review / approved / published / inactive / archived.</summary>
     public string Status { get; set; } = ConceptChainStatuses.Draft;
@@ -73,11 +86,11 @@ public sealed class ConceptChainBranch
 }
 
 /// <summary>
-/// SCMM-10 (③, RM2) — one position in a branch. It carries the expected concept TYPE plus the authoring metadata the
-/// legacy flat list could not hold: per-position cardinality (<see cref="MinSelection"/> / <see cref="MaxSelection"/>),
-/// the moderator / allowed-role references (<see cref="AllowedRoleRefs"/>) and the for-whom audience-dimension
-/// references (<see cref="AudienceDimensionRefs"/>). Every ref is a CONFIG pointer only — nothing here resolves a role,
-/// evaluates an audience or assigns a moderator (D8, no engine).
+/// SCMM-10 (③, RM2) — one position in a branch. It carries the expected concept TYPE plus the per-position cardinality
+/// (<see cref="MinSelection"/> / <see cref="MaxSelection"/>) the legacy flat list could not hold. This is STRUCTURE
+/// ONLY — no engine advances or evaluates it (D8). Moderator / for-whom moved to the TEMPLATE level (SCMM-10 WP-A,
+/// D-a/D-e): the legacy step-level <c>AllowedRoleRefs</c> / <c>AudienceDimensionRefs</c> were removed (no downstream
+/// consumer read them) and any such element on a legacy branch document is ignored on read (see the persistence map).
 /// </summary>
 public sealed class ConceptChainStep
 {
@@ -89,12 +102,4 @@ public sealed class ConceptChainStep
     /// <summary>Maximum number of nodes for this position (RM2 max selections). Null = unbounded; when set it is ≥ 1 and
     /// ≥ <see cref="MinSelection"/>.</summary>
     public int? MaxSelection { get; set; }
-
-    /// <summary>Moderator / allowed-role references (RM2 allowed roles) — WHO may author/own this position. Opaque config
-    /// strings; not validated against a role master and never used to assign anyone.</summary>
-    public List<string> AllowedRoleRefs { get; set; } = new();
-
-    /// <summary>For-whom audience-dimension references (RM3 usage-context audience) — WHICH audience this position targets.
-    /// Opaque config strings; a reference, never a membership evaluation.</summary>
-    public List<string> AudienceDimensionRefs { get; set; } = new();
 }

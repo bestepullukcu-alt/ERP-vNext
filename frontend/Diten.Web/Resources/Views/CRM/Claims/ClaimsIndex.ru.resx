@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="ClaimsTitle" xml:space="preserve"><value>Заявления</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Составляйте регулируемый текст заявления с квалификаторами, применимостью, доказательствами и повторно используемыми компонентами.</value></data>
+  <data name="ApprovalFreezeNote" xml:space="preserve"><value>Утверждение заявления замораживает его регулируемое содержание (текст, квалификаторы, применимость, доказательства, компоненты); последующее изменение требует новой версии.</value></data>
+  <data name="ClaimCode" xml:space="preserve"><value>Код заявления</value></data>
+  <data name="ClaimName" xml:space="preserve"><value>Название заявления</value></data>
+  <data name="ClaimVersion" xml:space="preserve"><value>Версия</value></data>
+  <data name="Status" xml:space="preserve"><value>Статус</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Действует с</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Действует до</value></data>
+  <data name="Approved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="Archived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
+  <data name="Actions" xml:space="preserve"><value>Действия</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Отмена</value></data>
+  <data name="Save" xml:space="preserve"><value>Сохранить</value></data>
+  <data name="CreateClaim" xml:space="preserve"><value>Создать заявление</value></data>
+  <data name="EditClaim" xml:space="preserve"><value>Редактировать заявление</value></data>
+  <data name="ApproveClaim" xml:space="preserve"><value>Утвердить</value></data>
+  <data name="ApproveClaimConfirm" xml:space="preserve"><value>Утвердить это заявление? Его регулируемое содержание будет заморожено; последующее изменение потребует новой версии.</value></data>
+  <data name="ArchiveClaim" xml:space="preserve"><value>Архивировать</value></data>
+  <data name="ArchiveClaimConfirm" xml:space="preserve"><value>Архивировать это заявление? Это мягкое действие жизненного цикла; оно остаётся доступным для чтения.</value></data>
+  <data name="RecordApproved" xml:space="preserve"><value>Заявление утверждено.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Заявление архивировано.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Заявлений пока нет.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Что-то пошло не так. Повторите попытку.</value></data>
+  <data name="Filter" xml:space="preserve"><value>Фильтр</value></data>
+  <data name="Loading" xml:space="preserve"><value>Загрузка...</value></data>
+  <data name="No" xml:space="preserve"><value>Нет</value></data>
+  <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Включая архивные</value></data>
+  <data name="Active" xml:space="preserve"><value>Активные</value></data>
+  <data name="View" xml:space="preserve"><value>Просмотр</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
+  <data name="Edit" xml:space="preserve"><value>Изменить</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>Вы уверены?</value></data>
+  <data name="Search" xml:space="preserve"><value>Поиск..</value></data>
+  <data name="Export" xml:space="preserve"><value>Экспорт</value></data>
+  <data name="Reset" xml:space="preserve"><value>Сброс</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Показать все</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Сохранить вид</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Видимость столбцов</value></data>
+  <data name="Apply" xml:space="preserve"><value>Применить</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>Утверждено</value></data>
+  <data name="StatusInactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="StatusArchived" xml:space="preserve"><value>В архиве</value></data>
+  <data name="Status_draft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="Status_inactive" xml:space="preserve"><value>Неактивно</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Идентификация и формулировка</value></data>
+  <data name="ClaimCodeNote" xml:space="preserve"><value>Устойчивый бизнес-ключ, общий для всех версий одного заявления.</value></data>
+  <data name="ClaimText" xml:space="preserve"><value>Текст заявления</value></data>
+  <data name="ClaimTextNote" xml:space="preserve"><value>Регулируемая формулировка. Замораживается после утверждения заявления.</value></data>
+  <data name="ApplicabilitySection" xml:space="preserve"><value>Применимость</value></data>
+  <data name="ProductRefs" xml:space="preserve"><value>Ссылки на продукты</value></data>
+  <data name="MarketRefs" xml:space="preserve"><value>Ссылки на рынки</value></data>
+  <data name="AudienceRefs" xml:space="preserve"><value>Ссылки на аудитории</value></data>
+  <data name="EligibilityPolicyId" xml:space="preserve"><value>ID политики допустимости</value></data>
+  <data name="EligibilityPolicyIdNote" xml:space="preserve"><value>Необязательная ссылка на политику допустимости; оценка здесь не выполняется.</value></data>
+  <data name="RefsTagHint" xml:space="preserve"><value>Введите значение и нажмите Enter, чтобы добавить каждую ссылку.</value></data>
+  <data name="EffectiveSection" xml:space="preserve"><value>Период действия</value></data>
+  <data name="ComponentsSection" xml:space="preserve"><value>Регулируемое содержание</value></data>
+  <data name="Qualifiers" xml:space="preserve"><value>Квалификаторы</value></data>
+  <data name="EvidenceRefs" xml:space="preserve"><value>Ссылки на доказательства</value></data>
+  <data name="EvidenceRefsNote" xml:space="preserve"><value>Непрозрачные ссылки на доказательства; хранятся как есть (без разрешения).</value></data>
+  <data name="ComponentRefs" xml:space="preserve"><value>Компоненты</value></data>
+  <data name="ComponentRefsNote" xml:space="preserve"><value>Повторно используемый контент знаний по id (только повторное использование; новый компонент не создаётся).</value></data>
+  <data name="ComponentPickerPlaceholder" xml:space="preserve"><value>Выберите компоненты...</value></data>
+  <data name="Description" xml:space="preserve"><value>Описание</value></data>
+  <data name="StatusEditableNote" xml:space="preserve"><value>Создание и редактирование допускают черновик или неактивно; для этих переходов используйте Утвердить и Архивировать.</value></data>
+  <data name="ArchivedClaimReadOnly" xml:space="preserve"><value>Это заявление в архиве и доступно только для чтения.</value></data>
+  <data name="Passive" xml:space="preserve"><value>Пассивный</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Массовое удаление</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Удалить выбранные записи?</value></data>
+  <data name="QuickViewTitle" xml:space="preserve"><value>Предпросмотр заявления</value></data>
+  <data name="ApprovedBodyFrozenNote" xml:space="preserve"><value>Это заявление утверждено: регулируемое содержание заморожено. Создайте новую версию, чтобы изменить формулировку.</value></data>
+</root>

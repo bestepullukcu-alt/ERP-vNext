@@ -683,6 +683,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Concepts</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>声明</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>内容范围</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>内容集</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>拜访频率策略</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>资格策略</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>知识路径</value>
   </data>
@@ -859,4 +874,26 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>已验证认证登记册</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>已验证参与者</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>劳动力分析</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>采购</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>供应商</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>寻源</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>不支持修改 RFx；请新建 RFx，或通过发布、报价和授标进行管理。</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>采购申请</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>采购订单</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>不支持修改采购申请；请新建申请，或提交此申请以供审批。</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>不支持修改采购订单；请新建采购订单，或批准此订单。</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>发票匹配</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>发票采集与三方匹配</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>合同</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>合同与条款库</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>仅可更新草稿合同；已激活的合同通过生命周期操作管理，而非编辑。</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>收货 (GRN)</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>不支持修改收货单；已过账的收货通过冲销移动更正，而非编辑。</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>不支持更新发票；请通过重新运行三方匹配或解决其异常来更正，而不是通过编辑。</value></data>
 </root>

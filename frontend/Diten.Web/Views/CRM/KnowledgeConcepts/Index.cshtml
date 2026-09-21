@@ -95,7 +95,8 @@
    has none of these: it keeps its route-based Create/Edit pages. *@
 <partial name="~/Views/CRM/KnowledgeConcepts/_TypeCreateEditOffcanvas.cshtml" />
 <partial name="~/Views/CRM/KnowledgeConcepts/_RelationshipCreateEditOffcanvas.cshtml" />
-<partial name="~/Views/CRM/KnowledgeConcepts/_TemplateCreateEditOffcanvas.cshtml" />
+@* SCMM-10-UI-refine: the Chain Template create/edit moved to the Golden Compact full page
+   (Templates/Create · Templates/Edit); its offcanvas partial was removed. *@
 
 @* Shared read-only quick view for the three Slim surfaces. This is the Golden preview canvas shell; each aggregate
    contributes its own field-map partial and concept-slim.js reveals the one that was asked for. *@

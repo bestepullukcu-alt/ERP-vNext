@@ -61,7 +61,8 @@
             updatedAt: item.updatedAt || item.createdAt, isArchived: item.isArchived
         };
         if (kind === 'topics') return Object.assign({ id:item.topicId, code:item.topicCode, name:item.topicName, subjectId:item.subjectId, parentTopicId:item.parentTopicId }, common);
-        if (kind === 'audience-profiles') return Object.assign({ id:item.audienceProfileId, code:item.profileCode, name:item.profileName, profileType:item.profileType }, common);
+        // WP-MOD0162-AUD-UI: dimensions ride through so an edit round-trips them (writes are full replaces).
+        if (kind === 'audience-profiles') return Object.assign({ id:item.audienceProfileId, code:item.profileCode, name:item.profileName, profileType:item.profileType, dimensions:item.dimensions || [] }, common);
         return Object.assign({ id:item.subjectId, code:item.subjectCode, name:item.subjectName, parentSubjectId:item.parentSubjectId }, common);
     };
 
@@ -531,10 +532,330 @@
         document.getElementById('taxonomySubmit')?.classList.toggle('d-none', readOnly);
     };
 
+    // ─── WP-MOD0162-AUD-UI: AudienceProfile dimension builder ─────────────────
+    // Each row = an axis + its values. A reference axis (account-type / contact-type / medical-specialty) picks values
+    // BY NAME from MOD-0048 published-values but STORES the stable ValueCode; a custom axis takes a free AxisCode + free
+    // tag values. Dimensions are optional (0+ rows). Writes are full replaces — collectDimensions() is the whole list.
+    const REF_AXES = ['account-type', 'contact-type', 'medical-specialty'];
+    const AXIS_LABEL = {
+        'account-type': () => L.AxisAccountType || 'account-type',
+        'contact-type': () => L.AxisContactType || 'contact-type',
+        'medical-specialty': () => L.AxisMedicalSpecialty || 'medical-specialty',
+        'custom': () => L.AxisCustom || 'custom'
+    };
+    const isRefAxis = axis => REF_AXES.includes(axis);
+    // Soft-cascade doctor detection — by code or (multilingual) label; best-effort, never a hard data binding.
+    const DOCTOR_CODES = ['doctor', 'physician', 'md', 'doktor', 'hekim'];
+    const looksLikeDoctor = (code, label) => DOCTOR_CODES.includes(norm(code).toLowerCase())
+        || /doctor|physician|hekim|doktor|m[eé]decin|arzt|врач|医生|طبيب/i.test(norm(label));
+
+    // published-values cache: setCode → [{code, label, isDeprecated, replacement}]
+    const refValues = {};
+    const loadRefValues = async setCode => {
+        if (refValues[setCode]) return refValues[setCode];
+        try {
+            const data = await envelope(await fetch(`${base}/reference-data/${encodeURIComponent(setCode)}/values`, { credentials: 'same-origin', headers }));
+            refValues[setCode] = (data?.items || []).map(v => {
+                const code = norm(v.code || v.valueCode || v.value);
+                return {
+                    code,
+                    label: norm(v.label || v.displayName || v.text) || code,
+                    isDeprecated: v.isDeprecated === true || v.isActive === false,
+                    replacement: norm(v.replacementValueCode || v.replacementCode),
+                    sortOrder: Number(v.sortOrder || 0)
+                };
+            }).filter(o => o.code).sort((a, b) => a.sortOrder - b.sortOrder || a.label.localeCompare(b.label));
+        } catch { refValues[setCode] = []; }
+        return refValues[setCode];
+    };
+    const refValueLabel = (setCode, code) => (refValues[setCode] || []).find(o => o.code === code)?.label || code;
+
+    // WP-MOD0162-AUD-UI-3: compose-then-add. `dimensions` holds ADDED items (display-only); a value's label is
+    // captured at Add time so nothing re-looks-up async. Item: { axis, axisCode, values:[code], valueLabels:[label] }.
+    let dimensions = [];
+    let composeAxis = 'account-type';   // the axis currently in the fixed bottom compose-row
+    let dimReadOnly = false;
+    // WP-MOD0162-SUBJECT-UI: Subject↔Global Product picker state.
+    let subjectGpDisabled = false;      // MDM selector unreachable/forbidden → picker disabled, custom still works
+    let suppressGpAuto = false;         // load seeds the picker; its change handler must not prefill the Name then
+
+    // WP-MOD0162-AUD-UI-2: Dimensions apply ONLY to these profile types; Name is derived from the dimension value
+    // labels for them, and pre-filled from the ProfileType label (editable) for every other type.
+    const DIM_TYPES = ['healthcare-professional', 'pharmacist'];
+    let currentFormKind = null;
+    let profileNameDirty = false;      // the editable-Name case: a user edit is preserved until ProfileType changes
+    let suppressProfileAuto = false;   // openForm sets fields itself; the ProfileType change handler must not fight it
+    const titleize = code => norm(code).split(/[-_\s]+/).filter(Boolean)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    // The read-only Name for a dimensioned profile: every added value's display label, joined by " / "
+    // ("Doctor / Nephrology"). Labels are captured at Add time (stored on the item as valueLabels), so this is
+    // synchronous and never blanks while a published-values fetch is in flight.
+    const dimensionNameLabel = () => {
+        const parts = [];
+        dimensions.forEach(d => (d.valueLabels || []).forEach(l => { if (norm(l)) parts.push(l); }));
+        return parts.join(' / ');
+    };
+    const profileTypeValue = () => norm(document.getElementById('taxProfileType')?.value);
+    // Dimensions are visible only for a dimensioned profile type on the AudienceProfile form.
+    const updateDimVisibility = () => {
+        const show = currentFormKind === 'audience-profiles' && DIM_TYPES.includes(profileTypeValue());
+        document.getElementById('taxDimensionsSection')?.classList.toggle('d-none', !show);
+    };
+    // Name: derived + DISABLED for a dimensioned profile; ProfileType-seeded + editable otherwise. Only the
+    // AudienceProfile form drives this — Subject/Topic keep a plain editable name. The derived value still submits
+    // because the submit handler reads taxName.value in JS (~901), not a native form-serialize that would drop a
+    // disabled field.
+    const updateProfileName = () => {
+        if (currentFormKind !== 'audience-profiles') return;
+        const nameEl = document.getElementById('taxName');
+        if (!nameEl) return;
+        const pt = profileTypeValue();
+        const derived = DIM_TYPES.includes(pt);
+        // In view mode setFormReadOnly already disabled everything — don't re-enable it here; only manage the
+        // disabled appearance in create/edit, mirroring the derived state.
+        if (!dimReadOnly) { nameEl.disabled = derived; nameEl.readOnly = derived; }
+        if (derived) {
+            setValue('taxName', dimensionNameLabel());    // empty until a dimension value is chosen
+        } else if (!profileNameDirty) {
+            setValue('taxName', pt ? titleize(pt) : '');
+        }
+    };
+    const onProfileTypeChange = () => {
+        if (suppressProfileAuto || currentFormKind !== 'audience-profiles') return;
+        profileNameDirty = false;                         // a fresh ProfileType re-seeds the editable Name
+        const dim = DIM_TYPES.includes(profileTypeValue());
+        if (!dim) { dimensions = []; renderDimensions(); }  // clear orphaned dims when leaving a dimensioned type
+        updateDimVisibility();
+        // (Re)build the compose-row now the section is visible, so its select2 measures a real width.
+        if (dim) { if (isRefAxis(composeAxis)) loadRefValues(composeAxis).then(renderCompose); else renderCompose(); }
+        updateProfileName();
+    };
+
+    // ── Canonical DitenCheckItem shell (exact classes) ────────────────────────
+    // DitenCheckItem.row/.addRow are purpose-built for task text-items (fixed grip/level/evidence/remove + a text
+    // string) with no slot for Axis+Values select2 — so, per the WP, we reuse the exact CSS classes verbatim rather
+    // than the factory. The grip + move affordances are present but WITHDRAWN (visibility:hidden), so a dimension row
+    // keeps the same rhythm/height as a Tasks checklist row without offering a reorder that is meaningless for a set.
+    const checkitemAffordance = () =>
+        `<span class="diten-checkitem-grip diten-checkitem-withdrawn" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>`
+        + `<span class="diten-checkitem-move diten-checkitem-withdrawn" aria-hidden="true">`
+        + `<button type="button" class="diten-checkitem-btn" tabindex="-1"><i class="bx bx-chevron-up"></i></button>`
+        + `<button type="button" class="diten-checkitem-btn" tabindex="-1"><i class="bx bx-chevron-down"></i></button></span>`;
+
+    // ── Added rows (display-only checklist) ───────────────────────────────────
+    const axisDisplay = d => d.axis === 'custom' ? (d.axisCode || (L.AxisCustom || 'custom')) : AXIS_LABEL[d.axis]();
+    const renderDimensions = () => {
+        const host = document.getElementById('taxDimensions');
+        if (!host) return;
+        // Display-only rows (no inline edit — change = delete + re-add): axis label + value-label chips + the quiet
+        // canonical × (diten-checkitem-remove, transparent → red on hover), never a heavy btn-label-danger block.
+        host.innerHTML = dimensions.map((d, i) => {
+            const chips = (d.valueLabels || []).map(l => `<span class="badge bg-label-secondary me-1">${esc(l)}</span>`).join('');
+            const rm = dimReadOnly ? '' :
+                `<button type="button" class="diten-checkitem-btn diten-checkitem-remove js-dim-remove" data-i="${i}" title="${esc(L.RemoveDimension || '')}" aria-label="${esc(L.RemoveDimension || '')}"><i class="bx bx-x"></i></button>`;
+            return `<li class="diten-checkitem">
+                    ${checkitemAffordance()}
+                    <span class="diten-checkitem-text"><span class="fw-medium me-2">${esc(axisDisplay(d))}</span>${chips || '<span class="text-muted">—</span>'}</span>
+                    ${rm}
+                </li>`;
+        }).join('');
+        document.getElementById('taxDimensionsEmpty')?.classList.toggle('d-none', dimensions.length > 0);
+        updateProfileName();   // the added values drive the derived Name for HCP/pharmacist profiles
+    };
+
+    // ── Fixed compose-row: a plain .diten-checkitem shell (NOT a separate card) ──
+    const composeValuesControl = () => {
+        const dep = ` (${esc(L.Deprecated || 'deprecated')})`;
+        if (composeAxis === 'custom') {
+            return `<input type="text" class="form-control form-control-sm mb-1" id="composeCustomCode" placeholder="${esc(L.CustomAxisPlaceholder || '')}">
+                <select multiple class="form-select form-select-sm" id="composeValues" data-placeholder="${esc(L.CustomValuesPlaceholder || '')}"></select>`;
+        }
+        const opts = (refValues[composeAxis] || []).map(o =>
+            `<option value="${esc(o.code)}">${esc(o.label)}${o.isDeprecated ? dep : ''}</option>`).join('');
+        return `<select multiple class="form-select form-select-sm" id="composeValues" data-placeholder="${esc(L.SelectValues || L.SelectOption || '')}">${opts}</select>`;
+    };
+    const renderCompose = () => {
+        const host = document.getElementById('taxDimensionCompose');
+        if (!host) return;
+        if (dimReadOnly) { host.innerHTML = ''; return; }   // view mode: display rows only, no compose-row
+        const axisOpts = REF_AXES.concat('custom')
+            .map(a => `<option value="${esc(a)}"${composeAxis === a ? ' selected' : ''}>${esc(AXIS_LABEL[a]())}</option>`).join('');
+        // Same .diten-checkitem shell as an added row (matching border/bg/padding); Axis + Values sit in the text slot,
+        // a plain Tasks-style Add (btn-label-primary, not a solid purple block) sits where remove would.
+        // Compose-row is a vertical stack: row 1 = Axis + Values ALWAYS side by side (flex:1 vs flex:2, both
+        // min-width:0 so they stay on one line and shrink rather than wrap, small select2 preserved); row 2 = a
+        // left-aligned Add beneath them. No grip/move affordance here — this is an add-row, not a draggable item, so
+        // its left padding is just the .diten-checkitem shell's own (grip space removed).
+        host.innerHTML = `<div class="diten-checkitem flex-column align-items-stretch gap-2">
+                <div class="d-flex gap-2 align-items-start">
+                    <span style="flex:1 1 0; min-width:0"><select class="form-select form-select-sm" id="composeAxis" aria-label="${esc(L.Axis || 'Axis')}">${axisOpts}</select></span>
+                    <span style="flex:2 1 0; min-width:0">${composeValuesControl()}</span>
+                </div>
+                <button type="button" class="btn btn-label-primary btn-sm align-self-start" id="btnDimAdd">${esc(L.AddDimension || 'Add')}</button>
+            </div>`;
+        initComposeSelect2();
+    };
+    const initComposeSelect2 = () => {
+        const jq = window.jQuery;
+        if (!jq?.fn?.select2) return;
+        // selectionCssClass 'form-select form-select-sm' = the same SMALL rendering the working filter chips use
+        // (initSelect2 ~167); without it select2 renders at its default (large) height and the multi container grows
+        // past its flex cell and overruns Add.
+        jq('#composeAxis').select2({ dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', minimumResultsForSearch: Infinity, width: '100%' })
+            .off('change.dc').on('change.dc', async function () {
+                composeAxis = jq(this).val();
+                if (isRefAxis(composeAxis)) await loadRefValues(composeAxis);
+                renderCompose();   // swap the values control for the new axis' vocabulary
+            });
+        const vopts = { dropdownParent: jq('#taxonomyCanvas'), selectionCssClass: 'form-select form-select-sm', width: '100%', placeholder: document.getElementById('composeValues')?.getAttribute('data-placeholder') || '', closeOnSelect: false };
+        if (composeAxis === 'custom') { vopts.tags = true; vopts.tokenSeparators = [',']; }
+        jq('#composeValues').select2(vopts);
+    };
+    // Add the composed axis+values as a display row, CAPTURING the value labels now (from the loaded published-values,
+    // so no later async lookup), then reset the compose-row. Stores the stable code; the label is display-only.
+    const addComposed = () => {
+        if (dimReadOnly) return;
+        const jq = window.jQuery;
+        const custom = composeAxis === 'custom';
+        const axisCode = custom ? norm(document.getElementById('composeCustomCode')?.value) : composeAxis;
+        const values = normArr(jq ? jq('#composeValues').val() : []);
+        if (!axisCode || values.length === 0) return;   // backend requires a non-empty axis + ≥1 value
+        const valueLabels = custom ? values.slice() : values.map(v => refValueLabel(composeAxis, v));
+        // Re-adding an axis replaces its earlier row (the backend rejects a duplicate axis).
+        const key = axisCode.toLowerCase();
+        dimensions = dimensions.filter(d => d.axisCode.toLowerCase() !== key);
+        dimensions.unshift({ axis: custom ? 'custom' : composeAxis, axisCode, values, valueLabels });
+        // Cascade: adding contact-type=doctor pre-sets the next compose axis to medical-specialty (documented fallback).
+        composeAxis = maybeCascadeAxis(dimensions[0]) || 'account-type';
+        if (isRefAxis(composeAxis)) { loadRefValues(composeAxis).then(renderCompose); } else { renderCompose(); }
+        renderDimensions();
+    };
+    const maybeCascadeAxis = added => {
+        if (added.axis !== 'contact-type') return null;
+        const hasDoctor = added.values.some((code, k) => looksLikeDoctor(code, added.valueLabels[k]));
+        if (!hasDoctor || dimensions.some(d => d.axis === 'medical-specialty')) return null;
+        return 'medical-specialty';
+    };
+
+    const loadDimensions = async row => {
+        dimensions = (row?.dimensions || []).map(d => {
+            const axisCode = norm(d.axisCode);
+            return { axis: isRefAxis(axisCode) ? axisCode : 'custom', axisCode, values: normArr(d.values), valueLabels: [] };
+        });
+        await Promise.all(REF_AXES.filter(a => dimensions.some(d => d.axis === a)).map(loadRefValues));
+        // resolve display labels now that published-values are cached (custom = the raw value is its own label)
+        dimensions.forEach(d => { d.valueLabels = d.axis === 'custom' ? d.values.slice() : d.values.map(v => refValueLabel(d.axis, v)); });
+        renderDimensions();
+    };
+    // Full-replace list; each item already carries a non-empty axis + ≥1 value and a unique axis (enforced on Add).
+    const collectDimensions = () => {
+        const seen = new Set(); const out = [];
+        dimensions.forEach(d => {
+            const axisCode = norm(d.axisCode);
+            const values = normArr(d.values);
+            if (!axisCode || values.length === 0) return;
+            const key = axisCode.toLowerCase();
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push({ axisCode, values });
+        });
+        return out;
+    };
+
+    // ── WP-MOD0162-SUBJECT-UI: Subject ↔ MDM Global Product picker ────────────
+    const gpMode = () => document.querySelector('input[name="taxSubjectSource"]:checked')?.value || 'custom';
+    const setGpMode = mode => {
+        const custom = mode !== 'global-product';
+        const r = document.getElementById(custom ? 'taxSubjectSourceCustom' : 'taxSubjectSourceProduct');
+        if (r) r.checked = true;
+        document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
+    };
+    const gpRef = row => (row?.externalReferences || []).find(r => norm(r.sourceSystem).toLowerCase() === 'global-product');
+    const setGpDisabled = reason => {
+        subjectGpDisabled = true;
+        const note = document.getElementById('taxGlobalProductDisabledNote');
+        if (note) { note.textContent = L[reason] || L.GlobalProductPickerUnavailable || ''; note.classList.remove('d-none'); }
+    };
+    // WP-MOD0162-SUBJECT-UI-2: ajax server-side search over the MDM selector (177 rows, MDM cap pageSize=100). The
+    // browser types to search; the same-origin proxy attaches the token and clamps pageSize. A { disabled, reason }
+    // body → disabled + reason (never a silent empty list); a stored code stays visible via its preselected <option>.
+    const initGpSelect2 = () => {
+        const jq = window.jQuery;
+        if (!jq?.fn?.select2) return;
+        const $s = jq('#taxGlobalProductId');
+        if ($s.hasClass('select2-hidden-accessible')) $s.select2('destroy');
+        $s.select2({
+            dropdownParent: jq('#taxonomyCanvas'),
+            selectionCssClass: 'form-select form-select-sm',
+            width: '100%',
+            placeholder: $s.data('placeholder') || '',
+            allowClear: true,
+            minimumInputLength: 0,
+            ajax: {
+                url: `${base}/global-product-options`,
+                dataType: 'json',
+                delay: 250,
+                data: params => ({ search: params.term || '', pageNumber: 1, pageSize: 100 }),
+                processResults: body => {
+                    if (body && body.disabled) { setGpDisabled(body.reason); return { results: [] }; }
+                    subjectGpDisabled = false;
+                    document.getElementById('taxGlobalProductDisabledNote')?.classList.add('d-none');
+                    return { results: (body && body.options ? body.options : []).map(o => ({ id: o.value, text: o.label })) };
+                },
+                // Return the jqXHR so select2 can abort an in-flight search when a new keystroke starts (a .then() chain
+                // has no .abort()).
+                transport: (params, success, failure) => {
+                    const request = jq.ajax(params);
+                    request.then(success);
+                    request.fail(xhr => { setGpDisabled('GlobalProductPickerUnavailable'); failure(xhr); });
+                    return request;
+                }
+            }
+        });
+        // A user pick prefills the (editable) Name; a programmatic seed (load) is suppressed so it can't clobber a
+        // stored/edited Subject name.
+        $s.off('change.gp').on('change.gp', function () {
+            if (suppressGpAuto) return;
+            const sel = $s.select2('data');
+            const label = (sel && sel[0]) ? norm(sel[0].text) : '';
+            if (norm($s.val()) && label) setValue('taxName', label);
+        });
+    };
+    const loadSubjectGlobalProduct = async row => {
+        const ref = gpRef(row);
+        const currentId = ref ? norm(ref.externalId) : '';
+        let currentLabel = ref ? norm(ref.externalName) : '';
+        const el = document.getElementById('taxGlobalProductId');
+        if (!el) return;
+        subjectGpDisabled = false;
+        document.getElementById('taxGlobalProductDisabledNote')?.classList.add('d-none');
+        suppressGpAuto = true;
+        // Preselect the stored product (resolve id→name when the reference carried none) — an ajax select2 shows a
+        // selected value only if its <option> is present.
+        if (currentId && !currentLabel) {
+            try { const r = await (await fetch(`${base}/global-product-options/${encodeURIComponent(currentId)}`, { credentials: 'same-origin', headers })).json(); currentLabel = norm(r?.label) || currentId; }
+            catch { currentLabel = currentId; }
+        }
+        el.innerHTML = currentId ? `<option value="${esc(currentId)}" selected>${esc(currentLabel || currentId)}</option>` : '';
+        // Availability probe (search-less, pageSize=1) so the picker shows disabled + reason immediately, not only
+        // after the dropdown is first opened.
+        let probe = null;
+        try { probe = await (await fetch(`${base}/global-product-options?pageSize=1`, { credentials: 'same-origin', headers })).json(); }
+        catch { probe = { disabled: true, reason: 'GlobalProductPickerUnavailable' }; }
+        if (probe && probe.disabled) { setGpDisabled(probe.reason); el.disabled = true; }
+        else { el.disabled = !!dimReadOnly; }   // view mode keeps it disabled
+        initGpSelect2();
+        if (window.jQuery) window.jQuery('#taxGlobalProductId').trigger('change.select2');
+        setGpMode(currentId ? 'global-product' : 'custom');
+        suppressGpAuto = false;
+    };
+
     const openForm = (kind, row, readOnly) => {
         const spec = SPECS[kind];
         const form = document.getElementById('taxonomyForm');
         form.reset();
+        currentFormKind = kind;
+        suppressProfileAuto = true;   // openForm seeds ProfileType / Name / dimensions itself; don't let the change handler fight it
         populateFormOptions(kind, row);
         document.getElementById('taxKind').value = kind;
         document.getElementById('taxId').value = row?.id || '';
@@ -554,6 +875,35 @@
         document.querySelectorAll('.tax-only-topic').forEach(x => x.classList.toggle('d-none', kind !== 'topics'));
         document.querySelectorAll('.tax-only-profile').forEach(x => x.classList.toggle('d-none', kind !== 'audience-profiles'));
         setFormReadOnly(!!readOnly);
+        // WP-MOD0162-AUD-UI(-2): the dimension builder + Name derivation are profile-only. Dimensions show only for a
+        // dimensioned ProfileType; Name is derived+read-only for those, ProfileType-seeded+editable otherwise.
+        dimReadOnly = !!readOnly;
+        // Reset the Name control per open: enabled in create/edit, disabled in view (setFormReadOnly already disabled
+        // it). updateProfileName then re-derives the disabled state from the ProfileType for the AudienceProfile form.
+        const taxNameEl = document.getElementById('taxName');
+        taxNameEl.readOnly = false;
+        taxNameEl.disabled = !!readOnly;
+        composeAxis = 'account-type';                      // reset the compose-row for each open
+        if (kind === 'audience-profiles') {
+            void loadDimensions(row);                     // async: renderDimensions() re-derives the Name once it lands
+            const pt = row?.profileType || '';
+            if (DIM_TYPES.includes(pt)) {
+                profileNameDirty = false;
+                document.getElementById('taxName').readOnly = true;
+                updateProfileName();
+            } else {
+                profileNameDirty = !!(row && row.name);   // an existing custom name is preserved (not re-seeded)
+                if (!profileNameDirty) setValue('taxName', pt ? titleize(pt) : '');
+            }
+        } else {
+            dimensions = []; renderDimensions();
+        }
+        updateDimVisibility();
+        // Render the compose-row AFTER visibility is set so its select2 measures a real width (a d-none section is 0-wide).
+        if (currentFormKind === 'audience-profiles') { if (isRefAxis(composeAxis)) loadRefValues(composeAxis).then(renderCompose); else renderCompose(); }
+        // WP-MOD0162-SUBJECT-UI: load the Subject↔Global Product picker (id→name + mode) for subjects.
+        if (kind === 'subjects') { void loadSubjectGlobalProduct(row); }
+        suppressProfileAuto = false;
         // A topic's subject is fixed at creation (the update contract does not carry SubjectId).
         if (!readOnly) document.getElementById('taxSubjectId').disabled = !!row;
         document.getElementById('taxonomyCanvasTitle').textContent = readOnly
@@ -579,7 +929,8 @@
             return isUpdate ? payload : Object.assign({ topicCode: src.code, subjectId: src.subjectId }, payload);
         }
         if (kind === 'audience-profiles') {
-            const payload = Object.assign({ profileName: src.name, profileType: norm(src.profileType) || null }, common);
+            // WP-MOD0162-AUD-UI: dimensions is a full replace (empty array clears); values are stable ValueCodes.
+            const payload = Object.assign({ profileName: src.name, profileType: norm(src.profileType) || null, dimensions: src.dimensions || [] }, common);
             return isUpdate ? payload : Object.assign({ profileCode: src.code }, payload);
         }
         // ParentSubjectId is re-assignable, so it rides both create and update.
@@ -655,8 +1006,27 @@
             subjectId: document.getElementById('taxSubjectId').value || existing.subjectId,
             parentSubjectId: document.getElementById('taxParentSubjectId').value,
             parentTopicId: document.getElementById('taxParentTopicId').value,
-            profileType: document.getElementById('taxProfileType').value
+            profileType: document.getElementById('taxProfileType').value,
+            dimensions: kind === 'audience-profiles' ? collectDimensions() : undefined
         });
+        // WP-MOD0162-SUBJECT-UI: full-replace externalReferences, managing only the global-product line and preserving
+        // any other reference types. When MDM is disabled the stored refs pass through untouched (never lose the link).
+        if (kind === 'subjects') {
+            const existingRefs = existing.externalReferences || [];
+            if (subjectGpDisabled) {
+                src.externalReferences = existingRefs;
+            } else {
+                const others = existingRefs.filter(r => norm(r.sourceSystem).toLowerCase() !== 'global-product');
+                const gpId = gpMode() === 'global-product' ? norm(document.getElementById('taxGlobalProductId')?.value) : '';
+                if (gpId) {
+                    const el = document.getElementById('taxGlobalProductId');
+                    const opt = el?.options[el.selectedIndex];
+                    const label = opt ? norm(opt.textContent) : '';
+                    others.push({ sourceSystem: 'global-product', externalId: gpId, externalName: label || null, isPrimary: true });
+                }
+                src.externalReferences = others;
+            }
+        }
         try {
             await save(kind, id, src);
             window.showToast?.(id ? L.RecordUpdated : L.RecordCreated, 'success');
@@ -697,6 +1067,37 @@
             const kind = paneKind[event.target.getAttribute('data-bs-target')];
             try { state[kind]?.table?.columns.adjust().responsive.recalc(); } catch { /* responsive not ready yet */ }
         });
+    });
+
+    // WP-MOD0162-AUD-UI-2: ProfileType drives Dimensions visibility + Name; a real user edit of the (editable) Name
+    // marks it dirty so the ProfileType prefill stops overwriting it until ProfileType changes again. The <select>
+    // element persists across openForm (select2 only re-wraps it), so these bind once. Bind both native + jQuery
+    // because select2 raises the change as a jQuery event while setValue() dispatches a native one.
+    document.getElementById('taxProfileType')?.addEventListener('change', onProfileTypeChange);
+    window.jQuery && window.jQuery('#taxProfileType').on('change', onProfileTypeChange);
+    document.getElementById('taxName')?.addEventListener('input', () => {
+        if (currentFormKind === 'audience-profiles' && !DIM_TYPES.includes(profileTypeValue())) profileNameDirty = true;
+    });
+
+    // WP-MOD0162-SUBJECT-UI: the Subject source toggle shows/hides the Global Product picker; choosing custom clears
+    // the picked product so the save carries no global-product reference.
+    document.querySelectorAll('input[name="taxSubjectSource"]').forEach(r => r.addEventListener('change', () => {
+        const custom = gpMode() !== 'global-product';
+        document.getElementById('taxGlobalProductWrap')?.classList.toggle('d-none', custom);
+        // Choosing custom clears the picked product (an ajax select2 has no blank <option>, so clear via val(null)).
+        if (custom && window.jQuery) window.jQuery('#taxGlobalProductId').val(null).trigger('change');
+    }));
+
+    // WP-MOD0162-AUD-UI-3: compose-then-add. Add commits the compose-row as a display row; × removes an added row.
+    // Both containers exist at load (offcanvas markup, hidden), so these delegated listeners bind once.
+    document.getElementById('taxDimensionCompose')?.addEventListener('click', event => {
+        if (event.target.closest('#btnDimAdd')) { event.preventDefault(); addComposed(); }
+    });
+    document.getElementById('taxDimensions')?.addEventListener('click', event => {
+        const rm = event.target.closest('.js-dim-remove');
+        if (!rm || dimReadOnly) return;
+        dimensions.splice(Number(rm.dataset.i), 1);
+        renderDimensions();
     });
 
     registerTableFilter();

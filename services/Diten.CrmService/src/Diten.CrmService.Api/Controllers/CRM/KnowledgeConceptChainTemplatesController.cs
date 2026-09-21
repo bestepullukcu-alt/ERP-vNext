@@ -44,7 +44,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             new CreateConceptChainTemplateCommand(
                 request.SubjectId, request.ChainCode, request.ChainName, request.OrderedConceptTypes,
                 request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo,
-                ToBranchInputs(request.Branches)),
+                ToBranchInputs(request.Branches), request.ModeratorRoleType, request.ForWhomAudienceProfileIds),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
@@ -54,7 +54,8 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
         => CreateActionResultInstance(await _mediator.Send(
             new UpdateConceptChainTemplateCommand(
                 templateId, request.ChainName, request.OrderedConceptTypes, request.EffectiveFrom, request.Description,
-                request.Status, request.ChainVersion, request.EffectiveTo, ToBranchInputs(request.Branches)),
+                request.Status, request.ChainVersion, request.EffectiveTo, ToBranchInputs(request.Branches),
+                request.ModeratorRoleType, request.ForWhomAudienceProfileIds),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates/{templateId:guid}/archive")]
@@ -68,7 +69,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
         => branches?.Select(b => new ConceptChainBranchInput(
             b.BranchCode,
             (b.Steps ?? Array.Empty<ConceptChainStepRequest>()).Select(s => new ConceptChainStepInput(
-                s.ConceptTypeId, s.MinSelection, s.MaxSelection, s.AllowedRoleRefs, s.AudienceDimensionRefs)).ToList(),
+                s.ConceptTypeId, s.MinSelection, s.MaxSelection)).ToList(),
             b.BranchName,
             b.SortOrder)).ToList();
 }

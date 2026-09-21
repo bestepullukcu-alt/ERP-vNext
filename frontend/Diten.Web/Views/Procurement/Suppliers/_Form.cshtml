@@ -1,0 +1,184 @@
+@model Diten.Web.Models.Procurement.Suppliers.SuppliersEditViewModel
+@using Diten.Web.Views.Procurement.Suppliers
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<SuppliersIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    var isEdit = string.Equals(ViewData["FormMode"]?.ToString(), "edit", StringComparison.OrdinalIgnoreCase);
+    var title = isEdit ? Localizer["FormTitleEdit"].Value : Localizer["FormTitleCreate"].Value;
+    var action = isEdit ? "Edit" : "Create";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0">@title</h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/Suppliers">@Localizer["SuppliersTitle"]</a>
+                </li>
+                <li class="breadcrumb-item active text-primary">@title</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/Suppliers" class="btn btn-label-secondary">
+            @SharedLocalizer["Cancel"]
+        </a>
+        <button type="submit" form="supplierForm" class="btn btn-primary">
+            @SharedLocalizer["Save"]
+        </button>
+    </div>
+</div>
+
+<form id="supplierForm" asp-controller="Suppliers" asp-action="@action" asp-route-id="@Model.SupplierId" method="post"
+    class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="SupplierId" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="row g-4">
+        <!-- Main Column (Left) -->
+        <div class="col-12 col-lg-8">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-id-card"></i>@Localizer["IdentitySection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="Name" class="form-label fw-medium">@Localizer["Name"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-buildings diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Name" class="form-control" maxlength="200" placeholder="@Localizer["NamePlaceholder"]" required />
+                            </div>
+                            <span asp-validation-for="Name" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Status" class="form-label fw-medium">@SharedLocalizer["Status"] <span class="text-danger">*</span></label>
+                            <div class="diten-field">
+                                <i class="bx bx-check-shield diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="Status" class="select2 form-select" required>
+                                    <option value="Active">@Localizer["StatusActive"]</option>
+                                    <option value="OnHold">@Localizer["StatusOnHold"]</option>
+                                    <option value="Blocked">@Localizer["StatusBlocked"]</option>
+                                    <option value="Inactive">@Localizer["StatusInactive"]</option>
+                                </select>
+                            </div>
+                            <span asp-validation-for="Status" class="text-danger small mt-1"></span>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="Country" class="form-label fw-medium">@Localizer["Country"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-globe diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="Country" class="form-control" maxlength="8" placeholder="@Localizer["CountryPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="TaxId" class="form-label fw-medium">@Localizer["TaxId"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-receipt diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="TaxId" class="form-control" maxlength="64" placeholder="@Localizer["TaxIdPlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-check-double"></i>@Localizer["OnboardingSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label asp-for="KycLegalName" class="form-label fw-medium">@Localizer["KycLegalName"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-user-check diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="KycLegalName" class="form-control" maxlength="200" placeholder="@Localizer["KycLegalNamePlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label asp-for="KycRegistrationNo" class="form-label fw-medium">@Localizer["KycRegistrationNo"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="KycRegistrationNo" class="form-control" maxlength="64" placeholder="@Localizer["KycRegistrationNoPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="DocumentType" class="form-label fw-medium">@Localizer["DocumentType"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-file diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="DocumentType" class="form-control" maxlength="64" placeholder="@Localizer["DocumentTypePlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input type="hidden" name="SubmitForApproval" value="false" />
+                                <input asp-for="SubmitForApproval" class="form-check-input" role="switch" value="true" />
+                                <label asp-for="SubmitForApproval" class="form-check-label ms-2">@Localizer["SubmitForApproval"]</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Column (Right) -->
+        <div class="col-12 col-lg-4">
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-user-pin"></i>@Localizer["ContactSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="ContactType" class="form-label fw-medium">@Localizer["ContactType"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-purchase-tag diten-field-icon" aria-hidden="true"></i>
+                                <select asp-for="ContactType" class="select2 form-select">
+                                    <option value="primary">@Localizer["ContactTypePrimary"]</option>
+                                    <option value="billing">@Localizer["ContactTypeBilling"]</option>
+                                    <option value="quality">@Localizer["ContactTypeQuality"]</option>
+                                    <option value="logistics">@Localizer["ContactTypeLogistics"]</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ContactEmail" class="form-label fw-medium">@Localizer["ContactEmail"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-envelope diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ContactEmail" type="email" class="form-control" maxlength="200" placeholder="@Localizer["ContactEmailPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ContactPhone" class="form-label fw-medium">@Localizer["ContactPhone"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-phone diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ContactPhone" class="form-control" maxlength="40" placeholder="@Localizer["ContactPhonePlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="card-section-title mb-4"><i class="bx bx-server"></i>@Localizer["SourcingSection"]</h6>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="SourceSystem" class="form-label fw-medium">@Localizer["SourceSystem"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-data diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="SourceSystem" class="form-control" maxlength="120" placeholder="@Localizer["SourceSystemPlaceholder"]" />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="ExternalRef" class="form-label fw-medium">@Localizer["ExternalRef"]</label>
+                            <div class="diten-field">
+                                <i class="bx bx-link diten-field-icon" aria-hidden="true"></i>
+                                <input asp-for="ExternalRef" class="form-control" maxlength="120" placeholder="@Localizer["ExternalRefPlaceholder"]" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+</form>

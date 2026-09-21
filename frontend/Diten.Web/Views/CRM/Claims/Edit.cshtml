@@ -1,0 +1,82 @@
+@model Diten.Web.Models.CRM.ClaimEditViewModel
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    ViewData["Title"] = Localizer["EditClaim"].Value;
+    Layout = "_LayoutTenantShell";
+    var canApprove = PermissionClaims.HasPermission(User, "crm.claim.approve");
+    var canManage = PermissionClaims.HasPermission(User, "crm.claim.manage");
+    var canApproveNow = canApprove && !Model.IsArchived && !Model.IsApproved;
+    var canArchiveNow = canManage && !Model.IsArchived;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h5 class="mb-0 d-flex align-items-center gap-2">
+            @Localizer["EditClaim"]
+            @if (Model.IsApproved)
+            {
+                <span class="badge bg-label-success">@Localizer["StatusApproved"]</span>
+            }
+            @if (Model.IsArchived)
+            {
+                <span class="badge bg-label-secondary">@Localizer["StatusArchived"]</span>
+            }
+        </h5>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="/CRM/Claims">@Localizer["ClaimsTitle"]</a></li>
+                <li class="breadcrumb-item active text-primary">@Model.ClaimCode</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a href="/CRM/Claims" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        @if (canApproveNow)
+        {
+            <button type="button" id="btnApproveClaim" class="btn btn-label-success"
+                    data-id="@Model.ClaimId" data-confirm="@Localizer["ApproveClaimConfirm"]"
+                    data-ok="@Localizer["RecordApproved"]" data-fail="@Localizer["ErrorState"]">
+                <i class="bx bx-check-circle me-1"></i>@Localizer["ApproveClaim"]
+            </button>
+        }
+        @if (canArchiveNow)
+        {
+            <button type="button" id="btnArchiveClaim" class="btn btn-label-warning"
+                    data-id="@Model.ClaimId" data-confirm="@Localizer["ArchiveClaimConfirm"]"
+                    data-ok="@Localizer["RecordArchived"]" data-fail="@Localizer["ErrorState"]">
+                <i class="bx bx-archive-in me-1"></i>@Localizer["ArchiveClaim"]
+            </button>
+        }
+        @if (!Model.IsArchived)
+        {
+            <button type="submit" form="claimForm" class="btn btn-primary">@Localizer["Save"]</button>
+        }
+    </div>
+</div>
+
+@if (Model.IsArchived)
+{
+    <div class="alert alert-secondary" role="alert"><i class="bx bx-archive me-1"></i>@Localizer["ArchivedClaimReadOnly"]</div>
+}
+else if (Model.IsApproved)
+{
+    <div class="alert alert-info" role="alert"><i class="bx bx-lock-alt me-1"></i>@Localizer["ApprovedBodyFrozenNote"]</div>
+}
+
+<form asp-action="Edit" asp-route-id="@Model.ClaimId" method="post" id="claimForm" class="needs-validation" novalidate>
+    @Html.AntiForgeryToken()
+    <partial name="~/Views/CRM/Claims/_Form.cshtml" model="Model" />
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+}
+
+@section Scripts {
+    <script src="~/assets/vendor/libs/flatpickr/flatpickr.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/assets/js/CRM/Claims/form.js" asp-append-version="true"></script>
+}

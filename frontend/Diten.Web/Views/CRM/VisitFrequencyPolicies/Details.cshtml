@@ -1,0 +1,235 @@
+@model Guid
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["DetailPageTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    var policyId = Model.ToString();
+
+    // WP-FREQ-DET-B — the header [Düzenle]/[Archive] actions are manage-only (UAS-001: an unauthorized user never sees
+    // them). Same canonical-OR-fallback pair the controller writes gate on.
+    var canManage = PermissionClaims.HasPermission(User, "crm.visit-frequency-policy.manage")
+        || PermissionClaims.HasPermission(User, "crm.territory.model.manage");
+
+    // Code-keyed L10n bridge for details.js (its own bridge — the retired _DetailsQuickView is gone). Vocabulary
+    // (target/frequency/period/source) is humanized by details.js; only the closed structural sets (statuses, verdicts,
+    // reason codes, priority bands) + the source/period DISPLAY labels are shipped, each with a humanized fallback in
+    // details.js — never a hardcoded authoring vocabulary. PascalCase dictionary keys survive Json.Serialize as authored.
+    var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+    var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    // WP-FREQ-DET-G — target-type DISPLAY labels for the conflicting-policies sub-line. Only the friendly-named codes ship;
+    // any other target type (account-contact-link / territory-node / concept-node / audience-profile) is humanized in JS.
+    var targetCodes = new[] { "segment", "account", "contact", "campaign-target" };
+    var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
+    var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
+    var reasonCodes = new[]
+    {
+        "frequency_policy_resolved", "frequency_unknown", "no_matching_policy", "policy_not_effective",
+        "policy_inactive", "policy_archived", "policy_conflict", "policy_selected_by_priority",
+        "policy_selected_by_specificity", "policy_selected_by_latest_effective_from", "campaign_context_missing",
+        "segment_context_missing", "cycle_context_missing", "business_scope_mismatch", "contact_location_context_absent"
+    };
+
+    var l10n = new Dictionary<string, object>
+    {
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["DetailLoading"] = SharedLocalizer["Loading"].Value,
+        ["NotAvailable"] = SharedLocalizer["NotAvailable"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["NoEndDate"] = Localizer["NoEndDate"].Value,
+        ["ContextNone"] = Localizer["ScopeAllTargets"].Value,
+        ["VisitsWord"] = Localizer["VisitsWord"].Value,
+        ["TargetsWord"] = Localizer["TargetsWord"].Value,
+        ["FreqBounded"] = Localizer["FreqBounded"].Value,
+        ["FreqOpenEnded"] = Localizer["FreqOpenEnded"].Value,
+        // field labels (context chips + source line)
+        ["FieldSource"] = Localizer["FieldSource"].Value,
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        // timeline (WP-FREQ-DET-C — DURUM AKIŞI audit trail type labels; the fallbacks details.js carries are English)
+        ["TlCreated"] = Localizer["Tl_created"].Value,
+        ["TlWeightChanged"] = Localizer["Tl_weight_changed"].Value,
+        ["TlArchived"] = Localizer["Tl_archived"].Value,
+        ["timelineLabels"] = new Dictionary<string, string>
+        {
+            ["created"] = Localizer["Tl_created"].Value,
+            ["published"] = Localizer["Tl_published"].Value,
+            ["deactivated"] = Localizer["Tl_deactivated"].Value,
+            ["reactivated"] = Localizer["Tl_reactivated"].Value,
+            ["weight-changed"] = Localizer["Tl_weight_changed"].Value,
+            ["archived"] = Localizer["Tl_archived"].Value,
+            ["next-eval"] = Localizer["Tl_next_eval"].Value
+        },
+        // impact + conflicts
+        ["ImpactTargetsLine"] = Localizer["ImpactTargetsLine"].Value,
+        ["ImpactVisitsLine"] = Localizer["ImpactVisitsLine"].Value,
+        ["ConflictsCandidateCount"] = Localizer["ConflictsCandidateCount"].Value,
+        ["ConflictsEmpty"] = Localizer["ConflictsEmpty"].Value,
+        ["SelectedBadge"] = Localizer["ResolveSelectedBadge"].Value,
+        ["CandidateBadge"] = Localizer["CandidateBadge"].Value,
+        // WP-FREQ-DET-G — optional specificity hint appended to the conflict-row target-type sub-line.
+        ["SpecNarrowest"] = Localizer["SpecNarrowest"].Value,
+        ["SpecBroadest"] = Localizer["SpecBroadest"].Value,
+        // archive flow
+        ["ArchiveConfirm"] = Localizer["ArchiveConfirm"].Value,
+        ["RecordArchived"] = Localizer["RecordArchived"].Value,
+        ["Archive"] = Localizer["Archive"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    var verdictLabels = new Dictionary<string, string>();
+    foreach (var v in verdictCodes) { verdictLabels[v] = Localizer[$"Verdict_{v}"].Value; }
+    l10n["verdictLabels"] = verdictLabels;
+    var reasonLabels = new Dictionary<string, string>();
+    foreach (var r in reasonCodes) { reasonLabels[r] = Localizer[$"Reason_{r}"].Value; }
+    l10n["reasonLabels"] = reasonLabels;
+    var bandLabels = new Dictionary<string, string>();
+    foreach (var b in bandCodes) { bandLabels[b] = Localizer[$"Band_{b}"].Value; }
+    l10n["bandLabels"] = bandLabels;
+    var sourceLabels = new Dictionary<string, string>();
+    foreach (var s in sourceCodes) { sourceLabels[s] = Localizer[$"Source_{s}"].Value; }
+    l10n["sourceLabels"] = sourceLabels;
+    var periodLabels = new Dictionary<string, string>();
+    foreach (var p in periodCodes) { periodLabels[p] = Localizer[$"Period_{p}"].Value; }
+    l10n["periodLabels"] = periodLabels;
+    var targetLabels = new Dictionary<string, string>();
+    foreach (var tt in targetCodes) { targetLabels[tt] = Localizer[$"TargetType_{tt}"].Value; }
+    l10n["targetLabels"] = targetLabels;
+}
+
+<div class="vfp-detail-scope vfp-detail-page" id="vfpDetailPage"
+     data-endpoint="/CRM/VisitFrequencyPolicies/api" data-policy-id="@policyId" data-can-manage="@(canManage ? "1" : "0")">
+
+    @* Breadcrumb (mirrors the editor header pattern) *@
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="/CRM/VisitFrequencyPolicies">@Localizer["PoliciesTitle"]</a></li>
+            <li class="breadcrumb-item active text-primary">@Localizer["DetailPageTitle"]</li>
+        </ol>
+    </nav>
+
+    @* Loading / error / body states (details.js toggles) *@
+    <div id="vfpDetLoading" class="vfp-dv-state"><span class="vfp-dv-spinner"></span></div>
+    <div id="vfpDetError" class="vfp-dv-state text-danger d-none"></div>
+
+    <div id="vfpDetBody" class="d-none">
+        <div class="row g-4">
+            @* ── LEFT: main policy card (header + stat strip + context + notes) then conflicting policies ── *@
+            <div class="col-12 col-lg-8">
+                @* Main policy card — everything about THIS policy lives inside one card (mockup): header, the 4-cell
+                   stat strip, the BAĞLAM section and the NOTES section, separated by in-card dividers. *@
+                <section class="card">
+                    <div class="card-body p-4">
+                        @* header: name + status + code + description + actions *@
+                        <div class="vfp-det-header">
+                            <div class="min-w-0">
+                                <div class="vfp-det-title-row">
+                                    <h5 class="vfp-det-name mb-0" id="vfpDetName">-</h5>
+                                    <span id="vfpDetStatus"></span>
+                                </div>
+                                <div class="vfp-mono vfp-det-code" id="vfpDetCode"></div>
+                                <p class="vfp-det-desc mb-0" id="vfpDetDesc"></p>
+                            </div>
+                            @if (canManage)
+                            {
+                                <div class="vfp-det-actions">
+                                    <a href="/CRM/VisitFrequencyPolicies/Edit/@policyId" class="btn btn-primary">
+                                        <i class="bx bx-edit me-1"></i>@Localizer["EditAction"]
+                                    </a>
+                                    <button type="button" class="btn btn-label-danger d-none" id="vfpDetArchive">
+                                        <i class="bx bx-archive-in me-1"></i>@Localizer["Archive"]
+                                    </button>
+                                </div>
+                            }
+                        </div>
+
+                        @* 4-cell bordered stat strip (in-card cells, NOT separate cards) *@
+                        <div class="vfp-det-stat-strip">
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-repeat" aria-hidden="true"></i>@Localizer["Frequency"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatFreqValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatFreqSub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-target-lock" aria-hidden="true"></i>@Localizer["Target"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatTargetValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatTargetSub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-calendar" aria-hidden="true"></i>@Localizer["Validity"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatValidityValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatValiditySub"></div>
+                            </div>
+                            <div class="vfp-det-stat-cell">
+                                <div class="vfp-det-stat-label"><i class="bx bx-sort" aria-hidden="true"></i>@Localizer["Weight"]</div>
+                                <div class="vfp-det-stat-value" id="vfpStatWeightValue">—</div>
+                                <div class="vfp-det-stat-sub" id="vfpStatWeightSub"></div>
+                            </div>
+                        </div>
+
+                        @* BAĞLAM section (in-card) *@
+                        <div class="vfp-det-inner-section">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-sitemap dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionContext"]</h6>
+                            <div class="vfp-det-chips" id="vfpDetContext"></div>
+                        </div>
+
+                        @* NOTES section (in-card; hidden until the policy carries notes) *@
+                        <div class="vfp-det-inner-section d-none" id="vfpDetNotesCard">
+                            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-note dt-card-icon" aria-hidden="true"></i>@Localizer["EditorSectionNotes"]</h6>
+                            <p class="vfp-det-notes mb-0" id="vfpDetNotes"></p>
+                        </div>
+                    </div>
+                </section>
+
+                @* ÇAKIŞAN POLİTİKALAR — separate card below the main policy card *@
+                <section class="card mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-git-merge dt-card-icon" aria-hidden="true"></i>@Localizer["ConflictsTitle"]<span class="vfp-det-cand-count ms-auto" id="vfpDetConflictsCount"></span></h6>
+                        <div id="vfpDetConflicts"></div>
+                    </div>
+                </section>
+            </div>
+
+            @* ── RIGHT: status flow + impact ── *@
+            <div class="col-12 col-lg-4">
+                <section class="card">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-time-five dt-card-icon" aria-hidden="true"></i>@Localizer["StatusFlowTitle"]</h6>
+                        <div class="vfp-dv-tl" id="vfpDetTimeline"></div>
+                    </div>
+                </section>
+
+                <section class="card mt-4">
+                    <div class="card-body p-4">
+                        <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bar-chart-alt-2 dt-card-icon" aria-hidden="true"></i>@Localizer["ImpactTitle"]</h6>
+                        <div id="vfpDetImpact"></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* details.js L10n bridge (code-keyed, PascalCase preserved) *@
+<script id="vfp-detail-l10n" type="application/json">@Html.Raw(Json.Serialize(l10n))</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/assets/css/visit-frequency-details.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/details.js" asp-append-version="true"></script>
+}

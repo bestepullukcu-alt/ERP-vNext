@@ -744,6 +744,21 @@
   <data name="Nav.Page.KNOWLEDGECONCEPTS" xml:space="preserve">
     <value>Kavramlar</value>
   </data>
+  <data name="Nav.Page.CLAIMS" xml:space="preserve">
+    <value>İddialar</value>
+  </data>
+  <data name="Nav.Page.CONTENTSCOPES" xml:space="preserve">
+    <value>İçerik Kapsamları</value>
+  </data>
+  <data name="Nav.Page.CONTENTSETS" xml:space="preserve">
+    <value>İçerik Setleri</value>
+  </data>
+  <data name="Nav.Page.VISITFREQUENCYPOLICIES" xml:space="preserve">
+    <value>Ziyaret Sıklığı Politikaları</value>
+  </data>
+  <data name="Nav.Page.ELIGIBILITYPOLICIES" xml:space="preserve">
+    <value>Uygunluk Politikaları</value>
+  </data>
   <data name="Nav.Page.KNOWLEDGEPATHS" xml:space="preserve">
     <value>Bilgi Yolları</value>
   </data>
@@ -920,4 +935,26 @@
   <data name="Nav.Page.VERIFIEDCERTIFICATIONREGISTRY" xml:space="preserve"><value>Doğrulanmış Sertifika Sicili</value></data>
   <data name="Nav.Page.VERIFIEDPARTICIPANTS" xml:space="preserve"><value>Doğrulanmış Katılımcılar</value></data>
   <data name="Nav.Page.WORKFORCEANALYTICS" xml:space="preserve"><value>İş Gücü Analitiği</value></data>
+  <data name="Nav.Domain.PROCUREMENT" xml:space="preserve"><value>Satın Alma</value></data>
+  <data name="Nav.Module.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Module.PROCUREMENTSUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Page.SUPPLIERS" xml:space="preserve"><value>Tedarikçiler</value></data>
+  <data name="Nav.Module.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="Nav.Page.SOURCING" xml:space="preserve"><value>Tedarik</value></data>
+  <data name="RfxUpdateNotSupported" xml:space="preserve"><value>RFx güncelleme desteklenmiyor; yeni bir RFx oluşturun veya yayınla/teklif/kazanan akışıyla yönetin.</value></data>
+  <data name="Nav.Module.REQUISITIONS" xml:space="preserve"><value>Talepler</value></data>
+  <data name="Nav.Page.REQUISITIONS" xml:space="preserve"><value>Talepler</value></data>
+  <data name="Nav.Module.PURCHASEORDERS" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
+  <data name="Nav.Page.PURCHASEORDERS" xml:space="preserve"><value>Satın Alma Siparişleri</value></data>
+  <data name="RequisitionUpdateNotSupported" xml:space="preserve"><value>Talep güncelleme desteklenmiyor; yeni bir talep oluşturun veya bunu onaya gönderin.</value></data>
+  <data name="PurchaseOrderUpdateNotSupported" xml:space="preserve"><value>Satın alma siparişi güncelleme desteklenmiyor; yeni bir sipariş oluşturun veya bunu onaylayın.</value></data>
+  <data name="Nav.Module.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="Nav.Module.INVOICEMATCH" xml:space="preserve"><value>Fatura Eşleştirme</value></data>
+  <data name="Nav.Page.INVOICEMATCH" xml:space="preserve"><value>Fatura Yakalama ve 3-Yönlü Eşleştirme</value></data>
+  <data name="Nav.Module.CONTRACTS" xml:space="preserve"><value>Sözleşmeler</value></data>
+  <data name="Nav.Page.CONTRACTS" xml:space="preserve"><value>Sözleşme ve Clause Kütüphanesi</value></data>
+  <data name="ContractEditDraftOnly" xml:space="preserve"><value>Yalnızca taslak sözleşmeler güncellenebilir; aktifleştirilmiş bir sözleşme düzenlemeyle değil yaşam döngüsü işlemleriyle yönetilir.</value></data>
+  <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
+  <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
+  <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>
 </root>

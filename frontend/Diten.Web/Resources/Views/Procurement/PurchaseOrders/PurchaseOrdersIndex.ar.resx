@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value></resheader>
+  <data name="PurchaseOrdersTitle" xml:space="preserve"><value>أوامر الشراء</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>أوامر الشراء: اطلب الاحتياج المعتمد من المورّدين، وسعّر البنود، واعتمدها.</value></data>
+  <data name="AddNew" xml:space="preserve"><value>إضافة أمر شراء</value></data>
+  <data name="EditItem" xml:space="preserve"><value>تعديل أمر الشراء</value></data>
+  <data name="FormTitleCreate" xml:space="preserve"><value>إضافة أمر شراء</value></data>
+  <data name="FormTitleEdit" xml:space="preserve"><value>تعديل أمر الشراء</value></data>
+  <data name="QuickView" xml:space="preserve"><value>عرض</value></data>
+  <data name="Actions" xml:space="preserve"><value>الإجراءات</value></data>
+  <data name="PoId" xml:space="preserve"><value>رقم الأمر</value></data>
+  <data name="SupplierId" xml:space="preserve"><value>المورّد</value></data>
+  <data name="TotalAmount" xml:space="preserve"><value>المبلغ الإجمالي</value></data>
+  <data name="Currency" xml:space="preserve"><value>العملة</value></data>
+  <data name="PurchaseOrderSection" xml:space="preserve"><value>تفاصيل أمر الشراء</value></data>
+  <data name="LinesSection" xml:space="preserve"><value>بنود الأمر</value></data>
+  <data name="IntegrationSection" xml:space="preserve"><value>التكامل</value></data>
+  <data name="AddLine" xml:space="preserve"><value>إضافة بند</value></data>
+  <data name="SupplierPlaceholder" xml:space="preserve"><value>اختر المورّد</value></data>
+  <data name="SupplierHint" xml:space="preserve"><value>يتم التحقق من المورّد وفق بيانات المورّدين الرئيسية (fail-closed).</value></data>
+  <data name="RequisitionRef" xml:space="preserve"><value>مرجع الطلب</value></data>
+  <data name="RequisitionRefPlaceholder" xml:space="preserve"><value>مثال: REQ-3001</value></data>
+  <data name="RequisitionRefHint" xml:space="preserve"><value>مرجع اختياري لطلب معتمد.</value></data>
+  <data name="CurrencyPlaceholder" xml:space="preserve"><value>مثال: TRY</value></data>
+  <data name="CurrencyHint" xml:space="preserve"><value>يجب أن تطابق العملة العملة الأساسية للكيان القانوني.</value></data>
+  <data name="LineItemId" xml:space="preserve"><value>رقم الصنف</value></data>
+  <data name="LineItemIdPlaceholder" xml:space="preserve"><value>مثال: b1f2c3d4-0000-0000-0000-000000000001</value></data>
+  <data name="LineSkuId" xml:space="preserve"><value>رقم SKU</value></data>
+  <data name="LineSkuIdPlaceholder" xml:space="preserve"><value>مثال: c3d4e5f6-0000-0000-0000-000000000002</value></data>
+  <data name="LineQuantity" xml:space="preserve"><value>الكمية</value></data>
+  <data name="LineQuantityPlaceholder" xml:space="preserve"><value>مثال: 100.000</value></data>
+  <data name="LineUomId" xml:space="preserve"><value>وحدة القياس</value></data>
+  <data name="LineUomIdPlaceholder" xml:space="preserve"><value>مثال: BOX</value></data>
+  <data name="LineUnitPrice" xml:space="preserve"><value>سعر الوحدة</value></data>
+  <data name="LineUnitPricePlaceholder" xml:space="preserve"><value>مثال: 12.5000</value></data>
+  <data name="LineAmount" xml:space="preserve"><value>مبلغ البند</value></data>
+  <data name="LinesHint" xml:space="preserve"><value>مطلوب بند واحد على الأقل (الصنف، الكمية، وحدة القياس، سعر الوحدة). يحسب الخادم مبالغ البنود والإجمالي.</value></data>
+  <data name="SourceSystem" xml:space="preserve"><value>النظام المصدر</value></data>
+  <data name="SourceSystemPlaceholder" xml:space="preserve"><value>مثال: SAP</value></data>
+  <data name="ExternalRef" xml:space="preserve"><value>مرجع خارجي</value></data>
+  <data name="ExternalRefPlaceholder" xml:space="preserve"><value>مثال: ERP-PO-9001</value></data>
+  <data name="StatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="StatusApproved" xml:space="preserve"><value>معتمد</value></data>
+  <data name="StatusPartiallyReceived" xml:space="preserve"><value>مُستلَم جزئيًا</value></data>
+  <data name="StatusReceived" xml:space="preserve"><value>مُستلَم</value></data>
+  <data name="StatusClosed" xml:space="preserve"><value>مغلق</value></data>
+  <data name="StatusCancelled" xml:space="preserve"><value>ملغى</value></data>
+  <data name="ActionApprove" xml:space="preserve"><value>اعتماد</value></data>
+  <data name="ConfirmApprove" xml:space="preserve"><value>هل تريد اعتماد أمر الشراء هذا؟ الأوامر المعتمدة تُفتح لاستلام البضائع.</value></data>
+  <data name="ApproveSuccess" xml:space="preserve"><value>تم اعتماد أمر الشراء.</value></data>
+</root>

@@ -1,0 +1,270 @@
+@using Diten.Web.Security
+@using Diten.Web.Views.CRM.VisitFrequencyPolicies
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<VisitFrequencyPoliciesIndex> Localizer
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@{
+    ViewData["Title"] = Localizer["PoliciesTitle"].Value;
+    Layout = "_LayoutTenantShell";
+    // Çözümleme (resolve) tab is permission-gated (UAS-001): only drawn for a user granted resolve (canonical or the
+    // documented territory.read fallback). Its panel content is FREQ-C.
+    var canResolve = PermissionClaims.HasPermission(User, "crm.visit-frequency-policy.resolve")
+        || PermissionClaims.HasPermission(User, "crm.territory.read");
+
+    // WP-FREQ-DET-B — the details quick-view offcanvas is RETIRED (details are now a separate /Details/{id} page). The
+    // shared L10n bridge + css + resolve.js that the retired _DetailsQuickView partial used to host are moved here so the
+    // permission-gated Çözümleme (resolve) tab keeps working UNCHANGED — resolve.js + _Resolve.cshtml are not touched.
+    // The bridge is only rendered when the resolve tab is drawn (canResolve). Only closed structural sets (lifecycle
+    // statuses, resolve verdicts, reason codes, priority bands) are localized; every code still degrades to a humanized
+    // label in resolve.js, so the maps never act as a hardcoded authoring vocabulary.
+    var reasonCodes = new[]
+    {
+        "frequency_policy_resolved", "frequency_unknown", "no_matching_policy", "policy_not_effective",
+        "policy_inactive", "policy_archived", "policy_conflict", "policy_selected_by_priority",
+        "policy_selected_by_specificity", "policy_selected_by_latest_effective_from", "campaign_context_missing",
+        "segment_context_missing", "cycle_context_missing", "business_scope_mismatch", "contact_location_context_absent"
+    };
+    var verdictCodes = new[] { "resolved", "unknown", "conflict", "not_applicable" };
+    var bandCodes = new[] { "override-all", "campaign-level", "standard", "baseline", "last-resort" };
+    var periodCodes = new[] { "day", "week", "month", "quarter", "cycle", "campaign-period", "custom" };
+    var targetTypeCodes = new[] { "account-contact-link", "contact", "account", "campaign-target", "concept-node", "territory-node", "audience-profile", "segment" };
+    var sourceCodes = new[] { "campaign", "segmentation", "manual", "legacy-import", "business-rule", "manager-override", "other" };
+
+    var resolveL10n = new Dictionary<string, object>
+    {
+        // shared
+        ["ErrorState"] = Localizer["ErrorState"].Value,
+        ["PerPeriod"] = Localizer["PerPeriod"].Value,
+        ["NotAvailable"] = SharedLocalizer["NotAvailable"].Value,
+        ["DetailLoading"] = SharedLocalizer["Loading"].Value,
+        ["NoEndDate"] = Localizer["NoEndDate"].Value,
+        // details section titles
+        ["DvSectionIdentity"] = Localizer["EditorSectionIdentity"].Value,
+        ["DvSectionTarget"] = Localizer["EditorSectionTarget"].Value,
+        ["DvSectionContext"] = Localizer["EditorSectionContext"].Value,
+        ["DvSectionFrequency"] = Localizer["Frequency"].Value,
+        ["DvSectionPriority"] = Localizer["Priority"].Value,
+        ["DvSectionSource"] = Localizer["Source"].Value,
+        ["DvSectionEffective"] = Localizer["EditorSectionEffective"].Value,
+        ["DvSectionStatus"] = Localizer["FieldStatus"].Value,
+        ["DvSectionTrail"] = Localizer["DetailTrail"].Value,
+        // details field labels (reuse FREQ-B where identical)
+        ["FieldPolicyCode"] = Localizer["FieldPolicyCode"].Value,
+        ["FieldPolicyName"] = Localizer["FieldPolicyName"].Value,
+        ["FieldDescription"] = Localizer["FieldDescription"].Value,
+        ["FieldTargetType"] = Localizer["FieldTargetType"].Value,
+        ["FieldTarget"] = Localizer["FieldTarget"].Value,
+        ["FieldBusinessUnit"] = Localizer["FieldBusinessUnit"].Value,
+        ["FieldTerritory"] = Localizer["FieldTerritory"].Value,
+        ["FieldSegment"] = Localizer["FieldSegment"].Value,
+        ["FieldCampaign"] = Localizer["FieldCampaign"].Value,
+        ["FieldBrand"] = Localizer["FieldBrand"].Value,
+        ["FieldProduct"] = Localizer["FieldProduct"].Value,
+        ["FieldCyclePeriod"] = Localizer["FieldCyclePeriod"].Value,
+        ["FieldConceptNode"] = Localizer["FieldConceptNode"].Value,
+        ["FieldAudienceProfile"] = Localizer["FieldAudienceProfile"].Value,
+        ["FieldFrequencyType"] = Localizer["FieldFrequencyType"].Value,
+        ["FieldRequiredVisitCount"] = Localizer["FieldRequiredVisitCount"].Value,
+        ["FieldPeriodType"] = Localizer["FieldPeriodType"].Value,
+        ["FieldSource"] = Localizer["FieldSource"].Value,
+        ["FieldEffectiveFrom"] = Localizer["FieldEffectiveFrom"].Value,
+        ["FieldEffectiveTo"] = Localizer["FieldEffectiveTo"].Value,
+        ["FieldNotes"] = Localizer["FieldNotes"].Value,
+        ["FieldStatus"] = Localizer["FieldStatus"].Value,
+        ["FreqReadsAsLabel"] = Localizer["FreqReadsAsLabel"].Value,
+        ["DetailCreated"] = Localizer["DetailCreated"].Value,
+        ["DetailUpdated"] = Localizer["DetailUpdated"].Value,
+        ["DetailArchived"] = Localizer["DetailArchived"].Value,
+        // resolve panel
+        ["ResolveInputSection"] = Localizer["ResolveInputSection"].Value,
+        ["ResolveResultSection"] = Localizer["ResolveResultSection"].Value,
+        ["ResolveEffectiveAt"] = Localizer["ResolveEffectiveAt"].Value,
+        ["ResolveAction"] = Localizer["ResolveAction"].Value,
+        ["ResolveReadOnlyNote"] = Localizer["ResolveReadOnlyNote"].Value,
+        ["ResolveResultEmpty"] = Localizer["ResolveResultEmpty"].Value,
+        ["ResolveRunning"] = Localizer["ResolveRunning"].Value,
+        ["ResolveSelectedPolicy"] = Localizer["ResolveSelectedPolicy"].Value,
+        ["ResolveCandidates"] = Localizer["ResolveCandidates"].Value,
+        ["ResolveNoCandidates"] = Localizer["ResolveNoCandidates"].Value,
+        ["ResolveReasonCodes"] = Localizer["ResolveReasonCodes"].Value,
+        ["ResolveSelectionReason"] = Localizer["ResolveSelectionReason"].Value,
+        ["ResolveNoSelected"] = Localizer["ResolveNoSelected"].Value,
+        ["ResolveSpecificity"] = Localizer["ResolveSpecificity"].Value,
+        ["ResolveSelectedBadge"] = Localizer["ResolveSelectedBadge"].Value,
+        ["ResolveEliminated"] = Localizer["ResolveEliminated"].Value,
+        ["ResolveTargetTypeRequired"] = Localizer["ResolveTargetTypeRequired"].Value,
+        ["TargetRequired"] = Localizer["TargetRequired"].Value,
+        ["SelectOption"] = Localizer["SelectOption"].Value,
+        ["ContextNone"] = Localizer["ContextNone"].Value,
+        ["SelectTerritoryModel"] = Localizer["SelectTerritoryModel"].Value,
+        ["SelectTerritoryNode"] = Localizer["SelectTerritoryNode"].Value,
+        ["TargetIdManual"] = Localizer["TargetIdManual"].Value,
+        // WP-FREQ-DET-H — Çözümleme "Frekans Kontrolü" mockup (3-card resolve panel)
+        ["ResolveWhoTitle"] = Localizer["ResolveWhoTitle"].Value,
+        ["ResolveWhoDesc"] = Localizer["ResolveWhoDesc"].Value,
+        ["ResolveScenarioLabel"] = Localizer["ResolveScenarioLabel"].Value,
+        ["ResolveScenario_contact_territory"] = Localizer["ResolveScenario_contact_territory"].Value,
+        ["ResolveScenario_contact"] = Localizer["ResolveScenario_contact"].Value,
+        ["ResolveScenario_account"] = Localizer["ResolveScenario_account"].Value,
+        ["ResolveScenario_account-contact-link"] = Localizer["ResolveScenario_account-contact-link"].Value,
+        ["ResolveScenario_segment"] = Localizer["ResolveScenario_segment"].Value,
+        ["ResolveScenario_campaign-target"] = Localizer["ResolveScenario_campaign-target"].Value,
+        ["ResolveScenario_territory-node"] = Localizer["ResolveScenario_territory-node"].Value,
+        ["ResolveScenario_concept-node"] = Localizer["ResolveScenario_concept-node"].Value,
+        ["ResolveScenario_audience-profile"] = Localizer["ResolveScenario_audience-profile"].Value,
+        ["ResolveRecordLabel"] = Localizer["ResolveRecordLabel"].Value,
+        ["ResolveChange"] = Localizer["ResolveChange"].Value,
+        ["ResolveCyclePeriod"] = Localizer["ResolveCyclePeriod"].Value,
+        ["ResolveDateLabel"] = Localizer["ResolveDateLabel"].Value,
+        ["ResolveShowFrequency"] = Localizer["ResolveShowFrequency"].Value,
+        ["ResolveRuleSimpleTitle"] = Localizer["ResolveRuleSimpleTitle"].Value,
+        ["ResolveRuleSimpleBody"] = Localizer["ResolveRuleSimpleBody"].Value,
+        ["ResolveAnswerLabel"] = Localizer["ResolveAnswerLabel"].Value,
+        ["ResolveHeadlineResolved"] = Localizer["ResolveHeadlineResolved"].Value,
+        ["ResolveHeadlineUnknown"] = Localizer["ResolveHeadlineUnknown"].Value,
+        ["ResolveHeadlineConflict"] = Localizer["ResolveHeadlineConflict"].Value,
+        ["ResolveHeadlineNotApplicable"] = Localizer["ResolveHeadlineNotApplicable"].Value,
+        ["ResolveExplainResolved"] = Localizer["ResolveExplainResolved"].Value,
+        ["ResolveExplainUnknown"] = Localizer["ResolveExplainUnknown"].Value,
+        ["ResolveExplainConflict"] = Localizer["ResolveExplainConflict"].Value,
+        ["ResolveExplainNotApplicable"] = Localizer["ResolveExplainNotApplicable"].Value,
+        // WP-FREQ-DET-M — verdict-tone answer box (date_out derivation + coloured badges); additive keys.
+        ["ResolveExplainDateOut"] = Localizer["ResolveExplainDateOut"].Value,
+        ["ResolveHeadlineDateOut"] = Localizer["ResolveHeadlineDateOut"].Value,
+        ["ResolveVerdictBadge_resolved"] = Localizer["ResolveVerdictBadge_resolved"].Value,
+        ["ResolveVerdictBadge_conflict"] = Localizer["ResolveVerdictBadge_conflict"].Value,
+        ["ResolveVerdictBadge_dateout"] = Localizer["ResolveVerdictBadge_dateout"].Value,
+        ["ResolveVerdictBadge_unknown"] = Localizer["ResolveVerdictBadge_unknown"].Value,
+        ["ResolveWinnerTitle"] = Localizer["ResolveWinnerTitle"].Value,
+        ["ResolveOpenPolicy"] = Localizer["ResolveOpenPolicy"].Value,
+        ["ResolveLadderTitle"] = Localizer["ResolveLadderTitle"].Value,
+        ["ResolveLadderSort"] = Localizer["ResolveLadderSort"].Value,
+        ["ResolveLadderEmpty"] = Localizer["ResolveLadderEmpty"].Value,
+        ["ResolveTagSelected"] = Localizer["ResolveTagSelected"].Value,
+        ["ResolveTagNotEffective"] = Localizer["ResolveTagNotEffective"].Value,
+        ["ResolveTagInactive"] = Localizer["ResolveTagInactive"].Value,
+        ["ResolveTagFallback"] = Localizer["ResolveTagFallback"].Value,
+        ["ResolveNextTitle"] = Localizer["ResolveNextTitle"].Value,
+        ["ResolveDo_resolved_1"] = Localizer["ResolveDo_resolved_1"].Value,
+        ["ResolveDo_resolved_1d"] = Localizer["ResolveDo_resolved_1d"].Value,
+        ["ResolveDo_resolved_2"] = Localizer["ResolveDo_resolved_2"].Value,
+        ["ResolveDo_resolved_2d"] = Localizer["ResolveDo_resolved_2d"].Value,
+        ["ResolveDo_conflict_1"] = Localizer["ResolveDo_conflict_1"].Value,
+        ["ResolveDo_conflict_1d"] = Localizer["ResolveDo_conflict_1d"].Value,
+        ["ResolveDo_conflict_2"] = Localizer["ResolveDo_conflict_2"].Value,
+        ["ResolveDo_conflict_2d"] = Localizer["ResolveDo_conflict_2d"].Value,
+        ["ResolveDo_unknown_1"] = Localizer["ResolveDo_unknown_1"].Value,
+        ["ResolveDo_unknown_1d"] = Localizer["ResolveDo_unknown_1d"].Value,
+        ["ResolveDo_unknown_2"] = Localizer["ResolveDo_unknown_2"].Value,
+        ["ResolveDo_unknown_2d"] = Localizer["ResolveDo_unknown_2d"].Value,
+        ["ResolveDo_na_1"] = Localizer["ResolveDo_na_1"].Value,
+        ["ResolveDo_na_1d"] = Localizer["ResolveDo_na_1d"].Value,
+        ["SpecNarrowest"] = Localizer["SpecNarrowest"].Value,
+        ["SpecBroadest"] = Localizer["SpecBroadest"].Value,
+        // WP-FREQ-DET-I — explanatory candidate "why" sentences + the segment "all targets" friendly label. Keyed here so
+        // resolve.js renders full sentences (not the short reason codes) in 7 languages; each still has a JS fallback.
+        ["ResolveWhyNotEffective"] = Localizer["ResolveWhyNotEffective"].Value,
+        ["ResolveWhySpecificityLost"] = Localizer["ResolveWhySpecificityLost"].Value,
+        ["ResolveWhyBroader"] = Localizer["ResolveWhyBroader"].Value,
+        ["ResolveWhyLastResort"] = Localizer["ResolveWhyLastResort"].Value,
+        ["ResolveWhySelSpecificity"] = Localizer["ResolveWhySelSpecificity"].Value,
+        ["ResolveWhySelPriority"] = Localizer["ResolveWhySelPriority"].Value,
+        ["ResolveWhyContextMissing"] = Localizer["ResolveWhyContextMissing"].Value,
+        ["ResolveCandSegmentAll"] = Localizer["ResolveCandSegmentAll"].Value,
+        ["statusLabels"] = new Dictionary<string, string>
+        {
+            ["draft"] = Localizer["Status_draft"].Value,
+            ["active"] = Localizer["Status_active"].Value,
+            ["inactive"] = Localizer["Status_inactive"].Value,
+            ["archived"] = Localizer["Status_archived"].Value
+        }
+    };
+    var resolveVerdictLabels = new Dictionary<string, string>();
+    foreach (var v in verdictCodes) { resolveVerdictLabels[v] = Localizer[$"Verdict_{v}"].Value; }
+    resolveL10n["verdictLabels"] = resolveVerdictLabels;
+    var resolveReasonLabels = new Dictionary<string, string>();
+    foreach (var r in reasonCodes) { resolveReasonLabels[r] = Localizer[$"Reason_{r}"].Value; }
+    resolveL10n["reasonLabels"] = resolveReasonLabels;
+    var resolveBandLabels = new Dictionary<string, string>();
+    foreach (var b in bandCodes) { resolveBandLabels[b] = Localizer[$"Band_{b}"].Value; }
+    resolveL10n["bandLabels"] = resolveBandLabels;
+    // WP-FREQ-DET-H maps — period ("ay"), cadence ("ayda"), friendly target-type, source labels (closed sets; the
+    // codes still come from the FU03 contract at runtime, resolve.js labels each through these maps with a fallback).
+    var resolvePeriodLabels = new Dictionary<string, string>();
+    foreach (var p in periodCodes) { resolvePeriodLabels[p] = Localizer[$"Period_{p}"].Value; }
+    resolveL10n["periodLabels"] = resolvePeriodLabels;
+    var resolveCadenceLabels = new Dictionary<string, string>();
+    foreach (var p in periodCodes) { resolveCadenceLabels[p] = Localizer[$"ResolveCadence_{p}"].Value; }
+    resolveL10n["cadenceLabels"] = resolveCadenceLabels;
+    var resolveTargetTypeLabels = new Dictionary<string, string>();
+    foreach (var tt in targetTypeCodes) { resolveTargetTypeLabels[tt] = Localizer[$"TargetType_{tt}"].Value; }
+    resolveL10n["targetTypeLabels"] = resolveTargetTypeLabels;
+    var resolveSourceLabels = new Dictionary<string, string>();
+    foreach (var sc in sourceCodes) { resolveSourceLabels[sc] = Localizer[$"Source_{sc}"].Value; }
+    resolveL10n["sourceLabels"] = resolveSourceLabels;
+}
+
+<div class="mb-3">
+    <h5 class="mb-0">@Localizer["PoliciesTitle"]</h5>
+    <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
+    <small class="text-muted"><i class="bx bx-info-circle me-1"></i>@Localizer["ArchiveVsDeleteNote"]</small>
+</div>
+
+@* Tabbed console: the policy list + (permission-gated) the read-only resolve/çözümleme panel (FREQ-C).
+   WP-FREQ-DET-J — the tab strip is wrapped in the WorkCenter tab-card surface (card + card-body p-3 + wcn-tabcard;
+   pills use wcn-tabs + bordered compact wc-tab-compact). CSS is global (backbone-custom.css); the Bootstrap
+   data-bs-toggle="tab" switch, tab ids (#tab-policies/#tab-resolve), canResolve gate and content are unchanged. *@
+<section class="card mb-3 wcn-tabcard">
+    <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
+        <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button type="button" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center active" data-bs-toggle="tab" data-bs-target="#tab-policies" role="tab">
+                    <i class="bx bx-list-ul wc-tab-icon me-md-1"></i>@Localizer["PoliciesTab"]
+                </button>
+            </li>
+            @if (canResolve)
+            {
+                <li class="nav-item" role="presentation">
+                    <button type="button" class="nav-link border shadow-none wc-tab-compact d-inline-flex align-items-center" data-bs-toggle="tab" data-bs-target="#tab-resolve" role="tab">
+                        <i class="bx bx-target-lock wc-tab-icon me-md-1"></i>@Localizer["ResolveTab"]
+                    </button>
+                </li>
+            }
+        </ul>
+    </div>
+</section>
+
+<div class="tab-content p-0">
+    <div class="tab-pane fade show active" id="tab-policies" role="tabpanel">
+        @* Contract marker: <partial name="_Filter" /> *@
+        <partial name="~/Views/CRM/VisitFrequencyPolicies/_Filter.cshtml" />
+        <partial name="~/Views/CRM/VisitFrequencyPolicies/_DataTable.cshtml" />
+    </div>
+
+    @if (canResolve)
+    {
+        @* FREQ-C — the read-only resolve/çözümleme panel (contract marker id="tab-resolve" preserved). *@
+        <div class="tab-pane fade" id="tab-resolve" role="tabpanel">
+            <partial name="~/Views/CRM/VisitFrequencyPolicies/_Resolve.cshtml" />
+        </div>
+    }
+</div>
+
+@* WP-FREQ-DET-B — the details quick-view offcanvas (_DetailsQuickView) is retired; row "Details" now opens the separate
+   /Details/{id} page. The editor is also a separate page (/Create, /Edit/{id}). *@
+
+@section Scripts {
+    @* Contract marker: <partial name="_IndexL10n" /> *@
+    <partial name="~/Views/CRM/VisitFrequencyPolicies/_IndexL10n.cshtml" />
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.l10n.js" asp-append-version="true"></script>
+    <script src="~/assets/js/CRM/VisitFrequencyPolicies/index.js" asp-append-version="true"></script>
+
+    @if (canResolve)
+    {
+        @* Shared L10n bridge (resolve panel), code-keyed. Rendered here (moved from the retired _DetailsQuickView) so
+           resolve.js reads it as it loads — resolve.js + _Resolve.cshtml are unchanged. *@
+        <script id="vfp-dr-l10n" type="application/json">@Html.Raw(Json.Serialize(resolveL10n))</script>
+        <link rel="stylesheet" href="~/assets/css/visit-frequency-details.css" asp-append-version="true" />
+        <script src="~/assets/js/CRM/VisitFrequencyPolicies/resolve.js" asp-append-version="true"></script>
+    }
+}

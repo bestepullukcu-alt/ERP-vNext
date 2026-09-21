@@ -126,4 +126,27 @@
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
+  <data name="Dimensions" xml:space="preserve"><value>维度</value></data>
+  <data name="AddDimension" xml:space="preserve"><value>添加维度</value></data>
+  <data name="DimensionsNote" xml:space="preserve"><value>通过参考数据维度（或自定义维度）定位该受众。</value></data>
+  <data name="DimensionsEmpty" xml:space="preserve"><value>尚无维度 — 该画像面向所有人。</value></data>
+  <data name="Axis" xml:space="preserve"><value>维度</value></data>
+  <data name="Values" xml:space="preserve"><value>值</value></data>
+  <data name="RemoveDimension" xml:space="preserve"><value>移除维度</value></data>
+  <data name="Deprecated" xml:space="preserve"><value>已弃用</value></data>
+  <data name="AxisAccountType" xml:space="preserve"><value>客户类型</value></data>
+  <data name="AxisContactType" xml:space="preserve"><value>联系人类型</value></data>
+  <data name="AxisMedicalSpecialty" xml:space="preserve"><value>医学专业</value></data>
+  <data name="AxisCustom" xml:space="preserve"><value>自定义</value></data>
+  <data name="SelectValues" xml:space="preserve"><value>选择值</value></data>
+  <data name="CustomAxisPlaceholder" xml:space="preserve"><value>维度代码（如区域）</value></data>
+  <data name="CustomValuesPlaceholder" xml:space="preserve"><value>输入值并按回车</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>主题来源</value></data>
+  <data name="FromGlobalProduct" xml:space="preserve"><value>来自全局产品</value></data>
+  <data name="CustomSubject" xml:space="preserve"><value>自定义</value></data>
+  <data name="SelectGlobalProduct" xml:space="preserve"><value>选择全局产品</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>将主题关联到其 MDM 主数据并预填名称（可编辑）。</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>全局产品列表不可用；请输入自定义主题。</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>全局产品服务不可用；请输入自定义主题。</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>您无权浏览全局产品；请输入自定义主题。</value></data>
 </root>

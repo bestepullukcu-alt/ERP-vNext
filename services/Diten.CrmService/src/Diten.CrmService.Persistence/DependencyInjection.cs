@@ -135,6 +135,9 @@ public static class DependencyInjection
         services.AddScoped<IEligibilityPolicyRepository, EligibilityPolicyRepository>();
         // SCMM-12 (CAND-CAP-0011) — claim master (versioned; approval freezes the governed body).
         services.AddScoped<IClaimRepository, ClaimRepository>();
+        // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
+        services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
+        services.AddScoped<IContentSetRepository, ContentSetRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -449,6 +452,11 @@ public static class DependencyInjection
             map.GetMemberMap(p => p.CycleId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(p => p.CyclePeriodId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
+        // WP-FREQ-DET-C — the embedded audit-trail event is an owned value object with NO Guid FK, so plain AutoMap is
+        // sufficient (no string-Guid serializer). Registered explicitly (like VisitReportSample/Amendment) so the driver
+        // never treats it as an anonymous type. AutoMap only rejects UNKNOWN elements on read, never missing ones, so a
+        // pre-trail policy document (no Events element) still deserializes — its Events member stays the empty default.
+        Map<VisitFrequencyPolicyEvent>(_ => { });
 
         // MOD-0164 FU02 — ConsentRecord / PreferenceRecord. SubjectId and ScopeId are Guid FKs, so they take the
         // string-Guid convention like every other CRM aggregate: without it the evaluation filter serializes a string
@@ -527,6 +535,9 @@ public static class DependencyInjection
             map.GetMemberMap(c => c.ProductId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(c => c.CampaignId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             map.GetMemberMap(c => c.SegmentId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            // SCMM-13 — the variant-set FK follows the string-Guid convention (else a set lookup filters a string
+            // against a stored binary and silently returns nothing: the new-field class-map trap).
+            map.GetMemberMap(c => c.ContentSetId).SetSerializer(stringGuid);
         });
         Map<Subject>(map => map.GetMemberMap(s => s.ParentSubjectId)
             .SetSerializer(new NullableSerializer<Guid>(stringGuid)));
@@ -568,6 +579,39 @@ public static class DependencyInjection
                 map.GetMemberMap(a => a.EligibilityPolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
             });
         }
+
+        // SCMM-14 (CAND-CAP-0011) — ContentScope has no Guid FK (only Id/TenantId on the base map); registered so the
+        // driver maps it explicitly rather than as an anonymous document.
+        Map<ContentScope>(_ => { });
+
+        // SCMM-14 (CAND-CAP-0011) — ContentSet. Its Guid FKs live in embedded value objects; each takes the string-Guid
+        // convention (the new-aggregate class-map trap) so a stored ref round-trips as a string subtype and any future
+        // by-ref filter compares string vs string, not string vs binary.
+        Map<ContentSet>(_ => { });
+        Map<ContentSetTemplateRef>(map =>
+            map.GetMemberMap(x => x.ConceptChainTemplateId).SetSerializer(stringGuid));
+        Map<ContentSetScopeRef>(map =>
+            map.GetMemberMap(x => x.ContentScopeId).SetSerializer(stringGuid));
+        Map<ContentArrangement>(map =>
+            map.GetMemberMap(x => x.TemplateStepId).SetSerializer(stringGuid));
+        Map<ContentSetComponent>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.KnowledgeContentId).SetSerializer(stringGuid);
+        });
+        Map<ContentSetClaim>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ClaimId).SetSerializer(stringGuid);
+        });
+        Map<ContentSetEligibilitySnapshot>(_ => { });
+        Map<ContentSetEligibilityItem>(map =>
+        {
+            map.GetMemberMap(x => x.SelectionId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.ItemId).SetSerializer(stringGuid);
+            map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
+
         Map<KnowledgeExternalReference>(_ => { });
 
         // MOD-0162 FU03 — Concept graph. Every Guid FK takes the string-Guid convention like every other CRM aggregate:
@@ -598,6 +642,12 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.SubjectId).SetSerializer(stringGuid);
             map.GetMemberMap(x => x.OrderedConceptTypes)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // SCMM-10 (WP-A) — the template-level for-whom AudienceProfile refs are a List<Guid> and need the enumerable
+            // string-Guid serializer (like OrderedConceptTypes), else they store binary and any by-ref filter compares
+            // string vs binary and silently matches nothing (the new-field class-map trap). ModeratorRoleType is a plain
+            // string — AutoMap handles it, and an old document without either element reads back as null / empty (additive).
+            map.GetMemberMap(x => x.ForWhomAudienceProfileIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
         // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
         // ConceptTypeId Guid falls through to the global Standard (binary sub-type 4) serializer and every branch-step
@@ -612,6 +662,11 @@ public static class DependencyInjection
             {
                 map.AutoMap();
                 map.GetMemberMap(s => s.ConceptTypeId).SetSerializer(stringGuid);
+                // SCMM-10 (WP-A, D-e) — the step-level AllowedRoleRefs / AudienceDimensionRefs were removed (moved to
+                // the template level). The CRM maps are otherwise STRICT, so a legacy branch document still carrying
+                // those elements would throw FormatException on read; ignoring extra elements is the read-time migration
+                // that lets pre-WP-A templates deserialize unchanged.
+                map.SetIgnoreExtraElements(true);
             });
         }
         Map<KnowledgeContentConceptLink>(map =>
@@ -1441,6 +1496,10 @@ public static class DependencyInjection
                     .Ascending("ExternalReferences.SourceSystem")
                     .Ascending("ExternalReferences.ExternalId"),
                 new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_external_ref" }));
+            // SCMM-13 — variant-set access path (source + its translations of one logical component).
+            knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
+                Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ContentSetId),
+                new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_set" }));
 
             var knowledgeSubjects = database.GetCollection<Subject>(SubjectRepository.CollectionName);
             knowledgeSubjects.Indexes.CreateOne(new CreateIndexModel<Subject>(
@@ -1474,6 +1533,18 @@ public static class DependencyInjection
             claims.Indexes.CreateOne(new CreateIndexModel<Claim>(
                 Builders<Claim>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ClaimCode),
                 new CreateIndexOptions { Name = "ix_claims_tenant_code" }));
+
+            // SCMM-14 (CAND-CAP-0011) — content-scope + content-set indexes (tenant scoped). Codes are shared across
+            // versions / not unique ⇒ non-unique; uniqueness of the ACTIVE code is guarded in the create handlers.
+            var contentScopes = database.GetCollection<ContentScope>(ContentScopeRepository.CollectionName);
+            contentScopes.Indexes.CreateOne(new CreateIndexModel<ContentScope>(
+                Builders<ContentScope>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.ScopeCode),
+                new CreateIndexOptions { Name = "ix_content_scopes_tenant_code" }));
+
+            var contentSets = database.GetCollection<ContentSet>(ContentSetRepository.CollectionName);
+            contentSets.Indexes.CreateOne(new CreateIndexModel<ContentSet>(
+                Builders<ContentSet>.IndexKeys.Ascending(s => s.TenantId).Ascending(s => s.SetCode),
+                new CreateIndexOptions { Name = "ix_content_sets_tenant_code" }));
 
             // MOD-0162 FU03 — concept-graph indexes (tenant scoped, soft-delete aware). EffectiveFrom / EffectiveTo /
             // ArchivedAt are DateTimeOffset (BSON array) and are deliberately NOT index keys (parallel-array trap); code

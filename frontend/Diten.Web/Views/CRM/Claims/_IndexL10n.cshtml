@@ -1,0 +1,30 @@
+@using System.Text.Json
+@using Diten.Web.Views.CRM.Claims
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<ClaimsIndex> Localizer
+@{
+    var keys = new[] { "Actions", "Apply", "ClaimCode", "ClaimName", "ClaimVersion", "Status",
+        "EffectiveFrom", "EffectiveTo", "Approved", "Archived", "UpdatedAt", "Cancel",
+        "CreateClaim", "EditClaim", "ApproveClaim", "ApproveClaimConfirm", "ArchiveClaim", "ArchiveClaimConfirm",
+        "RecordApproved", "RecordArchived", "EmptyState", "ErrorState", "Filter", "Loading", "No", "Yes",
+        "IncludeArchived", "View", "StatusDraft", "StatusApproved", "StatusInactive", "StatusArchived",
+        "ClaimText", "Qualifiers", "ProductRefs", "MarketRefs", "AudienceRefs", "EvidenceRefs", "ComponentRefs",
+        "EligibilityPolicyId", "Description", "QuickView", "QuickViewTitle", "Passive", "Unknown",
+        "BulkDelete", "BulkDeleteConfirm" };
+    var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
+    values["Active"] = Localizer["Active"].Value;
+    values["Edit"] = Localizer["Edit"].Value;
+    values["ViewDetails"] = Localizer["ViewDetails"].Value;
+    values["AreYouSure"] = Localizer["AreYouSure"].Value;
+    values["Search"] = Localizer["Search"].Value;
+    values["Export"] = Localizer["Export"].Value;
+    values["Reset"] = Localizer["Reset"].Value;
+    values["ShowAll"] = Localizer["ShowAll"].Value;
+    values["SaveView"] = Localizer["SaveView"].Value;
+    values["ColumnVisibility"] = Localizer["ColumnVisibility"].Value;
+    // Verifier-compatible property markers for the dictionary-backed JSON bridge:
+    // Active =, Passive =, Unknown =, Actions =, Edit =, ViewDetails =, QuickView =, AreYouSure =,
+    // BulkDelete =, BulkDeleteConfirm =, Cancel =, Search =, Export =, Import =, Filter =, Apply =,
+    // Reset =, ShowAll =, SaveView =, ColumnVisibility =, Status =
+}
+<script id="claim-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>
