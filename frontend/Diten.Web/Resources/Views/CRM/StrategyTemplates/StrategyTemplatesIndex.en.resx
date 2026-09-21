@@ -48,7 +48,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>Reference an existing active policy, declare a non-binding rhythm, or choose none. No policy is ever written from here.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>Frequency intent</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>Visit frequency policy</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>How often — frequency intent</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Frequency intent — How often</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>Frequency</value></data>
   <data name="Frozen" xml:space="preserve"><value>frozen</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>This play is live, so its bindings are frozen. Create a new version to change them; the name and notes stay editable.</value></data>

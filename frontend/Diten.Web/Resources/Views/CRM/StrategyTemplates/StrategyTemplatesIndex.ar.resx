@@ -48,7 +48,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>أشر إلى سياسة نشطة قائمة، أو صرّح بإيقاع غير مُلزِم، أو اختر «لا شيء». لا تُكتب أي سياسة من هنا.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>نية التكرار</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>سياسة تكرار الزيارة</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>كم مرة — نية التكرار</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>نية التكرار — كم مرة</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>التكرار</value></data>
   <data name="Frozen" xml:space="preserve"><value>مجمّد</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>هذا المخطط فعّال، لذا رُوابطه مجمّدة. أنشئ إصدارًا جديدًا لتغييرها؛ يبقى الاسم والملاحظات قابلين للتعديل.</value></data>

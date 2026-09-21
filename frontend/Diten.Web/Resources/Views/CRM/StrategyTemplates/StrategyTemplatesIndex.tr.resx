@@ -48,7 +48,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>Mevcut aktif bir politikayı referanslayın, bağlayıcı olmayan bir ritim beyan edin veya hiçbiri deyin. Buradan asla politika yazılmaz.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>Frekans niyeti</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>Ziyaret frekans politikası</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>Ne sıklıkta — frekans niyeti</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Frekans niyeti — Ne sıklıkta</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>Frekans</value></data>
   <data name="Frozen" xml:space="preserve"><value>donmuş</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>Bu plan canlıda olduğu için bağları donmuştur. Değiştirmek için yeni sürüm oluşturun; ad ve notlar düzenlenebilir kalır.</value></data>

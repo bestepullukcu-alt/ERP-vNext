@@ -48,7 +48,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>引用现有的启用策略、声明一个非约束性节奏，或选择“无”。此处永不写入策略。</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>频次意图</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>拜访频次策略</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>频次——意图</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>频次意图 — 多久一次</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>频次</value></data>
   <data name="Frozen" xml:space="preserve"><value>已冻结</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>该方案已上线，绑定被冻结。请创建新版本来修改；名称与备注仍可编辑。</value></data>

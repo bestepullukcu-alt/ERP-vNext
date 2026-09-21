@@ -51,17 +51,35 @@
     // echoes). jQuery/select2 absent → the plain <select> is left untouched (graceful degrade).
     const jq = () => window.jQuery;
     const hasSelect2 = () => { const $ = jq(); return !!($ && $.fn && $.fn.select2); };
-    const bindRoleSelect2 = select => {
+    // WP-ST-EDIT-O — generalised from the EDIT-L role-only helper. bindSelect2(select, { search }) drives BOTH controls:
+    // the segment ROLE dropdown binds with search:false (minimumResultsForSearch: Infinity — aramasız, only 3 roles) and
+    // the frequency POLICY dropdown binds with search:true (the box searches across many policies). The native-change
+    // bridge is unchanged and shared: select2 announces a choice the jQuery way (native addEventListener never hears it),
+    // so this re-dispatches a native BUBBLING change (guarded by originalEvent so a value-only re-read never echoes). That
+    // reaches the form-delegated change listener (→ sync()/FrequencyIntentJson) AND the EDIT-N policy change handler
+    // (→ "Politikayı aç"). Value/GUID contract is untouched. jQuery/select2 absent → the plain <select> is left as is.
+    const bindSelect2 = (select, opts) => {
         if (!select || !hasSelect2()) return;
         const $ = jq();
         const $s = $(select);
         if ($s.hasClass('select2-hidden-accessible')) return; // already bound
-        $s.select2({ dropdownParent: $s.parent(), minimumResultsForSearch: Infinity });
-        $s.off('change.stRoleBridge').on('change.stRoleBridge', ev => {
+        const search = !!(opts && opts.search);
+        $s.select2(Object.assign({ dropdownParent: $s.parent() }, search ? {} : { minimumResultsForSearch: Infinity }));
+        $s.off('change.stBridge').on('change.stBridge', ev => {
             if (ev && ev.originalEvent) return;
             select.dispatchEvent(new Event('change', { bubbles: true }));
         });
     };
+    // WP-ST-EDIT-O — the policy <select> is a PERSISTENT element whose <option>s are rewritten on every renderFrequency;
+    // select2 must be torn down first (it caches the option snapshot and the wrapper shows stale text otherwise), then
+    // re-bound after the fresh options are in place. The element identity survives, so the EDIT-N native listener stays.
+    const unbindSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) { $s.off('change.stBridge'); $s.select2('destroy'); }
+    };
+    const bindRoleSelect2 = select => bindSelect2(select, { search: false });
     // renderSegments rebuilds #segmentBindingList innerHTML (wiping any prior select2 DOM), so a fresh init per row is
     // enough — no explicit destroy is needed.
     const rebindRoleSelects = () => {
@@ -341,6 +359,10 @@
         const policyBlock = el('frequencyPolicyBlock');
         const policySelect = el('frequencyPolicyId');
         if (policySelect) {
+            // WP-ST-EDIT-O — tear down any prior select2 before rewriting the <option>s (see unbindSelect2), rebuild the
+            // list, then re-bind as a SEARCHABLE single select2. The <select> value stays the raw policy GUID, so
+            // readFrequency()/FrequencyIntentJson.visitFrequencyPolicyId is byte-for-byte unchanged.
+            unbindSelect2(policySelect);
             const list = options.policy;
             const value = state.frequency.visitFrequencyPolicyId || '';
             const known = list.some(o => o.id === value);
@@ -348,6 +370,7 @@
                 + (!known && value ? `<option value="${esc(value)}" selected>${esc(value)}</option>` : '')
                 + list.map(o => `<option value="${esc(o.id)}"${o.id === value ? ' selected' : ''}>${esc(o.text)}</option>`).join('');
             policySelect.disabled = frozen || !can('frequency-policy');
+            bindSelect2(policySelect, { search: true });
         }
         // WP-ST-EDIT-N — keep the "Politikayı aç" button in sync with the (possibly restored) selection on every render.
         syncFrequencyPolicyOpen();

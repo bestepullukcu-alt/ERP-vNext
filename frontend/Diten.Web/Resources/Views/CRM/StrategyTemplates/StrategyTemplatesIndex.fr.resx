@@ -48,7 +48,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>Référencez une politique active existante, déclarez un rythme non contraignant, ou choisissez aucun. Aucune politique n'est écrite ici.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>Intention de fréquence</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>Politique de fréquence de visite</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>À quelle fréquence — intention</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Intention de fréquence — À quelle fréquence</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>Fréquence</value></data>
   <data name="Frozen" xml:space="preserve"><value>gelé</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>Ce plan est actif : ses liens sont gelés. Créez une nouvelle version pour les modifier ; le nom et les notes restent modifiables.</value></data>
