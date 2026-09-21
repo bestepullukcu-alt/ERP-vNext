@@ -603,9 +603,20 @@ window.DtDefaults = (function () {
         var originalPreXhr = merged.preXhr;
         merged.preXhr = function (settings, data) {
             if (!firstLoadDone) {
-                $('#skeleton-loader').fadeIn(100);
+                var $skeleton = $('#skeleton-loader');
+                $skeleton.fadeIn(100);
                 // The cube lives inside the table's own wrapper; the class hides it for this table alone.
                 $(settings && settings.nTableWrapper).addClass('dt-first-load');
+                /*
+                 * ⚠ AND THE REAL TABLE WAITS ITS TURN — but only for a list that opted in with the shaped
+                 * skeleton (`_TableSkeleton.cshtml`). MEASURED: with the old five-bar block the real `<thead>`
+                 * stood UNDER the placeholder while the toolbar and the pager were still being built, so the
+                 * page arrived in three instalments from the top down. A shaped skeleton already draws all
+                 * three, so showing the half-built table beside it is what made it unreadable.
+                 */
+                if ($skeleton.is('[data-table-skeleton]')) {
+                    $(settings && settings.nTableWrapper).addClass('dt-skeleton-hidden');
+                }
             }
             if (typeof originalPreXhr === 'function') {
                 originalPreXhr.call(this, settings, data);
@@ -616,8 +627,21 @@ window.DtDefaults = (function () {
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
             firstLoadDone = true;
-            $(settings && settings.nTableWrapper).removeClass('dt-first-load');
+            var $wrapper = $(settings && settings.nTableWrapper);
+            var wasHidden = $wrapper.hasClass('dt-skeleton-hidden');
+            $wrapper.removeClass('dt-first-load dt-skeleton-hidden');
             $('#skeleton-loader').fadeOut(300);
+            /*
+             * A table measured while it was hidden has no column widths worth keeping. DataTables recomputes on
+             * demand, so ask it once — and only for the table that was actually hidden.
+             */
+            if (wasHidden) {
+                try {
+                    var api = new DataTable.Api(settings);
+                    api.columns.adjust();
+                    if (api.responsive && typeof api.responsive.recalc === 'function') { api.responsive.recalc(); }
+                } catch (e) { }
+            }
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {
                 originalInitComplete.call(this, settings, json);
