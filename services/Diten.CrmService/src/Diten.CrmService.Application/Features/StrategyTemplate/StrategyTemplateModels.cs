@@ -32,6 +32,10 @@ public sealed record StrategyTemplateListItemDto(
     string FrequencyIntentMode,
     int ProductLineCount,
     int SkuAllocationCount,
+    // WP-ST-LIST2 — Σ of the product lines' LineWeightPercentage (the line-among-lines weighting that totals 100.00 when
+    // present). Null when there is no product line or when none carries a weight, so the grid shows only a count and
+    // never a misleading "0%". This is additive: the detail/create/update DTOs are untouched.
+    decimal? ProductAllocationTotalPercentage,
     int ContentBindingCount,
     bool AreBindingsFrozen,
     DateTimeOffset? BindingsFrozenAt,

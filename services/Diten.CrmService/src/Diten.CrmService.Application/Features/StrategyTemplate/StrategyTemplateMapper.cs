@@ -195,6 +195,11 @@ public static class StrategyTemplateMapper
         template.FrequencyIntent.Mode,
         template.ProductLines.Count,
         template.ProductLines.Sum(l => l.SkuAllocations.Count),
+        // WP-ST-LIST2 — Σ of the line weights, or null when no line carries one (the "all or none" weighting rule). Pure
+        // in-memory arithmetic over the already-loaded lines: no extra read, no tenant surface touched.
+        template.ProductLines.Any(l => l.LineWeightPercentage.HasValue)
+            ? template.ProductLines.Sum(l => l.LineWeightPercentage ?? 0m)
+            : (decimal?)null,
         template.ContentBindings.Count,
         template.AreBindingsFrozen(),
         template.BindingsFrozenAt,

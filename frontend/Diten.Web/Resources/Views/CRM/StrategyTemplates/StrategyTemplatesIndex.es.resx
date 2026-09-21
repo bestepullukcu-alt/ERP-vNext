@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Plantillas de estrategia</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Tipo de sujeto</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>A qué apunta el plan. Inmutable tras la creación; cada segmento enlazado debe coincidir.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>Persona</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>Organización</value></data>
   <data name="Superseded" xml:space="preserve"><value>reemplazado</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Código</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Clave de negocio estable. Nunca se renombra: cambie el nombre en su lugar.</value></data>

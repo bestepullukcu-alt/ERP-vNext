@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Modèles de stratégie</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Type de sujet</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>Ce que le plan cible. Immuable après création ; chaque segment lié doit correspondre.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>Personne</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>Organisation</value></data>
   <data name="Superseded" xml:space="preserve"><value>remplacé</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Code</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Clé métier stable. Elle n'est jamais renommée — modifiez le nom à la place.</value></data>

@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Strategy Templates</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Subject type</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>What the play targets. Immutable after create; every bound segment must match it.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>Person</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>Organization</value></data>
   <data name="Superseded" xml:space="preserve"><value>superseded</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Code</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Stable business key. It is never renamed — change the name instead.</value></data>

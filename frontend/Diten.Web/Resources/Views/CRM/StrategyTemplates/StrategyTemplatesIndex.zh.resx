@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>策略模板</value></data>
   <data name="SubjectType" xml:space="preserve"><value>主体类型</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>方案针对的对象。创建后不可更改；所有绑定的细分必须一致。</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>个人</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>机构</value></data>
   <data name="Superseded" xml:space="preserve"><value>已被取代</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>编码</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>稳定的业务主键，不可重命名——请改名称字段。</value></data>

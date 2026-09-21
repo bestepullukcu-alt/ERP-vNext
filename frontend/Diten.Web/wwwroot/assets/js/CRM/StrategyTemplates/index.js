@@ -297,12 +297,28 @@
     const playCell = row => `<span class="fw-medium text-heading d-block">${esc(row.templateName || '—')}</span>`
         + (norm(row.templateCode) ? `<span class="text-muted small">${esc(row.templateCode)}</span>` : '')
         + (row.superseded ? ` <span class="badge bg-label-secondary">${esc(L.Superseded || 'superseded')}</span>` : '');
-    // SEGMENT — bound-segment count (prominent) + subject type (muted).
-    const segmentCell = row => `<span class="fw-medium text-heading d-block">${esc(row.segmentBindingCount ?? 0)}</span>`
-        + (norm(row.subjectType) ? `<span class="text-muted small">${esc(row.subjectType)}</span>` : '');
-    // ÜRÜN — product-line count (prominent) + "N SKU" (muted). No hardcoded Σ% (the real total lives on Detail/Edit).
-    const productCell = row => `<span class="fw-medium text-heading d-block">${esc(row.productLineCount ?? 0)}</span>`
-        + `<span class="text-muted small">${esc(row.skuAllocationCount ?? 0)} ${esc(L.SkuUnit || 'SKU')}</span>`;
+    // SEGMENT — subject-type badge (contact=kişi/mavi, account=kurum/turuncu) + bound-segment count beside it (mockup).
+    // Unknown/blank subject types degrade to the count alone (no fabricated badge).
+    const subjectLabel = row => {
+        const t = norm(row.subjectType).toLowerCase();
+        if (t === 'contact') return { label: L.SubjectTypeContact || 'kişi', tone: 'primary' };
+        if (t === 'account') return { label: L.SubjectTypeAccount || 'kurum', tone: 'warning' };
+        return null;
+    };
+    const segmentCell = row => {
+        const s = subjectLabel(row);
+        const count = `<span class="fw-medium text-heading">${esc(row.segmentBindingCount ?? 0)}</span>`;
+        return s ? `${badge(s.label, s.tone)} ${count}` : count;
+    };
+    // ÜRÜN — "N · %" (mockup): product-line count · Σ line-weight%. The percentage shows ONLY when the mapper reports a
+    // real positive total (every line weighted); a null/zero total prints the count alone (never a misleading "0%").
+    const productCell = row => {
+        const count = row.productLineCount ?? 0;
+        const total = row.productAllocationTotalPercentage;
+        const hasPct = total != null && Number(total) > 0;
+        const pct = hasPct ? ` · ${Math.round(Number(total))}%` : '';
+        return `<span class="fw-medium text-heading">${esc(count)}${esc(pct)}</span>`;
+    };
     // DURUM — status badge + version (vN).
     const statusCell = row => badge(row.templateStatus, row.templateStatus === 'archived' ? 'secondary' : row.templateStatus === 'active' ? 'success' : 'primary')
         + `<span class="text-muted small d-block">v${esc(row.templateVersion ?? 1)}</span>`;
@@ -326,8 +342,8 @@
             { targets: 0, className: 'control', orderable: false, render: () => '' },
             { targets: 1, render: (v, t, row) => t === 'display' ? playCell(row) : `${norm(row.templateName)} ${norm(row.templateCode)}` },
             { targets: 2, render: (v, t, row) => t === 'display' ? scopeCell(row) : `${scopeName(row)} ${scopeTypeLabel(norm(row.effectiveScopeType) || norm(row.scopeType))}` },
-            { targets: 3, render: (v, t, row) => t === 'display' ? segmentCell(row) : (t === 'sort' || t === 'type' ? (row.segmentBindingCount ?? 0) : `${row.segmentBindingCount ?? 0} ${norm(row.subjectType)}`) },
-            { targets: 4, render: (v, t, row) => t === 'display' ? productCell(row) : (t === 'sort' || t === 'type' ? (row.productLineCount ?? 0) : `${row.productLineCount ?? 0} ${row.skuAllocationCount ?? 0}`) },
+            { targets: 3, render: (v, t, row) => t === 'display' ? segmentCell(row) : (t === 'sort' || t === 'type' ? (row.segmentBindingCount ?? 0) : `${row.segmentBindingCount ?? 0} ${norm(subjectLabel(row)?.label) || norm(row.subjectType)}`) },
+            { targets: 4, render: (v, t, row) => t === 'display' ? productCell(row) : (t === 'sort' || t === 'type' ? (row.productLineCount ?? 0) : `${row.productLineCount ?? 0} ${row.productAllocationTotalPercentage ?? ''}`) },
             { targets: 5, render: v => esc(v ?? 0) },
             { targets: 6, render: (v, t, row) => t === 'display' ? statusCell(row) : norm(row.templateStatus) },
             { targets: 7, render: (v, t) => t === 'display' ? fmtDate(v) : norm(v) },

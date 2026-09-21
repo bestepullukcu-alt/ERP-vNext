@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>قوالب الاستراتيجية</value></data>
   <data name="SubjectType" xml:space="preserve"><value>نوع الموضوع</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>ما يستهدفه المخطط. غير قابل للتغيير بعد الإنشاء؛ وكل شريحة مرتبطة يجب أن تطابقه.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>شخص</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>مؤسسة</value></data>
   <data name="Superseded" xml:space="preserve"><value>تم استبداله</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>الرمز</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>مفتاح عمل ثابت. لا يُعاد تسميته — غيّر الاسم بدلاً من ذلك.</value></data>

@@ -116,6 +116,8 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Strateji Şablonları</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Özne tipi</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>Planın neyi hedeflediği. Oluşturduktan sonra değişmez; bağlı her segment bununla eşleşmelidir.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>kişi</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>kurum</value></data>
   <data name="Superseded" xml:space="preserve"><value>geçersizleşti</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Kod</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Kararlı iş anahtarı. Yeniden adlandırılmaz — bunun yerine adı değiştirin.</value></data>
