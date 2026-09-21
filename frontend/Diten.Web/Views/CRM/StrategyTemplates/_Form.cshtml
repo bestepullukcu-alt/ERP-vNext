@@ -43,6 +43,65 @@
             </div>
         </section>
 
+        @*
+            KAPSAM — NEREDE (WP-ST-EDIT-A). A mirror of the Campaign scope section: the play's address level plus the
+            cascading reference (Country → Legal entity → Business unit / Territory). Unlike a cycle period's scope this
+            one is EDITABLE — a play's address is an attribute, not its identity. Exactly ONE reference is posted
+            (single-reference); the JS clears the others and the runtime refuses a second one regardless. The
+            scope-options feed is loaded client-side from the same-origin proxy, exactly as the Campaign form does.
+        *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                <div class="row g-3" id="strategyTemplateScopeSection"
+                     data-scope-options-url="/CRM/StrategyTemplates/api/scope-options">
+                    <div class="col-12 col-md-4">
+                        <label asp-for="ScopeType" class="form-label fw-medium">
+                            @Localizer["ScopeType"] <span class="text-danger">*</span>
+                        </label>
+                        <select asp-for="ScopeType" id="scopeType" class="form-select" required
+                                data-selected="@Model.ScopeType"></select>
+                        <div class="form-text">@Localizer["ScopeEditableHint"]</div>
+                    </div>
+
+                    @* Exactly ONE reference block is visible at a time — the address is discriminated, never combined. *@
+                    <div class="col-12 col-md-4 d-none" data-scope-block="country">
+                        <label asp-for="CountryScope" class="form-label fw-medium">@Localizer["CountryScope"]</label>
+                        <select asp-for="CountryScope" id="countryScope" class="form-select"
+                                data-selected="@Model.CountryScope"></select>
+                        <div class="form-text d-none" data-scope-note="country"></div>
+                    </div>
+
+                    <div class="col-12 col-md-4 d-none" data-scope-block="legal-entity">
+                        <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"]</label>
+                        <select asp-for="LegalEntityId" id="legalEntityId" class="form-select"
+                                data-selected="@(Model.LegalEntityId?.ToString())"></select>
+                        <div class="form-text d-none" data-scope-note="legal-entity"></div>
+                    </div>
+
+                    @* Business unit is a country-first cascade: the country filter narrows the list to the units the
+                       tenant's territory plans actually cover. The filter is NOT the play's scope and is never posted. *@
+                    <div class="col-12 col-md-4 d-none" data-scope-block="business-unit">
+                        <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
+                            @Localizer["BusinessUnitCountryFilter"]
+                        </label>
+                        <select asp-for="BusinessUnitCountryFilter" id="buFilterCountry" class="form-select mb-3"
+                                data-selected="@Model.BusinessUnitCountryFilter"></select>
+
+                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
+                        <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select"
+                                data-selected="@Model.BusinessUnitId"></select>
+                        <div class="form-text d-none" data-scope-note="business-unit"></div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="small text-muted" id="resolvedScope"></div>
+                        <div class="form-text">@Localizer["ScopeHelp"]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         @if (Model.AreBindingsFrozen)
         {
             <div class="alert alert-warning" role="alert">
@@ -158,10 +217,8 @@
                         <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
                         <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>
-                        <input asp-for="BusinessUnitId" class="form-control" maxlength="64" />
-                    </div>
+                    @* WP-ST-EDIT-A — the opaque BusinessUnitId free-text input moved into the KAPSAM scope section as a
+                       governed, territory-derived picker. SubjectType stays here as the play's classification. *@
                 </div>
             </div>
         </section>

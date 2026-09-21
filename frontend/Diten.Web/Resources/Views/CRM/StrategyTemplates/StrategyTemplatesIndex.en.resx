@@ -130,4 +130,20 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Scope level</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Whole tenant</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Country</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Country</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Filter business units by country</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>The play's address. It decides the scope this strategy applies to: the whole tenant, or one country, legal entity or business unit.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>The scope can be changed. Only the reference of the chosen level is kept.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>The governed reference set is not published yet. An operator must publish it.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>The dependency did not answer, so this list could not be loaded.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>No territory plan matches, so the full published list is shown.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>Resolved scope</value></data>
 </root>

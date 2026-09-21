@@ -29,7 +29,12 @@
         "SkuAllocationMode", "TotalPercentage", "TotalMustBe100", "ContainmentNotVerifiedHelp", "NoProductLines",
         "ContentRefType", "ContentRef", "NoContentBindings", "ContentPublishedOnlyHelp", "PickerUnavailable",
         "GskuPickerUnavailable", "LimitReached", "FrozenBindingsHelp", "StatusSeparateEndpointHelp",
-        "NoMembersEverHelp", "ApplyIsMicroTargetHelp"
+        "NoMembersEverHelp", "ApplyIsMicroTargetHelp",
+        // WP-ST-EDIT-A — KAPSAM scope cascade (Campaign resx keys mirrored; form.js reads them from this bridge).
+        "ScopeSection", "ScopeType", "ScopeType_tenant", "ScopeType_country", "ScopeType_legal-entity",
+        "ScopeType_business-unit", "CountryScope", "LegalEntity", "BusinessUnit", "BusinessUnitCountryFilter",
+        "ScopeHelp", "ScopeEditableHint", "ReferenceSetUnpublished", "DependencyUnavailable", "NoTerritoryPlanMatches",
+        "ResolvedScope"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

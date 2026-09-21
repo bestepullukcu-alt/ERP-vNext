@@ -23,6 +23,20 @@ public sealed class StrategyTemplateDetailViewModel
     public Guid VersionLineageId { get; set; }
     public bool Superseded { get; set; }
     public Guid? SupersededByTemplateId { get; set; }
+
+    /// <summary>WP-ST-SCOPE — the play's address level as STORED (empty for a pre-scope play).</summary>
+    public string ScopeType { get; set; } = string.Empty;
+
+    /// <summary>WP-ST-SCOPE — the EFFECTIVE address level (derived from <see cref="BusinessUnitId"/> for a pre-scope
+    /// play), so the editor opens on the scope the play always had rather than on an empty selector.</summary>
+    public string EffectiveScopeType { get; set; } = string.Empty;
+
+    /// <summary>WP-ST-SCOPE — the country reference, when the scope is <c>country</c>.</summary>
+    public string? CountryScope { get; set; }
+
+    /// <summary>WP-ST-SCOPE — the legal-entity reference, when the scope is <c>legal-entity</c>.</summary>
+    public Guid? LegalEntityId { get; set; }
+
     public string? BusinessUnitId { get; set; }
     public string? Description { get; set; }
     public string? Notes { get; set; }
@@ -180,8 +194,23 @@ public sealed class StrategyTemplateEditViewModel
 
     public string TemplateStatus { get; set; } = "draft";
 
+    /// <summary>WP-ST-EDIT-A — the play's address level (tenant / country / legal-entity / business-unit). Omitted
+    /// means "derive it": a business unit makes it business-unit, nothing makes it tenant — exactly what a pre-scope
+    /// play already meant. Mirrors the Campaign scope contract.</summary>
+    public string? ScopeType { get; set; }
+
+    /// <summary>WP-ST-EDIT-A — the country reference, when <see cref="ScopeType"/> is <c>country</c>.</summary>
+    public string? CountryScope { get; set; }
+
+    /// <summary>WP-ST-EDIT-A — the legal-entity reference, when <see cref="ScopeType"/> is <c>legal-entity</c>.</summary>
+    public Guid? LegalEntityId { get; set; }
+
     [StringLength(64)]
     public string? BusinessUnitId { get; set; }
+
+    /// <summary>WP-ST-EDIT-A — the country the author is filtering business units by. Informational: it narrows the
+    /// business-unit picker and is never posted as the play's scope.</summary>
+    public string? BusinessUnitCountryFilter { get; set; }
 
     [StringLength(2000)]
     public string? Description { get; set; }

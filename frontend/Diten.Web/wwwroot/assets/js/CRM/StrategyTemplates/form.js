@@ -496,8 +496,126 @@
         }
     });
 
+    // ---------------- WP-ST-EDIT-A scope cascade ("KAPSAM — NEREDE"), mirroring the Campaign form ----------------
+    // The play's address is EDITABLE: ScopeType picks the level, and exactly ONE reference block (country / legal-entity
+    // / business-unit) is shown and posted. The option feeds come from the same-origin scope-options proxy — there is no
+    // cycle-period binding here, so unlike the Campaign form nothing reloads a period picker.
+    const scopeSection = el('strategyTemplateScopeSection');
+    const scopeTypeEl = el('scopeType');
+    const countryEl = el('countryScope');
+    const legalEntityEl = el('legalEntityId');
+    const businessUnitEl = el('businessUnitId');
+    const buFilterCountryEl = el('buFilterCountry');
+    const resolvedScopeEl = el('resolvedScope');
+    const scopeOptionsUrl = scopeSection?.dataset.scopeOptionsUrl || `${endpoint}/scope-options`;
+    let scopeOptions = null;
+
+    // Fills a scope select, keeping the current value selectable even when the feed no longer offers it (e.g. a
+    // territory-narrowed business-unit list on edit) — otherwise the round trip would silently drop the reference.
+    const fillScope = (node, items, placeholder) => {
+        if (!node) return;
+        const current = node.dataset.selected || node.value || '';
+        const list = items || [];
+        const known = list.some(i => String(i.value) === String(current));
+        const head = `<option value="">${esc(placeholder || '')}</option>`;
+        const kept = current && !known ? `<option value="${esc(current)}" selected>${esc(current)}</option>` : '';
+        node.innerHTML = head + kept
+            + list.map(i => `<option value="${esc(i.value)}"${String(i.value) === String(current) ? ' selected' : ''}>${esc(i.label)}</option>`).join('');
+        if (current) node.value = current;
+    };
+
+    // Says WHY a list is empty: an unpublished set, an unreachable dependency and "no territory plan matches" are three
+    // different situations, and an author who cannot tell them apart has no way to act.
+    const setScopeNote = (level, key) => {
+        const note = scopeSection?.querySelector(`[data-scope-note="${level}"]`);
+        if (!note) return;
+        const text = key ? (L[key] || '') : '';
+        note.textContent = text;
+        note.classList.toggle('d-none', !text);
+    };
+
+    // Single-reference invariant: only the SELECTED level keeps its reference; the others are cleared so the payload can
+    // never carry two addresses (the runtime refuses a second one too, but the UI never sends it).
+    const clearUnselectedScopeRefs = () => {
+        const level = (scopeTypeEl?.value || '').trim();
+        if (level !== 'country' && countryEl) countryEl.value = '';
+        if (level !== 'legal-entity' && legalEntityEl) legalEntityEl.value = '';
+        if (level !== 'business-unit' && businessUnitEl) businessUnitEl.value = '';
+    };
+
+    const renderResolvedScope = () => {
+        if (!resolvedScopeEl) return;
+        const level = (scopeTypeEl?.value || '').trim();
+        const typeLabel = level ? (L['ScopeType_' + level] || level) : '';
+        let refLabel = '';
+        if (level === 'country') refLabel = countryEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        else if (level === 'legal-entity') refLabel = legalEntityEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        else if (level === 'business-unit') refLabel = businessUnitEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        const value = refLabel ? `${typeLabel} — ${refLabel}` : typeLabel;
+        resolvedScopeEl.innerHTML = value
+            ? `<span class="fw-medium">${esc(L.ResolvedScope || '')}:</span> ${esc(value)}` : '';
+    };
+
+    // Only the block belonging to the selected level is shown: the address is discriminated, never combined.
+    const applyScopeType = () => {
+        const level = (scopeTypeEl?.value || '').trim();
+        scopeSection?.querySelectorAll('[data-scope-block]').forEach(block => {
+            block.classList.toggle('d-none', block.dataset.scopeBlock !== level);
+        });
+        clearUnselectedScopeRefs();
+        renderResolvedScope();
+    };
+
+    const renderScopeOptions = () => {
+        if (!scopeOptions) return;
+        fillScope(scopeTypeEl, (scopeOptions.scopeTypes || []).map(v => ({ value: v, label: L['ScopeType_' + v] || v })), '');
+        if (scopeTypeEl && !scopeTypeEl.value) scopeTypeEl.value = 'tenant';
+
+        fillScope(countryEl, scopeOptions.countries, L.SelectOption);
+        setScopeNote('country', scopeOptions.countrySetPublished ? null : 'ReferenceSetUnpublished');
+
+        fillScope(legalEntityEl, scopeOptions.legalEntities, L.SelectOption);
+        setScopeNote('legal-entity', scopeOptions.legalEntityLookupAvailable ? null : 'DependencyUnavailable');
+
+        fillScope(buFilterCountryEl, scopeOptions.countries, L.ShowAll);
+        fillScope(businessUnitEl, scopeOptions.businessUnits, L.SelectOption);
+        setScopeNote('business-unit',
+            !scopeOptions.businessUnitSetPublished ? 'ReferenceSetUnpublished'
+                : (scopeOptions.businessUnitFromTerritory ? null : 'NoTerritoryPlanMatches'));
+
+        applyScopeType();
+    };
+
+    const loadScopeOptions = async () => {
+        if (!scopeSection) return;
+        const params = new URLSearchParams();
+        const country = (buFilterCountryEl?.value || '').trim();
+        if (country) params.set('country', country);
+        try {
+            const response = await fetch(`${scopeOptionsUrl}?${params.toString()}`, {
+                credentials: 'same-origin', headers: { Accept: 'application/json' }
+            });
+            if (!response.ok) return;
+            scopeOptions = (await response.json().catch(() => ({})))?.data || null;
+            renderScopeOptions();
+        } catch (error) {
+            // A selector that cannot load its options leaves what is already selected alone (graceful, like Campaign).
+            console.warn('[StrategyTemplates] Scope options could not be loaded.', error);
+        }
+    };
+
+    scopeTypeEl?.addEventListener('change', applyScopeType);
+    countryEl?.addEventListener('change', renderResolvedScope);
+    legalEntityEl?.addEventListener('change', renderResolvedScope);
+    businessUnitEl?.addEventListener('change', renderResolvedScope);
+    // The country filter narrows the business-unit candidates; it is not the play's scope and is never posted.
+    buFilterCountryEl?.addEventListener('change', () => { void loadScopeOptions(); });
+    // Belt-and-braces before the metadata/binding sync runs: only the selected level's reference reaches the payload.
+    form.addEventListener('submit', clearUnselectedScopeRefs);
+
     const init = async () => {
         renderAll();
+        await loadScopeOptions();
         await loadOptions();
         renderAll();
         if (window.flatpickr) {

@@ -130,4 +130,20 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Ámbito</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Nivel de ámbito</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Todo el inquilino</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>País</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Entidad legal</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>País</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad legal</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Filtrar unidades de negocio por país</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>La dirección de la jugada. Determina el ámbito al que se aplica esta estrategia: todo el inquilino, o un solo país, entidad legal o unidad de negocio.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>El ámbito puede cambiarse. Solo se conserva la referencia del nivel elegido.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>El conjunto de referencia gobernado aún no está publicado. Un operador debe publicarlo.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>La dependencia no respondió, por lo que no se pudo cargar esta lista.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Ningún plan territorial coincide, por lo que se muestra la lista publicada completa.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>Ámbito resuelto</value></data>
 </root>

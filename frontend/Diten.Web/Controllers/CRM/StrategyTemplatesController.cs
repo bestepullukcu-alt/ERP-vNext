@@ -423,7 +423,12 @@ public sealed class StrategyTemplatesController : Controller
         m.SubjectType,
         EffectiveFrom = m.EffectiveFrom ?? DateTimeOffset.Now,
         m.EffectiveTo,
+        // WP-ST-EDIT-A — the play's address. Only the reference of the SELECTED level is carried (single-reference); the
+        // UI clears the others, and the runtime refuses a second reference regardless.
         m.BusinessUnitId,
+        m.ScopeType,
+        m.CountryScope,
+        m.LegalEntityId,
         m.Description,
         m.Notes,
         SegmentBindings = ParseArray(m.SegmentBindingsJson, nameof(m.SegmentBindingsJson)),
@@ -437,7 +442,11 @@ public sealed class StrategyTemplatesController : Controller
         m.TemplateName,
         EffectiveFrom = m.EffectiveFrom ?? DateTimeOffset.Now,
         m.EffectiveTo,
+        // WP-ST-EDIT-A — scope is editable metadata, correctable even on a frozen version (unlike the binding lists).
         m.BusinessUnitId,
+        m.ScopeType,
+        m.CountryScope,
+        m.LegalEntityId,
         m.Description,
         m.Notes,
         // Frozen bindings are never re-sent: the runtime would answer 409, and the author is pointed at new-version.
@@ -495,6 +504,11 @@ public sealed class StrategyTemplatesController : Controller
             SubjectType = t.SubjectType,
             TemplateStatus = t.TemplateStatus,
             BusinessUnitId = t.BusinessUnitId,
+            // WP-ST-EDIT-A — seed from the EFFECTIVE scope so a pre-scope play opens on the address it always had
+            // (a business unit derives business-unit, nothing derives tenant) rather than on an empty selector.
+            ScopeType = string.IsNullOrWhiteSpace(t.EffectiveScopeType) ? t.ScopeType : t.EffectiveScopeType,
+            CountryScope = t.CountryScope,
+            LegalEntityId = t.LegalEntityId,
             Description = t.Description,
             Notes = t.Notes,
             EffectiveFrom = t.EffectiveFrom,

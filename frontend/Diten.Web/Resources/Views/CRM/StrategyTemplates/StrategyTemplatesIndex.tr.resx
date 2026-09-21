@@ -130,4 +130,20 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Kapsam seviyesi</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Tüm kiracı</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Ülke</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Ülke</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Tüzel kişi</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>İş birimlerini ülkeye göre filtrele</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Oyunun adresi. Bu stratejinin hangi kapsama uygulanacağını belirler: tüm kiracı ya da tek bir ülke, tüzel kişi veya iş birimi.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>Kapsam değiştirilebilir. Yalnızca seçili seviyenin referansı saklanır.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>Yönetişimli referans seti henüz yayınlanmadı. Bir operatörün yayınlaması gerekir.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Bağımlılık cevap vermedi, bu liste yüklenemedi.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Eşleşen bir saha planı yok, bu yüzden yayınlanmış tam liste gösteriliyor.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>Çözümlenen kapsam</value></data>
 </root>
