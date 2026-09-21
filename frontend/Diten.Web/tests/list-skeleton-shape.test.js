@@ -55,7 +55,7 @@ describe("the placeholder is shaped like the list it stands in for", () => {
 
   test("the layout rules carry no colour and no animation of their own", () => {
     const css = CSS();
-    const block = css.slice(css.indexOf(".dt-skeleton .dt-skeleton-toolbar"), css.indexOf(".dt-skeleton-hidden"));
+    const block = css.slice(css.indexOf(".dt-skeleton .dt-skeleton-toolbar"), css.indexOf("[data-table-skeleton] ~ .card-datatable"));
     expect(block.length, "the layout block is gone").toBeGreaterThan(200);
     expect(block, "a second grey entered through the layout rules").not.toMatch(/background|animation|linear-gradient/);
   });
@@ -83,50 +83,28 @@ describe("the placeholder is shaped like the list it stands in for", () => {
 });
 
 describe("the half-built table does not stand beside its own placeholder", () => {
-  let DtDefaults;
-
-  beforeAll(() => {
-    global.DataTable = {
-      Responsive: { display: { modal: () => ({}) } },
-      Api: function () { this.columns = { adjust: () => {} }; this.responsive = { recalc: () => {} }; }
-    };
-    loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
-    loadScript("wwwroot/assets/js/dt-defaults.js");
-    DtDefaults = global.window.DtDefaults;
+  /*
+   * ⚠ THE MECHANISM IS MARKUP + CSS. The first version hid the table from `preXhr`, a DataTables option that
+   * does not exist, so nothing happened at all. Now the placeholder is rendered visible and the table is not
+   * rendered while that element is its sibling; removing the element is what reveals it.
+   */
+  test("the CSS keeps the table out of the page while the placeholder is there", () => {
+    const rule = CSS().replace(/\/\*[\s\S]*?\*\//g, "")
+      .match(/\[data-table-skeleton\] ~ \.card-datatable,\s*\[data-table-skeleton\] ~ \.table-responsive \{([^}]*)\}/);
+    expect(rule, "the table no longer waits for the placeholder").toBeTruthy();
+    expect(rule[1]).toContain("display: none");
   });
 
-  const stage = (marker) => {
-    document.body.innerHTML =
-      `<div id="skeleton-loader" ${marker ? "data-table-skeleton" : ""} style="display:none"></div>` +
-      '<div class="dt-container"><table></table></div>';
-    return { nTableWrapper: document.querySelector(".dt-container") };
-  };
-  const tableHidden = () => document.querySelector(".dt-container").classList.contains("dt-skeleton-hidden");
-
-  test("a list with the shaped skeleton hides its table until the real one is ready", () => {
-    const config = DtDefaults.create({});
-    const settings = stage(true);
-
-    config.preXhr(settings, {});
-    expect(tableHidden(), "the real header stood under the placeholder again").toBe(true);
-
-    config.initComplete(settings, {});
-    expect(tableHidden(), "the table never came back").toBe(false);
-  });
-
-  test("a list still carrying the OLD block is left exactly as it was", () => {
-    const config = DtDefaults.create({});
-    const settings = stage(false);
-
-    config.preXhr(settings, {});
-    expect(tableHidden(), "a list that did not opt in had its table hidden").toBe(false);
-  });
-
-  test("the column widths are recomputed for the table that was hidden", () => {
-    // Measured while hidden, a table's columns are worth nothing; this is the one call that fixes it.
-    const source = read("wwwroot", "assets", "js", "dt-defaults.js");
-    const initComplete = source.slice(source.indexOf("merged.initComplete = function"));
-    expect(initComplete).toContain("columns.adjust()");
-    expect(initComplete).toMatch(/wasHidden/);
+  test("the partial sits where that selector can reach the table", () => {
+    // A sibling rule only works if the two really are siblings; every migrated list is checked, not assumed.
+    LISTS.forEach(([area, folder]) => {
+      const source = read("Views", area, folder, "_DataTable.cshtml");
+      const partialAt = source.indexOf('<partial name="_TableSkeleton" />');
+      const tableAt = source.search(/<div class="card-datatable|<div class="table-responsive/);
+      expect(partialAt, `${area}/${folder}: the partial is gone`).toBeGreaterThan(-1);
+      expect(tableAt, `${area}/${folder}: the table wrapper is gone`).toBeGreaterThan(-1);
+      expect(tableAt, `${area}/${folder}: the placeholder is not before the table, so the rule cannot hide it`)
+        .toBeGreaterThan(partialAt);
+    });
   });
 });
