@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Lecture seule — le statut change dans la source ; ici, seulement plan/épingle personnels.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Quelle action exécuter ?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Choisissez une action.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Traitement en cours…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Déplacé vers l'historique</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Déposer ici : {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Mois précédent</value>
   </data>

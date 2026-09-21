@@ -5810,6 +5810,140 @@ DURUM: AÇIK · BULAN: WP-INFRA-AUDIT-APPEND-ACTOR-AND-ESCALATION-CLOCK-01 · KA
 
 ---
 
+### BL-425
+
+**Yönetişim iş kuyruğu panosu (Views/ManagementGovernance/WorkQueue.cshtml) gerçek veriye ve yetkiye bağlı değil**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+`Views/ManagementGovernance/WorkQueue.cshtml` + `mg-page.js` bugün bellekte üretilen sahte veriyle çalışıyor: görev tablosuna (TaskItem/WorkAggregation) bağlı değil, denetleyici sınıfında `[Authorize]` yok, ekran metinleri yalnız İngilizce (7 dil değil), "Closed" sütunu hiçbir zaman dolmuyor (hiçbir yazma yolu onu doldurmuyor). Önce gerçek veri (WorkAggregation projeksiyonuna bağlanmak) ve yetki (uygun `[Authorize]`/izin) gelmeli; pano bundan sonra Görev Merkezi'nin Kanban bileşeninin (WP-WCN-KANBAN-01) salt-okunur bir modu olarak gelebilir — sütun/kart/sürükleme görünümünü ikinci kez yazmak yerine aynı bileşeni okuma-yalnız açmak. Gelecek gerileme riski: düşük (eklemeli; mevcut Görev Merkezi Kanban davranışına dokunmuyor).
+
+---
+
+### BL-426
+
+**Görev Merkezi ilk yükleme ekranı iskelet (skeleton) olmalı, spinner kartı değil**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+Ölçülen (bu worktree'de bu düzeltme turunda yeniden ölçüldü, satırlar güncel): ilk yüklemede sayfa, ortada spinner + "İşleriniz yükleniyor" başlığı + üç gri çubuklu bir kart gösteriyor (`app.js` `renderLoadingState` :6787; kendi `.wcn-skeleton` sınıfı, `backbone-custom.css` :7892-7893). Sayfanın gerçek şekli (sekme şeridi, filtre/segment çubuğu, seçili görünüme göre liste satırları / pano sütunları / takvim ızgarası) yüklenirken hiç görünmüyor; veri gelince düzen birden değişiyor. Platformun ortak iskelet dili (`.backbone-skeleton` + `.skeleton-row`, `backbone-custom.css` :347-368) burada kullanılmıyor — Work Report ekranı bu dili doğru şekilde yeniden kullanıyor ve kendi `⚠ NO NEW SKELETON LANGUAGE` notunu taşıyor (`backbone-custom.css` :9499-9501: bloklar `.shimmer` + `.skeleton-row`, yalnız BOYUTLAR ekrana özel), bu Görev Merkezi'nin izleyeceği canlı örnek. İstenen: ilk yüklemede spinner kartı yerine sayfanın kendi şeklinde bir iskelet (sekmeler, filtre çubuğu, seçili görünüme göre satır/sütun/takvim yerleri), ortak sınıflarla; yazma sonrası yeniden okumada iskelet değil mevcut içerik kalmalı (`state.loadState` TEK yerde `'loading'` olarak atanıyor — yalnız ilk yüklemede, `app.js` :10770 — dosyada başka hiçbir yeniden-okuma yolu bu satırı tekrar çağırmıyor; kural zaten korunuyor, yeni iskelet de aynı kurala uymalı); `role=status` metni kalmalı; `prefers-reduced-motion`'da animasyon olmamalı; Takvim görünümü geldiğinde aynı kural ona da uygulanmalı. Gelecek gerileme riski: düşük (yalnız yükleme görünümü; veri yolu değişmez).
+
+---
+
+### BL-427
+
+**`ErrorTitle` anahtarı Görev Merkezi'nde genel eylem-hatası bildirimi olarak kullanılıyor ama metni sayfanın YÜKLENEMEDİĞİNİ söylüyor**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 3b/4) · KAYIT: 2026-09-18
+
+Ölçüldü (bu düzeltme turunda satırlar yeniden doğrulandı): `WorkCenterNextIndex.*.resx`'te `ErrorTitle` = "Görev Merkezi yüklenemedi" — `renderErrorState`'in (`app.js:6847`) sayfa hiç yüklenemediğinde gösterdiği başlık, komşu anahtarı `ErrorDesc` = "Filtreleriniz korundu. Çalışma alanını yeniden yüklemek için tekrar deneyin." ile birlikte. Ancak `t('ErrorTitle')` `app.js`'te 6 ayrı yerde, sayfa gayet yüklüyken tek bir EYLEMİN başarısız olduğu anlarda genel hata tostu olarak çağrılıyor (`app.js:5580,8019,8475,8549,9246,10932` — biri artık Kanban bırakma akışının ağ-hatası dalı, WP-WCN-KANBAN-01 Dilim 3b `runKanbanDrop`'un `.catch`'i). Beşi TEK BAŞINA (`toast(t('ErrorTitle'), 'error')`); altıncısı (`:9246`) tek başına DEĞİL — bir 403 koşulunda `NoAccessTitle`'a düşen bir üçlü operatörün ELSE dalı (`result.status === 403 ? t('NoAccessTitle') : t('ErrorTitle')`), yani orada `ErrorTitle` yalnız 403-DIŞI eylem hatalarında çağrılıyor. Bir sürükle-bırağın ağ hatasında kullanıcı "Görev Merkezi yüklenemedi" okuyor — sayfa yüklü, yalnız o işlem başarısız oldu. Genel eylem-hatası için ayrı bir anahtar açılmalı (7 dil, gerçek çeviri, ör. "İşlem tamamlanamadı") ve altı çağrı yeri ona geçirilmeli (`:9246`'daki ELSE dalı dahil, `NoAccessTitle` dalına dokunmadan); `ErrorTitle`/`ErrorDesc` çifti yalnız gerçek sayfa-yükleme hatasında (`renderErrorState`) kalmalı. Gelecek gerileme riski: düşük (yalnız metin/anahtar; davranış değişmiyor).
+
+---
+
+### BL-428
+
+**Durum raporu ve kanıt standardı: elle yazılan yüzdeler yerine üretilen tablo**
+
+DURUM: AÇIK · BULAN: CT (MVP6 lojistik raporu incelemesi) · KAYIT: 2026-09-18 · SAHİP KARARI: 2026-09-18 onaylandı
+
+Ölçüldü: Tedarik zinciri durum raporu "bounded runtime %22,2 — 2/9" gibi satırlar taşıyordu. "bounded runtime" ve
+"bounded CT kabulü" terimleri depoda hiçbir yerde tanımlı değil (`AGENTS.md`, `.antigravity/rules/**`,
+`docs/guides/operations/control-tower-sop.md`: sıfır eşleşme). Kanıt bağlantıları başka bir makinedeki kopyayı
+(`/Users/natig/Projects/ERP-vNext-recovery/...`) ve bir `/private/tmp/...` yolunu gösteriyordu; ikisi de bizde
+açılamıyor. Depo ölçümü: `origin/feature/mvp6-logistics` (`4a8d4d4b`) MOD-0183 sevkiyat kodunu (42 dosya,
+`ShipmentsController`) ve 68 kanıt dosyasını taşıyor; MOD-0184 (Carrier) için tek satır kod yok; iki CT karar kaydı
+depoda yok; dal main'in 1 commit önünde, **400 commit gerisinde**; o daldaki dokuz paketin sekizi hâlâ `draft`
+(MOD-0184 dahil, ki rapor onu "E4, CT kabul" diye gösteriyordu). Sonuç: rapor doğrulanamıyor ve sayılar depodaki
+durumla uyuşmuyor.
+
+İstenen:
+1. **Durum/portföy raporu şablonu** (SOP'a yeni bölüm, §22'nin yanına): sabit sütunlar — modül · kapsam cümlesi ·
+   kanıt seviyesi (E0–E5) · kanıtın yeri (`depo-yolu@commit`) · CT kararı (§29'daki hangi Done) · sıradaki tek eksik.
+   Yüzde ancak altındaki liste ile birlikte yazılır.
+2. **Kanıt kuralı** (`.antigravity/rules/`): kanıt depoya işlenir ve gönderilir, `docs/records/audits/<yyyy-ay>/`
+   altında durur, `yol@commit` diye gösterilir. Kişisel makine yolu, `/tmp` ve gönderilmemiş dal kanıt sayılmaz.
+3. **Bayatlık kuralı**: kanıt koşusundan önce dal ana dalla senkronlanır; rapor dalın kaç commit geride olduğunu yazar.
+4. **Terim disiplini**: yeni statü adı uydurulmaz; yalnız E0–E5 ve §29 Done seviyeleri. Yeni terim önce SOP'a yazılır.
+5. **CT karar kaydı künyesi**: her karar kaydının başına dört satırlık künye (modül/iş paketi, kanıt seviyesi, karar,
+   commit) — makine okuyabilsin diye.
+6. **`scripts/status_report.sh`**: paket `status:` alanlarını, karar kaydı künyelerini ve git'teki geri kalmışlığı
+   okuyup 1. maddedeki tabloyu üretir. Geliştirici tablo yazmaz, betiği çalıştırır.
+
+Gelecek gerileme riski: düşük (belge + salt-okuyan betik; üretim koduna dokunmaz). 1–4 tek başına da işe yarar ama
+elle yazım sürer; asıl kolaylık 6'dan gelir.
+
+---
+
+### BL-429
+
+**"Ad bilgisi yok" etiketi Görev Merkezi'nin başka üç yerinde de gerçek ad gibi kullanılıyor olabilir**
+
+DURUM: AÇIK · BULAN: WP-WCN-KANBAN-01 (Dilim 4) · KAYIT: 2026-09-18
+
+Ölçüldü: `toPresentation`'ın `personName()`'i sunucu `displayName` göndermediğinde `PersonNameUnavailable`
+etiketini ("Ad bilgisi yok") döndürüyor; bu bir ad değil, adın bilinmediğini söyleyen cümle. Kanban kartı bunu ad
+sanıp baş harf üretiyordu; Dilim 4'te `assigneeNameKnown`/`requesterNameKnown` bayrakları eklenerek düzeltildi.
+Aynı `item.assignee || item.requester` doğruluk denetimi deseni Kanban DIŞINDA da duruyor: liste satırı çipi
+(`app.js:1591`), detay sayfası atanan alanı (`:2994-2995`) ve devir kartı (`:4711`). Bu WP'nin kapsamı yalnız
+Kanban olduğu için oralara dokunulmadı.
+
+İstenen: üç yerin her biri ölçülür; etiketi ad gibi gösteren varsa aynı bayraklarla kapatılır, kanıtı test olur.
+Gelecek gerileme riski: düşük (yalnız gösterim).
+
+---
+
+### BL-430
+
+**Eksik ikon adı ekrana dolu bir kare çiziyor — "Görev Merkezi geçici olarak kullanılamıyor" sayfasında canlıda görüldü**
+
+DURUM: AÇIK · BULAN: sahip (canlı önizleme, 2026-09-18) · KAYIT: 2026-09-18
+
+Ölçüldü: Kiracı kabuğu ikonları `assets/vendor/fonts/iconify-icons.css` ile yüklüyor. Bu yöntemde `.bx` kutusu
+`background-color: currentColor` alıp şekli `mask-image: var(--svg)` ile kesiyor; `--svg` değişkenini ikonun kendi
+sınıfı tanımlıyor. İkon sınıfı sette YOKSA maske tanımsız kalır ve kutu rengiyle **dolu bir kare** olarak boyanır.
+Sahibin gördüğü turuncu kare budur: hata ekranı `unavailable` durumunda `bx-cloud-off` kullanıyor (`app.js`
+`LOAD_ERROR_STATES`), ve `bx-cloud-off` `iconify-icons.css`'te yok. Renk `.wcn-system-error > i`'nin
+`var(--bs-danger)` değeri, boyut 2.5rem.
+
+Sette bulunmayan diğer adlar (tarandı, `wwwroot/assets/js/**`):
+- Kare çizen gerçek ikon adları: `bx-cloud-off`, `bx-flag-alt`, `bx-hospital`, `bx-x-square`
+- İkon değil, boxicons'ın yardımcı sınıfları: `bx-spin` (dönme), `bx-lg` (boyut) — iconify ile sessizce hiçbir şey
+  yapmıyorlar; ör. `bx bx-loader-alt bx-spin` dönmüyor.
+
+İstenen:
+1. Dört ikon adı sette var olan karşılıklarıyla değiştirilir ya da ikonlar sete eklenir; hata ekranı için sette duran
+   `bx-wifi-off` uygun bir karşılık.
+2. `bx-spin` / `bx-lg` yerine projenin kendi yolu kullanılır (dönme için mevcut spinner deseni, boyut için CSS).
+3. Koruma testi: `wwwroot/assets/js/**` içinde geçen her `bx-*` sınıfı ikon setinde tanımlı olmalı; değilse test
+   kırmızı. Bugün hiçbir test bunu yakalamıyor.
+4. Aynı turda hata ekranının yerleşimi gözden geçirilir (ikon başlığa çok yakın; "Tekrar dene" düğmesinin yeri).
+
+Gelecek gerileme riski: düşük (ikon adları + koruma testi; davranış değişmez).
+İlgili: BL-427 (aynı ekranın başlığı yanlış anahtardan geliyor).
+
+---
+
+### BL-431
+
+**İki Satınalma ekranı ortak onay bileşenine kendi seçenek listesini geçiriyor — "üründe tek diyalog" kuralı kırıldı**
+
+DURUM: AÇIK · BULAN: CT (Kanban dalını main ile birleştirirken) · KAYIT: 2026-09-21
+
+Ölçüldü: `frontend/Diten.Web/tests/wcn-dialog-one-language.test.js` ürün genelinde tek bir onay diyaloğu
+kuralını koruyor ve `showConfirm`'e `inputOptions` geçen dosyaları adıyla sayıyor. Birleşme sonrası liste
+beklenen 2 yerine 4 dosya veriyor; yeni gelenler `wwwroot/assets/js/Procurement/InvoiceMatch/details.js` ve
+`.../index.js`. Aynı dosyada ikinci bir kırmızı da var: "declares the package once" testi 5 yerine 6 dosya
+görüyor. Yani main'de bu test zaten kırmızı; CI vitest koşmadığı için fark edilmemiş.
+
+Bu bir yanlış pozitif DEĞİL: kural bilerek ürün genelinde. Test gevşetilmez; iki ekran ortak bileşenin kendi
+yoluna taşınır (BL-367 ile aynı aile).
+
+İstenen: Satınalma sahibi iki dosyayı ortak diyalog yoluna taşır ya da kuralın değişmesi için gerekçe getirir;
+test yeşile döner. CT tarafında yapılacak bir şey yok, kayıt bilgi amaçlıdır.
+Gelecek gerileme riski: düşük (yalnız iki ekranın diyalog çağrısı).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

@@ -117,6 +117,8 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>A due date is required.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>The task is waiting for the reviewer to respond.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>You must attach the deliverable file before completing this task.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>This step cannot close until the linked review meeting's minutes are published.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>

@@ -81,6 +81,9 @@ public sealed class TaskWorkItemByIdHttpTests
         Assert.Contains($"\"deepLink\":\"/Tasks/{task.Id}\"", body);
         // The holder's own act, computed for the caller.
         Assert.Contains("\"code\":\"accept\"", body);
+        // WP-WCN-KANBAN-01 — proved on the real wire, not a unit serializer double: accept from Open carries
+        // its Kanban drag target as a JSON string (mirrors AcceptTaskItemHandler; CT decision 2026-09-17).
+        Assert.Contains("\"targetStatus\":\"InProgress\"", body);
     }
 
     [Fact]

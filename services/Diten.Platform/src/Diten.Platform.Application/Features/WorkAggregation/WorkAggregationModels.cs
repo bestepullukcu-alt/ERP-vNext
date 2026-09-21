@@ -240,6 +240,10 @@ public sealed record WorkItemSourceDto(
 // One entry of the single authoritative actions[] array. Contract-conformant: unique code, localizable label,
 // explicit enabled + source; a disabled action carries disabledReasonCode + a localizable disabledReason.
 // No per-action concurrency token is ever emitted (the projection carries one concurrency token).
+// TargetStatus is a normalizedStatus string (see TaskLifecycleService: Pending|InProgress|Waiting|Done|Cancelled),
+// never a raw enum. Null means the action does not move the item to a new Kanban column — either because it
+// leaves the underlying lifecycle unchanged (e.g. claim), or because it changes who holds the work rather than
+// advancing it (release, return, reassign, plan — deliberately excluded, see WCN Kanban WP-WCN-KANBAN-01).
 public sealed record WorkItemActionDto(
     string Code,
     WorkItemLabelDto Label,
@@ -252,7 +256,8 @@ public sealed record WorkItemActionDto(
     bool RequiresReason,
     bool RequiresEvidence,
     bool SupportsBulk,
-    string RiskLevel);
+    string RiskLevel,
+    string? TargetStatus = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.

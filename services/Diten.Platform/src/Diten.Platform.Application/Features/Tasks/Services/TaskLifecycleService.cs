@@ -14,11 +14,13 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 public sealed class TaskLifecycleService : ITaskLifecycleService
 {
     // Contract normalizedStatus values (fixture-contract.js NORMALIZED_STATUSES).
-    private const string Pending = "Pending";
-    private const string InProgress = "InProgress";
-    private const string Waiting = "Waiting";
-    private const string Done = "Done";
-    private const string Cancelled = "Cancelled";
+    // internal, not private: TaskWorkItemProvider.BuildActions reuses these exact strings for
+    // WorkItemActionDto.TargetStatus (WP-WCN-KANBAN-01) rather than re-declaring its own copies.
+    internal const string Pending = "Pending";
+    internal const string InProgress = "InProgress";
+    internal const string Waiting = "Waiting";
+    internal const string Done = "Done";
+    internal const string Cancelled = "Cancelled";
 
     public TaskLifecycle ResolveInitialLifecycle(bool approvalRequired)
         // An approval-gated task is NOT startable yet. It stays Open and is projected as Waiting + an approval

@@ -222,6 +222,11 @@
         ErrorApprovalPending = Localizer["ErrorApprovalPending"].Value,
         // 409 REVIEW_PENDING — the OTHER gate. Cleared by the reviewer, not the approver.
         ErrorReviewPending = Localizer["ErrorReviewPending"].Value,
+        // WP-WCN-KANBAN-01 Dilim 4 — two more reason codes the Kanban drop path can reach, mapped in
+        // Tasks/api.js's REASON_CODE_MESSAGE_KEYS but unbridged until now (the fallback was the generic error).
+        // PERM_DENIED reuses ErrorNoAccess below instead of a third key here — see api.js's own comment on it.
+        ErrorDeliverableRequired = Localizer["ErrorDeliverableRequired"].Value,
+        ErrorReviewMeetingRequired = Localizer["ErrorReviewMeetingRequired"].Value,
         // 409 TASK_INVALID_STATE — measured live when the subtask checkbox met a not-started child.
         ErrorTaskInvalidState = Localizer["ErrorTaskInvalidState"].Value,
         ErrorCancelNotRequester = Localizer["ErrorCancelNotRequester"].Value,

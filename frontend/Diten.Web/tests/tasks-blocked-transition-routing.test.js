@@ -77,10 +77,44 @@ describe("MOD-0024 blocked-transition routing", () => {
     "WORKFLOW_REJECTED",
     "WORKFLOW_CANCELLED",
     "WORKFLOW_NOT_TERMINAL_APPROVED",
-    "WorkflowGateEvaluationFailed"
+    "WorkflowGateEvaluationFailed",
+    // WP-WCN-KANBAN-01 Dilim 4 — both RULES about the task's/type's own state, same as every other code in
+    // this list, not a race.
+    "TASK_DELIVERABLE_REQUIRED",
+    "REVIEW_MEETING_REQUIRED"
   ])("routes %s to the blocked branch, never to the concurrency message", (reasonCode) => {
     expect(api.isTransitionBlocked({ status: 409, reasonCode })).toBe(true);
     expect(api.isConcurrencyConflict({ status: 409, reasonCode })).toBe(false);
+  });
+
+  /*
+   * WP-WCN-KANBAN-01 Dilim 4 — TASK_DELIVERABLE_REQUIRED/REVIEW_MEETING_REQUIRED fell through to the generic
+   * "İşlem sırasında bir hata oluştu" until now: a Kanban drop (or any dispatch) refused with either read as an
+   * unexplained failure regardless of what the server actually said. Sabotage-guarded: drop one of the two from
+   * REASON_CODE_MESSAGE_KEYS and its own sentence disappears, replaced by the generic one.
+   */
+  it.each([
+    ["TASK_DELIVERABLE_REQUIRED", "errorDeliverableRequired"],
+    ["REVIEW_MEETING_REQUIRED", "errorReviewMeetingRequired"]
+  ])("%s shows its OWN sentence, not the generic error", (reasonCode, messageKey) => {
+    const generic = api.failureMessage({ status: 409, reasonCode: "SOME_UNMAPPED_CODE_FOR_THIS_TEST" });
+    const ownMessage = api.failureMessage({ status: 409, reasonCode });
+    expect(ownMessage).not.toBe(generic);
+    expect(ownMessage).toBe(messageKey); // the test translator echoes the key back — see below.
+  });
+
+  /*
+   * CT fix, Dilim 4 correction round — PERM_DENIED is deliberately NOT a third own-sentence code. Every
+   * language's ErrorPermDenied text was a word-for-word duplicate of ErrorNoAccess (the 403 fallback below
+   * already reaches), so the map now reuses that one sentence instead of a second copy of it — proven here by
+   * asking for the SAME message a bare 403 gets, through the reasonCode branch instead of the status branch.
+   * Sabotage: point PERM_DENIED at a different key (or delete it) and this goes red.
+   */
+  it("routes PERM_DENIED to the same sentence a bare 403 gets, not a duplicate translation", () => {
+    const bare403 = api.failureMessage({ status: 403, reasonCode: null });
+    const viaReasonCode = api.failureMessage({ status: 403, reasonCode: "PERM_DENIED" });
+    expect(viaReasonCode).toBe(bare403);
+    expect(viaReasonCode).toBe("errorNoAccess");
   });
 
   it("warns instead of silently mislabelling an UNKNOWN 409 code", () => {
@@ -133,14 +167,20 @@ describe("MOD-0024 blocked-transition routing", () => {
       expect(notBridged).toEqual([]);
     });
 
-    it("does not leave a non-English file carrying the English text for the new approval messages", () => {
+    /*
+     * CT fix — this used to check only the ErrorApproval* keys, so the three keys this dilim added
+     * (ErrorDeliverableRequired, ErrorReviewMeetingRequired, plus whatever the next dilim maps) were never
+     * covered by the "not an English copy" guard at all. Checking every mapped key closes that gap for good,
+     * instead of needing a fresh allow-list edit each time a code is added.
+     */
+    it("does not leave a non-English file carrying the English text for any mapped message key", () => {
       const en = resxKeys("en");
-      const approvalKeys = messageKeys.map(pascal).filter((key) => key.startsWith("ErrorApproval"));
-      expect(approvalKeys.length).toBeGreaterThan(0);
+      const allKeys = messageKeys.map(pascal);
+      expect(allKeys.length).toBeGreaterThan(0);
 
       LOCALES.filter((locale) => locale !== "en").forEach((locale) => {
         const entries = resxKeys(locale);
-        approvalKeys.forEach((key) => {
+        allKeys.forEach((key) => {
           expect(entries[key]).not.toBe(en[key]);
         });
       });
