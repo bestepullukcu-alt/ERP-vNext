@@ -48,4 +48,6 @@
   <data name="ChangeAccountKind" xml:space="preserve"><value>Изменить тип</value></data>
   <data name="AccountKindChanged" xml:space="preserve"><value>Тип учётной записи обновлён</value></data>
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Оставьте пустым, чтобы учётная запись осталась неподтверждённой.</value></data>
+  <data name="InviteLinkTitle" xml:space="preserve"><value>Ссылка-приглашение (разработка)</value></data>
+  <data name="InviteLinkHint" xml:space="preserve"><value>Отправьте пользователю эту ссылку для установки пароля. Показывается только в среде разработки.</value></data>
 </root>

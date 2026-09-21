@@ -897,4 +897,6 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>No se admite la edición de un GRN; una recepción contabilizada se corrige con un movimiento de reversión, no con una edición.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>No se admite actualizar una factura; corríjala volviendo a ejecutar la conciliación de 3 vías o resolviendo su excepción, no mediante una edición.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copiado</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
 </root>

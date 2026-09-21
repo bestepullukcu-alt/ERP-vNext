@@ -10,7 +10,8 @@
         'Reset', 'Roles', 'Save', 'SaveView', 'Search', 'ShowAll', 'Status', 'Unknown', 'Update',
         'ViewDetails', 'Details',
         'AccountKind', 'AccountKindUnknown', 'AccountKindHuman', 'AccountKindService', 'ChangeAccountKind',
-        'AccountKindChanged'
+        'AccountKindChanged',
+        'InviteLinkTitle', 'InviteLinkHint', 'Close', 'Copy', 'Copied'
     ];
 
     const logMissingKeys = (dictionary) => {

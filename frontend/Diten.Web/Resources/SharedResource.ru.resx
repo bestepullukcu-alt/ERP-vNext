@@ -896,4 +896,6 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Обновление счёта не поддерживается; исправьте его повторным сопоставлением или решением исключения, а не редактированием.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Скопировано</value></data>
+  <data name="Close" xml:space="preserve"><value>Закрыть</value></data>
 </root>

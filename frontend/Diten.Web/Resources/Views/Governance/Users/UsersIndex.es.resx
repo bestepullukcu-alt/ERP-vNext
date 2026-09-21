@@ -48,4 +48,6 @@
   <data name="ChangeAccountKind" xml:space="preserve"><value>Cambiar tipo</value></data>
   <data name="AccountKindChanged" xml:space="preserve"><value>Tipo de cuenta actualizado</value></data>
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Déjelo vacío para mantener la cuenta sin confirmar.</value></data>
+  <data name="InviteLinkTitle" xml:space="preserve"><value>Enlace de invitación (desarrollo)</value></data>
+  <data name="InviteLinkHint" xml:space="preserve"><value>Envíe al usuario este enlace para establecer la contraseña. Solo se muestra en desarrollo.</value></data>
 </root>

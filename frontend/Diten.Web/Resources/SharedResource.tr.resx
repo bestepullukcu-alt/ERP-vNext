@@ -957,4 +957,5 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Kopyalandı</value></data>
 </root>
