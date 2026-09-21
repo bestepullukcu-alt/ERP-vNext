@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>Sin contenido enlazado. Entonces el plan no tiene dimensión de contenido.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Un plan enlaza la identidad de un segmento. Nunca lista ni cuenta a las personas que contiene.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>Sin línea de producto. Entonces el plan no tiene dimensión de producto.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Aún no hay líneas de producto — añade los productos que lleva este plan.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Aún no hay segmentos — elige a quién se aplica el plan.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notas</value></data>
   <data name="AllCompany" xml:space="preserve"><value>Toda la empresa</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>Nombre</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Estado</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Versión</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>Las cuotas SKU de cada línea asignada deben sumar exactamente 100,00. Nada se redondea ni se normaliza por usted.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Las cuotas de todas las líneas de producto deben sumar exactamente 100,00. Nada se redondea ni se normaliza por usted.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Total</value></data>
   <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Período de campaña</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Personalizado</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Total de productos</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Los productos se validan con el catálogo MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Añadir un producto…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Distribuir equitativamente</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>El porcentaje de producto no es 100%. Total calculado {total}% — diferencia de {diff} puntos. Corrija las filas para guardar.</value></data>
 </root>

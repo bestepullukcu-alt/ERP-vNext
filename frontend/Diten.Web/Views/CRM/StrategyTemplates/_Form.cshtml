@@ -243,22 +243,35 @@
         @* BINDING 3 — "what". Product lines with the SKU split; the live total is a display only, the runtime decides. *@
         <section class="card mb-4" id="productSection">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                @* WP-ST-EDIT-Q — the section head no longer carries a "+ ekle" button; a product is added through the
+                   searchable "Ürün ekle…" picker below (mockup). The heading + Σ badge move together on one row. *@
+                <div class="d-flex justify-content-between align-items-center mb-1">
                     <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ProductSection"]</h6>
-                    <button type="button" id="btnAddProductLine" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddProductLine"]</button>
+                    <span class="badge bg-label-secondary" id="productWeightBadge">Σ 0.00%</span>
                 </div>
+                @* WP-ST-EDIT-Q — provenance sub-header (mockup): the products are validated against the MDM Global
+                   Product catalogue. *@
+                <p class="text-muted small mb-2">@Localizer["ProductCatalogHelp"]</p>
                 <small class="text-muted d-block mb-2">@Localizer["TotalMustBe100"]</small>
                 <div class="alert alert-secondary py-2 small" role="alert">
                     <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
                 </div>
-                @* WP-ST-EDIT-P — the product section is FLAT (mockup): each line is a product + weight %, and every line
-                   totals 100.00. This control row carries the live Σ badge (≠100 → danger) and the "Eşit dağıt" button;
-                   form.js paints the badge text/colour and drives the even split. The SKU-allocation mode toggle and the
-                   per-line SKU sub-rows were removed from this screen — the backend still supports them, this UI does not
-                   edit them, and an incoming sku-allocated line round-trips untouched through ProductLinesJson. *@
+                @* WP-ST-EDIT-Q — the searchable single-select "Ürün ekle…" picker (no button). form.js paints the pool
+                   (products not already on a line), binds select2 search, and appends a product-only line on pick; it is
+                   disabled with a reason when the actor may not browse MDM or the line limit is reached. The wrapper is
+                   the select2 dropdownParent. *@
+                <div class="st-prod-picker">
+                    <select id="productAddPicker" class="form-select form-select-sm"
+                            aria-label="@Localizer["AddProductLine"]"></select>
+                </div>
+                @* WP-ST-EDIT-P/Q — the flat product section: each line is a product + weight %, every line totals 100.00.
+                   This control row carries the live Σ progress bar + "Eşit dağıt"; form.js drives the bar width/colour and
+                   the even split. The SKU-allocation mode toggle and the per-line SKU sub-rows were removed from this
+                   screen — the backend still supports them, this UI does not edit them, and an incoming sku-allocated line
+                   round-trips untouched through ProductLinesJson. *@
                 <div class="st-prod-controls">
                     <span class="st-prod-total-label">@Localizer["ProductWeightTotalLabel"]</span>
-                    <span class="badge bg-label-secondary" id="productWeightBadge">Σ 0.00%</span>
+                    <div class="st-prod-progress"><span class="st-prod-progress-bar" id="productWeightBar"></span></div>
                     <button type="button" class="btn btn-sm btn-label-secondary" id="btnDistributeProducts">
                         <i class="bx bx-distribute-horizontal me-1"></i>@Localizer["EqualDistribute"]
                     </button>
@@ -266,7 +279,8 @@
                 @* Σ≠100 warning box (mockup). form.js fills the format text ({total}/{diff}) and toggles visibility. *@
                 <div class="st-prod-warn d-none" id="productWeightWarn" role="alert"></div>
                 <div id="productLineList" class="d-flex flex-column gap-2"></div>
-                <div id="productLineEmpty" class="text-muted d-none">@Localizer["NoProductLines"]</div>
+                @* WP-ST-EDIT-Q — dashed empty-state box (the segment section pattern), not a bare text line. *@
+                <div id="productLineEmpty" class="st-prod-empty d-none">@Localizer["NoProductLines"]</div>
                 <input type="hidden" asp-for="ProductLinesJson" id="ProductLinesJson" />
             </div>
         </section>

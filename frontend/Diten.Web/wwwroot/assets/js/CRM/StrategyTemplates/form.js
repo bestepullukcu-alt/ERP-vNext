@@ -116,6 +116,39 @@
         }
     };
 
+    // WP-ST-EDIT-Q — the MDM selector validator caps PageSize at 1–100 (GetGlobalProductSelectorValidator /
+    // GetFinishedGoodGskuSelectorValidator), so the old `?pageSize=200` was rejected with a 400 and the picker fell back
+    // to []. This helper honours the cap and still returns the WHOLE catalogue: it fetches page 1 with pageSize=100,
+    // reads the paged envelope's totalCount (Response<PagedResult>.data.totalCount — confirmed on both selectors), then
+    // pulls the remaining pages (pageNumber=2..) and concatenates before the same map+filter load() applies. A hard page
+    // ceiling guards an implausible totalCount from an unbounded loop. Only the MDM product/gsku pickers use loadAll —
+    // every other picker (segment/policy/path/journey) still uses load() unchanged, so their contract is untouched.
+    const PICKER_PAGE_SIZE = 100;
+    const PICKER_MAX_PAGES = 50;
+    const loadAll = async (baseUrl, map) => {
+        const sep = baseUrl.indexOf('?') >= 0 ? '&' : '?';
+        const pageUrl = n => `${baseUrl}${sep}pageSize=${PICKER_PAGE_SIZE}&pageNumber=${n}`;
+        const fetchPage = async url => {
+            const data = await envelope(await fetch(url, { credentials: 'same-origin', headers: { Accept: 'application/json' } }));
+            return { items: data?.items || data?.Items || [], totalCount: Number(data?.totalCount ?? data?.TotalCount) };
+        };
+        try {
+            const first = await fetchPage(pageUrl(1));
+            const items = first.items.slice();
+            if (Number.isFinite(first.totalCount) && first.totalCount > items.length && items.length > 0) {
+                const pages = Math.min(Math.ceil(first.totalCount / PICKER_PAGE_SIZE), PICKER_MAX_PAGES);
+                const rest = await Promise.all(
+                    Array.from({ length: Math.max(0, pages - 1) }, (_, k) => fetchPage(pageUrl(k + 2))));
+                rest.forEach(p => items.push(...p.items));
+            }
+            return items.map(map).filter(o => o.id);
+        } catch (error) {
+            // Same graceful contract as load(): an unreadable picker stays empty and never invents options.
+            console.warn('[StrategyTemplates] Paged picker load failed:', baseUrl, error);
+            return [];
+        }
+    };
+
     const loadOptions = async () => {
         const jobs = [];
         if (can('segment')) {
@@ -151,7 +184,9 @@
             })).then(x => { options.journey = x.filter(o => o.status === 'published'); }));
         }
         if (can('global-product')) {
-            jobs.push(load(`${endpoint}/global-products?pageSize=200`, r => ({
+            // WP-ST-EDIT-Q — loadAll (pageSize=100, paged) replaces the rejected pageSize=200 single fetch; the mapping
+            // (id / canonicalCode / globalProductName) is byte-for-byte unchanged so every consumer keeps its shape.
+            jobs.push(loadAll(`${endpoint}/global-products`, r => ({
                 id: r.id,
                 text: `${r.canonicalCode || ''} — ${r.globalProductName || ''}`.trim(),
                 // WP-ST-EDIT-P — canonical code kept split out so the flat product row can show the MDM-GP code beneath
@@ -161,7 +196,8 @@
             })).then(x => { options.product = x; }));
         }
         if (can('gsku')) {
-            jobs.push(load(`${endpoint}/gskus?pageSize=200`, r => ({
+            // WP-ST-EDIT-Q — same paged fetch for the SKU selector (also capped at 100 by its MDM validator).
+            jobs.push(loadAll(`${endpoint}/gskus`, r => ({
                 id: r.id,
                 text: r.gskuCanonicalCode || r.canonicalCode || String(r.id)
             })).then(x => { options.gsku = x; }));
@@ -453,6 +489,15 @@
             badge.classList.remove('bg-label-success', 'bg-label-danger', 'bg-label-secondary');
             badge.classList.add(n === 0 ? 'bg-label-secondary' : ok ? 'bg-label-success' : 'bg-label-danger');
         }
+        // WP-ST-EDIT-Q — the visual progress bar mirrors the badge: fill = min(total, 100)%, success when Σ is exactly
+        // 100.00, danger otherwise (including empty, where the 0% width leaves it invisible). Display only — same as the
+        // badge, it never blocks the save or normalises a share.
+        const bar = el('productWeightBar');
+        if (bar) {
+            bar.style.width = `${Math.min(round2(total), 100)}%`;
+            bar.classList.toggle('is-ok', n > 0 && ok);
+            bar.classList.toggle('is-danger', !(n > 0 && ok));
+        }
         const warn = el('productWeightWarn');
         if (warn) {
             if (n === 0 || ok) {
@@ -473,17 +518,47 @@
     // icon. The SKU-allocation mode toggle and the per-line SKU sub-rows were removed from THIS screen; the backend still
     // supports sku-allocated lines, so an incoming line's skuAllocationMode/skuAllocations stay untouched in state (see
     // sync) and round-trip through ProductLinesJson with no data loss — the flat row just shows its product + weight.
+    // WP-ST-EDIT-Q — the searchable "Ürün ekle…" picker at the head of the section replaces the old "+ ekle" button.
+    // Its options are the MDM products NOT already on a line (the segment picker's `chosen` filter), so an added product
+    // is never offered twice; picking one appends a product-only line and resets the picker to its placeholder head. The
+    // <option>s are rewritten on every render, so select2 is torn down first then re-bound as a searchable single (the
+    // policy-select pattern from EDIT-O). The picker is DISABLED with a stated reason when the actor may not browse MDM
+    // (PickerUnavailable) or the line limit is reached (LimitReached) — it never degrades into a free-text GUID box.
+    const renderProductPicker = () => {
+        const picker = el('productAddPicker');
+        if (!picker) return;
+        unbindSelect2(picker);
+        const canPick = can('global-product');
+        const atLimit = !!cfg.maxProductLines && state.products.length >= cfg.maxProductLines;
+        const disabled = frozen || !canPick || atLimit;
+        const placeholder = !canPick ? (L.PickerUnavailable || '')
+            : atLimit ? (L.LimitReached || '')
+            : (L.ProductAddPicker || L.AddProductLine || '');
+        const chosen = new Set(state.products.map(p => p.globalProductId));
+        const pool = (options.product || []).filter(o => !chosen.has(o.id));
+        picker.innerHTML = `<option value="">${esc(placeholder)}</option>`
+            + pool.map(o => `<option value="${esc(o.id)}">${esc(o.text)}</option>`).join('');
+        picker.value = '';
+        picker.disabled = disabled;
+        bindSelect2(picker, { search: true });
+    };
+
     const renderProducts = () => {
         const host = el('productLineList');
         const empty = el('productLineEmpty');
         if (!host) return;
         host.innerHTML = state.products.map((line, i) => {
+            // WP-ST-EDIT-Q — the row's product is a SABİT (read-only) label (mockup): name on top, MDM-GP code beneath.
+            // It is no longer an editable dropdown — changing a line's product is "Kaldır + yeniden ekle". productById
+            // resolves the name/code; if it cannot (feed still loading, or an id no longer offered) the raw
+            // globalProductId is shown so the reference is never lost. sync() does NOT re-read it (see the product block).
             const opt = productById(line.globalProductId);
+            const name = opt ? (opt.name || opt.text) : (line.globalProductId || '');
             const code = opt ? (opt.code || '') : '';
             return `
             <div class="st-prod-row" data-row="product" data-index="${i}">
                 <div class="st-prod-main">
-                    ${pickerSelect('product', line.globalProductId, can('global-product'))}
+                    <div class="st-prod-name">${esc(name)}</div>
                     <div class="st-prod-meta">${esc(code)}</div>
                 </div>
                 <div class="st-prod-weight">
@@ -496,6 +571,7 @@
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.products.length > 0);
+        renderProductPicker();
         updateProductTotals();
     };
 
@@ -588,13 +664,27 @@
     // 'change' listener (through select2's native-change bridge), which runs sync() and writes bindingRole back into
     // state.segments[i] WITHOUT a re-render — so the dropdown never flickers and SegmentBindingsJson keeps its shape.
 
-    el('btnAddProductLine')?.addEventListener('click', () => {
-        if (frozen || limitReached(state.products.length, cfg.maxProductLines)) return;
-        state.products.push({
-            globalProductId: '', skuAllocationMode: 'product-only', lineWeightPercentage: null,
-            skuAllocations: [], sortOrder: state.products.length * 10, notes: null
-        });
-        renderProducts();
+    // WP-ST-EDIT-Q — adding a product is now the searchable "Ürün ekle…" picker (the "+ ekle" button is gone). Choosing
+    // an option appends a product-only line with THAT product already resolved (globalProductId set from the pick), then
+    // resets and re-renders the picker so the just-added product drops out of its pool. A programmatic value set fires no
+    // 'change', and the picker is outside #productLineList, so the form-delegated change never double-handles it — this
+    // dedicated listener is the only path. skuAllocationMode/skuAllocations seed the contract; sortOrder/notes preserved.
+    el('productAddPicker')?.addEventListener('change', event => {
+        if (frozen) return;
+        const id = event.target.value;
+        if (!id) return;
+        // WP-ST-EDIT-Q — defer the add + re-render out of select2's OWN change dispatch: renderProducts tears this
+        // picker's select2 down and rebuilds it, and doing that synchronously inside select2's change stack can leave
+        // select2 referencing a just-destroyed instance. A 0 ms defer lets select2 finish, then we mutate + re-render.
+        setTimeout(() => {
+            if (limitReached(state.products.length, cfg.maxProductLines)) { renderProductPicker(); return; }
+            state.products.push({
+                globalProductId: id, skuAllocationMode: 'product-only', lineWeightPercentage: null,
+                skuAllocations: [], sortOrder: state.products.length * 10, notes: null
+            });
+            renderProducts();
+            updateSidePanel();
+        }, 0);
     });
 
     // WP-ST-EDIT-P — "Eşit dağıt": split 100 evenly across the lines (round2(100/N)), then push the rounding remainder
@@ -672,12 +762,14 @@
             const i = Number(row.dataset.index);
             const line = state.products[i];
             if (!line) return;
-            line.globalProductId = row.querySelector('[data-kind="product"]')?.value || '';
+            // WP-ST-EDIT-Q — the product is FIXED by the "Ürün ekle…" picker; the row shows a read-only name + MDM-GP
+            // code, so globalProductId is NOT re-read here (an absent dropdown would wipe it — the segment-row pattern).
+            // Only the weight is read back.
             const weight = row.querySelector('.js-weight')?.value;
             line.lineWeightPercentage = weight === '' || weight == null ? null : Number(weight);
-            // WP-ST-EDIT-P — the flat screen edits product + weight ONLY. skuAllocationMode and skuAllocations are NOT
-            // re-read or cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row keeps
-            // its mode + allocations intact (no wipe), so ProductLinesJson round-trips the contract without data loss.
+            // WP-ST-EDIT-P — the flat screen edits weight ONLY. skuAllocationMode and skuAllocations are NOT re-read or
+            // cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row keeps its mode +
+            // allocations intact (no wipe), so ProductLinesJson round-trips the contract without data loss.
         });
 
         document.querySelectorAll('[data-row="content"]').forEach(row => {
@@ -698,12 +790,11 @@
     form.addEventListener('change', event => {
         if (!event.target.closest('#segmentBindingList, #productLineList, #contentBindingList, #frequencyEditor')) return;
         sync();
-        // A content type change reshapes its row, so it re-renders; a product pick refreshes the MDM-GP code sub-line and
-        // the Σ badge; choosing the first segment derives the SubjectType and locks the remaining rows to that type.
+        // A content type change reshapes its row, so it re-renders; choosing the first segment derives the SubjectType
+        // and locks the remaining rows to that type. WP-ST-EDIT-Q — the in-row product dropdown is gone (the row is a
+        // fixed label; the product is added/removed, never changed in place), so there is no product branch here.
         if (event.target.classList.contains('js-content-type')) {
             renderContents();
-        } else if (event.target.matches('[data-kind="product"]')) {
-            renderProducts();
         } else if (event.target.matches('[data-kind="segment"]')) {
             renderSegments();
         }
@@ -1054,7 +1145,9 @@
     form.addEventListener('change', updateSidePanel);
     form.addEventListener('input', updateSidePanel);
     document.addEventListener('click', event => {
-        if (event.target.closest('#btnAddSegmentBinding, #btnAddProductLine, #btnAddContentBinding, .js-remove, .js-remove-sku, .js-add-sku')) {
+        // WP-ST-EDIT-Q — #btnAddProductLine is gone; adding a product fires the picker's own 'change' (handled above,
+        // which schedules the panel refresh), so only the segment/content add buttons and the remove icons remain here.
+        if (event.target.closest('#btnAddSegmentBinding, #btnAddContentBinding, .js-remove, .js-remove-sku, .js-add-sku')) {
             setTimeout(updateSidePanel, 0);
         }
     });

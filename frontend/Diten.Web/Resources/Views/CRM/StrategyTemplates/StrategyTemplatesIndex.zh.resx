@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>否</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>未绑定内容，方案即没有内容维度。</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>方案绑定的是细分的身份，绝不列出或统计其中的人员。</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>没有产品行，方案即没有产品维度。</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>暂无产品行 — 添加此方案所承载的产品。</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>还没有细分——请选择方案适用于谁。</value></data>
   <data name="Notes" xml:space="preserve"><value>备注</value></data>
   <data name="AllCompany" xml:space="preserve"><value>整个公司</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>名称</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>状态</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>版本</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>每个已分配行的 SKU 占比必须正好合计 100.00。系统不会替您四舍五入或归一化。</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>所有产品行的占比必须正好合计 100.00。系统不会替您四舍五入或归一化。</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>合计</value></data>
   <data name="Unknown" xml:space="preserve"><value>未知</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>活动周期</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>自定义</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>产品合计</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>产品依据 MDM 全球产品目录进行校验。</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>添加产品…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>平均分配</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>产品百分比不是 100%。计算总计 {total}% — 相差 {diff} 个百分点。请修正各行后再保存。</value></data>
 </root>

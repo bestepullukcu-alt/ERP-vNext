@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>İçerik bağlanmadı. Bu durumda planın içerik boyutu yoktur.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Plan, segmentin kimliğini bağlar. İçindeki kişileri asla listelemez veya saymaz.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>Ürün hattı yok. Bu durumda planın ürün boyutu yoktur.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Ürün satırı yok — oyunun hangi ürünleri taşıdığını ekleyin.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Henüz segment yok — oyunun kime uygulanacağını seçin.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
   <data name="AllCompany" xml:space="preserve"><value>Tüm şirket</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>Ad</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Durum</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Sürüm</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>SKU dağılımı olan her hattın payları tam 100.00 etmelidir. Hiçbir şey sizin için yuvarlanmaz veya normalize edilmez.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Tüm ürün satırlarının payları tam 100.00 etmelidir. Hiçbir şey sizin için yuvarlanmaz veya normalize edilmez.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Toplam</value></data>
   <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Kampanya dönemi</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Özel</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Ürün toplamı</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Ürünler MDM Global Product kataloğundan doğrulanır.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Ürün ekle…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Eşit dağıt</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Ürün yüzdesi %100 değil. Hesaplanan toplam {total}% — fark {diff} puan. Kaydetmek için satırları düzeltin.</value></data>
 </root>

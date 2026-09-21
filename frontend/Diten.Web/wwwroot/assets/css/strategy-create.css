@@ -397,7 +397,9 @@
    rounded-pill tip badge (form.js). EDIT-G'de yüzeyler bg-body (gri sayfa zemini) idi ve fontlar büyük inherit'ti; kart
    içinde gri görünüyordu. Beyaz için var(--bs-card-bg), aile için var(--bs-body-font-family) ve boyutlar /Tasks/Create
    satırlarıyla hizalı. Tema-duyarlı; hover/is-active vurguları korunur. */
-.st-editor-scope .st-segment-empty {
+/* WP-ST-EDIT-Q — the product empty-state reuses the segment section's dashed box (same theme-aware surface). */
+.st-editor-scope .st-segment-empty,
+.st-editor-scope .st-prod-empty {
     padding: 17px;
     text-align: center;
     border: 1px dashed var(--bs-border-color);
@@ -563,3 +565,41 @@
     font-size: 12px;
     color: var(--bs-secondary-color);
 }
+
+/* ── WP-ST-EDIT-Q — aramalı "Ürün ekle…" picker + sabit ürün ad etiketi + Σ progress bar (mockup). Theme-aware Bootstrap
+   tokens, scoped under .st-editor-scope. ───────────────────────────────────────────────────────────────────────────── */
+/* The picker sits above the line list; its wrapper is the select2 dropdownParent, so the box fills the card width. */
+.st-editor-scope .st-prod-picker { margin-bottom: 11px; }
+.st-editor-scope .st-prod-picker .select2-container { width: 100% !important; }
+
+/* The row's product is now a read-only label (name + MDM-GP code beneath), matching the segment display row typography. */
+.st-editor-scope .st-prod-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The Σ progress bar grows to fill the control row between the label and "Eşit dağıt"; the fill colour tracks the badge
+   (success at exactly 100.00, danger otherwise). form.js sets the width and toggles is-ok/is-danger. */
+.st-editor-scope .st-prod-progress {
+    flex: 1 1 120px;
+    min-width: 90px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bs-secondary-bg);
+    overflow: hidden;
+}
+.st-editor-scope .st-prod-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: var(--bs-danger);
+    transition: width 0.2s ease, background-color 0.2s ease;
+}
+.st-editor-scope .st-prod-progress-bar.is-ok { background: var(--bs-success); }
+.st-editor-scope .st-prod-progress-bar.is-danger { background: var(--bs-danger); }

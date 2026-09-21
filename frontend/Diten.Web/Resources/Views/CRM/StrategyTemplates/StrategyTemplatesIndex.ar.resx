@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>لا</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>لم يُربط محتوى. عندها لا يملك المخطط بُعدًا للمحتوى.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>المخطط يربط هوية الشريحة، ولا يعرض أو يعدّ الأشخاص داخلها إطلاقًا.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج. عندها لا يملك المخطط بُعدًا للمنتج.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج بعد — أضف المنتجات التي يحملها هذا المخطط.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>لا توجد شريحة بعد — اختر لمن ينطبق المخطط.</value></data>
   <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
   <data name="AllCompany" xml:space="preserve"><value>الشركة بأكملها</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>الاسم</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>الحالة</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>الإصدار</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>يجب أن يبلغ مجموع حصص SKU في كل خط موزَّع 100.00 بالضبط. لا يتم أي تقريب أو تسوية نيابة عنك.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>يجب أن يبلغ مجموع حصص جميع خطوط المنتج 100.00 بالضبط. لا يتم أي تقريب أو تسوية نيابة عنك.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>الإجمالي</value></data>
   <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>تاريخ التحديث</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>مخصص</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>إجمالي المنتجات</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>يتم التحقق من المنتجات مقابل كتالوج MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>إضافة منتج…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>توزيع بالتساوي</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>نسبة المنتج ليست 100٪. الإجمالي المحسوب {total}٪ — بفارق {diff} نقطة. صحّح الصفوف للحفظ.</value></data>
 </root>

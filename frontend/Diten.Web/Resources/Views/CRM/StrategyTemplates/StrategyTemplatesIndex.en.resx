@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>No content bound. The play then has no content dimension.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>A play binds a segment's identity. It never lists or counts the people inside it.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>No product line. The play then has no product dimension.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>No product lines yet — add the products this play carries.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>No segment yet — choose who the play applies to.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notes</value></data>
   <data name="AllCompany" xml:space="preserve"><value>All company</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>Name</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Status</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Version</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>The SKU shares of each allocated line must total exactly 100.00. Nothing is rounded or normalised for you.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>The shares of all product lines must total exactly 100.00. Nothing is rounded or normalised for you.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Total</value></data>
   <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Campaign period</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Custom</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Product total</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Products are validated against the MDM Global Product catalogue.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Add a product…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Distribute evenly</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Product percentage is not 100%. Computed total {total}% — off by {diff} points. Fix the rows to save.</value></data>
 </root>

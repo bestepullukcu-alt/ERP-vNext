@@ -68,7 +68,7 @@
   <data name="No" xml:space="preserve"><value>Нет</value></data>
   <data name="NoContentBindings" xml:space="preserve"><value>Контент не связан. Тогда у плана нет контентного измерения.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>План связывает идентичность сегмента. Он никогда не перечисляет и не считает людей внутри.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>Нет продуктовых строк. Тогда у плана нет продуктового измерения.</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Пока нет продуктовых строк — добавьте продукты, которые несёт этот план.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Пока нет сегментов — выберите, к кому применяется план.</value></data>
   <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
   <data name="AllCompany" xml:space="preserve"><value>Вся компания</value></data>
@@ -124,7 +124,7 @@
   <data name="TemplateName" xml:space="preserve"><value>Название</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Статус</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Версия</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>Доли SKU каждой распределённой строки должны давать ровно 100,00. Ничего не округляется и не нормализуется автоматически.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Доли всех продуктовых строк должны давать ровно 100,00. Ничего не округляется и не нормализуется автоматически.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Итого</value></data>
   <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
@@ -232,6 +232,8 @@
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Пользовательский</value></data>
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Итого по продуктам</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Продукты проверяются по каталогу MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Добавить продукт…</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Распределить поровну</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Процент продукта не равен 100%. Расчётный итог {total}% — отклонение {diff} пунктов. Исправьте строки, чтобы сохранить.</value></data>
 </root>
