@@ -202,3 +202,109 @@ describe("all seven tenant languages carry the new keys", () => {
       });
   });
 });
+
+/*
+ * ─── The classification selects are select2, and select2 has two seams that markup cannot show ───────────────
+ *
+ * The owner's question was simply "why is this not a select2 like the rest of the screen". Wrapping it is one
+ * class; what makes the wrap SAFE is the pair of seams the library introduces, and both are invisible to a
+ * reader of the .cshtml:
+ *
+ *   1. select2 paints its own box NEXT TO the <select> and hides the original. A value written to `.value`
+ *      therefore leaves the painted box showing the previous choice — the create form's reset walked straight
+ *      into this.
+ *   2. That painted box is a SIBLING. `d-none` on the <select> hides nothing the user can see — and this screen
+ *      uses exactly that toggle to withdraw the "Change type" control when the permission snapshot disagrees
+ *      with the server gate. A hide that silently stopped working is a control on screen the server refuses.
+ *
+ * So these tests drive the module's OWN functions (UsersList.offcanvasSelects) against the REAL vendored
+ * jQuery and select2, on markup lifted out of the real Razor views. A test with its own copy of the helpers, or
+ * its own hand-written <select>, would keep passing after either seam broke.
+ */
+describe("the account-kind selects are select2, and both of its seams are honoured", () => {
+  const vm = require("vm");
+  const { loadScript } = require("./load-script");
+
+  /** The real <select> from the view, with the Razor calls reduced to their key names. */
+  const selectFromView = (source, id) => {
+    const from = source.indexOf(`<select id="${id}"`);
+    const to = source.indexOf("</select>", from);
+    expect(from, `${id} is no longer in the view`).toBeGreaterThan(-1);
+    return source.slice(from, to + "</select>".length).replace(/@Localizer\["([^"]+)"\]/g, "$1");
+  };
+
+  let usersList;
+  beforeAll(() => {
+    // One load per file: `const UsersList` cannot be declared twice in the same context.
+    loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
+    loadScript("wwwroot/assets/vendor/libs/select2/select2.js");
+    loadScript("wwwroot/assets/js/Governance/Users/index.js");
+    usersList = vm.runInThisContext("UsersList");
+  });
+
+  beforeEach(() => {
+    const create = selectFromView(read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"), "userAccountKind");
+    const quick = selectFromView(read("Views", "Governance", "Users", "_DetailsQuickView.cshtml"), "oc-accountkind-select");
+    document.body.innerHTML =
+      `<div class="offcanvas" id="offcanvasCreateEdit">${create}</div>` +
+      `<div class="offcanvas" id="offcanvasDetailsPreview">${quick}</div>`;
+    usersList.offcanvasSelects.init();
+  });
+
+  const created = () => document.getElementById("userAccountKind");
+  const quickView = () => document.getElementById("oc-accountkind-select");
+  const paintedBoxOf = (el) => el.nextElementSibling;
+  const shownText = (el) => paintedBoxOf(el).querySelector(".select2-selection__rendered").textContent.trim();
+
+  test("both selects are wrapped — the view marks them and the module wraps what the view marked", () => {
+    [created(), quickView()].forEach((el) => {
+      expect(el.classList.contains("select2-offcanvas"), `${el.id} lost the select2 marker in the view`).toBe(true);
+      expect(el.classList.contains("select2-hidden-accessible"), `${el.id} was not wrapped`).toBe(true);
+      expect(paintedBoxOf(el).classList.contains("select2-container")).toBe(true);
+    });
+  });
+
+  test("the dropdown opens INSIDE its own offcanvas, not on <body>", () => {
+    // Without dropdownParent select2 appends to <body>, which sits below the offcanvas in the stacking
+    // context — the list opens behind the panel, which is the whole reason this screen never got select2.
+    [["userAccountKind", "offcanvasCreateEdit"], ["oc-accountkind-select", "offcanvasDetailsPreview"]]
+      .forEach(([selectId, panelId]) => {
+        global.jQuery(`#${selectId}`).select2("open");
+        const dropdown = document.querySelector(".select2-dropdown");
+        expect(dropdown, `${selectId} opened no dropdown`).toBeTruthy();
+        expect(dropdown.closest(`#${panelId}`), `${selectId} opens its list outside ${panelId}`).toBeTruthy();
+        global.jQuery(`#${selectId}`).select2("close");
+      });
+  });
+
+  test("seam 1 — a value written through the module repaints the box (the reset path)", () => {
+    usersList.offcanvasSelects.setValue(created(), "Service");
+    expect(created().value).toBe("Service");
+    expect(shownText(created()), "the painted box still shows the previous choice").toBe("AccountKindService");
+
+    // The reset the create offcanvas performs: back to the empty option, which MEANS Unknown.
+    usersList.offcanvasSelects.setValue(created(), "");
+    expect(created().value).toBe("");
+    expect(shownText(created())).toBe("AccountKindUnknown");
+  });
+
+  test("seam 2 — hiding through the module hides the painted box too (the permission withdrawal)", () => {
+    const el = quickView();
+    usersList.offcanvasSelects.setHidden(el, true);
+    expect(el.classList.contains("d-none")).toBe(true);
+    expect(paintedBoxOf(el).classList.contains("d-none"), "the control the user can actually see stayed visible").toBe(true);
+
+    usersList.offcanvasSelects.setHidden(el, false);
+    expect(paintedBoxOf(el).classList.contains("d-none")).toBe(false);
+  });
+
+  test("the module uses those two functions — no raw .value or d-none on either select", () => {
+    const source = read("wwwroot", "assets", "js", "Governance", "Users", "index.js");
+    // A raw assignment or toggle would work in the markup and silently stop working under select2.
+    expect(source).not.toMatch(/kindSelect\.value\s*=/);
+    expect(source).not.toMatch(/kindSelect\.classList\.toggle\('d-none'/);
+    expect(source).toMatch(/setSelectValue\(document\.getElementById\('userAccountKind'\), ''\)/);
+    expect(source).toMatch(/setSelectValue\(kindSelect, normalizeAccountKind\(data\.accountKind\)\)/);
+    expect(source).toMatch(/setSelectHidden\(kindSelect, !canManageKind\(\)\)/);
+  });
+});
