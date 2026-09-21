@@ -383,9 +383,12 @@
 }
 .st-editor-scope .st-seg-main { flex: 1 1 180px; min-width: 0; }
 .st-editor-scope .st-seg-name {
-    font-size: 0.875rem;
+    /* WP-ST-EDIT-L — smaller (0.8125rem/13px) and darker: bs-heading-color read as mid-grey in this theme, so use the
+       high-emphasis token (Bootstrap 5.3 ~black; theme-aware, light in dark mode) with a near-black fallback. */
+    font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--bs-heading-color);
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -396,29 +399,11 @@
     color: var(--bs-secondary-color);
 }
 .st-editor-scope .st-seg-type { flex: 0 0 auto; }
-.st-editor-scope .st-seg-roles { flex: 0 0 auto; display: inline-flex; }
-.st-editor-scope .st-seg-role {
-    padding: 4px 10px;
-    font-family: var(--bs-body-font-family);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1.4;
-    border: 1px solid var(--bs-border-color);
-    background: var(--bs-card-bg);
-    color: var(--st-muted);
-    cursor: pointer;
-}
-.st-editor-scope .st-seg-role + .st-seg-role { border-left: 0; }
-.st-editor-scope .st-seg-role:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
-.st-editor-scope .st-seg-role:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
-.st-editor-scope .st-seg-role.is-active {
-    position: relative;
-    z-index: 1;
-    background: var(--st-accent-soft);
-    border-color: var(--st-accent);
-    color: var(--st-accent);
-}
-.st-editor-scope .st-seg-role:disabled { opacity: 0.55; cursor: not-allowed; }
+/* WP-ST-EDIT-L — the role toggle button group (.st-seg-role*) is retired; the role is now a single select2 dropdown
+   (.js-role). The container gives it a fixed, compact width and lets the select2 box (or the plain <select> when select2
+   is unavailable) fill it. */
+.st-editor-scope .st-seg-roles { flex: 0 0 auto; width: 150px; }
+.st-editor-scope .st-seg-roles .select2-container { width: 100% !important; }
 
 .st-editor-scope .st-segment-add {
     display: inline-flex;
@@ -459,8 +444,10 @@
 .st-editor-scope .st-segment-choice-name {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 0.875rem;
-    color: var(--bs-heading-color);
+    /* WP-ST-EDIT-L — matches the display row: 0.8125rem + high-emphasis (near-black) colour. */
+    font-size: 0.8125rem;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

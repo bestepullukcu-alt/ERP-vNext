@@ -39,6 +39,32 @@
     const parse = (json, fallback) => { try { const v = JSON.parse(json || ''); return v ?? fallback; } catch (e) { return fallback; } };
     const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
 
+    // ── select2 (single dropdown) enhancement — the app-wide VFP pattern (jQuery select2, dropdownParent, native-change
+    // bridge). WP-ST-EDIT-L: the segment ROLE control moved from a button toggle to a single <select class="js-role">;
+    // this is PRESENTATION ONLY — the underlying <select> keeps its .js-role class and value, so sync()/SegmentBindingsJson
+    // read it byte-for-byte as before. select2 announces a choice the jQuery way, which native addEventListener never
+    // hears, so a bridge re-dispatches a native BUBBLING change (guarded by originalEvent so a value-only re-read never
+    // echoes). jQuery/select2 absent → the plain <select> is left untouched (graceful degrade).
+    const jq = () => window.jQuery;
+    const hasSelect2 = () => { const $ = jq(); return !!($ && $.fn && $.fn.select2); };
+    const bindRoleSelect2 = select => {
+        if (!select || !hasSelect2()) return;
+        const $ = jq();
+        const $s = $(select);
+        if ($s.hasClass('select2-hidden-accessible')) return; // already bound
+        $s.select2({ dropdownParent: $s.parent(), minimumResultsForSearch: Infinity });
+        $s.off('change.stRoleBridge').on('change.stRoleBridge', ev => {
+            if (ev && ev.originalEvent) return;
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
+    // renderSegments rebuilds #segmentBindingList innerHTML (wiping any prior select2 DOM), so a fresh init per row is
+    // enough — no explicit destroy is needed.
+    const rebindRoleSelects = () => {
+        if (!hasSelect2()) return;
+        el('segmentBindingList')?.querySelectorAll('.js-role').forEach(bindRoleSelect2);
+    };
+
     // ----- state, seeded from the hidden inputs the server rendered -----
     const state = {
         segments: parse(el('SegmentBindingsJson')?.value, []) || [],
@@ -237,8 +263,12 @@
             const name = opt ? (opt.name || opt.text) : (b.segmentId || '');
             const code = opt ? (opt.code || '') : '';
             const type = (opt && opt.subjectType) || activeSubjectType();
-            const roleBtns = roles.map(r => `
-                <button type="button" class="st-seg-role js-role-btn${b.bindingRole === r ? ' is-active' : ''}" data-role="${esc(r)}"${frozen ? ' disabled' : ''}>${esc(roleLabel(r))}</button>`).join('');
+            // WP-ST-EDIT-L — the role is a single select2 dropdown (no empty option; the default primary/secondary was
+            // set when the segment was picked). The control keeps the .js-role class, so sync() reads it exactly as the
+            // former hidden input — SegmentBindingsJson (segmentId/bindingRole/sortOrder) is unchanged.
+            const roleSelect = `<select class="select2 form-select form-select-sm js-role"${frozen ? ' disabled' : ''}>`
+                + roles.map(r => `<option value="${esc(r)}"${b.bindingRole === r ? ' selected' : ''}>${esc(roleLabel(r))}</option>`).join('')
+                + '</select>';
             return `
             <div class="st-seg-row" data-row="segment" data-index="${i}">
                 <div class="st-seg-main">
@@ -246,14 +276,15 @@
                     <div class="st-seg-meta">${esc(code)}</div>
                 </div>
                 <span class="badge ${segTypeBadgeClass(type)} st-seg-type">${esc(segTypeLabel(type))}</span>
-                <input type="hidden" class="js-role" value="${esc(b.bindingRole || '')}" />
-                <div class="st-seg-roles" role="group">${roleBtns}</div>
-                <button type="button" class="btn btn-sm btn-label-danger js-remove"${frozen ? ' disabled' : ''}>
-                    <i class="bx bx-trash"></i> ${esc(L.Remove || '')}
+                <div class="st-seg-roles">${roleSelect}</div>
+                <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
+                    <i class="bx bx-trash"></i>
                 </button>
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.segments.length > 0);
+        // WP-ST-EDIT-L — search-enable the freshly rendered role selects (select2 snapshots options at init).
+        rebindRoleSelects();
         renderSegmentSummary();
         renderSegmentPicker();
         // Keep the hidden #SubjectType consistent with the current segment selection (no-op on edit).
@@ -477,19 +508,9 @@
         setTimeout(updateSidePanel, 0);
     });
 
-    // The segmented role toggle: a button click sets bindingRole directly (buttons fire no 'change'), then re-renders so
-    // the active state and the hidden .js-role input (read back by sync/submit) stay in step.
-    el('segmentBindingList')?.addEventListener('click', event => {
-        const rbtn = event.target.closest('.js-role-btn');
-        if (!rbtn || frozen) return;
-        const row = rbtn.closest('[data-row="segment"]');
-        if (!row) return;
-        const i = Number(row.dataset.index);
-        if (!state.segments[i]) return;
-        state.segments[i].bindingRole = rbtn.dataset.role || null;
-        renderSegments();
-        setTimeout(updateSidePanel, 0);
-    });
+    // WP-ST-EDIT-L — the role is now a single select2 <select class="js-role">. Its choice reaches the FORM-delegated
+    // 'change' listener (through select2's native-change bridge), which runs sync() and writes bindingRole back into
+    // state.segments[i] WITHOUT a re-render — so the dropdown never flickers and SegmentBindingsJson keeps its shape.
 
     el('btnAddProductLine')?.addEventListener('click', () => {
         if (frozen || limitReached(state.products.length, cfg.maxProductLines)) return;
