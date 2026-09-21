@@ -40,9 +40,16 @@ KORU/YAPMA: yalnız list DTO+mapper+index.js+resx; Detay/Create/Edit/form.js/det
 DOĞRULA (E2): cd C:\Users\user\Desktop\ERP-vNext; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj -c Release --nologo (mevcut yeşil, PII flake hariç) + dotnet test frontend/Diten.Web.Tests/Diten.Web.Tests.csproj -c Release --nologo (201/0). git diff: StrategyTemplateModels+mapper+index.js+resx. Ayrı commit ("feat(strategy): WP-ST-LIST2 — liste SEGMENT badge (kişi/kurum) + ÜRÜN N·% ağırlık toplamı (MOD-0167-FU04)" + son satır Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: LineWeightPercentage toplamı beklenen semantik değilse (SKU-içi 100 ile karışıyorsa); değişiklik kapsam dışına taşarsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-21) → **ACCEPTED (E2)**
 ```
-- İzole worktree → Application.Tests + Web.Tests yeşil; git diff list DTO+mapper+index.js+resx; SEGMENT badge kişi/kurum; ÜRÜN N·% (gerçek Σ, ağırlıksızda sayı); diğer kolonlar/KAPSAM/filtre korundu.
+Commit: 999a1721 · Agent: PASS · CT: ACCEPTED E2 (izole temiz build) · /c/tmp/ct-stlist2-verify @999a1721
+```
+- ✅ **Kapsam:** StrategyTemplateModels(list row +ProductAllocationTotalPercentage) + StrategyTemplateMapper(ToListItem hesap) + index.js + _IndexL10n.cshtml + 7 resx. **Detay/Create/Edit + form.js/details.js + Detail/Create/Update DTO dokunulmadı** ✓.
+- ✅ **ÜRÜN %:** `ProductLines.Any(LineWeightPercentage.HasValue) ? Σ(LineWeightPercentage ?? 0) : null` — ürün-satırı ağırlığı (SKU-içi 100 ile KARIŞMADI). Frontend: total>0→"N · %", null/0→yalnız sayı ("0%" yok). Eski "N SKU" alt-satırı kaldırıldı.
+- ✅ **SEGMENT badge:** contact→"kişi"/primary(mavi), account→"kurum"/warning(turuncu) + SegmentBindingCount; bilinmeyen tip→yalnız sayı (uydurma badge yok). SubjectTypeContact/Account 7 resx + _IndexL10n köprü.
+- ✅ **KORU=0:** WP-ST-LIST diğer kolonlar/KAPSAM scope-options map/ülke filtresi/SaveView/actions korundu; kontrat additive.
+- ✅ **Build+test (CT izole, Release):** Application.Tests **1830/0/5** + Diten.Web.Tests **201/0**.
+- ⏳ E4: SEGMENT badge + ÜRÜN N·%. **Mapper backend → FLEET RESTART.**
+
+**WP-ST-LIST2 KOMPLE.**
 ```
