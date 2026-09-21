@@ -24,7 +24,15 @@ const read = (...p) => fs.readFileSync(web(...p), "utf8");
 /** The partial with its Razor comments removed — a note ABOUT the vocabulary is not markup. */
 const PARTIAL = () => read("Views", "Shared", "_TableSkeleton.cshtml").replace(/@\*[\s\S]*?\*@/g, "");
 const CSS = () => read("wwwroot", "assets", "css", "backbone-custom.css");
-const LISTS = ["FieldDefinitions", "OrganizationUnits", "Positions", "PositionAssignments"];
+/** Every list that has been migrated: the four under test, plus the two templates new screens are copied from. */
+const LISTS = [
+  ["Organization", "FieldDefinitions"],
+  ["Organization", "OrganizationUnits"],
+  ["Organization", "Positions"],
+  ["Organization", "PositionAssignments"],
+  ["DevEnablement", "GoldenReferenceSlim"],
+  ["DevEnablement", "GoldenReferenceCompact"]
+];
 
 describe("the placeholder is shaped like the list it stands in for", () => {
   test("it draws a toolbar, a header, rows and a footer — not five identical bars", () => {
@@ -52,12 +60,23 @@ describe("the placeholder is shaped like the list it stands in for", () => {
     expect(block, "a second grey entered through the layout rules").not.toMatch(/background|animation|linear-gradient/);
   });
 
-  test("all four Organization lists use the shared partial, and none keeps a private copy", () => {
-    LISTS.forEach((folder) => {
-      const source = read("Views", "Organization", folder, "_DataTable.cshtml");
-      expect(source, `${folder} still draws its own skeleton`).toContain('<partial name="_TableSkeleton" />');
-      expect(source, `${folder} kept a hand-written skeleton block`).not.toMatch(/id="skeleton-loader"/);
-      // And the inline style two of them used to hide it with: FG-003 says styling lives in the stylesheet.
+  test("every migrated list uses the shared partial and keeps NO fragment of its old one", () => {
+    /*
+     * ⚠ THE SECOND ASSERTION IS THE ONE THAT MATTERS, AND IT EXISTS BECAUSE THE FIRST ONE PASSED WHILE THE
+     * PAGE WAS BROKEN. The migration removed the block's opening tag and its first bar, and left four orphan
+     * bars plus a stray `</div>` behind: the id was gone (so a check for the id was happy), the bars had no
+     * wrapper to hide them so they showed permanently, and the stray closing tag shut the card early, which
+     * pushed the toolbar and the table outside it. The owner's screenshot was that page. So: no placeholder
+     * block outside the partial, and the tags must balance.
+     */
+    LISTS.forEach(([area, folder]) => {
+      const source = read("Views", area, folder, "_DataTable.cshtml");
+      expect(source, `${area}/${folder} still draws its own skeleton`).toContain('<partial name="_TableSkeleton" />');
+      expect(source.replace(/_TableSkeleton/g, ""), `${area}/${folder} kept a fragment of the old block`)
+        .not.toMatch(/skeleton/i);
+      expect(source.match(/<div\b/g)?.length ?? 0, `${area}/${folder} has unbalanced <div> tags`)
+        .toBe(source.match(/<\/div>/g)?.length ?? 0);
+      // FG-003: the hiding lives in the stylesheet, never in a style attribute.
       expect(source).not.toMatch(/style="display:\s*none/);
     });
   });
