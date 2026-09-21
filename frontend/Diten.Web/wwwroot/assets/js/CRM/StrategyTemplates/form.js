@@ -178,7 +178,9 @@
 
     const segmentById = id => (options.segment || []).find(o => o.id === id);
     const segTypeLabel = t => t === 'account' ? (L.SegTypeAccount || '') : t === 'contact' ? (L.SegTypeContact || '') : '';
-    const segTypeBadgeClass = t => t === 'account' ? 'bg-label-warning' : 'bg-label-primary';
+    // WP-ST-EDIT-I — the type badge is rounded-pill (mockup's yuvarlakımsı kişi/hekim, kurum/hesap rozeti); the
+    // bg-label-warning / bg-label-primary tone is unchanged. Both render sites (display row + picker choice) reuse this.
+    const segTypeBadgeClass = t => (t === 'account' ? 'bg-label-warning' : 'bg-label-primary') + ' rounded-pill';
     const roleLabel = r => L['BindingRole_' + r] || r;
 
     const renderSegmentSummary = () => {

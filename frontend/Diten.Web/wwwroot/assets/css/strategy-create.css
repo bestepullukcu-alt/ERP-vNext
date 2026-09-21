@@ -356,13 +356,19 @@
     color: var(--bs-secondary-color);
     white-space: nowrap;
 }
+/* ── WP-ST-EDIT-I — segment satırları/picker beyaz (card-bg) + Task Center tipografisi (body-font, küçük boyutlar) +
+   rounded-pill tip badge (form.js). EDIT-G'de yüzeyler bg-body (gri sayfa zemini) idi ve fontlar büyük inherit'ti; kart
+   içinde gri görünüyordu. Beyaz için var(--bs-card-bg), aile için var(--bs-body-font-family) ve boyutlar /Tasks/Create
+   satırlarıyla hizalı. Tema-duyarlı; hover/is-active vurguları korunur. */
 .st-editor-scope .st-segment-empty {
     padding: 17px;
     text-align: center;
     border: 1px dashed var(--bs-border-color);
     border-radius: 6px;
     color: var(--bs-secondary-color);
-    background: var(--bs-body-bg);
+    background: var(--bs-card-bg);
+    font-family: var(--bs-body-font-family);
+    font-size: 0.875rem;
 }
 .st-editor-scope .st-seg-row {
     display: flex;
@@ -372,10 +378,12 @@
     padding: 9px 11px;
     border: 1px solid var(--bs-border-color);
     border-radius: 6px;
-    background: var(--bs-body-bg);
+    background: var(--bs-card-bg);
+    font-family: var(--bs-body-font-family);
 }
 .st-editor-scope .st-seg-main { flex: 1 1 180px; min-width: 0; }
 .st-editor-scope .st-seg-name {
+    font-size: 0.9375rem;
     font-weight: 500;
     color: var(--st-text);
     overflow: hidden;
@@ -391,11 +399,12 @@
 .st-editor-scope .st-seg-roles { flex: 0 0 auto; display: inline-flex; }
 .st-editor-scope .st-seg-role {
     padding: 4px 10px;
-    font-size: 12px;
+    font-family: var(--bs-body-font-family);
+    font-size: 0.8125rem;
     font-weight: 500;
     line-height: 1.4;
     border: 1px solid var(--bs-border-color);
-    background: var(--bs-body-bg);
+    background: var(--bs-card-bg);
     color: var(--st-muted);
     cursor: pointer;
 }
@@ -415,7 +424,7 @@
     display: inline-flex;
     align-items: center;
     padding: 7px 12px;
-    background: var(--bs-body-bg);
+    background: var(--bs-card-bg);
     border: 1px dashed var(--bs-border-color);
     border-radius: 6px;
     font-size: 12.5px;
@@ -438,7 +447,7 @@
     gap: 10px;
     width: 100%;
     padding: 9px 11px;
-    background: var(--bs-body-bg);
+    background: var(--bs-card-bg);
     border: 0;
     border-bottom: 1px solid var(--bs-border-color);
     text-align: left;
