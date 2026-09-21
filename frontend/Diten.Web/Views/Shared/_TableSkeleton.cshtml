@@ -13,11 +13,22 @@
     group reads as a toolbar, a header, rows and a footer. A second animation or a second grey would be the
     thing that warning forbids.
 
-    ⚠ `data-table-skeleton` IS THE OPT-IN. dt-defaults.js hides the real table while this marker is present and
-    reveals it on initComplete, which is what stops the pop-in. A list still carrying the old block keeps its
-    old behaviour exactly — nothing is migrated by surprise.
+    ⚠ IT IS VISIBLE FROM THE SERVER'S FIRST PAINT, AND THAT IS THE WHOLE MECHANISM. It carries no
+    `.backbone-skeleton` (which hides), so it is on screen before a single line of JavaScript has run — which is
+    when a placeholder is actually needed. The CSS beside it hides the real table for as long as this element is
+    a sibling, and `dt-defaults.js` REMOVES this element once the table has drawn; the table then appears
+    because its selector no longer matches.
+
+    ⚠ WHY NOT A LOADING HOOK. The first version asked DataTables to show it from a `preXhr` option — and
+    DataTables has no such option (`preXhr` is an EVENT; its registered init callbacks are drawCallback,
+    initComplete, preDrawCallback, rowCallback and the state ones, measured in the vendored source). That
+    function was never called once, on any page, which is why the owner still saw the spinner. A placeholder
+    that depends on nothing cannot fail that way.
+
+    ⚠ `data-table-skeleton` IS THE OPT-IN: a list still carrying the old hidden block keeps its old behaviour
+    exactly, and nothing is migrated by surprise.
 *@
-<div id="skeleton-loader" class="backbone-skeleton dt-skeleton p-4" data-table-skeleton aria-hidden="true">
+<div id="skeleton-loader" class="dt-skeleton p-4" data-table-skeleton aria-hidden="true">
     <div class="dt-skeleton-toolbar">
         <span class="shimmer skeleton-row dt-skeleton-search"></span>
         <span class="shimmer skeleton-row dt-skeleton-button"></span>

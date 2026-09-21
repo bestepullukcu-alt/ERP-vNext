@@ -505,24 +505,19 @@ window.DtDefaults = (function () {
         /*
          * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
          *
-         * MEASURED: this file ran BOTH indicators on every request. `preXhr` faded the page's
-         * `#skeleton-loader` in, and `processing: true` drew the theme's `sk-fold` cube on top of it — so a
-         * list opened with grey placeholder rows AND a spinning cube over them. The owner saw the cube and
-         * asked which one is correct; the product had already answered in CSS ("NO NEW SKELETON LANGUAGE",
-         * backbone-custom.css) and in 226 views that carry the skeleton markup.
+         * The product had already chosen the skeleton: `backbone-custom.css` carries a "NO NEW SKELETON
+         * LANGUAGE" warning and 226 views ship placeholder markup. What it did not have was a working way to
+         * SHOW one on a list — so every list opened with the theme's `sk-fold` cube instead, which is what the
+         * owner saw and asked about.
          *
-         * THE RULE, and why each half of it:
-         *   · FIRST load — the page is empty and its shape is known, so the SKELETON speaks and the cube is
-         *     suppressed. A placeholder in the shape of the answer is what stops the layout jumping when the
-         *     answer arrives.
-         *   · EVERY LATER load (filter, page, search, reload) — the rows are already on screen. Replacing them
-         *     with grey blocks reads as going backwards, so the skeleton stays down and the cube is the busy
-         *     signal, exactly as it is today.
-         *
-         * Per TABLE, not per page: `create` runs once for each table, so this flag cannot leak between two
-         * tables on one screen.
+         * ⚠ AND THE FIRST FIX FOR IT DID NOT RUN. MEASURED in the vendored DataTables: `preXhr` is an EVENT,
+         * not an init option — the options registered as callbacks are drawCallback, initComplete,
+         * preDrawCallback, rowCallback and the state ones. Setting `merged.preXhr` therefore called nothing,
+         * on any page, and the tests that drove that function directly were green the whole time. So the
+         * mechanism moved out of JavaScript: `_TableSkeleton.cshtml` renders the placeholder VISIBLE, a CSS
+         * sibling rule keeps the table (and the cube inside it) out of the page while that element is there,
+         * and the block below removes the element once the table has drawn. Nothing has to fire.
          */
-        var firstLoadDone = false;
         merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || sharedL10n().Search || 'Search...';
 
         // DataTables i18n mapping. Each slot left undefined is a slot DataTables fills with its own English —
@@ -599,48 +594,29 @@ window.DtDefaults = (function () {
             };
         }
 
-        // İlk yüklemede iskelet konuşur; sonraki isteklerde ekrandaki satırlar durur ve küp devreye girer.
-        var originalPreXhr = merged.preXhr;
-        merged.preXhr = function (settings, data) {
-            if (!firstLoadDone) {
-                var $skeleton = $('#skeleton-loader');
-                $skeleton.fadeIn(100);
-                // The cube lives inside the table's own wrapper; the class hides it for this table alone.
-                $(settings && settings.nTableWrapper).addClass('dt-first-load');
-                /*
-                 * ⚠ AND THE REAL TABLE WAITS ITS TURN — but only for a list that opted in with the shaped
-                 * skeleton (`_TableSkeleton.cshtml`). MEASURED: with the old five-bar block the real `<thead>`
-                 * stood UNDER the placeholder while the toolbar and the pager were still being built, so the
-                 * page arrived in three instalments from the top down. A shaped skeleton already draws all
-                 * three, so showing the half-built table beside it is what made it unreadable.
-                 */
-                if ($skeleton.is('[data-table-skeleton]')) {
-                    $(settings && settings.nTableWrapper).addClass('dt-skeleton-hidden');
-                }
-            }
-            if (typeof originalPreXhr === 'function') {
-                originalPreXhr.call(this, settings, data);
-            }
-        };
-
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
-            firstLoadDone = true;
-            var $wrapper = $(settings && settings.nTableWrapper);
-            var wasHidden = $wrapper.hasClass('dt-skeleton-hidden');
-            $wrapper.removeClass('dt-first-load dt-skeleton-hidden');
-            $('#skeleton-loader').fadeOut(300);
             /*
-             * A table measured while it was hidden has no column widths worth keeping. DataTables recomputes on
-             * demand, so ask it once — and only for the table that was actually hidden.
+             * ⚠ REMOVED, NOT HIDDEN. The CSS keeps the table out of the page for as long as this element is its
+             * sibling, so taking the element away IS what reveals the table — one act, no second class to get
+             * out of step with. A list still carrying the old hidden block falls through to the fadeOut below,
+             * exactly as before.
              */
-            if (wasHidden) {
+            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
+            if (shaped) {
+                shaped.remove();
+                /*
+                 * A table that was not rendered has no column widths worth keeping. DataTables recomputes on
+                 * demand, so ask it once, now that the table is actually on screen.
+                 */
                 try {
                     var api = new DataTable.Api(settings);
                     api.columns.adjust();
                     if (api.responsive && typeof api.responsive.recalc === 'function') { api.responsive.recalc(); }
                 } catch (e) { }
+            } else {
+                $('#skeleton-loader').fadeOut(300);
             }
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {

@@ -5,99 +5,97 @@ const { loadScript } = require("./load-script");
 /*
  * A LIST SPEAKS WITH ONE VOICE WHILE IT LOADS — owner report, 2026-09-21.
  *
- * MEASURED before this round, in `dt-defaults.js`: `preXhr` faded the page's `#skeleton-loader` in on EVERY
- * request, and `processing: true` drew the theme's `sk-fold` cube over it at the same time. A list therefore
- * opened with grey placeholder rows AND a spinning cube on top of them — and DataTables' own untranslated
- * "Loading..." in the body behind both. Three voices for one wait.
+ * MEASURED, in two rounds, and the second round is the one worth reading.
  *
- * The product had already chosen: `backbone-custom.css` carries a "NO NEW SKELETON LANGUAGE" warning and 226
- * views ship the skeleton markup. So the rule is: the FIRST load is the skeleton's (the page is empty and its
- * shape is known), every LATER load is the cube's (the rows are on screen; replacing them with grey blocks
- * reads as going backwards).
+ * ROUND 1 assumed `dt-defaults.js` was already showing the page's placeholder and only had to stop the theme's
+ * `sk-fold` cube from spinning on top of it. It was not: the file set a `preXhr` option, and DataTables has no
+ * such option. `preXhr` is an EVENT; the init options it registers as callbacks are drawCallback,
+ * initComplete, preDrawCallback, rowCallback and the state ones — measured in the vendored library. That
+ * function had never been called on any page, which is why every list opened with the cube and no placeholder,
+ * and why the owner asked about it in the first place. ⚠ The round-1 tests were green throughout, because they
+ * called `config.preXhr(...)` themselves. A test that invokes a hook production never invokes proves nothing.
  *
- * These tests drive the REAL `DtDefaults.create` and call the hooks DataTables would call. The only stub is the
- * vendor library's own namespace, which the module reads once while it is being defined.
+ * ROUND 2 takes the mechanism out of JavaScript: the shaped placeholder is rendered VISIBLE by the server, a
+ * CSS sibling rule keeps the table — and the cube DataTables draws inside it — out of the page while that
+ * element is present, and `initComplete` removes the element. Nothing has to fire for the placeholder to be
+ * seen, so nothing can silently not fire.
+ *
+ * What is still asserted here is the part that is genuinely JavaScript's: the removal, the column recompute
+ * that a never-rendered table needs, the untranslated "Loading..." staying quiet, and — the lesson of round 1 —
+ * that this file does not go back to hanging its behaviour on a hook DataTables never calls.
  */
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const CSS = fs.readFileSync(web("wwwroot", "assets", "css", "backbone-custom.css"), "utf8");
 
-describe("the first load is the skeleton's, every later load is the cube's", () => {
+describe("the placeholder is on screen before any script runs", () => {
   let DtDefaults;
 
   beforeAll(() => {
-    // `baseConfig` asks the vendor for its responsive modal renderer while the module is being defined; that is
-    // the whole of the dependency, so it is the whole of the stub.
-    global.DataTable = { Responsive: { display: { modal: () => ({}) } } };
+    global.DataTable = {
+      Responsive: { display: { modal: () => ({}) } },
+      Api: function () { this.columns = { adjust: () => {} }; this.responsive = { recalc: () => {} }; }
+    };
     loadScript("wwwroot/assets/vendor/libs/jquery/jquery.js");
     loadScript("wwwroot/assets/js/dt-defaults.js");
     DtDefaults = global.window.DtDefaults;
   });
 
-  /** The two DOM pieces the hooks touch: the page's skeleton and this table's own wrapper. */
-  const stage = () => {
-    document.body.innerHTML =
-      '<div id="skeleton-loader" style="display: none;"></div>' +
-      '<div class="dt-container"><div class="dt-processing">cube</div><table></table></div>';
-    return { settings: { nTableWrapper: document.querySelector(".dt-container") } };
-  };
-
-  const skeletonShown = () => document.getElementById("skeleton-loader").style.display !== "none";
-  const cubeSuppressed = () => document.querySelector(".dt-container").classList.contains("dt-first-load");
-
-  test("the first request shows the skeleton and silences the cube", () => {
-    const config = DtDefaults.create({});
-    const { settings } = stage();
-
-    config.preXhr(settings, {});
-    // jQuery's fadeIn is animated; the display flip happens on the first frame, so ask jQuery, not the clock.
-    global.jQuery("#skeleton-loader").stop(true, true);
-    expect(skeletonShown(), "the skeleton never appeared on the first load").toBe(true);
-    expect(cubeSuppressed(), "the cube would spin on top of the skeleton").toBe(true);
+  test("the partial carries no class that would hide it", () => {
+    const partial = fs.readFileSync(web("Views", "Shared", "_TableSkeleton.cshtml"), "utf8");
+    // `.backbone-skeleton` is `display: none` — wearing it is what made round 1 invisible.
+    expect(partial, "the placeholder hides itself again and waits for a script to show it")
+      .not.toMatch(/class="[^"]*backbone-skeleton/);
+    expect(partial).toMatch(/data-table-skeleton/);
   });
 
-  test("once the table has loaded, later requests leave the skeleton down and the cube alone", () => {
-    const config = DtDefaults.create({});
-    const { settings } = stage();
-
-    config.preXhr(settings, {});
-    config.initComplete(settings, {});
-    global.jQuery("#skeleton-loader").stop(true, true).hide();
-    expect(cubeSuppressed(), "the suppression outlived the first load — the cube would never show again").toBe(false);
-
-    // A filter, a page change, a reload: the rows are on screen and stay there.
-    config.preXhr(settings, {});
-    global.jQuery("#skeleton-loader").stop(true, true);
-    expect(skeletonShown(), "a refresh turned the rows back into grey blocks").toBe(false);
-    expect(cubeSuppressed(), "the cube was silenced on a refresh, leaving no busy signal at all").toBe(false);
-  });
-
-  test("two tables on one screen do not share the flag", () => {
-    const first = DtDefaults.create({});
-    const second = DtDefaults.create({});
-    const { settings } = stage();
-
-    first.preXhr(settings, {});
-    first.initComplete(settings, {});
-    document.querySelector(".dt-container").classList.remove("dt-first-load");
-
-    second.preXhr(settings, {});
-    expect(cubeSuppressed(), "the second table inherited the first one's 'already loaded' state").toBe(true);
-  });
-
-  test("the body no longer says 'Loading...' in English behind the skeleton", () => {
-    expect(DtDefaults.create({}).language.loadingRecords).toBe("");
-    // A caller that wants its own word still gets it.
-    expect(DtDefaults.create({ language: { loadingRecords: "Yükleniyor" } }).language.loadingRecords).toBe("Yükleniyor");
-  });
-
-  test("the CSS hides the cube only while the class is on, and only inside that table", () => {
+  test("the table waits on a CSS sibling rule, not on a script", () => {
     const rule = CSS.replace(/\/\*[\s\S]*?\*\//g, "")
-      .match(/\.dt-first-load div\.dt-processing,\s*\.dt-first-load \.dataTables_processing \{([^}]*)\}/);
-    expect(rule, "the first-load rule is gone — the cube is back on top of the skeleton").toBeTruthy();
+      .match(/\[data-table-skeleton\] ~ \.card-datatable,\s*\[data-table-skeleton\] ~ \.table-responsive \{([^}]*)\}/);
+    expect(rule, "the table no longer waits for the placeholder to go").toBeTruthy();
     expect(rule[1]).toContain("display: none");
-    // MUTATION GUARD: an unscoped version of this rule would hide the busy signal on every request, forever.
-    const bare = CSS.replace(/\/\*[\s\S]*?\*\//g, "").match(/\n\s*div\.dt-processing\s*\{[^}]*display:\s*none/);
-    expect(bare, "the cube was hidden product-wide, not just during the first load").toBeNull();
+  });
+
+  test("initComplete REMOVES the placeholder, which is what reveals the table", () => {
+    document.body.innerHTML =
+      '<div class="card"><div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>' +
+      '<div class="card-datatable"><div class="dt-container"><table></table></div></div></div>';
+    const config = DtDefaults.create({});
+
+    config.initComplete({ nTableWrapper: document.querySelector(".dt-container") }, {});
+
+    expect(document.getElementById("skeleton-loader"), "the placeholder stayed, so the table stays hidden")
+      .toBeNull();
+  });
+
+  test("a list still carrying the OLD hidden block is left exactly as it was", () => {
+    document.body.innerHTML = '<div id="skeleton-loader" class="backbone-skeleton"></div>';
+    const config = DtDefaults.create({});
+
+    config.initComplete({ nTableWrapper: null }, {});
+
+    // Hidden by the old path (fadeOut), not removed: nothing about that page changes.
+    expect(document.getElementById("skeleton-loader"), "an unmigrated list had its markup removed").not.toBeNull();
+  });
+
+  test("the column widths are recomputed once the table is finally rendered", () => {
+    const source = fs.readFileSync(web("wwwroot", "assets", "js", "dt-defaults.js"), "utf8");
+    const initComplete = source.slice(source.indexOf("merged.initComplete = function"));
+    expect(initComplete).toContain("columns.adjust()");
+  });
+
+  test("⚠ the file does not hang its behaviour on a hook DataTables never calls", () => {
+    /*
+     * THE ROUND-1 LESSON, AS A GUARD. `preXhr` is an event, not an init option; assigning it is a no-op that
+     * looks like working code and passes any test that calls it directly.
+     */
+    const source = fs.readFileSync(web("wwwroot", "assets", "js", "dt-defaults.js"), "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(source, "merged.preXhr is assigned again — DataTables will never call it").not.toMatch(/merged\.preXhr\s*=/);
+  });
+
+  test("the body no longer says 'Loading...' in English behind the placeholder", () => {
+    expect(DtDefaults.create({}).language.loadingRecords).toBe("");
+    expect(DtDefaults.create({ language: { loadingRecords: "Yükleniyor" } }).language.loadingRecords).toBe("Yükleniyor");
   });
 });

@@ -420,10 +420,19 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
 .dt-skeleton .dt-skeleton-info { block-size: 1.125rem; inline-size: 12rem; margin-block-end: 0; }
 .dt-skeleton .dt-skeleton-pager { block-size: 2.25rem; inline-size: 9rem; margin-block-end: 0; margin-inline-start: auto; }
 
-/* The real table waits its turn: with the shaped skeleton in place the header, the toolbar and the pager all
-   arrive together, instead of the header standing under a placeholder and the rest appearing later. Scoped to
-   the opt-in marker, so a list still carrying the old block is untouched. */
-.dt-skeleton-hidden { display: none !important; }
+/* ⚠ THE REAL TABLE WAITS ITS TURN, AND CSS IS WHAT MAKES IT WAIT — not a script. While the placeholder is still
+   a sibling, the table (and the spinner DataTables draws inside it) is not rendered at all; `dt-defaults.js`
+   REMOVES the placeholder once the table has drawn, and this selector stops matching, so the table appears.
+
+   MEASURED, and this is why the mechanism moved out of JavaScript: the first version asked DataTables to show
+   the placeholder from a `preXhr` init option, and DataTables has no such option — `preXhr` is an event, and
+   the init callbacks it registers are drawCallback, initComplete, preDrawCallback, rowCallback and the state
+   ones. That function never ran, so the placeholder never appeared and the spinner was still the only thing
+   anyone saw. Markup plus one selector cannot fail that way. */
+[data-table-skeleton] ~ .card-datatable,
+[data-table-skeleton] ~ .table-responsive {
+    display: none !important;
+}
 
 /* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
    (light / dark / bordered skin) drives every surface. The panel background uses
