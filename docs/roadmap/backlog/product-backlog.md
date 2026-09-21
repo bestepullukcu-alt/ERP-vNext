@@ -6021,6 +6021,29 @@ BL-433'ten sonra ve ayrı bir iş paketi olarak planlanır; ikisi tek dilime kon
 
 ---
 
+### BL-435
+
+**PPM Girişimler ekranı ortak onay bileşenini atlayıp kendi diyaloğunu açıyor — "üründe tek diyalog" kuralı kırık**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ (PPM) · BULAN: CT (Kullanıcılar davet diyaloğunu düzeltirken tam paket koşusu) · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `tests/dialog-one-implementation.test.js` → "opens no dialog outside the
+shared component" tek bir dosyayı işaret ediyor: `wwwroot/assets/js/PPM/Initiatives/index.js`. Kural ürün
+genelinde ve bilerek öyle: ham `Swal.fire` yazan dosya ya `window.showConfirm`'e geçer ya da gerekçesiyle
+`KNOWN_RAW` listesine yazılır. Bu dosya ikisini de yapmamış, yani main'de bu test bugün kırmızı (CI vitest
+koşmadığı için görünmüyor — BL-431 ile aynı aile).
+
+Ham diyalog tek başına yasak değildir; alan taşıyan bir diyalog ham olmak zorundadır. Kural, ham olanın da
+ürünün görünümünü **okumasını** ister: `window.DitenDialogAppearance` paketi + `iconHtml` + `description`.
+Kullanıcılar modülündeki aynı hata bugün düzeltildi ve örneği orada duruyor
+(`Governance/Users/index.js` → `showInviteLink`).
+
+İstenen: PPM sahibi ya `showConfirm`'e geçer ya da gerekçesini yazıp `KNOWN_RAW`'a ekler **ve** yayımlanmış
+paketi okur. Test gevşetilmez. CT tarafında yapılacak bir şey yok; kayıt bilgi amaçlı.
+Gelecek gerileme riski: düşük (tek ekranın diyalog çağrısı).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
