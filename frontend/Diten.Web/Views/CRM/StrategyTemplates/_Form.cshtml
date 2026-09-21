@@ -251,7 +251,21 @@
                 <div class="alert alert-secondary py-2 small" role="alert">
                     <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
                 </div>
-                <div id="productLineList" class="d-flex flex-column gap-3"></div>
+                @* WP-ST-EDIT-P — the product section is FLAT (mockup): each line is a product + weight %, and every line
+                   totals 100.00. This control row carries the live Σ badge (≠100 → danger) and the "Eşit dağıt" button;
+                   form.js paints the badge text/colour and drives the even split. The SKU-allocation mode toggle and the
+                   per-line SKU sub-rows were removed from this screen — the backend still supports them, this UI does not
+                   edit them, and an incoming sku-allocated line round-trips untouched through ProductLinesJson. *@
+                <div class="st-prod-controls">
+                    <span class="st-prod-total-label">@Localizer["ProductWeightTotalLabel"]</span>
+                    <span class="badge bg-label-secondary" id="productWeightBadge">Σ 0.00%</span>
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btnDistributeProducts">
+                        <i class="bx bx-distribute-horizontal me-1"></i>@Localizer["EqualDistribute"]
+                    </button>
+                </div>
+                @* Σ≠100 warning box (mockup). form.js fills the format text ({total}/{diff}) and toggles visibility. *@
+                <div class="st-prod-warn d-none" id="productWeightWarn" role="alert"></div>
+                <div id="productLineList" class="d-flex flex-column gap-2"></div>
                 <div id="productLineEmpty" class="text-muted d-none">@Localizer["NoProductLines"]</div>
                 <input type="hidden" asp-for="ProductLinesJson" id="ProductLinesJson" />
             </div>

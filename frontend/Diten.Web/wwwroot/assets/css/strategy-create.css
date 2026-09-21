@@ -503,3 +503,63 @@
     color: var(--bs-secondary-color);
     background: var(--bs-body-bg);
 }
+
+/* ── WP-ST-EDIT-P — Ürün bölümü DÜZ (mockup): başlık altı Σ badge + "Eşit dağıt" kontrol satırı, Σ≠100 uyarı kutusu ve
+   her satır = ürün picker (ad + alt-satır MDM-GP kod) + yüzde + kaldır ikon. Segment satırı (.st-seg-row) görünüm
+   diliyle aynı hizada. ─────────────────────────────────────────────────────────────────────────────────────────── */
+.st-editor-scope .st-prod-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 11px;
+}
+.st-editor-scope .st-prod-total-label {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope #productWeightBadge { font-variant-numeric: tabular-nums; }
+.st-editor-scope .st-prod-warn {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 11px;
+    border-radius: 6px;
+    background: var(--bs-danger-bg-subtle);
+    border: 1px solid var(--bs-danger-border-subtle);
+    color: var(--bs-danger-text-emphasis);
+    font-size: 12.5px;
+}
+.st-editor-scope .st-prod-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+}
+.st-editor-scope .st-prod-main { flex: 1 1 200px; min-width: 0; }
+.st-editor-scope .st-prod-meta {
+    margin-top: 4px;
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    min-height: 1em;
+}
+.st-editor-scope .st-prod-weight {
+    flex: 0 0 auto;
+    width: 116px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.st-editor-scope .st-prod-weight .js-weight { text-align: right; }
+.st-editor-scope .st-prod-weight-sign {
+    font-family: var(--bs-font-monospace);
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+}

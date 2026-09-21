@@ -231,4 +231,7 @@
   <data name="PeriodType_cycle" xml:space="preserve"><value>Cycle</value></data>
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Campaign period</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Custom</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Product total</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Distribute evenly</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>Product percentage is not 100%. Computed total {total}% — off by {diff} points. Fix the rows to save.</value></data>
 </root>

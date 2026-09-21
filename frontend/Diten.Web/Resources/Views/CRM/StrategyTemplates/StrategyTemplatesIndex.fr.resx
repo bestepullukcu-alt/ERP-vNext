@@ -231,4 +231,7 @@
   <data name="PeriodType_cycle" xml:space="preserve"><value>Cycle</value></data>
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Période de campagne</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Personnalisé</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Total produits</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Répartir équitablement</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>Le pourcentage produit n'est pas 100 %. Total calculé {total} % — écart de {diff} points. Corrigez les lignes pour enregistrer.</value></data>
 </root>

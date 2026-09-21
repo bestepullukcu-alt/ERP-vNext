@@ -153,7 +153,11 @@
         if (can('global-product')) {
             jobs.push(load(`${endpoint}/global-products?pageSize=200`, r => ({
                 id: r.id,
-                text: `${r.canonicalCode || ''} — ${r.globalProductName || ''}`.trim()
+                text: `${r.canonicalCode || ''} — ${r.globalProductName || ''}`.trim(),
+                // WP-ST-EDIT-P — canonical code kept split out so the flat product row can show the MDM-GP code beneath
+                // the product name (mockup "ad + alt-satır MDM-GP kod"). The MDM load logic itself is unchanged.
+                code: r.canonicalCode || '',
+                name: r.globalProductName || ''
             })).then(x => { options.product = x; }));
         }
         if (can('gsku')) {
@@ -428,66 +432,71 @@
 
     // ---------------- "what" ----------------
 
+    // Per-line SKU total — kept for the read-only side-panel consistency check on an INCOMING sku-allocated line (the
+    // contract still supports that mode; this screen just no longer edits it). It is not used by the flat editor rows.
     const lineTotal = line => round2((line.skuAllocations || []).reduce((sum, a) => sum + (Number(a.percentage) || 0), 0));
+    // WP-ST-EDIT-P — the flat product section weighs the lines against each other: Σ of every line's LineWeightPercentage,
+    // which the runtime requires to be exactly 100.00.
+    const productWeightTotal = () => round2(state.products.reduce((s, l) => s + (Number(l.lineWeightPercentage) || 0), 0));
+    const productById = id => (options.product || []).find(o => o.id === id);
 
+    // WP-ST-EDIT-P — header Σ badge (empty → muted, =100 → success, ≠100 → danger) + the mockup Σ≠100 warning box. This
+    // is a DISPLAY guide only: it never blocks the save and never normalises a share — the runtime decides and refuses
+    // any total that is not exactly 100.00 (FU04 "live total display; runtime rejects ≠100").
+    const updateProductTotals = () => {
+        const n = state.products.length;
+        const total = productWeightTotal();
+        const ok = total === total100;
+        const badge = el('productWeightBadge');
+        if (badge) {
+            badge.textContent = `Σ ${total.toFixed(2)}%`;
+            badge.classList.remove('bg-label-success', 'bg-label-danger', 'bg-label-secondary');
+            badge.classList.add(n === 0 ? 'bg-label-secondary' : ok ? 'bg-label-success' : 'bg-label-danger');
+        }
+        const warn = el('productWeightWarn');
+        if (warn) {
+            if (n === 0 || ok) {
+                warn.classList.add('d-none');
+                warn.textContent = '';
+            } else {
+                const diff = round2(total - total100);
+                const diffLabel = (diff > 0 ? '+' : '') + diff.toFixed(2);
+                warn.textContent = (L.ProductTotalWarning || '')
+                    .replace('{total}', total.toFixed(2))
+                    .replace('{diff}', diffLabel);
+                warn.classList.remove('d-none');
+            }
+        }
+    };
+
+    // WP-ST-EDIT-P — DÜZ (flat) product rows (mockup): product picker (name + MDM-GP code beneath) + weight % + remove
+    // icon. The SKU-allocation mode toggle and the per-line SKU sub-rows were removed from THIS screen; the backend still
+    // supports sku-allocated lines, so an incoming line's skuAllocationMode/skuAllocations stay untouched in state (see
+    // sync) and round-trip through ProductLinesJson with no data loss — the flat row just shows its product + weight.
     const renderProducts = () => {
         const host = el('productLineList');
         const empty = el('productLineEmpty');
         if (!host) return;
         host.innerHTML = state.products.map((line, i) => {
-            const allocated = (line.skuAllocationMode || 'product-only') === 'sku-allocated';
-            const total = lineTotal(line);
-            const ok = total === total100;
-            const rows = (line.skuAllocations || []).map((a, j) => `
-                <tr data-row="sku" data-index="${i}" data-sub="${j}">
-                    <td>${pickerSelect('gsku', a.gskuId, can('gsku'), L.GskuPickerUnavailable)}</td>
-                    <td style="width:9rem">
-                        <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-percentage" value="${esc(a.percentage ?? '')}"${frozen ? ' disabled' : ''} />
-                    </td>
-                    <td class="text-end" style="width:6rem">
-                        <button type="button" class="btn btn-sm btn-label-danger js-remove-sku"${frozen ? ' disabled' : ''}><i class="bx bx-trash"></i></button>
-                    </td>
-                </tr>`).join('');
+            const opt = productById(line.globalProductId);
+            const code = opt ? (opt.code || '') : '';
             return `
-            <div class="border rounded p-3" data-row="product" data-index="${i}">
-                <div class="row g-2 align-items-end mb-2">
-                    <div class="col-12 col-md-5">
-                        <label class="form-label small mb-1">${esc(L.GlobalProduct || '')} <span class="text-danger">*</span></label>
-                        ${pickerSelect('product', line.globalProductId, can('global-product'))}
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label small mb-1">${esc(L.SkuAllocationMode || '')}</label>
-                        ${vocabSelect(cfg.skuAllocationModes || [], line.skuAllocationMode || 'product-only', 'js-mode')}
-                    </div>
-                    <div class="col-3 col-md-2">
-                        <label class="form-label small mb-1">${esc(L.LineWeightPercentage || '')}</label>
-                        <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} />
-                    </div>
-                    <div class="col-3 col-md-2 text-end">
-                        <button type="button" class="btn btn-sm btn-label-danger js-remove"${frozen ? ' disabled' : ''}><i class="bx bx-trash"></i></button>
-                    </div>
+            <div class="st-prod-row" data-row="product" data-index="${i}">
+                <div class="st-prod-main">
+                    ${pickerSelect('product', line.globalProductId, can('global-product'))}
+                    <div class="st-prod-meta">${esc(code)}</div>
                 </div>
-                <div class="${allocated ? '' : 'd-none'}">
-                    <table class="table table-sm mb-2">
-                        <thead><tr>
-                            <th>${esc(L.Gsku || '')}</th>
-                            <th>${esc(L.Percentage || '')}</th>
-                            <th></th>
-                        </tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <button type="button" class="btn btn-sm btn-label-primary js-add-sku"${frozen ? ' disabled' : ''}>
-                            <i class="bx bx-plus"></i> ${esc(L.AddSkuAllocation || '')}
-                        </button>
-                        <span class="badge ${ok ? 'bg-label-success' : 'bg-label-danger'}">
-                            ${esc(L.TotalPercentage || '')}: ${total.toFixed(2)}
-                        </span>
-                    </div>
+                <div class="st-prod-weight">
+                    <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.LineWeightPercentage || '')}" />
+                    <span class="st-prod-weight-sign">%</span>
                 </div>
+                <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
+                    <i class="bx bx-trash"></i>
+                </button>
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.products.length > 0);
+        updateProductTotals();
     };
 
     // ---------------- "which story" ----------------
@@ -588,6 +597,23 @@
         renderProducts();
     });
 
+    // WP-ST-EDIT-P — "Eşit dağıt": split 100 evenly across the lines (round2(100/N)), then push the rounding remainder
+    // onto the last row so Σ is EXACTLY 100.00. It only sets lineWeightPercentage — it never touches skuAllocationMode or
+    // skuAllocations, so the ProductLinesJson contract is preserved. Inert while frozen.
+    const distributeBtn = el('btnDistributeProducts');
+    if (distributeBtn && frozen) distributeBtn.disabled = true;
+    distributeBtn?.addEventListener('click', () => {
+        if (frozen) return;
+        const n = state.products.length;
+        if (n === 0) return;
+        const each = round2(total100 / n);
+        state.products.forEach(l => { l.lineWeightPercentage = each; });
+        const remainder = round2(total100 - round2(each * n));
+        if (remainder !== 0) state.products[n - 1].lineWeightPercentage = round2(each + remainder);
+        renderProducts();
+        setTimeout(updateSidePanel, 0);
+    });
+
     el('btnAddContentBinding')?.addEventListener('click', () => {
         if (frozen || limitReached(state.contents.length, cfg.maxContentBindings)) return;
         state.contents.push({
@@ -615,24 +641,9 @@
     el('frequencyPolicyId')?.addEventListener('change', syncFrequencyPolicyOpen);
 
     document.addEventListener('click', event => {
-        const removeSku = event.target.closest('.js-remove-sku');
-        if (removeSku) {
-            const row = removeSku.closest('[data-row="sku"]');
-            state.products[Number(row.dataset.index)].skuAllocations.splice(Number(row.dataset.sub), 1);
-            renderProducts();
-            return;
-        }
-
-        const addSku = event.target.closest('.js-add-sku');
-        if (addSku) {
-            const line = state.products[Number(addSku.closest('[data-row="product"]').dataset.index)];
-            line.skuAllocations = line.skuAllocations || [];
-            if (limitReached(line.skuAllocations.length, cfg.maxSkuAllocationsPerLine)) return;
-            line.skuAllocations.push({ gskuId: '', percentage: null, sortOrder: line.skuAllocations.length * 10 });
-            renderProducts();
-            return;
-        }
-
+        // WP-ST-EDIT-P — the per-line SKU add/remove controls were removed from this flat screen (the sku-allocated mode
+        // is no longer editable here), so their click handlers are gone too; an incoming line's allocations are preserved
+        // untouched in state, never mutated from this UI.
         const remove = event.target.closest('.js-remove');
         if (!remove) return;
         const row = remove.closest('[data-row]');
@@ -662,18 +673,11 @@
             const line = state.products[i];
             if (!line) return;
             line.globalProductId = row.querySelector('[data-kind="product"]')?.value || '';
-            line.skuAllocationMode = row.querySelector('.js-mode')?.value || 'product-only';
             const weight = row.querySelector('.js-weight')?.value;
             line.lineWeightPercentage = weight === '' || weight == null ? null : Number(weight);
-            row.querySelectorAll('[data-row="sku"]').forEach(sub => {
-                const allocation = line.skuAllocations[Number(sub.dataset.sub)];
-                if (!allocation) return;
-                allocation.gskuId = sub.querySelector('[data-kind="gsku"]')?.value || '';
-                const raw = sub.querySelector('.js-percentage')?.value;
-                // Stored exactly as typed — the client never normalises or redistributes a share.
-                allocation.percentage = raw === '' || raw == null ? null : Number(raw);
-            });
-            if (line.skuAllocationMode !== 'sku-allocated') line.skuAllocations = [];
+            // WP-ST-EDIT-P — the flat screen edits product + weight ONLY. skuAllocationMode and skuAllocations are NOT
+            // re-read or cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row keeps
+            // its mode + allocations intact (no wipe), so ProductLinesJson round-trips the contract without data loss.
         });
 
         document.querySelectorAll('[data-row="content"]').forEach(row => {
@@ -694,28 +698,22 @@
     form.addEventListener('change', event => {
         if (!event.target.closest('#segmentBindingList, #productLineList, #contentBindingList, #frequencyEditor')) return;
         sync();
-        // A mode or a content type change reshapes its row, so those two re-render; a percentage only refreshes totals.
-        if (event.target.classList.contains('js-mode') || event.target.classList.contains('js-content-type')) {
-            renderProducts();
+        // A content type change reshapes its row, so it re-renders; a product pick refreshes the MDM-GP code sub-line and
+        // the Σ badge; choosing the first segment derives the SubjectType and locks the remaining rows to that type.
+        if (event.target.classList.contains('js-content-type')) {
             renderContents();
-        } else if (event.target.classList.contains('js-percentage')) {
+        } else if (event.target.matches('[data-kind="product"]')) {
             renderProducts();
         } else if (event.target.matches('[data-kind="segment"]')) {
-            // Choosing the first segment derives the SubjectType; re-render so the remaining rows lock to that type.
             renderSegments();
         }
     });
 
     form.addEventListener('input', event => {
-        if (event.target.classList.contains('js-percentage')) {
+        // WP-ST-EDIT-P — a live weight edit refreshes the header Σ badge + the Σ≠100 warning box (display only).
+        if (event.target.classList.contains('js-weight')) {
             sync();
-            const row = event.target.closest('[data-row="product"]');
-            const badge = row?.querySelector('.badge');
-            if (!badge) return;
-            const total = lineTotal(state.products[Number(row.dataset.index)]);
-            badge.textContent = `${L.TotalPercentage || ''}: ${total.toFixed(2)}`;
-            badge.classList.toggle('bg-label-success', total === total100);
-            badge.classList.toggle('bg-label-danger', total !== total100);
+            updateProductTotals();
         }
     });
 

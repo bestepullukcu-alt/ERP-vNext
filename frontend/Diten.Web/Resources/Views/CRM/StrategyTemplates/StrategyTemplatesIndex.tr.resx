@@ -231,4 +231,7 @@
   <data name="PeriodType_cycle" xml:space="preserve"><value>Döngü</value></data>
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Kampanya dönemi</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Özel</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Ürün toplamı</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Eşit dağıt</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>Ürün yüzdesi %100 değil. Hesaplanan toplam {total}% — fark {diff} puan. Kaydetmek için satırları düzeltin.</value></data>
 </root>

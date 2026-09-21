@@ -231,4 +231,7 @@
   <data name="PeriodType_cycle" xml:space="preserve"><value>دورة</value></data>
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>إجمالي المنتجات</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>توزيع بالتساوي</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>نسبة المنتج ليست 100٪. الإجمالي المحسوب {total}٪ — بفارق {diff} نقطة. صحّح الصفوف للحفظ.</value></data>
 </root>

@@ -231,4 +231,7 @@
   <data name="PeriodType_cycle" xml:space="preserve"><value>Цикл</value></data>
   <data name="PeriodType_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
   <data name="PeriodType_custom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Итого по продуктам</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Распределить поровну</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>Процент продукта не равен 100%. Расчётный итог {total}% — отклонение {diff} пунктов. Исправьте строки, чтобы сохранить.</value></data>
 </root>
