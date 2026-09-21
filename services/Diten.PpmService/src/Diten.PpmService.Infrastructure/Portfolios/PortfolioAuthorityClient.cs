@@ -5,18 +5,19 @@ using Microsoft.Extensions.Options;
 
 namespace Diten.PpmService.Infrastructure.Portfolios;
 
-// Runtime DI supplies no Auth base address or credential, so this adapter is closed by default. The only enabled
-// composition in this delivery is the disposable Auth acceptance host, which owns its own loopback HttpClient/token.
-public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<PortfolioAuthorityOptions> options)
+// Credentials are bound to each request after explicit Bearer authentication and scope checks.
+public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<PortfolioAuthorityOptions> options,
+    PortfolioAuthRequestContext requestContext, PortfolioAuthTrustedTarget trustedTarget)
     : IPortfolioOwnerActionAuthority
 {
     private const string PolicyVersion = "portfolio-owner-auth-adapter-v1";
     private static readonly JsonDocumentOptions JsonOptions = new() { CommentHandling = JsonCommentHandling.Disallow };
 
-    public Task<PortfolioAuthorityEvidence> CanManageAsync(PortfolioAuthorityScope scope, CancellationToken ct)
+    public async Task<PortfolioAuthorityEvidence> CanManageAsync(PortfolioAuthorityScope scope, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        return Task.FromResult(Evidence(scope, CanUseAuth() ? LocalActorOutcome(scope) : PortfolioAuthorityOutcome.Unavailable));
+        return Evidence(scope, CanUseAuth() && await requestContext.IsValidAsync(scope, ct)
+            ? LocalActorOutcome(scope) : PortfolioAuthorityOutcome.Unavailable);
     }
 
     public async Task<PortfolioOwnerEvidence> EvaluateAsync(PortfolioAuthorityScope scope, CancellationToken ct)
@@ -26,13 +27,13 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
             return new(actor, Evidence(scope, actor.Outcome == PortfolioAuthorityOutcome.Allowed
                 ? PortfolioAuthorityOutcome.Unavailable : actor.Outcome), false, false, false, false, null, PortfolioOwnerLabelState.Available);
 
-        var assertion = await GetDataAsync($"api/users/{targetId:D}/account-assertion", ct);
+        var assertion = await GetDataAsync(scope, $"api/users/{targetId:D}/account-assertion", ct);
         if (assertion.Status == HttpStatusCode.NotFound)
             return new(actor, Evidence(scope, PortfolioAuthorityOutcome.NotFound), false, false, false, false, null, PortfolioOwnerLabelState.Available);
         if (assertion.Status != HttpStatusCode.OK || !TryAssertion(assertion.Data, targetId, out var active, out var accountKind))
             return Unavailable(actor, scope);
 
-        var label = await GetDataAsync($"api/users/{targetId:D}/display-label", ct);
+        var label = await GetDataAsync(scope, $"api/users/{targetId:D}/display-label", ct);
         if (label.Status == HttpStatusCode.NotFound)
             return new(actor, Evidence(scope, PortfolioAuthorityOutcome.NotFound), false, false, false, false, null, PortfolioOwnerLabelState.Available);
         if (label.Status != HttpStatusCode.OK || !TryLabel(label.Data, targetId, out var displayLabel, out var labelState))
@@ -50,7 +51,7 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
         if (scope.Search is null || scope.Limit is not { } limit || limit is < 1 or > 20)
             return new(Evidence(scope, PortfolioAuthorityOutcome.Unavailable), []);
 
-        var lookup = await GetDataAsync($"api/users/lookup?search={Uri.EscapeDataString(scope.Search)}&limit={limit}", ct);
+        var lookup = await GetDataAsync(scope, $"api/users/lookup?search={Uri.EscapeDataString(scope.Search)}&limit={limit}", ct);
         if (lookup.Status != HttpStatusCode.OK || !TryCandidateLookup(lookup.Data, limit, out var lookupCandidates))
             return new(Evidence(scope, PortfolioAuthorityOutcome.Unavailable), []);
 
@@ -58,7 +59,7 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
         foreach (var lookupCandidate in lookupCandidates)
         {
             // Lookup only proves a bounded, tenant-scoped discovery result. It does not prove account kind.
-            var assertion = await GetDataAsync($"api/users/{lookupCandidate.UserId:D}/account-assertion", ct);
+            var assertion = await GetDataAsync(scope, $"api/users/{lookupCandidate.UserId:D}/account-assertion", ct);
             if (assertion.Status != HttpStatusCode.OK ||
                 !TryAssertion(assertion.Data, lookupCandidate.UserId, out var active, out var accountKind))
                 return new(Evidence(scope, PortfolioAuthorityOutcome.Unavailable), []);
@@ -66,7 +67,7 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
             // These are definitive target facts, so they are omitted rather than converted into a provider outage.
             if (!active || !string.Equals(accountKind, "Human", StringComparison.Ordinal)) continue;
 
-            var label = await GetDataAsync($"api/users/{lookupCandidate.UserId:D}/display-label", ct);
+            var label = await GetDataAsync(scope, $"api/users/{lookupCandidate.UserId:D}/display-label", ct);
             if (label.Status != HttpStatusCode.OK ||
                 !TryLabel(label.Data, lookupCandidate.UserId, out var displayLabel, out var labelState))
                 return new(Evidence(scope, PortfolioAuthorityOutcome.Unavailable), []);
@@ -78,10 +79,11 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
         return new(authority, candidates);
     }
 
-    private async Task<(HttpStatusCode Status, JsonElement Data)> GetDataAsync(string path, CancellationToken ct)
+    private async Task<(HttpStatusCode Status, JsonElement Data)> GetDataAsync(PortfolioAuthorityScope scope, string path, CancellationToken ct)
     {
-        if (!CanUseAuth()) return (0, default);
-        using var request = new HttpRequestMessage(HttpMethod.Get, path);
+        if (!CanUseAuth() || !trustedTarget.TryCreateRequestUri(path, out var uri)) return (0, default);
+        using var request = new HttpRequestMessage(HttpMethod.Get, uri);
+        if (!await requestContext.TryBindAsync(request, scope, ct)) return (0, default);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(options.Value.TimeoutSeconds));
         try
@@ -100,8 +102,10 @@ public sealed class PortfolioAuthorityClient(HttpClient httpClient, IOptions<Por
         }
     }
 
-    private bool CanUseAuth() => options.Value.IsValid && httpClient.BaseAddress is { } baseAddress &&
-        baseAddress.IsLoopback && baseAddress.Scheme is "http" or "https";
+    private bool CanUseAuth() => trustedTarget.IsEnabled &&
+        httpClient.DefaultRequestHeaders.Authorization is null &&
+        !httpClient.DefaultRequestHeaders.Contains("X-Tenant-Id") &&
+        !httpClient.DefaultRequestHeaders.Contains("Cookie");
 
     private static PortfolioAuthorityOutcome LocalActorOutcome(PortfolioAuthorityScope scope)
     {

@@ -3090,6 +3090,63 @@ trusted actor/tenant eşleşmesi ve açık yetki gerekir. Bu değerlendirme yeni
 kesinleştirmez. Bunlar bu PPM scope'unun
 dışındadır.
 
+**SCOPED PORTFOLIO AUTH TRANSPORT APPROVAL — 2026-09-18:** The user explicitly authorized
+implementation and isolated tests in the following exact 14 files on
+`codex/ppm-portfolio-first-delivery`, baseline `1f63c2e3f657f484cfbff5217c2f6edf10fe91a5`.
+The controlling authority is that user message, not the earlier proposed implementation prompt.
+This scoped amendment permits the transport work previously held outside C4; the module remains
+`review` and no general module, browser or production acceptance is granted.
+
+1. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthorityOptions.cs`
+2. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthorityClient.cs`
+3. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/DependencyInjection.cs`
+4. `services/Diten.PpmService/src/Diten.PpmService.Api/Program.cs`
+5. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthRequestContext.cs` (new)
+6. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Portfolios/PortfolioAuthTrustedTarget.cs` (new)
+7. `services/Diten.PpmService/tests/Diten.PpmService.Tests/Portfolios/PortfolioAuthorityClientTests.cs`
+8. `services/Diten.PpmService/tests/Diten.PpmService.Tests/Portfolios/PortfolioAuthTransportTests.cs` (new)
+9. `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioAuthProviderProcessHost.cs`
+10. `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioAuthProviderIntegrationTests.cs`
+11. `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioAuthTransportTestHost.cs` (new)
+12. `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Portfolios/PortfolioAuthTransportIntegrationTests.cs` (new)
+13. `execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md`
+14. `docs/records/audits/2026-09/ppm-portfolio-auth-transport-implementation-2026-09-18.md` (new)
+
+The transport must consume only the saved token from a successful Bearer authentication ticket;
+raw Authorization-header fallback is forbidden. Authenticated actor/tenant must match the trusted
+PPM contexts and Portfolio scope. Every outbound request carries its own credential and tenant;
+pooled handlers, singletons and DefaultRequestHeaders must not retain request identity. Only the
+environment-owner-approved HTTPS origin and the existing lookup, account-assertion and display-label
+GET routes may be used. Normal TLS hostname/chain/validity verification remains mandatory;
+redirects, proxies and cookies are disabled. Additional certificate/SPKI pinning is not required
+by this scoped approval. Default-off/production-off, entitlement/permission/record relationship,
+existing HTTP outcomes, CAS/replay and transactional reassertion remain unchanged.
+
+The isolated tests must cover real factory reuse across concurrent request scopes, missing/failed
+authentication and scope mismatch with zero outbound, and target/TLS/redirect credential leakage.
+Test TLS trust belongs only to the run and test client, never the machine trust store; trust-all is
+forbidden. Existing disposable Auth/PPM Mongo, verified UDS peer, cleanup and secret-output boundaries
+remain mandatory. The test TLS bridge does not establish real environment or browser acceptance.
+
+Auth/Platform/Gateway/frontend changes, real environment configuration/secrets, shared/production DB,
+real grants/account classification/provisioning, browser execution and commit/push/PR are excluded.
+Only this pack and the new dated evidence file may record this delivery; historical control reports
+and backlog/seam documents are not in the authorized write scope. A need for any additional file or
+unexpected source change stops the work instead of expanding it. Real Auth origin/trust ownership,
+JWT compatibility and real PPM authentication/entitlement smoke remain environment-owner gates
+before browser acceptance.
+
+**Scoped transport evidence — 2026-09-18:** Authorized implementation and isolated tests completed:
+PPM unit **446/446** and selected Auth/supervisor/disposable-Mongo/TLS integration **64/64**, zero
+failures/skips. Architecture **16/18** retains the same two existing HCM/TEP ClockSkew failures;
+those files/guards were not changed. The unchanged standalone Auth fixture **65/65** and host **68/68**
+remain historical merge evidence, not new runs. The earlier cleanup timing risk is not closed by a
+single successful rerun. Backend, independent security and testing agents executed; security review
+reported no remaining blocker. No real origin was configured; runtime/browser/production acceptance
+and real PPM JWT/entitlement evidence remain open. Exact files, commands, findings and environment
+inputs are recorded in [the dated transport evidence](../../../../docs/records/audits/2026-09/ppm-portfolio-auth-transport-implementation-2026-09-18.md).
+
+
 **C5 alias kaydı — correction:** Parent pack'in §4.9.5'i `GateILocalApiSmokeTests.cs` dosyasını Gate I
 local evidence için adıyla yetkilendirir; bu, Portfolio Auth adapter'ın 12 dosyalık scoped onayı değildir.
 Önceki genel “`extern alias` kullan” talimatı da bu dosya için adapter-scope write authority sayılmaz.
@@ -3995,3 +4052,34 @@ Claude uygunluk incelemesi → correction → tek anlamlı PR sırasındadır. K
 Claude incelemesi, live provider ve production henüz yoktur; sonraki sayfa başlatılmadı.
 Pack review / production_authority: none ve NOT SELECTED detached dilim korunur.
 Commit, push veya PR yapılmadı.
+
+
+## Scoped PPM entitlement credential transport authority — 2026-09-18
+
+The user's current explicit instruction authorizes only the existing PPM entitlement consumer's
+credential transport hardening and isolated tests. It does not authorize a new provider or Auth API,
+real environment/config/secret changes, shared databases, grants/provisioning, VM/container setup,
+browser execution or commit/push/PR. The overall module remains `review`.
+
+Baseline: branch `codex/ppm-portfolio-first-delivery`, HEAD
+`1f63c2e3f657f484cfbff5217c2f6edf10fe91a5`, with the previous 14-file Portfolio Auth transport
+work already dirty. That prior work is preserved and is not attributed to this delivery. Only the
+entitlement registration in the shared DI file and this additive pack section may overlap it.
+
+Exact authorized paths:
+
+1. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/Entitlements/PpmEntitlementDecisionClient.cs`
+2. `services/Diten.PpmService/src/Diten.PpmService.Infrastructure/DependencyInjection.cs`
+3. `services/Diten.PpmService/tests/Diten.PpmService.Tests/PpmEntitlementAuthorizationTests.cs`
+4. `services/Diten.PpmService/tests/Diten.PpmService.IntegrationTests/Entitlements/PpmEntitlementTransportIntegrationTests.cs` (new)
+5. `execution/domains/portfolio-delivery/module-packs/MOD-0117-project-portfolio-management.md`
+6. `docs/records/audits/2026-09/ppm-entitlement-transport-hardening-2026-09-18.md` (new)
+
+The consumer keeps its existing provider contract and configuration keys. `BaseUrl` must be an
+operator-controlled single HTTPS origin; syntactic validation is not evidence of ownership or approval.
+Only the existing tenant-bound GET is sent, with per-message service key/correlation, normal TLS,
+redirect/proxy/cookies disabled and sensitive-header log redaction. Allow/Deny/dependency-unavailable,
+timeout/cancellation and the shared PPM authorization sequence remain unchanged.
+
+Actual test results, review limitations and preserved-baseline evidence are recorded in the
+[dated implementation report](../../../../docs/records/audits/2026-09/ppm-entitlement-transport-hardening-2026-09-18.md).

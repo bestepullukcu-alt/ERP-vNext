@@ -150,6 +150,14 @@ internal sealed class PortfolioAuthProviderProcessHost : IAsyncDisposable
         catch { client.Dispose(); throw Failure("login-failed"); }
     }
 
+    // Credential-free transport for the run-owned TLS bridge. Every new UDS connection
+    // still verifies root/socket identity and the kernel API peer before writing bytes.
+    internal HttpClient CreateForwardingClient()
+    {
+        if (!_ready || _disposed) throw Failure("host-not-ready");
+        return CreateClient();
+    }
+
     private HttpClient CreateClient()
     {
         var handler = new SocketsHttpHandler

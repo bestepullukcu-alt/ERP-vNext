@@ -2,7 +2,6 @@ using System.Net;
 using System.Text;
 using Diten.PpmService.Application.Features.Portfolios;
 using Diten.PpmService.Infrastructure.Portfolios;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Diten.PpmService.Tests.Portfolios;
@@ -46,7 +45,7 @@ public sealed class PortfolioAuthorityClientTests
     {
         var calls = 0;
         var client = Client(_ => { calls++; return Json("{}"); });
-        var scope = Scope(Guid.NewGuid()) with { ActorId = Guid.NewGuid() };
+        var scope = Scope(Guid.NewGuid()) with { CreatorId = Guid.NewGuid() };
 
         var result = await client.EvaluateAsync(scope, default);
 
@@ -115,14 +114,15 @@ public sealed class PortfolioAuthorityClientTests
         Assert.Equal(new[] { human }, result.Candidates.Select(x => x.UserId));
     }
 
-    private static PortfolioAuthorityClient Client(Func<HttpRequestMessage, HttpResponseMessage> responder) => new(
-        new HttpClient(new StubHandler(responder)) { BaseAddress = new Uri("http://localhost/") },
-        Options.Create(new PortfolioAuthorityOptions { Enabled = true, TimeoutSeconds = 10 }));
+    private static readonly Guid TenantId = Guid.NewGuid();
+    private static readonly Guid ActorId = Guid.NewGuid();
+    private static PortfolioAuthorityClient Client(Func<HttpRequestMessage, HttpResponseMessage> responder) =>
+        PortfolioAuthTransportTests.CreateClient(new StubHandler(responder), TenantId, ActorId);
 
     private static PortfolioAuthorityScope Scope(Guid targetId)
     {
-        var tenantId = Guid.NewGuid();
-        var actorId = Guid.NewGuid();
+        var tenantId = TenantId;
+        var actorId = ActorId;
         var portfolioId = Guid.NewGuid();
         var binding = new PortfolioTemporaryNonProductionRecordAccessAuthority(
             true, PortfolioTemporaryNonProductionAccessEnvironment.NonProduction).CreateBinding(portfolioId);

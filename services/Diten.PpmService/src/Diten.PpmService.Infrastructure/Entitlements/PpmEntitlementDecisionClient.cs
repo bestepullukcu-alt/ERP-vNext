@@ -31,16 +31,28 @@ public sealed class PpmEntitlementDecisionClient(
         var enabled = configuration.GetValue<bool>("PpmEntitlementDecision:Enabled");
         var baseUrl = configuration["PpmEntitlementDecision:BaseUrl"];
         var credential = configuration["PpmEntitlementDecision:ServiceCredential"];
-        if (!enabled || !Uri.TryCreate(baseUrl, UriKind.Absolute, out var baseUri)
-                     || string.IsNullOrWhiteSpace(credential))
+        if (!enabled || !TryGetApprovedOrigin(baseUrl, out var baseUri)
+                     || string.IsNullOrWhiteSpace(credential)
+                     || credential.Any(char.IsControl))
         {
             throw new PpmEntitlementDependencyException(
                 "The authoritative PPM entitlement decision provider is not configured.");
         }
 
+        if (httpClient.DefaultRequestHeaders.Any(header =>
+                header.Key.Equals(ServiceCredentialHeader, StringComparison.OrdinalIgnoreCase)
+                || header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase)
+                || header.Key.Equals("Proxy-Authorization", StringComparison.OrdinalIgnoreCase)
+                || header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase)
+                || header.Key.Equals("X-Tenant-Id", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new PpmEntitlementDependencyException(
+                "The PPM entitlement client contains unexpected default credentials or tenant headers.");
+        }
+
         using var request = new HttpRequestMessage(
             HttpMethod.Get,
-            new Uri(baseUri, $"/api/internal/ppm/tenants/{tenantId:D}/entitlement-decision"));
+            new Uri(baseUri!, $"/api/internal/ppm/tenants/{tenantId:D}/entitlement-decision"));
         request.Headers.TryAddWithoutValidation(ServiceCredentialHeader, credential);
         request.Headers.TryAddWithoutValidation(
             CorrelationIdHeader,
@@ -126,6 +138,38 @@ public sealed class PpmEntitlementDecisionClient(
                 "The authoritative PPM entitlement decision is unavailable.",
                 exception);
         }
+    }
+
+    public static HttpClientHandler CreateHttpHandler() => new()
+    {
+        AllowAutoRedirect = false,
+        UseProxy = false,
+        UseCookies = false,
+        CheckCertificateRevocationList = true
+        // No callback: normal platform hostname, chain and validity validation remains mandatory.
+    };
+
+    private static bool TryGetApprovedOrigin(string? value, out Uri? origin)
+    {
+        origin = null;
+        // Configuration is operator-owned. HTTPS syntax cannot establish deployment ownership or approval.
+        if (string.IsNullOrWhiteSpace(value)
+            || value.Any(char.IsWhiteSpace) || value.Any(char.IsControl)
+            || value.IndexOfAny(['\\', '%', '?', '#', '@']) >= 0
+            || !value.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+            || !Uri.TryCreate(value, UriKind.Absolute, out origin)
+            || origin.Scheme != Uri.UriSchemeHttps
+            || origin.HostNameType is not (UriHostNameType.Dns or UriHostNameType.IPv4 or UriHostNameType.IPv6)
+            || origin.Port <= 0 || !string.IsNullOrEmpty(origin.UserInfo)
+            || origin.AbsolutePath != "/"
+            || !string.IsNullOrEmpty(origin.Query) || !string.IsNullOrEmpty(origin.Fragment))
+        {
+            return false;
+        }
+
+        // Inspect the original path as Uri would normalize dot segments before validation.
+        var pathStart = value.IndexOf('/', "https://".Length);
+        return pathStart < 0 || pathStart == value.Length - 1;
     }
 
     private static async Task<byte[]> ReadBoundedPayloadAsync(

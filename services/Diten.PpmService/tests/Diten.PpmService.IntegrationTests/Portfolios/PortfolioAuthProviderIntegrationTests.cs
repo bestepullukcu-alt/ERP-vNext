@@ -17,8 +17,8 @@ using Xunit;
 
 namespace Diten.PpmService.IntegrationTests.Portfolios;
 
-// Calls the real Auth API in a separate process over a kernel-verified Unix socket and disposable mongod. The bearer belongs to that fixture's HttpClient;
-// PPM code neither reads nor forwards credentials in normal runtime composition.
+// Calls real Auth via a run-owned TLS bridge and kernel-verified Unix socket with disposable mongod.
+// The saved-ticket seam supplies the real fixture-login token; the raw incoming header is poisoned.
 // Auth uses its login-settings stub; this does not prove Platform integration. This joins two disposable processes. Auth supplies the real HTTP/JWT account facts; PPM uses its real
 // Mongo repository/UoW/CAS chain. The explicit PpmAccessAuthorizer seam supplies both Allowed and Forbidden PPM
 // entitlement outcomes so service paths can be exercised; it is never evidence of a production entitlement provider,
@@ -27,10 +27,18 @@ namespace Diten.PpmService.IntegrationTests.Portfolios;
 public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mongo) : IAsyncLifetime
 {
     private readonly PortfolioAuthProviderProcessHost host = new();
-    public Task InitializeAsync() => host.StartAsync();
+    private PortfolioAuthTransportTestHost bridge = null!;
+    public async Task InitializeAsync()
+    {
+        await host.StartAsync();
+        try { bridge = new PortfolioAuthTransportTestHost(host); }
+        catch { await host.DisposeAsync(); throw; }
+    }
     public async Task DisposeAsync()
     {
-        await host.DisposeAsync();
+        try { await bridge.DisposeAsync(); }
+        finally { await host.DisposeAsync(); }
+        Assert.True(bridge.CleanupVerified);
         Assert.True(host.CleanupVerified);
         Assert.True(host.OutputContainsNoSecrets);
     }
@@ -49,8 +57,7 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
         Assert.True(issuerPresent && audiencePresent, "The isolated login must issue a complete JWT profile; values withheld.");
         Assert.True(protectedResponse.StatusCode == HttpStatusCode.OK,
             $"Real Auth protected assertion status={(int)protectedResponse.StatusCode}; test JWT issuerPresent={issuerPresent}, audiencePresent={audiencePresent}.");
-        var authority = new PortfolioAuthorityClient(client,
-            Options.Create(new PortfolioAuthorityOptions { Enabled = true, TimeoutSeconds = 10 }));
+        var authority = bridge.Authority(bridge.Client(), host.TenantId, host.ActorId("pmo"), client.DefaultRequestHeaders.Authorization!.Parameter);
 
         var named = await authority.EvaluateAsync(Scope(host.Subjects["human"]), default);
         var missing = await authority.EvaluateAsync(Scope(host.Subjects["unnamed"]), default);
@@ -75,8 +82,7 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
     [Fact]
     public async Task Missing_or_untrusted_adapter_composition_stays_unavailable()
     {
-        var authority = new PortfolioAuthorityClient(new HttpClient(),
-            Options.Create(new PortfolioAuthorityOptions { Enabled = true, TimeoutSeconds = 10 }));
+        var authority = bridge.Authority(bridge.Client(), host.TenantId, host.ActorId("pmo"), savedToken: null);
 
         var result = await authority.EvaluateAsync(Scope(host.Subjects["human"]), default);
 
@@ -146,9 +152,12 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
         Assert.Equal(403, (await noEntitlement.ChangeOwner(new(world.Portfolio.Id, host.Subjects["human"], "Denied",
             PortfolioOwnerOperation.Transfer, moved.Data.AssignmentId, 3, Guid.NewGuid()), default)).StatusCode);
 
-        using var deadClient = new HttpClient { BaseAddress = new Uri("http://127.0.0.1:1/") };
-        var unavailable = await world.WithAuthority(deadClient).ChangeOwner(new(world.Portfolio.Id, host.Subjects["human"], "Unavailable",
+        var beforeUnavailable = bridge.Requests;
+        bridge.FailureStatus = HttpStatusCode.ServiceUnavailable;
+        var unavailable = await world.Service.ChangeOwner(new(world.Portfolio.Id, host.Subjects["human"], "Unavailable",
             PortfolioOwnerOperation.Transfer, moved.Data.AssignmentId, 3, Guid.NewGuid()), default);
+        bridge.FailureStatus = null;
+        Assert.True(bridge.Requests > beforeUnavailable);
         Assert.Equal(503, unavailable.StatusCode);
         saved = await world.Repository.GetByIdAsync(host.TenantId, world.Portfolio.Id, default);
         Assert.Equal(3, saved!.Version);
@@ -225,7 +234,7 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
         var database = PpmMongoTestDatabase.Open(mongo.ReplicaSetConnectionString);
         await new PpmMongoIndexInitializer(database).StartAsync(default);
         var context = new PpmMongoContext(database.Client, database);
-        var world = new PpmWorld(host.TenantId, actorId, context, authClient);
+        var world = new PpmWorld(host.TenantId, actorId, context, authClient, bridge);
         var created = await world.Service.Create(new($"AUTH-{Guid.NewGuid():N}", "Auth provider portfolio", null, null), default);
         Assert.Equal(201, created.StatusCode);
         world.Portfolio = await world.Repository.GetByIdAsync(host.TenantId, created.Data!.Id, default) ?? throw new InvalidOperationException("Portfolio was not persisted.");
@@ -248,9 +257,10 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
         private readonly PpmMongoContext _context;
         private readonly HttpClient _authClient;
         private readonly bool _accessAllowed;
-        public PpmWorld(Guid tenantId, Guid actorId, PpmMongoContext context, HttpClient authClient, bool accessAllowed = true)
+        private readonly PortfolioAuthTransportTestHost _bridge;
+        public PpmWorld(Guid tenantId, Guid actorId, PpmMongoContext context, HttpClient authClient, PortfolioAuthTransportTestHost bridge, bool accessAllowed = true)
         {
-            TenantId = tenantId; ActorId = actorId; _context = context; _authClient = authClient; _accessAllowed = accessAllowed;
+            TenantId = tenantId; ActorId = actorId; _context = context; _authClient = authClient; _bridge = bridge; _accessAllowed = accessAllowed;
             Repository = new PortfolioRepository(context); Audit = new AuditIntentRepository(context); Unit = new PpmUnitOfWork(context);
             Authority = CreateAuthority(authClient);
             Service = BuildService();
@@ -267,14 +277,12 @@ public sealed class PortfolioAuthProviderIntegrationTests(PpmDisposableMongo mon
         public async Task<long> AuditCount() => await _context.AuditIntents.CountDocumentsAsync(x => x.TenantId == TenantId && x.EntityId == Portfolio.Id);
         public PortfolioService ForActor(Guid actorId) => Rebuild(actorId, _authClient, _accessAllowed).Service;
         public PortfolioService WithAccess(bool allowed) => Rebuild(ActorId, _authClient, allowed).Service;
-        public PortfolioService WithAuthority(HttpClient client) => Rebuild(ActorId, client, _accessAllowed).Service;
         private PpmWorld Rebuild(Guid actorId, HttpClient client, bool accessAllowed)
         {
-            var next = new PpmWorld(TenantId, actorId, _context, client, accessAllowed) { Portfolio = Portfolio };
+            var next = new PpmWorld(TenantId, actorId, _context, client, _bridge, accessAllowed) { Portfolio = Portfolio };
             return next;
         }
-        private CountingAuthority CreateAuthority(HttpClient client) => new(new PortfolioAuthorityClient(client,
-            Options.Create(new PortfolioAuthorityOptions { Enabled = true, TimeoutSeconds = 10 })));
+        private CountingAuthority CreateAuthority(HttpClient client) => new(_bridge.Authority(_bridge.Client(), TenantId, ActorId, client.DefaultRequestHeaders.Authorization?.Parameter));
         private PortfolioService BuildService() => new(Repository, Audit, Unit, this, this, this, new TestPpmAccess(_accessAllowed),
             recordAuthority: new PortfolioTemporaryNonProductionRecordAccessAuthority(true, PortfolioTemporaryNonProductionAccessEnvironment.NonProduction),
             ownerAuthority: Authority);

@@ -43,13 +43,27 @@ public static class DependencyInjection
         services.AddScoped<ICorrelationContext, CanonicalCorrelationContext>();
         services.AddSingleton<IPermissionClaimEvaluator, SignedJwtPermissionClaimEvaluator>();
         services.AddScoped<IEffectivePermissionEvaluator, SharedPermissionClaimEvaluatorAdapter>();
-        services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>();
+        services.AddHttpClient<IPpmEntitlementDecisionClient, PpmEntitlementDecisionClient>()
+            .ConfigurePrimaryHttpMessageHandler(PpmEntitlementDecisionClient.CreateHttpHandler)
+            .RedactLoggedHeaders(new[]
+            {
+                PpmEntitlementDecisionClient.ServiceCredentialHeader,
+                "Authorization", "Proxy-Authorization", "X-Tenant-Id", "Cookie", "Set-Cookie"
+            });
         var portfolioAuthorityOptions = services.AddOptions<PortfolioAuthorityOptions>();
         if (configuration is not null)
         {
             portfolioAuthorityOptions.Bind(configuration.GetSection(PortfolioAuthorityOptions.SectionName));
         }
-        services.AddHttpClient<PortfolioAuthorityClient>();
+        portfolioAuthorityOptions.Validate(PortfolioAuthTrustedTarget.IsConfigurationValid,
+            "Enabled Portfolio Auth transport requires an approved HTTPS origin, trust profile owner/approval, non-production environment and bounded timeout.")
+            .ValidateOnStart();
+        services.AddScoped<PortfolioAuthRequestContext>();
+        services.AddSingleton(provider => new PortfolioAuthTrustedTarget(
+            provider.GetRequiredService<IOptions<PortfolioAuthorityOptions>>(), provider.GetService<IHostEnvironment>()));
+        services.AddHttpClient<PortfolioAuthorityClient>()
+            .ConfigurePrimaryHttpMessageHandler(PortfolioAuthTrustedTarget.CreateHttpHandler)
+            .RedactLoggedHeaders(new[] { "Authorization", "X-Tenant-Id", "Cookie" });
         services.AddScoped<IPortfolioOwnerActionAuthority>(provider => provider.GetRequiredService<PortfolioAuthorityClient>());
         var temporaryPortfolioAccessOptions = services.AddOptions<PortfolioTemporaryNonProductionAccessOptions>();
         if (configuration is not null)

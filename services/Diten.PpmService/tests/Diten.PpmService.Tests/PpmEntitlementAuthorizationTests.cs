@@ -389,16 +389,112 @@ public sealed class PpmEntitlementAuthorizationTests
             () => timeout.IsAllowedAsync(TenantId, cancelled.Token));
     }
 
+    [Theory]
+    [InlineData("http://platform.internal")]
+    [InlineData("https://user:password@platform.internal")]
+    [InlineData("https://@platform.internal")]
+    [InlineData("https://platform.internal/base")]
+    [InlineData("https://platform.internal/?query=1")]
+    [InlineData("https://platform.internal/#fragment")]
+    [InlineData("https://platform.internal?")]
+    [InlineData("https://platform.internal#")]
+    [InlineData("https://platform.internal/a/..")]
+    [InlineData("https://platform.internal/%2f")]
+    [InlineData(" https://platform.internal")]
+    [InlineData("https://platform.internal:0")]
+    public async Task Invalid_origin_never_sends_credential(string origin)
+    {
+        var handler = new RecordingHandler(_ => throw new InvalidOperationException("must not send"));
+        var exception = await Assert.ThrowsAsync<PpmEntitlementDependencyException>(() =>
+            Client(handler, true, baseUrl: origin).IsAllowedAsync(TenantId, default));
+        Assert.Null(handler.Request);
+        Assert.DoesNotContain(origin, exception.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Opaque_service_credential_preserves_internal_spaces()
+    {
+        const string credential = "run-owned opaque key";
+        var handler = new RecordingHandler(_ => Json(HttpStatusCode.OK, ValidJson()));
+        Assert.True(await Client(handler, true, credential: credential).IsAllowedAsync(TenantId, default));
+        Assert.True(handler.Request!.Headers.GetValues(PpmEntitlementDecisionClient.ServiceCredentialHeader).Single() == credential);
+    }
+
+    [Theory]
+    [InlineData("X-PPM-Service-Key")]
+    [InlineData("Authorization")]
+    [InlineData("Proxy-Authorization")]
+    [InlineData("Cookie")]
+    [InlineData("X-Tenant-Id")]
+    public async Task Contaminated_default_headers_fail_before_send(string name)
+    {
+        var handler = new RecordingHandler(_ => throw new InvalidOperationException("must not send"));
+        await Assert.ThrowsAsync<PpmEntitlementDependencyException>(() =>
+            Client(handler, true, configureClient: client =>
+                client.DefaultRequestHeaders.TryAddWithoutValidation(name, "poison-default"))
+                .IsAllowedAsync(TenantId, default));
+        Assert.Null(handler.Request);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData("invalid\r\nInjected: value")]
+    public async Task Invalid_credential_never_sends(string credential)
+    {
+        var handler = new RecordingHandler(_ => throw new InvalidOperationException("must not send"));
+        await Assert.ThrowsAsync<PpmEntitlementDependencyException>(() =>
+            Client(handler, true, credential: credential).IsAllowedAsync(TenantId, default));
+        Assert.Null(handler.Request);
+    }
+
+    [Fact]
+    public async Task Empty_tenant_never_calls_provider()
+    {
+        var handler = new RecordingHandler(_ => throw new InvalidOperationException("must not send"));
+        await Assert.ThrowsAsync<PpmEntitlementDependencyException>(() =>
+            Client(handler, true).IsAllowedAsync(Guid.Empty, default));
+        Assert.Null(handler.Request);
+    }
+
+    [Theory]
+    [InlineData(PpmPermissions.PortfoliosRead)]
+    [InlineData(PpmPermissions.InitiativesRead)]
+    [InlineData(PpmPermissions.ProgramsRead)]
+    [InlineData(PpmPermissions.ProjectsRead)]
+    [InlineData(PpmPermissions.InvestmentCasesRead)]
+    [InlineData(PpmPermissions.BenefitCommitmentsRead)]
+    public async Task Shared_consumer_preserves_access_decisions_for_all_aggregate_permissions(string permission)
+    {
+        foreach (var allowed in new[] { true, false })
+        {
+            var calls = new List<string>();
+            var client = Client(new RecordingHandler(_ => Json(HttpStatusCode.OK, ValidJson(allowed))), true);
+            var authorizer = new PpmAccessAuthorizer(new TenantContext(TenantId), new ActorContext(Guid.NewGuid()), client, new Permission(true, calls));
+            Assert.Equal(allowed ? PpmAccessDecision.Allowed : PpmAccessDecision.Forbidden,
+                await authorizer.AuthorizeAsync(permission, default));
+            Assert.Equal(allowed ? 1 : 0, calls.Count);
+        }
+        var failedCalls = new List<string>();
+        var failedClient = Client(new RecordingHandler(_ => new(HttpStatusCode.ServiceUnavailable)), true);
+        var failedAuthorizer = new PpmAccessAuthorizer(new TenantContext(TenantId), new ActorContext(Guid.NewGuid()), failedClient, new Permission(true, failedCalls));
+        Assert.Equal(PpmAccessDecision.DependencyUnavailable, await failedAuthorizer.AuthorizeAsync(permission, default));
+        Assert.Empty(failedCalls);
+    }
+
     private static PpmEntitlementDecisionClient Client(
         HttpMessageHandler handler,
         bool enabled,
-        ICorrelationContext? correlation = null)
+        ICorrelationContext? correlation = null,
+        string baseUrl = "https://platform.internal",
+        string credential = "dedicated-ppm-service-key-123",
+        Action<HttpClient>? configureClient = null)
     {
         var values = new Dictionary<string, string?>
         {
             ["PpmEntitlementDecision:Enabled"] = enabled.ToString(),
-            ["PpmEntitlementDecision:BaseUrl"] = "http://platform.internal",
-            ["PpmEntitlementDecision:ServiceCredential"] = "dedicated-ppm-service-key-123",
+            ["PpmEntitlementDecision:BaseUrl"] = baseUrl,
+            ["PpmEntitlementDecision:ServiceCredential"] = credential,
             ["PpmEntitlementDecision:TimeoutSeconds"] = "5"
         };
         var configuration = new ConfigurationBuilder()
@@ -406,8 +502,10 @@ public sealed class PpmEntitlementAuthorizationTests
             .Build();
         var context = new DefaultHttpContext { TraceIdentifier = "trace-fallback" };
         context.Request.Headers[PpmEntitlementDecisionClient.CorrelationIdHeader] = "corr-1";
+        var httpClient = new HttpClient(handler);
+        configureClient?.Invoke(httpClient);
         return new PpmEntitlementDecisionClient(
-            new HttpClient(handler),
+            httpClient,
             configuration,
             correlation ?? new CorrelationContext());
     }
