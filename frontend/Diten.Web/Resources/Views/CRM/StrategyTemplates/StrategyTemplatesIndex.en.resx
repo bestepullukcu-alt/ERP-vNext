@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>No product line. The play then has no product dimension.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>No segment bound yet. A play without a segment does not answer "who?".</value></data>
   <data name="Notes" xml:space="preserve"><value>Notes</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Reusable playbooks that bind a segment, a frequency intent, a product/SKU mix and content. A template binds; it never produces.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>All company</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>All countries</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>New play</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Templates that bind scope, segment, product weight and story. No delete — archive only.</value></data>
+  <data name="Play" xml:space="preserve"><value>Play</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Strategy Plays</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>plays</value></data>
+  <data name="Scope" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>Country</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Tenant</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Passive</value></data>
   <data name="Percentage" xml:space="preserve"><value>Share %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Period</value></data>

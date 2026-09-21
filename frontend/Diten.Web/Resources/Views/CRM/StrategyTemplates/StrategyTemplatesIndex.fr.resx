@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>Aucune ligne produit. Le plan n'a alors pas de dimension produit.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Aucun segment lié. Un plan sans segment ne répond pas à « qui ? ».</value></data>
   <data name="Notes" xml:space="preserve"><value>Notes</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Des plans réutilisables qui lient un segment, une intention de fréquence, un mix produit/SKU et du contenu. Un modèle lie ; il ne produit rien.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Toute l'entreprise</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Tous les pays</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Nouveau plan</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Modèles qui lient portée, segment, poids produit et récit. Pas de suppression — archivage uniquement.</value></data>
+  <data name="Play" xml:space="preserve"><value>Plan</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Plans stratégiques</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>plans</value></data>
+  <data name="Scope" xml:space="preserve"><value>Portée</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Unité opérationnelle</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>Pays</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Locataire</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Passif</value></data>
   <data name="Percentage" xml:space="preserve"><value>Part %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Période</value></data>

@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>没有产品行，方案即没有产品维度。</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>尚未绑定细分。没有细分的方案回答不了“谁”。</value></data>
   <data name="Notes" xml:space="preserve"><value>备注</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>可复用的行动方案，绑定细分、频次意图、产品/SKU 组合与内容。模板只做绑定，不生成任何记录。</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>整个公司</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>所有国家</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>新建策略</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>绑定范围、细分、产品权重和内容的模板。不可删除——仅归档。</value></data>
+  <data name="Play" xml:space="preserve"><value>策略</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>策略方案</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>个策略</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>租户</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>停用</value></data>
   <data name="Percentage" xml:space="preserve"><value>占比 %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>周期</value></data>

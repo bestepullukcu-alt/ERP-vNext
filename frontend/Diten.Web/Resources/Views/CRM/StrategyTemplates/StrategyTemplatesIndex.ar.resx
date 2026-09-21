@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج. عندها لا يملك المخطط بُعدًا للمنتج.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>لم تُربط أي شريحة. المخطط بلا شريحة لا يجيب عن سؤال «من؟».</value></data>
   <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>خطط قابلة لإعادة الاستخدام تربط شريحة ونية تكرار ومزيج منتج/SKU ومحتوى. القالب يربط ولا ينتج شيئًا.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>الشركة بأكملها</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>جميع الدول</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>خطة جديدة</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>قوالب تربط النطاق والشريحة ووزن المنتج والمحتوى. لا حذف — الأرشفة فقط.</value></data>
+  <data name="Play" xml:space="preserve"><value>خطة</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>الخطط الاستراتيجية</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>خطة</value></data>
+  <data name="Scope" xml:space="preserve"><value>النطاق</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>الدولة</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>المستأجر</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="Percentage" xml:space="preserve"><value>النسبة %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>الفترة</value></data>

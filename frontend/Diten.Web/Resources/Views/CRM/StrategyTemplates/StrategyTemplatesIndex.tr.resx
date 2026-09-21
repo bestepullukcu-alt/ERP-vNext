@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>Ürün hattı yok. Bu durumda planın ürün boyutu yoktur.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Henüz segment bağlanmadı. Segmentsiz bir plan "kim?" sorusunu cevaplamaz.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notlar</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Segment, frekans niyeti, ürün/SKU karması ve içeriği bağlayan yeniden kullanılabilir oyun planları. Şablon bağlar; üretmez.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Tüm şirket</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Tüm ülkeler</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Yeni oyun</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Kapsam, segment, ürün ağırlığı ve hikâyeyi bağlayan şablonlar. Silme yok — yalnızca arşiv.</value></data>
+  <data name="Play" xml:space="preserve"><value>Oyun</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Strateji Oyunları</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>oyun</value></data>
+  <data name="Scope" xml:space="preserve"><value>Kapsam</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>İş birimi</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>Ülke</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Tüzel kişilik</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Kiracı</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
   <data name="Percentage" xml:space="preserve"><value>Pay %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Dönem</value></data>

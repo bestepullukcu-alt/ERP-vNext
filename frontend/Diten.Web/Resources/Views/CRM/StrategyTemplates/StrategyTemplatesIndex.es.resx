@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>Sin línea de producto. Entonces el plan no tiene dimensión de producto.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Ningún segmento enlazado. Un plan sin segmento no responde a «¿quién?».</value></data>
   <data name="Notes" xml:space="preserve"><value>Notas</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Playbooks reutilizables que enlazan un segmento, una intención de frecuencia, una mezcla producto/SKU y contenido. Una plantilla enlaza; nunca produce.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Toda la empresa</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Todos los países</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Nueva jugada</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Plantillas que vinculan alcance, segmento, peso de producto e historia. Sin eliminación: solo archivo.</value></data>
+  <data name="Play" xml:space="preserve"><value>Jugada</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Jugadas estratégicas</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>jugadas</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>País</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Inquilino</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
   <data name="Percentage" xml:space="preserve"><value>Cuota %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Período</value></data>

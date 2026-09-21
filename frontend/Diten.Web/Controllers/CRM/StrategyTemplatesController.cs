@@ -176,6 +176,12 @@ public sealed class StrategyTemplatesController : Controller
     public Task<IActionResult> TemplateList(CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/strategy-templates{Request.QueryString}", ReadPermission, ct, ReadFallback);
 
+    /// <summary>WP-ST-SCOPE scope selector feed. The list console consumes it read-only for the KAPSAM label map
+    /// (country / legal-entity / business-unit → display name) and the country filter options.</summary>
+    [HttpGet("api/scope-options")]
+    public Task<IActionResult> ScopeOptions(CancellationToken ct) =>
+        ProxyGetAsync($"/api/crm/strategy-templates/scope-options{Request.QueryString}", ReadPermission, ct, ReadFallback);
+
     [HttpGet("api/templates/{templateId:guid}")]
     public Task<IActionResult> TemplateGet(Guid templateId, CancellationToken ct) =>
         ProxyGetAsync($"/api/crm/strategy-templates/{templateId}", ReadPermission, ct, ReadFallback);

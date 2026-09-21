@@ -71,7 +71,19 @@
   <data name="NoProductLines" xml:space="preserve"><value>Нет продуктовых строк. Тогда у плана нет продуктового измерения.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Сегмент не связан. План без сегмента не отвечает на вопрос «кто?».</value></data>
   <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Многоразовые планы, связывающие сегмент, намерение по частоте, продуктовый/SKU-микс и контент. Шаблон связывает и ничего не создаёт.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Вся компания</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Все страны</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Новый сценарий</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Шаблоны, связывающие область, сегмент, вес продукта и контент. Без удаления — только архив.</value></data>
+  <data name="Play" xml:space="preserve"><value>Сценарий</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Стратегические сценарии</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>сценариев</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>Страна</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Арендатор</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Неактивный</value></data>
   <data name="Percentage" xml:space="preserve"><value>Доля %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Период</value></data>
