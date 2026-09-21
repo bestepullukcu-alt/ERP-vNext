@@ -696,7 +696,15 @@
         let refLabel = '';
         if (level === 'country') refLabel = countryEl?.selectedOptions?.[0]?.textContent?.trim() || '';
         else if (level === 'legal-entity') refLabel = legalEntityEl?.selectedOptions?.[0]?.textContent?.trim() || '';
-        else if (level === 'business-unit') refLabel = businessUnitEl?.selectedOptions?.[0]?.textContent?.trim() || '';
+        else if (level === 'business-unit') {
+            // WP-ST-EDIT-H — the business-unit address resolves as "{country filter} / {business unit}" (e.g.
+            // "Belarus / Beta"). Each part is included only when it actually has a value — the country filter's
+            // "show all" head and the BU "—" head carry visible placeholder text but an empty value, so guard on
+            // value (not text) and join only the filled ones.
+            const buCountry = (buFilterCountryEl?.value || '').trim() ? (buFilterCountryEl.selectedOptions?.[0]?.textContent?.trim() || '') : '';
+            const bu = (businessUnitEl?.value || '').trim() ? (businessUnitEl.selectedOptions?.[0]?.textContent?.trim() || '') : '';
+            refLabel = [buCountry, bu].filter(Boolean).join(' / ');
+        }
         const value = refLabel ? `${typeLabel} — ${refLabel}` : typeLabel;
         const label = `<span class="st-resolved-scope-label">${esc(L.ResolvedScope || '')}</span>`;
         const valueHtml = value
@@ -724,12 +732,12 @@
         let current = (scopeTypeEl?.value || scopeTypeEl?.dataset.selected || '').trim();
         if (!current || types.indexOf(current) < 0) current = types.indexOf('tenant') >= 0 ? 'tenant' : (types[0] || 'tenant');
         if (scopeTypeEl) scopeTypeEl.value = current;
-        // WP-ST-EDIT-F — the buttons are standard Bootstrap outline-primary buttons (active = filled). The
-        // st-scope-type hook class is kept for the click handler + the stacked title/sub styling; the level logic,
-        // hidden #scopeType input and applyScopeType cascade are unchanged.
+        // WP-ST-EDIT-H — the buttons are Task Center .choice-box style cards (no btn-outline-primary fill): the
+        // st-scope-type class now owns the base bg-body + subtle border and the active primary-subtle wash (see
+        // strategy-create.css). The level logic, hidden #scopeType input and applyScopeType cascade are unchanged.
         scopeTypeButtonsEl.innerHTML = types.map(t => {
             const active = t === current;
-            return `<button type="button" class="btn btn-outline-primary st-scope-type${active ? ' active' : ''}" data-scope-type="${esc(t)}" aria-pressed="${active ? 'true' : 'false'}">
+            return `<button type="button" class="st-scope-type${active ? ' active' : ''}" data-scope-type="${esc(t)}" aria-pressed="${active ? 'true' : 'false'}">
                         <span class="st-scope-type-title">${esc(L['ScopeType_' + t] || t)}</span>
                         <span class="st-scope-type-sub">${esc(L['ScopeTypeSub_' + t] || '')}</span>
                     </button>`;

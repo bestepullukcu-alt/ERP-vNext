@@ -116,7 +116,9 @@
                     @* WP-ST-EDIT-F — the country filter and the business-unit picker sit side by side (row g-2) instead
                        of stacked; only the layout changed — buFilterCountry → loadScopeOptions → territory-derived BU
                        fill is untouched, and the filter is still never posted. *@
-                    <div class="col-12 col-md-4 d-none" data-scope-block="business-unit">
+                    @* WP-ST-EDIT-H — the business-unit block spans the full card width (col-12, no col-md-4) so its two
+                       side-by-side selects stay wide; country/legal-entity stay col-md-4 (they are single-field). *@
+                    <div class="col-12 d-none" data-scope-block="business-unit">
                         <div class="row g-2">
                             <div class="col-6">
                                 <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
