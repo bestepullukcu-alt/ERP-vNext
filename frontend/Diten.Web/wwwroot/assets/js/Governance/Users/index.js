@@ -749,9 +749,13 @@ const UsersList = (function () {
         const safe = String(link).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         S.fire({
             ...look({ width: '520px' }),
-            // The published builder, with this dialog's own glyph — never a second copy of the circle markup.
-            iconHtml: look.iconHtml(null, 'bx-link-alt'),
-            title: L.InviteLinkTitle,
+            /*
+             * ⚠ THE PICTURE RIDES THE TITLE, exactly as `showConfirm` composes it — and NOT through `iconHtml`.
+             * The package collapses the library's icon slot (`dt-dialog-iconslot`), because Option B moved the
+             * circle onto the title's own line; a raw dialog that fills the slot instead therefore draws no
+             * icon at all. Measured live before this line existed: no circle on screen.
+             */
+            title: look.iconHtml(null, 'bx-link-alt') + `<span>${L.InviteLinkTitle}</span>`,
             html: `<p class="${look.description}">${L.InviteLinkHint}</p>`
                 + '<div class="input-group">'
                 + `<input id="inviteLinkInput" type="text" class="form-control" readonly value="${safe}">`

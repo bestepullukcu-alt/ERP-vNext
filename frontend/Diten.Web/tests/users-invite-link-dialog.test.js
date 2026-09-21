@@ -80,6 +80,20 @@ describe("the dialog reads the product's package instead of drawing its own", ()
     expect(body).toContain("${look.description}");
   });
 
+  test("the picture rides the TITLE — the library's icon slot is collapsed and would show nothing", () => {
+    /*
+     * MEASURED LIVE (2026-09-21): passing the circle as `iconHtml` drew no icon at all, because Option B moved
+     * the picture onto the title's line and the package hides the slot (`dt-dialog-iconslot`). `showConfirm`
+     * composes `iconHtml + '<span>' + title + '</span>'`; a raw dialog has to do the same thing.
+     */
+    const body = dialogSource();
+    expect(body).toMatch(/title: look\.iconHtml\(null, 'bx-link-alt'\) \+ `<span>\$\{L\.InviteLinkTitle\}<\/span>`/);
+    expect(body, "an icon in the collapsed slot is an icon nobody sees").not.toMatch(/\biconHtml:/);
+    // And the slot really is collapsed — this is why, not an opinion.
+    expect(read("wwwroot", "assets", "css", "backbone-custom.css"))
+      .toMatch(/\.swal2-icon\.dt-dialog-iconslot \{ display: none !important; \}/);
+  });
+
   test("the seam it reads is really there, and still says what the dialog depends on", () => {
     // Rename `.description` or drop the width override in the component and this — not a browser — reports it.
     const look = loadAppearance();
