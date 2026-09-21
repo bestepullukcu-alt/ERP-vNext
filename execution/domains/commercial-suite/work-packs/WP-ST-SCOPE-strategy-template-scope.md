@@ -56,9 +56,18 @@ KORU/YAPMA: frontend DEĞİŞMEZ; binding/freeze/version/MDM-ürün/SKU%/segment
 DOĞRULA (E2): cd C:\Users\user\Desktop\ERP-vNext; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests/Diten.CrmService.Application.Tests.csproj -c Release --nologo (yeni + mevcut yeşil; PII order-flake hariç). Frontend diff YOK. Ayrı commit ("feat(strategy): WP-ST-SCOPE — StrategyTemplate kapsam modeli (Campaign aynası: tenant/country/legal-entity/business-unit) (MOD-0167-FU04)" + son satır Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 DUR: freeze modeli scope'u dondurma kapsamına almak gerekiyorsa (analiz editable diyor ama kod farklıysa); class-map/GUID beklenmeyen kırılma; scope-options seam imzaları Campaign'den saparsa → DUR+raporla.
 ```
-## §37 CT bağımsız doğrulama → (agent sonrası)
-```text
-Commit: <agent> · Agent: <PASS/FAIL> · CT: <PENDING>
+## §37 CT bağımsız doğrulama (2026-09-21) → **ACCEPTED (E2)**
 ```
-- İzole worktree → Application.Tests yeşil + verifier 85/9 baseline; scope entity+rules+validator+selector Campaign aynası; seam reuse (klon yok); LE fail-closed persist-öncesi; class-map LegalEntityId GUID; frontend diff yok; mevcut FU04 binding/freeze bozulmadı.
+Commit: 6652edf1 · Agent: PASS · CT: ACCEPTED E2 (izole temiz build) · /c/tmp/ct-stscope-verify @6652edf1
+```
+- ✅ **Kapsam (29 dosya, +1648/−26):** hepsi CrmService (entity + Rules/Services/Queries/Handlers/Api-Controller+Model + Persistence class-map + 12 test). **Frontend diff YOK** (grep boş — Views/CRM/StrategyTemplates + js dokunulmadı, FAZ 2).
+- ✅ **Mirror (Campaign'den ayrı sınıflar):** `StrategyTemplateScopeTypes`/`ScopeLimits` (BU ceiling = mevcut MaxBusinessUnitIdLength=64) + `Rules/StrategyTemplateScopeRules.cs` (pure Normalize + single-reference invariant + DeriveScopeType + Apply) + `Services/StrategyTemplateScopeWriteValidator.cs` (country **COUNTRY_CODES** → BU changed-only → LE fail-closed 503/not-referenceable) + `ScopeReferenceSets` + 9 scope reason-code (`StrategyTemplateErrorCodes.All`) + `GetStrategyTemplateScopeOptionsHandler` (country/LE/territory-BU 3 feed + 3 readiness, hardcode yok).
+- ✅ **Seam REUSE (klon yok):** ICyclePeriodLegalEntityValidator/Catalog + ITerritoryBusinessUnitCatalog + IReferenceDataValidator/Reader.
+- ✅ **Entity+handler:** ScopeType/CountryScope/LegalEntityId eklendi (BusinessUnitId korundu) + EffectiveScopeType()/ScopeRef()/HasConsistentScope(); migration yok. Create sıra code→shape→binding→**scope+MDM proof(fail-closed)**→InsertAsync LAST. Update: scope **her zaman** re-validate (editable metadata, dondurulmuş/aktif sürümde bile, freeze guard'a takılmaz — binding'ler hâlâ 409 frozen); `Apply` ile ata. Komut param'leri opsiyonel-varsayılan → mevcut çağrılar kırılmadı.
+- ✅ **Class-map:** `LegalEntityId` → `NullableSerializer<Guid>(stringGuid)` (subtype-4; yeni-alan GUID tuzağı önlendi). DI: ScopeWriteValidator kayıtlı; scope-options MediatR scan.
+- ✅ **KORU=0:** binding/freeze/version-clone/MDM-ürün/SKU%=100/segment-homojen/content-pinned dokunulmadı (additive); contract flag'leri korundu; tenant izolasyon; fail-closed persist öncesi. **Verifier 85/9 inherently korunur (UI değişmedi).**
+- ✅ **Build+test (CT izole, Release):** Application.Tests **1830/0/5** (yeni scope testleri: Rules/WriteValidator/Integration[frozen-scope-editable+LE-503-persist-yok]/ScopeOptions dahil; PII order-flake tetiklenmedi).
+- ⏳ E4: FAZ 2 (Düzenle KAPSAM cascade UI) sonrası. **Backend → FLEET RESTART.**
+
+**WP-ST-SCOPE KOMPLE (FAZ 1 backend). Sıra: FAZ 2 — Düzenle (authoring) UI + KAPSAM cascade → Detay → Liste.**
 ```
