@@ -285,3 +285,63 @@
 .st-freq-info-strong { font-weight: 600; color: var(--st-text); }
 .st-freq-info-text { color: var(--st-muted); }
 .st-freq-info-link { margin-left: 3px; font-weight: 600; white-space: nowrap; }
+
+/* ── WP-ST-EDIT-E — KAPSAM: ScopeType segmented buttons (title + sub-label) ──── */
+/* Replaces the scope-level dropdown. Each button is a theme-aware card with a bold title and a muted sub-label; the
+   active level takes the accent border + soft accent fill. Scope stays editable even when the bindings are frozen (the
+   address is an attribute, not identity), so these are never disabled by the frozen state. */
+.st-editor-scope .st-scope-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.st-editor-scope .st-scope-type {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    text-align: left;
+    padding: 7px 12px;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--st-card-border);
+    border-radius: 6px;
+    color: var(--st-text);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+.st-editor-scope .st-scope-type:hover:not(:disabled) { border-color: var(--st-accent-border); }
+.st-editor-scope .st-scope-type.is-active {
+    border-color: var(--st-accent);
+    background: var(--st-accent-soft);
+}
+.st-editor-scope .st-scope-type:disabled { opacity: 0.55; cursor: not-allowed; }
+.st-editor-scope .st-scope-type-title { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.st-editor-scope .st-scope-type.is-active .st-scope-type-title { color: var(--st-accent); }
+.st-editor-scope .st-scope-type-sub { font-size: 11px; color: var(--st-muted); line-height: 1.2; }
+.st-editor-scope .st-scope-type-sub:empty { display: none; }
+
+/* ── WP-ST-EDIT-E — ÇÖZÜMLENEN KAPSAM box (bg-body, not the mockup's literal grey) */
+.st-editor-scope .st-resolved-scope {
+    margin-top: 14px;
+    padding: 9px 11px;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.st-editor-scope .st-resolved-scope-label {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-resolved-scope-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--st-heading);
+}
+.st-editor-scope .st-resolved-scope-value.is-empty { color: var(--bs-danger); }

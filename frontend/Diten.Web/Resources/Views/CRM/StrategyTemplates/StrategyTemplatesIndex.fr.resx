@@ -130,12 +130,16 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Mis à jour le</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Voir les détails</value></data>
   <data name="Yes" xml:space="preserve"><value>Oui</value></data>
-  <data name="ScopeSection" xml:space="preserve"><value>Périmètre</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Périmètre — Où</value></data>
   <data name="ScopeType" xml:space="preserve"><value>Niveau de périmètre</value></data>
   <data name="ScopeType_tenant" xml:space="preserve"><value>Locataire entier</value></data>
   <data name="ScopeType_country" xml:space="preserve"><value>Pays</value></data>
   <data name="ScopeType_legal-entity" xml:space="preserve"><value>Entité juridique</value></data>
   <data name="ScopeType_business-unit" xml:space="preserve"><value>Unité opérationnelle</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>toute la société</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>un seul marché</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>entité juridique</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>UO · territoire</value></data>
   <data name="CountryScope" xml:space="preserve"><value>Pays</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>Unité opérationnelle</value></data>
@@ -146,6 +150,7 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>La dépendance n'a pas répondu ; cette liste n'a pas pu être chargée.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Aucun plan territorial ne correspond ; la liste publiée complète est affichée.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>Périmètre résolu</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>pas encore résolu</value></data>
   <data name="WhatTitle" xml:space="preserve"><value>Que fera ce plan ?</value></data>
   <data name="RecipeWhere" xml:space="preserve"><value>OÙ</value></data>
   <data name="RecipeWho" xml:space="preserve"><value>QUI</value></data>

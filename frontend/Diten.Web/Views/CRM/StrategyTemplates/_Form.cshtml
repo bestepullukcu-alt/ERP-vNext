@@ -79,12 +79,17 @@
                 <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
                 <div class="row g-3" id="strategyTemplateScopeSection"
                      data-scope-options-url="/CRM/StrategyTemplates/api/scope-options">
-                    <div class="col-12 col-md-4">
+                    @* WP-ST-EDIT-E — the scope LEVEL is chosen with a segmented button group, not a dropdown. The value
+                       still posts through a hidden #scopeType input (asp-for="ScopeType"), so the backend, the cascade
+                       and the single-reference invariant are unchanged; form.js builds the buttons and drives that
+                       hidden input on click. *@
+                    <div class="col-12">
                         <label asp-for="ScopeType" class="form-label fw-medium">
                             @Localizer["ScopeType"] <span class="text-danger">*</span>
                         </label>
-                        <select asp-for="ScopeType" id="scopeType" class="form-select" required
-                                data-selected="@Model.ScopeType"></select>
+                        <input type="hidden" asp-for="ScopeType" id="scopeType" data-selected="@Model.ScopeType" />
+                        <div class="st-scope-types" id="scopeTypeButtons" role="group"
+                             aria-label="@Localizer["ScopeType"]"></div>
                         <div class="form-text">@Localizer["ScopeEditableHint"]</div>
                     </div>
 
@@ -119,7 +124,9 @@
                     </div>
 
                     <div class="col-12">
-                        <div class="small text-muted" id="resolvedScope"></div>
+                        @* WP-ST-EDIT-E — ÇÖZÜMLENEN KAPSAM: an always-visible bordered box (bg-body). form.js paints the
+                           mono label + the resolved value (danger "henüz çözümlenmedi" when empty, breadcrumb when set). *@
+                        <div class="st-resolved-scope" id="resolvedScope"></div>
                         <div class="form-text">@Localizer["ScopeHelp"]</div>
                     </div>
                 </div>

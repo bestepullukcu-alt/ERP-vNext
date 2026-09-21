@@ -541,7 +541,10 @@
     // / business-unit) is shown and posted. The option feeds come from the same-origin scope-options proxy — there is no
     // cycle-period binding here, so unlike the Campaign form nothing reloads a period picker.
     const scopeSection = el('strategyTemplateScopeSection');
+    // WP-ST-EDIT-E — scopeTypeEl is now a HIDDEN input (the level is chosen with the segmented buttons below). Its
+    // `.value` still carries the posted ScopeType, so the cascade, single-reference clear and submit are unchanged.
     const scopeTypeEl = el('scopeType');
+    const scopeTypeButtonsEl = el('scopeTypeButtons');
     const countryEl = el('countryScope');
     const legalEntityEl = el('legalEntityId');
     const businessUnitEl = el('businessUnitId');
@@ -583,6 +586,9 @@
         if (level !== 'business-unit' && businessUnitEl) businessUnitEl.value = '';
     };
 
+    // WP-ST-EDIT-E — the ÇÖZÜMLENEN KAPSAM box is ALWAYS painted (a bordered bg-body box, styled in strategy-create.css).
+    // It shows a mono uppercase label plus the resolved breadcrumb; when nothing resolves yet the value is a danger-toned
+    // "henüz çözümlenmedi", so the author can see the box is waiting on a reference rather than seeing it disappear.
     const renderResolvedScope = () => {
         if (!resolvedScopeEl) return;
         const level = (scopeTypeEl?.value || '').trim();
@@ -592,8 +598,11 @@
         else if (level === 'legal-entity') refLabel = legalEntityEl?.selectedOptions?.[0]?.textContent?.trim() || '';
         else if (level === 'business-unit') refLabel = businessUnitEl?.selectedOptions?.[0]?.textContent?.trim() || '';
         const value = refLabel ? `${typeLabel} — ${refLabel}` : typeLabel;
-        resolvedScopeEl.innerHTML = value
-            ? `<span class="fw-medium">${esc(L.ResolvedScope || '')}:</span> ${esc(value)}` : '';
+        const label = `<span class="st-resolved-scope-label">${esc(L.ResolvedScope || '')}</span>`;
+        const valueHtml = value
+            ? `<span class="st-resolved-scope-value">${esc(value)}</span>`
+            : `<span class="st-resolved-scope-value is-empty">${esc(L.ResolvedScopeNone || '')}</span>`;
+        resolvedScopeEl.innerHTML = label + valueHtml;
     };
 
     // Only the block belonging to the selected level is shown: the address is discriminated, never combined.
@@ -606,10 +615,27 @@
         renderResolvedScope();
     };
 
+    // WP-ST-EDIT-E — build the segmented ScopeType buttons from the SAME feed the old dropdown used (scopeOptions
+    // .scopeTypes). The current level is kept selected; on first paint it defaults to 'tenant' (or the first offered
+    // level). Clicking a button sets the hidden #scopeType and calls applyScopeType — the cascade never changes.
+    const renderScopeTypeButtons = () => {
+        if (!scopeTypeButtonsEl) return;
+        const types = (scopeOptions?.scopeTypes || []);
+        let current = (scopeTypeEl?.value || scopeTypeEl?.dataset.selected || '').trim();
+        if (!current || types.indexOf(current) < 0) current = types.indexOf('tenant') >= 0 ? 'tenant' : (types[0] || 'tenant');
+        if (scopeTypeEl) scopeTypeEl.value = current;
+        scopeTypeButtonsEl.innerHTML = types.map(t => {
+            const active = t === current;
+            return `<button type="button" class="st-scope-type${active ? ' is-active' : ''}" data-scope-type="${esc(t)}" aria-pressed="${active ? 'true' : 'false'}">
+                        <span class="st-scope-type-title">${esc(L['ScopeType_' + t] || t)}</span>
+                        <span class="st-scope-type-sub">${esc(L['ScopeTypeSub_' + t] || '')}</span>
+                    </button>`;
+        }).join('');
+    };
+
     const renderScopeOptions = () => {
         if (!scopeOptions) return;
-        fillScope(scopeTypeEl, (scopeOptions.scopeTypes || []).map(v => ({ value: v, label: L['ScopeType_' + v] || v })), '');
-        if (scopeTypeEl && !scopeTypeEl.value) scopeTypeEl.value = 'tenant';
+        renderScopeTypeButtons();
 
         fillScope(countryEl, scopeOptions.countries, L.SelectOption);
         setScopeNote('country', scopeOptions.countrySetPublished ? null : 'ReferenceSetUnpublished');
@@ -644,7 +670,20 @@
         }
     };
 
-    scopeTypeEl?.addEventListener('change', applyScopeType);
+    // WP-ST-EDIT-E — a hidden input fires no 'change' on a programmatic set, so the segmented buttons drive the level:
+    // set the hidden value, move the active class, then run the existing applyScopeType (blocks + single-reference clear).
+    scopeTypeButtonsEl?.addEventListener('click', event => {
+        const btn = event.target.closest('.st-scope-type');
+        if (!btn || btn.disabled) return;
+        const level = btn.dataset.scopeType || '';
+        if (scopeTypeEl) scopeTypeEl.value = level;
+        scopeTypeButtonsEl.querySelectorAll('.st-scope-type').forEach(b => {
+            const on = b === btn;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        applyScopeType();
+    });
     countryEl?.addEventListener('change', renderResolvedScope);
     legalEntityEl?.addEventListener('change', renderResolvedScope);
     businessUnitEl?.addEventListener('change', renderResolvedScope);

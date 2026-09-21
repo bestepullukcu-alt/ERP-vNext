@@ -130,12 +130,16 @@
   <data name="UpdatedAt" xml:space="preserve"><value>Updated at</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
-  <data name="ScopeSection" xml:space="preserve"><value>Scope</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Scope — Where</value></data>
   <data name="ScopeType" xml:space="preserve"><value>Scope level</value></data>
   <data name="ScopeType_tenant" xml:space="preserve"><value>Whole tenant</value></data>
   <data name="ScopeType_country" xml:space="preserve"><value>Country</value></data>
   <data name="ScopeType_legal-entity" xml:space="preserve"><value>Legal entity</value></data>
   <data name="ScopeType_business-unit" xml:space="preserve"><value>Business unit</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>whole company</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>single market</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>legal entity</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>BU · territory</value></data>
   <data name="CountryScope" xml:space="preserve"><value>Country</value></data>
   <data name="LegalEntity" xml:space="preserve"><value>Legal entity</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>Business unit</value></data>
@@ -146,6 +150,7 @@
   <data name="DependencyUnavailable" xml:space="preserve"><value>The dependency did not answer, so this list could not be loaded.</value></data>
   <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>No territory plan matches, so the full published list is shown.</value></data>
   <data name="ResolvedScope" xml:space="preserve"><value>Resolved scope</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>not resolved yet</value></data>
   <data name="WhatTitle" xml:space="preserve"><value>What will this play do?</value></data>
   <data name="RecipeWhere" xml:space="preserve"><value>WHERE</value></data>
   <data name="RecipeWho" xml:space="preserve"><value>WHO</value></data>
