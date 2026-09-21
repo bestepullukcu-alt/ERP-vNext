@@ -31,6 +31,10 @@
     const total100 = Number(cfg.requiredAllocationTotal ?? 100);
 
     const esc = v => String(v ?? '').replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+    // Trim-or-empty, matching index.js. It was USED by the right-panel checklist/recipe below but never defined here, so
+    // updateSidePanel threw a ReferenceError before it could paint any check icon — which is why the BÖLÜMLER glyphs
+    // never showed. Defining it lets updateSidePanel run and setCheck stamp each row's bx-* icon.
+    const norm = v => (typeof v === 'string' ? v.trim() : (v == null ? '' : String(v)));
     const el = id => document.getElementById(id);
     const parse = (json, fallback) => { try { const v = JSON.parse(json || ''); return v ?? fallback; } catch (e) { return fallback; } };
     const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
@@ -72,7 +76,7 @@
                 text: `${r.segmentCode || ''} — ${r.segmentName || ''}`.trim(),
                 subjectType: r.subjectType,
                 archived: r.isArchived === true
-            })).then(x => { options.segment = x.filter(o => !o.archived && (!cfg.subjectType || o.subjectType === cfg.subjectType)); }));
+            })).then(x => { options.segment = x.filter(o => !o.archived); }));
         }
         if (can('frequency-policy')) {
             jobs.push(load(`${endpoint}/visit-frequency-policies`, r => ({
@@ -110,16 +114,43 @@
         await Promise.all(jobs);
     };
 
+    // ---------------- SubjectType — DERIVED, not chosen (WP-ST-EDIT-C) ----------------
+    // The manual "Özne tipi" select is gone. On EDIT the type is immutable — it keeps the server value. On CREATE it is
+    // derived from the FIRST bound segment: empty (so the picker offers every segment) until one is chosen, then locked
+    // to that segment's subjectType so every further segment must be the same type (homogeneous; the backend also
+    // refuses a mismatch). The value is mirrored into the hidden #SubjectType, which is what actually posts.
+    const isEdit = !!cfg.templateId;
+    const activeSubjectType = () => {
+        if (isEdit) return cfg.subjectType || '';
+        for (const b of state.segments) {
+            if (!b.segmentId) continue;
+            const hit = (options.segment || []).find(o => o.id === b.segmentId);
+            if (hit && hit.subjectType) return hit.subjectType;
+        }
+        return '';
+    };
+    const syncSubjectType = () => {
+        if (isEdit) return;                       // immutable after create
+        const input = el('SubjectType');
+        if (input) input.value = activeSubjectType();
+    };
+    // Segment candidates honour the active type: everything while it is empty, same-type only once it is set.
+    const segmentOptionsFor = () => {
+        const type = activeSubjectType();
+        const list = options.segment || [];
+        return type ? list.filter(o => o.subjectType === type) : list;
+    };
+
     /// A select bound to a picker. When the picker is unavailable the control is DISABLED with a reason — never a
     /// free-text GUID field, because a hand-typed id is an unverified promise.
-    const pickerSelect = (kind, value, allowed, unavailableText) => {
+    const pickerSelect = (kind, value, allowed, unavailableText, listOverride) => {
         if (!allowed) {
             return `<select class="form-select form-select-sm" data-kind="${kind}" disabled>
                         <option>${esc(unavailableText || L.PickerUnavailable || '')}</option>
                     </select>
                     <small class="text-muted">${esc(unavailableText || L.PickerUnavailable || '')}</small>`;
         }
-        const list = options[kind] || [];
+        const list = listOverride || options[kind] || [];
         const known = list.some(o => o.id === value);
         const head = `<option value="">${esc(L.SelectOption || '—')}</option>`;
         const kept = !known && value ? `<option value="${esc(value)}" selected>${esc(value)}</option>` : '';
@@ -140,12 +171,13 @@
         const host = el('segmentBindingList');
         const empty = el('segmentBindingEmpty');
         if (!host) return;
+        const segList = segmentOptionsFor();
         host.innerHTML = state.segments.map((b, i) => `
             <div class="border rounded p-3" data-row="segment" data-index="${i}">
                 <div class="row g-2 align-items-end">
                     <div class="col-12 col-md-5">
                         <label class="form-label small mb-1">${esc(L.Segment || '')} <span class="text-danger">*</span></label>
-                        ${pickerSelect('segment', b.segmentId, can('segment'))}
+                        ${pickerSelect('segment', b.segmentId, can('segment'), null, segList)}
                     </div>
                     <div class="col-6 col-md-3">
                         <label class="form-label small mb-1">${esc(L.BindingRole || '')}</label>
@@ -163,6 +195,8 @@
                 </div>
             </div>`).join('');
         empty?.classList.toggle('d-none', state.segments.length > 0);
+        // Keep the hidden #SubjectType consistent with the current segment selection (no-op on edit).
+        syncSubjectType();
     };
 
     // ---------------- "how often" ----------------
@@ -447,6 +481,9 @@
         });
 
         state.frequency = readFrequency();
+        // The derived SubjectType is part of the payload — keep the hidden field current on every read-back (and so at
+        // submit, since sync() runs first there too). No-op on edit, where the type is immutable.
+        syncSubjectType();
     };
 
     form.addEventListener('change', event => {
@@ -458,6 +495,9 @@
             renderContents();
         } else if (event.target.classList.contains('js-percentage')) {
             renderProducts();
+        } else if (event.target.matches('[data-kind="segment"]')) {
+            // Choosing the first segment derives the SubjectType; re-render so the remaining rows lock to that type.
+            renderSegments();
         }
     });
 

@@ -14,7 +14,15 @@
 }
 
 <div class="row g-4">
-    <div class="col-12 col-lg-8">
+    <div class="col-12">
+
+        @* WP-ST-EDIT-C — SubjectType is DERIVED, not chosen: a hidden field the segment binding builder fills from the
+           first bound segment on create, and that keeps its immutable value on edit. The backend still requires it and
+           still enforces one homogeneous type. TemplateStatus is DISPLAY-only (shown as tabs in the right panel) and is
+           posted back unchanged so the update flow is untouched. Both cards that used to render these controls were
+           removed; the Geçerlilik dates moved to the right panel's YAŞAM DÖNGÜSÜ card. *@
+        <input type="hidden" asp-for="SubjectType" />
+        <input type="hidden" asp-for="TemplateStatus" />
 
         <section class="card mb-4">
             <div class="card-body p-4">
@@ -204,63 +212,6 @@
                 <div id="contentBindingList" class="d-flex flex-column gap-2"></div>
                 <div id="contentBindingEmpty" class="text-muted d-none">@Localizer["NoContentBindings"]</div>
                 <input type="hidden" asp-for="ContentBindingsJson" id="ContentBindingsJson" />
-            </div>
-        </section>
-    </div>
-
-    <div class="col-12 col-lg-4">
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
-                        <select asp-for="SubjectType" class="select2 form-select" disabled="@(Model.TemplateId.HasValue)" required>
-                            @foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }
-                        </select>
-                        @if (Model.TemplateId.HasValue)
-                        {
-                            @* Immutable after create, so it is posted back as a hidden field rather than silently lost. *@
-                            <input type="hidden" asp-for="SubjectType" />
-                        }
-                        <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
-                        <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
-                    </div>
-                    @* WP-ST-EDIT-A — the opaque BusinessUnitId free-text input moved into the KAPSAM scope section as a
-                       governed, territory-derived picker. SubjectType stays here as the play's classification. *@
-                </div>
-            </div>
-        </section>
-
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
-                <div class="row g-3">
-                    <div class="col-12">
-                        @* No required star: the status is DISPLAY-only here. The author never fills it — the lifecycle
-                           moves through Activate / Archive, and the server ignores any status in the payload. *@
-                        <label asp-for="TemplateStatus" class="form-label fw-medium">@Localizer["TemplateStatus"]</label>
-                        <select asp-for="TemplateStatus" class="select2 form-select" disabled>
-                            @foreach (var x in Model.TemplateStatuses) { <option value="@x">@x</option> }
-                        </select>
-                        <input type="hidden" asp-for="TemplateStatus" />
-                        <small class="text-muted">@Localizer["StatusSeparateEndpointHelp"]</small>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
-                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
-                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
-                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
-                    </div>
-                    <div class="col-12">
-                        <div class="alert alert-secondary mb-0 py-2 small">
-                            <i class="bx bx-info-circle me-1"></i>@Localizer["ApplyIsMicroTargetHelp"]
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     </div>

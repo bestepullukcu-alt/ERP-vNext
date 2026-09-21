@@ -66,6 +66,20 @@
     <section class="card st-card mb-3">
         <div class="card-body p-3">
             <span class="st-card-kicker d-block mb-2">@Localizer["LifecycleActionsTitle"]</span>
+            @* WP-ST-EDIT-C — the Geçerlilik dates moved here from the removed _Form Lifecycle card. They sit OUTSIDE the
+               <form> element (this panel is a sibling aside), so each input carries form="strategyTemplateForm" to stay
+               in the submission — the same association the save buttons already use. Model binding is unchanged. *@
+            <div class="st-life-dates mb-3">
+                <div class="mb-2">
+                    <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input asp-for="EffectiveFrom" form="strategyTemplateForm" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
+                    <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                </div>
+                <div>
+                    <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                    <input asp-for="EffectiveTo" form="strategyTemplateForm" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
+                </div>
+            </div>
             <div class="st-life-tabs" role="group" aria-label="@Localizer["LifecycleActionsTitle"]">
                 <span class="st-life-tab @(isActive ? "" : "is-current")">@Localizer["LifecycleDraftTab"]</span>
                 <span class="st-life-tab @(isActive ? "is-current" : "")">@Localizer["LifecycleActiveTab"]</span>
