@@ -5923,6 +5923,27 @@ Gelecek gerileme riski: düşük (ikon adları + koruma testi; davranış deği�
 
 ---
 
+### BL-431
+
+**İki Satınalma ekranı ortak onay bileşenine kendi seçenek listesini geçiriyor — "üründe tek diyalog" kuralı kırıldı**
+
+DURUM: AÇIK · BULAN: CT (Kanban dalını main ile birleştirirken) · KAYIT: 2026-09-21
+
+Ölçüldü: `frontend/Diten.Web/tests/wcn-dialog-one-language.test.js` ürün genelinde tek bir onay diyaloğu
+kuralını koruyor ve `showConfirm`'e `inputOptions` geçen dosyaları adıyla sayıyor. Birleşme sonrası liste
+beklenen 2 yerine 4 dosya veriyor; yeni gelenler `wwwroot/assets/js/Procurement/InvoiceMatch/details.js` ve
+`.../index.js`. Aynı dosyada ikinci bir kırmızı da var: "declares the package once" testi 5 yerine 6 dosya
+görüyor. Yani main'de bu test zaten kırmızı; CI vitest koşmadığı için fark edilmemiş.
+
+Bu bir yanlış pozitif DEĞİL: kural bilerek ürün genelinde. Test gevşetilmez; iki ekran ortak bileşenin kendi
+yoluna taşınır (BL-367 ile aynı aile).
+
+İstenen: Satınalma sahibi iki dosyayı ortak diyalog yoluna taşır ya da kuralın değişmesi için gerekçe getirir;
+test yeşile döner. CT tarafında yapılacak bir şey yok, kayıt bilgi amaçlıdır.
+Gelecek gerileme riski: düşük (yalnız iki ekranın diyalog çağrısı).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
