@@ -731,30 +731,35 @@ const UsersList = (function () {
     const reloadWithSuccessToast = (messageKey, interpolationValue) =>
         window.DitenDataTable.reloadWithToast(dt, dtTableEl, messageKey, interpolationValue, bulkOptions);
 
-    // Dev-only invitation helper: copyable set-password link (never shown in prod — setupUrl is null there).
+    /*
+     * Dev-only invitation helper: the copyable set-password link (never shown in prod — setupUrl is null there).
+     *
+     * ⚠ IT WEARS THE PRODUCT'S DIALOG, IT DOES NOT DRAW ONE. This is a raw `Swal.fire` because it carries a
+     * field plus a copy button, which the shared confirm deliberately does not take — but "raw" decides the
+     * CONTENT, never the LOOK. It used to hand-write its own padding, popup class, icon markup and title
+     * spacing, and the result was the thing the owner photographed: a 38px centred title over a 512px popup,
+     * an English body under a Turkish button. `_GlobalConfirmation.cshtml` publishes the package exactly so
+     * that no file has to guess it — `width` is the one geometry a caller may set, and a URL needs the room.
+     */
     const showInviteLink = (link) => {
         const S = window.Swal;
         if (!S) { window.showToast?.(String(link), 'info'); return; }
+        const look = window.DitenDialogAppearance;
+        if (typeof look !== 'function') { window.showToast?.(String(link), 'info'); return; }
         const safe = String(link).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         S.fire({
-            // Icon mirrors the disable/reset confirm modals (.swal-icon-circle from _GlobalConfirmation).
-            iconHtml: '<div class="swal-icon-circle bg-label-primary border-primary border-opacity-25"><i class="bx bx-link-alt text-primary"></i></div>',
-            title: L.InviteLinkTitle || 'Invite link (dev)',
-            html: `<p class="mb-2 text-muted small text-center">${L.InviteLinkHint || 'Share this set-password link with the user (development only):'}</p>`
+            ...look({ width: '520px' }),
+            // The published builder, with this dialog's own glyph — never a second copy of the circle markup.
+            iconHtml: look.iconHtml(null, 'bx-link-alt'),
+            title: L.InviteLinkTitle,
+            html: `<p class="${look.description}">${L.InviteLinkHint}</p>`
                 + '<div class="input-group">'
                 + `<input id="inviteLinkInput" type="text" class="form-control" readonly value="${safe}">`
-                + `<button id="inviteLinkCopyBtn" type="button" class="btn btn-primary" title="${L.Copy || 'Copy'}"><i class="bx bx-copy"></i></button>`
+                + `<button id="inviteLinkCopyBtn" type="button" class="btn btn-primary" title="${L.Copy}"><i class="bx bx-copy"></i></button>`
                 + '</div>',
-            confirmButtonText: L.Close || L.Cancel || 'OK',
-            buttonsStyling: false,
-            // Match the confirm modals' top padding so the icon isn't flush against the popup edge.
-            padding: '2.5rem 1.5rem 2rem',
-            customClass: {
-                confirmButton: 'btn btn-label-secondary',
-                popup: 'rounded-4',
-                icon: 'border-0 m-0 p-0 d-flex justify-content-center w-100',
-                title: 'mt-4'
-            },
+            // "Kapat", not "İptal": nothing is being cancelled — the invitation has already been sent.
+            confirmButtonText: L.Close,
+            showCancelButton: false,
             didOpen: () => {
                 const input = document.getElementById('inviteLinkInput');
                 const btn = document.getElementById('inviteLinkCopyBtn');
@@ -762,7 +767,7 @@ const UsersList = (function () {
                 btn?.addEventListener('click', async () => {
                     try { await navigator.clipboard.writeText(link); }
                     catch (e) { input?.select(); try { document.execCommand('copy'); } catch (e2) { } }
-                    window.showToast?.(L.Copied || 'Copied', 'success');
+                    window.showToast?.(L.Copied, 'success');
                 });
             }
         });

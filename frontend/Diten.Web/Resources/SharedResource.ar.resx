@@ -896,4 +896,6 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>الاستلام (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>تعديل الاستلام غير مدعوم؛ يتم تصحيح الاستلام المُرحَّل بحركة عكسية وليس بالتعديل.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.</value></data>
+  <data name="Copied" xml:space="preserve"><value>تم النسخ</value></data>
+  <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
 </root>

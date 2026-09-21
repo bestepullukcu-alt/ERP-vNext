@@ -957,4 +957,5 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Receiving (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Updating a GRN is not supported; a posted receipt is corrected with a reversing movement, not an edit.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Updating an invoice is not supported; correct it by re-running the 3-way match or resolving its exception, not by an edit.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied</value></data>
 </root>
