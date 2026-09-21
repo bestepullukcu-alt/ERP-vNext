@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>Частота управляется в политиках частоты визитов</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — это поле только для справки. Реальная частота визитов хранится по цели/сегменту в отдельном модуле.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>Открыть политики ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Открыть политику</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» нацелена на {who} с {what} — {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>Эта стратегия</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>Не указано</value></data>

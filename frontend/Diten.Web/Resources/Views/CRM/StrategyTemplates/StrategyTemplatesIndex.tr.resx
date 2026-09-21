@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>Frekans, Ziyaret Sıklığı Politikaları'nda yönetilir</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — bu alan yalnızca referanstır. Gerçek ziyaret sıklığı hedef/segment bazında ayrı modülde tutulur.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>Politikaları aç ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Politikayı aç</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" — {who} için {what}, {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>Bu oyun</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>Belirtilmedi</value></data>

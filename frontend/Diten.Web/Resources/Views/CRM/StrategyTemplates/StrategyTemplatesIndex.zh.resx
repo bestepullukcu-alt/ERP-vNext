@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>频率在拜访频率策略中管理</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — 此字段仅供参考。真实拜访频率按目标/细分保存在单独的模块中。</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>打开策略 ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>打开此策略</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>“{name}”面向 {who}，使用 {what} — {howoften}。</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>此策略</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>未指定</value></data>

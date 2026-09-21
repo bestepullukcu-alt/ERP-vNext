@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>Frequency is managed in Visit Frequency Policies</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — this field is a reference only. The real visit frequency is kept per target/segment in a separate module.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>Open policies ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Open policy</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>"{name}" targets {who} with {what} — {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>This play</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>Not specified</value></data>

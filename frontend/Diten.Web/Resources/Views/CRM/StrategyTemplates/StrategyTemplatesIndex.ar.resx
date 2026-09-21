@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>تُدار التكرار في سياسات تكرار الزيارة</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — هذا الحقل مرجعي فقط. يُحفظ تكرار الزيارة الفعلي لكل هدف/شريحة في وحدة منفصلة.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>فتح السياسات ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>فتح السياسة</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» يستهدف {who} عبر {what} — {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>هذه الخطة</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>غير محدد</value></data>

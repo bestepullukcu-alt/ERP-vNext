@@ -204,9 +204,15 @@
                         <div class="d-flex flex-wrap gap-2" id="frequencyModeButtons" role="group"
                              aria-label="@Localizer["FrequencyIntentMode"]"></div>
                     </div>
+                    @* WP-ST-EDIT-N — the policy select sits side by side with a "Politikayı aç ↗" button that opens the
+                       SELECTED single policy's detail (info-box link opens the whole LIST); form.js drives its href and
+                       disables it while no policy is chosen. The select + FrequencyIntentJson logic is unchanged. *@
                     <div class="col-12 col-md-8 d-none" id="frequencyPolicyBlock">
                         <label class="form-label fw-medium" for="frequencyPolicyId">@Localizer["FrequencyPolicy"] <span class="text-danger">*</span></label>
-                        <select id="frequencyPolicyId" class="form-select"></select>
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="frequencyPolicyId" class="form-select"></select>
+                            <a id="frequencyPolicyOpen" class="btn btn-outline-primary btn-sm text-nowrap disabled" target="_blank" rel="noopener" aria-disabled="true" tabindex="-1">@Localizer["FreqOpenPolicySingle"] ↗</a>
+                        </div>
                     </div>
                     <div class="col-12 col-md-4 d-none frequency-declared">
                         <label class="form-label fw-medium" for="frequencyType">@Localizer["FrequencyType"] <span class="text-danger">*</span></label>

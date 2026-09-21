@@ -297,6 +297,26 @@
 
     // ---------------- "how often" ----------------
 
+    // WP-ST-EDIT-N — the "Politikayı aç ↗" button opens the SELECTED single policy's detail in a new tab (the info-box
+    // link opens the whole LIST). It is inert while no policy is chosen: no href, Bootstrap .disabled, aria-disabled and
+    // removed from the tab order. This only reads #frequencyPolicyId — it never touches FrequencyIntentJson or the mode.
+    const syncFrequencyPolicyOpen = () => {
+        const link = el('frequencyPolicyOpen');
+        if (!link) return;
+        const id = el('frequencyPolicyId')?.value || '';
+        if (id) {
+            link.href = '/CRM/VisitFrequencyPolicies/Details/' + encodeURIComponent(id);
+            link.classList.remove('disabled');
+            link.removeAttribute('aria-disabled');
+            link.removeAttribute('tabindex');
+        } else {
+            link.removeAttribute('href');
+            link.classList.add('disabled');
+            link.setAttribute('aria-disabled', 'true');
+            link.setAttribute('tabindex', '-1');
+        }
+    };
+
     const renderFrequency = () => {
         const modeEl = el('frequencyMode');
         if (!modeEl) return;
@@ -329,6 +349,8 @@
                 + list.map(o => `<option value="${esc(o.id)}"${o.id === value ? ' selected' : ''}>${esc(o.text)}</option>`).join('');
             policySelect.disabled = frozen || !can('frequency-policy');
         }
+        // WP-ST-EDIT-N — keep the "Politikayı aç" button in sync with the (possibly restored) selection on every render.
+        syncFrequencyPolicyOpen();
 
         const typeEl = el('frequencyType');
         if (typeEl) {
@@ -564,6 +586,10 @@
         renderFrequency();
         setTimeout(updateSidePanel, 0);
     });
+
+    // WP-ST-EDIT-N — choosing a policy updates the "Politikayı aç" button's href/enabled state directly (the form-level
+    // change handler does not re-render frequency for a policy pick). The mode/FrequencyIntentJson flow is untouched.
+    el('frequencyPolicyId')?.addEventListener('change', syncFrequencyPolicyOpen);
 
     document.addEventListener('click', event => {
         const removeSku = event.target.closest('.js-remove-sku');

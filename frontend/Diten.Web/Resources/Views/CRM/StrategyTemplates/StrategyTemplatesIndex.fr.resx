@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>La fréquence est gérée dans les Politiques de fréquence de visite</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — ce champ n'est qu'une référence. La fréquence de visite réelle est conservée par cible/segment dans un module séparé.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>Ouvrir les politiques ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Ouvrir la politique</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>« {name} » cible {who} avec {what} — {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>Ce plan</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>Non spécifié</value></data>

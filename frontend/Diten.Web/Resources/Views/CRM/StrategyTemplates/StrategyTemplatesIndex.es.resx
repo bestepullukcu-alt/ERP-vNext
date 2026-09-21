@@ -179,6 +179,7 @@
   <data name="FreqInfoStrong" xml:space="preserve"><value>La frecuencia se gestiona en las Políticas de frecuencia de visita</value></data>
   <data name="FreqInfoBody" xml:space="preserve"><value> — este campo es solo una referencia. La frecuencia de visita real se guarda por objetivo/segmento en un módulo aparte.</value></data>
   <data name="FreqInfoLink" xml:space="preserve"><value>Abrir políticas ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Abrir política</value></data>
   <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» se dirige a {who} con {what} — {howoften}.</value></data>
   <data name="SummaryEmptyName" xml:space="preserve"><value>Esta jugada</value></data>
   <data name="FrequencyNone" xml:space="preserve"><value>Sin especificar</value></data>

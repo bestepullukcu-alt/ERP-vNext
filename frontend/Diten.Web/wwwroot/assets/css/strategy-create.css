@@ -284,7 +284,9 @@
     background: var(--st-accent);
 }
 .st-freq-info-body { min-width: 0; font-size: 12.5px; }
-.st-freq-info-strong { font-weight: 600; color: var(--st-text); }
+/* WP-ST-EDIT-N — the strong lead ("Frequency is managed in Visit Frequency Policies") takes the same primary colour as
+   the info-link, so the whole info-box reads as one primary-tinted note. Only the colour changed. */
+.st-freq-info-strong { font-weight: 600; color: var(--bs-primary); }
 .st-freq-info-text { color: var(--st-muted); }
 .st-freq-info-link { margin-left: 3px; font-weight: 600; white-space: nowrap; color: var(--bs-primary); }
 
