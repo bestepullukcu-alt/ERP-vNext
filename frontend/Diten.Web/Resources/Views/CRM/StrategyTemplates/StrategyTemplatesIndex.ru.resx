@@ -69,7 +69,7 @@
   <data name="NoContentBindings" xml:space="preserve"><value>Контент не связан. Тогда у плана нет контентного измерения.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>План связывает идентичность сегмента. Он никогда не перечисляет и не считает людей внутри.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>Нет продуктовых строк. Тогда у плана нет продуктового измерения.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>Сегмент не связан. План без сегмента не отвечает на вопрос «кто?».</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Пока нет сегментов — выберите, к кому применяется план.</value></data>
   <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
   <data name="AllCompany" xml:space="preserve"><value>Вся компания</value></data>
   <data name="AllCountries" xml:space="preserve"><value>Все страны</value></data>
@@ -104,7 +104,7 @@
   <data name="Segment" xml:space="preserve"><value>Сегмент</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>Сегменты</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>Связанный сегмент закрепляется за конкретной версией. Список — это перечисление: объединение и исключение здесь не применяются.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>Кто — сегменты</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Сегменты — Кто</value></data>
   <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>Все</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>Строки SKU</value></data>
@@ -203,4 +203,12 @@
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Во всех строках выбран товар.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>В некоторых строках нет товара.</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>На кого нацелена эта стратегия, с какой историей и с каким весом продуктов?</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>человек / врач</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>организация / клиент</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>основной</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>вторичный</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>заметка-исключение</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} сегмент · тип {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>Больше нет сегментов для добавления.</value></data>
 </root>

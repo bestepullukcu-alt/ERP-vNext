@@ -69,7 +69,7 @@
   <data name="NoContentBindings" xml:space="preserve"><value>لم يُربط محتوى. عندها لا يملك المخطط بُعدًا للمحتوى.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>المخطط يربط هوية الشريحة، ولا يعرض أو يعدّ الأشخاص داخلها إطلاقًا.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج. عندها لا يملك المخطط بُعدًا للمنتج.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>لم تُربط أي شريحة. المخطط بلا شريحة لا يجيب عن سؤال «من؟».</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>لا توجد شريحة بعد — اختر لمن ينطبق المخطط.</value></data>
   <data name="Notes" xml:space="preserve"><value>ملاحظات</value></data>
   <data name="AllCompany" xml:space="preserve"><value>الشركة بأكملها</value></data>
   <data name="AllCountries" xml:space="preserve"><value>جميع الدول</value></data>
@@ -104,7 +104,7 @@
   <data name="Segment" xml:space="preserve"><value>الشريحة</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>الشرائح</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>الشريحة المرتبطة مثبّتة على تلك النسخة بالذات. القائمة تعداد فقط — لا يُطبَّق اتحاد ولا استبعاد هنا.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>من — الشرائح</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>الشرائح — من</value></data>
   <data name="SelectOption" xml:space="preserve"><value>اختر…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>الكل</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>صفوف SKU</value></data>
@@ -203,4 +203,12 @@
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>جميع الأسطر تحتوي على منتج.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>بعض الأسطر بلا منتج.</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>من الذي تستهدفه هذه الخطة، وبأي قصة، وبأي وزن للمنتجات؟</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>شخص / طبيب</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>مؤسسة / حساب</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>أساسي</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>ثانوي</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>ملاحظة استثناء</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} شريحة · نوع {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>لا مزيد من الشرائح لإضافتها.</value></data>
 </root>

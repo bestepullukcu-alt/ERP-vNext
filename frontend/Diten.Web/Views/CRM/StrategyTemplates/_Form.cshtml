@@ -155,15 +155,24 @@
         }
 
         @* BINDING 1 — "who". Embedded repeater; a play with no segment is not authorable. *@
+        @* WP-ST-EDIT-G — the section was realigned to the mockup: the heading reads "Segmentler — Kim" (the required
+           glyph moved off the heading — the section is still required, stated in the sub-header + right-panel checklist);
+           the count summary "N segment · {tip} tipi" sits on the right; each bound segment is shown as a display row
+           (name + type badge + SEG code, NO member count — the backend segment list carries none) with a segmented role
+           toggle (birincil / ikincil / hariç-not); the empty state is a dashed bg-body box; and "+ Segment ekle" opens an
+           inline picker. The SegmentBindingsJson contract (segmentId / bindingRole / sortOrder — sortOrder now an
+           automatic index) and the homogeneous SubjectType derivation are unchanged; only the markup + form.js changed. *@
         <section class="card mb-4" id="segmentBindingSection">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SegmentSection"] <span class="text-danger">*</span></h6>
-                    <button type="button" id="btnAddSegmentBinding" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddSegmentBinding"]</button>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SegmentSection"]</h6>
+                    <span id="segmentSummary" class="st-segment-summary d-none"></span>
                 </div>
                 <small class="text-muted d-block mb-3">@Localizer["SegmentBindingHelp"]</small>
                 <div id="segmentBindingList" class="d-flex flex-column gap-2"></div>
-                <div id="segmentBindingEmpty" class="text-muted d-none">@Localizer["NoSegmentBindings"]</div>
+                <div id="segmentBindingEmpty" class="st-segment-empty d-none">@Localizer["NoSegmentBindings"]</div>
+                <div id="segmentPicker" class="st-segment-picker d-none"></div>
+                <button type="button" id="btnAddSegmentBinding" class="st-segment-add mt-2"><i class="bx bx-plus me-1"></i>@Localizer["AddSegmentBinding"]</button>
                 <input type="hidden" asp-for="SegmentBindingsJson" id="SegmentBindingsJson" />
             </div>
         </section>

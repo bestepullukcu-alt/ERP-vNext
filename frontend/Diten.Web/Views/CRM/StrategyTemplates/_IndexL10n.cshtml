@@ -48,7 +48,10 @@
         "VisitsPerPeriodTpl", "ReadyCountTpl", "ChkIdentityEmptyDesc", "ChkScopeTenantDesc", "ChkSegmentsEmptyDesc",
         "ChkSegmentsCountDesc", "ChkFrequencyNoneDesc", "ChkFrequencyPolicyDesc", "ChkFrequencyDeclaredDesc",
         "ChkFrequencyIncompleteDesc", "ChkProductsEmptyDesc", "ChkProductsWeightOffDesc", "ChkProductsOkDesc",
-        "ChkContentEmptyDesc", "ChkContentCountDesc", "ChkMdmNeutralDesc", "ChkMdmOkDesc", "ChkMdmMissingDesc"
+        "ChkContentEmptyDesc", "ChkContentCountDesc", "ChkMdmNeutralDesc", "ChkMdmOkDesc", "ChkMdmMissingDesc",
+        // WP-ST-EDIT-G — Segment section: type badges, role-toggle labels, count summary + picker labels.
+        "SegTypeContact", "SegTypeAccount", "BindingRole_primary", "BindingRole_secondary", "BindingRole_exclusion-note",
+        "SegmentSummaryTpl", "SegmentPickerClose", "SegmentPickerEmpty"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

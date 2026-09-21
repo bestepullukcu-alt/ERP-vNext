@@ -69,7 +69,7 @@
   <data name="NoContentBindings" xml:space="preserve"><value>Sin contenido enlazado. Entonces el plan no tiene dimensión de contenido.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Un plan enlaza la identidad de un segmento. Nunca lista ni cuenta a las personas que contiene.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>Sin línea de producto. Entonces el plan no tiene dimensión de producto.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>Ningún segmento enlazado. Un plan sin segmento no responde a «¿quién?».</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Aún no hay segmentos — elige a quién se aplica el plan.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notas</value></data>
   <data name="AllCompany" xml:space="preserve"><value>Toda la empresa</value></data>
   <data name="AllCountries" xml:space="preserve"><value>Todos los países</value></data>
@@ -104,7 +104,7 @@
   <data name="Segment" xml:space="preserve"><value>Segmento</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>Segmentos</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>Un segmento enlazado queda fijado a esa versión exacta. La lista es una enumeración: aquí no se aplica unión ni exclusión.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>Quién — segmentos</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Segmentos — Quién</value></data>
   <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>Todos</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>Filas SKU</value></data>
@@ -203,4 +203,12 @@
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Todas las líneas tienen un producto.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Algunas líneas no tienen producto.</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>¿A quién se dirige esta jugada, con qué historia y con qué ponderación de productos?</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>persona / médico</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>organización / cuenta</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>principal</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>secundario</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>nota de exclusión</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} segmento · tipo {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>No hay más segmentos para añadir.</value></data>
 </root>

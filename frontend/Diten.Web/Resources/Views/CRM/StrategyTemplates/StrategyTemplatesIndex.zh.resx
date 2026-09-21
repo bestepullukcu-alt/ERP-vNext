@@ -69,7 +69,7 @@
   <data name="NoContentBindings" xml:space="preserve"><value>未绑定内容，方案即没有内容维度。</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>方案绑定的是细分的身份，绝不列出或统计其中的人员。</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>没有产品行，方案即没有产品维度。</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>尚未绑定细分。没有细分的方案回答不了“谁”。</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>还没有细分——请选择方案适用于谁。</value></data>
   <data name="Notes" xml:space="preserve"><value>备注</value></data>
   <data name="AllCompany" xml:space="preserve"><value>整个公司</value></data>
   <data name="AllCountries" xml:space="preserve"><value>所有国家</value></data>
@@ -104,7 +104,7 @@
   <data name="Segment" xml:space="preserve"><value>细分</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>细分</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>绑定的细分固定到该版本。列表只是枚举——此处不做并集或排除运算。</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>谁——细分</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>细分——谁</value></data>
   <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>全部</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>SKU 行</value></data>
@@ -203,4 +203,12 @@
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>所有行均已选产品。</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>部分行未选产品。</value></data>
   <data name="DescriptionPlaceholder" xml:space="preserve"><value>这个策略针对谁、用什么故事、以及怎样的产品权重？</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>个人 / 医生</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>机构 / 客户</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>主要</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>次要</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>排除备注</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} 个细分 · {type} 类型</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>没有更多可添加的细分。</value></data>
 </root>

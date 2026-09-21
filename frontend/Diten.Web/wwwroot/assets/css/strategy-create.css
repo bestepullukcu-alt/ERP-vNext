@@ -327,3 +327,126 @@
     color: var(--st-heading);
 }
 .st-editor-scope .st-resolved-scope-value.is-empty { color: var(--bs-danger); }
+
+/* ── WP-ST-EDIT-G — Segmentler bölümü (özet + display satır + rol toggle + dashed boş-hal + picker) ────────────────
+   Aligns the segment section to the mockup while staying theme-aware (bg-body, Bootstrap tokens). The row shows the
+   bound segment's name + SEG code + a type badge (NO member count — the backend list carries none) and a segmented
+   role toggle; adding is done through the inline "+ Segment ekle" picker. Everything is scoped under .st-editor-scope. */
+.st-editor-scope .st-segment-summary {
+    font-family: var(--bs-font-monospace);
+    font-size: 11px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.st-editor-scope .st-segment-empty {
+    padding: 17px;
+    text-align: center;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    color: var(--bs-secondary-color);
+    background: var(--bs-body-bg);
+}
+.st-editor-scope .st-seg-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-body-bg);
+}
+.st-editor-scope .st-seg-main { flex: 1 1 180px; min-width: 0; }
+.st-editor-scope .st-seg-name {
+    font-weight: 500;
+    color: var(--st-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-seg-meta {
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-seg-type { flex: 0 0 auto; }
+.st-editor-scope .st-seg-roles { flex: 0 0 auto; display: inline-flex; }
+.st-editor-scope .st-seg-role {
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+    color: var(--st-muted);
+    cursor: pointer;
+}
+.st-editor-scope .st-seg-role + .st-seg-role { border-left: 0; }
+.st-editor-scope .st-seg-role:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
+.st-editor-scope .st-seg-role:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; }
+.st-editor-scope .st-seg-role.is-active {
+    position: relative;
+    z-index: 1;
+    background: var(--st-accent-soft);
+    border-color: var(--st-accent);
+    color: var(--st-accent);
+}
+.st-editor-scope .st-seg-role:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.st-editor-scope .st-segment-add {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    background: var(--bs-body-bg);
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--st-text);
+    cursor: pointer;
+}
+.st-editor-scope .st-segment-add:hover { border-color: var(--st-accent); color: var(--st-accent); }
+.st-editor-scope .st-segment-add:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.st-editor-scope .st-segment-picker {
+    margin-top: 9px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.st-editor-scope .st-segment-choice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 11px;
+    background: var(--bs-body-bg);
+    border: 0;
+    border-bottom: 1px solid var(--bs-border-color);
+    text-align: left;
+    color: var(--st-text);
+    cursor: pointer;
+}
+.st-editor-scope .st-segment-choice:last-child { border-bottom: 0; }
+.st-editor-scope .st-segment-choice:hover { background: var(--bs-secondary-bg); }
+.st-editor-scope .st-segment-choice-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-segment-choice-code {
+    flex: 0 0 auto;
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.st-editor-scope .st-segment-picker-note {
+    padding: 11px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+    background: var(--bs-body-bg);
+}

@@ -74,6 +74,9 @@
             jobs.push(load(`${endpoint}/segments?includeArchived=false`, r => ({
                 id: r.segmentId || r.id,
                 text: `${r.segmentCode || ''} — ${r.segmentName || ''}`.trim(),
+                // WP-ST-EDIT-G — code + name split out so the display row can show the name with the SEG code beneath it.
+                code: r.segmentCode || '',
+                name: r.segmentName || '',
                 subjectType: r.subjectType,
                 archived: r.isArchived === true
             })).then(x => { options.segment = x.filter(o => !o.archived); }));
@@ -166,35 +169,91 @@
     };
 
     // ---------------- "who" ----------------
+    // WP-ST-EDIT-G — the segment section follows the mockup: each bound segment is a DISPLAY row (name + type badge +
+    // SEG code — no member count, the backend segment list carries none) with a segmented role toggle, and adding is
+    // done through an inline picker ("+ Segment ekle"). The picker honours the homogeneous filter (segmentOptionsFor),
+    // the SubjectType is still derived from the first bound segment, and SegmentBindingsJson keeps its shape
+    // (segmentId / bindingRole / sortOrder — sortOrder is now an automatic index, no longer an editable input).
+    let segPickerOpen = false;
+
+    const segmentById = id => (options.segment || []).find(o => o.id === id);
+    const segTypeLabel = t => t === 'account' ? (L.SegTypeAccount || '') : t === 'contact' ? (L.SegTypeContact || '') : '';
+    const segTypeBadgeClass = t => t === 'account' ? 'bg-label-warning' : 'bg-label-primary';
+    const roleLabel = r => L['BindingRole_' + r] || r;
+
+    const renderSegmentSummary = () => {
+        const span = el('segmentSummary');
+        if (!span) return;
+        const n = state.segments.length;
+        if (n === 0) { span.classList.add('d-none'); span.textContent = ''; return; }
+        const type = activeSubjectType();
+        const typeWord = type === 'contact' ? (L.SubjectTypeContact || '') : type === 'account' ? (L.SubjectTypeAccount || '') : '';
+        span.textContent = typeWord
+            ? (L.SegmentSummaryTpl || '{n} · {type}').replace('{n}', String(n)).replace('{type}', typeWord)
+            : `${n} ${L.StatSegments || ''}`.trim();
+        span.classList.remove('d-none');
+    };
+
+    const renderSegmentPicker = () => {
+        const panel = el('segmentPicker');
+        if (!panel) return;
+        if (!segPickerOpen) { panel.classList.add('d-none'); panel.innerHTML = ''; return; }
+        panel.classList.remove('d-none');
+        if (!can('segment')) {
+            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.PickerUnavailable || '')}</div>`;
+            return;
+        }
+        const chosen = new Set(state.segments.map(s => s.segmentId));
+        const pool = segmentOptionsFor().filter(o => !chosen.has(o.id));
+        if (pool.length === 0) {
+            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.SegmentPickerEmpty || '')}</div>`;
+            return;
+        }
+        panel.innerHTML = pool.map(o => `
+            <button type="button" class="st-segment-choice js-seg-choice" data-id="${esc(o.id)}">
+                <span class="st-segment-choice-name">${esc(o.name || o.text)}</span>
+                <span class="badge ${segTypeBadgeClass(o.subjectType)} st-seg-type">${esc(segTypeLabel(o.subjectType))}</span>
+                <span class="st-segment-choice-code">${esc(o.code || '')}</span>
+            </button>`).join('');
+    };
+
+    const updateAddSegBtnLabel = () => {
+        const btn = el('btnAddSegmentBinding');
+        if (!btn) return;
+        btn.innerHTML = segPickerOpen
+            ? `<i class="bx bx-x me-1"></i>${esc(L.SegmentPickerClose || '')}`
+            : `<i class="bx bx-plus me-1"></i>${esc(L.AddSegmentBinding || '')}`;
+    };
 
     const renderSegments = () => {
         const host = el('segmentBindingList');
         const empty = el('segmentBindingEmpty');
         if (!host) return;
-        const segList = segmentOptionsFor();
-        host.innerHTML = state.segments.map((b, i) => `
-            <div class="border rounded p-3" data-row="segment" data-index="${i}">
-                <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-5">
-                        <label class="form-label small mb-1">${esc(L.Segment || '')} <span class="text-danger">*</span></label>
-                        ${pickerSelect('segment', b.segmentId, can('segment'), null, segList)}
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label small mb-1">${esc(L.BindingRole || '')}</label>
-                        ${vocabSelect(['', ...(cfg.bindingRoles || [])], b.bindingRole || '', 'js-role')}
-                    </div>
-                    <div class="col-3 col-md-2">
-                        <label class="form-label small mb-1">${esc(L.SortOrder || '')}</label>
-                        <input type="number" class="form-control form-control-sm js-sort" value="${esc(b.sortOrder ?? i * 10)}"${frozen ? ' disabled' : ''} />
-                    </div>
-                    <div class="col-3 col-md-2 text-end">
-                        <button type="button" class="btn btn-sm btn-label-danger js-remove"${frozen ? ' disabled' : ''}>
-                            <i class="bx bx-trash"></i> ${esc(L.Remove || '')}
-                        </button>
-                    </div>
+        const roles = cfg.bindingRoles || [];
+        host.innerHTML = state.segments.map((b, i) => {
+            const opt = segmentById(b.segmentId);
+            const name = opt ? (opt.name || opt.text) : (b.segmentId || '');
+            const code = opt ? (opt.code || '') : '';
+            const type = (opt && opt.subjectType) || activeSubjectType();
+            const roleBtns = roles.map(r => `
+                <button type="button" class="st-seg-role js-role-btn${b.bindingRole === r ? ' is-active' : ''}" data-role="${esc(r)}"${frozen ? ' disabled' : ''}>${esc(roleLabel(r))}</button>`).join('');
+            return `
+            <div class="st-seg-row" data-row="segment" data-index="${i}">
+                <div class="st-seg-main">
+                    <div class="st-seg-name">${esc(name)}</div>
+                    <div class="st-seg-meta">${esc(code)}</div>
                 </div>
-            </div>`).join('');
+                <span class="badge ${segTypeBadgeClass(type)} st-seg-type">${esc(segTypeLabel(type))}</span>
+                <input type="hidden" class="js-role" value="${esc(b.bindingRole || '')}" />
+                <div class="st-seg-roles" role="group">${roleBtns}</div>
+                <button type="button" class="btn btn-sm btn-label-danger js-remove"${frozen ? ' disabled' : ''}>
+                    <i class="bx bx-trash"></i> ${esc(L.Remove || '')}
+                </button>
+            </div>`;
+        }).join('');
         empty?.classList.toggle('d-none', state.segments.length > 0);
+        renderSegmentSummary();
+        renderSegmentPicker();
         // Keep the hidden #SubjectType consistent with the current segment selection (no-op on edit).
         syncSubjectType();
     };
@@ -385,10 +444,49 @@
         return true;
     };
 
-    el('btnAddSegmentBinding')?.addEventListener('click', () => {
-        if (frozen || limitReached(state.segments.length, cfg.maxSegmentBindings)) return;
-        state.segments.push({ segmentId: '', bindingRole: '', sortOrder: state.segments.length * 10, notes: null });
+    // WP-ST-EDIT-G — "+ Segment ekle" no longer pushes an empty row; it toggles the inline picker. A segment is added
+    // (with its id already resolved) only when the author clicks an entry in that picker.
+    const addSegBtn = el('btnAddSegmentBinding');
+    if (addSegBtn && frozen) addSegBtn.disabled = true;
+    addSegBtn?.addEventListener('click', () => {
+        if (frozen) return;
+        segPickerOpen = !segPickerOpen;
+        updateAddSegBtnLabel();
+        renderSegmentPicker();
+    });
+
+    // Picking a segment from the pool adds it with a sensible default role (first = primary, rest = secondary) and its
+    // automatic sortOrder; the picker then closes. The homogeneous filter already kept the pool to the active type.
+    el('segmentPicker')?.addEventListener('click', event => {
+        const choice = event.target.closest('.js-seg-choice');
+        if (!choice || frozen) return;
+        if (limitReached(state.segments.length, cfg.maxSegmentBindings)) return;
+        const id = choice.dataset.id;
+        if (!id) return;
+        state.segments.push({
+            segmentId: id,
+            bindingRole: state.segments.length ? 'secondary' : 'primary',
+            sortOrder: state.segments.length * 10,
+            notes: null
+        });
+        segPickerOpen = false;
+        updateAddSegBtnLabel();
         renderSegments();
+        setTimeout(updateSidePanel, 0);
+    });
+
+    // The segmented role toggle: a button click sets bindingRole directly (buttons fire no 'change'), then re-renders so
+    // the active state and the hidden .js-role input (read back by sync/submit) stay in step.
+    el('segmentBindingList')?.addEventListener('click', event => {
+        const rbtn = event.target.closest('.js-role-btn');
+        if (!rbtn || frozen) return;
+        const row = rbtn.closest('[data-row="segment"]');
+        if (!row) return;
+        const i = Number(row.dataset.index);
+        if (!state.segments[i]) return;
+        state.segments[i].bindingRole = rbtn.dataset.role || null;
+        renderSegments();
+        setTimeout(updateSidePanel, 0);
     });
 
     el('btnAddProductLine')?.addEventListener('click', () => {
@@ -447,9 +545,11 @@
             const i = Number(row.dataset.index);
             const binding = state.segments[i];
             if (!binding) return;
-            binding.segmentId = row.querySelector('[data-kind="segment"]')?.value || '';
+            // WP-ST-EDIT-G — segmentId is fixed by the picker (the row is display-only), so it is NOT re-read here (an
+            // absent dropdown would wipe it). Only the role (from the hidden .js-role input the toggle drives) and the
+            // automatic index-based sortOrder are written back — SegmentBindingsJson keeps its shape.
             binding.bindingRole = row.querySelector('.js-role')?.value || null;
-            binding.sortOrder = Number(row.querySelector('.js-sort')?.value || 0);
+            binding.sortOrder = i * 10;
         });
 
         document.querySelectorAll('[data-row="product"]').forEach(row => {
