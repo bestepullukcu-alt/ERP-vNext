@@ -38,6 +38,10 @@
     const el = id => document.getElementById(id);
     const parse = (json, fallback) => { try { const v = JSON.parse(json || ''); return v ?? fallback; } catch (e) { return fallback; } };
     const round2 = n => Math.round((Number(n) || 0) * 100) / 100;
+    // WP-ST-EDIT-M — friendly-label fallback for a raw contract code (weekly → "Weekly", cycle-based → "Cycle Based"),
+    // used only when no FrequencyMode_/FrequencyType_/PeriodType_ L10n key exists (the VFP form uses the same helper). It
+    // formats the DISPLAY text only — the <option> value and the posted mode stay the raw contract code untouched.
+    const humanize = code => String(code ?? '').split(/[-_\s]+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
     // ── select2 (single dropdown) enhancement — the app-wide VFP pattern (jQuery select2, dropdownParent, native-change
     // bridge). WP-ST-EDIT-L: the segment ROLE control moved from a button toggle to a single <select class="js-role">;
@@ -296,9 +300,23 @@
     const renderFrequency = () => {
         const modeEl = el('frequencyMode');
         if (!modeEl) return;
+        // WP-ST-EDIT-M — the mode is a hidden input driven by three choice-box buttons (the KAPSAM .st-scope-type
+        // pattern). The hidden #frequencyMode keeps the posted value byte-for-byte, so readFrequency() and
+        // FrequencyIntentJson are unchanged; each button's LABEL is friendly L10n (FrequencyMode_/FrequencyModeSub_),
+        // never the raw contract mode string ("policy-reference"/"declared-intent"/"none"). The list is contract-driven.
         const modes = cfg.frequencyIntentModes || [];
-        modeEl.innerHTML = modes.map(m => `<option value="${esc(m)}"${m === state.frequency.mode ? ' selected' : ''}>${esc(m)}</option>`).join('');
-        modeEl.disabled = frozen;
+        const currentMode = state.frequency.mode || 'none';
+        modeEl.value = currentMode;
+        const modeButtons = el('frequencyModeButtons');
+        if (modeButtons) {
+            modeButtons.innerHTML = modes.map(m => {
+                const active = m === currentMode;
+                return `<button type="button" class="st-freq-mode${active ? ' active' : ''}" data-freq-mode="${esc(m)}" aria-pressed="${active ? 'true' : 'false'}"${frozen ? ' disabled' : ''}>
+                            <span class="st-freq-mode-title">${esc(L['FrequencyMode_' + m] || humanize(m))}</span>
+                            <span class="st-freq-mode-sub">${esc(L['FrequencyModeSub_' + m] || '')}</span>
+                        </button>`;
+            }).join('');
+        }
 
         const policyBlock = el('frequencyPolicyBlock');
         const policySelect = el('frequencyPolicyId');
@@ -314,13 +332,17 @@
 
         const typeEl = el('frequencyType');
         if (typeEl) {
-            // MOD-0165's own vocabulary, republished by the contract. Never a copy kept in this file.
-            typeEl.innerHTML = (cfg.frequencyTypes || []).map(v => `<option value="${esc(v)}"${v === state.frequency.frequencyType ? ' selected' : ''}>${esc(v)}</option>`).join('');
+            // MOD-0165's own vocabulary, republished by the contract. Never a copy kept in this file. WP-ST-EDIT-M — the
+            // <option> value is the raw contract code (the payload is unchanged), but the visible LABEL is friendly L10n
+            // (FrequencyType_<v>) with a humanize() fallback — the raw enum ("weekly") never shows in the UI.
+            typeEl.innerHTML = (cfg.frequencyTypes || []).map(v => `<option value="${esc(v)}"${v === state.frequency.frequencyType ? ' selected' : ''}>${esc(L['FrequencyType_' + v] || humanize(v))}</option>`).join('');
             typeEl.disabled = frozen;
         }
         const periodEl = el('periodType');
         if (periodEl) {
-            periodEl.innerHTML = (cfg.frequencyPeriodTypes || []).map(v => `<option value="${esc(v)}"${v === state.frequency.periodType ? ' selected' : ''}>${esc(v)}</option>`).join('');
+            // WP-ST-EDIT-M — value stays the raw contract code; the visible label is friendly L10n (PeriodType_<v>) with
+            // a humanize() fallback, so a raw "day"/"campaign-period" never shows in the UI.
+            periodEl.innerHTML = (cfg.frequencyPeriodTypes || []).map(v => `<option value="${esc(v)}"${v === state.frequency.periodType ? ' selected' : ''}>${esc(L['PeriodType_' + v] || humanize(v))}</option>`).join('');
             periodEl.disabled = frozen;
         }
         const countEl = el('requiredVisitCount');
@@ -530,7 +552,18 @@
         renderContents();
     });
 
-    el('frequencyMode')?.addEventListener('change', () => { state.frequency = readFrequency(); renderFrequency(); });
+    // WP-ST-EDIT-M — the mode is now a hidden input, so its choice comes from the three choice-box buttons (a
+    // programmatic value set fires no 'change'). The click sets the hidden #frequencyMode, re-reads state and re-renders —
+    // exactly what the old <select> change handler did, so the FrequencyIntentJson mode sync keeps its shape.
+    el('frequencyModeButtons')?.addEventListener('click', event => {
+        const btn = event.target.closest('.st-freq-mode');
+        if (!btn || btn.disabled || frozen) return;
+        const modeEl = el('frequencyMode');
+        if (modeEl) modeEl.value = btn.dataset.freqMode || 'none';
+        state.frequency = readFrequency();
+        renderFrequency();
+        setTimeout(updateSidePanel, 0);
+    });
 
     document.addEventListener('click', event => {
         const removeSku = event.target.closest('.js-remove-sku');

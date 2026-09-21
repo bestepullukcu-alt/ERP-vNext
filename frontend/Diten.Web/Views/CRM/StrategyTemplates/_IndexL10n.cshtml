@@ -51,7 +51,13 @@
         "ChkContentEmptyDesc", "ChkContentCountDesc", "ChkMdmNeutralDesc", "ChkMdmOkDesc", "ChkMdmMissingDesc",
         // WP-ST-EDIT-G — Segment section: type badges, role-toggle labels, count summary + picker labels.
         "SegTypeContact", "SegTypeAccount", "BindingRole_primary", "BindingRole_secondary", "BindingRole_exclusion-note",
-        "SegmentSummaryTpl", "SegmentPickerClose", "SegmentPickerEmpty"
+        "SegmentSummaryTpl", "SegmentPickerClose", "SegmentPickerEmpty",
+        // WP-ST-EDIT-M — Frekans MODE choice-box labels (title + sub) + friendly FrequencyType_/PeriodType_ labels.
+        "FrequencyMode_policy-reference", "FrequencyMode_declared-intent", "FrequencyMode_none",
+        "FrequencyModeSub_policy-reference", "FrequencyModeSub_declared-intent", "FrequencyModeSub_none",
+        "FrequencyType_weekly", "FrequencyType_biweekly", "FrequencyType_monthly", "FrequencyType_cycle-based",
+        "FrequencyType_custom", "PeriodType_day", "PeriodType_week", "PeriodType_month", "PeriodType_quarter",
+        "PeriodType_cycle", "PeriodType_campaign-period", "PeriodType_custom"
     };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     // Verifier-compatible property markers for the dictionary-backed JSON bridge (each token below is `Key =`):

@@ -211,4 +211,23 @@
   <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} segment · {type} tipi</value></data>
   <data name="SegmentPickerClose" xml:space="preserve"><value>Kapat</value></data>
   <data name="SegmentPickerEmpty" xml:space="preserve"><value>Eklenecek başka segment yok.</value></data>
+  <!-- WP-ST-EDIT-M — Frekans niyeti MODE choice-box etiketleri (başlık + alt) + insan-dostu FrequencyType/PeriodType. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>Politikaya işaretçi</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>Beyan edilen niyet</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>Yok</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>motor okur</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>yalnızca doküman</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>referans verilmedi</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>Haftalık</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>İki haftalık</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>Aylık</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>Döngü bazlı</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>Özel</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>Gün</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>Hafta</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>Ay</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>Çeyrek</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>Döngü</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>Kampanya dönemi</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>Özel</value></data>
 </root>

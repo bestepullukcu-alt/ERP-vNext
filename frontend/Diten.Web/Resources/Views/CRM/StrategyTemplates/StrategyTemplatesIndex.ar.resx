@@ -211,4 +211,23 @@
   <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} شريحة · نوع {type}</value></data>
   <data name="SegmentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
   <data name="SegmentPickerEmpty" xml:space="preserve"><value>لا مزيد من الشرائح لإضافتها.</value></data>
+  <!-- WP-ST-EDIT-M — تسميات مربع اختيار وضع نية التكرار (عنوان + عنوان فرعي) + تسميات FrequencyType/PeriodType الودّية. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>مؤشر إلى سياسة</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>نية معلنة</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>لا شيء</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>يقرأه المحرك</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>توثيق فقط</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>لا يوجد مرجع</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>أسبوعي</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>كل أسبوعين</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>شهري</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>حسب الدورة</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>مخصص</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>يوم</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>أسبوع</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>شهر</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>ربع سنة</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>دورة</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>فترة الحملة</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>مخصص</value></data>
 </root>

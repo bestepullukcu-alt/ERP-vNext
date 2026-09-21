@@ -211,4 +211,23 @@
   <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} 个细分 · {type} 类型</value></data>
   <data name="SegmentPickerClose" xml:space="preserve"><value>关闭</value></data>
   <data name="SegmentPickerEmpty" xml:space="preserve"><value>没有更多可添加的细分。</value></data>
+  <!-- WP-ST-EDIT-M — 频率意图模式的选择框标签（标题 + 副标签）+ 友好的 FrequencyType/PeriodType 标签。 -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>政策指针</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>声明意图</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>无</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>引擎读取</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>仅文档</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>未提供引用</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>每周</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>每两周</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>每月</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>基于周期</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>自定义</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>天</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>周</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>月</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>季度</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>周期</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>活动周期</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>自定义</value></data>
 </root>

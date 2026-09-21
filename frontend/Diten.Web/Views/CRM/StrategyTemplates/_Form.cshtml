@@ -194,9 +194,15 @@
                     </div>
                 </div>
                 <div class="row g-3" id="frequencyEditor">
-                    <div class="col-12 col-md-4">
-                        <label class="form-label fw-medium" for="frequencyMode">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>
-                        <select id="frequencyMode" class="form-select"></select>
+                    @* WP-ST-EDIT-M — the frequency intent MODE is chosen with three choice-box buttons (policy-reference /
+                       declared-intent / none), not a raw <select>. The value still posts through the hidden #frequencyMode
+                       input, so readFrequency() and the FrequencyIntentJson contract are unchanged; form.js builds the
+                       buttons (title + sub-label) and drives that hidden input on click. *@
+                    <div class="col-12">
+                        <label class="form-label fw-medium">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>
+                        <input type="hidden" id="frequencyMode" />
+                        <div class="d-flex flex-wrap gap-2" id="frequencyModeButtons" role="group"
+                             aria-label="@Localizer["FrequencyIntentMode"]"></div>
                     </div>
                     <div class="col-12 col-md-8 d-none" id="frequencyPolicyBlock">
                         <label class="form-label fw-medium" for="frequencyPolicyId">@Localizer["FrequencyPolicy"] <span class="text-danger">*</span></label>

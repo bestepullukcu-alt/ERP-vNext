@@ -211,4 +211,23 @@
   <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} segment · type {type}</value></data>
   <data name="SegmentPickerClose" xml:space="preserve"><value>Fermer</value></data>
   <data name="SegmentPickerEmpty" xml:space="preserve"><value>Aucun autre segment à ajouter.</value></data>
+  <!-- WP-ST-EDIT-M — libellés choice-box du MODE d'intention de fréquence (titre + sous-titre) + FrequencyType/PeriodType. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>Référence de politique</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>Intention déclarée</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>Aucun</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>lu par le moteur</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>documentation seulement</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>aucune référence</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>Hebdomadaire</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>Bimensuel</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>Mensuel</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>Basé sur le cycle</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>Personnalisé</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>Jour</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>Semaine</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>Mois</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>Trimestre</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>Cycle</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>Période de campagne</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>Personnalisé</value></data>
 </root>

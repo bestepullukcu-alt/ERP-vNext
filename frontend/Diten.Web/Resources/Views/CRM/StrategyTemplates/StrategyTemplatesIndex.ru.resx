@@ -211,4 +211,23 @@
   <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} сегмент · тип {type}</value></data>
   <data name="SegmentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
   <data name="SegmentPickerEmpty" xml:space="preserve"><value>Больше нет сегментов для добавления.</value></data>
+  <!-- WP-ST-EDIT-M — метки choice-box РЕЖИМА намерения частоты (заголовок + подпись) + дружелюбные FrequencyType/PeriodType. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>Ссылка на политику</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>Заявленное намерение</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>Нет</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>читает движок</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>только документация</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>ссылка не указана</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>Еженедельно</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>Раз в две недели</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>Ежемесячно</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>По циклу</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>День</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>Квартал</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>Цикл</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>Пользовательский</value></data>
 </root>
