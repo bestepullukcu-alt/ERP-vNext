@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>周期</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>您无权浏览该列表。</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>产品行</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>什么——产品与 SKU 组合</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>产品 + SKU% — 什么</value></data>
   <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>已启用。</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>已归档。</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>产品合计</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>产品依据 MDM 全球产品目录进行校验。</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>添加产品…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>可选</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>百分比</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>平均分配</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>产品百分比不是 100%。计算总计 {total}% — 相差 {diff} 个百分点。请修正各行后再保存。</value></data>
 </root>

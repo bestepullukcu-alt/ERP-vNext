@@ -561,6 +561,9 @@
                     <div class="st-prod-name">${esc(name)}</div>
                     <div class="st-prod-meta">${esc(code)}</div>
                 </div>
+                <div class="st-prod-sku">
+                    <input type="text" class="form-control form-control-sm js-sku" maxlength="200" placeholder="${esc(L.SkuOptionalPlaceholder || '')}" value="${esc(line.notes ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.ProductColSku || '')}" />
+                </div>
                 <div class="st-prod-weight">
                     <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.LineWeightPercentage || '')}" />
                     <span class="st-prod-weight-sign">%</span>
@@ -571,6 +574,8 @@
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.products.length > 0);
+        // WP-ST-EDIT-R — the ÜRÜN | SKU | YÜZDE column head is shown only when there is at least one line to label.
+        el('productLineHead')?.classList.toggle('d-none', state.products.length === 0);
         renderProductPicker();
         updateProductTotals();
     };
@@ -764,12 +769,16 @@
             if (!line) return;
             // WP-ST-EDIT-Q — the product is FIXED by the "Ürün ekle…" picker; the row shows a read-only name + MDM-GP
             // code, so globalProductId is NOT re-read here (an absent dropdown would wipe it — the segment-row pattern).
-            // Only the weight is read back.
+            // Only the weight and the optional SKU note are read back.
             const weight = row.querySelector('.js-weight')?.value;
             line.lineWeightPercentage = weight === '' || weight == null ? null : Number(weight);
-            // WP-ST-EDIT-P — the flat screen edits weight ONLY. skuAllocationMode and skuAllocations are NOT re-read or
-            // cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row keeps its mode +
-            // allocations intact (no wipe), so ProductLinesJson round-trips the contract without data loss.
+            // WP-ST-EDIT-R — the mockup's per-line SKU is a single optional FREE-TEXT field. The contract's
+            // SkuAllocationInput.GskuId is a Guid, so free text cannot map to a gsku allocation; the ProductLineInput's
+            // own free-text field is `Notes`, which no other UI surface reads (verified), so the SKU text binds there.
+            line.notes = row.querySelector('.js-sku')?.value?.trim() || null;
+            // WP-ST-EDIT-P — the flat screen edits weight + the SKU note ONLY. skuAllocationMode and skuAllocations are
+            // NOT re-read or cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row
+            // keeps its mode + allocations intact (no wipe), so ProductLinesJson round-trips the contract without loss.
         });
 
         document.querySelectorAll('[data-row="content"]').forEach(row => {

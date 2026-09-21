@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>Période</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>Vous n'avez pas l'autorisation de parcourir cette liste.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Lignes produit</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>Quoi — mix produit et SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Produit + SKU% — Quoi</value></data>
   <data name="QuickView" xml:space="preserve"><value>Aperçu rapide</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Activé.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Archivé.</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Total produits</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>Les produits sont validés à partir du catalogue MDM Global Product.</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>Ajouter un produit…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>facultatif</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Produit</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Pourcentage</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Répartir équitablement</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Le pourcentage produit n'est pas 100 %. Total calculé {total} % — écart de {diff} points. Corrigez les lignes pour enregistrer.</value></data>
 </root>

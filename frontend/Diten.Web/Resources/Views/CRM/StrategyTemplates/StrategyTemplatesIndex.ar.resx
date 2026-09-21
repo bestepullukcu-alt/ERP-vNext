@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>الفترة</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>لا تملك صلاحية استعراض هذه القائمة.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>خطوط المنتج</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>ماذا — مزيج المنتج و SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>المنتج + SKU% — ماذا</value></data>
   <data name="QuickView" xml:space="preserve"><value>عرض سريع</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>تم التفعيل.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>تمت الأرشفة.</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>إجمالي المنتجات</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>يتم التحقق من المنتجات مقابل كتالوج MDM Global Product.</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>إضافة منتج…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>اختياري</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>المنتج</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>النسبة</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>توزيع بالتساوي</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>نسبة المنتج ليست 100٪. الإجمالي المحسوب {total}٪ — بفارق {diff} نقطة. صحّح الصفوف للحفظ.</value></data>
 </root>

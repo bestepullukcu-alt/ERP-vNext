@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>Period</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>You do not have permission to browse this list.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Product lines</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>What — product and SKU mix</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Product + SKU% — What</value></data>
   <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Activated.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Archived.</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Product total</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>Products are validated against the MDM Global Product catalogue.</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>Add a product…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>optional</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Percentage</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Distribute evenly</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Product percentage is not 100%. Computed total {total}% — off by {diff} points. Fix the rows to save.</value></data>
 </root>

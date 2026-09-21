@@ -545,6 +545,9 @@
     background: var(--bs-card-bg);
 }
 .st-editor-scope .st-prod-main { flex: 1 1 200px; min-width: 0; }
+/* WP-ST-EDIT-R — the optional per-line SKU free-text column (mockup ÜRÜN | SKU | YÜZDE), fixed width between the product
+   label and the weight so the column head lines up over it. */
+.st-editor-scope .st-prod-sku { flex: 0 0 auto; width: 160px; }
 .st-editor-scope .st-prod-meta {
     margin-top: 4px;
     font-family: var(--bs-font-monospace);
@@ -603,3 +606,24 @@
 }
 .st-editor-scope .st-prod-progress-bar.is-ok { background: var(--bs-success); }
 .st-editor-scope .st-prod-progress-bar.is-danger { background: var(--bs-danger); }
+
+/* ── WP-ST-EDIT-R — ÜRÜN | SKU | YÜZDE kolon başlık satırı (mockup). Kolon genişlikleri .st-prod-row ile birebir hizalı:
+   ürün-main esnek (1 1 200) · sku sabit 160 · weight sabit 116 · kaldır ikonu için spacer. ─────────────────────────── */
+.st-editor-scope .st-prod-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 11px;
+    margin-bottom: 2px;
+}
+.st-editor-scope .st-prod-head > span {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-prod-head-product { flex: 1 1 200px; min-width: 0; }
+.st-editor-scope .st-prod-head-sku { flex: 0 0 auto; width: 160px; }
+.st-editor-scope .st-prod-head-weight { flex: 0 0 auto; width: 116px; text-align: right; }
+.st-editor-scope .st-prod-head-spacer { flex: 0 0 auto; width: 30px; }

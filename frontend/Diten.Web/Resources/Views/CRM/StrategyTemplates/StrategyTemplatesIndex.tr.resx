@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>Dönem</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>Bu listeyi görüntüleme yetkiniz yok.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Ürün hatları</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>Ne — ürün ve SKU karması</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Ürün + SKU% — Ne</value></data>
   <data name="QuickView" xml:space="preserve"><value>Hızlı bakış</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Aktifleştirildi.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Arşivlendi.</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Ürün toplamı</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>Ürünler MDM Global Product kataloğundan doğrulanır.</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>Ürün ekle…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>opsiyonel</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Ürün</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Yüzde</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Eşit dağıt</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Ürün yüzdesi %100 değil. Hesaplanan toplam {total}% — fark {diff} puan. Kaydetmek için satırları düzeltin.</value></data>
 </root>

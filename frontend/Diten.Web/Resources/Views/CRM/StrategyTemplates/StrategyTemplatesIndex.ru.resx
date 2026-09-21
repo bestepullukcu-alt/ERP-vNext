@@ -89,7 +89,7 @@
   <data name="PeriodType" xml:space="preserve"><value>Период</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>У вас нет прав для просмотра этого списка.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Продуктовые строки</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>Что — продукт и микс SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Продукт + SKU% — Что</value></data>
   <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Активировано.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Отправлено в архив.</value></data>
@@ -234,6 +234,10 @@
   <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Итого по продуктам</value></data>
   <data name="ProductCatalogHelp" xml:space="preserve"><value>Продукты проверяются по каталогу MDM Global Product.</value></data>
   <data name="ProductAddPicker" xml:space="preserve"><value>Добавить продукт…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>необязательно</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Процент</value></data>
   <data name="EqualDistribute" xml:space="preserve"><value>Распределить поровну</value></data>
   <data name="ProductTotalWarning" xml:space="preserve"><value>Процент продукта не равен 100%. Расчётный итог {total}% — отклонение {diff} пунктов. Исправьте строки, чтобы сохранить.</value></data>
 </root>

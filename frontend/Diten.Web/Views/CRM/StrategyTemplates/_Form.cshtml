@@ -272,12 +272,23 @@
                 <div class="st-prod-controls">
                     <span class="st-prod-total-label">@Localizer["ProductWeightTotalLabel"]</span>
                     <div class="st-prod-progress"><span class="st-prod-progress-bar" id="productWeightBar"></span></div>
+                    @* WP-ST-EDIT-R — bx-distribute-horizontal is not defined in the iconify set (renders as tofu); bx-equalizer
+                       is defined and carries the "even out" meaning. *@
                     <button type="button" class="btn btn-sm btn-label-secondary" id="btnDistributeProducts">
-                        <i class="bx bx-distribute-horizontal me-1"></i>@Localizer["EqualDistribute"]
+                        <i class="bx bx-equalizer me-1"></i>@Localizer["EqualDistribute"]
                     </button>
                 </div>
                 @* Σ≠100 warning box (mockup). form.js fills the format text ({total}/{diff}) and toggles visibility. *@
                 <div class="st-prod-warn d-none" id="productWeightWarn" role="alert"></div>
+                @* WP-ST-EDIT-R — column header row (mockup ÜRÜN | SKU | YÜZDE). Its column widths track the .st-prod-row
+                   layout so the labels sit over their inputs; it is hidden while there are no lines (form.js toggles it
+                   with the empty-state). The trailing spacer keeps the labels clear of the remove icon column. *@
+                <div id="productLineHead" class="st-prod-head d-none">
+                    <span class="st-prod-head-product">@Localizer["ProductColProduct"]</span>
+                    <span class="st-prod-head-sku">@Localizer["ProductColSku"]</span>
+                    <span class="st-prod-head-weight">@Localizer["ProductColWeight"]</span>
+                    <span class="st-prod-head-spacer" aria-hidden="true"></span>
+                </div>
                 <div id="productLineList" class="d-flex flex-column gap-2"></div>
                 @* WP-ST-EDIT-Q — dashed empty-state box (the segment section pattern), not a bare text line. *@
                 <div id="productLineEmpty" class="st-prod-empty d-none">@Localizer["NoProductLines"]</div>
