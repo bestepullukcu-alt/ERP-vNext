@@ -56,13 +56,18 @@
                             <label asp-for="Code" class="form-label fw-medium">@Localizer["Code"] <span class="text-danger">*</span></label>
                             @if (isEdit)
                             {
-                                @* ⚠ DISABLED, NOT merely un-submitted. Stored values join to their definition,
-                                   and the FU02 update request has no code member — so an edited code would be
-                                   discarded in silence while the screen reported a saved change. The hidden
-                                   OriginalCode above lets the model refuse a crafted post as well. *@
+                                @* ⚠ READONLY, NOT DISABLED — AND THE DIFFERENCE IS THE WHOLE BUG (owner report,
+                                   2026-09-21). A disabled input POSTS NOTHING, so every edit arrived with an
+                                   empty Code, [Required] failed, and the page came back with the code field
+                                   red: this form could not save a single change since it was written. Readonly
+                                   is just as uneditable and still posts, so the model's own immutability guard
+                                   (OriginalCode vs Code) finally has both sides to compare — a crafted post is
+                                   still refused, with a message, which is what that guard was written for.
+                                   `bg-label-secondary` is the product's existing immutable-field look: Bootstrap 5
+                                   dropped the [readonly] background rule, so Users and Roles both paint it. *@
                                 <div class="diten-field">
                                     <i class="bx bx-hash diten-field-icon" aria-hidden="true"></i>
-                                    <input asp-for="Code" class="form-control" disabled required data-code-immutable />
+                                    <input asp-for="Code" class="form-control bg-label-secondary" readonly required data-code-immutable />
                                 </div>
                                 <div class="form-text">@Localizer["CodeImmutableHelp"]</div>
                             }
