@@ -386,6 +386,45 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     display: none !important;
 }
 
+/* ── THE LIST'S OWN SHAPE WHILE IT LOADS (2026-09-21, owner report) ────────
+   "Anlaşılmıyor, sayfa geldikten sonra yukarıdan aşağı yükleniyor." Five identical bars said nothing about what
+   was coming and sat above the real table header, so the toolbar and the pager popped in afterwards.
+
+   ⚠ THIS IS LAYOUT, NOT A NEW SKELETON LANGUAGE. The blocks are still `.shimmer` + `.skeleton-row`; these rules
+   only place them — a toolbar row, a header bar, body rows, a footer — so the group reads as the list it is
+   standing in for. A second animation or a second grey would be what the warning above forbids.
+
+   Sizes are the list's own: 2.25rem is the height of the search box and the toolbar buttons, 2.75rem a table
+   row, and the cells share one flexible track so a narrow screen shrinks them together instead of wrapping. */
+.dt-skeleton .dt-skeleton-toolbar,
+.dt-skeleton .dt-skeleton-row,
+.dt-skeleton .dt-skeleton-footer {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.dt-skeleton .dt-skeleton-toolbar { margin-block-end: 1.25rem; }
+.dt-skeleton .dt-skeleton-search { block-size: 2.25rem; inline-size: 14rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-button { block-size: 2.25rem; inline-size: 6rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-button:first-of-type { margin-inline-start: auto; }
+
+.dt-skeleton .dt-skeleton-head { block-size: 2.5rem; margin-block-end: .75rem; }
+
+.dt-skeleton .dt-skeleton-row { margin-block-end: .625rem; }
+.dt-skeleton .dt-skeleton-cell { block-size: 1.125rem; flex: 1 1 0; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-cell--sm { flex: 0 0 3.5rem; }
+.dt-skeleton .dt-skeleton-cell--lg { flex: 2 1 0; }
+
+.dt-skeleton .dt-skeleton-footer { margin-block-start: 1.25rem; }
+.dt-skeleton .dt-skeleton-info { block-size: 1.125rem; inline-size: 12rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-pager { block-size: 2.25rem; inline-size: 9rem; margin-block-end: 0; margin-inline-start: auto; }
+
+/* The real table waits its turn: with the shaped skeleton in place the header, the toolbar and the pager all
+   arrive together, instead of the header standing under a placeholder and the rest appearing later. Scoped to
+   the opt-in marker, so a list still carrying the old block is untouched. */
+.dt-skeleton-hidden { display: none !important; }
+
 /* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
    (light / dark / bordered skin) drives every surface. The panel background uses
    the SAME variable as the list-page body; the header & section cards use the card
