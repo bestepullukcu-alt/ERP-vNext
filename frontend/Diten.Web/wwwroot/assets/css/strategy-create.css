@@ -383,9 +383,9 @@
 }
 .st-editor-scope .st-seg-main { flex: 1 1 180px; min-width: 0; }
 .st-editor-scope .st-seg-name {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    color: var(--st-text);
+    color: var(--bs-heading-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -455,10 +455,12 @@
     cursor: pointer;
 }
 .st-editor-scope .st-segment-choice:last-child { border-bottom: 0; }
-.st-editor-scope .st-segment-choice:hover { background: var(--bs-secondary-bg); }
+.st-editor-scope .st-segment-choice:hover { background: rgba(var(--bs-primary-rgb), 0.07); }
 .st-editor-scope .st-segment-choice-name {
     flex: 1 1 auto;
     min-width: 0;
+    font-size: 0.875rem;
+    color: var(--bs-heading-color);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
