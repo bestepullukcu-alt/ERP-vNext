@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>选择产品后由运行时校验。</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>所有行均已选产品。</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>部分行未选产品。</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>这个策略针对谁、用什么故事、以及怎样的产品权重？</value></data>
 </root>

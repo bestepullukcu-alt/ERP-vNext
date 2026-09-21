@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Среда выполнения проверит после выбора товара.</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Во всех строках выбран товар.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>В некоторых строках нет товара.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>На кого нацелена эта стратегия, с какой историей и с каким весом продуктов?</value></data>
 </root>

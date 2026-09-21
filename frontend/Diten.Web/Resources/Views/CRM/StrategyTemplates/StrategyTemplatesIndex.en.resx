@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>The runtime validates once a product is picked.</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>All lines have a product.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Some lines have no product.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Who does this play target, with which story, and what product weighting?</value></data>
 </root>

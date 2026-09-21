@@ -5,6 +5,17 @@
 @inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
 @{
     var jsonOpts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
+    // WP-ST-EDIT-D — Kimlik başlığı badge'leri DISPLAY-only: durum ve sürüm doğrudan Model'den okunur,
+    // form alanı değildir. Durum etiketi mevcut yaşam-döngüsü L10n anahtarları ile eşlenir (yeni anahtar yok).
+    var identityStatusKey = (Model.TemplateStatus ?? "draft").ToLowerInvariant();
+    var identityStatusLabel = identityStatusKey switch
+    {
+        "active" => Localizer["Active"],
+        "inactive" => Localizer["Passive"],
+        "archived" => Localizer["Archived"],
+        _ => Localizer["LifecycleDraftTab"]
+    };
 }
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -26,7 +37,13 @@
 
         <section class="card mb-4">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["IdentitySection"]</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-label-secondary">@identityStatusLabel</span>
+                        <span class="badge bg-label-secondary">v@(Model.TemplateVersion)</span>
+                    </div>
+                </div>
                 <div class="row g-3">
                     <div class="col-12 col-md-4">
                         <label asp-for="TemplateCode" class="form-label fw-medium">@Localizer["TemplateCode"] <span class="text-danger">*</span></label>
@@ -41,12 +58,11 @@
                     </div>
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
-                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000" placeholder="@Localizer["DescriptionPlaceholder"]"></textarea>
                     </div>
-                    <div class="col-12">
-                        <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
-                        <textarea asp-for="Notes" class="form-control" rows="2" maxlength="2000"></textarea>
-                    </div>
+                    @* WP-ST-EDIT-D — Notlar alanı Kimlik kartından kaldırıldı; ancak değer edit'te kaybolmasın diye
+                       hidden olarak POST edilir (TemplateStatus deseniyle aynı). Notes VM property'si korunur. *@
+                    <input type="hidden" asp-for="Notes" />
                 </div>
             </div>
         </section>

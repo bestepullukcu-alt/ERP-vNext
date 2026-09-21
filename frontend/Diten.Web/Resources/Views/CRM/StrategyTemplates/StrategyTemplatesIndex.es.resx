@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>El runtime valida cuando se elige un producto.</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Todas las líneas tienen un producto.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Algunas líneas no tienen producto.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>¿A quién se dirige esta jugada, con qué historia y con qué ponderación de productos?</value></data>
 </root>

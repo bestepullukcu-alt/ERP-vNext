@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Ürün seçilince çalışma zamanı doğrular.</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Tüm hatlarda ürün seçili.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Bazı hatlarda ürün seçilmedi.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Bu oyun kimi, hangi hikâye ile, hangi ürün ağırlığıyla hedefliyor?</value></data>
 </root>

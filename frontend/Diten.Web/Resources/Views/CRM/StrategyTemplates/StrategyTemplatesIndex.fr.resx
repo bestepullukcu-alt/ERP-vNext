@@ -197,4 +197,5 @@
   <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Le runtime valide une fois un produit choisi.</value></data>
   <data name="ChkMdmOkDesc" xml:space="preserve"><value>Toutes les lignes ont un produit.</value></data>
   <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Certaines lignes n'ont pas de produit.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>Qui cette pièce cible-t-elle, avec quelle histoire et quelle pondération de produits ?</value></data>
 </root>
