@@ -73,7 +73,7 @@
                                        /Users/api/{id}/account-kind, never to a service port. *@
                                     @if (Perms.Has("auth.users.account-kind.manage"))
                                     {
-                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto" aria-label="@Localizer["AccountKind"]">
+                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto select2-offcanvas" aria-label="@Localizer["AccountKind"]">
                                             <option value="Unknown">@Localizer["AccountKindUnknown"]</option>
                                             <option value="Human">@Localizer["AccountKindHuman"]</option>
                                             <option value="Service">@Localizer["AccountKindService"]</option>

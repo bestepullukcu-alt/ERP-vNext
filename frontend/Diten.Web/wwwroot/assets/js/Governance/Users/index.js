@@ -361,6 +361,53 @@ const UsersList = (function () {
             requestAnimationFrame(() => syncMultiSelectSummary($s));
         });
     };
+    /*
+     * The two account-kind selects are the module's only offcanvas selects, and the project's convention for a
+     * select inside an offcanvas is select2 with `dropdownParent` pointed at that panel — without the parent the
+     * dropdown is appended to <body>, which is BELOW the offcanvas in the stacking context, so the list opens
+     * behind the panel. Same wrapper the filters above already use, so the three controls on this screen do not
+     * look like two different products.
+     *
+     * Three options and no free text: the search box is suppressed, exactly as the filter selects do.
+     */
+    const initOffcanvasSelect2 = () => {
+        if (!window.jQuery || !$.fn.select2) return;
+        [
+            { panel: '#offcanvasCreateEdit', select: '#userAccountKind', width: '100%', selectionCssClass: 'form-select' },
+            // Sits inline beside the "Change type" button, so it keeps the small, shrink-to-fit shape it had.
+            { panel: '#offcanvasDetailsPreview', select: '#oc-accountkind-select', width: 'auto', selectionCssClass: 'form-select form-select-sm' }
+        ].forEach(({ panel, select, width, selectionCssClass }) => {
+            const $panel = $(panel);
+            const $el = $panel.find(select);
+            if (!$el.length) return; // Razor draws neither control without auth.users.account-kind.manage.
+            if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
+            $el.select2({ dropdownParent: $panel, width, selectionCssClass, minimumResultsForSearch: Infinity });
+        });
+    };
+
+    /*
+     * Select2 keeps the native <select> as the value holder but paints its own box, so a value written straight
+     * to `.value` leaves the painted box showing the previous choice. Every assignment made by this module goes
+     * through here.
+     */
+    const setSelectValue = (el, value) => {
+        if (!el) return;
+        el.value = value;
+        if (window.jQuery && $.fn.select2 && $(el).hasClass('select2-hidden-accessible')) $(el).trigger('change.select2');
+    };
+
+    /*
+     * ⚠ And the painted box is a SIBLING of the select, so `d-none` on the select alone hides nothing. This
+     * screen uses that toggle to withdraw the change control when the permission snapshot disagrees with the
+     * server gate — a hide that silently stopped working would leave a control on screen that the server then
+     * refuses.
+     */
+    const setSelectHidden = (el, hidden) => {
+        if (!el) return;
+        el.classList.toggle('d-none', hidden);
+        if (window.jQuery) $(el).next('.select2-container').toggleClass('d-none', hidden);
+    };
+
     const syncFilterControls = (values) => {
         $('#filterStatus').val(normalizeArray(values.status)).trigger('change');
         $('#filterRoles').val(normalizeArray(values.roles)).trigger('change');
@@ -406,6 +453,7 @@ const UsersList = (function () {
     const setupFilters = async (api) => {
         populateRoleFilterOptions(api);
         initSelect2Filters();
+        initOffcanvasSelect2();
         applySavedTableState(api, defaultViewState || { filters: appliedFilters });
 
         document.getElementById('btnFilterApply')?.addEventListener('click', () => {
@@ -531,8 +579,8 @@ const UsersList = (function () {
         const kindSelect = document.getElementById('oc-accountkind-select');
         const kindBtn = document.getElementById('oc-btn-accountkind');
         if (kindSelect) {
-            kindSelect.value = normalizeAccountKind(data.accountKind);
-            kindSelect.classList.toggle('d-none', !canManageKind());
+            setSelectValue(kindSelect, normalizeAccountKind(data.accountKind));
+            setSelectHidden(kindSelect, !canManageKind());
         }
         if (kindBtn) {
             kindBtn.dataset.userId = data.id || '';
@@ -586,8 +634,7 @@ const UsersList = (function () {
         document.getElementById('userFirstName').value = '';
         document.getElementById('userLastName').value = '';
         document.getElementById('userIsActive').checked = true;
-        const kindSelect = document.getElementById('userAccountKind');
-        if (kindSelect) kindSelect.value = '';
+        setSelectValue(document.getElementById('userAccountKind'), '');
         document.getElementById('formUserAlert').classList.add('d-none');
     };
     const openCreateOffcanvas = () => {
@@ -1017,6 +1064,18 @@ const UsersList = (function () {
             registerTableFilters();
             initDataTable();
             bindEvents();
+        },
+        /*
+         * The account-kind controls are this module's only select2-wrapped selects, and both of their seams are
+         * invisible in the markup: select2 paints its own box beside the <select>, so a value write has to
+         * repaint it and a hide has to hide it too. Exposed so the tests drive THESE functions with the real
+         * vendored library rather than a second copy of them — a copy would keep passing after the real ones
+         * broke. Not called by the page: the page calls the private helpers directly.
+         */
+        offcanvasSelects: {
+            init: initOffcanvasSelect2,
+            setValue: setSelectValue,
+            setHidden: setSelectHidden
         }
     };
 })();
