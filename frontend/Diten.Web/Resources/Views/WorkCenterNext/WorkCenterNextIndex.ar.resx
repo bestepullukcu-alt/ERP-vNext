@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>للقراءة فقط — تتغيّر الحالة في المصدر؛ هنا فقط الخطة/التثبيت الشخصي.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>ما الإجراء الذي يجب تشغيله؟</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>اختر إجراءً.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>جارٍ المعالجة…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>تم النقل إلى السجل</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>أفلت هنا: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>الشهر السابق</value>
   </data>

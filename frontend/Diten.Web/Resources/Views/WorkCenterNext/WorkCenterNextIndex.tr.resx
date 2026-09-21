@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Salt-okunur — durum kaynağında değişir; buradan yalnızca kişisel plan/sabitleme.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Hangi işlem çalışsın?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Bir işlem seçin.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>İşleniyor…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Geçmiş'e taşındı</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Buraya bırak: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Önceki ay</value>
   </data>

@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Только чтение — статус меняется в источнике; здесь только личный план/закрепление.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Какое действие выполнить?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Выберите действие.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Обработка…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Перемещено в Историю</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Перетащите сюда: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Предыдущий месяц</value>
   </data>

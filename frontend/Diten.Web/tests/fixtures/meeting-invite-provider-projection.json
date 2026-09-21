@@ -54,7 +54,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "declineInvite",
@@ -74,7 +75,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -161,7 +163,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "declineInvite",
@@ -181,7 +184,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -259,7 +263,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "declineInvite",
@@ -276,7 +281,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -360,7 +366,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "declineInvite",
@@ -377,7 +384,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {

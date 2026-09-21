@@ -117,6 +117,8 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>Son tarih zorunludur.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>Görev, onaylayan kişinin kararını bekliyor.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>Görev, incelemeyi yapan kişinin yanıtını bekliyor.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce teslimat dosyasını eklemelisiniz.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Bağlı inceleme toplantısının tutanağı yayımlanmadan bu adım kapatılamaz.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Bu görev bu durumdayken tamamlanamaz. Önce başlatın.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Bu görevi yalnızca talep eden kişi iptal edebilir. İşi istemiyorsanız iade edin.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Görevin neyi beklediğini yazın.</value></data>

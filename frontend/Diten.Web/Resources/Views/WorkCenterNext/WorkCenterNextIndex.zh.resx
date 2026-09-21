@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>只读——状态在来源中更改；此处仅设置个人计划/置顶。</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>要执行哪个操作？</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>请选择一个操作。</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>处理中…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>已移至历史</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>拖放到此处：{0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>上个月</value>
   </data>
