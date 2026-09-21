@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>وحدة الأعمال</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>تصفية وحدات الأعمال حسب الدولة</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>عنوان الخطة. يحدد النطاق الذي تنطبق عليه هذه الاستراتيجية: المستأجر بالكامل، أو دولة واحدة أو كيان قانوني أو وحدة أعمال.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>يحدد النطاق الذي تنطبق عليه هذه الاستراتيجية: المستأجر بالكامل، أو دولة واحدة أو كيان قانوني أو وحدة أعمال.</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>يمكن تغيير النطاق. يُحتفظ فقط بمرجع المستوى المختار.</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>مجموعة المراجع المحوكمة غير منشورة بعد. يجب أن ينشرها المشغل.</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>لم تستجب التبعية، لذا تعذر تحميل هذه القائمة.</value></data>

@@ -76,7 +76,10 @@
         *@
         <section class="card mb-4">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ScopeSection"]</h6>
+                @* WP-ST-EDIT-F — the ScopeHelp text moved up as a section sub-header, right under the KAPSAM heading;
+                   the duplicate form-text help at the bottom of the box was removed. *@
+                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ScopeSection"]</h6>
+                <p class="text-muted small mb-4">@Localizer["ScopeHelp"]</p>
                 <div class="row g-3" id="strategyTemplateScopeSection"
                      data-scope-options-url="/CRM/StrategyTemplates/api/scope-options">
                     @* WP-ST-EDIT-E — the scope LEVEL is chosen with a segmented button group, not a dropdown. The value
@@ -88,7 +91,7 @@
                             @Localizer["ScopeType"] <span class="text-danger">*</span>
                         </label>
                         <input type="hidden" asp-for="ScopeType" id="scopeType" data-selected="@Model.ScopeType" />
-                        <div class="st-scope-types" id="scopeTypeButtons" role="group"
+                        <div class="d-flex flex-wrap gap-2" id="scopeTypeButtons" role="group"
                              aria-label="@Localizer["ScopeType"]"></div>
                         <div class="form-text">@Localizer["ScopeEditableHint"]</div>
                     </div>
@@ -110,16 +113,24 @@
 
                     @* Business unit is a country-first cascade: the country filter narrows the list to the units the
                        tenant's territory plans actually cover. The filter is NOT the play's scope and is never posted. *@
+                    @* WP-ST-EDIT-F — the country filter and the business-unit picker sit side by side (row g-2) instead
+                       of stacked; only the layout changed — buFilterCountry → loadScopeOptions → territory-derived BU
+                       fill is untouched, and the filter is still never posted. *@
                     <div class="col-12 col-md-4 d-none" data-scope-block="business-unit">
-                        <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
-                            @Localizer["BusinessUnitCountryFilter"]
-                        </label>
-                        <select asp-for="BusinessUnitCountryFilter" id="buFilterCountry" class="form-select mb-3"
-                                data-selected="@Model.BusinessUnitCountryFilter"></select>
-
-                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
-                        <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select"
-                                data-selected="@Model.BusinessUnitId"></select>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
+                                    @Localizer["BusinessUnitCountryFilter"]
+                                </label>
+                                <select asp-for="BusinessUnitCountryFilter" id="buFilterCountry" class="form-select"
+                                        data-selected="@Model.BusinessUnitCountryFilter"></select>
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
+                                <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select"
+                                        data-selected="@Model.BusinessUnitId"></select>
+                            </div>
+                        </div>
                         <div class="form-text d-none" data-scope-note="business-unit"></div>
                     </div>
 
@@ -127,7 +138,6 @@
                         @* WP-ST-EDIT-E — ÇÖZÜMLENEN KAPSAM: an always-visible bordered box (bg-body). form.js paints the
                            mono label + the resolved value (danger "henüz çözümlenmedi" when empty, breadcrumb when set). *@
                         <div class="st-resolved-scope" id="resolvedScope"></div>
-                        <div class="form-text">@Localizer["ScopeHelp"]</div>
                     </div>
                 </div>
             </div>

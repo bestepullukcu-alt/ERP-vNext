@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>Entidad legal</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Filtrar unidades de negocio por país</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>La dirección de la jugada. Determina el ámbito al que se aplica esta estrategia: todo el inquilino, o un solo país, entidad legal o unidad de negocio.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Determina el ámbito al que se aplica esta estrategia: todo el inquilino, o un solo país, entidad legal o unidad de negocio.</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>El ámbito puede cambiarse. Solo se conserva la referencia del nivel elegido.</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>El conjunto de referencia gobernado aún no está publicado. Un operador debe publicarlo.</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>La dependencia no respondió, por lo que no se pudo cargar esta lista.</value></data>

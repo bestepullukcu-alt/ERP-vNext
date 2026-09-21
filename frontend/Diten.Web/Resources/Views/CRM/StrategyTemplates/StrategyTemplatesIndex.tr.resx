@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>Tüzel kişi</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>İş birimi</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>İş birimlerini ülkeye göre filtrele</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>Oyunun adresi. Bu stratejinin hangi kapsama uygulanacağını belirler: tüm kiracı ya da tek bir ülke, tüzel kişi veya iş birimi.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Bu stratejinin hangi kapsama uygulanacağını belirler: tüm kiracı ya da tek bir ülke, tüzel kişi veya iş birimi.</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>Kapsam değiştirilebilir. Yalnızca seçili seviyenin referansı saklanır.</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>Yönetişimli referans seti henüz yayınlanmadı. Bir operatörün yayınlaması gerekir.</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>Bağımlılık cevap vermedi, bu liste yüklenemedi.</value></data>

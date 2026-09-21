@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Фильтровать бизнес-единицы по стране</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>Адрес плана. Определяет область применения этой стратегии: весь тенант либо одна страна, юридическое лицо или бизнес-единица.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Определяет область применения этой стратегии: весь тенант либо одна страна, юридическое лицо или бизнес-единица.</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>Область можно изменить. Сохраняется только ссылка выбранного уровня.</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>Управляемый набор справочных данных ещё не опубликован. Его должен опубликовать оператор.</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>Зависимость не ответила, поэтому список не загружен.</value></data>

@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>Unité opérationnelle</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Filtrer les unités par pays</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>L'adresse du plan. Elle détermine le périmètre auquel cette stratégie s'applique : tout le locataire, ou un seul pays, une entité juridique ou une unité opérationnelle.</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Elle détermine le périmètre auquel cette stratégie s'applique : tout le locataire, ou un seul pays, une entité juridique ou une unité opérationnelle.</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>Le périmètre est modifiable. Seule la référence du niveau choisi est conservée.</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>Le jeu de références gouverné n'est pas encore publié. Un opérateur doit le publier.</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>La dépendance n'a pas répondu ; cette liste n'a pas pu être chargée.</value></data>

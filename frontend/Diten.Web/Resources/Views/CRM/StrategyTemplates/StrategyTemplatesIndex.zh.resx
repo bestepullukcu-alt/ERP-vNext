@@ -144,7 +144,7 @@
   <data name="LegalEntity" xml:space="preserve"><value>法人实体</value></data>
   <data name="BusinessUnit" xml:space="preserve"><value>业务单元</value></data>
   <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>按国家筛选业务单元</value></data>
-  <data name="ScopeHelp" xml:space="preserve"><value>该策略的所属范围。它决定此策略适用的范围：整个租户，或某个国家、法人实体或业务单元。</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>它决定此策略适用的范围：整个租户，或某个国家、法人实体或业务单元。</value></data>
   <data name="ScopeEditableHint" xml:space="preserve"><value>范围可以更改。仅保留所选层级的引用。</value></data>
   <data name="ReferenceSetUnpublished" xml:space="preserve"><value>受管引用数据集尚未发布，需由运维人员发布。</value></data>
   <data name="DependencyUnavailable" xml:space="preserve"><value>依赖服务未响应，无法加载此列表。</value></data>

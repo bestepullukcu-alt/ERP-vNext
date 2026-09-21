@@ -624,9 +624,12 @@
         let current = (scopeTypeEl?.value || scopeTypeEl?.dataset.selected || '').trim();
         if (!current || types.indexOf(current) < 0) current = types.indexOf('tenant') >= 0 ? 'tenant' : (types[0] || 'tenant');
         if (scopeTypeEl) scopeTypeEl.value = current;
+        // WP-ST-EDIT-F — the buttons are standard Bootstrap outline-primary buttons (active = filled). The
+        // st-scope-type hook class is kept for the click handler + the stacked title/sub styling; the level logic,
+        // hidden #scopeType input and applyScopeType cascade are unchanged.
         scopeTypeButtonsEl.innerHTML = types.map(t => {
             const active = t === current;
-            return `<button type="button" class="st-scope-type${active ? ' is-active' : ''}" data-scope-type="${esc(t)}" aria-pressed="${active ? 'true' : 'false'}">
+            return `<button type="button" class="btn btn-outline-primary st-scope-type${active ? ' active' : ''}" data-scope-type="${esc(t)}" aria-pressed="${active ? 'true' : 'false'}">
                         <span class="st-scope-type-title">${esc(L['ScopeType_' + t] || t)}</span>
                         <span class="st-scope-type-sub">${esc(L['ScopeTypeSub_' + t] || '')}</span>
                     </button>`;
@@ -679,7 +682,7 @@
         if (scopeTypeEl) scopeTypeEl.value = level;
         scopeTypeButtonsEl.querySelectorAll('.st-scope-type').forEach(b => {
             const on = b === btn;
-            b.classList.toggle('is-active', on);
+            b.classList.toggle('active', on);
             b.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
         applyScopeType();
