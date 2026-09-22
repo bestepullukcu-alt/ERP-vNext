@@ -29,7 +29,7 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Columns</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Whether a SKU belongs to the selected product is not verified here — please check it yourself.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Content</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Only a published knowledge-path or content-engagement-journey can be bound; references are pinned to the version.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Only a published knowledge-path or content-engagement-journey can be bound; references are pinned to the version (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Content</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Content type</value></data>
   <data name="ContentSection" xml:space="preserve"><value>Content — which story</value></data>
@@ -38,6 +38,11 @@
   <data name="ContentKindJourney" xml:space="preserve"><value>Journey</value></data>
   <data name="ContentPickerClose" xml:space="preserve"><value>Close</value></data>
   <data name="ContentPickerEmpty" xml:space="preserve"><value>No more content to add.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>published · pinned</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>draft · not selectable</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>archived · not selectable</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>No content available to bind.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>NO DELETE — plays are only archived; active versions are immutable.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Create strategy template</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>A declared rhythm records the author's intent. It is not binding and the frequency resolver does not read it.</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>

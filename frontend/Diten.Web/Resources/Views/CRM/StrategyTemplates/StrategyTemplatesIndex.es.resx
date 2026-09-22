@@ -29,7 +29,7 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Aquí no se verifica si un SKU pertenece al producto seleccionado: compruébelo usted mismo.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Contenido</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Solo se puede enlazar un knowledge-path o content-engagement-journey publicado; las referencias se fijan a la versión.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Solo se puede enlazar un knowledge-path o content-engagement-journey publicado; las referencias se fijan a la versión (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Contenido</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Tipo de contenido</value></data>
   <data name="ContentSection" xml:space="preserve"><value>Contenido — qué relato</value></data>
@@ -38,6 +38,11 @@
   <data name="ContentKindJourney" xml:space="preserve"><value>Recorrido</value></data>
   <data name="ContentPickerClose" xml:space="preserve"><value>Cerrar</value></data>
   <data name="ContentPickerEmpty" xml:space="preserve"><value>No hay más contenido para añadir.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>publicado · fijado</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>borrador · no seleccionable</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>archivado · no seleccionable</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>No hay contenido disponible para enlazar.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>SIN ELIMINACIÓN — los planes solo se archivan; las versiones activas son inmutables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Crear plantilla de estrategia</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un ritmo declarado registra la intención del autor. No es vinculante y el resolutor de frecuencia no lo lee.</value></data>
   <data name="Description" xml:space="preserve"><value>Descripción</value></data>

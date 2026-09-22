@@ -297,20 +297,18 @@
         </section>
 
         @* BINDING 4 — "which story". Typed and published-only. *@
-        @* WP-ST-EDIT-U — the content section mirrors the segment section (mockup): each bound content is a compact
-           DISPLAY card (name + kind·code + "sabitlenmiş" pin — no editable type/ref/sortOrder fields) and adding is done
-           through an inline "+ İçerik ekle" picker over the published knowledge-path + engagement-journey pool. The empty
-           state is a dashed bg-body box. The ContentBindingsJson contract (contentRefType / contentRefId / sortOrder —
-           now an automatic index — / notes) and the typed + published + pinned invariant are unchanged; only the markup
-           + form.js changed. The .st-segment-* classes are shared display styles, reused here. *@
+        @* WP-ST-EDIT-V — the content section is a CHECKBOX CARD GRID (mockup), replacing the EDIT-U inline picker. form.js
+           paints one card per knowledge-path + engagement-journey (name + kind·code + status badge); only published refs
+           are selectable (their checkbox toggles the binding), draft/archived cards are disabled and greyed. The footer
+           note states the ship invariant (no delete — plays are only archived, active versions are immutable). The
+           ContentBindingsJson contract (contentRefType / contentRefId / sortOrder — an automatic index — / notes) and the
+           typed + published + pinned invariant are unchanged; only the markup + form.js changed. *@
         <section class="card mb-4" id="contentSection">
             <div class="card-body p-4">
                 <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["ContentSection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["ContentPublishedOnlyHelp"]</small>
-                <div id="contentBindingList" class="d-flex flex-column gap-2"></div>
-                <div id="contentBindingEmpty" class="st-segment-empty d-none">@Localizer["NoContentBindings"]</div>
-                <div id="contentPicker" class="st-segment-picker d-none"></div>
-                <button type="button" id="btnAddContentBinding" class="st-segment-add mt-2"><i class="bx bx-plus me-1"></i>@Localizer["AddContentBinding"]</button>
+                <div id="contentBindingList" class="st-content-grid"></div>
+                <p class="st-content-nodelete mt-3 mb-0">@Localizer["ContentNoDeleteNote"]</p>
                 <input type="hidden" asp-for="ContentBindingsJson" id="ContentBindingsJson" />
             </div>
         </section>

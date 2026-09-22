@@ -29,7 +29,7 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Принадлежность SKU выбранному продукту здесь не проверяется — проверьте её самостоятельно.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Контент</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Можно связать только опубликованный knowledge-path или content-engagement-journey; ссылки закрепляются за версией.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Можно связать только опубликованный knowledge-path или content-engagement-journey; ссылки закрепляются за версией (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Контент</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Тип контента</value></data>
   <data name="ContentSection" xml:space="preserve"><value>Контент — какая история</value></data>
@@ -38,6 +38,11 @@
   <data name="ContentKindJourney" xml:space="preserve"><value>Путь взаимодействия</value></data>
   <data name="ContentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
   <data name="ContentPickerEmpty" xml:space="preserve"><value>Больше нет контента для добавления.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>опубликовано · закреплено</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>черновик · нельзя выбрать</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>в архиве · нельзя выбрать</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>Нет контента для связывания.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>БЕЗ УДАЛЕНИЯ — планы только архивируются; активные версии неизменяемы.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>
   <data name="Description" xml:space="preserve"><value>Описание</value></data>

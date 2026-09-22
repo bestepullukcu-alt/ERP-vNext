@@ -29,7 +29,7 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>لا يتم التحقق هنا من انتماء SKU إلى المنتج المختار — يرجى التأكد بنفسك.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>المحتوى</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى knowledge-path أو content-engagement-journey منشور؛ تُثبَّت المراجع على النسخة.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى knowledge-path أو content-engagement-journey منشور؛ تُثبَّت المراجع على النسخة (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>المحتوى</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>نوع المحتوى</value></data>
   <data name="ContentSection" xml:space="preserve"><value>المحتوى — أي حكاية</value></data>
@@ -38,6 +38,11 @@
   <data name="ContentKindJourney" xml:space="preserve"><value>رحلة</value></data>
   <data name="ContentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
   <data name="ContentPickerEmpty" xml:space="preserve"><value>لا مزيد من المحتوى للإضافة.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>منشور · مثبَّت</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>مسودة · غير قابل للتحديد</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>مؤرشف · غير قابل للتحديد</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>لا يوجد محتوى متاح للربط.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>لا حذف — تُؤرشَف المخططات فقط؛ الإصدارات النشطة غير قابلة للتغيير.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>الإيقاع المُصرَّح يسجّل نية المؤلف فقط. غير مُلزِم ولا يقرأه محرّك تحديد التكرار.</value></data>
   <data name="Description" xml:space="preserve"><value>الوصف</value></data>

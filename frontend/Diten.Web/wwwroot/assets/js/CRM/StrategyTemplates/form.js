@@ -179,7 +179,10 @@
                 name: r.pathName || '',
                 kind: 'knowledge-path',
                 status: r.pathStatus
-            })).then(x => { options.path = x.filter(o => o.status === 'published'); }));
+                // WP-ST-EDIT-V — the published filter is removed here: the content card GRID lists every ref and disables
+                // (greys) the non-published ones, so the whole set must reach options.path. Selectability is gated by
+                // status in renderContents, not by dropping rows at load.
+            })).then(x => { options.path = x; }));
         }
         if (can('content-engagement-journey')) {
             jobs.push(load(`${endpoint}/content-engagement-journeys`, r => ({
@@ -189,7 +192,8 @@
                 name: r.journeyName || '',
                 kind: 'content-engagement-journey',
                 status: r.journeyStatus
-            })).then(x => { options.journey = x.filter(o => o.status === 'published'); }));
+                // WP-ST-EDIT-V — published filter removed (see the knowledge-path branch); the grid shows every journey.
+            })).then(x => { options.journey = x; }));
         }
         if (can('global-product')) {
             // WP-ST-EDIT-Q — loadAll (pageSize=100, paged) replaces the rejected pageSize=200 single fetch; the mapping
@@ -604,80 +608,44 @@
     };
 
     // ---------------- "which story" ----------------
-    // WP-ST-EDIT-U — the content section mirrors the segment section: each bound content is a compact DISPLAY card
-    // (name + kind·code + "sabitlenmiş" pin) and adding is done through an inline picker over the merged published pool
-    // (knowledge-path + engagement-journey). The picker only ever offers status==='published' refs, the contentRefType is
-    // taken from the chosen option's kind (never invented), and ContentBindingsJson keeps its shape
-    // (contentRefType / contentRefId / sortOrder — now an automatic index — / notes).
-    let contentPickerOpen = false;
-
-    const contentOptionsFor = type => type === 'content-engagement-journey' ? options.journey : options.path;
-    // The merged published pool; every option already carries its kind (set in loadOptions), so the card and the picker
-    // can resolve name/code and the ref type from a single lookup.
+    // WP-ST-EDIT-V — the content section is a CHECKBOX CARD GRID (mockup), replacing the EDIT-U inline picker. Every
+    // knowledge-path + engagement-journey is listed as a card (name + kind·code + status badge). ONLY published refs are
+    // selectable (green "yayında · sabitlenir"); draft/archived cards are disabled and greyed, so they can never enter the
+    // binding. The contentRefType is taken from the card's kind (never invented), and ContentBindingsJson keeps its shape
+    // (contentRefType / contentRefId / sortOrder — an automatic index — / notes).
     const contentPool = () => [...(options.path || []), ...(options.journey || [])];
     const contentById = id => contentPool().find(o => o.id === id);
     const contentKindLabel = kind => kind === 'content-engagement-journey' ? (L.ContentKindJourney || '') : (L.ContentKindKnowledgePath || '');
-    const canAnyContent = () => can('knowledge-path') || can('content-engagement-journey');
-
-    const renderContentPicker = () => {
-        const panel = el('contentPicker');
-        if (!panel) return;
-        if (!contentPickerOpen) { panel.classList.add('d-none'); panel.innerHTML = ''; return; }
-        panel.classList.remove('d-none');
-        if (!canAnyContent()) {
-            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.PickerUnavailable || '')}</div>`;
-            return;
-        }
-        const chosen = new Set(state.contents.map(c => c.contentRefId));
-        const pool = contentPool().filter(o => !chosen.has(o.id));
-        if (pool.length === 0) {
-            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.ContentPickerEmpty || '')}</div>`;
-            return;
-        }
-        panel.innerHTML = pool.map(o => `
-            <button type="button" class="st-segment-choice js-content-choice" data-id="${esc(o.id)}" data-content-kind="${esc(o.kind)}">
-                <span class="st-segment-choice-name">${esc(o.name || o.text)}</span>
-                <span class="badge bg-label-secondary rounded-pill st-seg-type">${esc(contentKindLabel(o.kind))}</span>
-                <span class="st-segment-choice-code">${esc(o.code || '')}</span>
-            </button>`).join('');
-    };
-
-    const updateAddContentBtnLabel = () => {
-        const btn = el('btnAddContentBinding');
-        if (!btn) return;
-        btn.innerHTML = contentPickerOpen
-            ? `<i class="bx bx-x me-1"></i>${esc(L.ContentPickerClose || '')}`
-            : `<i class="bx bx-plus me-1"></i>${esc(L.AddContentBinding || '')}`;
-    };
+    const contentStatusLabel = status => status === 'published' ? (L.ContentStatusPublished || '')
+        : status === 'archived' ? (L.ContentStatusArchived || '')
+        : (L.ContentStatusDraft || '');
 
     const renderContents = () => {
         const host = el('contentBindingList');
-        const empty = el('contentBindingEmpty');
         if (!host) return;
-        host.innerHTML = state.contents.map((c, i) => {
-            // WP-ST-EDIT-U — a compact display card (mockup). contentById resolves the name/code/kind from the merged
-            // published pool; if it cannot (feed still loading, or an unpublished/removed ref) the stored contentRefType
-            // gives the kind and the raw contentRefId is shown, so the reference is never lost. sync() does NOT re-read
-            // the ref/type (fixed by the inline picker) — see the content block.
-            const opt = contentById(c.contentRefId);
-            const name = opt ? (opt.name || opt.text) : (c.contentRefId || '');
-            const kind = (opt && opt.kind) || c.contentRefType || '';
-            const code = opt ? (opt.code || '') : '';
-            const meta = [contentKindLabel(kind), code].filter(Boolean).join(' · ');
+        const pool = contentPool();
+        if (pool.length === 0) {
+            // WP-ST-EDIT-V — a plain short message (not a dashed empty-state box) when there is no content to list at all
+            // (e.g. the master data is not seeded yet).
+            host.innerHTML = `<div class="st-content-grid-empty">${esc(L.ContentGridEmpty || '')}</div>`;
+            return;
+        }
+        const chosen = new Set(state.contents.map(c => c.contentRefId));
+        host.innerHTML = pool.map(o => {
+            const isPublished = o.status === 'published';
+            const disabled = frozen || !isPublished;
+            const checked = chosen.has(o.id);
+            const meta = [contentKindLabel(o.kind), o.code].filter(Boolean).join(' · ');
             return `
-            <div class="st-content-row" data-row="content" data-index="${i}">
-                <div class="st-content-main">
-                    <div class="st-content-name">${esc(name)}</div>
-                    <div class="st-content-meta">${esc(meta)}</div>
-                </div>
-                <span class="badge bg-label-secondary rounded-pill st-content-pinned">${esc(L.ContentPinned || '')}</span>
-                <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
-                    <i class="bx bx-trash"></i>
-                </button>
-            </div>`;
+            <label class="st-content-choice${disabled ? ' is-disabled' : ''}">
+                <input type="checkbox" class="js-content-check" data-id="${esc(o.id)}" data-content-kind="${esc(o.kind)}"${checked ? ' checked' : ''}${disabled ? ' disabled' : ''} />
+                <span class="st-content-choice-body">
+                    <span class="st-content-choice-name">${esc(o.name || o.text)}</span>
+                    <span class="st-content-choice-meta">${esc(meta)}</span>
+                </span>
+                <span class="badge ${isPublished ? 'bg-label-success' : 'bg-label-secondary'} rounded-pill st-content-choice-status">${esc(contentStatusLabel(o.status))}</span>
+            </label>`;
         }).join('');
-        empty?.classList.toggle('d-none', state.contents.length > 0);
-        renderContentPicker();
     };
 
     const renderAll = () => { renderSegments(); renderFrequency(); renderProducts(); renderContents(); };
@@ -765,36 +733,24 @@
         setTimeout(updateSidePanel, 0);
     });
 
-    // WP-ST-EDIT-U — "+ İçerik ekle" no longer pushes an empty binding; it toggles the inline picker (the segment
-    // pattern). A content is added — with its ref id AND kind already resolved — only when the author clicks a pool entry.
-    const addContentBtn = el('btnAddContentBinding');
-    if (addContentBtn && frozen) addContentBtn.disabled = true;
-    addContentBtn?.addEventListener('click', () => {
-        if (frozen) return;
-        contentPickerOpen = !contentPickerOpen;
-        updateAddContentBtnLabel();
-        renderContentPicker();
-    });
-
-    // Picking a content from the merged published pool appends it with the kind-derived contentRefType and its automatic
-    // sortOrder; the picker then closes. The chosen filter already kept the pool to refs not yet bound.
-    el('contentPicker')?.addEventListener('click', event => {
-        const choice = event.target.closest('.js-content-choice');
-        if (!choice || frozen) return;
-        if (limitReached(state.contents.length, cfg.maxContentBindings)) return;
-        const id = choice.dataset.id;
-        const kind = choice.dataset.contentKind;
+    // WP-ST-EDIT-V — toggling a published content card's checkbox binds/unbinds it. Only published cards are enabled, so a
+    // draft/archived ref can never enter state.contents. Checking appends with the kind-derived contentRefType + automatic
+    // sortOrder; unchecking removes that contentRefId. The card already shows its own checkbox state, so no re-render is
+    // needed — the side panel refresh comes from the form-level change listener. The limit reverts an over-the-cap tick.
+    el('contentBindingList')?.addEventListener('change', event => {
+        const box = event.target.closest('.js-content-check');
+        if (!box || frozen || box.disabled) return;
+        const id = box.dataset.id;
+        const kind = box.dataset.contentKind;
         if (!id || !kind) return;
-        state.contents.push({
-            contentRefType: kind,
-            contentRefId: id,
-            sortOrder: state.contents.length * 10,
-            notes: null
-        });
-        contentPickerOpen = false;
-        updateAddContentBtnLabel();
-        renderContents();
-        setTimeout(updateSidePanel, 0);
+        if (box.checked) {
+            if (state.contents.some(c => c.contentRefId === id)) return;
+            if (limitReached(state.contents.length, cfg.maxContentBindings)) { box.checked = false; return; }
+            state.contents.push({ contentRefType: kind, contentRefId: id, sortOrder: state.contents.length * 10, notes: null });
+        } else {
+            const idx = state.contents.findIndex(c => c.contentRefId === id);
+            if (idx >= 0) state.contents.splice(idx, 1);
+        }
     });
 
     // WP-ST-EDIT-M — the mode is now a hidden input, so its choice comes from the three choice-box buttons (a
@@ -864,15 +820,10 @@
             }
         });
 
-        document.querySelectorAll('[data-row="content"]').forEach(row => {
-            const i = Number(row.dataset.index);
-            const binding = state.contents[i];
-            if (!binding) return;
-            // WP-ST-EDIT-U — the content card is display-only; contentRefType/contentRefId are FIXED by the inline picker
-            // (an absent dropdown would wipe them — the segment/product pattern). Only the automatic index-based sortOrder
-            // is written back — ContentBindingsJson keeps its shape.
-            binding.sortOrder = i * 10;
-        });
+        // WP-ST-EDIT-V — the content grid has no per-row inputs; state.contents is maintained directly by the checkbox
+        // toggle handler (contentRefType/contentRefId set from the picked card, only published refs can enter). Here we
+        // just normalise the automatic index-based sortOrder so ContentBindingsJson stays ordered without gaps.
+        state.contents.forEach((binding, i) => { binding.sortOrder = i * 10; });
 
         state.frequency = readFrequency();
         // The derived SubjectType is part of the payload — keep the hidden field current on every read-back (and so at
@@ -1236,9 +1187,10 @@
     form.addEventListener('change', updateSidePanel);
     form.addEventListener('input', updateSidePanel);
     document.addEventListener('click', event => {
-        // WP-ST-EDIT-Q — #btnAddProductLine is gone; adding a product fires the picker's own 'change' (handled above,
-        // which schedules the panel refresh), so only the segment/content add buttons and the remove icons remain here.
-        if (event.target.closest('#btnAddSegmentBinding, #btnAddContentBinding, .js-remove, .js-remove-sku, .js-add-sku')) {
+        // WP-ST-EDIT-Q — #btnAddProductLine is gone (product add is a picker 'change'); WP-ST-EDIT-V — #btnAddContentBinding
+        // is gone (content is a checkbox grid whose 'change' the form-level updateSidePanel listener already catches). So
+        // only the segment add button and the remove icons remain here.
+        if (event.target.closest('#btnAddSegmentBinding, .js-remove, .js-remove-sku, .js-add-sku')) {
             setTimeout(updateSidePanel, 0);
         }
     });

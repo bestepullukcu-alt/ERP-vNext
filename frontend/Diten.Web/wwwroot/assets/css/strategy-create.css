@@ -506,22 +506,48 @@
     background: var(--bs-body-bg);
 }
 
-/* ── WP-ST-EDIT-U — İçerik bölümü kompakt "sabitlenmiş" kartlar (mockup). Segment display satırıyla aynı tipografi/yüzey
-   (bg-card, body-font); kart = ad + kind·kod (mono) + "sabitlenmiş" pill + kaldır ikon. Ekleme .st-segment-picker /
-   .st-segment-add / .st-segment-empty (paylaşımlı) ile yapılır. ──────────────────────────────────────────────────────── */
-.st-editor-scope .st-content-row {
-    display: flex;
-    align-items: center;
+/* ── WP-ST-EDIT-V — İçerik checkbox kart ızgarası (mockup). Grid auto-fit; her kart = checkbox + ad + kind·kod (mono) +
+   durum rozeti. Yalnız yayında kart seçilebilir (yeşil vurgu, :has(:checked)); taslak/arşiv is-disabled (soluk, pasif).
+   Altta mono uppercase "SİLME YOK" notu. ──────────────────────────────────────────────────────────────────────────── */
+.st-editor-scope .st-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
     gap: 10px;
-    flex-wrap: wrap;
-    padding: 9px 11px;
+}
+.st-editor-scope .st-content-grid-empty {
+    padding: 14px;
+    font-size: 0.875rem;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-content-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 11px;
     border: 1px solid var(--bs-border-color);
     border-radius: 6px;
     background: var(--bs-card-bg);
-    font-family: var(--bs-body-font-family);
+    cursor: pointer;
 }
-.st-editor-scope .st-content-main { flex: 1 1 200px; min-width: 0; }
-.st-editor-scope .st-content-name {
+.st-editor-scope .st-content-choice:has(.js-content-check:checked) {
+    border-color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.06);
+}
+.st-editor-scope .st-content-choice.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: var(--bs-body-bg);
+}
+.st-editor-scope .st-content-choice .js-content-check { flex: 0 0 auto; margin-top: 2px; }
+.st-editor-scope .st-content-choice-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.st-editor-scope .st-content-choice-name {
     font-size: 0.8125rem;
     font-weight: 500;
     color: #2f3349;
@@ -530,14 +556,19 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.st-editor-scope .st-content-meta {
+.st-editor-scope .st-content-choice-meta {
     font-family: var(--bs-font-monospace);
     font-size: 10.5px;
-    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-content-choice-status { flex: 0 0 auto; align-self: flex-start; }
+.st-editor-scope .st-content-nodelete {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--bs-secondary-color);
 }
-.st-editor-scope .st-content-pinned { flex: 0 0 auto; }
 
 /* ── WP-ST-EDIT-P — Ürün bölümü DÜZ (mockup): başlık altı Σ badge + "Eşit dağıt" kontrol satırı, Σ≠100 uyarı kutusu ve
    her satır = ürün picker (ad + alt-satır MDM-GP kod) + yüzde + kaldır ikon. Segment satırı (.st-seg-row) görünüm

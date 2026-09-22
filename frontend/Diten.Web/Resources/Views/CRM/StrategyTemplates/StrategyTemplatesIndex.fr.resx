@@ -29,7 +29,7 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Colonnes</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>L'appartenance d'un SKU au produit sélectionné n'est pas vérifiée ici — merci de la contrôler vous-même.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Contenu</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Seul un knowledge-path ou content-engagement-journey publié peut être lié ; les références sont épinglées à la version.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Seul un knowledge-path ou content-engagement-journey publié peut être lié ; les références sont épinglées à la version (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Contenu</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Type de contenu</value></data>
   <data name="ContentSection" xml:space="preserve"><value>Contenu — quel récit</value></data>
@@ -38,6 +38,11 @@
   <data name="ContentKindJourney" xml:space="preserve"><value>Parcours d'engagement</value></data>
   <data name="ContentPickerClose" xml:space="preserve"><value>Fermer</value></data>
   <data name="ContentPickerEmpty" xml:space="preserve"><value>Aucun autre contenu à ajouter.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>publié · épinglé</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>brouillon · non sélectionnable</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>archivé · non sélectionnable</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>Aucun contenu disponible à lier.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>AUCUNE SUPPRESSION — les plans sont seulement archivés ; les versions actives sont immuables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Créer un modèle de stratégie</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un rythme déclaré consigne l'intention de l'auteur. Il n'est pas contraignant et le résolveur de fréquence ne le lit pas.</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
