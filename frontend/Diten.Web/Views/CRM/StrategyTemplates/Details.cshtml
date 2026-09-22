@@ -125,25 +125,36 @@
             @{
                 var effScope = string.IsNullOrWhiteSpace(t.EffectiveScopeType) ? t.ScopeType : t.EffectiveScopeType;
                 string ScopeCardClass(string level) => "card backbone-preview-section h-100" + (effScope == level ? " border-primary" : "");
+                // WP-ST-DETAIL-5 — the effective level gets a soft primary fill (mockup lavender). Inline + --bs-primary-rgb
+                // so it is theme-safe and needs no stylesheet on the Detay page.
+                string ScopeCardStyle(string level) => effScope == level ? "background: rgba(var(--bs-primary-rgb), 0.08);" : "";
             }
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-map dt-card-icon" aria-hidden="true"></i>@Localizer["ScopeSection"]</h6>
                     <div class="row g-3">
-                        <div class="col-12 col-md-4">
-                            <div class="@ScopeCardClass("country")"><div class="card-body p-3">
+                        @* WP-ST-DETAIL-5 — TÜM KİRACI is the first level; a tenant-scoped play highlights it (the other three
+                           stay "—", which is correct — there is no country/LE/BU reference). *@
+                        <div class="col-6 col-md-3">
+                            <div class="@ScopeCardClass("tenant")" style="@ScopeCardStyle("tenant")"><div class="card-body p-3">
+                                <div class="text-muted small text-uppercase mb-1">@Localizer["ScopeType_tenant"]</div>
+                                <div class="fw-medium">@Localizer["ScopeType_tenant"]</div>
+                            </div></div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="@ScopeCardClass("country")" style="@ScopeCardStyle("country")"><div class="card-body p-3">
                                 <div class="text-muted small text-uppercase mb-1">@Localizer["CountryScope"]</div>
                                 <div class="fw-medium" data-resolve="country" data-id="@t.CountryScope">@(string.IsNullOrWhiteSpace(t.CountryScope) ? "—" : t.CountryScope)</div>
                             </div></div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="@ScopeCardClass("legal-entity")"><div class="card-body p-3">
+                        <div class="col-6 col-md-3">
+                            <div class="@ScopeCardClass("legal-entity")" style="@ScopeCardStyle("legal-entity")"><div class="card-body p-3">
                                 <div class="text-muted small text-uppercase mb-1">@Localizer["DetailScopeLegalEntity"]</div>
                                 <div class="fw-medium" data-resolve="legal-entity" data-id="@(t.LegalEntityId?.ToString())">@(t.LegalEntityId is { } le && le != Guid.Empty ? le.ToString() : "—")</div>
                             </div></div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="@ScopeCardClass("business-unit")"><div class="card-body p-3">
+                        <div class="col-6 col-md-3">
+                            <div class="@ScopeCardClass("business-unit")" style="@ScopeCardStyle("business-unit")"><div class="card-body p-3">
                                 <div class="text-muted small text-uppercase mb-1">@Localizer["DetailScopeBusinessUnit"]</div>
                                 <div class="fw-medium" data-resolve="business-unit" data-id="@t.BusinessUnitId">@(string.IsNullOrWhiteSpace(t.BusinessUnitId) ? "—" : t.BusinessUnitId)</div>
                             </div></div>
