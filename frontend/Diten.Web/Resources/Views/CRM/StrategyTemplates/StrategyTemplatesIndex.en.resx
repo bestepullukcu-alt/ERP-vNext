@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>Use in campaign</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Coming with the campaign integration.</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>Read-only — take a new version to edit.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>No SKU specified</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Legal entity</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>Business unit / Territory</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Last updated {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Bindings are immutable; view-only.</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>Reaching {segments} segments within {scope}, with {products} products (Σ{weight}%) and {contents} pinned content items.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>NO DELETE — plays are only archived; active versions are immutable.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Create strategy template</value></data>

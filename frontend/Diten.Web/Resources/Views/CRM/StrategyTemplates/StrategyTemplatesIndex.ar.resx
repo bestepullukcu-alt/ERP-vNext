@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>استخدام في حملة</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>سيتوفر مع تكامل الحملات.</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>للقراءة فقط — أنشئ إصدارًا جديدًا للتعديل.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>لم يُحدَّد SKU</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>الكيان القانوني</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>وحدة الأعمال / الإقليم</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>آخر تحديث {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>الروابط غير قابلة للتغيير؛ للعرض فقط.</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>الوصول إلى {segments} شريحة ضمن {scope}، مع {products} منتجات (Σ{weight}%) و{contents} محتوى مثبَّت.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>لا حذف — تُؤرشَف المخططات فقط؛ الإصدارات النشطة غير قابلة للتغيير.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>

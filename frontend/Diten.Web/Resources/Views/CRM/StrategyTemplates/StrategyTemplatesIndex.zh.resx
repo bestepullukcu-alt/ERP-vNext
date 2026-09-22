@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>在营销活动中使用</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>将随营销活动集成推出。</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>只读 — 如需编辑请创建新版本。</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>未指定 SKU</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>业务单元 / 区域</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>最后更新 {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>绑定不可变，仅供查看。</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>在 {scope} 范围内覆盖 {segments} 个细分，包含 {products} 个产品（Σ{weight}%）和 {contents} 项固定内容。</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>不可删除 — 方案只能归档；已激活版本不可变更。</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>创建策略模板</value></data>

@@ -83,18 +83,26 @@
             }));
             const versions = data?.versions || data?.Versions || [];
             if (versions.length === 0) { host.textContent = L.EmptyState || ''; return; }
-            // The endpoint already sorts newest-first (TemplateVersion descending); the panel renders it as received.
+            // WP-ST-DETAIL-4 — a dotted timeline (mockup): each version is "vN · {status}" with a leading dot; the current
+            // version carries a "geçerli" marker and a "last updated {date}" line, a frozen (superseded) version says its
+            // bindings are immutable and view-only. The endpoint already sorts newest-first (TemplateVersion descending).
             host.innerHTML = versions.map(v => {
                 const st = versionStatus(v.templateStatus ?? v.TemplateStatus);
                 const date = versionDate(v.activatedAt ?? v.ActivatedAt ?? v.createdAt ?? v.CreatedAt);
                 const isCurrent = (v.isCurrent ?? v.IsCurrent) === true;
                 const ver = v.templateVersion ?? v.TemplateVersion;
+                const sub = isCurrent ? (L.LastUpdatedTpl || '').replace('{date}', date) : (L.VersionFrozenNote || '');
                 return `
-                <div class="d-flex align-items-center gap-2 py-1${isCurrent ? ' fw-semibold' : ''}">
-                    <span class="text-nowrap">v${esc(ver)}</span>
-                    <span class="badge ${st.tone} rounded-pill">${esc(st.label)}</span>
-                    <span class="text-muted ms-auto">${esc(date)}</span>
-                    ${isCurrent ? `<span class="badge bg-label-primary rounded-pill">${esc(L.CurrentVersion || '')}</span>` : ''}
+                <div class="d-flex gap-2 pb-2">
+                    <span class="rounded-circle flex-shrink-0 mt-1 ${isCurrent ? 'bg-primary' : 'bg-secondary'}" style="width: 8px; height: 8px;"></span>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="fw-semibold">v${esc(ver)}</span>
+                            <span class="badge ${st.tone} rounded-pill">${esc(st.label)}</span>
+                            ${isCurrent ? `<span class="badge bg-label-primary rounded-pill">${esc(L.CurrentVersion || '')}</span>` : ''}
+                        </div>
+                        <div class="text-muted small">${esc(sub)}</div>
+                    </div>
                 </div>`;
             }).join('');
         } catch (error) {

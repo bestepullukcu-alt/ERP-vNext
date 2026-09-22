@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>Utiliser dans une campagne</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>À venir avec l'intégration des campagnes.</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>Lecture seule — créez une nouvelle version pour modifier.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>Aucun SKU spécifié</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Entité juridique</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>Unité commerciale / Territoire</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Dernière mise à jour {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Les liens sont immuables ; consultation seule.</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>Ciblage de {segments} segments dans {scope}, avec {products} produits (Σ{weight}%) et {contents} contenus épinglés.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>AUCUNE SUPPRESSION — les plans sont seulement archivés ; les versions actives sont immuables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Créer un modèle de stratégie</value></data>

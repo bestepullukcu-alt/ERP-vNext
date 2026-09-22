@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>Использовать в кампании</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Появится с интеграцией кампаний.</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>Только чтение — создайте новую версию для редактирования.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>SKU не указан</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>Бизнес-единица / Территория</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Последнее обновление {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Привязки неизменяемы; только просмотр.</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>Охват {segments} сегментов в рамках {scope}, {products} продуктов (Σ{weight}%) и {contents} закреплённых материалов.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>БЕЗ УДАЛЕНИЯ — планы только архивируются; активные версии неизменяемы.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>

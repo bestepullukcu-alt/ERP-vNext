@@ -50,6 +50,11 @@
   <data name="UseInCampaign" xml:space="preserve"><value>Kampanyada kullan</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Kampanya entegrasyonu ile gelecek.</value></data>
   <data name="DetailReadOnlyNote" xml:space="preserve"><value>Salt-okunur — düzenlemek için yeni sürüm alın.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>SKU belirtilmedi</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Tüzel kişilik</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>İş birimi / Territory</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Son güncelleme {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Bağları değişmez; yalnızca görüntülenebilir.</value></data>
   <data name="DetailSummaryTpl" xml:space="preserve"><value>{scope} kapsamında {segments} segmente, {products} ürün (Σ{weight}%) ve {contents} sabitlenmiş içerik ile gidiliyor.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>SİLME YOK — oyunlar yalnızca arşivlenir; aktif sürümler değişmezdir.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Strateji şablonu oluştur</value></data>
