@@ -234,9 +234,14 @@
 
     /// A select bound to a picker. When the picker is unavailable the control is DISABLED with a reason — never a
     /// free-text GUID field, because a hand-typed id is an unverified promise.
-    const pickerSelect = (kind, value, allowed, unavailableText, listOverride) => {
+    // WP-ST-EDIT-T — an optional extraClass lets a caller tag the rendered <select> (e.g. `js-sku`) so it can be bound to
+    // select2 and read back in sync; the data-kind, head/kept/body option shape and disabled-with-reason behaviour are
+    // unchanged. sync must NOT trust the disabled branch's value (its only <option> is the reason text) — it guards on
+    // the picker being editable before reading.
+    const pickerSelect = (kind, value, allowed, unavailableText, listOverride, extraClass) => {
+        const cls = `form-select form-select-sm${extraClass ? ' ' + extraClass : ''}`;
         if (!allowed) {
-            return `<select class="form-select form-select-sm" data-kind="${kind}" disabled>
+            return `<select class="${cls}" data-kind="${kind}" disabled>
                         <option>${esc(unavailableText || L.PickerUnavailable || '')}</option>
                     </select>
                     <small class="text-muted">${esc(unavailableText || L.PickerUnavailable || '')}</small>`;
@@ -246,7 +251,7 @@
         const head = `<option value="">${esc(L.SelectOption || '—')}</option>`;
         const kept = !known && value ? `<option value="${esc(value)}" selected>${esc(value)}</option>` : '';
         const body = list.map(o => `<option value="${esc(o.id)}"${o.id === value ? ' selected' : ''}>${esc(o.text)}</option>`).join('');
-        return `<select class="form-select form-select-sm" data-kind="${kind}"${frozen ? ' disabled' : ''}>${head}${kept}${body}</select>`;
+        return `<select class="${cls}" data-kind="${kind}"${frozen ? ' disabled' : ''}>${head}${kept}${body}</select>`;
     };
 
     const vocabSelect = (values, value, extraClass) => {
@@ -555,6 +560,12 @@
             const opt = productById(line.globalProductId);
             const name = opt ? (opt.name || opt.text) : (line.globalProductId || '');
             const code = opt ? (opt.code || '') : '';
+            // WP-ST-EDIT-T — the per-line SKU is now a searchable gsku dropdown (a real MDM GSKU reference), like the
+            // product picker. The value is the FIRST skuAllocation's gskuId (single-SKU model); an empty head option (—)
+            // keeps the SKU optional. When the actor may not browse gsku the control is disabled with GskuPickerUnavailable
+            // (never a free-text GUID box). options.gsku is loaded (EDIT-Q loadAll); it stays empty until GSKU master data
+            // is seeded, so the dropdown is legitimately empty until then.
+            const skuId = (line.skuAllocations || [])[0]?.gskuId || '';
             return `
             <div class="st-prod-row" data-row="product" data-index="${i}">
                 <div class="st-prod-main">
@@ -562,7 +573,7 @@
                     <div class="st-prod-meta">${esc(code)}</div>
                 </div>
                 <div class="st-prod-sku">
-                    <input type="text" class="form-control form-control-sm js-sku" maxlength="200" placeholder="${esc(L.SkuOptionalPlaceholder || '')}" value="${esc(line.notes ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.ProductColSku || '')}" />
+                    ${pickerSelect('gsku', skuId, can('gsku'), L.GskuPickerUnavailable, null, 'js-sku')}
                 </div>
                 <div class="st-prod-weight">
                     <input type="number" step="0.01" min="0.01" max="100" class="form-control form-control-sm js-weight" value="${esc(line.lineWeightPercentage ?? '')}"${frozen ? ' disabled' : ''} aria-label="${esc(L.LineWeightPercentage || '')}" />
@@ -576,6 +587,10 @@
         empty?.classList.toggle('d-none', state.products.length > 0);
         // WP-ST-EDIT-R — the ÜRÜN | SKU | YÜZDE column head is shown only when there is at least one line to label.
         el('productLineHead')?.classList.toggle('d-none', state.products.length === 0);
+        // WP-ST-EDIT-T — search-enable the freshly rendered per-line SKU selects (the segment role-select pattern: the
+        // innerHTML rebuild above wiped any prior select2 DOM, so a fresh bind per row is enough). bindSelect2 no-ops when
+        // jQuery/select2 is absent, leaving the plain <select> as a graceful degrade.
+        host.querySelectorAll('.js-sku').forEach(s => bindSelect2(s, { search: true }));
         renderProductPicker();
         updateProductTotals();
     };
@@ -769,16 +784,20 @@
             if (!line) return;
             // WP-ST-EDIT-Q — the product is FIXED by the "Ürün ekle…" picker; the row shows a read-only name + MDM-GP
             // code, so globalProductId is NOT re-read here (an absent dropdown would wipe it — the segment-row pattern).
-            // Only the weight and the optional SKU note are read back.
+            // Only the weight and the SKU allocation are read back.
             const weight = row.querySelector('.js-weight')?.value;
             line.lineWeightPercentage = weight === '' || weight == null ? null : Number(weight);
-            // WP-ST-EDIT-R — the mockup's per-line SKU is a single optional FREE-TEXT field. The contract's
-            // SkuAllocationInput.GskuId is a Guid, so free text cannot map to a gsku allocation; the ProductLineInput's
-            // own free-text field is `Notes`, which no other UI surface reads (verified), so the SKU text binds there.
-            line.notes = row.querySelector('.js-sku')?.value?.trim() || null;
-            // WP-ST-EDIT-P — the flat screen edits weight + the SKU note ONLY. skuAllocationMode and skuAllocations are
-            // NOT re-read or cleared here: a NEW row keeps its 'product-only'/[] seed, and an INCOMING sku-allocated row
-            // keeps its mode + allocations intact (no wipe), so ProductLinesJson round-trips the contract without loss.
+            // WP-ST-EDIT-T — the per-line SKU is a single searchable gsku dropdown. Only when the picker is actually
+            // EDITABLE (the actor may browse gsku AND the play is not frozen) is the allocation written back — otherwise
+            // the incoming skuAllocations/mode are left untouched (never wiped for an actor who cannot edit them; the
+            // disabled branch's only <option> is the reason text, which must never be read as a gskuId). A chosen gsku
+            // maps to the single-SKU model [{gskuId, 100}] + 'sku-allocated'; an empty pick returns the line to
+            // 'product-only'/[]. globalProductId is NOT re-read; `notes` no longer carries the SKU (left as-is).
+            if (can('gsku') && !frozen) {
+                const g = row.querySelector('.js-sku')?.value || '';
+                if (g) { line.skuAllocations = [{ gskuId: g, percentage: 100 }]; line.skuAllocationMode = 'sku-allocated'; }
+                else { line.skuAllocations = []; line.skuAllocationMode = 'product-only'; }
+            }
         });
 
         document.querySelectorAll('[data-row="content"]').forEach(row => {

@@ -545,9 +545,11 @@
     background: var(--bs-card-bg);
 }
 .st-editor-scope .st-prod-main { flex: 1 1 200px; min-width: 0; }
-/* WP-ST-EDIT-R — the optional per-line SKU free-text column (mockup ÜRÜN | SKU | YÜZDE), fixed width between the product
-   label and the weight so the column head lines up over it. */
+/* WP-ST-EDIT-R — the optional per-line SKU column (mockup ÜRÜN | SKU | YÜZDE), fixed width between the product label and
+   the weight so the column head lines up over it. WP-ST-EDIT-T — the cell now holds a searchable gsku select2; force the
+   select2 container to fill the fixed column so it does not overflow the row/head alignment. */
 .st-editor-scope .st-prod-sku { flex: 0 0 auto; width: 160px; }
+.st-editor-scope .st-prod-sku .select2-container { width: 100% !important; }
 .st-editor-scope .st-prod-meta {
     margin-top: 4px;
     font-family: var(--bs-font-monospace);
