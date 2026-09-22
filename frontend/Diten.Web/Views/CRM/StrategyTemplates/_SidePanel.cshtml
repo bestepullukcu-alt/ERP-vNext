@@ -21,10 +21,8 @@
 
     @* ── BU OYUN NE YAPACAK? — live recipe + stat tiles ───────────────────────── *@
     <section class="card st-card mb-3">
-        <div class="st-card-head">
-            <span class="st-card-kicker">@Localizer["WhatTitle"]</span>
-        </div>
         <div class="card-body p-3">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["WhatTitle"]</h6>
             <dl class="st-recipe" id="stRecipe">
                 <div class="st-recipe-row"><dt>@Localizer["RecipeWhere"]</dt><dd id="stRecipeWhere">@Localizer["RecipeNone"]</dd></div>
                 <div class="st-recipe-row"><dt>@Localizer["RecipeWho"]</dt><dd id="stRecipeWho">@Localizer["RecipeNone"]</dd></div>
@@ -46,7 +44,7 @@
     <section class="card st-card mb-3">
         <div class="card-body p-3">
             <div class="st-sections-head">
-                <span class="st-card-kicker">@Localizer["SectionsTitle"]</span>
+                <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-list-check dt-card-icon" aria-hidden="true"></i>@Localizer["SectionsTitle"]</h6>
                 <span class="st-ready-pill" id="stReadyPill"></span>
             </div>
             <div class="st-ready-track"><div class="st-ready-bar" id="stReadyBar"></div></div>
@@ -65,7 +63,7 @@
     @* ── YAŞAM DÖNGÜSÜ — status + actions (save buttons submit the existing MVC form) ─ *@
     <section class="card st-card mb-3">
         <div class="card-body p-3">
-            <span class="st-card-kicker d-block mb-2">@Localizer["LifecycleActionsTitle"]</span>
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-refresh dt-card-icon" aria-hidden="true"></i>@Localizer["LifecycleActionsTitle"]</h6>
             @* WP-ST-EDIT-C — the Geçerlilik dates moved here from the removed _Form Lifecycle card. They sit OUTSIDE the
                <form> element (this panel is a sibling aside), so each input carries form="strategyTemplateForm" to stay
                in the submission — the same association the save buttons already use. Model binding is unchanged. *@

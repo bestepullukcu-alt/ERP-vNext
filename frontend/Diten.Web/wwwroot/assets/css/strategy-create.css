@@ -61,17 +61,8 @@
     border-radius: 8px;
     overflow: hidden;
 }
-.st-card-head {
-    padding: 12px 15px 10px;
-    border-bottom: 1px solid var(--st-card-border);
-}
-.st-card-kicker {
-    font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--st-heading);
-    font-weight: 600;
-}
+/* WP-ST-EDIT-X — the side-panel card titles now use the golden .dt-card-icon + h6 header standard (Task/Create), so the
+   former .st-card-head strip and .st-card-kicker span styles are retired. */
 
 /* ── recipe (NEREDE / KİM / …) ─────────────────────────────────────────────── */
 .st-recipe {

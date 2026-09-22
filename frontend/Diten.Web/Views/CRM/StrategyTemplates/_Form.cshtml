@@ -42,7 +42,7 @@
         <section class="card mb-4">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["IdentitySection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-purchase-tag-alt dt-card-icon" aria-hidden="true"></i>@Localizer["IdentitySection"]</h6>
                     <div class="d-flex align-items-center gap-2">
                         <span class="badge bg-label-secondary">@identityStatusLabel</span>
                         <span class="badge bg-label-secondary">v@(Model.TemplateVersion)</span>
@@ -82,7 +82,7 @@
             <div class="card-body p-4">
                 @* WP-ST-EDIT-F — the ScopeHelp text moved up as a section sub-header, right under the KAPSAM heading;
                    the duplicate form-text help at the bottom of the box was removed. *@
-                <h6 class="text-uppercase text-heading fw-semibold mb-2">@Localizer["ScopeSection"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-map dt-card-icon" aria-hidden="true"></i>@Localizer["ScopeSection"]</h6>
                 <p class="text-muted small mb-4">@Localizer["ScopeHelp"]</p>
                 <div class="row g-3" id="strategyTemplateScopeSection"
                      data-scope-options-url="/CRM/StrategyTemplates/api/scope-options">
@@ -171,7 +171,7 @@
         <section class="card mb-4" id="segmentBindingSection">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SegmentSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-group dt-card-icon" aria-hidden="true"></i>@Localizer["SegmentSection"]</h6>
                     <span id="segmentSummary" class="st-segment-summary d-none"></span>
                 </div>
                 <small class="text-muted d-block mb-3">@Localizer["SegmentBindingHelp"]</small>
@@ -186,7 +186,7 @@
         @* BINDING 2 — "how often". Three shapes, none of which writes a MOD-0165 policy. *@
         <section class="card mb-4" id="frequencySection">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-time-five dt-card-icon" aria-hidden="true"></i>@Localizer["FrequencySection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["FrequencyIntentHelp"]</small>
                 @* WP-ST-EDIT-B — frequency is a POINTER only: the real cadence lives in the Visit Frequency Policies
                    module (MOD-0165). This info-box states that and links out; the frequency FIELD logic is unchanged. *@
@@ -250,7 +250,7 @@
                 @* WP-ST-EDIT-Q — the section head no longer carries a "+ ekle" button; a product is added through the
                    searchable "Ürün ekle…" picker below (mockup). The heading + Σ badge move together on one row. *@
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ProductSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-package dt-card-icon" aria-hidden="true"></i>@Localizer["ProductSection"]</h6>
                     <span class="badge bg-label-secondary" id="productWeightBadge">Σ 0.00%</span>
                 </div>
                 @* WP-ST-EDIT-Q — provenance sub-header (mockup): the products are validated against the MDM Global
@@ -309,7 +309,7 @@
            typed + published + pinned invariant are unchanged; only the markup + form.js changed. *@
         <section class="card mb-4" id="contentSection">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-1">@Localizer["ContentSection"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-1 d-flex align-items-center gap-2"><i class="bx bx-book-content dt-card-icon" aria-hidden="true"></i>@Localizer["ContentSection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["ContentPublishedOnlyHelp"]</small>
                 <div id="contentBindingList" class="st-content-grid"></div>
                 <p class="st-content-nodelete mt-3 mb-0">@Localizer["ContentNoDeleteNote"]</p>
