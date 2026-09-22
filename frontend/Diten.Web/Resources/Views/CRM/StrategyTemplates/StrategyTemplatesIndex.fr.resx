@@ -42,6 +42,13 @@
   <data name="ContentStatusDraft" xml:space="preserve"><value>brouillon · non sélectionnable</value></data>
   <data name="ContentStatusArchived" xml:space="preserve"><value>archivé · non sélectionnable</value></data>
   <data name="ContentGridEmpty" xml:space="preserve"><value>Aucun contenu disponible à lier.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historique des versions</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>actuelle</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>actif</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>brouillon</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>archivé</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Utiliser dans une campagne</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>À venir avec l'intégration des campagnes.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>AUCUNE SUPPRESSION — les plans sont seulement archivés ; les versions actives sont immuables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Créer un modèle de stratégie</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un rythme déclaré consigne l'intention de l'auteur. Il n'est pas contraignant et le résolveur de fréquence ne le lit pas.</value></data>

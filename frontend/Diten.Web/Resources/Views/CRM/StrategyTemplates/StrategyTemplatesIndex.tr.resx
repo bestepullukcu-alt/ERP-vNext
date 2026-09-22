@@ -42,6 +42,13 @@
   <data name="ContentStatusDraft" xml:space="preserve"><value>taslak · seçilemez</value></data>
   <data name="ContentStatusArchived" xml:space="preserve"><value>arşiv · seçilemez</value></data>
   <data name="ContentGridEmpty" xml:space="preserve"><value>Bağlanabilir içerik yok.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Sürüm geçmişi</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>geçerli</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>aktif</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>taslak</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>arşiv</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Kampanyada kullan</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>Kampanya entegrasyonu ile gelecek.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>SİLME YOK — oyunlar yalnızca arşivlenir; aktif sürümler değişmezdir.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Strateji şablonu oluştur</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Beyan edilen ritim yazarın niyetini kaydeder. Bağlayıcı değildir ve frekans çözümleyicisi onu okumaz.</value></data>

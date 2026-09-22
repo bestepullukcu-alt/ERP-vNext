@@ -204,6 +204,14 @@ public sealed class StrategyTemplatesController : Controller
             $"/api/crm/strategy-templates/{templateId}/bindings{Request.QueryString}",
             ReadPermission, ct, ReadFallback);
 
+    /// <summary>WP-ST-DETAIL-2 — the Detay "Sürüm geçmişi" panel feed: every version of the play's lineage
+    /// (newest first). A pass-through to the DETAIL-1 read; the gateway <c>/{everything}</c> route covers it.</summary>
+    [HttpGet("api/templates/{templateId:guid}/versions")]
+    public Task<IActionResult> TemplateVersions(Guid templateId, CancellationToken ct) =>
+        ProxyGetAsync(
+            $"/api/crm/strategy-templates/{templateId}/versions{Request.QueryString}",
+            ReadPermission, ct, ReadFallback);
+
     [HttpPost("api/templates/{templateId:guid}/activate")]
     public Task<IActionResult> Activate(Guid templateId, CancellationToken ct) =>
         ProxyJsonAsync(

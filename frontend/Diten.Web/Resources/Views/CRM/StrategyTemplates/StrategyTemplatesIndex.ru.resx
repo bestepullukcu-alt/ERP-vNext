@@ -42,6 +42,13 @@
   <data name="ContentStatusDraft" xml:space="preserve"><value>черновик · нельзя выбрать</value></data>
   <data name="ContentStatusArchived" xml:space="preserve"><value>в архиве · нельзя выбрать</value></data>
   <data name="ContentGridEmpty" xml:space="preserve"><value>Нет контента для связывания.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>История версий</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>текущая</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>активно</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>черновик</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>в архиве</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Использовать в кампании</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>Появится с интеграцией кампаний.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>БЕЗ УДАЛЕНИЯ — планы только архивируются; активные версии неизменяемы.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>

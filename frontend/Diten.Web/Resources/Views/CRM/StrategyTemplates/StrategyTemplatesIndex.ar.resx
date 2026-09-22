@@ -42,6 +42,13 @@
   <data name="ContentStatusDraft" xml:space="preserve"><value>مسودة · غير قابل للتحديد</value></data>
   <data name="ContentStatusArchived" xml:space="preserve"><value>مؤرشف · غير قابل للتحديد</value></data>
   <data name="ContentGridEmpty" xml:space="preserve"><value>لا يوجد محتوى متاح للربط.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>سجل الإصدارات</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>الحالي</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>نشط</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>استخدام في حملة</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>سيتوفر مع تكامل الحملات.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>لا حذف — تُؤرشَف المخططات فقط؛ الإصدارات النشطة غير قابلة للتغيير.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>الإيقاع المُصرَّح يسجّل نية المؤلف فقط. غير مُلزِم ولا يقرأه محرّك تحديد التكرار.</value></data>

@@ -58,7 +58,7 @@
             @* Section 1 — Identity (mirrors _Form) *@
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-purchase-tag-alt dt-card-icon" aria-hidden="true"></i>@Localizer["IdentitySection"]</h6>
                     <dl class="row mb-0">
                         <dt class="col-sm-4 fw-medium">@Localizer["TemplateCode"]</dt>
                         <dd class="col-sm-8">@t.TemplateCode</dd>
@@ -72,10 +72,33 @@
                 </div>
             </section>
 
+            @* Section 1b — KAPSAM (read-only scope, WP-ST-DETAIL-2). Rendered from the detail VM's stored scope fields;
+               the level shows the EFFECTIVE scope (derived for a pre-scope play), the reference rows show the stored value
+               or "—". No new endpoint — these are the same fields the editor's scope cascade posts. *@
+            @{
+                var effScope = string.IsNullOrWhiteSpace(t.EffectiveScopeType) ? t.ScopeType : t.EffectiveScopeType;
+                var scopeLevelLabel = string.IsNullOrWhiteSpace(effScope) ? "—" : Localizer["ScopeType_" + effScope].Value;
+            }
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-map dt-card-icon" aria-hidden="true"></i>@Localizer["ScopeSection"]</h6>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 fw-medium">@Localizer["ScopeType"]</dt>
+                        <dd class="col-sm-8">@scopeLevelLabel</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["CountryScope"]</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(t.CountryScope) ? "—" : t.CountryScope)</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["LegalEntity"]</dt>
+                        <dd class="col-sm-8">@(t.LegalEntityId is { } le && le != Guid.Empty ? le.ToString() : "—")</dd>
+                        <dt class="col-sm-4 fw-medium">@Localizer["BusinessUnit"]</dt>
+                        <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(t.BusinessUnitId) ? "—" : t.BusinessUnitId)</dd>
+                    </dl>
+                </div>
+            </section>
+
             @* Section 2 — "who" *@
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["SegmentSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-group dt-card-icon" aria-hidden="true"></i>@Localizer["SegmentSection"]</h6>
                     <div class="alert alert-secondary py-2 small" role="alert">
                         <i class="bx bx-info-circle me-1"></i>@Localizer["NoMembersEverHelp"]
                     </div>
@@ -126,7 +149,7 @@
             @* Section 3 — "how often" *@
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-time-five dt-card-icon" aria-hidden="true"></i>@Localizer["FrequencySection"]</h6>
                     <dl class="row mb-0">
                         <dt class="col-sm-4 fw-medium">@Localizer["FrequencyIntentMode"]</dt>
                         <dd class="col-sm-8">
@@ -165,7 +188,7 @@
             @* Section 4 — "what" *@
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ProductSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-package dt-card-icon" aria-hidden="true"></i>@Localizer["ProductSection"]</h6>
                     <div class="alert alert-secondary py-2 small" role="alert">
                         <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
                     </div>
@@ -218,7 +241,7 @@
             @* Section 5 — "which story" *@
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["ContentSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-book-content dt-card-icon" aria-hidden="true"></i>@Localizer["ContentSection"]</h6>
                     @if (t.ContentBindings.Count == 0)
                     {
                         <p class="text-muted mb-0">@Localizer["NoContentBindings"]</p>
@@ -261,7 +284,7 @@
         <div class="col-12 col-lg-4">
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ClassificationSection"]</h6>
                     <dl class="row mb-0">
                         <dt class="col-6 fw-medium">@Localizer["SubjectType"]</dt>
                         <dd class="col-6">@t.SubjectType</dd>
@@ -273,7 +296,7 @@
 
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["LifecycleSection"]</h6>
                     <dl class="row mb-0">
                         <dt class="col-6 fw-medium">@Localizer["TemplateStatus"]</dt>
                         <dd class="col-6"><span class="badge bg-label-primary">@t.TemplateStatus</span></dd>
@@ -289,6 +312,24 @@
                     <div class="alert alert-secondary mt-3 mb-0 py-2 small">
                         <i class="bx bx-info-circle me-1"></i>@Localizer["ApplyIsMicroTargetHelp"]
                     </div>
+                </div>
+            </section>
+
+            @* WP-ST-DETAIL-2 — version history. details.js fills #stVersionHistory from the DETAIL-1 /versions endpoint
+               (newest first: vN + status badge + date + "geçerli" on the current version). *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-history dt-card-icon" aria-hidden="true"></i>@Localizer["VersionHistory"]</h6>
+                    <div id="stVersionHistory" data-id="@t.TemplateId" class="small text-muted">@Localizer["Loading"]</div>
+                </div>
+            </section>
+
+            @* WP-ST-DETAIL-2 — "Kampanyada kullan" placeholder. The Campaign integration is a later roadmap step
+               (F-ST-USE-IN-CAMPAIGN), so the button is a disabled placeholder with no target yet. *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <button type="button" class="btn btn-outline-primary w-100 disabled" disabled aria-disabled="true">@Localizer["UseInCampaign"] ↗</button>
+                    <p class="text-muted small mt-2 mb-0">@Localizer["UseInCampaignSoon"]</p>
                 </div>
             </section>
         </div>

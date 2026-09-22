@@ -42,6 +42,13 @@
   <data name="ContentStatusDraft" xml:space="preserve"><value>borrador · no seleccionable</value></data>
   <data name="ContentStatusArchived" xml:space="preserve"><value>archivado · no seleccionable</value></data>
   <data name="ContentGridEmpty" xml:space="preserve"><value>No hay contenido disponible para enlazar.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historial de versiones</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>actual</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>activo</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>borrador</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>archivado</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Usar en campaña</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>Disponible con la integración de campañas.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>SIN ELIMINACIÓN — los planes solo se archivan; las versiones activas son inmutables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Crear plantilla de estrategia</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un ritmo declarado registra la intención del autor. No es vinculante y el resolutor de frecuencia no lo lee.</value></data>
