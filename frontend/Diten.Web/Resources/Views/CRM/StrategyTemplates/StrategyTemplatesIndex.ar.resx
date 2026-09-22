@@ -29,10 +29,15 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>الأعمدة</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>لا يتم التحقق هنا من انتماء SKU إلى المنتج المختار — يرجى التأكد بنفسك.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>المحتوى</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى محتوى منشور وغير مؤرشف، مثبّت على تلك النسخة.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>لا يمكن ربط سوى knowledge-path أو content-engagement-journey منشور؛ تُثبَّت المراجع على النسخة.</value></data>
   <data name="ContentRef" xml:space="preserve"><value>المحتوى</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>نوع المحتوى</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>أي محتوى</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>المحتوى — أي حكاية</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>مثبَّت</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>مسار معرفي</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>رحلة</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>لا مزيد من المحتوى للإضافة.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>الإيقاع المُصرَّح يسجّل نية المؤلف فقط. غير مُلزِم ولا يقرأه محرّك تحديد التكرار.</value></data>
   <data name="Description" xml:space="preserve"><value>الوصف</value></data>
@@ -66,7 +71,7 @@
   <data name="NewVersion" xml:space="preserve"><value>إصدار جديد</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>إنشاء نسخة مسودة جديدة من هذا المخطط؟ تبقى النسخة الحالية قابلة للقراءة.</value></data>
   <data name="No" xml:space="preserve"><value>لا</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>لم يُربط محتوى. عندها لا يملك المخطط بُعدًا للمحتوى.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>لا يوجد محتوى بعد — اختر الحكاية التي سيرويها هذا المخطط.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>المخطط يربط هوية الشريحة، ولا يعرض أو يعدّ الأشخاص داخلها إطلاقًا.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>لا توجد خطوط منتج بعد — أضف المنتجات التي يحملها هذا المخطط.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>لا توجد شريحة بعد — اختر لمن ينطبق المخطط.</value></data>

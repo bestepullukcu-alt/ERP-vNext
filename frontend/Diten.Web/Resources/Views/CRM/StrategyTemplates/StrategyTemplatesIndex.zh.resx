@@ -29,10 +29,15 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>此处不校验 SKU 是否属于所选产品，请自行确认。</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>内容</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>只能绑定已发布且未归档的内容，并固定到该版本。</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>只能绑定已发布的 knowledge-path 或 content-engagement-journey；引用会固定到该版本。</value></data>
   <data name="ContentRef" xml:space="preserve"><value>内容</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>内容类型</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>讲什么——内容</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>内容 — 讲什么</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>已固定</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>知识路径</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>旅程</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>没有更多内容可添加。</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>创建策略模板</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>声明的节奏只记录作者意图，不具约束力，频次解析器不会读取它。</value></data>
   <data name="Description" xml:space="preserve"><value>描述</value></data>
@@ -66,7 +71,7 @@
   <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>创建此方案的新草稿版本？当前版本仍可读。</value></data>
   <data name="No" xml:space="preserve"><value>否</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>未绑定内容，方案即没有内容维度。</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>暂无内容 — 选择此方案要讲述的故事。</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>方案绑定的是细分的身份，绝不列出或统计其中的人员。</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>暂无产品行 — 添加此方案所承载的产品。</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>还没有细分——请选择方案适用于谁。</value></data>

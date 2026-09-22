@@ -29,10 +29,15 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Bir SKU'nun seçilen ürüne ait olup olmadığı burada doğrulanmaz — lütfen kendiniz kontrol edin.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>İçerik</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Yalnızca yayımlanmış ve arşivlenmemiş içerik bağlanabilir; tam o sürüme sabitlenir.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Yalnızca yayınlanmış knowledge-path veya content-engagement-journey bağlanabilir; referanslar sürüme sabitlenir.</value></data>
   <data name="ContentRef" xml:space="preserve"><value>İçerik</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>İçerik tipi</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>Hangi sunum — içerik</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>İçerik — hangi hikâye</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>sabitlenmiş</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>Bilgi yolu</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>Yolculuk</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>Kapat</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>Eklenecek başka içerik yok.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Strateji şablonu oluştur</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Beyan edilen ritim yazarın niyetini kaydeder. Bağlayıcı değildir ve frekans çözümleyicisi onu okumaz.</value></data>
   <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
@@ -66,7 +71,7 @@
   <data name="NewVersion" xml:space="preserve"><value>Yeni sürüm</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>Bu planın yeni taslak sürümü oluşturulsun mu? Mevcut sürüm okunabilir kalır.</value></data>
   <data name="No" xml:space="preserve"><value>Hayır</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>İçerik bağlanmadı. Bu durumda planın içerik boyutu yoktur.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Henüz içerik yok — oyunun hangi hikâyeyi anlatacağını seçin.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Plan, segmentin kimliğini bağlar. İçindeki kişileri asla listelemez veya saymaz.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>Ürün satırı yok — oyunun hangi ürünleri taşıdığını ekleyin.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Henüz segment yok — oyunun kime uygulanacağını seçin.</value></data>

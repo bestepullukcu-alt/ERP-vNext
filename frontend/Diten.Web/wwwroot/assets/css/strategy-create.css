@@ -506,6 +506,39 @@
     background: var(--bs-body-bg);
 }
 
+/* ── WP-ST-EDIT-U — İçerik bölümü kompakt "sabitlenmiş" kartlar (mockup). Segment display satırıyla aynı tipografi/yüzey
+   (bg-card, body-font); kart = ad + kind·kod (mono) + "sabitlenmiş" pill + kaldır ikon. Ekleme .st-segment-picker /
+   .st-segment-add / .st-segment-empty (paylaşımlı) ile yapılır. ──────────────────────────────────────────────────────── */
+.st-editor-scope .st-content-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+    font-family: var(--bs-body-font-family);
+}
+.st-editor-scope .st-content-main { flex: 1 1 200px; min-width: 0; }
+.st-editor-scope .st-content-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-content-meta {
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-content-pinned { flex: 0 0 auto; }
+
 /* ── WP-ST-EDIT-P — Ürün bölümü DÜZ (mockup): başlık altı Σ badge + "Eşit dağıt" kontrol satırı, Σ≠100 uyarı kutusu ve
    her satır = ürün picker (ad + alt-satır MDM-GP kod) + yüzde + kaldır ikon. Segment satırı (.st-seg-row) görünüm
    diliyle aynı hizada. ─────────────────────────────────────────────────────────────────────────────────────────── */

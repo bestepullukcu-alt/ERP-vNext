@@ -173,6 +173,11 @@
             jobs.push(load(`${endpoint}/knowledge-paths`, r => ({
                 id: r.pathId || r.id,
                 text: `${r.pathCode || ''} — ${r.pathName || ''}`.trim(),
+                // WP-ST-EDIT-U — code/name split out (like segment/product) so the compact content card can show the
+                // name with "kind · code" beneath; kind tags the ref type so the merged picker/card knows which it is.
+                code: r.pathCode || '',
+                name: r.pathName || '',
+                kind: 'knowledge-path',
                 status: r.pathStatus
             })).then(x => { options.path = x.filter(o => o.status === 'published'); }));
         }
@@ -180,6 +185,9 @@
             jobs.push(load(`${endpoint}/content-engagement-journeys`, r => ({
                 id: r.journeyId || r.id,
                 text: `${r.journeyCode || ''} — ${r.journeyName || ''}`.trim(),
+                code: r.journeyCode || '',
+                name: r.journeyName || '',
+                kind: 'content-engagement-journey',
                 status: r.journeyStatus
             })).then(x => { options.journey = x.filter(o => o.status === 'published'); }));
         }
@@ -596,47 +604,80 @@
     };
 
     // ---------------- "which story" ----------------
+    // WP-ST-EDIT-U — the content section mirrors the segment section: each bound content is a compact DISPLAY card
+    // (name + kind·code + "sabitlenmiş" pin) and adding is done through an inline picker over the merged published pool
+    // (knowledge-path + engagement-journey). The picker only ever offers status==='published' refs, the contentRefType is
+    // taken from the chosen option's kind (never invented), and ContentBindingsJson keeps its shape
+    // (contentRefType / contentRefId / sortOrder — now an automatic index — / notes).
+    let contentPickerOpen = false;
 
     const contentOptionsFor = type => type === 'content-engagement-journey' ? options.journey : options.path;
+    // The merged published pool; every option already carries its kind (set in loadOptions), so the card and the picker
+    // can resolve name/code and the ref type from a single lookup.
+    const contentPool = () => [...(options.path || []), ...(options.journey || [])];
+    const contentById = id => contentPool().find(o => o.id === id);
+    const contentKindLabel = kind => kind === 'content-engagement-journey' ? (L.ContentKindJourney || '') : (L.ContentKindKnowledgePath || '');
+    const canAnyContent = () => can('knowledge-path') || can('content-engagement-journey');
+
+    const renderContentPicker = () => {
+        const panel = el('contentPicker');
+        if (!panel) return;
+        if (!contentPickerOpen) { panel.classList.add('d-none'); panel.innerHTML = ''; return; }
+        panel.classList.remove('d-none');
+        if (!canAnyContent()) {
+            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.PickerUnavailable || '')}</div>`;
+            return;
+        }
+        const chosen = new Set(state.contents.map(c => c.contentRefId));
+        const pool = contentPool().filter(o => !chosen.has(o.id));
+        if (pool.length === 0) {
+            panel.innerHTML = `<div class="st-segment-picker-note">${esc(L.ContentPickerEmpty || '')}</div>`;
+            return;
+        }
+        panel.innerHTML = pool.map(o => `
+            <button type="button" class="st-segment-choice js-content-choice" data-id="${esc(o.id)}" data-content-kind="${esc(o.kind)}">
+                <span class="st-segment-choice-name">${esc(o.name || o.text)}</span>
+                <span class="badge bg-label-secondary rounded-pill st-seg-type">${esc(contentKindLabel(o.kind))}</span>
+                <span class="st-segment-choice-code">${esc(o.code || '')}</span>
+            </button>`).join('');
+    };
+
+    const updateAddContentBtnLabel = () => {
+        const btn = el('btnAddContentBinding');
+        if (!btn) return;
+        btn.innerHTML = contentPickerOpen
+            ? `<i class="bx bx-x me-1"></i>${esc(L.ContentPickerClose || '')}`
+            : `<i class="bx bx-plus me-1"></i>${esc(L.AddContentBinding || '')}`;
+    };
 
     const renderContents = () => {
         const host = el('contentBindingList');
         const empty = el('contentBindingEmpty');
         if (!host) return;
         host.innerHTML = state.contents.map((c, i) => {
-            const type = c.contentRefType || (cfg.contentRefTypes || [])[0] || 'knowledge-path';
-            const list = contentOptionsFor(type);
-            const known = list.some(o => o.id === c.contentRefId);
-            const allowed = type === 'content-engagement-journey' ? can('content-engagement-journey') : can('knowledge-path');
-            const select = allowed
-                ? `<select class="form-select form-select-sm js-content-ref"${frozen ? ' disabled' : ''}>
-                        <option value="">${esc(L.SelectOption || '—')}</option>
-                        ${!known && c.contentRefId ? `<option value="${esc(c.contentRefId)}" selected>${esc(c.contentRefId)}</option>` : ''}
-                        ${list.map(o => `<option value="${esc(o.id)}"${o.id === c.contentRefId ? ' selected' : ''}>${esc(o.text)}</option>`).join('')}
-                   </select>`
-                : `<select class="form-select form-select-sm js-content-ref" disabled><option>${esc(L.PickerUnavailable || '')}</option></select>`;
+            // WP-ST-EDIT-U — a compact display card (mockup). contentById resolves the name/code/kind from the merged
+            // published pool; if it cannot (feed still loading, or an unpublished/removed ref) the stored contentRefType
+            // gives the kind and the raw contentRefId is shown, so the reference is never lost. sync() does NOT re-read
+            // the ref/type (fixed by the inline picker) — see the content block.
+            const opt = contentById(c.contentRefId);
+            const name = opt ? (opt.name || opt.text) : (c.contentRefId || '');
+            const kind = (opt && opt.kind) || c.contentRefType || '';
+            const code = opt ? (opt.code || '') : '';
+            const meta = [contentKindLabel(kind), code].filter(Boolean).join(' · ');
             return `
-            <div class="border rounded p-3" data-row="content" data-index="${i}">
-                <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-3">
-                        <label class="form-label small mb-1">${esc(L.ContentRefType || '')} <span class="text-danger">*</span></label>
-                        ${vocabSelect(cfg.contentRefTypes || [], type, 'js-content-type')}
-                    </div>
-                    <div class="col-12 col-md-5">
-                        <label class="form-label small mb-1">${esc(L.ContentRef || '')} <span class="text-danger">*</span></label>
-                        ${select}
-                    </div>
-                    <div class="col-6 col-md-2">
-                        <label class="form-label small mb-1">${esc(L.SortOrder || '')}</label>
-                        <input type="number" class="form-control form-control-sm js-sort" value="${esc(c.sortOrder ?? i * 10)}"${frozen ? ' disabled' : ''} />
-                    </div>
-                    <div class="col-6 col-md-2 text-end">
-                        <button type="button" class="btn btn-sm btn-label-danger js-remove"${frozen ? ' disabled' : ''}><i class="bx bx-trash"></i></button>
-                    </div>
+            <div class="st-content-row" data-row="content" data-index="${i}">
+                <div class="st-content-main">
+                    <div class="st-content-name">${esc(name)}</div>
+                    <div class="st-content-meta">${esc(meta)}</div>
                 </div>
+                <span class="badge bg-label-secondary rounded-pill st-content-pinned">${esc(L.ContentPinned || '')}</span>
+                <button type="button" class="btn btn-icon btn-sm btn-label-danger js-remove" title="${esc(L.Remove || '')}" aria-label="${esc(L.Remove || '')}"${frozen ? ' disabled' : ''}>
+                    <i class="bx bx-trash"></i>
+                </button>
             </div>`;
         }).join('');
         empty?.classList.toggle('d-none', state.contents.length > 0);
+        renderContentPicker();
     };
 
     const renderAll = () => { renderSegments(); renderFrequency(); renderProducts(); renderContents(); };
@@ -724,13 +765,36 @@
         setTimeout(updateSidePanel, 0);
     });
 
-    el('btnAddContentBinding')?.addEventListener('click', () => {
-        if (frozen || limitReached(state.contents.length, cfg.maxContentBindings)) return;
+    // WP-ST-EDIT-U — "+ İçerik ekle" no longer pushes an empty binding; it toggles the inline picker (the segment
+    // pattern). A content is added — with its ref id AND kind already resolved — only when the author clicks a pool entry.
+    const addContentBtn = el('btnAddContentBinding');
+    if (addContentBtn && frozen) addContentBtn.disabled = true;
+    addContentBtn?.addEventListener('click', () => {
+        if (frozen) return;
+        contentPickerOpen = !contentPickerOpen;
+        updateAddContentBtnLabel();
+        renderContentPicker();
+    });
+
+    // Picking a content from the merged published pool appends it with the kind-derived contentRefType and its automatic
+    // sortOrder; the picker then closes. The chosen filter already kept the pool to refs not yet bound.
+    el('contentPicker')?.addEventListener('click', event => {
+        const choice = event.target.closest('.js-content-choice');
+        if (!choice || frozen) return;
+        if (limitReached(state.contents.length, cfg.maxContentBindings)) return;
+        const id = choice.dataset.id;
+        const kind = choice.dataset.contentKind;
+        if (!id || !kind) return;
         state.contents.push({
-            contentRefType: (cfg.contentRefTypes || [])[0] || 'knowledge-path',
-            contentRefId: '', sortOrder: state.contents.length * 10, notes: null
+            contentRefType: kind,
+            contentRefId: id,
+            sortOrder: state.contents.length * 10,
+            notes: null
         });
+        contentPickerOpen = false;
+        updateAddContentBtnLabel();
         renderContents();
+        setTimeout(updateSidePanel, 0);
     });
 
     // WP-ST-EDIT-M — the mode is now a hidden input, so its choice comes from the three choice-box buttons (a
@@ -804,9 +868,10 @@
             const i = Number(row.dataset.index);
             const binding = state.contents[i];
             if (!binding) return;
-            binding.contentRefType = row.querySelector('.js-content-type')?.value || binding.contentRefType;
-            binding.contentRefId = row.querySelector('.js-content-ref')?.value || '';
-            binding.sortOrder = Number(row.querySelector('.js-sort')?.value || 0);
+            // WP-ST-EDIT-U — the content card is display-only; contentRefType/contentRefId are FIXED by the inline picker
+            // (an absent dropdown would wipe them — the segment/product pattern). Only the automatic index-based sortOrder
+            // is written back — ContentBindingsJson keeps its shape.
+            binding.sortOrder = i * 10;
         });
 
         state.frequency = readFrequency();
@@ -818,12 +883,10 @@
     form.addEventListener('change', event => {
         if (!event.target.closest('#segmentBindingList, #productLineList, #contentBindingList, #frequencyEditor')) return;
         sync();
-        // A content type change reshapes its row, so it re-renders; choosing the first segment derives the SubjectType
-        // and locks the remaining rows to that type. WP-ST-EDIT-Q — the in-row product dropdown is gone (the row is a
-        // fixed label; the product is added/removed, never changed in place), so there is no product branch here.
-        if (event.target.classList.contains('js-content-type')) {
-            renderContents();
-        } else if (event.target.matches('[data-kind="segment"]')) {
+        // Choosing the first segment derives the SubjectType and locks the remaining rows to that type. WP-ST-EDIT-Q —
+        // the in-row product dropdown is gone; WP-ST-EDIT-U — the content cards are display-only (type/ref are fixed by
+        // the inline picker), so neither a product nor a content branch remains here.
+        if (event.target.matches('[data-kind="segment"]')) {
             renderSegments();
         }
     });

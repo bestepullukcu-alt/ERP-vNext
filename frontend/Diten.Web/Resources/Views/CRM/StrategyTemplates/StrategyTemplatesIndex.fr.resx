@@ -29,10 +29,15 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Colonnes</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>L'appartenance d'un SKU au produit sélectionné n'est pas vérifiée ici — merci de la contrôler vous-même.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Contenu</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Seul un contenu publié et non archivé peut être lié, épinglé à cette version précise.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Seul un knowledge-path ou content-engagement-journey publié peut être lié ; les références sont épinglées à la version.</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Contenu</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Type de contenu</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>Quel récit — contenu</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Contenu — quel récit</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>épinglé</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>Parcours de connaissance</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>Parcours d'engagement</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>Fermer</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>Aucun autre contenu à ajouter.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Créer un modèle de stratégie</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un rythme déclaré consigne l'intention de l'auteur. Il n'est pas contraignant et le résolveur de fréquence ne le lit pas.</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
@@ -66,7 +71,7 @@
   <data name="NewVersion" xml:space="preserve"><value>Nouvelle version</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>Créer une nouvelle version brouillon de ce plan ? La version actuelle reste lisible.</value></data>
   <data name="No" xml:space="preserve"><value>Non</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>Aucun contenu lié. Le plan n'a alors pas de dimension contenu.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Aucun contenu pour l'instant — choisissez le récit que ce plan racontera.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Un plan lie l'identité d'un segment. Il ne liste ni ne compte jamais les personnes qu'il contient.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>Aucune ligne produit — ajoutez les produits que porte ce plan.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Aucun segment pour l'instant — choisissez à qui s'applique le plan.</value></data>

@@ -29,10 +29,15 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Принадлежность SKU выбранному продукту здесь не проверяется — проверьте её самостоятельно.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Контент</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Связать можно только опубликованный и неархивный контент, закреплённый за конкретной версией.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Можно связать только опубликованный knowledge-path или content-engagement-journey; ссылки закрепляются за версией.</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Контент</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Тип контента</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>Какая история — контент</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Контент — какая история</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>закреплено</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>Путь знаний</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>Путь взаимодействия</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>Больше нет контента для добавления.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>
   <data name="Description" xml:space="preserve"><value>Описание</value></data>
@@ -66,7 +71,7 @@
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию плана? Текущая версия останется доступной для чтения.</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>Контент не связан. Тогда у плана нет контентного измерения.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Пока нет контента — выберите историю, которую расскажет этот план.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>План связывает идентичность сегмента. Он никогда не перечисляет и не считает людей внутри.</value></data>
   <data name="NoProductLines" xml:space="preserve"><value>Пока нет продуктовых строк — добавьте продукты, которые несёт этот план.</value></data>
   <data name="NoSegmentBindings" xml:space="preserve"><value>Пока нет сегментов — выберите, к кому применяется план.</value></data>
