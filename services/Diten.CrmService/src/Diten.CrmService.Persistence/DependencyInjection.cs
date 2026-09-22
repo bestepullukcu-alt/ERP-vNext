@@ -138,6 +138,7 @@ public static class DependencyInjection
         // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
         services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
         services.AddScoped<IContentSetRepository, ContentSetRepository>();
+        services.AddScoped<IContentSetRevisionRepository, ContentSetRevisionRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -616,6 +617,13 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.ItemId).SetSerializer(stringGuid);
             map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
+
+        // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
+        // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
+        // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
+        Map<ContentSetRevision>(map =>
+            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid));
+        Map<ContentSetReviewDecision>(_ => { });
 
         Map<KnowledgeExternalReference>(_ => { });
 
