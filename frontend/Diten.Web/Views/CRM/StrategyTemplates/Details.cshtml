@@ -15,13 +15,22 @@
 <div class="strategy-template-details">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
-            <h5 class="mb-0">@t.TemplateName <span class="badge bg-label-secondary ms-2">v@t.TemplateVersion</span></h5>
+            @* WP-ST-DETAIL-3 — human header: name + status + version + the play's own description sentence. The version is
+               wrapped in v@(...) so Razor never reads "v@t" as an email literal. *@
+            <h5 class="mb-0">@t.TemplateName
+                <span class="badge bg-label-@(t.TemplateStatus == "active" ? "success" : t.TemplateStatus == "archived" ? "secondary" : "warning") ms-2">@(t.TemplateStatus == "active" ? Localizer["Active"] : t.TemplateStatus == "archived" ? Localizer["Archived"] : Localizer["LifecycleDraftTab"])</span>
+                <span class="badge bg-label-secondary ms-1">v@(t.TemplateVersion)</span>
+            </h5>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates">@Localizer["StrategyTemplatesTitle"]</a></li>
                     <li class="breadcrumb-item active text-primary">@t.TemplateCode</li>
                 </ol>
             </nav>
+            @if (!string.IsNullOrWhiteSpace(t.Description))
+            {
+                <p class="text-muted mb-0 mt-1">@t.Description</p>
+            }
         </div>
         <div class="d-flex align-items-center gap-2">
             @if (Model.CanManage && !t.IsArchived)
@@ -52,6 +61,39 @@
         <div class="alert alert-info" role="alert"><i class="bx bx-git-branch me-1"></i>@Localizer["Superseded"]</div>
     }
 
+    @* WP-ST-DETAIL-3 — stat tiles (mockup). Every number is computed from the DetailDto server-side, so it always matches
+       the sections below: bound segments, product lines, the Σ of the line weights, and pinned content bindings. *@
+    @{
+        var stWeightTotal = t.ProductLines.Sum(l => l.LineWeightPercentage ?? 0m);
+        var stWeightOk = t.ProductLines.Count > 0 && stWeightTotal == 100m;
+    }
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card backbone-preview-section h-100"><div class="card-body p-3 text-center">
+                <div class="h4 mb-0 fw-semibold">@t.SegmentBindings.Count</div>
+                <div class="text-muted small text-uppercase">@Localizer["StatSegments"]</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card backbone-preview-section h-100"><div class="card-body p-3 text-center">
+                <div class="h4 mb-0 fw-semibold">@t.ProductLines.Count</div>
+                <div class="text-muted small text-uppercase">@Localizer["StatProductLines"]</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card backbone-preview-section h-100"><div class="card-body p-3 text-center">
+                <div class="h4 mb-0 fw-semibold @(stWeightOk ? "text-success" : t.ProductLines.Count > 0 ? "text-danger" : "")">Σ @stWeightTotal.ToString("0.##")%</div>
+                <div class="text-muted small text-uppercase">@Localizer["StatWeightTotal"]</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card backbone-preview-section h-100"><div class="card-body p-3 text-center">
+                <div class="h4 mb-0 fw-semibold">@t.ContentBindings.Count</div>
+                <div class="text-muted small text-uppercase">@Localizer["StatContents"]</div>
+            </div></div>
+        </div>
+    </div>
+
     <div class="row g-4">
         <div class="col-12 col-lg-8">
 
@@ -72,26 +114,37 @@
                 </div>
             </section>
 
-            @* Section 1b — KAPSAM (read-only scope, WP-ST-DETAIL-2). Rendered from the detail VM's stored scope fields;
-               the level shows the EFFECTIVE scope (derived for a pre-scope play), the reference rows show the stored value
-               or "—". No new endpoint — these are the same fields the editor's scope cascade posts. *@
+            @* Section 1b — KAPSAM (read-only scope, WP-ST-DETAIL-3 mockup). Three mini-cards (country / legal-entity /
+               business-unit); the level that IS the play's effective scope is highlighted (border-primary). The VALUE
+               spans carry data-resolve so details.js can replace the stored code/id with the scope-options display name;
+               the code/id shown server-side stays as the fallback if the feed cannot resolve it. *@
             @{
                 var effScope = string.IsNullOrWhiteSpace(t.EffectiveScopeType) ? t.ScopeType : t.EffectiveScopeType;
-                var scopeLevelLabel = string.IsNullOrWhiteSpace(effScope) ? "—" : Localizer["ScopeType_" + effScope].Value;
+                string ScopeCardClass(string level) => "card backbone-preview-section h-100" + (effScope == level ? " border-primary" : "");
             }
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-map dt-card-icon" aria-hidden="true"></i>@Localizer["ScopeSection"]</h6>
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4 fw-medium">@Localizer["ScopeType"]</dt>
-                        <dd class="col-sm-8">@scopeLevelLabel</dd>
-                        <dt class="col-sm-4 fw-medium">@Localizer["CountryScope"]</dt>
-                        <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(t.CountryScope) ? "—" : t.CountryScope)</dd>
-                        <dt class="col-sm-4 fw-medium">@Localizer["LegalEntity"]</dt>
-                        <dd class="col-sm-8">@(t.LegalEntityId is { } le && le != Guid.Empty ? le.ToString() : "—")</dd>
-                        <dt class="col-sm-4 fw-medium">@Localizer["BusinessUnit"]</dt>
-                        <dd class="col-sm-8 mb-0">@(string.IsNullOrWhiteSpace(t.BusinessUnitId) ? "—" : t.BusinessUnitId)</dd>
-                    </dl>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="@ScopeCardClass("country")"><div class="card-body p-3">
+                                <div class="text-muted small text-uppercase mb-1">@Localizer["CountryScope"]</div>
+                                <div class="fw-medium" data-resolve="country" data-id="@t.CountryScope">@(string.IsNullOrWhiteSpace(t.CountryScope) ? "—" : t.CountryScope)</div>
+                            </div></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="@ScopeCardClass("legal-entity")"><div class="card-body p-3">
+                                <div class="text-muted small text-uppercase mb-1">@Localizer["LegalEntity"]</div>
+                                <div class="fw-medium" data-resolve="legal-entity" data-id="@(t.LegalEntityId?.ToString())">@(t.LegalEntityId is { } le && le != Guid.Empty ? le.ToString() : "—")</div>
+                            </div></div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="@ScopeCardClass("business-unit")"><div class="card-body p-3">
+                                <div class="text-muted small text-uppercase mb-1">@Localizer["BusinessUnit"]</div>
+                                <div class="fw-medium" data-resolve="business-unit" data-id="@t.BusinessUnitId">@(string.IsNullOrWhiteSpace(t.BusinessUnitId) ? "—" : t.BusinessUnitId)</div>
+                            </div></div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -108,39 +161,34 @@
                     }
                     else
                     {
-                        <div class="table-responsive">
-                            <table class="table table-sm mb-0">
-                                <thead><tr>
-                                    <th>@Localizer["Segment"]</th>
-                                    <th>@Localizer["BindingRole"]</th>
-                                    <th>@Localizer["TemplateVersion"]</th>
-                                    <th>@Localizer["Status"]</th>
-                                    <th>@Localizer["Notes"]</th>
-                                </tr></thead>
-                                <tbody>
-                                @foreach (var b in t.SegmentBindings.OrderBy(x => x.SortOrder))
-                                {
-                                    var hint = segmentHints.TryGetValue(b.SegmentId, out var h) ? h : null;
-                                    <tr>
-                                        <td><code>@(b.SegmentCodeDisplay ?? b.SegmentId.ToString())</code></td>
-                                        <td>@(b.BindingRole ?? "—")</td>
-                                        <td>v@b.SegmentVersionAtBinding</td>
-                                        <td>
-                                            <span class="badge bg-label-secondary">@(hint?.CurrentStatus ?? "—")</span>
-                                            @if (hint?.Superseded == true)
-                                            {
-                                                <span class="badge bg-label-info ms-1">@Localizer["Superseded"]</span>
-                                            }
-                                            @if (hint?.Archived == true)
-                                            {
-                                                <span class="badge bg-label-danger ms-1">@Localizer["Archived"]</span>
-                                            }
-                                        </td>
-                                        <td>@(string.IsNullOrWhiteSpace(b.Notes) ? "—" : b.Notes)</td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
+                        @* WP-ST-DETAIL-3 — resolved rows: the segment NAME (details.js fills it via data-resolve, code as
+                           fallback) + SEG code + role badge + the play's subject-type badge (homogeneous, from t.SubjectType). *@
+                        var subjectBadge = t.SubjectType == "contact" ? Localizer["SubjectTypeContact"] : t.SubjectType == "account" ? Localizer["SubjectTypeAccount"] : null;
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var b in t.SegmentBindings.OrderBy(x => x.SortOrder))
+                            {
+                                var hint = segmentHints.TryGetValue(b.SegmentId, out var h) ? h : null;
+                                var segFallback = string.IsNullOrWhiteSpace(b.SegmentCodeDisplay) ? b.SegmentId.ToString() : b.SegmentCodeDisplay;
+                                <div class="d-flex align-items-center gap-2 flex-wrap border rounded p-2">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium" data-resolve="segment" data-id="@b.SegmentId">@segFallback</div>
+                                        @if (!string.IsNullOrWhiteSpace(b.SegmentCodeDisplay))
+                                        {
+                                            <div class="text-muted small font-monospace">@b.SegmentCodeDisplay</div>
+                                        }
+                                    </div>
+                                    @if (subjectBadge is not null)
+                                    {
+                                        <span class="badge bg-label-primary rounded-pill">@subjectBadge</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(b.BindingRole))
+                                    {
+                                        <span class="badge bg-label-secondary rounded-pill">@(Localizer["BindingRole_" + b.BindingRole])</span>
+                                    }
+                                    @if (hint?.Superseded == true) { <span class="badge bg-label-info rounded-pill">@Localizer["Superseded"]</span> }
+                                    @if (hint?.Archived == true) { <span class="badge bg-label-danger rounded-pill">@Localizer["Archived"]</span> }
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -161,12 +209,23 @@
                         </dd>
                         @if (t.FrequencyIntent.Mode == "policy-reference")
                         {
+                            var polFallback = t.FrequencyIntent.PolicyCodeDisplay ?? t.FrequencyIntent.VisitFrequencyPolicyId?.ToString() ?? "—";
                             <dt class="col-sm-4 fw-medium">@Localizer["FrequencyPolicy"]</dt>
                             <dd class="col-sm-8">
-                                <code>@(t.FrequencyIntent.PolicyCodeDisplay ?? t.FrequencyIntent.VisitFrequencyPolicyId?.ToString() ?? "—")</code>
+                                @* WP-ST-DETAIL-3 — the policy NAME (details.js fills via data-resolve; code as fallback) + its
+                                   code + status + a link that opens the policy detail. The reference itself is unchanged. *@
+                                <span class="fw-medium" data-resolve="frequency-policy" data-id="@(t.FrequencyIntent.VisitFrequencyPolicyId?.ToString())">@polFallback</span>
+                                @if (!string.IsNullOrWhiteSpace(t.FrequencyIntent.PolicyCodeDisplay))
+                                {
+                                    <span class="text-muted small font-monospace ms-1">@t.FrequencyIntent.PolicyCodeDisplay</span>
+                                }
                                 @if (frequencyHint?.PolicyStatus is { } status)
                                 {
                                     <span class="badge bg-label-secondary ms-1">@status</span>
+                                }
+                                @if (t.FrequencyIntent.VisitFrequencyPolicyId is { } pid && pid != Guid.Empty)
+                                {
+                                    <a href="/CRM/VisitFrequencyPolicies/Details/@pid" class="ms-2 small" target="_blank" rel="noopener">@Localizer["FreqOpenPolicySingle"] ↗</a>
                                 }
                             </dd>
                         }
@@ -198,16 +257,28 @@
                     }
                     else
                     {
+                        @* WP-ST-DETAIL-3 — the Σ line-weight progress bar (mockup): success at exactly 100.00, danger otherwise. *@
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="badge @(stWeightOk ? "bg-label-success" : "bg-label-danger")">Σ @stWeightTotal.ToString("0.##")%</span>
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar @(stWeightOk ? "bg-success" : "bg-danger")" role="progressbar" style="width: @(Math.Min(stWeightTotal, 100m).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                            </div>
+                        </div>
                         @foreach (var line in t.ProductLines.OrderBy(x => x.SortOrder))
                         {
+                            var prodFallback = string.IsNullOrWhiteSpace(line.GlobalProductCodeDisplay) ? line.GlobalProductId.ToString() : line.GlobalProductCodeDisplay;
                             <div class="border rounded p-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
                                     <div>
-                                        <code>@(line.GlobalProductCodeDisplay ?? line.GlobalProductId.ToString())</code>
-                                        <span class="badge bg-label-secondary ms-2">@line.SkuAllocationMode</span>
+                                        @* WP-ST-DETAIL-3 — resolved product NAME (details.js via data-resolve; code fallback) + MDM-GP code. *@
+                                        <div class="fw-medium" data-resolve="global-product" data-id="@line.GlobalProductId">@prodFallback</div>
+                                        @if (!string.IsNullOrWhiteSpace(line.GlobalProductCodeDisplay))
+                                        {
+                                            <span class="text-muted small font-monospace">@line.GlobalProductCodeDisplay</span>
+                                        }
                                         @if (line.LineWeightPercentage is { } weight)
                                         {
-                                            <span class="badge bg-label-info ms-1">@Localizer["LineWeightPercentage"]: @weight.ToString("0.##")</span>
+                                            <span class="badge bg-label-info ms-1">@Localizer["LineWeightPercentage"]: @weight.ToString("0.##")%</span>
                                         }
                                     </div>
                                     @if (line.SkuAllocations.Count > 0)
@@ -248,33 +319,24 @@
                     }
                     else
                     {
-                        <div class="table-responsive">
-                            <table class="table table-sm mb-0">
-                                <thead><tr>
-                                    <th>@Localizer["ContentRefType"]</th>
-                                    <th>@Localizer["ContentRef"]</th>
-                                    <th>@Localizer["TemplateVersion"]</th>
-                                    <th>@Localizer["Status"]</th>
-                                </tr></thead>
-                                <tbody>
-                                @foreach (var c in t.ContentBindings.OrderBy(x => x.SortOrder))
-                                {
-                                    var hint = contentHints.TryGetValue(c.ContentRefId, out var h) ? h : null;
-                                    <tr>
-                                        <td><span class="badge bg-label-secondary">@c.ContentRefType</span></td>
-                                        <td><code>@(c.ContentCodeDisplay ?? c.ContentRefId.ToString())</code></td>
-                                        <td>@(c.ContentVersionAtBinding ?? "—")</td>
-                                        <td>
-                                            <span class="badge bg-label-secondary">@(hint?.CurrentStatus ?? "—")</span>
-                                            @if (hint?.Archived == true)
-                                            {
-                                                <span class="badge bg-label-danger ms-1">@Localizer["Archived"]</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
+                        @* WP-ST-DETAIL-3 — compact cards (mockup): the content NAME (details.js via data-resolve; code fallback)
+                           + kind·code + "sabitlenmiş" pin. The kind label reuses the Edit content-kind labels. *@
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var c in t.ContentBindings.OrderBy(x => x.SortOrder))
+                            {
+                                var hint = contentHints.TryGetValue(c.ContentRefId, out var h) ? h : null;
+                                var contentFallback = string.IsNullOrWhiteSpace(c.ContentCodeDisplay) ? c.ContentRefId.ToString() : c.ContentCodeDisplay;
+                                var kindLabel = c.ContentRefType == "content-engagement-journey" ? Localizer["ContentKindJourney"].Value : Localizer["ContentKindKnowledgePath"].Value;
+                                var contentMeta = string.IsNullOrWhiteSpace(c.ContentCodeDisplay) ? kindLabel : $"{kindLabel} · {c.ContentCodeDisplay}";
+                                <div class="d-flex align-items-center gap-2 flex-wrap border rounded p-2" data-content-kind="@c.ContentRefType">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium" data-resolve="content" data-id="@c.ContentRefId">@contentFallback</div>
+                                        <div class="text-muted small font-monospace text-uppercase">@contentMeta</div>
+                                    </div>
+                                    <span class="badge bg-label-secondary rounded-pill">@Localizer["ContentPinned"]</span>
+                                    @if (hint?.Archived == true) { <span class="badge bg-label-danger rounded-pill">@Localizer["Archived"]</span> }
+                                </div>
+                            }
                         </div>
                     }
                 </div>
@@ -282,6 +344,17 @@
         </div>
 
         <div class="col-12 col-lg-4">
+            @* WP-ST-DETAIL-3 — "BU OYUN NE YAPACAK?" human summary (details.js composes it from the resolved scope + the
+               counts, mirroring the editor's stSummarySentence). Hidden until details.js fills it (no invented text). A
+               read-only note reminds that a live play is changed through a new version, not in place. *@
+            <section class="card backbone-preview-section mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["WhatTitle"]</h6>
+                    <p id="stDetailSummary" class="mb-0 d-none"></p>
+                    <p class="text-muted small mb-0 mt-2">@Localizer["DetailReadOnlyNote"]</p>
+                </div>
+            </section>
+
             <section class="card backbone-preview-section mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-info-circle dt-card-icon" aria-hidden="true"></i>@Localizer["ClassificationSection"]</h6>
@@ -334,6 +407,19 @@
             </section>
         </div>
     </div>
+
+    @* WP-ST-DETAIL-3 — summary data (counts + scope) for details.js to compose the human "BU OYUN NE YAPACAK?" sentence.
+       Every number is from the DetailDto server-side, so it matches the sections above. *@
+    <script id="stDetailData" type="application/json">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new {
+        segments = t.SegmentBindings.Count,
+        products = t.ProductLines.Count,
+        weight = stWeightTotal,
+        contents = t.ContentBindings.Count,
+        scopeLevel = effScope,
+        scopeCountry = t.CountryScope,
+        scopeLegalEntity = t.LegalEntityId,
+        scopeBusinessUnit = t.BusinessUnitId
+    }))</script>
 </div>
 
 @section Scripts {

@@ -49,6 +49,8 @@
   <data name="VerStatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
   <data name="UseInCampaign" xml:space="preserve"><value>استخدام في حملة</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>سيتوفر مع تكامل الحملات.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>للقراءة فقط — أنشئ إصدارًا جديدًا للتعديل.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>الوصول إلى {segments} شريحة ضمن {scope}، مع {products} منتجات (Σ{weight}%) و{contents} محتوى مثبَّت.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>لا حذف — تُؤرشَف المخططات فقط؛ الإصدارات النشطة غير قابلة للتغيير.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>إنشاء قالب استراتيجية</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>الإيقاع المُصرَّح يسجّل نية المؤلف فقط. غير مُلزِم ولا يقرأه محرّك تحديد التكرار.</value></data>

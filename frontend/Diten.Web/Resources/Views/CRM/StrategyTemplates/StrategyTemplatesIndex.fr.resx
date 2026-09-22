@@ -49,6 +49,8 @@
   <data name="VerStatusArchived" xml:space="preserve"><value>archivé</value></data>
   <data name="UseInCampaign" xml:space="preserve"><value>Utiliser dans une campagne</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>À venir avec l'intégration des campagnes.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Lecture seule — créez une nouvelle version pour modifier.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>Ciblage de {segments} segments dans {scope}, avec {products} produits (Σ{weight}%) et {contents} contenus épinglés.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>AUCUNE SUPPRESSION — les plans sont seulement archivés ; les versions actives sont immuables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Créer un modèle de stratégie</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un rythme déclaré consigne l'intention de l'auteur. Il n'est pas contraignant et le résolveur de fréquence ne le lit pas.</value></data>

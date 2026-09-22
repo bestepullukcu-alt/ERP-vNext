@@ -49,6 +49,8 @@
   <data name="VerStatusArchived" xml:space="preserve"><value>в архиве</value></data>
   <data name="UseInCampaign" xml:space="preserve"><value>Использовать в кампании</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Появится с интеграцией кампаний.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Только чтение — создайте новую версию для редактирования.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>Охват {segments} сегментов в рамках {scope}, {products} продуктов (Σ{weight}%) и {contents} закреплённых материалов.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>БЕЗ УДАЛЕНИЯ — планы только архивируются; активные версии неизменяемы.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>

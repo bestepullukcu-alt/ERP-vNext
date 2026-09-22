@@ -49,6 +49,8 @@
   <data name="VerStatusArchived" xml:space="preserve"><value>arşiv</value></data>
   <data name="UseInCampaign" xml:space="preserve"><value>Kampanyada kullan</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Kampanya entegrasyonu ile gelecek.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Salt-okunur — düzenlemek için yeni sürüm alın.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>{scope} kapsamında {segments} segmente, {products} ürün (Σ{weight}%) ve {contents} sabitlenmiş içerik ile gidiliyor.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>SİLME YOK — oyunlar yalnızca arşivlenir; aktif sürümler değişmezdir.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Strateji şablonu oluştur</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Beyan edilen ritim yazarın niyetini kaydeder. Bağlayıcı değildir ve frekans çözümleyicisi onu okumaz.</value></data>

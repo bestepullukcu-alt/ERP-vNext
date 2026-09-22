@@ -49,6 +49,8 @@
   <data name="VerStatusArchived" xml:space="preserve"><value>archived</value></data>
   <data name="UseInCampaign" xml:space="preserve"><value>Use in campaign</value></data>
   <data name="UseInCampaignSoon" xml:space="preserve"><value>Coming with the campaign integration.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Read-only — take a new version to edit.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>Reaching {segments} segments within {scope}, with {products} products (Σ{weight}%) and {contents} pinned content items.</value></data>
   <data name="ContentNoDeleteNote" xml:space="preserve"><value>NO DELETE — plays are only archived; active versions are immutable.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Create strategy template</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>A declared rhythm records the author's intent. It is not binding and the frequency resolver does not read it.</value></data>
