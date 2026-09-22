@@ -126,6 +126,15 @@ public sealed class StrategyTemplatesController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new GetStrategyTemplateBindingsQuery(templateId, effectiveAt), cancellationToken));
 
+    /// <summary>WP-ST-DETAIL-1 — the version-history read for the Detay "Sürüm geçmişi" panel: every version of the play's
+    /// lineage (archived included), newest first. A READ over the existing lineage; it decides and persists nothing. This
+    /// sub-path is covered by the FU04 gateway <c>/{everything}</c> route, so no new ocelot route is needed.</summary>
+    [HttpGet("api/crm/strategy-templates/{templateId:guid}/versions")]
+    [HasPermission(Perms.ReadFallback)]
+    public async Task<IActionResult> Versions(Guid templateId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetStrategyTemplateVersionsQuery(templateId), cancellationToken));
+
     private static List<StrategyTemplateSegmentBindingInput>? MapSegments(
         List<StrategyTemplateSegmentBindingRequest>? bindings)
         => bindings?.Select(b => b.ToInput()).ToList();

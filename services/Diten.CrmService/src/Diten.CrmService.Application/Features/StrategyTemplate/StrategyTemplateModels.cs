@@ -49,6 +49,20 @@ public sealed record StrategyTemplateListDto(
     IReadOnlyList<StrategyTemplateListItemDto> Items,
     int TotalCount);
 
+/// <summary>WP-ST-DETAIL-1 — one row of a play's version lineage for the Detay "Sürüm geçmişi" panel. A READ projection
+/// of an existing lineage member (archived versions included); it decides nothing and persists nothing.</summary>
+public sealed record StrategyTemplateVersionDto(
+    Guid TemplateId,
+    int TemplateVersion,
+    string TemplateStatus,
+    DateTimeOffset? ActivatedAt,
+    DateTimeOffset? ArchivedAt,
+    DateTimeOffset CreatedAt,
+    bool IsCurrent);
+
+public sealed record StrategyTemplateVersionsDto(
+    IReadOnlyList<StrategyTemplateVersionDto> Versions);
+
 /// <summary>Template detail, including all four embedded binding lists exactly as stored.</summary>
 public sealed record StrategyTemplateDetailDto(
     Guid TemplateId,
