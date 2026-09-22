@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>记录已成功创建。</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>记录已激活。</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>已保存，但无法激活。</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>记录已成功删除。</value>
   </data>

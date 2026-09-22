@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>Borrador</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>Activo</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Guardar (activo)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Guardar y activar</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Guardar (bloqueado)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>Congela la jugada actual y abre una copia nueva</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>Una StrategyTemplate no produce nada por sí sola: vincula un segmento, una política de frecuencia de visita, productos y contenido aprobado en una sola plantilla. La ejecución ocurre a través de CyclePeriod y Campaign.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>La frecuencia se gestiona en las Políticas de frecuencia de visita</value></data>

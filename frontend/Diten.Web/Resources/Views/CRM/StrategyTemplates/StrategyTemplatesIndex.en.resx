@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>Draft</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>Active</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Save draft</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Save (active)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Save and activate</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Save (blocked)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>Freezes the current play and opens a new copy</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>A StrategyTemplate produces nothing on its own — it binds a segment, a visit-frequency policy, products and approved content into one template. Execution happens through CyclePeriod and Campaign.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>Frequency is managed in Visit Frequency Policies</value></data>

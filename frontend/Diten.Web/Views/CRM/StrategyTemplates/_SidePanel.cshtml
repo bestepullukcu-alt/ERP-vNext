@@ -85,8 +85,11 @@
                 <span class="st-life-tab @(isActive ? "is-current" : "")">@Localizer["LifecycleActiveTab"]</span>
             </div>
             <div class="st-life-actions">
-                <button type="submit" form="strategyTemplateForm" class="btn btn-primary w-100">@Localizer["Save"]</button>
-                <button type="submit" form="strategyTemplateForm" class="btn btn-label-secondary w-100">@Localizer["SaveDraft"]</button>
+                @* WP-ST-EDIT-W — the primary Save is DYNAMIC: form.js rewrites its label and enabled state from the live
+                   readiness (Kaydet aktif / ve aktifleştir / engellendi) and sets the #activateAfterSave flag on click.
+                   "Taslak kaydet" always saves as-is (flag false). Both still submit the same MVC form. *@
+                <button type="submit" form="strategyTemplateForm" id="btnPrimarySave" class="btn btn-primary w-100" data-mode="save">@Localizer["Save"]</button>
+                <button type="submit" form="strategyTemplateForm" id="btnSaveDraft" class="btn btn-label-secondary w-100">@Localizer["SaveDraft"]</button>
                 @if (isEdit)
                 {
                     <div class="st-life-divider"></div>

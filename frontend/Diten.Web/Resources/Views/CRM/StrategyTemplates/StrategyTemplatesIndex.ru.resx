@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>Черновик</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>Активно</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Сохранить (активно)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Сохранить и активировать</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Сохранить (заблокировано)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>Замораживает текущую стратегию и открывает новую копию</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate сам по себе ничего не создаёт — он связывает сегмент, политику частоты визитов, товары и утверждённый контент в один шаблон. Исполнение происходит через CyclePeriod и Campaign.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>Частота управляется в политиках частоты визитов</value></data>

@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>مسودة</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>نشط</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>حفظ المسودة</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>حفظ (نشط)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>حفظ وتفعيل</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>حفظ (محظور)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>يُجمّد الخطة الحالية ويفتح نسخة جديدة</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>لا ينتج StrategyTemplate شيئًا بمفرده — بل يربط شريحة وسياسة تكرار زيارة ومنتجات ومحتوى معتمد في قالب واحد. يتم التنفيذ عبر CyclePeriod وCampaign.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>تُدار التكرار في سياسات تكرار الزيارة</value></data>

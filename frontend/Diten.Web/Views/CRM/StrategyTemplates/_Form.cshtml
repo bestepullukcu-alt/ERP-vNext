@@ -34,6 +34,10 @@
            removed; the Geçerlilik dates moved to the right panel's YAŞAM DÖNGÜSÜ card. *@
         <input type="hidden" asp-for="SubjectType" />
         <input type="hidden" asp-for="TemplateStatus" />
+        @* WP-ST-EDIT-W — one-click "save + activate" flag. A plain hidden input (name binds to the ViewModel bool; a
+           string "true"/"false" parses cleanly) rather than asp-for, which would render a bool as a checkbox. form.js
+           sets it to 'true' only when the primary button is in "Kaydet ve aktifleştir" mode, 'false' otherwise. *@
+        <input type="hidden" name="ActivateAfterSave" id="activateAfterSave" value="false" />
 
         <section class="card mb-4">
             <div class="card-body p-4">
@@ -320,6 +324,9 @@
 <script id="strategyTemplateFormBootstrap" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
     templateId = Model.TemplateId,
     subjectType = Model.SubjectType,
+    // WP-ST-EDIT-W — the current lifecycle status drives the dynamic Save label (active → "Kaydet (aktif)", otherwise
+    // "Kaydet ve aktifleştir"). Display-only; it never changes what is posted.
+    templateStatus = Model.TemplateStatus,
     areBindingsFrozen = Model.AreBindingsFrozen,
     endpoint = "/CRM/StrategyTemplates/api",
     bindingRoles = Model.BindingRoles,

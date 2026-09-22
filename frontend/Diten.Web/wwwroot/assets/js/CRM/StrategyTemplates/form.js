@@ -1180,12 +1180,47 @@
             bar.style.width = `${Math.round((done / total) * 100)}%`;
             bar.classList.toggle('is-ready', done === total);
         }
+
+        // WP-ST-EDIT-W — the primary Save button is DYNAMIC. canSave = no section is 'warn' (mdm included — the same
+        // readiness the pill/bar reflect). A blocked play cannot save; a ready ACTIVE play saves in place; a ready
+        // non-active play saves AND activates in one click (mode='activate' → the click sets the #activateAfterSave flag,
+        // and the controller runs the activate only for an actor who holds the permission). Label + enabled + data-mode.
+        const btnSave = el('btnPrimarySave');
+        if (btnSave) {
+            const canSave = !document.querySelector('.st-check.is-warn');
+            const status = cfg.templateStatus || 'draft';
+            if (!canSave) {
+                btnSave.textContent = L.SaveBlocked || L.Save || '';
+                btnSave.disabled = true;
+                btnSave.dataset.mode = 'blocked';
+            } else if (status === 'active') {
+                btnSave.textContent = L.SaveActive || L.Save || '';
+                btnSave.disabled = false;
+                btnSave.dataset.mode = 'save';
+            } else {
+                btnSave.textContent = L.SaveAndActivate || L.Save || '';
+                btnSave.disabled = false;
+                btnSave.dataset.mode = 'activate';
+            }
+        }
     }
 
     // Live updates: field edits bubble to the form; add/remove clicks mutate state then re-render, so a microtask-delayed
     // refresh picks up the new state. Neither path touches buildPayload / the binding builders.
     form.addEventListener('change', updateSidePanel);
     form.addEventListener('input', updateSidePanel);
+
+    // WP-ST-EDIT-W — the submitting button decides the one-click activate flag. Only "Kaydet ve aktifleştir"
+    // (mode 'activate') sets it true; "Kaydet (aktif)" just saves an already-active play, "Taslak kaydet" always saves as
+    // a draft. This runs on click, before the native form submit, so the hidden #activateAfterSave posts the right value.
+    el('btnPrimarySave')?.addEventListener('click', () => {
+        const flag = el('activateAfterSave');
+        if (flag) flag.value = el('btnPrimarySave').dataset.mode === 'activate' ? 'true' : 'false';
+    });
+    el('btnSaveDraft')?.addEventListener('click', () => {
+        const flag = el('activateAfterSave');
+        if (flag) flag.value = 'false';
+    });
     document.addEventListener('click', event => {
         // WP-ST-EDIT-Q — #btnAddProductLine is gone (product add is a picker 'change'); WP-ST-EDIT-V — #btnAddContentBinding
         // is gone (content is a checkbox grid whose 'change' the form-level updateSidePanel listener already catches). So

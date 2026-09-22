@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>草稿</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>启用</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>保存（已激活）</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>保存并激活</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>保存（已阻止）</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>冻结当前策略并打开新副本</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate 本身不产生任何内容——它将细分、拜访频率策略、产品和已批准内容绑定到一个模板中。执行通过 CyclePeriod 和 Campaign 完成。</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>频率在拜访频率策略中管理</value></data>

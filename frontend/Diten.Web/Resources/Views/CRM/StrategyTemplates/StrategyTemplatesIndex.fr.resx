@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>Brouillon</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>Actif</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Enregistrer le brouillon</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Enregistrer (actif)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Enregistrer et activer</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Enregistrer (bloqué)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>Gèle le plan actuel et ouvre une nouvelle copie</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>Un StrategyTemplate ne produit rien en soi — il relie un segment, une politique de fréquence de visite, des produits et du contenu approuvé dans un seul modèle. L'exécution se fait via CyclePeriod et Campaign.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>La fréquence est gérée dans les Politiques de fréquence de visite</value></data>

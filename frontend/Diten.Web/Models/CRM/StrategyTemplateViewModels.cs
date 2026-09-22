@@ -233,6 +233,12 @@ public sealed class StrategyTemplateEditViewModel
     public string? ProductLinesJson { get; set; }
     public string? ContentBindingsJson { get; set; }
 
+    /// <summary>WP-ST-EDIT-W — one-click "save + activate". When the author picks "Kaydet ve aktifleştir" the form posts
+    /// this flag; the controller, after a SUCCESSFUL save and only when the actor holds the activate permission, calls the
+    /// EXISTING activate endpoint. It is not part of the CrmService payload (ToCreate/ToUpdatePayload ignore it) — purely
+    /// a Web-controller orchestration signal.</summary>
+    public bool ActivateAfterSave { get; set; }
+
     // ----- contract-driven options (never hardcoded in the view or in JS) -----
     public List<string> SubjectTypes { get; set; } = new();
     public List<string> TemplateStatuses { get; set; } = new();

@@ -184,6 +184,9 @@
   <data name="LifecycleDraftTab" xml:space="preserve"><value>Taslak</value></data>
   <data name="LifecycleActiveTab" xml:space="preserve"><value>Aktif</value></data>
   <data name="SaveDraft" xml:space="preserve"><value>Taslak kaydet</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Kaydet (aktif)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Kaydet ve aktifleştir</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Kaydet (engellendi)</value></data>
   <data name="NewVersionDetailTpl" xml:space="preserve"><value>Mevcut oyunu dondurur, yeni bir kopya açılır</value></data>
   <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate kendisi hiçbir şey üretmez — Segment, ziyaret sıklığı politikası, ürün ve onaylı içeriği tek bağlayıcı şablonda birleştirir. Uygulama CyclePeriod ve Campaign üzerinden yapılır.</value></data>
   <data name="FreqInfoStrong" xml:space="preserve"><value>Frekans, Ziyaret Sıklığı Politikaları'nda yönetilir</value></data>

@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>L'enregistrement a été créé avec succès.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>L'enregistrement a été activé.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>Enregistré, mais l'activation a échoué.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>L'enregistrement a été supprimé avec succès.</value>
   </data>

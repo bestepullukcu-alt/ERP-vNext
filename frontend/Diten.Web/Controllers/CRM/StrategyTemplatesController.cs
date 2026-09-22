@@ -96,10 +96,17 @@ public sealed class StrategyTemplatesController : Controller
             var envelope = await response.Content
                 .ReadFromJsonAsync<StrategyTemplateGatewayResponse<Guid>>(_json, ct);
             TempData["SuccessMessage"] = _sharedLocalizer["RecordCreated"].Value;
-            // A new play lands on Edit so the author can keep binding without a second navigation.
-            return envelope?.Data is { } id && id != Guid.Empty
-                ? RedirectToAction(nameof(Edit), new { id })
-                : RedirectToAction(nameof(Index));
+            if (envelope?.Data is { } id && id != Guid.Empty)
+            {
+                // WP-ST-EDIT-W — one-click "save + activate". Activate is a SEPARATE operation over the EXISTING endpoint;
+                // it runs ONLY after the save succeeded and ONLY when the actor holds the activate permission. A failed
+                // activate never rolls back the save — the play stays created and the author lands on Edit with a notice.
+                if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+                    return await ActivateAfterSaveAsync(id, nameof(Edit), ct);
+                // A new play lands on Edit so the author can keep binding without a second navigation.
+                return RedirectToAction(nameof(Edit), new { id });
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         AddGatewayErrors(await ExtractErrorsAsync(response, ct));
@@ -141,6 +148,10 @@ public sealed class StrategyTemplatesController : Controller
         if (response is not null && response.IsSuccessStatusCode)
         {
             TempData["SuccessMessage"] = _sharedLocalizer["RecordUpdated"].Value;
+            // WP-ST-EDIT-W — same one-click "save + activate" orchestration as Create. On a failed activate the update is
+            // still saved; both outcomes land on Details, the failure adding a "saved, not activated" warning.
+            if (model.ActivateAfterSave && HasAnyPermission(ActivatePermission))
+                return await ActivateAfterSaveAsync(id, nameof(Details), ct);
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -316,6 +327,26 @@ public sealed class StrategyTemplatesController : Controller
         if (response is null || !response.IsSuccessStatusCode) return null;
         return (await response.Content
             .ReadFromJsonAsync<StrategyTemplateGatewayResponse<StrategyTemplateBindingsViewModel>>(_json, ct))?.Data;
+    }
+
+    /// <summary>WP-ST-EDIT-W — the "save + activate" tail: calls the EXISTING activate endpoint over Gateway for a play
+    /// that was just saved. Activate is a SEPARATE operation and its failure NEVER undoes the save — on success the actor
+    /// lands on Details with a "record activated" notice; on any non-success (403 / 409-already-active / unreachable) the
+    /// save stands and the actor is told it was saved but not activated, landing on <paramref name="failureAction"/>.
+    /// The caller has already verified the actor holds the activate permission.</summary>
+    private async Task<IActionResult> ActivateAfterSaveAsync(Guid id, string failureAction, CancellationToken ct)
+    {
+        var activate = await SendGatewayAsync(
+            HttpMethod.Post, $"/api/crm/strategy-templates/{id}/activate", null, ct);
+        if (activate is not null && activate.IsSuccessStatusCode)
+        {
+            TempData["SuccessMessage"] = _sharedLocalizer["RecordActivated"].Value;
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // The save already succeeded; keep its success toast and add a warning about the activation.
+        TempData["WarningMessage"] = _sharedLocalizer["SavedNotActivated"].Value;
+        return RedirectToAction(failureAction, new { id });
     }
 
     private async Task<IActionResult> ProxyGetAsync(
