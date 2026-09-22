@@ -60,5 +60,8 @@ Commit: c8c608b1 · CT: WP öncülü YANLIŞ çıktı → kullanıcı kararı Se
 - ✅ **Build+test (CT):** Diten.Platform.API derleme **0 hata**; DocumentRepository test filtresi **54/0** (6 yeni + FU01 contract-guard). git diff: 2 kaynak (+12/−1) + 1 test dosyası; mevcut 3 scope davranışı byte-aynı.
 - ✅ **E4 anon reddi (canlı, 2026-09-22):** token'sız `POST /api/v1/document-repository/objects` (scope=ContentMessagingArtifacts, PDF) → **401 Unauthorized** (`WWW-Authenticate: Bearer`); token'sız `GET objects/{id}/content` → **401**. Gateway 5000 sağlıklı (200).
 
-**WP-SCMM-16A KOMPLE (E2 + E4-anon).** E4-authenticated (upload→contentId+checksum · download aynı bayt · cross-tenant 404) **RBAC grant + re-login** bekliyor (aşağıda): `platform.document-repository.read|manage` 97c5 Admin'e verilmeli. SCMM-16B render bu FU01 endpoint'ini `ContentMessagingArtifacts` scope'uyla tüketecek.
+- ✅ **RBAC grant (2026-09-22):** `platform.document-repository.read|manage` → 97c5 Admin verildi (2 rolePermission satırı, marker `manual-grant-scmm16a-docrepo`, subtype-4; `scratchpad/docrepo_grant.py`).
+- ✅ **E4 authenticated (canlı, 2026-09-22): 8/8 PASS** (`scratchpad/smoke-scmm16a-docrepo-e4.ps1`, Get-Credential login → taze token): Login→token · Upload (scope=ContentMessagingArtifacts)→2xx+contentId · Scope echo=`ContentMessagingArtifacts` · Checksum present + **yerel SHA-256 ile eşleşiyor** · Download→200 · **round-trip baytlar birebir** · bilinmeyen contentId→**404 (non-leakage)**.
+
+**WP-SCMM-16A KOMPLE (E2 + E4 tam, 8/8).** SCMM-16B render bu FU01 endpoint'ini (`POST /api/v1/document-repository/objects`, scope=`ContentMessagingArtifacts` → contentId+checksum) tüketecek; contentId'yi ContentSetRevision'a bağlayacak.
 
