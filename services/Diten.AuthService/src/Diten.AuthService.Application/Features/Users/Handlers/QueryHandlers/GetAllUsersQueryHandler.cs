@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Queries;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 
 namespace Diten.AuthService.Application.Features.Users.Handlers.QueryHandlers;
@@ -33,7 +34,7 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
             var roles = await _userRoleRepository.GetRolesByUserAsync(user.Id, _tenantContext.TenantId, ct);
             dtos.Add(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
                 user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
-                AccountKind: user.AccountKind.ToString()));
+                AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user)));
         }
 
         return new PaginatedResult<UserDto>(dtos, total, request.Page, request.PageSize);

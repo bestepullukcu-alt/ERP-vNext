@@ -378,7 +378,7 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         var subject = await NewSubjectAsync("upd-denied");
         using var editor = _host.Client(await TokenWithAsync(_seed.Creator.Id, "auth.users.update"), _seed.TenantId);
 
-        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Changed", lastName = "Name", isActive = true, accountKind = "Human" });
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Changed", lastName = "Name", isActive = false, accountKind = "Human" });
         var body = await response.Content.ReadAsStringAsync();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
@@ -402,7 +402,7 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
             _seed.TenantId, correlationId);
         var audit = _host.Database.GetCollection<AuthAuditLog>("authAuditLogs");
 
-        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = true, accountKind = "service" });
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = false, accountKind = "service" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using (var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
@@ -422,7 +422,7 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         Assert.Equal(correlationId, meta.RootElement.GetProperty("correlationId").GetString());
 
         // Re-sending the same kind is a 200 and no second row.
-        var again = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = true, accountKind = "Service" });
+        var again = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Sub", lastName = "Ject", isActive = false, accountKind = "Service" });
         Assert.Equal(HttpStatusCode.OK, again.StatusCode);
         var after = await audit.Find(a => a.EventName == SetAccountKindCommandHandler.AuditEventName && a.TenantId == _seed.TenantId).ToListAsync();
         Assert.Single(after, r => r.Metadata.Contains(subject.ToString()));
@@ -434,7 +434,7 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         var subject = await NewSubjectAsync("upd-same");
         using var editor = _host.Client(await TokenWithAsync(_seed.Creator.Id, "auth.users.update"), _seed.TenantId);
 
-        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Renamed", lastName = "Ject", isActive = true, accountKind = "Unknown" });
+        var response = await editor.PutAsJsonAsync($"api/users/{subject}", new { firstName = "Renamed", lastName = "Ject", isActive = false, accountKind = "Unknown" });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var stored = await _host.Database.GetCollection<User>("users").Find(u => u.Id == subject).SingleAsync();
@@ -442,7 +442,12 @@ public sealed class AccountKindEndpointTests : IClassFixture<AccountKindAcceptan
         Assert.Equal(AccountKind.Unknown, stored.AccountKind);
     }
 
-    /// <summary>A fresh Unknown subject of the disposable tenant, created through the real create endpoint.</summary>
+    /// <summary>
+    /// A fresh Unknown subject of the disposable tenant, created through the real create endpoint — as an INVITATION,
+    /// so it is inactive until its owner sets a password. The PUTs above therefore send <c>isActive: false</c>: that is
+    /// what the edit form posts for an invited account, and switching it on is refused (409 USER_INVITATION_PENDING,
+    /// WP-AUTH-INVITED-LIFECYCLE-01) — a rule of its own, covered by UserLifecycleMongoTests, not by these kind tests.
+    /// </summary>
     private async Task<Guid> NewSubjectAsync(string slug)
     {
         using var creator = _host.Client(_seed.CreatorToken, _seed.TenantId);

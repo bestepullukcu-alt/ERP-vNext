@@ -12,6 +12,8 @@
                         <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
                             <option value="Active">@SharedLocalizer["Active"]</option>
                             <option value="Passive">@SharedLocalizer["Passive"]</option>
+                            @* WP-AUTH-INVITED-LIFECYCLE-01 — the third state: invited, password never set. *@
+                            <option value="Invited">@Localizer["StatusInvited"]</option>
                         </select>
                     </div>
 

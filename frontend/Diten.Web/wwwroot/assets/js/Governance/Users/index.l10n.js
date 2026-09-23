@@ -11,7 +11,8 @@
         'ViewDetails', 'Details',
         'AccountKind', 'AccountKindUnknown', 'AccountKindHuman', 'AccountKindService', 'ChangeAccountKind',
         'AccountKindChanged',
-        'InviteLinkTitle', 'InviteLinkHint', 'Close', 'Copy', 'Copied'
+        'InviteLinkTitle', 'InviteLinkHint', 'Close', 'Copy', 'Copied',
+        'StatusInvited', 'InvitationPendingHint', 'ErrorUserEmailTaken', 'ErrorUserInvitationPending'
     ];
 
     const logMissingKeys = (dictionary) => {

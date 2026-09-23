@@ -94,10 +94,23 @@ const UsersList = (function () {
         accountKinds: normalizeArray((filters || {}).accountKinds)
     });
     const hasFilterValue = (v) => Array.isArray(v) ? normalizeArray(v).length > 0 : normalizeString(v).length > 0;
-    const matchesStatusFilter = (selected, isActive) => {
+    /*
+     * WP-AUTH-INVITED-LIFECYCLE-01 — THREE states, derived by AuthService (UserLifecycle.StatusOf) and sent as
+     * `status`: Invited (password never set — cannot sign in, whatever isActive says) · Inactive · Active. The screen's
+     * codes are Invited · Passive · Active (Passive keeps saved filter views working). A row without `status` (an
+     * older service) falls back to isActive — never to Invited, which only the server can know.
+     */
+    const userStatusOf = (row) => {
+        const status = normalizeString((row || {}).status).toLowerCase();
+        if (status === 'invited') return 'Invited';
+        if (status === 'inactive' || status === 'passive') return 'Passive';
+        if (status === 'active') return 'Active';
+        return (row || {}).isActive ? 'Active' : 'Passive';
+    };
+    const matchesStatusFilter = (selected, row) => {
         const norm = normalizeArray(selected);
         if (!norm.length) return true;
-        return norm.includes(isActive ? 'Active' : 'Passive');
+        return norm.includes(userStatusOf(row));
     };
     const matchesRolesFilter = (selected, roles) => {
         const norm = normalizeArray(selected);
@@ -278,7 +291,7 @@ const UsersList = (function () {
             if (settings.nTable !== dtTableEl) return true;
             const row = rowData || dt?.row(dataIndex)?.data?.() || null;
             if (!row) return true;
-            return matchesStatusFilter(appliedFilters.status, row.isActive)
+            return matchesStatusFilter(appliedFilters.status, row)
                 && matchesRolesFilter(appliedFilters.roles, row.roles)
                 && matchesAccountKindFilter(appliedFilters.accountKinds, row.accountKind);
         });
@@ -475,10 +488,17 @@ const UsersList = (function () {
         });
     };
 
+    // One colour per state: an invited account must never look like one an administrator switched off.
     const getStatusMap = () => ({
-        true: { title: L.Active, class: 'bg-label-success' },
-        false: { title: L.Passive, class: 'bg-label-secondary' }
+        Active: { title: L.Active, class: 'bg-label-success' },
+        Passive: { title: L.Passive, class: 'bg-label-secondary' },
+        Invited: { title: L.StatusInvited, class: 'bg-label-info' }
     });
+    const statusOfRow = (row) => getStatusMap()[userStatusOf(row)];
+    const renderStatusBadge = (row) => {
+        const status = statusOfRow(row);
+        return `<span class="badge ${status.class}">${escapeChip(status.title || '')}</span>`;
+    };
 
     // ─── KPI cards ──────────────────────────────────────────────────────────
     // Live counts from the full loaded dataset (rows().data() returns all rows, unaffected by search/filter).
@@ -486,11 +506,12 @@ const UsersList = (function () {
     const updateKpis = (api) => {
         const rows = api.rows().data().toArray();
         const total = rows.length;
-        const active = rows.filter((r) => r && r.isActive).length;
+        const active = rows.filter((r) => r && userStatusOf(r) === 'Active').length;
+        const passive = rows.filter((r) => r && userStatusOf(r) === 'Passive').length;
         const noRole = rows.filter((r) => r && (!Array.isArray(r.roles) || r.roles.length === 0)).length;
         setKpi('kpi-users-total', total);
         setKpi('kpi-users-active', active);
-        setKpi('kpi-users-passive', total - active);
+        setKpi('kpi-users-passive', passive); // Invited is neither: it was never switched on or off
         setKpi('kpi-users-norole', noRole);
     };
 
@@ -565,9 +586,10 @@ const UsersList = (function () {
         if (rolesEl) rolesEl.innerHTML = renderRoleChips(data.roles);
 
         const statusEl = document.getElementById('oc-status');
-        const status = getStatusMap()[String(!!data.isActive)] || { title: L.Unknown, class: 'bg-label-primary' };
+        const status = statusOfRow(data);
         statusEl.className = `badge ${status.class}`;
         statusEl.innerText = status.title || '-';
+        document.getElementById('oc-invite-pending-hint')?.classList.toggle('d-none', userStatusOf(data) !== 'Invited');
 
         // ── Account kind: the badge for every reader; the change control only where the server drew it AND
         //    the snapshot agrees (the server gate is the one that matters; this keeps the two from disagreeing).
@@ -611,6 +633,7 @@ const UsersList = (function () {
         // own button (UpdateUser carries it). Only the create-time hint ("leave unset…") is create-only.
         document.getElementById('userAccountKindCreateHint')?.classList.toggle('d-none', !isCreate);
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
+        document.getElementById('userInvitePendingRow')?.classList.add('d-none'); // edit decides after the load
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
         /*
@@ -697,6 +720,11 @@ const UsersList = (function () {
             document.getElementById('userFirstName').value = d.firstName || '';
             document.getElementById('userLastName').value = d.lastName || '';
             document.getElementById('userIsActive').checked = !!d.isActive;
+            // WP-AUTH-INVITED-LIFECYCLE-01 — no activation switch for an invited account: it activates when its owner
+            // sets a password. The sentence says so instead; AuthService refuses the transition regardless.
+            const invited = userStatusOf(d) === 'Invited';
+            document.getElementById('userActiveRow')?.classList.toggle('d-none', invited);
+            document.getElementById('userInvitePendingRow')?.classList.toggle('d-none', !invited);
             /*
              * The kind starts from what AuthService reports, as the enum NAME. Unknown is the select's empty option
              * (the create form's value for it); the proxy turns an empty edit choice back into "Unknown".
@@ -709,6 +737,19 @@ const UsersList = (function () {
             return;
         }
         getOcCreateEditInstance()?.show();
+    };
+    /*
+     * WP-AUTH-INVITED-LIFECYCLE-01 — a refusal AuthService tags with a stable code is shown in the reader's language;
+     * anything else keeps the gateway text. The proxy passes the first errorCodes[].code as `errorCode`.
+     */
+    const ERROR_CODE_KEYS = {
+        USER_EMAIL_TAKEN: 'ErrorUserEmailTaken',
+        USER_INVITATION_PENDING: 'ErrorUserInvitationPending'
+    };
+    const localizedErrors = (json) => {
+        const key = ERROR_CODE_KEYS[(json || {}).errorCode];
+        if (key && L[key]) return [L[key]];
+        return (json && Array.isArray(json.errors) && json.errors.length) ? json.errors : [L.ErrorOccurred];
     };
     const showFormErrors = (errors) => {
         const alertEl = document.getElementById('formUserAlert');
@@ -748,7 +789,7 @@ const UsersList = (function () {
                     reloadWithSuccessToast(isEdit ? 'RecordUpdated' : 'RecordCreated');
                 }
             } else {
-                showFormErrors(json.errors);
+                showFormErrors(localizedErrors(json));
             }
         } catch (error) {
             console.error('[Users] Form submit failed.', error);
@@ -889,7 +930,7 @@ const UsersList = (function () {
                     });
                     const json = await res.json().catch(() => ({}));
                     if (!res.ok) {
-                        throw new Error((json.errors && json.errors[0]) || L.ErrorOccurred);
+                        throw new Error(localizedErrors(json)[0] || L.ErrorOccurred);
                     }
                     // Dev-only: resend/reset return a copyable set-password link → show the modal
                     // (same as create). disable/enable have no setupUrl → plain success toast.
@@ -1004,9 +1045,9 @@ const UsersList = (function () {
                     },
                     {
                         targets: 6,
-                        render: (data, type) => type === 'display'
-                            ? window.DitenDataTable.renderStatusBadge(data, getStatusMap())
-                            : (getStatusMap()[String(!!data)] || { title: L.Unknown }).title
+                        render: (data, type, full) => type === 'display'
+                            ? renderStatusBadge(full)
+                            : statusOfRow(full).title
                     },
                     {
                         targets: -1,
@@ -1030,11 +1071,17 @@ const UsersList = (function () {
                             if (canUpdate() && full.isActive) {
                                 actions.push({ className: 'js-user-disable text-warning', icon: 'bx bx-minus-circle', text: L.Disable, attrs: { 'data-id': full.id, 'data-json': rowJson } });
                             }
-                            if (canUpdate() && !full.isActive) {
+                            // WP-AUTH-INVITED-LIFECYCLE-01 — never "Activate" an invited account (AuthService refuses
+                            // it too): it activates itself when the person redeems the link.
+                            if (canUpdate() && !full.isActive && userStatusOf(full) !== 'Invited') {
                                 actions.push({ className: 'js-user-enable text-success', icon: 'bx bx-check-circle', text: L.Enable, attrs: { 'data-id': full.id, 'data-json': rowJson } });
                             }
                             if (canCreate() && full.mustChangePassword) {
-                                actions.push({ className: 'js-user-resend', icon: 'bx bx-mail-send', text: L.ResendInvitation, attrs: { 'data-id': full.id, 'data-json': rowJson } });
+                                // For an invited account this is the ONLY way forward, and the tooltip says why reset
+                                // and activate are absent (the quick view carries the same sentence).
+                                const resendAttrs = { 'data-id': full.id, 'data-json': rowJson };
+                                if (userStatusOf(full) === 'Invited') resendAttrs.title = L.InvitationPendingHint || '';
+                                actions.push({ className: 'js-user-resend', icon: 'bx bx-mail-send', text: L.ResendInvitation, attrs: resendAttrs });
                             }
                             if (canUpdate() && full.isActive && !full.mustChangePassword) {
                                 actions.push({ className: 'js-user-reset', icon: 'bx bx-key', text: L.ResetPassword, attrs: { 'data-id': full.id, 'data-json': rowJson } });

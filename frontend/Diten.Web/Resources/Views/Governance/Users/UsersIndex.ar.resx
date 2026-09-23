@@ -50,4 +50,8 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>اتركه فارغًا ليبقى الحساب غير مؤكد.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>رابط الدعوة (بيئة التطوير)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>أرسل رابط تعيين كلمة المرور هذا إلى المستخدم. يظهر في بيئة التطوير فقط.</value></data>
+  <data name="StatusInvited" xml:space="preserve"><value>مدعو</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>الدعوة معلّقة: يصبح الحساب نشطًا تلقائيًا عندما يعيّن الشخص كلمة المرور عبر الرابط المرسل بالبريد الإلكتروني. لا تتوفر إعادة تعيين كلمة المرور حتى ذلك الحين؛ أعد إرسال الدعوة بدلًا من ذلك.</value></data>
+  <data name="ErrorUserEmailTaken" xml:space="preserve"><value>يوجد مستخدم بعنوان البريد الإلكتروني هذا بالفعل.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>لم يقبل هذا المستخدم الدعوة بعد. يتم تفعيل الحساب عندما يعيّن كلمة المرور؛ أعد إرسال الدعوة عند الحاجة.</value></data>
 </root>

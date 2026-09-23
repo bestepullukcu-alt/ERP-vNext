@@ -94,6 +94,12 @@
                         <label for="userIsActive" class="form-check-label ms-2">@SharedLocalizer["Active"]</label>
                     </div>
                 </div>
+                @* WP-AUTH-INVITED-LIFECYCLE-01 — an invited account is activated by its owner redeeming the link, never
+                   from here: index.js hides the switch above for it and shows this sentence instead. AuthService refuses
+                   the activation too (409 USER_INVITATION_PENDING), so the hidden switch is not the only defence. *@
+                <div class="col-12 d-none" id="userInvitePendingRow">
+                    <div class="form-text">@Localizer["InvitationPendingHint"]</div>
+                </div>
             </div>
         </form>
     </div>

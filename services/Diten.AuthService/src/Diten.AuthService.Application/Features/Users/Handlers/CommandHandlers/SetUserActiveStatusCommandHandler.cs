@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -30,6 +31,13 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
         if (user is null) return Response<NoContent>.Fail("User not found.", 404);
+
+        // WP-AUTH-INVITED-LIFECYCLE-01 — an invited account activates when its owner redeems the set-password link.
+        // Activated by an administrator it would read "Active" and still be unable to sign in (placeholder hash).
+        if (UserLifecycle.RefusesActivation(user, request.IsActive))
+        {
+            return UserLifecycle.InvitationPendingRefusal<NoContent>();
+        }
 
         if (request.IsActive)
         {

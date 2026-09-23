@@ -50,4 +50,8 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Оставьте пустым, чтобы учётная запись осталась неподтверждённой.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Ссылка-приглашение (разработка)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Отправьте пользователю эту ссылку для установки пароля. Показывается только в среде разработки.</value></data>
+  <data name="StatusInvited" xml:space="preserve"><value>Приглашён</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>Приглашение ожидает ответа: учётная запись станет активной, когда человек задаст пароль по ссылке из письма. До этого сброс пароля недоступен — отправьте приглашение повторно.</value></data>
+  <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Пользователь с таким адресом электронной почты уже существует.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Этот пользователь ещё не принял приглашение. Учётная запись активируется, когда он задаст пароль; при необходимости отправьте приглашение повторно.</value></data>
 </root>
