@@ -14,6 +14,11 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Json;
 
+if (await VerifiedMarketOperationalMode.TryRunAsync(args))
+{
+    return;
+}
+
 var builder = WebApplication.CreateBuilder(args);
 
 /*
@@ -280,16 +285,6 @@ if (args.Any(argument => string.Equals(
             options.LeaseOwner,
             options.ActivateScalarClaims,
             options.SelectedIndexName);
-    return;
-}
-
-if (VerifiedMarketOperationalCommandLine.IsRequested(args))
-{
-    VerifiedMarketOperationalCommandLine.EnsureDevelopment(builder.Environment);
-    await using var operationalScope = app.Services.CreateAsyncScope();
-    await operationalScope.ServiceProvider
-        .GetRequiredService<VerifiedMarketOperationalProvisioningRunner>()
-        .RunAsync();
     return;
 }
 

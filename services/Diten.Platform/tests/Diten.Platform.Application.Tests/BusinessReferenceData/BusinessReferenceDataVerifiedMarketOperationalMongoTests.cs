@@ -1,105 +1,420 @@
 using Diten.Platform.API.Configuration;
+using Diten.Platform.API.Services.BusinessReferenceData;
+using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Domain.Entities;
 using Diten.Platform.Domain.Repositories;
+using Diten.Platform.Infrastructure.Persistence;
+using Diten.Platform.Infrastructure.Persistence.Schema;
+using Diten.Platform.Infrastructure.Persistence.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.BusinessReferenceData;
 
-public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests : IAsyncLifetime
+[Collection(VerifiedMarketReplicaSetCollection.Name)]
+public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
 {
-    private BusinessReferenceDataTestHarness _harness=null!;
-    public async Task InitializeAsync()=>_harness=await BusinessReferenceDataTestHarness.CreateAsync();
-    public Task DisposeAsync()=>_harness.DisposeAsync().AsTask();
+    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId);
+    private static readonly Guid HistoricalOwnerId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
+    private static readonly Guid ConsumerTenantId = Guid.Parse("74355e70-4c7d-410c-8cf6-db5fe3b9547f");
+    private readonly VerifiedMarketReplicaSetFixture _fixture;
 
-    [Fact]
-    public async Task Exact249Artifact_PublishesTwAndReplaysOneDurableIdentityWithoutAssignments()
+    public BusinessReferenceDataVerifiedMarketOperationalMongoTests(VerifiedMarketReplicaSetFixture fixture)
     {
-        var path=BusinessReferenceDataTestHarness.GetSeedPath("mod-0290-market-reference.json");
-        var facts=Facts(path,"market-run"); var eligibility=new Eligibility(facts); var loader=_harness.CreateLoader(eligibility: new RuntimeBusinessReferenceDataPublicationEligibility(), marketEligibility:eligibility);
-        var first=await loader.LoadVerifiedMarketCatalogFromFileAsync(path,facts.ActorId,facts.IdempotencyNamespace,eligibility.Authorization,facts);
-        var replay=await loader.LoadVerifiedMarketCatalogFromFileAsync(path,facts.ActorId,facts.IdempotencyNamespace,eligibility.Authorization,facts);
-        Assert.Empty(first.BlockedConflicts); Assert.Equal(1,replay.SetsAlreadyLoaded);
-        var publication=await _harness.Repository.GetVerifiedPublicationAsync("market",facts.CatalogVersion,facts.CatalogFingerprint);
-        Assert.NotNull(publication); Assert.Equal(249,publication.Version.Values.Count); Assert.Contains(publication.Version.Values,x=>x.ValueCode=="TW"&&x.DisplayName=="Taiwan (Province of China)");
-        Assert.Equal(BusinessReferenceDataPublishOperationState.COMPLETED,publication.Operation.OperationState); Assert.Equal(BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED,publication.Operation.PublishCheckpoint);
-        var operations=await _harness.Database.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations").Find(FilterDefinition<BusinessReferenceDataPublishOperation>.Empty).ToListAsync();
-        Assert.Single(operations); Assert.StartsWith("market-run:",operations[0].IdempotencyKey,StringComparison.Ordinal);
-        Assert.Equal(0,await _harness.Database.GetCollection<BusinessReferenceDataTenantAssignment>("business_reference_data_tenant_assignments").CountDocumentsAsync(FilterDefinition<BusinessReferenceDataTenantAssignment>.Empty));
+        _fixture = fixture;
     }
 
     [Fact]
-    public async Task DifferentNamespace_CreatesDistinctOperationIdentity()
+    public async Task FreshPublishAndSameKeyReplay_CreateOneDurableMarketIdentityAndAuditIntent()
     {
-        var path=BusinessReferenceDataTestHarness.GetSeedPath("mod-0290-market-reference.json");
-        foreach(var ns in new[]{"run-a","run-b"}) { var facts=Facts(path,ns); var eligibility=new Eligibility(facts); await _harness.CreateLoader(marketEligibility:eligibility).LoadVerifiedMarketCatalogFromFileAsync(path,facts.ActorId,ns,eligibility.Authorization,facts); }
-        var keys=await _harness.Database.GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations").Find(FilterDefinition<BusinessReferenceDataPublishOperation>.Empty).Project(x=>x.IdempotencyKey).ToListAsync();
-        Assert.Equal(2,keys.Distinct(StringComparer.Ordinal).Count()); Assert.Contains(keys,x=>x.StartsWith("run-a:",StringComparison.Ordinal)); Assert.Contains(keys,x=>x.StartsWith("run-b:",StringComparison.Ordinal));
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        var beforeArtifact = await File.ReadAllBytesAsync(harness.Facts.CatalogPath);
+        await harness.SeedReadOnlyInvariantsAsync();
+        var invariantsBefore = await harness.InvariantSnapshotAsync();
+
+        await harness.RunAsync();
+        var countsAfterFirst = await harness.TargetCountsAsync();
+        await harness.RunAsync();
+        var countsAfterReplay = await harness.TargetCountsAsync();
+
+        Assert.Equal((1L, 1L, 1L, 1L, 0L, 0L), countsAfterFirst);
+        Assert.Equal(countsAfterFirst, countsAfterReplay);
+        Assert.Equal(invariantsBefore, await harness.InvariantSnapshotAsync());
+        Assert.Equal(beforeArtifact, await File.ReadAllBytesAsync(harness.Facts.CatalogPath));
+        var publication = await harness.ReadVerifiedPublicationAsync();
+        Assert.NotNull(publication);
+        Assert.Equal(249, publication.Version.Values.Count);
+        Assert.Contains(publication.Version.Values, value => value.ValueCode == "TW");
     }
 
     [Fact]
-    public async Task NamespacedCheckpointCrash_ReplaysSameOperationToVerifiedCompletion()
+    public async Task ForeignTargetTenant_IsRejectedBeforeAnyMarketOrAuditWrite()
     {
-        var path = BusinessReferenceDataTestHarness.GetSeedPath("mod-0290-market-reference.json");
-        var facts = Facts(path, "checkpoint-run");
-        var eligibility = new Eligibility(facts);
-        var observer = new ThrowOnceAtCheckpointObserver(BusinessReferenceDataPublishCheckpoint.TARGET_VERSION_WRITTEN);
-
-        await Assert.ThrowsAsync<InjectedPublishCrashException>(() =>
-            _harness.CreateLoader(observer, marketEligibility: eligibility)
-                .LoadVerifiedMarketCatalogFromFileAsync(path, facts.ActorId, facts.IdempotencyNamespace, eligibility.Authorization, facts));
-
-        var interrupted = Assert.Single(await _harness.Database
-            .GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations")
-            .Find(FilterDefinition<BusinessReferenceDataPublishOperation>.Empty)
-            .ToListAsync());
-        Assert.Equal(BusinessReferenceDataPublishOperationState.RECOVERY_REQUIRED, interrupted.OperationState);
-        Assert.Equal(BusinessReferenceDataPublishCheckpoint.TARGET_VERSION_WRITTEN, interrupted.PublishCheckpoint);
-        Assert.StartsWith("checkpoint-run:", interrupted.IdempotencyKey, StringComparison.Ordinal);
-
-        await _harness.CreateLoader(marketEligibility: eligibility)
-            .LoadVerifiedMarketCatalogFromFileAsync(path, facts.ActorId, facts.IdempotencyNamespace, eligibility.Authorization, facts);
-
-        var completed = await _harness.Repository.GetPublishOperationByIdAsync(interrupted.PublishOperationId);
-        Assert.NotNull(completed);
-        Assert.Equal(BusinessReferenceDataPublishOperationState.COMPLETED, completed.OperationState);
-        Assert.Equal(BusinessReferenceDataPublishCheckpoint.COMPLETION_VERIFIED, completed.PublishCheckpoint);
-        Assert.NotNull(await _harness.Repository.GetVerifiedPublicationAsync("market", facts.CatalogVersion, facts.CatalogFingerprint));
-    }
-
-    [Fact]
-    public async Task SameNamespacedOperationKey_WithDifferentFingerprint_IsConflict()
-    {
-        var path = BusinessReferenceDataTestHarness.GetSeedPath("mod-0290-market-reference.json");
-        var facts = Facts(path, "conflict-run");
-        var eligibility = new Eligibility(facts);
-        await _harness.CreateLoader(marketEligibility: eligibility)
-            .LoadVerifiedMarketCatalogFromFileAsync(path, facts.ActorId, facts.IdempotencyNamespace, eligibility.Authorization, facts);
-        var persisted = Assert.Single(await _harness.Database
-            .GetCollection<BusinessReferenceDataPublishOperation>("business_reference_data_publish_operations")
-            .Find(FilterDefinition<BusinessReferenceDataPublishOperation>.Empty)
-            .ToListAsync());
-
-        var conflict = await _harness.Repository.CreateOrGetPublishOperationAsync(new BusinessReferenceDataPublishOperation
+        var foreignFacts = VerifiedMarketOperationalReplicaHarness.LockedFacts() with
         {
-            TenantId = persisted.TenantId,
-            BusinessReferenceDataSetId = persisted.BusinessReferenceDataSetId,
-            BusinessReferenceDataVersionId = persisted.BusinessReferenceDataVersionId,
-            IdempotencyKey = persisted.IdempotencyKey,
-            ExpectedPublishedVersionId = persisted.ExpectedPublishedVersionId,
-            ExpectedSetVersion = persisted.ExpectedSetVersion,
-            ExpectedTargetVersionToken = persisted.ExpectedTargetVersionToken,
-            CatalogVersion = persisted.CatalogVersion,
-            CatalogFingerprint = new string('0', 64),
-            CreatedBy = "actor"
-        });
+            ReferenceTenantId = Guid.NewGuid()
+        };
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(
+            _fixture.Replica,
+            facts: foreignFacts);
 
-        Assert.Equal(BusinessReferenceDataPublishOperationCreateOutcome.Conflict, conflict.Outcome);
-        Assert.Equal(persisted.PublishOperationId, conflict.Operation.PublishOperationId);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_AUDIT_SCOPE_VIOLATION", exception.Message);
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
     }
 
-    private VerifiedMarketOperationalFacts Facts(string path,string ns)=>new(Path.GetFullPath(path),VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,_harness.ReferenceTenantId,"actor",ns);
-    private sealed class Eligibility : IBusinessReferenceDataVerifiedMarketOperationalEligibility { private readonly VerifiedMarketOperationalFacts _facts; public AuthorizationToken Authorization {get;}=new(); public Eligibility(VerifiedMarketOperationalFacts facts)=>_facts=facts; public Task<VerifiedMarketOperationalEligibilityDecision> EvaluateAsync(CancellationToken ct=default)=>Task.FromResult(new VerifiedMarketOperationalEligibilityDecision(true,"ok",_facts,Authorization)); public bool IsAuthorized(IBusinessReferenceDataVerifiedMarketOperationalAuthorization authorization,VerifiedMarketOperationalFacts facts)=>ReferenceEquals(authorization,Authorization)&&facts==_facts; }
-    private sealed class AuthorizationToken:IBusinessReferenceDataVerifiedMarketOperationalAuthorization;
+    [Fact]
+    public async Task MissingRequiredIndex_IsRejectedBeforeAnyMarketOrAuditWrite()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .Indexes.DropOneAsync("ux_audit_outbox_idempotency_key");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REQUIRED_INDEX_MISMATCH", exception.Message);
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+    }
+
+    [Fact]
+    public async Task WrongRequiredIndexSpec_IsRejectedBeforeAnyMarketOrAuditWrite()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        var indexes = harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox).Indexes;
+        await indexes.DropOneAsync("ux_audit_outbox_idempotency_key");
+        await indexes.CreateOneAsync(new CreateIndexModel<BsonDocument>(
+            Builders<BsonDocument>.IndexKeys.Ascending("IdempotencyKey"),
+            new CreateIndexOptions
+            {
+                Name = "ux_audit_outbox_idempotency_key",
+                Unique = false
+            }));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REQUIRED_INDEX_MISMATCH", exception.Message);
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+    }
+
+    [Fact]
+    public async Task PreExistingTarget_IsManualReconciliationAndIsNotRetried()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataSets)
+            .InsertOneAsync(new BsonDocument
+            {
+                ["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard),
+                ["TenantId"] = new BsonBinaryData(ReferenceTenantId, GuidRepresentation.Standard),
+                ["SetCode"] = "market",
+                ["IsDeleted"] = false
+            });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_TARGET_AMBIGUOUS", exception.Message);
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataPublishOperations)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+    }
+
+    [Theory]
+    [InlineData("Market")]
+    [InlineData("MARKET")]
+    public async Task CaseVariantPreExistingMarket_IsRejectedBeforeAnyOperationalWrite(string setCode)
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataSets)
+            .InsertOneAsync(new BsonDocument
+            {
+                ["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard),
+                ["TenantId"] = new BsonBinaryData(ReferenceTenantId, GuidRepresentation.Standard),
+                ["SetCode"] = setCode,
+                ["IsDeleted"] = false
+            });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_TARGET_AMBIGUOUS", exception.Message);
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataPublishOperations)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+    }
+
+    [Fact]
+    public async Task PartialCheckpoint_IsManualReconciliationWithoutAutomaticRecovery()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataVersions)
+            .InsertOneAsync(new BsonDocument
+            {
+                ["_id"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard),
+                ["TenantId"] = new BsonBinaryData(ReferenceTenantId, GuidRepresentation.Standard),
+                ["LastPublishIdempotencyKey"] = harness.OperationKey,
+                ["IsDeleted"] = false
+            });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_TARGET_AMBIGUOUS", exception.Message);
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+    }
+
+    [Fact]
+    public async Task AuditAppendFailure_ReturnsManualReconciliationAndNeverClaimsExactReplay()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(
+            _fixture.Replica,
+            auditService: new RejectingAuditService());
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_MANUAL_RECONCILIATION_REQUIRED", exception.Message);
+        Assert.IsType<InvalidOperationException>(exception.InnerException);
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        Assert.Equal(0, await harness.Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty));
+        var completion = await harness.VerifyCompletionAsync();
+        Assert.Equal(VerifiedMarketOperationalTargetDisposition.ManualReconciliationRequired, completion.Disposition);
+    }
+
+    [Fact]
+    public async Task PublishedMarketValueTamper_IsManualReconciliationWithoutAdditionalWriteOrRetry()
+    {
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica);
+        await harness.RunAsync();
+        var countsBeforeTamper = await harness.TargetCountsAsync();
+        await harness.TamperOnePublishedValueAsync();
+
+        var completion = await harness.VerifyCompletionAsync();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal(VerifiedMarketOperationalTargetDisposition.ManualReconciliationRequired, completion.Disposition);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_TARGET_PARTIAL_OR_MISMATCHED", completion.ReasonCode);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_TARGET_PARTIAL_OR_MISMATCHED", exception.Message);
+        Assert.Equal(countsBeforeTamper, await harness.TargetCountsAsync());
+    }
+
+    private sealed class RejectingAuditService : IAuditService
+    {
+        public Task<AuditAppendResult> AppendAsync(AuditAppendRequest request, CancellationToken ct = default) =>
+            Task.FromResult(AuditAppendResult.Rejected("test-owned audit rejection"));
+    }
+}
+
+internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
+{
+    private static readonly Guid ReferenceTenantId = Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId);
+    private static readonly Guid HistoricalOwnerId = Guid.Parse("97c59330-dbc4-4665-b29c-0c26dbb5cc93");
+    private static readonly Guid ConsumerTenantId = Guid.Parse("74355e70-4c7d-410c-8cf6-db5fe3b9547f");
+    private readonly ServiceProvider _provider;
+
+    private VerifiedMarketOperationalReplicaHarness(
+        IMongoDatabase database,
+        ServiceProvider provider,
+        VerifiedMarketOperationalFacts facts)
+    {
+        Database = database;
+        _provider = provider;
+        Facts = facts;
+    }
+
+    public IMongoDatabase Database { get; }
+    public VerifiedMarketOperationalFacts Facts { get; }
+    public string OperationKey =>
+        $"{Facts.IdempotencyNamespace}:businessreferencedata-catalog-v{Facts.CatalogVersion}:market".ToLowerInvariant();
+
+    public static async Task<VerifiedMarketOperationalReplicaHarness> CreateAsync(
+        Diten.Platform.Application.Tests.Persistence.DisposableMongoReplicaSet replica,
+        VerifiedMarketOperationalFacts? facts = null,
+        IAuditService? auditService = null)
+    {
+        var database = replica.CreateDatabase();
+        await PlatformSchemaManifest.ApplyAsync(
+            database,
+            [SchemaProfile.BusinessReferenceData, SchemaProfile.AccessGovernance]);
+        var databaseName = database.DatabaseNamespace.DatabaseName;
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MongoDbSettings:ConnectionString"] = replica.ConnectionString,
+                ["MongoDbSettings:DatabaseName"] = databaseName,
+                [$"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId"] =
+                    VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId
+            })
+            .Build();
+        var lockedFacts = facts ?? LockedFacts();
+        var eligibility = new TestEligibility(lockedFacts);
+        var services = new ServiceCollection();
+        services.AddVerifiedMarketOperationalPersistence(configuration);
+        services.AddSingleton<IBusinessReferenceDataVerifiedMarketOperationalEligibility>(eligibility);
+        services.AddScoped<VerifiedMarketOperationalProvisioningRunner>();
+        if (auditService is not null)
+        {
+            services.AddSingleton(auditService);
+            services.AddSingleton<IAuditService>(auditService);
+        }
+
+        var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        return new VerifiedMarketOperationalReplicaHarness(database, provider, lockedFacts);
+    }
+
+    public static VerifiedMarketOperationalFacts LockedFacts() => new(
+        BusinessReferenceDataTestHarness.GetSeedPath(VerifiedMarketOperationalProvisioningOptions.LockedCatalogFileName),
+        VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
+        VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
+        ReferenceTenantId,
+        "market-operator",
+        "market-operational-replica-test");
+
+    public async Task RunAsync()
+    {
+        await using var scope = _provider.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<VerifiedMarketOperationalProvisioningRunner>().RunAsync();
+    }
+
+    public async Task<VerifiedMarketOperationalTargetPreflightResult> VerifyCompletionAsync()
+    {
+        await using var scope = _provider.CreateAsyncScope();
+        return await scope.ServiceProvider.GetRequiredService<IVerifiedMarketOperationalPreflight>()
+            .VerifyCompletionAsync(Facts);
+    }
+
+    public async Task<BusinessReferenceDataVerifiedPublication?> ReadVerifiedPublicationAsync()
+    {
+        await using var scope = _provider.CreateAsyncScope();
+        scope.ServiceProvider.GetRequiredService<Diten.Platform.Common.Tenancy.ITenantContext>()
+            .SetTenant(Facts.ReferenceTenantId);
+        return await scope.ServiceProvider.GetRequiredService<IBusinessReferenceDataStewardshipRepository>()
+            .GetVerifiedPublicationAsync("market", Facts.CatalogVersion, Facts.CatalogFingerprint);
+    }
+
+    public async Task TamperOnePublishedValueAsync()
+    {
+        var collection = Database.GetCollection<BusinessReferenceDataVersion>(PlatformCollections.BusinessReferenceDataVersions);
+        var version = await collection
+            .Find(value => value.TenantId == Facts.ReferenceTenantId && value.LastPublishIdempotencyKey == OperationKey)
+            .SingleAsync();
+        Assert.Equal(249, version.Values.Count);
+        version.Values[0].DisplayName = $"{version.Values[0].DisplayName} [test-owned tamper]";
+        var result = await collection.ReplaceOneAsync(
+            value => value.Id == version.Id,
+            version);
+        Assert.Equal(1, result.ModifiedCount);
+    }
+
+    public async Task<(long Sets, long Versions, long Operations, long Audits, long Assignments, long IntegrationEvents)> TargetCountsAsync()
+    {
+        var tenant = Facts.ReferenceTenantId;
+        var sets = await Database.GetCollection<BusinessReferenceDataSet>(PlatformCollections.BusinessReferenceDataSets)
+            .CountDocumentsAsync(value => value.TenantId == tenant && value.SetCode == "market");
+        var versions = await Database.GetCollection<BusinessReferenceDataVersion>(PlatformCollections.BusinessReferenceDataVersions)
+            .CountDocumentsAsync(value => value.TenantId == tenant && value.LastPublishIdempotencyKey == OperationKey);
+        var operations = await Database.GetCollection<BusinessReferenceDataPublishOperation>(PlatformCollections.BusinessReferenceDataPublishOperations)
+            .CountDocumentsAsync(value => value.TenantId == tenant && value.IdempotencyKey == OperationKey);
+        var audits = await Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("TenantId", new BsonBinaryData(tenant, GuidRepresentation.Standard)));
+        var assignments = await Database.GetCollection<BusinessReferenceDataTenantAssignment>(PlatformCollections.BusinessReferenceDataTenantAssignments)
+            .CountDocumentsAsync(value => value.TenantId == tenant);
+        var integrationEvents = await Database.GetCollection<BusinessReferenceDataIntegrationEvent>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
+            .CountDocumentsAsync(value => value.TenantId == tenant);
+        return (sets, versions, operations, audits, assignments, integrationEvents);
+    }
+
+    public async Task SeedReadOnlyInvariantsAsync()
+    {
+        await Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataSets)
+            .InsertManyAsync([
+                InvariantDocument("old-owner-market", HistoricalOwnerId, "market"),
+                InvariantDocument("consumer-non-market", ConsumerTenantId, "currency"),
+                InvariantDocument("owner-non-market", ReferenceTenantId, "country")]);
+        await Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataTenantAssignments)
+            .InsertOneAsync(new BsonDocument
+            {
+                ["_id"] = ObjectId.GenerateNewId(),
+                ["TenantId"] = new BsonBinaryData(HistoricalOwnerId, GuidRepresentation.Standard),
+                ["ConsumerTenantId"] = new BsonBinaryData(ConsumerTenantId, GuidRepresentation.Standard),
+                ["SetCode"] = "market",
+                ["TestInvariantMarker"] = "consumer-assignment",
+                ["IsDeleted"] = false
+            });
+    }
+
+    public async Task<string> InvariantSnapshotAsync()
+    {
+        var snapshots = new List<string>();
+        foreach (var collectionName in new[]
+                 {
+                     PlatformCollections.BusinessReferenceDataSets,
+                     PlatformCollections.BusinessReferenceDataVersions,
+                     PlatformCollections.BusinessReferenceDataPublishOperations,
+                     PlatformCollections.BusinessReferenceDataTenantAssignments
+                 })
+        {
+            var documents = await Database.GetCollection<BsonDocument>(collectionName)
+                .Find(Builders<BsonDocument>.Filter.Exists("TestInvariantMarker"))
+                .Sort(Builders<BsonDocument>.Sort.Ascending("TestInvariantMarker"))
+                .ToListAsync();
+            snapshots.Add($"{collectionName}:{string.Join('|', documents.Select(document => document.ToJson()))}");
+        }
+
+        return string.Join('\n', snapshots);
+    }
+
+    private static BsonDocument InvariantDocument(string marker, Guid tenantId, string setCode) => new()
+    {
+        ["_id"] = ObjectId.GenerateNewId(),
+        ["TenantId"] = new BsonBinaryData(tenantId, GuidRepresentation.Standard),
+        ["SetCode"] = setCode,
+        ["TestInvariantMarker"] = marker,
+        ["IsDeleted"] = false
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        await _provider.DisposeAsync();
+    }
+
+    private sealed class TestEligibility : IBusinessReferenceDataVerifiedMarketOperationalEligibility
+    {
+        private readonly VerifiedMarketOperationalFacts _facts;
+        private readonly Authorization _authorization = new();
+
+        public TestEligibility(VerifiedMarketOperationalFacts facts)
+        {
+            _facts = facts;
+        }
+
+        public Task<VerifiedMarketOperationalEligibilityDecision> EvaluateAsync(CancellationToken ct = default) =>
+            Task.FromResult(new VerifiedMarketOperationalEligibilityDecision(
+                true,
+                "VERIFIED_MARKET_OPERATIONAL_ELIGIBLE",
+                _facts,
+                _authorization));
+
+        public bool IsAuthorized(
+            IBusinessReferenceDataVerifiedMarketOperationalAuthorization authorization,
+            VerifiedMarketOperationalFacts facts) =>
+            ReferenceEquals(authorization, _authorization) && facts == _facts;
+
+        private sealed class Authorization : IBusinessReferenceDataVerifiedMarketOperationalAuthorization;
+    }
 }
