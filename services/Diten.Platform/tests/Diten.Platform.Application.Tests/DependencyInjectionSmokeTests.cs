@@ -1,4 +1,5 @@
 using Diten.Platform.Application.Services;
+using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Common.Catalog;
 using Diten.Platform.Application.Features.BusinessReferenceData.Handlers.QueryHandlers;
 using Diten.Platform.Application.Features.BusinessReferenceData.Queries;
@@ -14,12 +15,14 @@ using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Migrations;
 using Diten.Platform.Infrastructure.Persistence.Repositories;
+using Diten.Platform.Infrastructure.Services.Audit;
 using Microsoft.Extensions.Hosting;
 using Diten.Platform.API.Security;
 using Diten.Platform.Application.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using MongoDB.Driver;
 using Moq;
 using Xunit;
 
@@ -156,23 +159,83 @@ public sealed class DependencyInjectionSmokeTests
     }
 
     [Fact]
-    public void AuditOutboxRepository_RequiresTemporalStateRepositoryAndDiRegistersBoth()
+    public void DefaultAuditOutboxActivation_WhenBothTwoArgumentConstructorsAreResolvable_IsAmbiguous()
     {
-        var constructor = Assert.Single(typeof(AuditOutboxRepository).GetConstructors(), candidate =>
-            candidate.GetParameters().Any(parameter =>
-                parameter.ParameterType == typeof(AuditOutboxTemporalMigrationRepository))
-            && candidate.GetParameters().Any(parameter =>
-                parameter.ParameterType == typeof(IPlatformDbContext)));
-        var temporalParameter = Assert.Single(constructor.GetParameters(), parameter =>
-            parameter.ParameterType == typeof(AuditOutboxTemporalMigrationRepository));
-        var root = FindRepositoryRoot();
-        var dependencyInjection = File.ReadAllText(Path.Combine(
-            root,
-            "services", "Diten.Platform", "src", "Diten.Platform.Infrastructure", "DependencyInjection.cs"));
+        // Arrange
+        var services = new ServiceCollection();
+        var mongoClient = new MongoClient("mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=10");
+        var database = mongoClient.GetDatabase("platform_di_ambiguity_guard");
+        services.AddSingleton<IPlatformDbContext>(new PlatformDbContext(mongoClient, database));
+        services.AddScoped<IMongoDatabase>(_ => database);
+        services.AddScoped<AuditOutboxTemporalMigrationRepository>();
+        services.AddScoped<AuditOutboxRepository>();
 
-        Assert.False(temporalParameter.HasDefaultValue);
-        Assert.Contains("AddScoped<AuditOutboxTemporalMigrationRepository>()", dependencyInjection, StringComparison.Ordinal);
-        Assert.Contains("AddScoped<AuditOutboxRepository>()", dependencyInjection, StringComparison.Ordinal);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        // Act
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            scope.ServiceProvider.GetRequiredService<AuditOutboxRepository>());
+
+        // Assert
+        Assert.Contains("constructors", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("ambiguous", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void AddAuditOutboxRepositories_WithBothConstructorDependenciesRegistered_UsesTransactionAwareScopedIdentity()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var mongoClient = new MongoClient("mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=10");
+        var database = mongoClient.GetDatabase("platform_di_registration_guard");
+        var platformDbContext = new PlatformDbContext(mongoClient, database);
+        services.AddSingleton<IPlatformDbContext>(platformDbContext);
+        services.AddScoped<IMongoDatabase>(_ => database);
+
+        // Act: invoke the production registration path without running startup migrations or seeds.
+        Diten.Platform.Infrastructure.DependencyInjection.AddAuditOutboxRepositories(services);
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var firstScope = provider.CreateScope();
+        var repository = firstScope.ServiceProvider.GetRequiredService<AuditOutboxRepository>();
+        var writer = firstScope.ServiceProvider.GetRequiredService<IAuditOutboxWriter>();
+        var transactionalWriter = firstScope.ServiceProvider.GetRequiredService<ITransactionalAuditOutboxWriter>();
+        var trustedIntentOutbox = firstScope.ServiceProvider.GetRequiredService<ITrustedSourceAuditIntentOutbox>();
+        var processingRepository = firstScope.ServiceProvider.GetRequiredService<IAuditOutboxProcessingRepository>();
+
+        using var secondScope = provider.CreateScope();
+        var repositoryFromSecondScope = secondScope.ServiceProvider.GetRequiredService<AuditOutboxRepository>();
+
+        // Assert
+        Assert.Same(repository, writer);
+        Assert.Same(repository, transactionalWriter);
+        Assert.Same(repository, trustedIntentOutbox);
+        Assert.Same(repository, processingRepository);
+        Assert.NotSame(repository, repositoryFromSecondScope);
+
+        var contextField = typeof(AuditOutboxRepository).GetField(
+            "_dbContext",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        Assert.NotNull(contextField);
+        Assert.Same(platformDbContext, contextField.GetValue(repository));
+
+        var registration = Assert.Single(services.Where(candidate =>
+            candidate.ServiceType == typeof(AuditOutboxRepository)));
+        Assert.Equal(ServiceLifetime.Scoped, registration.Lifetime);
+        Assert.NotNull(registration.ImplementationFactory);
+
+        Assert.Contains(typeof(AuditOutboxRepository).GetConstructors(), constructor =>
+            constructor.GetParameters().Select(parameter => parameter.ParameterType)
+                .SequenceEqual(new[]
+                {
+                    typeof(IMongoDatabase),
+                    typeof(AuditOutboxTemporalMigrationRepository)
+                }));
     }
 
     [Fact]

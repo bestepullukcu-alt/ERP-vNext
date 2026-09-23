@@ -493,14 +493,9 @@ public static class DependencyInjection
         services.AddSingleton<ISmtpClientFactory, MailKitSmtpClientFactory>();
         services.AddScoped<SecretReferenceResolver>();
         services.AddScoped<IMessagingProviderResolver, MessagingProviderResolver>();
-        services.AddScoped<AuditOutboxTemporalMigrationRepository>();
+        AddAuditOutboxRepositories(services);
         services.AddScoped<AuditOutboxTemporalStorageMigrationRunner>();
-        services.AddScoped<AuditOutboxRepository>();
-        services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
-        services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
-        services.AddScoped<ITrustedSourceAuditIntentOutbox>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddScoped<ITrustedSourceAuditIntentAcceptanceService, TrustedSourceAuditIntentAcceptanceService>();
-        services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
         services.AddSingleton<AuditOutboxWorkerOptions>();
         services.AddScoped<AuditOutboxPayloadMapper>();
         services.AddScoped<AuditOutboxProcessor>();
@@ -619,6 +614,19 @@ public static class DependencyInjection
             configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
 
         return services;
+    }
+
+    internal static void AddAuditOutboxRepositories(IServiceCollection services)
+    {
+        services.AddScoped<AuditOutboxTemporalMigrationRepository>();
+        services.AddScoped<AuditOutboxRepository>(provider =>
+            new AuditOutboxRepository(
+                provider.GetRequiredService<IPlatformDbContext>(),
+                provider.GetRequiredService<AuditOutboxTemporalMigrationRepository>()));
+        services.AddScoped<IAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITransactionalAuditOutboxWriter>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<ITrustedSourceAuditIntentOutbox>(provider => provider.GetRequiredService<AuditOutboxRepository>());
+        services.AddScoped<IAuditOutboxProcessingRepository>(provider => provider.GetRequiredService<AuditOutboxRepository>());
     }
 
     public static IServiceCollection AddTenantAuthorizationContext(this IServiceCollection services)
