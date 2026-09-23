@@ -21,6 +21,25 @@ const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const read = (...p) => fs.readFileSync(web(...p), "utf8");
 
+/*
+ * BL-440 package 1: a list may now USE the shell instead of copying the card. Such a page's `_DataTable.cshtml`
+ * carries a model setup and one `<partial …/_ListShell.cshtml>` call — the placeholder and the table wrapper live in
+ * the shell. So the rules below are measured on the file that actually renders them: the shell for a page that
+ * delegates, the page itself otherwise. The page is still held to its own rule: it calls the shell and writes no
+ * table of its own (list-shell-component.test.js pins that directly).
+ */
+const SHELL_CALL = /<partial\s+name="~\/Views\/Shared\/Components\/DataTable\/_ListShell\.cshtml"\s+model="\w+"\s*\/>/;
+const listMarkup = (area, folder) => {
+  const page = read("Views", area, folder, "_DataTable.cshtml");
+  if (!SHELL_CALL.test(page.replace(/@\*[\s\S]*?\*@/g, ""))) {
+    return { source: page, label: `${area}/${folder}` };
+  }
+  return {
+    source: read("Views", "Shared", "Components", "DataTable", "_ListShell.cshtml").replace(/@\*[\s\S]*?\*@/g, ""),
+    label: `${area}/${folder} → _ListShell`
+  };
+};
+
 /** The partial with its Razor comments removed — a note ABOUT the vocabulary is not markup. */
 const PARTIAL = () => read("Views", "Shared", "_TableSkeleton.cshtml").replace(/@\*[\s\S]*?\*@/g, "");
 const CSS = () => read("wwwroot", "assets", "css", "backbone-custom.css");
@@ -70,11 +89,11 @@ describe("the placeholder is shaped like the list it stands in for", () => {
      * block outside the partial, and the tags must balance.
      */
     LISTS.forEach(([area, folder]) => {
-      const source = read("Views", area, folder, "_DataTable.cshtml");
-      expect(source, `${area}/${folder} still draws its own skeleton`).toContain('<partial name="_TableSkeleton" />');
-      expect(source.replace(/_TableSkeleton/g, ""), `${area}/${folder} kept a fragment of the old block`)
+      const { source, label } = listMarkup(area, folder);
+      expect(source, `${label} still draws its own skeleton`).toContain('<partial name="_TableSkeleton" />');
+      expect(source.replace(/_TableSkeleton/g, ""), `${label} kept a fragment of the old block`)
         .not.toMatch(/skeleton/i);
-      expect(source.match(/<div\b/g)?.length ?? 0, `${area}/${folder} has unbalanced <div> tags`)
+      expect(source.match(/<div\b/g)?.length ?? 0, `${label} has unbalanced <div> tags`)
         .toBe(source.match(/<\/div>/g)?.length ?? 0);
       // FG-003: the hiding lives in the stylesheet, never in a style attribute.
       expect(source).not.toMatch(/style="display:\s*none/);
@@ -98,12 +117,12 @@ describe("the half-built table does not stand beside its own placeholder", () =>
   test("the partial sits where that selector can reach the table", () => {
     // A sibling rule only works if the two really are siblings; every migrated list is checked, not assumed.
     LISTS.forEach(([area, folder]) => {
-      const source = read("Views", area, folder, "_DataTable.cshtml");
+      const { source, label } = listMarkup(area, folder);
       const partialAt = source.indexOf('<partial name="_TableSkeleton" />');
       const tableAt = source.search(/<div class="card-datatable|<div class="table-responsive/);
-      expect(partialAt, `${area}/${folder}: the partial is gone`).toBeGreaterThan(-1);
-      expect(tableAt, `${area}/${folder}: the table wrapper is gone`).toBeGreaterThan(-1);
-      expect(tableAt, `${area}/${folder}: the placeholder is not before the table, so the rule cannot hide it`)
+      expect(partialAt, `${label}: the partial is gone`).toBeGreaterThan(-1);
+      expect(tableAt, `${label}: the table wrapper is gone`).toBeGreaterThan(-1);
+      expect(tableAt, `${label}: the placeholder is not before the table, so the rule cannot hide it`)
         .toBeGreaterThan(partialAt);
     });
   });
