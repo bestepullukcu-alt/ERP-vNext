@@ -6127,6 +6127,54 @@ Gelecek gerileme riski: orta-yüksek — yeni bir gelen kutusu kalemi türü, MO
 
 ---
 
+### BL-440
+
+**Liste ekranları referansı kopyalıyor, kullanmıyor — 138 listede yapı tek tek elle yazılıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ (ekip kararı) · BULAN: CT + sahip (Kullanıcılar modülü testi) · KAYIT: 2026-09-23
+
+Ölçüldü (2026-09-23, test dalı):
+
+| | |
+|---|---|
+| Liste bileşeni (`_DataTable.cshtml`) | **138** |
+| `data-dt-standard="v2"` taşıyan | 133 |
+| Bir tür iskelet markup'ı olan | 132 |
+| **Toplu seçim sütunu (`dt-checkboxes`) olan** | **26** |
+| Ortak şekilli iskelet parçasını kullanan | 6 |
+
+Altın referans (Golden Reference Slim/Compact) bugünkü kuralların hepsini taşıyor: alan ikonları, değişmez
+alan boyası, offcanvas select2, seçim sütunu, yeni iskelet parçası. **Referans doğru; ekranlar ona bakmıyor.**
+
+Kullanıcılar ekranı bunun canlı örneği: JS'i referanstan kopyalanmış (`bindBulkSelection` çağırıyor) ama
+markup'ı kopyalanmamış (seçim sütunu yok) → toplu eylem çubuğu hiç çıkmıyor. Aynı boşluktan üç bulgu daha
+çıktı: gizli sütunlar dışa aktarmada görünüyor (sütun listesi ekranda elle sabitlenmiş), yükleme göstergesi
+farklı (eski iskelet bloğu), araç çubuğu ikonlarının hizası farklı.
+
+⚠ DÜZELTME: CT ilk ölçümünde "ekranların yarısı ortak katmandan geçmiyor" dedi; yanlıştı. Kullanıcılar
+`DitenDataTable.createCrudTable` → `DtDefaults.create` zincirinden geçiyor (`diten-datatable.js:263`).
+Sorun ortak katmanın yokluğu değil, **markup ile JS'in ayrı ayrı yazılması**.
+
+**İki model, karar ekibin:**
+
+1. **Guard** (ucuz, hızlı): bir test, JS'in beklediği ile markup'ın sunduğunu karşılaştırsın — toplu çubuk
+   bekleyen ekranın seçim sütunu olsun, iskelet bekleyen ekranın parçası olsun. Bugün uymayanlar gerekçesiyle
+   listelenir; yeni ekran listeye eklenemez. **Bu bir iskele, model değil** — kozmetik sapmayı değil gerçek
+   kusuru yakalar, ama kopyalamayı ortadan kaldırmaz.
+2. **Bileşen** (doğru model, pahalı): liste bir kopyalama kaynağı değil, **kullanılan bir bileşen** olsun —
+   ekran sütunlarını ve seçeneklerini verir; kart, iskelet, araç çubuğu, seçim sütunu ve tablo kabuğu
+   bileşenden gelir. Kopya olmayınca ayrışacak bir şey de olmaz. SAP Fiori (SmartTable / List Report) ve
+   Oracle Redwood sayfa şablonları bu modeli seçmiştir; ikisi de "şu sayfaya bak ve benzet" demez.
+
+**CT'nin önerisi:** (1) şimdi, doğru biçimiyle (tutarlılık guard'ı) · (2) bir sonraki YENİ liste ekranında
+doğsun, 138 ekranlık göç programı olarak değil · eskiler modül test turlarında tek tek düşsün (Kullanıcılar'da
+bugün yapıldığı gibi).
+
+Gelecek gerileme riski: (1) düşük — yalnız test. (2) YÜKSEK ve bilinçli: ürünün bütün listelerinin şeklini
+belirler; bu yüzden CT tek başına karar vermiyor, ekip tartışması için buraya yazıldı.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
