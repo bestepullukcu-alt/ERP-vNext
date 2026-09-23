@@ -88,11 +88,47 @@ describe("MOD-0024 task surface contract", () => {
       expect(surfaceFiles.length).toBeGreaterThan(3);
     });
 
-    it("calls no SweetAlert2 directly", () => {
+    /*
+     * ⚠ ONE NAMED EXCEPTION, AND IT COSTS MORE THAN IT SAVES TO ADD A SECOND (2026-09-23).
+     *
+     * Handing a task on asks for the new person AND a mandatory reason. `_GlobalConfirmation.cshtml` states in
+     * its own words that a dialog with more than one field cannot be a `showConfirm` — growing that helper a
+     * custom-fields seam was considered there and rejected. So this one file opens a raw dialog, exactly as
+     * three Meetings dialogs already do product-wide (`dialog-one-implementation.test.js`).
+     *
+     * What the exception does NOT license is a dialog that looks like another product: the test below proves
+     * this file spreads the published appearance package, uses the published icon builder, and writes no
+     * chrome of its own. A file added to this list without that proof fails the next test, not this one.
+     */
+    const RAW_BY_DESIGN = ["reassign.js"];
+
+    it("calls no SweetAlert2 directly, except the multi-field dialog named here", () => {
       const offenders = surfaceFiles
         .filter((parts) => /\bSwal\b/.test(read(...parts)))
-        .map((parts) => parts.at(-1));
+        .map((parts) => parts.at(-1))
+        .filter((name) => !RAW_BY_DESIGN.includes(name));
       expect(offenders).toEqual([]);
+    });
+
+    it("keeps the exception honest — a named file still has a raw dialog", () => {
+      // A stale licence is a hole: the file was moved to the shared confirm, the entry stayed, and the next
+      // raw dialog slipped in free.
+      const stale = RAW_BY_DESIGN.filter((name) =>
+        !/\bSwal\b/.test(read("wwwroot", "assets", "js", "Tasks", name)));
+      expect(stale, "these files no longer open a raw dialog — take them off the list").toEqual([]);
+    });
+
+    it("and the exception wears the product's dialog, not one of its own", () => {
+      RAW_BY_DESIGN.forEach((name) => {
+        const source = read("wwwroot", "assets", "js", "Tasks", name);
+        expect(source, `${name} does not spread the published appearance`)
+          .toMatch(/\.\.\.look\(|\.\.\.(global\.)?DitenDialogAppearance\(/);
+        expect(source, `${name} draws its own icon instead of asking the builder`)
+          .toMatch(/look\.iconHtml\(|DitenDialogAppearance\.iconHtml\(/);
+        // The four pieces of chrome a hand-written dialog always re-types. None of them belong here.
+        ["customClass:", "buttonsStyling:", "padding:", "rounded-4"].forEach((chrome) =>
+          expect(source, `${name} writes its own ${chrome}`).not.toContain(chrome));
+      });
     });
 
     it("uses no native alert() either", () => {

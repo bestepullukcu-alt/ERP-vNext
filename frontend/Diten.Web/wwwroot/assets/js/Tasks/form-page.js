@@ -869,6 +869,12 @@
                     estimateHours: existing.data.estimateHours ?? null
                 };
                 form.setAttribute('data-task-version', existing.data.version);
+                /*
+                 * The assignment is read-only here and changes hands through its own audited action; this fills
+                 * the summary boxes and decides whether the handover button is offered. Called AFTER writeForm
+                 * so the pickers already hold the names it reads — a GUID is never shown (pack §12 K6.4).
+                 */
+                global.TaskReassign?.mount(taskId, existing.data);
                 // Effort actuals are visible on edit but never editable.
                 ['spentHours', 'remainingHours'].forEach((field) => {
                     form.querySelectorAll(`[data-task-field="${field}"]`)

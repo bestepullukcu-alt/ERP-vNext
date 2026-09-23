@@ -240,4 +240,16 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>يتطلب هذا البند إثباتًا قبل أن يمكن إكماله.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>تعذّر تحميل هذا الملف. تحقق من نوعه وحجمه ثم حاول مرة أخرى.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>يمكن إضافة المرفقات، بما فيها الإثبات، بعد إنشاء المهمة.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>تسليم المهمة</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>تسليم هذه المهمة إلى شخص آخر</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>يرى المسؤول الجديد المهمة فورًا، ويُحفَظ السبب في سجل المهمة.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>المسؤول الجديد</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>اختر شخصًا</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>سبب التسليم</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>مثال: في إجازة حتى ٥ أكتوبر، وستتولى عائشة التدقيق.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>اختر من سيتولى المهمة.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>اكتب سبب انتقال المهمة.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>تم تسليم المهمة.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>لا يوجد شخص آخر يمكن تسليم المهمة إليه.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>الإسناد لا يُعدَّل بل يُسلَّم، مع سبب يبقى في سجل المهمة.</value></data>
 </root>

@@ -240,4 +240,16 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Этот пункт нельзя завершить без подтверждающего документа.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Не удалось загрузить файл. Проверьте его тип и размер и повторите попытку.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Вложения, включая подтверждающие документы, можно добавить после создания задачи.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Передать</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Передать задачу другому сотруднику</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>Новый исполнитель увидит задачу сразу. Причина сохраняется в истории задачи.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Новый исполнитель</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Выберите сотрудника</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Причина передачи</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>напр. В отпуске до 5 октября, аудит ведёт Айше.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Выберите, кто примет задачу.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Укажите, почему задача передаётся.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>Задача передана.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>Больше некому передать эту задачу.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Назначение не редактируют — его передают, а причина остаётся в истории задачи.</value></data>
 </root>
