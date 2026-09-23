@@ -329,6 +329,88 @@ def check_form_required_contract(root: Path, form_path: Path, form_text: str) ->
     return checks
 
 
+# ── The list shell (BL-440 package 1, 2026-09-23) ─────────────────────────────────────────────────────────
+# A _DataTable.cshtml that calls <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="…">
+# no longer carries the table markup in its own text: the v2 marker, the placeholder, the selection column and the
+# data mode are rendered by the shell FROM the page's model setup. The markers are therefore resolved from two
+# production sources — the page's `new DataTableListShellViewModel { … }` block and the shell file itself — and
+# every marker is emitted only when BOTH sides carry it. A marker missing from the shell file, or `HasSelection =
+# false` on the page, leaves the effective markup without it, so the existing checks go red exactly as they would
+# on a hand-written page. Nothing here trusts a comment or a copy.
+
+LIST_SHELL_CALL = re.compile(r"<partial\s+name\s*=\s*\"[^\"]*_ListShell(?:\.cshtml)?\"\s+model\s*=\s*\"(\w+)\"")
+LIST_SHELL_RELATIVE = Path("frontend") / "Diten.Web" / "Views" / "Shared" / "Components" / "DataTable" / "_ListShell.cshtml"
+TABLE_SKELETON_RELATIVE = Path("frontend") / "Diten.Web" / "Views" / "Shared" / "_TableSkeleton.cshtml"
+
+
+def strip_razor_comments(text: str) -> str:
+    return re.sub(r"@\*[\s\S]*?\*@", "", text)
+
+
+def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) -> Tuple[str, List[Check]]:
+    """Return the markup the page EFFECTIVELY renders, plus a red check per marker the shell file itself lacks.
+
+    Unchanged (and no checks) when the page does not call the shell. The shell checks are emitted only when they
+    fail: the golden pages' report keeps its size, and a shell that lost a marker is named directly instead of
+    surfacing as a page defect — the Index of a golden page quotes the markers in a Razor comment, which the page
+    checks (is_v2, the v2 table id) still read, so without these the loss would be invisible there."""
+    page = strip_razor_comments(data_table_html)
+    if not LIST_SHELL_CALL.search(page):
+        return data_table_html, []
+
+    shell_path = root / LIST_SHELL_RELATIVE
+    shell = strip_razor_comments(read_text(shell_path)) if shell_path.exists() else ""
+    skeleton_path = root / TABLE_SKELETON_RELATIVE
+    skeleton = strip_razor_comments(read_text(skeleton_path)) if skeleton_path.exists() else ""
+
+    def setting(pattern: str) -> Optional[str]:
+        m = re.search(pattern, page)
+        return m.group(1) if m else None
+
+    table_id = setting(r"\bTableId\s*=\s*\"([^\"]*)\"")
+    data_mode = setting(r"\bDataMode\s*=\s*\"([^\"]*)\"")
+    slug = setting(r"\bSlug\s*=\s*\"([^\"]*)\"")
+    has_selection = setting(r"\bHasSelection\s*=\s*(true|false)\b") == "true"
+
+    shell_has_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", shell))
+    shell_has_skeleton = bool(re.search(r"<partial\s+name\s*=\s*\"_TableSkeleton\"\s*/>", shell))
+    shell_has_select_all = "dt-checkboxes-select-all" in shell
+    shell_has_data_mode = "data-dt-data-mode" in shell
+    skeleton_has_id = bool(re.search(r"id\s*=\s*\"skeleton-loader\"", skeleton))
+
+    missing = [name for name, ok in (
+        ("data-dt-standard=\"v2\"", shell_has_v2),
+        ("<partial name=\"_TableSkeleton\" />", shell_has_skeleton),
+        ("dt-checkboxes-select-all", shell_has_select_all),
+        ("data-dt-data-mode", shell_has_data_mode),
+    ) if not ok]
+    print(f"[shell] {data_table_path.name} calls _ListShell — markers resolved from the model setup "
+          f"(TableId={table_id!r}, DataMode={data_mode!r}, HasSelection={str(has_selection).lower()}) and {shell_path}")
+    if missing:
+        print(f"[shell] WARNING: the shell file itself lacks {', '.join(missing)} — reported below as a red 'List shell file carries …' check")
+
+    parts: List[str] = []
+    if shell_has_skeleton:
+        parts.append('<partial name="_TableSkeleton" />')
+        if skeleton_has_id:
+            parts.append('<div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>')
+    attrs: List[str] = []
+    if table_id:
+        attrs.append(f'id="{table_id}"')
+    if shell_has_v2:
+        attrs.append('data-dt-standard="v2"')
+    if shell_has_data_mode and data_mode in ("server", "client"):
+        attrs.append(f'data-dt-data-mode="{data_mode}"')
+    attrs.append(f'class="datatables-{slug} table border-top"' if slug else 'class="table border-top"')
+    parts.append('<div class="card-datatable table-responsive"><table ' + " ".join(attrs) + '><thead><tr><th></th>')
+    if has_selection and shell_has_select_all:
+        parts.append('<th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>')
+    parts.append('</tr></thead></table></div>')
+    shell_checks = [Check(f"List shell file carries {name}", False, f"{shell_path} no longer renders {name} — every list that calls the shell lost it at once")
+                    for name in missing]
+    return data_table_html + "\n" + "".join(parts), shell_checks
+
+
 def check_list_screen_coherence(
     data_table_path: Path,
     data_table_html: str,
@@ -571,6 +653,8 @@ def main() -> int:
     dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
     data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
+    data_table_html, list_shell_checks = resolve_list_shell(root, data_table_partial, data_table_html)
+    checks.extend(list_shell_checks)
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
 
     # ── Package 0 of the golden-reference plan (owner approval 2026-09-23, BL-440) ──────────────────────────

@@ -1,0 +1,58 @@
+@*
+    THE LIST SHELL — the table card as a used component, not a copied one (BL-440 package 1, 2026-09-23).
+
+    ⚠ WHAT THIS RENDERS IS EXACTLY WHAT THE GOLDEN REFERENCES DREW BY HAND, in this order: the card, the shared
+    shaped placeholder, the responsive wrapper, the v2 table with its data mode, the empty control column, the
+    optional selection column, the page's columns, the optional actions column. The render-equality test in
+    Diten.Web.Tests (ListShellRenderEqualityTests) holds the pre-component HTML of both golden lists and asserts
+    this shell still produces it byte-for-byte after whitespace normalisation. Change the markup here and that
+    test is the one that goes red — as it should, because 138 lists will eventually stand on this.
+
+    ⚠ THIS FILE PRODUCES NO TEXT. Every header is handed in already localized (Localizer[...].Value on the page),
+    so the shell has no resx of its own and no language can be missing from it.
+
+    ⚠ DATA MODE IS FAIL-CLOSED. "server" or "client", or the render throws. A misspelt mode is not a warning
+    on a page that will silently page wrong.
+*@
+@model Diten.Web.Models.DataTable.DataTableListShellViewModel
+@{
+    if (!Model.IsDataModeValid)
+    {
+        throw new InvalidOperationException(
+            $"_ListShell: DataMode must be one of {string.Join(" | ", Diten.Web.Models.DataTable.DataTableListShellViewModel.AllowedDataModes)}, got '{Model.DataMode}' (table '{Model.TableId}').");
+    }
+    var tableClass = string.IsNullOrWhiteSpace(Model.Slug) ? "table border-top" : $"datatables-{Model.Slug} table border-top";
+}
+
+<div class="card">
+    <partial name="_TableSkeleton" />
+
+    <div class="card-datatable table-responsive">
+        <table id="@Model.TableId" data-dt-standard="v2" data-dt-data-mode="@Model.DataMode" class="@tableClass">
+            <thead>
+                <tr>
+                    <th></th>
+                    @if (Model.HasSelection)
+                    {
+                        <th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>
+                    }
+                    @foreach (var column in Model.Columns)
+                    {
+                        if (string.IsNullOrWhiteSpace(column.CssClass))
+                        {
+                            <th>@column.Header</th>
+                        }
+                        else
+                        {
+                            <th class="@column.CssClass">@column.Header</th>
+                        }
+                    }
+                    @if (Model.HasActions)
+                    {
+                        <th class="cell-fit text-end pe-3 all">@Model.ActionsHeader</th>
+                    }
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
