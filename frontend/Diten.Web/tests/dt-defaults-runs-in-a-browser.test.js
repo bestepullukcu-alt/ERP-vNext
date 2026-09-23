@@ -63,10 +63,10 @@ describe("dt-defaults.js runs with a browser's globals and nothing more", () => 
     expect(document.getElementById("skeleton-loader")).toBeNull();
   });
 
-  test("the other two exits are just as clean", () => {
+  test("the draw callback and the error exit are just as clean", () => {
     skeletonPage();
     expect(() => DtDefaults.create({}).drawCallback({ nTableWrapper: document.querySelector(".dt-container") })).not.toThrow();
-    expect(document.getElementById("skeleton-loader")).toBeNull();
+    expect(document.getElementById("skeleton-loader"), "a draw is not an answer; it must leave the placeholder").not.toBeNull();
 
     skeletonPage();
     expect(() => DtDefaults.create({ ajax: { url: "/nowhere" } }).ajax.error({ status: 503, responseText: "" }, "error", "x")).not.toThrow();

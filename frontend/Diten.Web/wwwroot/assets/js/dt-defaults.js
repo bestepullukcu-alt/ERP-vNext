@@ -587,7 +587,12 @@ window.DtDefaults = (function () {
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
         if (merged.ajax && typeof merged.ajax === 'object') {
             merged.ajax.xhrFields = $.extend(true, {}, merged.ajax.xhrFields, { withCredentials: true });
-            merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
+            // A page that brings its own handler keeps it — but the placeholder is removed on failure regardless,
+            // or that page would show a placeholder forever when its service is down.
+            var pageAjaxError = typeof merged.ajax.error === 'function' ? merged.ajax.error : null;
+            merged.ajax.error = pageAjaxError
+                ? function (xhr, textStatus, errorThrown) { revealTable(); return pageAjaxError.call(this, xhr, textStatus, errorThrown); }
+                : function (xhr, textStatus, errorThrown) {
                 revealTable();
 
                 var status = xhr && xhr.status ? xhr.status : 0;
@@ -648,8 +653,13 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
-            // A draw happened — even an empty one after a failed fetch. Whatever is on screen, it is the answer.
-            revealTable();
+            /*
+             * ⚠ NOT A REVEAL EXIT. DataTables draws the table ONCE, EMPTY, before the ajax request is answered
+             * (measured on 2.1.8: first drawCallback fires with the response still pending). Revealing here took
+             * the shaped placeholder away at init and every list opened on the three dots instead of its shape —
+             * the owner saw it the same afternoon it shipped (2026-09-23). The answer arrives through
+             * initComplete (success) or ajax.error (failure); those two are the only exits.
+             */
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
                 originalDrawCallback.call(this, settings);

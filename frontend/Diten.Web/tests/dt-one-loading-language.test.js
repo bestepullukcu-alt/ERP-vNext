@@ -92,7 +92,16 @@ describe("the placeholder is on screen before any script runs", () => {
       "the placeholder survived a failed load, so the table can never appear").toBeNull();
   });
 
-  test("a draw reveals it too — even an empty one", () => {
+  /*
+   * ⚠ THE SECOND REGRESSION OF THE SAME FIX (owner, 2026-09-23, "iskelet eskisi gibi oldu").
+   *
+   * The round above added `drawCallback` as a third exit ("a draw happened — whatever is on screen is the
+   * answer"). It is not: DataTables draws the table ONCE, EMPTY, before the ajax request is answered — measured
+   * on the shipped 2.1.8 with a probe table: first drawCallback fires with the response still pending, then a
+   * second draw, then initComplete. So the exit removed the shape at init, and every list opened on the three
+   * dots again. A draw is not an answer; initComplete and ajax.error are.
+   */
+  test("the first draw does NOT reveal — DataTables draws once before the ajax answer", () => {
     document.body.innerHTML =
       '<div class="card"><div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>' +
       '<div class="card-datatable"><div class="dt-container"><table></table></div></div></div>';
@@ -100,7 +109,21 @@ describe("the placeholder is on screen before any script runs", () => {
 
     config.drawCallback({ nTableWrapper: document.querySelector(".dt-container") });
 
-    expect(document.getElementById("skeleton-loader"), "a draw left the placeholder in place").toBeNull();
+    expect(document.getElementById("skeleton-loader"),
+      "the placeholder was removed by a draw, i.e. before any data or error arrived").not.toBeNull();
+  });
+
+  test("a page that brings its own ajax error handler still has the placeholder removed on failure", () => {
+    document.body.innerHTML =
+      '<div class="card"><div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>' +
+      '<div class="card-datatable"><div class="dt-container"><table></table></div></div></div>';
+    let pageHandlerCalls = 0;
+    const config = DtDefaults.create({ ajax: { url: "/nowhere", error: () => { pageHandlerCalls += 1; } } });
+
+    config.ajax.error({ status: 503, responseText: "" }, "error", "Service Unavailable");
+
+    expect(pageHandlerCalls, "the page's own handler was replaced instead of wrapped").toBe(1);
+    expect(document.getElementById("skeleton-loader"), "the page's handler ran but the placeholder stayed").toBeNull();
   });
 
   test("a list still carrying the OLD hidden block is left exactly as it was", () => {
