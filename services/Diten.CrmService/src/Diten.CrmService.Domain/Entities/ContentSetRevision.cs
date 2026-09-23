@@ -57,6 +57,13 @@ public sealed class ContentSetRevision : EntityBase
     /// <summary>Correlates the submission with its decision (DEC-SCMM-04 duplicate/stale-safe correlation).</summary>
     public string? CorrelationId { get; set; }
 
+    // ── render output (SCMM-16B; additive) ──────────────────────────────────────────────────────────────────────────
+    /// <summary>The rendered PDF artifact bound to this revision (SCMM-16B), or null until it has been rendered. This is
+    /// the ONLY field rendering writes — the frozen snapshot and the review status/decision are never mutated by it. It is
+    /// written once (idempotent render): a re-render returns the existing pointer rather than producing a second artifact.
+    /// </summary>
+    public ContentSetRenderedArtifact? RenderedArtifact { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -66,6 +73,30 @@ public sealed class ContentSetRevision : EntityBase
 
     /// <summary>True while the revision can still receive a decision (submitted or in-review).</summary>
     public bool IsOpen() => ReviewStatus is ContentSetReviewStatuses.Submitted or ContentSetReviewStatuses.InReview;
+
+    /// <summary>True once a rendered artifact has been bound to this revision (SCMM-16B).</summary>
+    public bool IsRendered() => RenderedArtifact is not null;
+}
+
+/// <summary>
+/// SCMM-16B (CAND-CAP-0011, SCMM-16) — the immutable pointer to a revision's rendered PDF, stored through the
+/// MOD-0262-FU01 document repository. Bound once after approval; <see cref="ContentId"/> + <see cref="Checksum"/> are the
+/// manifest-bound provenance (AT05). The raw storage object key is deliberately NOT held here — FU01 never returns it and
+/// download is addressed by content id (non-leakage).
+/// </summary>
+public sealed class ContentSetRenderedArtifact
+{
+    /// <summary>The FU01 repository content id the artifact was stored under (server-issued).</summary>
+    public Guid ContentId { get; set; }
+
+    /// <summary>The SHA-256 checksum FU01 computed while streaming the bytes (lowercase hex).</summary>
+    public string Checksum { get; set; } = string.Empty;
+
+    public string MediaType { get; set; } = "application/pdf";
+    public long ByteSize { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public DateTimeOffset RenderedAtUtc { get; set; }
+    public string? RenderedBy { get; set; }
 }
 
 /// <summary>SCMM-15 — the recorded review outcome of a revision. Embedded VO. <see cref="ReviewerId"/> is the deciding
@@ -120,4 +151,10 @@ public static class ContentSetRevisionReasonCodes
     public const string Submitted = "content_set_revision_submitted";
     public const string Approved = "content_set_revision_approved";
     public const string Rejected = "content_set_revision_rejected";
+
+    /// <summary>SCMM-16B — a revision was rendered to a PDF artifact and the pointer bound.</summary>
+    public const string Rendered = "content_set_revision_rendered";
+
+    /// <summary>SCMM-16B — render was refused because the revision is not approved.</summary>
+    public const string NotApproved = "content_set_revision_not_approved";
 }

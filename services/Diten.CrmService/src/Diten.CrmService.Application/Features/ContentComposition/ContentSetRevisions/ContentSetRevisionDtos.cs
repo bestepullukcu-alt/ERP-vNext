@@ -36,3 +36,14 @@ public sealed record ContentSetRevisionDto(
     bool IsArchived);
 
 public sealed record ContentSetRevisionListDto(IReadOnlyList<ContentSetRevisionDto> Items, int Total);
+
+/// <summary>SCMM-16B — the rendered-artifact pointer returned by render / read. The internal storage object key is never
+/// projected (FU01 non-leakage); the artifact is addressed by <see cref="ContentId"/>.</summary>
+public sealed record RenderedArtifactDto(
+    Guid ContentId,
+    string Checksum,
+    string MediaType,
+    long ByteSize,
+    string FileName,
+    DateTimeOffset RenderedAtUtc,
+    string? RenderedBy);

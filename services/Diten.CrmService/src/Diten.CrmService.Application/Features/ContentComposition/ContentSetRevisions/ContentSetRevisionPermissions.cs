@@ -12,6 +12,11 @@ public static class ContentSetRevisionPermissions
     public const string Submit = "crm.content-set.manage";
     public const string Review = "crm.content-set.review";
 
-    /// <summary>The new key this WP introduces (Read/Submit already exist under ContentSet).</summary>
-    public static readonly IReadOnlyList<string> New = new[] { Review };
+    /// <summary>SCMM-16B — render an approved revision to a PDF artifact. A SEPARATE capability from authoring/review:
+    /// producing the released output is its own operation. Needs an AuthService catalog entry + 97c5 grant to seed.</summary>
+    public const string Render = "crm.content-set.render";
+
+    /// <summary>The keys these WPs introduce (Read/Submit already existed under ContentSet; Review = SCMM-15;
+    /// Render = SCMM-16B).</summary>
+    public static readonly IReadOnlyList<string> New = new[] { Review, Render };
 }

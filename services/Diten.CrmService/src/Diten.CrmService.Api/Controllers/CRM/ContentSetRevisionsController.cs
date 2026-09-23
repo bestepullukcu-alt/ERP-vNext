@@ -49,4 +49,27 @@ public sealed class ContentSetRevisionsController : CustomBaseController
         Guid revisionId, [FromBody] RecordReviewDecisionRequest request, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new RecordReviewDecisionCommand(revisionId, request.Decision, request.Reason), cancellationToken));
+
+    // SCMM-16B — render an approved revision to a PDF, store it through MOD-0262-FU01, and bind the pointer. Idempotent
+    // (a re-render returns the existing artifact). The response carries the content id / checksum, never the object key.
+    [HttpPost(Base + "/{revisionId:guid}/render")]
+    [HasPermission(Perms.Render)]
+    public async Task<IActionResult> Render(Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new RenderContentSetRevisionCommand(revisionId), cancellationToken));
+
+    // SCMM-16B — stream the rendered PDF. The content id is resolved from the revision (never a client input, so FU01's
+    // non-leakage holds); another tenant's revision or an unrendered revision is 404.
+    [HttpGet(Base + "/{revisionId:guid}/artifact")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> Artifact(Guid revisionId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetContentSetRevisionArtifactQuery(revisionId), cancellationToken);
+        if (!response.IsSuccessful || response.Data is null)
+        {
+            return CreateActionResultInstance(response);
+        }
+
+        return File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
+    }
 }

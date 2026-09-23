@@ -23,3 +23,11 @@ public sealed record RecordReviewDecisionCommand(
     Guid RevisionId,
     string Decision,
     string? Reason = null) : IRequest<Response<bool>>;
+
+/// <summary>SCMM-16B (CAND-CAP-0011, SCMM-16) — render an approved revision's frozen manifest to a single PDF, store it
+/// through the MOD-0262-FU01 document repository, and bind the returned content id + checksum to the revision. Only an
+/// <c>approved</c> revision can be rendered (else 409). Idempotent (AT05 retry no-dup): once an artifact is bound, a
+/// re-render returns the existing pointer with no second upload. TenantId is server-resolved; the revision id is the
+/// route, never a client-supplied content id.</summary>
+public sealed record RenderContentSetRevisionCommand(Guid RevisionId)
+    : IRequest<Response<RenderedArtifactDto>>;

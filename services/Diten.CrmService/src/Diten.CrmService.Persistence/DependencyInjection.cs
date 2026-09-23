@@ -624,6 +624,10 @@ public static class DependencyInjection
         Map<ContentSetRevision>(map =>
             map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid));
         Map<ContentSetReviewDecision>(_ => { });
+        // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
+        // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
+        Map<ContentSetRenderedArtifact>(map =>
+            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
 
         Map<KnowledgeExternalReference>(_ => { });
 

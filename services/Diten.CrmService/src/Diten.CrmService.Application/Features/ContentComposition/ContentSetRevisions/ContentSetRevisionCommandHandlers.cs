@@ -1,5 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
+using Diten.CrmService.Application.Features.ContentComposition.ContentSetRevisions.Rendering;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -235,4 +238,129 @@ public sealed class RecordReviewDecisionHandler : IRequestHandler<RecordReviewDe
     // unauthenticated actor can never rubber-stamp an unauthenticated submission.
     private bool ActorMatchesSubmitter(string? submittedBy)
         => string.Equals(_actor.ActorName ?? string.Empty, submittedBy ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+}
+
+/// <summary>
+/// SCMM-16B (CAND-CAP-0011, SCMM-16) — render an approved revision to a single PDF, store it through the MOD-0262-FU01
+/// document repository, and bind the returned content id + checksum to the revision (manifest-bound, AT05). Only an
+/// <c>approved</c> revision may be rendered (else 409). The render is idempotent (AT05 retry no-dup): once an artifact is
+/// bound, a re-render returns the existing pointer without a second render or upload. The store is <b>fail-closed</b> — a
+/// storage failure throws and the artifact is never bound; audit is fail-soft and never blocks the render.
+/// </summary>
+public sealed class RenderContentSetRevisionHandler
+    : IRequestHandler<RenderContentSetRevisionCommand, Response<RenderedArtifactDto>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IActorContext _actor;
+    private readonly IContentSetRevisionRepository _revisions;
+    private readonly IContentSetRevisionRenderer _renderer;
+    private readonly IContentArtifactStore _store;
+    private readonly IContentCompositionAuditPublisher _audit;
+
+    public RenderContentSetRevisionHandler(
+        ITenantContext tenant,
+        IActorContext actor,
+        IContentSetRevisionRepository revisions,
+        IContentSetRevisionRenderer renderer,
+        IContentArtifactStore store,
+        IContentCompositionAuditPublisher audit)
+    {
+        _tenant = tenant;
+        _actor = actor;
+        _revisions = revisions;
+        _renderer = renderer;
+        _store = store;
+        _audit = audit;
+    }
+
+    public async Task<Response<RenderedArtifactDto>> Handle(
+        RenderContentSetRevisionCommand request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<RenderedArtifactDto>.Fail("Tenant context is required.", 400);
+        }
+
+        var revision = await _revisions.GetByIdAsync(tenantId, request.RevisionId, cancellationToken);
+        if (revision is null)
+        {
+            return Response<RenderedArtifactDto>.Fail("Content set revision not found.", 404);
+        }
+
+        // Idempotent (AT05 retry no-dup): an already-bound artifact is returned as-is — no re-render, no second upload.
+        if (revision.RenderedArtifact is { } bound)
+        {
+            return Response<RenderedArtifactDto>.Success(ToDto(bound), 200);
+        }
+
+        // Only an approved revision may be rendered (the review gate is the release precondition).
+        if (!string.Equals(revision.ReviewStatus, ContentSetReviewStatuses.Approved, StringComparison.Ordinal))
+        {
+            return Response<RenderedArtifactDto>.Fail(
+                $"Only an approved content set revision can be rendered (current status: {revision.ReviewStatus}).", 409);
+        }
+
+        // Render → store. The store is fail-closed: a non-2xx throws ContentArtifactStoreException, which propagates and
+        // leaves RenderedArtifact unset (nothing is persisted), so a storage outage never marks a revision rendered.
+        var content = _renderer.Render(revision);
+        var stored = await _store.StoreAsync(
+            new ContentArtifactStoreRequest(
+                revision.Id,
+                DeterministicVersionId(revision.Id, revision.RevisionNumber),
+                content.FileName,
+                content.MediaType,
+                content.Bytes),
+            cancellationToken);
+
+        var now = DateTimeOffset.UtcNow;
+        revision.RenderedArtifact = new ContentSetRenderedArtifact
+        {
+            ContentId = stored.ContentId,
+            Checksum = stored.Checksum,
+            MediaType = stored.MediaType,
+            ByteSize = stored.ByteSize,
+            FileName = content.FileName,
+            RenderedAtUtc = now,
+            RenderedBy = _actor.ActorName
+        };
+        revision.UpdatedAt = now;
+        revision.UpdatedBy = _actor.ActorName;
+
+        await _revisions.UpdateAsync(revision, cancellationToken);
+
+        await SafeAuditAsync(tenantId, revision, stored, cancellationToken);
+
+        return Response<RenderedArtifactDto>.Success(ToDto(revision.RenderedArtifact), 201);
+    }
+
+    // Fail-soft: an audit outage never breaks a completed render (the artifact is already stored and bound).
+    private async Task SafeAuditAsync(
+        Guid tenantId, ContentSetRevision revision, ContentArtifactStoreResult stored, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Counts / ids / correlation only — no manifest payload or PII.
+            var detail = $"revision={revision.RevisionCode};contentId={stored.ContentId:D};bytes={stored.ByteSize}";
+            await _audit.PublishAsync(
+                ContentSetRevisionReasonCodes.Rendered, tenantId, "ContentSetRevision", revision.Id, revision.Version,
+                detail, cancellationToken);
+        }
+        catch
+        {
+            // Audit is a side effect, not a gate (mirrors IContentCompositionAuditPublisher's fail-soft contract).
+        }
+    }
+
+    private static RenderedArtifactDto ToDto(ContentSetRenderedArtifact a) => new(
+        a.ContentId, a.Checksum, a.MediaType, a.ByteSize, a.FileName, a.RenderedAtUtc, a.RenderedBy);
+
+    // A stable per-(revision, revisionNumber) version id so the deterministic FU01 object key is reproducible. Idempotency
+    // itself is enforced above (the bound-artifact short-circuit); this only keeps the storage key stable on a retry.
+    private static Guid DeterministicVersionId(Guid revisionId, int revisionNumber)
+    {
+        var seed = Encoding.UTF8.GetBytes($"content-set-revision-artifact:{revisionId:N}:{revisionNumber}");
+        return new Guid(MD5.HashData(seed));
+    }
 }
