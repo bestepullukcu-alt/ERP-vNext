@@ -329,6 +329,86 @@ def check_form_required_contract(root: Path, form_path: Path, form_text: str) ->
     return checks
 
 
+def check_list_screen_coherence(
+    data_table_path: Path,
+    data_table_html: str,
+    index_path: Path,
+    index_html: str,
+    js_path: Path,
+    js_text: str,
+    data_mode_arg: Optional[str],
+    is_v2: bool,
+) -> List[Check]:
+    """The four coherence rules a copied page silently breaks (BL-440, 2026-09-23).
+
+    1. data_mode — declared (module pack `data_mode`, page marker `data-dt-data-mode`) and honoured:
+       server → DataTables serverSide, no client-side filter hook; client → no serverSide.
+    2. No hard-coded page cap (`pageSize=N`) in the page's JS — in EITHER mode. A capped client-side list
+       shows N rows and calls it the total (Users: pageSize=1000 → the 1001st user never appears, no error).
+    3. Selection column ↔ bulk JS ↔ bulk bar: JS that binds bulk selection needs the checkbox column, the
+       column needs the bar, the bar needs the JS. Any one without the others is a dead feature.
+    4. The shaped placeholder partial on v2 pages (the old hidden five-bar block is the un-migrated look).
+    Plus: the list goes through the shared layer (DitenDataTable.createCrudTable or DtDefaults.create).
+    """
+    out: List[Check] = []
+    js_no_comments = re.sub(r"/\*[\s\S]*?\*/", "", js_text)
+    js_no_comments = re.sub(r"(^|[^:])//.*$", r"\1", js_no_comments, flags=re.MULTILINE)
+
+    marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
+    page_mode = marker.group(1) if marker else None
+    if data_mode_arg and page_mode and data_mode_arg != page_mode:
+        out.append(Check("Data mode: page marker agrees with the module pack",
+                         False, f"page says {page_mode}, pack says {data_mode_arg} (file: {data_table_path})"))
+    effective_mode = data_mode_arg or page_mode
+    if effective_mode is None:
+        out.append(Check("Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)",
+                         False, f"Undeclared: is this list server-paged or a bounded client-side set? (file: {data_table_path})"))
+    else:
+        out.append(Check(f"Data mode declared: {effective_mode}", True))
+        server_side = bool(re.search(r"\bserverSide\s*:\s*true\b", js_no_comments))
+        client_filter_hook = bool(re.search(r"ext\.search\.push\(", js_no_comments))
+        if effective_mode == "server":
+            out.append(Check("Server mode: DataTables serverSide is on", server_side,
+                             "" if server_side else f"data_mode=server but index.js has no `serverSide: true` (file: {js_path})"))
+            out.append(Check("Server mode: no client-side filter hook", not client_filter_hook,
+                             "" if not client_filter_hook else f"data_mode=server but filters run in the browser via ext.search.push (file: {js_path})"))
+        else:
+            out.append(Check("Client mode: DataTables serverSide is off", not server_side,
+                             "" if not server_side else f"data_mode=client but index.js sets `serverSide: true` (file: {js_path})"))
+
+    cap = re.search(r"pageSize=(\d+)", js_no_comments)
+    out.append(Check("No hard-coded page cap in the page's JS", cap is None,
+                     "" if cap is None else f"`pageSize={cap.group(1)}` — rows past {cap.group(1)} are silently cut, the pager calls {cap.group(1)} the total (file: {js_path})"))
+
+    js_binds_bulk = bool(re.search(r"bindBulkSelection\(|\bbulk\s*:", js_no_comments))
+    markup_has_selection = "dt-checkboxes-select-all" in data_table_html
+    index_has_bar = "_BulkActionBar" in index_html
+    if js_binds_bulk and not markup_has_selection:
+        out.append(Check("Selection column ↔ bulk JS", False,
+                         f"index.js binds bulk selection but _DataTable.cshtml has no selection column (dt-checkboxes-select-all) — the bulk bar can never appear (file: {data_table_path})"))
+    elif markup_has_selection and not js_binds_bulk:
+        out.append(Check("Selection column ↔ bulk JS", False,
+                         f"_DataTable.cshtml has a selection column but index.js never binds it (bindBulkSelection / createCrudTable bulk) (file: {js_path})"))
+    else:
+        out.append(Check("Selection column ↔ bulk JS", True))
+    if markup_has_selection and not index_has_bar:
+        out.append(Check("Selection column ↔ bulk bar", False,
+                         f"a selection column without <partial _BulkActionBar> in Index.cshtml selects into nothing (file: {index_path})"))
+    else:
+        out.append(Check("Selection column ↔ bulk bar", True))
+
+    if is_v2:
+        shaped = bool(re.search(r"<partial\s+name\s*=\s*\"_TableSkeleton\"\s*/>", data_table_html))
+        old_block = "backbone-skeleton" in data_table_html
+        out.append(Check("Shaped placeholder: shared _TableSkeleton partial", shaped and not old_block,
+                         "" if (shaped and not old_block) else f"the list still draws the old hidden five-bar block instead of <partial name=\"_TableSkeleton\" /> (file: {data_table_path})"))
+
+    shared_layer = bool(re.search(r"DitenDataTable\.createCrudTable\(|DtDefaults\.create\(", js_no_comments))
+    out.append(Check("List goes through the shared layer (createCrudTable / DtDefaults.create)", shared_layer,
+                     "" if shared_layer else f"index.js builds its DataTable without the shared layer (file: {js_path})"))
+    return out
+
+
 def print_report(checks: List[Check]) -> None:
     failed = [c for c in checks if not c.ok]
     passed = [c for c in checks if c.ok]
@@ -415,6 +495,18 @@ def main() -> int:
         help="Golden reference variant: slim (<=8 form fields, create/edit offcanvas) or compact (>8 form fields, full pages)",
     )
     parser.add_argument(
+        "--data-mode",
+        choices=["server", "client"],
+        default=None,
+        help="Module pack data_mode. Defaults to the page's own <table data-dt-data-mode=...> marker; both present and different is a FAIL.",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["report", "gaps"],
+        default="report",
+        help="report = full pass/fail list; gaps = only the failing checks, one per line (what the touch protocol quotes).",
+    )
+    parser.add_argument(
         "--api-profile",
         choices=["proxy", "direct-gateway"],
         default=None,
@@ -480,6 +572,12 @@ def main() -> int:
     css_text = read_text(backbone_custom_css)
     data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
+
+    # ── Package 0 of the golden-reference plan (owner approval 2026-09-23, BL-440) ──────────────────────────
+    # Four things "look at the reference and imitate it" could not guarantee, measured on the Users screen:
+    # the data model, a hard-coded page cap, markup and JS expecting different things, and the placeholder.
+    checks.extend(check_list_screen_coherence(
+        data_table_partial, data_table_html, index_cshtml, index_html, index_js, js_text, args.data_mode, is_v2))
 
     checks.append(
         check_contains(
@@ -1083,6 +1181,11 @@ def main() -> int:
             )
         )
 
+    if args.format == "gaps":
+        gaps = [c for c in checks if not c.ok]
+        for i, c in enumerate(gaps, 1):
+            print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
+        return 0 if not gaps else 1
     print_report(checks)
     return 1 if any(not c.ok for c in checks) else 0
 

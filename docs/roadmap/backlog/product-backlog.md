@@ -6131,7 +6131,7 @@ Gelecek gerileme riski: orta-yüksek — yeni bir gelen kutusu kalemi türü, MO
 
 **Liste ekranları referansı kopyalıyor, kullanmıyor — 138 listede yapı tek tek elle yazılıyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ (ekip kararı) · BULAN: CT + sahip (Kullanıcılar modülü testi) · KAYIT: 2026-09-23
+DURUM: KARAR VERİLDİ, YÜRÜYOR · SAHİP: CT (paketler prompt olarak çıkar) · BULAN: CT + sahip (Kullanıcılar modülü testi) · KAYIT: 2026-09-23 · KARAR: 2026-09-23
 
 Ölçüldü (2026-09-23, test dalı):
 
@@ -6172,6 +6172,18 @@ bugün yapıldığı gibi).
 
 Gelecek gerileme riski: (1) düşük — yalnız test. (2) YÜKSEK ve bilinçli: ürünün bütün listelerinin şeklini
 belirler; bu yüzden CT tek başına karar vermiyor, ekip tartışması için buraya yazıldı.
+
+**KARAR (sahip, 2026-09-23, ekip sayfası: "Altın Referans Sözleşmesi"):** ikisi de — guard şimdi, bileşen ilk yeni listede.
+İki ek karar:
+1. **Veri modeli her sayfada sunucu değil, kurala göre:** module pack `data_mode: server | client` (+ istemcide `data_mode_max_rows`);
+   ayrım kümenin sınırlı olup olmadığı. Kural: `frontend-datatable-template.md` → Veri modeli; `module-pack-standard.md`.
+2. **Eski sayfalar şimdi değişmez; dokunma protokolü:** eski bir liste ekranına dokunan görev sapmaları listeler ve sahibe sorar
+   (`frontend-datatable-template.md` → Dokunma protokolü; altı ajan; Claude Code PostToolUse kancası `list_screen_touch_hook.py`).
+
+**Paketler:** 0 guard'lar + kural + kanca (CT, bitti) · 1 liste kabuğu bileşeni · 2 JS fabrikası (`createCrudTable` büyür) ·
+3 sunucu veri modu (pilot Auth/Users sorgusu) · 4 altın referanslar bileşene + kural dosyaları · 5 Kullanıcılar pilot ekran.
+Sıra zorunlu; her paket ayrı prompt, CT kabul eder. Ölçüm (paket 0): Kullanıcılar 17 sapma; Golden Slim/Compact yeni kontrollerde temiz,
+yalnız eski `personalizationClient` kontrolü kırmızı (HEAD'de de kırmızıydı, ayrı borç).
 
 ---
 

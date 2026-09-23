@@ -147,8 +147,12 @@ dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
 
 ### DataTable Kontrat Doğrulama (Frontend)
 ```bash
-python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact [--data-mode server|client] [--format gaps]
 ```
+
+> Eski bir liste ekranına dokunan görev **dokunma protokolüne** tabidir (`frontend-datatable-template.md` → Dokunma protokolü):
+> sapmalar `--format gaps` ile listelenir, sahibe sorulur, sessizce ne düzeltilir ne atlanır. Claude Code'da `.claude/settings.json`
+> PostToolUse kancası (`list_screen_touch_hook.py`) bunu düzenlemeden hemen sonra otomatik koşturur.
 
 ---
 
