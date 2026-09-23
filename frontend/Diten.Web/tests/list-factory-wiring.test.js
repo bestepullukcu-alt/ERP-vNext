@@ -45,7 +45,8 @@ describe("the list factory's wiring (the seams the pure tests cannot see)", () =
       _handlers: handlers, _searchCalls: searchCalls,
       column: () => ({ visible: () => true }), order: () => [[2, "asc"]],
       search: (v) => { if (v !== undefined) { searchCalls.push(v); api._search = v; return api; } return api._search || ""; },
-      draw() {}, columns: { adjust() {} },
+      // A real draw fires search/order events (that is how DataTables reports a redraw); the dirty recompute hangs on them.
+      draw() { api.emit("search.dt"); api.emit("order.dt"); }, columns: { adjust() {} },
       table: () => ({ container: () => document.querySelector(".card-datatable") }),
       on(events, fn) { String(events).split(/\s+/).forEach((e) => { (handlers[e] = handlers[e] || []).push(fn); }); return api; },
       emit(e) { (handlers[e] || []).forEach((fn) => fn()); },
@@ -120,6 +121,23 @@ describe("the list factory's wiring (the seams the pure tests cannot see)", () =
 
     expect(api._searchCalls, "the saved view applied to the table must be the default one").toContain("chosen");
     expect(api._searchCalls).not.toContain("first");
+  });
+
+  test("3b. a page that opens ON its saved view is not dirty — the Save View button stays hidden (CT, measured live)", async () => {
+    // Live on Golden Slim: save a view with status=[Passive], reload → the filter was applied, the badge said 1, and the
+    // Save View button was VISIBLE although captured == saved (serialized byte-equal). Cause: applyState assigned
+    // `appliedFilters` AFTER applyViewToTable's draw, and that draw's events recomputed dirty against the OLD filters.
+    window.personalizationClient = {
+      getViews: async () => [{ id: "v", isDefault: true, viewDefinition: { filters: { status: ["Passive"] }, search: "" } }]
+    };
+    const api = stub();
+    // The page's lookup fetch is what puts applyState AFTER arming on a real page; without an await here the saved
+    // view is applied synchronously inside initComplete, before dirty-tracking is armed, and the bug cannot show.
+    await build(api, { filters: { fields: [{ id: "filterStatus", key: "status", kind: "multi" }], loadOptions: async () => { await tick(); } } });
+    await tick(20);
+
+    const btn = document.querySelector(".dt-save-filter-btn");
+    expect(btn.classList.contains("d-none"), "applied == saved, so nothing to save").toBe(true);
   });
 
   test("4. the filter hook is scoped to ITS table — another table on the page is never filtered by it", async () => {

@@ -6192,6 +6192,17 @@ DataMode fail-closed); iki altın `_DataTable.cshtml` kabuğu kullanıyor; rende
 `.Value` ile aldığı için HTML-encode ediyor, eski `@Localizer[...]` etmiyordu — `_BulkActionBar` ile aynı davranış, altın başlıklarda
 özel karakter yok; resx'e HTML koyan bir sayfa kabuğa geçerken bunu görecek.
 
+**Paket 2 notları (2026-09-23, WP-UI-LIST-FACTORY-01, merge e9e00106e):** `DitenDataTable.createList` (dataMode fail-closed, filters,
+savedView, quickView, form, toolbar); Golden Slim 991→246, Compact 685→163; 79 tesisat ismi fabrikada. CT'nin 6 sabotajından 4'ü
+yeşil kalmıştı — tesisat boşlukları (arama sonrası dirty, populate, isDefault, filtre kancası kapsamı) → `list-factory-wiring.test.js`.
+Canlı (DevEnablement açık): Apply/Reset/rozet/panel, Save View kaydet → yeniden yükle → otomatik uygulanıyor → sil, hızlı görünüm,
+toplu seçim, düzenleme offcanvas'ı — hepsi ölçüldü. Bilinen: `createCrudTable` 84 eski çağıran için `dataMode`'suz kalıyor (bilinçli;
+zorunluluk `createList`'te); `normalizeScalar` sayıyı `String()` yapıyor (eski sayfalar `''` yapıyordu — `1 ≡ "1"` kuralının doğru hâli).
+**CT canlı bulgusu (paket 2 kabulü):** kayıtlı görünümle açılan sayfa dirty görünüyordu (Save View düğmesi görünür, oysa
+captured == saved bayt bayt aynı): `applyState` filtreleri `applyViewToTable`'ın çiziminden SONRA atıyordu, çizimin
+tetiklediği search/order olayları dirty'yi eski (boş) filtrelerle hesaplıyordu. Düzeltildi (filtreler önce, sonda senkron);
+guard `list-factory-wiring.test.js` 3b — sayfanın lookup fetch'ini taklit eden bir await ile (onsuz hata görünmez).
+
 ---
 
 ### BL-393

@@ -792,10 +792,18 @@ window.DitenDataTable = (function () {
             setSaveVisible(state.isDirty(captureView(api || dt, state, appliedFilters), store.saved));
         }
         function applyState(api, view) {
-            var s = applyViewToTable(api, state, view);
+            /*
+             * ⚠ ORDER MATTERS (measured live, 2026-09-23): applyViewToTable ends in api.draw(), and that draw fires the
+             * search/order/column events which recompute the dirty state from `appliedFilters`. Assigning the filters
+             * AFTER the draw meant the recompute saw the old (empty) filters against the saved view and showed the
+             * Save View button on a freshly loaded, un-dirty page. The filters are the first thing set now.
+             */
+            var s = state.normalizeViewState(view);
             appliedFilters = s.filters;
+            applyViewToTable(api, state, s);
             writeFilterControls(fields, appliedFilters);
             refreshVisual(api);
+            syncDirty(api);
         }
 
         // The client-side filter hook — registered ONCE per table, scoped to this table only.
