@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Список Global Product недоступен; введите произвольный субъект.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Служба Global Product недоступна; введите произвольный субъект.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>У вас нет прав для просмотра Global Products; введите произвольный субъект.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>Изменить порядок</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>Изменить порядок тем</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>Изменить порядок разделов</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>Изменить порядок профилей аудитории</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>Перетащите строки, чтобы изменить порядок, затем сохраните.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>Сохранить порядок</value></data>
 </root>

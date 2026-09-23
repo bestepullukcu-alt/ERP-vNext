@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>La lista de Global Products no está disponible; introduzca un asunto personalizado.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>El servicio de Global Product no está disponible; introduzca un asunto personalizado.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>No tiene permiso para explorar Global Products; introduzca un asunto personalizado.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>Reordenar</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>Reordenar temas</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>Reordenar tópicos</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>Reordenar perfiles de audiencia</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>Arrastra las filas para cambiar su orden y luego guarda.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>Guardar orden</value></data>
 </root>

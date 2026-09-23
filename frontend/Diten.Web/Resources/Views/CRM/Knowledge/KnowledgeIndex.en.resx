@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>The Global Product list is unavailable; enter a custom subject.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>The Global Product service is not available; enter a custom subject.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>You don't have permission to browse Global Products; enter a custom subject.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>Reorder</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>Reorder Subjects</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>Reorder Topics</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>Reorder Audience Profiles</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>Drag the rows to change their order, then save.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>Save Order</value></data>
 </root>

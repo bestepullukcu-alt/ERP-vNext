@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Global Product listesi kullanılamıyor; özel bir subject girin.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Global Product servisi mevcut değil; özel bir subject girin.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>Global Product görüntüleme izniniz yok; özel bir subject girin.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>Sırala</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>Konuları Sırala</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>Başlıkları Sırala</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>Hedef Kitle Profillerini Sırala</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>Sırayı değiştirmek için satırları sürükleyin, sonra kaydedin.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>Sırayı Kaydet</value></data>
 </root>
