@@ -240,4 +240,16 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>该条目需要提供证明文件才能完成。</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>该文件无法上传。请检查文件类型和大小后重试。</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>任务创建后即可添加附件（含证明文件）。</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>移交</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>将此任务移交他人</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>新负责人会立即看到该任务。移交原因将保留在任务历史中。</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>新负责人</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>选择一位人员</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>移交原因</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>例如：10 月 5 日前休假，审核由 Ayşe 接手。</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>请选择由谁接手该任务。</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>请说明任务为何移交。</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>任务已移交。</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>没有其他人可以接手此任务。</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>分配不是编辑出来的，而是移交的；移交原因会保留在任务历史中。</value></data>
 </root>

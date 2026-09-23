@@ -240,4 +240,16 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>This item requires evidence before it can be completed.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>This file could not be uploaded. Check its type and size and try again.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Attachments, including evidence, can be added once the task is created.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Hand over</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Hand this task to someone else</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>The new owner sees the task immediately. The reason is kept with the task's history.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>New owner</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Choose a person</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Reason for the handover</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>e.g. On leave until 5 October; Ayşe is covering the audit.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Choose who takes the task over.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Write why the task is changing hands.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>The task was handed over.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>There is nobody else this task can be handed to.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>An assignment is not edited — it is handed over, with a reason that stays in the task's history.</value></data>
 </root>

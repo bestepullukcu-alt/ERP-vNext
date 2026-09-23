@@ -145,6 +145,13 @@ describe("the tag box's text starts on the same line as its neighbours'", () => 
  * already in that field's own card heading (see the "never repeats its own card header" test).
  */
 const ICON_MAP = {
+  /*
+   * 2026-09-23 — the edit form's read-only assignment. They are fields the reader looks at rather than types
+   * into, and the rule the owner set is "every field carries one", not "every editable field".
+   * `bx-user-check` and not `bx-user`: the picker above names WHO MAY take the work, these name who HAS it.
+   */
+  taskAssignmentTargetRead: "bx-directions",
+  taskAssigneeRead: "bx-user-check",
   taskTitle: "bx-text",
   taskPriority: "bx-flag",
   /*

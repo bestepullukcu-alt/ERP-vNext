@@ -35,5 +35,8 @@
     <script src="~/assets/js/shared/diten-person-picker.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/form.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/document-references.js" asp-append-version="true"></script>
+    @* The handover action. Loaded BEFORE form-page.js, which calls TaskReassign.mount once the form has
+       been hydrated from the loaded task. *@
+    <script src="~/assets/js/Tasks/reassign.js" asp-append-version="true"></script>
     <script src="~/assets/js/Tasks/form-page.js" asp-append-version="true"></script>
 }
