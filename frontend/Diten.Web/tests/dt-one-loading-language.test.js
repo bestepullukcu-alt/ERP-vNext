@@ -68,6 +68,41 @@ describe("the placeholder is on screen before any script runs", () => {
       .toBeNull();
   });
 
+  /*
+   * ⚠ THE REGRESSION THIS SUITE MISSED, AND THE OWNER FOUND (2026-09-23).
+   *
+   * The golden reference pages worked the day before and showed nothing the day after. Cause: their data comes
+   * from a service that was down, DataTables does not call `initComplete` when the first ajax FAILS, and
+   * `initComplete` was the only place that REMOVED the placeholder. Hiding it is not enough — the CSS rule that
+   * keeps the table out of the page matches on the element being PRESENT. So the page stayed blank where it
+   * used to show an empty table: the change turned "service down" into "page down".
+   *
+   * Both remaining exits now perform the same act.
+   */
+  test("a failed first load still reveals the table", () => {
+    document.body.innerHTML =
+      '<div class="card"><div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>' +
+      '<div class="card-datatable"><div class="dt-container"><table></table></div></div></div>';
+    const config = DtDefaults.create({ ajax: { url: "/nowhere" } });
+
+    // What DataTables calls when the request fails: the error handler, and no initComplete at all.
+    config.ajax.error({ status: 503, responseText: "" }, "error", "Service Unavailable");
+
+    expect(document.getElementById("skeleton-loader"),
+      "the placeholder survived a failed load, so the table can never appear").toBeNull();
+  });
+
+  test("a draw reveals it too — even an empty one", () => {
+    document.body.innerHTML =
+      '<div class="card"><div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>' +
+      '<div class="card-datatable"><div class="dt-container"><table></table></div></div></div>';
+    const config = DtDefaults.create({});
+
+    config.drawCallback({ nTableWrapper: document.querySelector(".dt-container") });
+
+    expect(document.getElementById("skeleton-loader"), "a draw left the placeholder in place").toBeNull();
+  });
+
   test("a list still carrying the OLD hidden block is left exactly as it was", () => {
     document.body.innerHTML = '<div id="skeleton-loader" class="backbone-skeleton"></div>';
     const config = DtDefaults.create({});

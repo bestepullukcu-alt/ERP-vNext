@@ -558,12 +558,35 @@ window.DtDefaults = (function () {
             delete merged.buttons;
         }
 
+        /*
+         * ⚠ REVEALING THE TABLE IS ONE ACT, AND EVERY EXIT HAS TO PERFORM IT (2026-09-23, owner report).
+         *
+         * MEASURED: the shaped placeholder hides the table through a CSS sibling rule, so what reveals the table
+         * is REMOVING the element — hiding it is not enough. Only `initComplete` removed it, and DataTables does
+         * not call `initComplete` when the first ajax FAILS. With the golden reference pages' service down, the
+         * placeholder stayed in the DOM, the rule kept matching, and the page showed nothing at all. Before the
+         * shaped placeholder existed the same failure left an empty table on screen — so the change turned
+         * "service down" into "page down".
+         *
+         * Now the draw path and the ajax error path perform the same act. A list that still carries the old
+         * hidden block keeps falling through to the fade, exactly as before.
+         */
+        var revealTable = function () {
+            var shaped = global.document.querySelector('#skeleton-loader[data-table-skeleton]');
+            if (shaped) {
+                shaped.remove();
+                return true;
+            }
+            try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+            return false;
+        };
+
         // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
         if (merged.ajax && typeof merged.ajax === 'object') {
             merged.ajax.xhrFields = $.extend(true, {}, merged.ajax.xhrFields, { withCredentials: true });
             merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
-                try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+                revealTable();
 
                 var status = xhr && xhr.status ? xhr.status : 0;
                 var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
@@ -603,9 +626,7 @@ window.DtDefaults = (function () {
              * out of step with. A list still carrying the old hidden block falls through to the fadeOut below,
              * exactly as before.
              */
-            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
-            if (shaped) {
-                shaped.remove();
+            if (revealTable()) {
                 /*
                  * A table that was not rendered has no column widths worth keeping. DataTables recomputes on
                  * demand, so ask it once, now that the table is actually on screen.
@@ -615,8 +636,6 @@ window.DtDefaults = (function () {
                     api.columns.adjust();
                     if (api.responsive && typeof api.responsive.recalc === 'function') { api.responsive.recalc(); }
                 } catch (e) { }
-            } else {
-                $('#skeleton-loader').fadeOut(300);
             }
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {
@@ -627,7 +646,8 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
-            $('#skeleton-loader').fadeOut(200);
+            // A draw happened — even an empty one after a failed fetch. Whatever is on screen, it is the answer.
+            revealTable();
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
                 originalDrawCallback.call(this, settings);
