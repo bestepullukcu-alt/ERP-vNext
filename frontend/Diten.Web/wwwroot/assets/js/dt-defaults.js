@@ -572,7 +572,9 @@ window.DtDefaults = (function () {
          * hidden block keeps falling through to the fade, exactly as before.
          */
         var revealTable = function () {
-            var shaped = global.document.querySelector('#skeleton-loader[data-table-skeleton]');
+            // `document`, never `global`: the browser has no `global` (only Node does — which is why vitest stayed green
+            // while every list page threw ReferenceError inside initComplete, 2026-09-23 14:16–15:00).
+            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
             if (shaped) {
                 shaped.remove();
                 return true;
