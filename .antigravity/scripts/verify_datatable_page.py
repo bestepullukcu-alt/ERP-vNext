@@ -411,6 +411,101 @@ def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) 
     return data_table_html + "\n" + "".join(parts), shell_checks
 
 
+# ── The list factory (BL-440 package 2, 2026-09-23) ───────────────────────────────────────────────────────
+# A page whose index.js calls `DitenDataTable.createList({ dataMode: 'client', … })` no longer carries the Save View
+# machine, the inline filter bar, the DataTables constructor or the bulk wiring in its own text: those live in
+# diten-datatable.js. Exactly like resolve_list_shell, the markers the page checks look for are resolved from TWO
+# production sources — the page's factory call and the factory file — and each marker is emitted only when the factory
+# demonstrably carries the mechanic behind it. A mechanic missing from the factory is reported as its own red check;
+# nothing is taken from a comment or a copy.
+
+LIST_FACTORY_CALL = re.compile(r"DitenDataTable\.createList\(")
+LIST_FACTORY_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "diten-datatable.js"
+
+
+def strip_js_comments(text: str) -> str:
+    text = re.sub(r"/\*[\s\S]*?\*/", "", text)
+    return re.sub(r"(^|[^:'\"`])//.*$", r"\1", text, flags=re.MULTILINE)
+
+
+def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mode: Optional[str]) -> Tuple[str, List[Check]]:
+    """Return the JS the page EFFECTIVELY runs (page + resolved factory markers), plus red checks for what the factory lacks."""
+    page = strip_js_comments(js_text)
+    if not LIST_FACTORY_CALL.search(page):
+        return js_text, []
+
+    factory_path = root / LIST_FACTORY_RELATIVE
+    factory = strip_js_comments(read_text(factory_path)) if factory_path.exists() else ""
+    checks: List[Check] = []
+
+    mode = re.search(r"\bdataMode\s*:\s*['\"]([^'\"]*)['\"]", page)
+    js_mode = mode.group(1) if mode else None
+    if js_mode is None:
+        checks.append(Check("List factory call declares dataMode", False, f"createList(...) without dataMode: the factory throws at runtime (file: {index_js})"))
+    elif page_data_mode and js_mode != page_data_mode:
+        checks.append(Check("List factory dataMode agrees with the page marker", False, f"index.js says dataMode '{js_mode}', the <table> says '{page_data_mode}' (file: {index_js})"))
+
+    apply_block = re.search(r"applyBtn \|\| 'btnFilterApply'\)\?\.addEventListener\('click', function \(\) \{([\s\S]*?)\n\s*\}\);", factory)
+    reset_block = re.search(r"resetBtn \|\| 'btnFilterReset'\)\?\.addEventListener\('click', function \(e\) \{([\s\S]*?)\n\s*\}\);", factory)
+    baseline_fn = re.search(r"function baseline\(\) \{[\s\S]*?filters: emptyFilters\(\), search: '', colVis: defaultColVis\(\), columnOrder: identityOrder\(\), order: baseOrder", factory)
+    config_block = re.search(r"var config = Object\.assign\(\{\}, pageConfig, \{([\s\S]*?)initComplete:", factory)
+
+    mechanics = [
+        # (name, verified-in-factory, tokens the page checks look for)
+        ("Save View button rendered (dt-save-filter-btn)",
+         "className: 'btn btn-label-primary d-none dt-save-filter-btn'" in factory,
+         "var saveBtn = document.querySelector('.dt-save-filter-btn');"),
+        ("Apply binding: #btnFilterApply → applied state, dirty recomputed, panel closed",
+         bool(apply_block) and "syncDirty(api)" in apply_block.group(1) and "collapseOf(collapseId)?.hide()" in apply_block.group(1),
+         "document.getElementById('btnFilterApply').addEventListener('click', function () { setSaveFilterVisible(isDirtyComparedToDefault(api)); });"),
+        ("Reset binding: #btnFilterReset → preventDefault, factory baseline (never the saved view), dirty recomputed",
+         bool(reset_block) and "e.preventDefault()" in reset_block.group(1) and "applyState(api, state.baseline())" in reset_block.group(1)
+         and "store.saved" not in reset_block.group(1) and "syncDirty(api)" in reset_block.group(1),
+         "document.getElementById('btnFilterReset').addEventListener('click', function (e) { e.preventDefault(); applySavedTableState(api, getResetBaselineState()); setSaveFilterVisible(isDirtyComparedToDefault(api)); });"),
+        ("Reset baseline = empty filters + empty search + default colVis + identity columnOrder + baseOrder",
+         bool(baseline_fn),
+         "var getResetBaselineState = function () { return { filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: Array.from({ length: n }, function (_, i) { return i; }), order: baseOrder }; };"),
+        ("Save View payload has a non-empty default name",
+         bool(re.search(r"viewName: \(record\?\.viewName \|\| record\?\.ViewName \|\| L\(\)\.SaveView \|\| 'Default'\)\.trim\(\)", factory)),
+         "var saveDefaultView = function (view) { var payload = { viewName: (savedName || L.SaveView || 'Default').trim() }; };"),
+        ("No filter-control change toggles Save View",
+         "change.saveFilter" not in factory and not re.search(r"change[^\n]*\n[^\n]*setSaveVisible", factory),
+         ""),
+        ("stateSave:false written explicitly",
+         bool(config_block) and bool(re.search(r"stateSave:\s*false", config_block.group(1))),
+         "stateSave: false"),
+        ("DataTables v2 constructor + DtDefaults.create + DtDefaults.exportButtons",
+         bool(re.search(r"new DataTable\(options\.tableEl, window\.DtDefaults\.create\(config\)\)", factory)) and "window.DtDefaults.exportButtons(" in factory,
+         "var dt = new DataTable(tableEl, window.DtDefaults.create(config)); var buttons = window.DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options);"),
+        ("Row-action delegation (closest on the trigger, inside the table or the responsive modal)",
+         "var trigger = event.target.closest(selector);" in factory and "closest('.modal.dtr-bs-modal')" in factory and "key: 'quickView'" in page,
+         "document.addEventListener('click', function (e) { var trigger = e.target.closest('.js-quick-view'); });"),
+        ("Bulk selection + reload-with-toast + clear-selection wiring",
+         "bindBulkSelection(options.tableEl, dt, options.bulk || {});" in factory and "reloadWithToast(dt, tableEl, messageKey, interpolationValue, options.bulk || {});" in factory and "function clearSelection(tableEl, options)" in factory,
+         "bindBulkSelection(tableEl, dt, bulkOptions); reloadWithToast(dt, tableEl, key); clearSelection(tableEl, bulkOptions);"),
+        ("Shared layer: createList builds through createCrudTable",
+         "dt = createCrudTable({" in factory,
+         "DitenDataTable.createCrudTable({ tableEl: tableEl });"),
+        ("Inline filter host mounted with px-3 (frontend-ui-ux 24–25 select2 contract)",
+         "host.classList.add('px-3');" in factory and "dropdownParent: $(document.body)" in factory and "dropdownCssClass: 'dt-inline-filter-dropdown'" in factory
+         and "width: 'element'" in factory and "selectionCssClass: 'form-select form-select-sm'" in factory,
+         "host.classList.add('px-3'); $s.select2({ dropdownParent: $(document.body), dropdownCssClass: 'dt-inline-filter-dropdown', selectionCssClass: 'form-select form-select-sm', width: 'element' });"),
+    ]
+
+    resolved: List[str] = []
+    verified = 0
+    for name, ok, tokens in mechanics:
+        if ok:
+            verified += 1
+            if tokens:
+                resolved.append(tokens)
+        else:
+            checks.append(Check(f"List factory carries: {name}", False, f"{factory_path} no longer carries it — every list built by createList lost it at once"))
+
+    print(f"[factory] {index_js.name} calls DitenDataTable.createList (dataMode={js_mode!r}) — {verified}/{len(mechanics)} mechanics verified in {factory_path}")
+    return js_text + "\n/* resolved from the list factory */\n" + "\n".join(resolved) + "\n", checks
+
+
 def check_list_screen_coherence(
     data_table_path: Path,
     data_table_html: str,
@@ -655,6 +750,9 @@ def main() -> int:
     data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
     data_table_html, list_shell_checks = resolve_list_shell(root, data_table_partial, data_table_html)
     checks.extend(list_shell_checks)
+    page_marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
+    js_text, list_factory_checks = resolve_list_factory(root, index_js, js_text, page_marker.group(1) if page_marker else None)
+    checks.extend(list_factory_checks)
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
 
     # ── Package 0 of the golden-reference plan (owner approval 2026-09-23, BL-440) ──────────────────────────
