@@ -6044,6 +6044,89 @@ Gelecek gerileme riski: düşük (tek ekranın diyalog çağrısı).
 
 ---
 
+### BL-436
+
+**Hiç değer almamış alan tanımı silinemiyor — yanlışlıkla açılan satır listede sonsuza kadar kalıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (organizasyon alan tanımlarını girerken) · KAYIT: 2026-09-21
+
+Ölçüldü: MOD-0288-FU02'de tanım için **silme uç noktası yok**; tek eylem `deactivate` (tekil + toplu).
+Denetleyicinin kendi cümlesi: *"IT DEACTIVATES; IT DOES NOT DELETE."* Bu, kullanılmış bir tanım için doğru —
+kaydedilmiş her değer tanımı kimliğiyle işaret ediyor ve yazıldığı andaki tipini/sınıflandırmasını kopyalıyor,
+tanım silinirse yorumlanamayan değerler kalır. Oracle'da kullanılmış flexfield segmenti devre dışı bırakılır,
+SAP'de karakteristik ancak hiç kullanılmamışsa silinir.
+
+Eksik olan ikinci yarı: **hiç değer yazılmamış** bir tanım da silinemiyor. `Kod` oluşturulduktan sonra
+değiştirilemediği ve pasife alma tek yönlü olduğu için, yazım hatasıyla açılmış bir tanım kalıcı: listede
+durur, 50'lik kotadan düşmez (pasifler sayılmıyor, bu doğru) ama gözden hiç kalkmaz.
+
+İstenen: "değeri yoksa silinir, varsa silinemez" kuralı — silme, o tanıma ait değer sayısı sıfırsa kabul edilir,
+değilse 409 ve mevcut pasife alma yolu önerilir. Sayım sunucuda yapılır.
+Gelecek gerileme riski: düşük (yeni bir uç nokta, mevcut davranış değişmiyor).
+
+---
+
+### BL-437
+
+**Onay iş kaleminin başlığı "Onay: tasks &lt;guid&gt;" — onaylayan neye onay verdiğini görmüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: `WorkItemProjectionService.cs:25` sabit bir kaynak anahtarı kuruyor —
+`WorkAggregation_Title_Approval` → tr metni `Onay: {objectType} {objectId}`. Görevin başlığı hiç kullanılmıyor.
+"Bu bana neden geldi" bilgisi de yok: `Requester` alanı DTO'da var ama onay yolunda doldurulmuyor
+(`WorkAggregationModels.cs:358`; görev projeksiyonu dolduruyor, onay projeksiyonu doldurmuyor), kaynak görev
+bağlantısı `DeepLink: null` (`:58-63`), bekleme sebebi bilerek null (`:88`).
+
+Sonuç: onaylayan kişi gelen kutusunda ham bir kimlik görüyor ve neyi onayladığını anlamak için tahmin etmek
+zorunda. Bu, toplantı → karar → görev → onay zincirini test edilemez de kılıyor.
+
+İstenen: başlık kaynak görevin başlığını taşısın, `Requester` doldurulsun, kaynağa tıklanır bağlantı ve tek
+cümlelik sebep eklensin ("X onayını bekliyor"). Projeksiyon katmanında toplu iş; metinler yedi dilde.
+Gelecek gerileme riski: düşük (yalnız projeksiyon; iş akışı kuralları değişmiyor).
+
+---
+
+### BL-438
+
+**Klavye kısayolları tek ekranda yaşıyor, yarısı hiçbir yerde yazmıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: kısayollar yalnız `WorkCenterNext/app.js:10038-10082`'de tanımlı ve `document`'e bağlı. Tuşlar:
+`j` sonraki, `k` önceki, `Enter`/`o` aç, `a` kabul, `r` reddet, `Escape` seçimi temizle, sekme şeridinde
+ok tuşları. İpucu açılır menüsü (`app.js:1230`, metin `KeyboardHint`) bunların yalnız **dördünü** yazıyor —
+`o`, `Escape` ve oklar hiçbir yerde geçmiyor — ve menü `d-none d-lg-block` ile küçük ekranlarda gizli. Ortak
+bir kısayol katmanı yok; Görevler ekranlarında kısayol hiç çalışmıyor.
+
+İstenen: ortak kısayol katmanı (tek yerde tanımlı, her ekranın kaydolduğu) + `?` tuşuyla açılan tam liste,
+küçük ekranlarda da erişilebilir. Yeni eylemler (devret, onaya git, soruyu cevapla) listeye oradan girer.
+Gelecek gerileme riski: orta — `document` seviyesinde tuş yakalayan ortak katman, form alanlarında ve
+diyaloglarda susmak zorunda; bunun testi baştan yazılır.
+
+---
+
+### BL-439
+
+**Soru sorulan kişiye hiçbir şey gitmiyor — "Bilgi bekle" akışının ikinci yarısı yok**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: soru hem "kime" hem "neden" olarak saklanıyor (`TaskItem.WaitingOnUserId`, `WaitingReason`;
+`InquireTaskItemRequest(ExpectedVersion, Reason, WaitingOnUserId?)`) ve **soranın** kartında doğru gösteriliyor
+(`app.js:2104-2110` → "X bekleniyor (sebep)"). Görev soranın üzerinde `Waiting` durumunda kalıyor.
+
+Eksik olan: **sorulan kişiye giden hiçbir şey yok.** `TaskNotificationService` ve `TaskReadAccessPolicy` içinde
+`WaitingOnUserId` hiç geçmiyor (grep boş) — ne bildirim, ne gelen kutusunda bir kalem. O kişi sorulduğunu ancak
+soran söylerse öğreniyor. Yani özellik yarım: soru kaydediliyor, iletilmiyor.
+
+İstenen (ayrı iş paketi): sorulan kişiye bir iş kalemi düşsün ("X sana sordu: …"), cevapladığında görev
+beklemeden çıksın, cevap görevin geçmişine yazılsın. Bildirim yolu + yeni kalem türü + cevap akışı + kimin
+neyi okuyabileceği kuralı gerekiyor.
+Gelecek gerileme riski: orta-yüksek — yeni bir gelen kutusu kalemi türü, MOD-0024 projeksiyonuna dokunur.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
