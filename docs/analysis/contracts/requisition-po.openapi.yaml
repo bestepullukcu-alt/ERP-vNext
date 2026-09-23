@@ -8,8 +8,8 @@ info:
     Ürün kimliği MOD-0290'dan (consume), tedarikçi MOD-0140'tan (consume). Stok TUTMAZ.
     Tenant + Legal-Entity scoped; TenantId/LegalEntityId server-resolved (payload'da yok).
     Parasal alanlar Decimal (string); float YASAK; para birimi LE base currency.
-  version: 1.0.0
-  x-status: REVIEW              # freeze-ready; owner+consumer review pending (K16)
+  version: 1.1.0                    # 1.0.0 → 1.1.0: pack §14 delete/bulk-delete folded in (additive; existing ops unchanged)
+  x-status: FROZEN                  # frozen 2026-09-23 (CT A2); implementation-accurate, additive-only sonrası genişletilir
   x-owner: MOD-0141
   x-authored-by: control-tower
   x-min-contract: PO-BUNDLE
@@ -57,6 +57,28 @@ paths:
       responses:
         '200': { description: Talep, content: { application/json: { schema: { $ref: '#/components/schemas/Requisition' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteRequisition
+      summary: "Soft delete (pack §14 procurement.requisitions.delete; yalnız Draft — onaya gönderilmiş → 409). Hard delete YOK."
+      parameters: [{ name: requisitionId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Talep soft-delete edildi }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /requisitions/bulk:
+    delete:
+      operationId: bulkDeleteRequisitions
+      summary: "Toplu soft delete (pack §14 procurement.requisitions.bulk-delete; yalnız Draft)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "requisitionId listesi" }
+            example: ["REQ-3001", "REQ-3002"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /requisitions/{requisitionId}/submit:
     post:
       operationId: submitRequisition
@@ -112,6 +134,28 @@ paths:
       responses:
         '200': { description: PO (GRN 0142 poId/poLineId ile bunu okur), content: { application/json: { schema: { $ref: '#/components/schemas/PurchaseOrder' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deletePurchaseOrder
+      summary: "Soft delete (pack §14 procurement.purchase-orders.delete; yalnız Draft — onaylanmış PO → 409). Hard delete YOK."
+      parameters: [{ name: poId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: PO soft-delete edildi }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /purchase-orders/bulk:
+    delete:
+      operationId: bulkDeletePurchaseOrders
+      summary: "Toplu soft delete (pack §14 procurement.purchase-orders.bulk-delete; yalnız Draft)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "poId listesi" }
+            example: ["PO-5001", "PO-5002"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /purchase-orders/{poId}/approve:
     post:
       operationId: approvePurchaseOrder

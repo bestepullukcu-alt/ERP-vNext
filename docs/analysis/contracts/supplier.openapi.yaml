@@ -10,10 +10,10 @@ info:
     (B) MVP-2 producer yüzeyi (ADDITIVE, review-pending): supplier CRUD + onboarding case
         (KYC/sanctions/docs/approvals). (B), (A)'nın SUPERSET'idir; (A) daraltılmamıştır (K16, README §29).
     Tenant + Legal-Entity scoped; TenantId/LegalEntityId server-resolved (payload'da yok).
-  version: 1.1.0
+  version: 1.2.0                    # 1.1.0 → 1.2.0: (B) producer additive delete/bulk-delete folded in (backward-compatible; (A) unchanged)
   x-status: FROZEN
   x-slice-status: FROZEN            # (A) consumer slice — şekil dondurulmuş, MVP-6 buna bağlı
-  x-producer-status: REVIEW         # (B) producer additive surface — owner+consumer freeze review pending
+  x-producer-status: FROZEN         # (B) producer surface FROZEN 2026-09-23 (CT A2) — implementation-accurate; additive-only sonrası genişletilir
   x-owner: MOD-0140
   x-authored-by: control-tower
   x-front-loaded-for: [MOD-0147, MOD-0148]
@@ -100,6 +100,29 @@ paths:
         '404': { $ref: '#/components/responses/UnknownSupplier' }
         '409': { $ref: '#/components/responses/ConcurrencyConflict' }
         '422': { $ref: '#/components/responses/SupplierUnprocessable' }
+    # ---- (C) producer additive: soft delete (pack §14; v1.2.0 backward-compatible amendment) ----
+    delete:
+      operationId: deleteSupplier
+      summary: "Soft delete (pack §14 procurement.suppliers.delete). Hard delete YOK."
+      parameters: [{ name: supplierId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Supplier soft-delete edildi }
+        '404': { $ref: '#/components/responses/UnknownSupplier' }
+        '409': { $ref: '#/components/responses/ConcurrencyConflict' }
+  /bulk:
+    delete:
+      operationId: bulkDeleteSuppliers
+      summary: "Toplu soft delete (pack §14 procurement.suppliers.bulk-delete)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "supplierId listesi" }
+            example: ["SUP-2001", "SUP-2002"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /validate:
     post:
       operationId: validateSuppliers
