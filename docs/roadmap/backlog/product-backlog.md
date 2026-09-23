@@ -5944,6 +5944,189 @@ Gelecek gerileme riski: düşük (yalnız iki ekranın diyalog çağrısı).
 
 ---
 
+### BL-432
+
+**Eski modüller veri kapsamını hiç sormuyor — okuma yetkisi olan kiracının bütün satırlarını görüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "kişiyi organizasyon birimine atıyorsun, o şekilde datayı görmüyor mu?") · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `IDataScopeResolver` üretim kodunda yalnız üç yüzeyde tüketiliyor —
+`Features/Tasks/Handlers/QueryHandlers/WorkReportQueryHandler.cs` (+ `WorkReportScopeSource`),
+`Features/Tasks/Services/TaskAssignmentScopeResolver.cs` ve `API/Authorization/Explain/SelfAccessExplainService.cs`.
+Motor çalışıyor ve gerçek: `OrgDataScopeResolver` (MOD-0018-FU15) MOD-0288 organizasyon verisinden OrgUnit (alt ağaç
+düzleştirilmiş) · Position · ManagerChain · LegalEntity üretiyor, döngü güvenli ve kapalı başlıyor. Sorulmuyor.
+
+Sonuç: bir modülün okuma yetkisini alan kişi, bir birime atanmış olsa bile o modülün kiracıdaki **bütün**
+satırlarını görüyor. Kiracı izolasyonu sağlam (`TenantId` her sorguda); eksik olan aynı şirket içindeki ayrım.
+
+Yeni iş bu kapıdan geçemez: kural `.antigravity/rules/data-scope-enforcement.md` (SEC-002) olarak yazıldı ve yeni
+modüller ile hâlen üzerinde çalışılan modüller için bugünden geçerli. Bu madde **geriye dönük** bağlama işidir.
+
+İstenen (modül başına ayrı dilim, sırayla): CRM önce — hangi alan kapsamı taşır (müşteri sahibi / birim), kapsam
+çevirisi `WorkReportScope` kalıbıyla, tenant-wide için ayrı izin (`<modül>.<özellik>.read-tenant-wide`), iki kişi
+iki birim testi + sabotaj. Ardından Satınalma, Doküman Yönetimi, MDM listeleri.
+Gelecek gerileme riski: orta. Bugün herkes her satırı görüyor; kapsam açıldığında bazı kullanıcıların listesi
+kısalacak. Bu bir gerileme değil düzeltmedir, ama kiracı yöneticisine önceden söylenmeden açılmaz — her modül
+dilimi kendi geçiş cümlesini yazar (kimin neyi görmeyi bırakacağı).
+
+---
+
+### BL-433
+
+**Servis hesabı bugün yalnız bir etiket — ekrandan giriş yapabiliyor, kişi seçicilerde çıkıyor, görev sahibi olabiliyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "bu servis hesabı nasıl olmalı, etiketleme dışında ne işe yarar?") · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `AccountKind` (Unknown | Human | Service) `Diten.AuthService.Domain/Enums/AccountKind.cs`'de
+tanımlı; değiştirmek `auth.users.account-kind.manage` iznini istiyor ve bu izin `ExplicitGrantOnlyPermissions`
+listesinde (hiçbir role kendiliğinden gelmez, SuperAdmin otomatiği dahil); `GET api/users/{id}/account-assertion`
+kararı değil olguyu döndürüyor (`Active` + `AccountKind`), kararı çağıran (PPM) veriyor; tohumlama hiçbir hesabı
+sınıflandırmıyor (`DataSeeder` → `AccountKind.Unknown`). Yani sınıflandırma katmanı doğru kurulmuş.
+
+Davranış katmanı yok. `Service` işaretli bir hesap bugün: `/account/login` ekranından şifreyle girebiliyor,
+kişi/atama seçicilerinde insanların arasında listeleniyor, görev sahibi ve onaycı olabiliyor. Bir denetçi "bu
+onayı kim verdi" diye sorduğunda cevap bir robot olabilir ve ekranda insandan ayırt edilmiyor.
+
+İstenen (küçük, tek dilim): `Service` hesabı (1) etkileşimli giriş akışında reddedilir — hata metni kendi kodunu
+taşır, "şifre yanlış" denmez; (2) kişi seçicilerinden ve atama havuzlarından düşer; (3) görev sahibi/onaycı
+olamaz. Üçü de tek bir "bu hesap insan mı" sorusunu okur; test: her üç yüzey için `Service` ile kırmızı, `Human`
+ile yeşil. Kimlik/anahtar tarafı buraya girmez — o BL-434.
+Gelecek gerileme riski: düşük. Bugün hiçbir hesap `Service` değil (tohumlama `Unknown` veriyor), yani kural
+açıldığında kimsenin girişi kesilmez; yanlış işaretlenmiş bir hesap ise zaten bugün de yanlış.
+
+---
+
+### BL-434
+
+**Servis hesabının kimlik bilgisi yok — insan şifresiyle çalışan entegrasyon, süresi ve iptali olmayan erişim demek**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "servis hesabı belli süreliğine mi açılıyor, o hesaba belli sayfalar yetki mi veriliyor?") · KAYIT: 2026-09-21
+
+Bugünkü durum: bir entegrasyonun sistemimize bağlanma yolu, birinin insan hesabı açıp şifresini entegrasyona
+vermesidir. Bunun üç sonucu var — şifre bir insanın parola politikasına tabi (dolayısıyla bir gün süresi dolar ve
+entegrasyon gece yarısı durur), kimsenin elinde "bu anahtar nerede kullanılıyor" listesi yoktur, ve erişimi
+kesmenin tek yolu hesabı kapatmaktır (hangi entegrasyonun kırılacağı bilinmeden).
+
+SAP ve Oracle bu ihtiyacı ayrı bir kullanıcı türüyle karşılar: SAP'de `System`/`Communication` kullanıcı türü
+(diyalog girişi yapamaz, parola politikası ayrıdır), Oracle'da entegrasyon kullanıcısı + belirteç. Bizde karşılığı
+`AccountKind.Service`, ama yalnız sınıflandırma tarafı var (BL-433).
+
+İstenen (büyük — kendi iş paketi, tek dilimde yapılmaz): servis hesabına ait anahtar/istemci kimliği, verilme ve
+bitiş tarihi, planlı döndürme (eskisi geçerliyken yenisi çalışır), anında iptal, ve her kullanımın denetim kaydı
+(hangi anahtar, hangi IP, hangi uç nokta). Yetki tarafı mevcut RBAC'tir — servis hesabına da rol verilir; gördüğü
+veri BL-432'deki kapsam kuralıyla belirlenir (servis hesabına da pozisyon/birim verilir, ayrı bir veri mekanizması
+kurulmaz).
+Gelecek gerileme riski: yüksekse de yönetilebilir — bu iş Auth'un kimlik doğrulama yoluna dokunur. Bu yüzden
+BL-433'ten sonra ve ayrı bir iş paketi olarak planlanır; ikisi tek dilime konmaz.
+
+---
+
+### BL-435
+
+**PPM Girişimler ekranı ortak onay bileşenini atlayıp kendi diyaloğunu açıyor — "üründe tek diyalog" kuralı kırık**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ (PPM) · BULAN: CT (Kullanıcılar davet diyaloğunu düzeltirken tam paket koşusu) · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `tests/dialog-one-implementation.test.js` → "opens no dialog outside the
+shared component" tek bir dosyayı işaret ediyor: `wwwroot/assets/js/PPM/Initiatives/index.js`. Kural ürün
+genelinde ve bilerek öyle: ham `Swal.fire` yazan dosya ya `window.showConfirm`'e geçer ya da gerekçesiyle
+`KNOWN_RAW` listesine yazılır. Bu dosya ikisini de yapmamış, yani main'de bu test bugün kırmızı (CI vitest
+koşmadığı için görünmüyor — BL-431 ile aynı aile).
+
+Ham diyalog tek başına yasak değildir; alan taşıyan bir diyalog ham olmak zorundadır. Kural, ham olanın da
+ürünün görünümünü **okumasını** ister: `window.DitenDialogAppearance` paketi + `iconHtml` + `description`.
+Kullanıcılar modülündeki aynı hata bugün düzeltildi ve örneği orada duruyor
+(`Governance/Users/index.js` → `showInviteLink`).
+
+İstenen: PPM sahibi ya `showConfirm`'e geçer ya da gerekçesini yazıp `KNOWN_RAW`'a ekler **ve** yayımlanmış
+paketi okur. Test gevşetilmez. CT tarafında yapılacak bir şey yok; kayıt bilgi amaçlı.
+Gelecek gerileme riski: düşük (tek ekranın diyalog çağrısı).
+
+---
+
+### BL-436
+
+**Hiç değer almamış alan tanımı silinemiyor — yanlışlıkla açılan satır listede sonsuza kadar kalıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (organizasyon alan tanımlarını girerken) · KAYIT: 2026-09-21
+
+Ölçüldü: MOD-0288-FU02'de tanım için **silme uç noktası yok**; tek eylem `deactivate` (tekil + toplu).
+Denetleyicinin kendi cümlesi: *"IT DEACTIVATES; IT DOES NOT DELETE."* Bu, kullanılmış bir tanım için doğru —
+kaydedilmiş her değer tanımı kimliğiyle işaret ediyor ve yazıldığı andaki tipini/sınıflandırmasını kopyalıyor,
+tanım silinirse yorumlanamayan değerler kalır. Oracle'da kullanılmış flexfield segmenti devre dışı bırakılır,
+SAP'de karakteristik ancak hiç kullanılmamışsa silinir.
+
+Eksik olan ikinci yarı: **hiç değer yazılmamış** bir tanım da silinemiyor. `Kod` oluşturulduktan sonra
+değiştirilemediği ve pasife alma tek yönlü olduğu için, yazım hatasıyla açılmış bir tanım kalıcı: listede
+durur, 50'lik kotadan düşmez (pasifler sayılmıyor, bu doğru) ama gözden hiç kalkmaz.
+
+İstenen: "değeri yoksa silinir, varsa silinemez" kuralı — silme, o tanıma ait değer sayısı sıfırsa kabul edilir,
+değilse 409 ve mevcut pasife alma yolu önerilir. Sayım sunucuda yapılır.
+Gelecek gerileme riski: düşük (yeni bir uç nokta, mevcut davranış değişmiyor).
+
+---
+
+### BL-437
+
+**Onay iş kaleminin başlığı "Onay: tasks &lt;guid&gt;" — onaylayan neye onay verdiğini görmüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: `WorkItemProjectionService.cs:25` sabit bir kaynak anahtarı kuruyor —
+`WorkAggregation_Title_Approval` → tr metni `Onay: {objectType} {objectId}`. Görevin başlığı hiç kullanılmıyor.
+"Bu bana neden geldi" bilgisi de yok: `Requester` alanı DTO'da var ama onay yolunda doldurulmuyor
+(`WorkAggregationModels.cs:358`; görev projeksiyonu dolduruyor, onay projeksiyonu doldurmuyor), kaynak görev
+bağlantısı `DeepLink: null` (`:58-63`), bekleme sebebi bilerek null (`:88`).
+
+Sonuç: onaylayan kişi gelen kutusunda ham bir kimlik görüyor ve neyi onayladığını anlamak için tahmin etmek
+zorunda. Bu, toplantı → karar → görev → onay zincirini test edilemez de kılıyor.
+
+İstenen: başlık kaynak görevin başlığını taşısın, `Requester` doldurulsun, kaynağa tıklanır bağlantı ve tek
+cümlelik sebep eklensin ("X onayını bekliyor"). Projeksiyon katmanında toplu iş; metinler yedi dilde.
+Gelecek gerileme riski: düşük (yalnız projeksiyon; iş akışı kuralları değişmiyor).
+
+---
+
+### BL-438
+
+**Klavye kısayolları tek ekranda yaşıyor, yarısı hiçbir yerde yazmıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: kısayollar yalnız `WorkCenterNext/app.js:10038-10082`'de tanımlı ve `document`'e bağlı. Tuşlar:
+`j` sonraki, `k` önceki, `Enter`/`o` aç, `a` kabul, `r` reddet, `Escape` seçimi temizle, sekme şeridinde
+ok tuşları. İpucu açılır menüsü (`app.js:1230`, metin `KeyboardHint`) bunların yalnız **dördünü** yazıyor —
+`o`, `Escape` ve oklar hiçbir yerde geçmiyor — ve menü `d-none d-lg-block` ile küçük ekranlarda gizli. Ortak
+bir kısayol katmanı yok; Görevler ekranlarında kısayol hiç çalışmıyor.
+
+İstenen: ortak kısayol katmanı (tek yerde tanımlı, her ekranın kaydolduğu) + `?` tuşuyla açılan tam liste,
+küçük ekranlarda da erişilebilir. Yeni eylemler (devret, onaya git, soruyu cevapla) listeye oradan girer.
+Gelecek gerileme riski: orta — `document` seviyesinde tuş yakalayan ortak katman, form alanlarında ve
+diyaloglarda susmak zorunda; bunun testi baştan yazılır.
+
+---
+
+### BL-439
+
+**Soru sorulan kişiye hiçbir şey gitmiyor — "Bilgi bekle" akışının ikinci yarısı yok**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: soru hem "kime" hem "neden" olarak saklanıyor (`TaskItem.WaitingOnUserId`, `WaitingReason`;
+`InquireTaskItemRequest(ExpectedVersion, Reason, WaitingOnUserId?)`) ve **soranın** kartında doğru gösteriliyor
+(`app.js:2104-2110` → "X bekleniyor (sebep)"). Görev soranın üzerinde `Waiting` durumunda kalıyor.
+
+Eksik olan: **sorulan kişiye giden hiçbir şey yok.** `TaskNotificationService` ve `TaskReadAccessPolicy` içinde
+`WaitingOnUserId` hiç geçmiyor (grep boş) — ne bildirim, ne gelen kutusunda bir kalem. O kişi sorulduğunu ancak
+soran söylerse öğreniyor. Yani özellik yarım: soru kaydediliyor, iletilmiyor.
+
+İstenen (ayrı iş paketi): sorulan kişiye bir iş kalemi düşsün ("X sana sordu: …"), cevapladığında görev
+beklemeden çıksın, cevap görevin geçmişine yazılsın. Bildirim yolu + yeni kalem türü + cevap akışı + kimin
+neyi okuyabileceği kuralı gerekiyor.
+Gelecek gerileme riski: orta-yüksek — yeni bir gelen kutusu kalemi türü, MOD-0024 projeksiyonuna dokunur.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

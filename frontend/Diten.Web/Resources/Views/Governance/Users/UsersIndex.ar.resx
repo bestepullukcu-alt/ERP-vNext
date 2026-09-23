@@ -50,7 +50,4 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>اتركه فارغًا ليبقى الحساب غير مؤكد.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>رابط الدعوة (بيئة التطوير)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>أرسل رابط تعيين كلمة المرور هذا إلى المستخدم. يظهر في بيئة التطوير فقط.</value></data>
-  <data name="AccountKindEditHint" xml:space="preserve"><value>لا يُعدَّل النوع هنا، بل يُغيَّر بإجراء خاص به ويُسجَّل التغيير.</value></data>
-  <data name="AccountKindNewLabel" xml:space="preserve"><value>نوع الحساب الجديد</value></data>
-  <data name="AccountKindNewRequired" xml:space="preserve"><value>اختر النوع الجديد.</value></data>
 </root>

@@ -310,79 +310,102 @@ describe("the account-kind selects are select2, and both of its seams are honour
 });
 
 /*
- * ── THE TYPE IS CHANGED FROM THE EDIT FORM TOO (owner report, 2026-09-23) ────────────────────────────────
+ * ── THE TYPE IS EDITED ON THE EDIT FORM, AND SAVED BY "UPDATE" (WP-AUTH-USER-KIND-UPDATE-01, 2026-09-23) ──────
  *
- * The owner opened Edit, looked for "change type", and found nothing: it lived only in the quick view. The
- * reason was sound — `UpdateUser` carries no kind, so a saveable box on the edit form would be the defect we
- * had just fixed on the task form, a promise the server drops. The cure is the same shape as the handover:
- * the field is SHOWN read-only and the change is offered as the audited call it already is.
+ * The first cure for the owner's report ("I can't change the type on Edit") was a read-only box plus a button
+ * that called the separate account-kind route, because `UpdateUser` carried no kind. The owner did not want a
+ * second control shape on one form: create has a select, so edit gets the SAME select, saved by the form's own
+ * button. AuthService's UpdateUser now carries the kind, refuses a change without the manage key (403), and takes
+ * it through the same writer + audit row as the quick view's "Change type" — which stays, on its own route.
  *
- * ⚠ AND ONE CALL, TWO DOORS. The quick view and the edit form now post through a single function. Two copies
- * of a write that carries a permission and an audit trail is how they end up disagreeing.
+ * Every rule of the retired block has a replacement here, pinned against the production files:
+ *   read-only row + button           → gone; the one select is the edit control
+ *   both rows inside the gate        → the one select (and its hint) inside the gate
+ *   create/edit row toggle           → the select is NOT toggled; only the create-time hint is
+ *   confirm-with-select on edit      → no edit dialog at all; the form posts the field
+ *   one network call, two doors      → one account-kind call, ONE door (quick view); edit goes through /Users/edit
+ *   the box shows a word             → the select starts from the reported kind (Unknown ⇒ the empty option)
+ *   three l10n keys in seven langs   → the three keys are gone everywhere (resx × 7, bridge, loader, views, JS)
  */
-describe("the account type can be changed from the edit form, without becoming a saveable field", () => {
+describe("the account type is a select on the edit form, saved by Update", () => {
   const offcanvas = () => read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml");
   const js = () => read("wwwroot", "assets", "js", "Governance", "Users", "index.js");
+  const RETIRED_KEYS = ["AccountKindEditHint", "AccountKindNewLabel", "AccountKindNewRequired"];
 
-  test("edit shows the type read-only, in the product's immutable-field paint", () => {
+  test("edit has no read-only kind box and no separate change button — the select is the control", () => {
     const source = offcanvas();
-    const row = source.slice(source.indexOf('id="userAccountKindReadRow"'), source.indexOf("AccountKindEditHint"));
-    expect(row, "the read-only row is gone").toBeTruthy();
-    expect(row).toMatch(/id="userAccountKindRead"[^>]*readonly/);
-    expect(row, "an unpainted readonly box reads as editable").toMatch(/bg-label-secondary/);
-    expect(row, "the change button is missing beside it").toContain('id="btnUserAccountKindChange"');
+    ["userAccountKindReadRow", "userAccountKindRead", "btnUserAccountKindChange"].forEach((id) =>
+      expect(source, `${id} came back on the create/edit form`).not.toContain(`id="${id}"`));
+    // Exactly one kind control on the form, and it posts under the name the proxy reads.
+    expect((source.match(/name="AccountKind"/g) || []).length).toBe(1);
+    expect(source).toMatch(/<select id="userAccountKind" name="AccountKind" class="form-select select2-offcanvas">/);
   });
 
-  test("both rows sit inside the same explicit-grant-only gate", () => {
-    const block = gatedBlockContaining(offcanvas(), 'id="userAccountKindReadRow"');
-    expect(block, "the read-only row is drawn outside the account-kind.manage gate").toBeTruthy();
-    expect(block, "the create picker and the edit row drifted apart").toContain('id="userAccountKindRow"');
+  test("the one select and its create-time hint sit inside the explicit-grant-only gate", () => {
+    const block = gatedBlockContaining(offcanvas(), 'id="userAccountKind"');
+    expect(block, "the select is drawn outside the account-kind.manage gate").toBeTruthy();
+    expect(block).toContain('id="userAccountKindCreateHint"');
   });
 
-  test("create shows the picker, edit shows the read-only row — never both", () => {
+  test("setCreateMode shows the select on BOTH create and edit; only the create hint is create-only", () => {
     const source = js();
-    expect(source).toMatch(/userAccountKindRow'\)\?\.classList\.toggle\('d-none', !isCreate\)/);
-    expect(source).toMatch(/userAccountKindReadRow'\)\?\.classList\.toggle\('d-none', isCreate\)/);
+    const mode = source.slice(source.indexOf("const setCreateMode"), source.indexOf("const resetCreateEditForm"));
+    expect(mode, "the kind row is hidden again on one of the two modes").not.toMatch(/userAccountKindRow'\)\?\.classList\.toggle/);
+    expect(mode).toMatch(/userAccountKindCreateHint'\)\?\.classList\.toggle\('d-none', !isCreate\)/);
+    expect(source).not.toContain("userAccountKindReadRow");
   });
 
-  test("the new value is chosen inside the SHARED confirm — this screen opens no dialog of its own", () => {
-    const ask = js().slice(js().indexOf("const askAccountKindChange"), js().indexOf("const openCreateOffcanvas"));
-    expect(ask).toContain("window.showConfirm");
-    expect(ask).toMatch(/inputType: 'select'/);
-    expect(ask).toMatch(/inputOptions:/);
-    expect(ask, "the picker offers something the enum does not have").toMatch(/Unknown:[\s\S]{0,60}Human:[\s\S]{0,60}Service:/);
-    expect(ask, "a no-op write is sent when the reader picks what is already set").toMatch(/kind === current/);
-    expect(js(), "a second dialog was opened instead of the shared one").not.toMatch(/\bSwal\.fire\(/);
+  test("the edit door opens no dialog of its own — the form posts the field to /Users/edit", () => {
+    const source = js();
+    expect(source, "the edit-form confirm came back").not.toContain("askAccountKindChange");
+    expect(source).not.toContain("btnUserAccountKindChange");
+    expect(source, "a second dialog was opened instead of the shared one").not.toMatch(/\bSwal\.fire\(/);
+    // The save sends the whole form (FormData), so the named select travels with FirstName/LastName/IsActive.
+    const submit = source.slice(source.indexOf("const submitCreateEditForm"), source.indexOf("const bulkOptions"));
+    expect(submit).toMatch(/new FormData\(form\)/);
+    expect(submit).toMatch(/`\/Users\/edit\/\$\{editingId\}`/);
   });
 
-  test("one network call serves both doors", () => {
+  test("the account-kind route keeps exactly one caller: the quick view's 'Change type'", () => {
     const source = js();
     const posts = source.match(/\/Users\/api\/\$\{id\}\/account-kind/g) || [];
     expect(posts.length, "the account-kind write exists in more than one place again").toBe(1);
     expect(source).toContain("const postAccountKind = async (id, kind, offcanvasToHide)");
-    // Both doors reach it.
+    const callers = source.match(/postAccountKind\(/g) || []; // the declaration is `postAccountKind = async (`
+    expect(callers.length, "postAccountKind gained or lost a caller (the quick view is the only one)").toBe(1);
     expect(source).toMatch(/postAccountKind\(id, kind, getOcDetailsInstance\(\)\)/);
-    expect(source).toMatch(/postAccountKind\(id, kind, getOcCreateEditInstance\(\)\)/);
+    expect(source).not.toMatch(/postAccountKind\(id, kind, getOcCreateEditInstance\(\)\)/);
   });
 
-  test("the box shows a word, never the enum number", () => {
-    expect(js()).toMatch(/kindRead\.value = accountKindLabel\(currentKind\)/);
+  test("the edit select starts from the kind AuthService reports, through the select2-safe setter", () => {
+    const source = js();
+    const open = source.slice(source.indexOf("const openEditOffcanvas"), source.indexOf("const showFormErrors"));
+    expect(open).toMatch(/const currentKind = normalizeAccountKind\(d\.accountKind\)/);
+    expect(open).toMatch(/setSelectValue\(document\.getElementById\('userAccountKind'\), currentKind === 'Unknown' \? '' : currentKind\)/);
+    // And the proxy actually hands the kind over (it did not before this change — d.accountKind was undefined).
+    expect(read("Controllers", "UsersController.cs")).toMatch(/accountKind = model\.AccountKind/);
   });
 
-  ["AccountKindEditHint", "AccountKindNewLabel", "AccountKindNewRequired"].forEach((key) => {
-    test(`${key} exists in all seven languages, translated`, () => {
-      const en = new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`)
-        .exec(read("Resources", "Views", "Governance", "Users", "UsersIndex.en.resx"))[1];
+  test("the edit proxy forwards the field, and an empty edit choice as Unknown (not as 'leave it')", () => {
+    const source = read("Controllers", "UsersController.cs");
+    expect(source).toMatch(/AccountKind = ReadEditAccountKind\(\)/);
+    const reader = source.slice(source.indexOf("private string? ReadEditAccountKind()"));
+    expect(reader).toMatch(/!Request\.Form\.ContainsKey\("AccountKind"\)\)\s*return null;/);
+    expect(reader).toMatch(/string\.IsNullOrWhiteSpace\(value\) \? "Unknown" : value/);
+  });
+
+  RETIRED_KEYS.forEach((key) => {
+    test(`${key} is retired everywhere — seven resx, the bridge, the loader, the views and the JS`, () => {
       LANGS.forEach((lang) => {
         const resx = read("Resources", "Views", "Governance", "Users", `UsersIndex.${lang}.resx`);
-        const m = new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`).exec(resx);
-        expect(m, `${key} missing in ${lang}`).toBeTruthy();
-        if (lang !== "en") {
-          expect(m[1], `${lang} carries untranslated English for ${key}`).not.toBe(en);
-        }
+        expect(resx, `${key} is still in UsersIndex.${lang}.resx`).not.toContain(`<data name="${key}"`);
       });
-      expect(read("Views", "Governance", "Users", "_IndexL10n.cshtml"))
-        .toMatch(new RegExp(`${key} = Localizer\\["${key}"\\]\\.Value`));
+      [
+        ["Views", "Governance", "Users", "_IndexL10n.cshtml"],
+        ["Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"],
+        ["wwwroot", "assets", "js", "Governance", "Users", "index.l10n.js"],
+        ["wwwroot", "assets", "js", "Governance", "Users", "index.js"]
+      ].forEach((file) => expect(read(...file), `${key} is still read by ${file.join("/")}`).not.toContain(key));
     });
   });
 });

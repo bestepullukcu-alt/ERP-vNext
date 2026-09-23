@@ -607,9 +607,9 @@ const UsersList = (function () {
     const setCreateMode = (isCreate) => {
         // Invitation hint shows on create; status switch shows on edit. No password field (invite flow).
         document.getElementById('userInviteHint')?.classList.toggle('d-none', !isCreate);
-        // Classification is chosen on create and CHANGED on edit through its own route — two rows, one visible.
-        document.getElementById('userAccountKindRow')?.classList.toggle('d-none', !isCreate);
-        document.getElementById('userAccountKindReadRow')?.classList.toggle('d-none', isCreate);
+        // WP-AUTH-USER-KIND-UPDATE-01 — the kind select is the SAME control on create and edit, saved by the form's
+        // own button (UpdateUser carries it). Only the create-time hint ("leave unset…") is create-only.
+        document.getElementById('userAccountKindCreateHint')?.classList.toggle('d-none', !isCreate);
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
@@ -639,11 +639,8 @@ const UsersList = (function () {
         document.getElementById('formUserAlert').classList.add('d-none');
     };
     /*
-     * ⚠ ONE CALL, TWO DOORS (2026-09-23). The kind is changed from the quick view AND from the edit offcanvas,
-     * and the server takes it through its own route — `UpdateUser` carries no kind, which is why the edit form
-     * shows the field READ-ONLY instead of pretending to save it. Both doors post through here, so the request,
-     * the refusal handling and the toast exist once; only the way the new value is CHOSEN differs, and that
-     * difference is what each door's dialog is for.
+     * The quick view's "Change type" posts here — its own audited route. The edit form no longer does: its select is
+     * saved by "Update" (WP-AUTH-USER-KIND-UPDATE-01), and AuthService takes both through the same writer + audit row.
      */
     const postAccountKind = async (id, kind, offcanvasToHide) => {
         try {
@@ -669,40 +666,6 @@ const UsersList = (function () {
             console.error('[Users] Account kind change failed.', error);
             window.showToast?.(error.message || L.ErrorOccurred, 'error');
         }
-    };
-
-    /*
-     * The edit door. The new value is chosen INSIDE the shared confirm (its `select` input), so this screen
-     * opens no dialog of its own — the product has exactly one confirm and this is a one-field question.
-     */
-    const askAccountKindChange = () => {
-        if (!canManageKind()) { return; }
-        const button = document.getElementById('btnUserAccountKindChange');
-        const id = button?.dataset.userId;
-        const email = button?.dataset.userEmail || '';
-        const current = normalizeAccountKind(button?.dataset.userKind);
-        if (!id) { return; }
-
-        window.showConfirm?.(L.ChangeAccountKind, (chosen) => {
-            const kind = normalizeAccountKind(chosen);
-            if (kind === current) { return; }   // Nothing to change; the server would accept a no-op write.
-            return postAccountKind(id, kind, getOcCreateEditInstance());
-        }, {
-            entityName: email,
-            type: 'primary',
-            icon: 'bx-id-card',
-            confirmButtonText: L.ChangeAccountKind,
-            showInput: true,
-            inputType: 'select',
-            inputLabel: L.AccountKindNewLabel,
-            inputOptions: {
-                Unknown: L.AccountKindUnknown,
-                Human: L.AccountKindHuman,
-                Service: L.AccountKindService
-            },
-            inputRequired: true,
-            inputValidationMessage: L.AccountKindNewRequired
-        });
     };
 
     const openCreateOffcanvas = () => {
@@ -735,19 +698,11 @@ const UsersList = (function () {
             document.getElementById('userLastName').value = d.lastName || '';
             document.getElementById('userIsActive').checked = !!d.isActive;
             /*
-             * The read-only kind and the button that changes it. The VALUE is shown as a word, never as the enum
-             * number, and the button carries what the change needs so the dialog does not go looking for it.
+             * The kind starts from what AuthService reports, as the enum NAME. Unknown is the select's empty option
+             * (the create form's value for it); the proxy turns an empty edit choice back into "Unknown".
              */
-            const kindRead = document.getElementById('userAccountKindRead');
-            const kindButton = document.getElementById('btnUserAccountKindChange');
             const currentKind = normalizeAccountKind(d.accountKind);
-            if (kindRead) { kindRead.value = accountKindLabel(currentKind); }
-            if (kindButton) {
-                kindButton.dataset.userId = d.id || '';
-                kindButton.dataset.userEmail = d.email || '';
-                kindButton.dataset.userKind = currentKind;
-                kindButton.classList.toggle('d-none', !canManageKind());
-            }
+            setSelectValue(document.getElementById('userAccountKind'), currentKind === 'Unknown' ? '' : currentKind);
         } catch (error) {
             console.error('[Users] Failed to load user for edit.', error);
             window.showToast?.(L.ErrorOccurred, 'error');
@@ -974,8 +929,6 @@ const UsersList = (function () {
             window.showConfirm?.(L.ChangeAccountKind, () => postAccountKind(id, kind, getOcDetailsInstance()),
                 { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', icon: 'bx-id-card', confirmButtonText: L.ChangeAccountKind });
         });
-
-        document.getElementById('btnUserAccountKindChange')?.addEventListener('click', askAccountKindChange);
 
         document.getElementById('oc-btn-edit')?.addEventListener('click', () => {
             const id = document.getElementById('oc-btn-edit')?.dataset.editId;

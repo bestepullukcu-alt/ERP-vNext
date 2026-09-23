@@ -55,12 +55,20 @@ describe("every admin confirmation wears its own action's glyph", () => {
     });
   });
 
-  test("the account-type change wears the same glyph as its own button", () => {
+  test("the account-type change keeps its glyph — and now there is only one door to it", () => {
+    /*
+     * ⚠ UPDATED WITH THE DESIGN, NOT LOOSENED (2026-09-23). This used to demand the glyph TWICE, because the
+     * type was changed from two dialogs: the quick view's and one on the edit form. WP-AUTH-USER-KIND-UPDATE-01
+     * made the edit side a saved FIELD — the kind now rides the form's own "Update" — so the edit dialog and
+     * its button are gone. One dialog is left, and it still names the act it performs.
+     */
     const source = JS_SOURCE();
     expect((source.match(/icon: 'bx-id-card'/g) || []).length,
-      "one of the two doors to the type change lost its glyph").toBe(2);
-    expect(read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"))
-      .toMatch(/btnUserAccountKindChange[\s\S]{0,120}bx-id-card/);
+      "the quick view's type change lost its glyph").toBe(1);
+    // And the edit form asks no dialog at all: the field is saved with everything else.
+    expect(read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml"),
+      "the edit form grew a type dialog again — it is a saved field now")
+      .not.toContain("btnUserAccountKindChange");
   });
 
   test("every glyph named here exists in the icon set (BL-430)", () => {
