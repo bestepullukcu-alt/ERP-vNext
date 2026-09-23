@@ -607,8 +607,9 @@ const UsersList = (function () {
     const setCreateMode = (isCreate) => {
         // Invitation hint shows on create; status switch shows on edit. No password field (invite flow).
         document.getElementById('userInviteHint')?.classList.toggle('d-none', !isCreate);
-        // Classification is a CREATE-time choice here; UpdateUser carries no kind (quick view's "Change type" does).
+        // Classification is chosen on create and CHANGED on edit through its own route — two rows, one visible.
         document.getElementById('userAccountKindRow')?.classList.toggle('d-none', !isCreate);
+        document.getElementById('userAccountKindReadRow')?.classList.toggle('d-none', isCreate);
         document.getElementById('userActiveRow')?.classList.toggle('d-none', isCreate);
         const emailEl = document.getElementById('userEmail');
         const emailHelp = document.getElementById('userEmailHelp');
@@ -637,6 +638,72 @@ const UsersList = (function () {
         setSelectValue(document.getElementById('userAccountKind'), '');
         document.getElementById('formUserAlert').classList.add('d-none');
     };
+    /*
+     * ⚠ ONE CALL, TWO DOORS (2026-09-23). The kind is changed from the quick view AND from the edit offcanvas,
+     * and the server takes it through its own route — `UpdateUser` carries no kind, which is why the edit form
+     * shows the field READ-ONLY instead of pretending to save it. Both doors post through here, so the request,
+     * the refusal handling and the toast exist once; only the way the new value is CHOSEN differs, and that
+     * difference is what each door's dialog is for.
+     */
+    const postAccountKind = async (id, kind, offcanvasToHide) => {
+        try {
+            const res = await fetch(`/Users/api/${id}/account-kind`, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken(),
+                    ...getAuthHeaders()
+                },
+                body: JSON.stringify({ kind })
+            });
+            const json = await res.json().catch(() => ({}));
+            if (!res.ok) {
+                throw new Error((json.errors && json.errors[0]) || json.detail || L.ErrorOccurred);
+            }
+            suppressResponsiveReturn = true;
+            responsiveReturnModalEl = null;
+            offcanvasToHide?.hide();
+            reloadWithSuccessToast('AccountKindChanged');
+        } catch (error) {
+            console.error('[Users] Account kind change failed.', error);
+            window.showToast?.(error.message || L.ErrorOccurred, 'error');
+        }
+    };
+
+    /*
+     * The edit door. The new value is chosen INSIDE the shared confirm (its `select` input), so this screen
+     * opens no dialog of its own — the product has exactly one confirm and this is a one-field question.
+     */
+    const askAccountKindChange = () => {
+        if (!canManageKind()) { return; }
+        const button = document.getElementById('btnUserAccountKindChange');
+        const id = button?.dataset.userId;
+        const email = button?.dataset.userEmail || '';
+        const current = normalizeAccountKind(button?.dataset.userKind);
+        if (!id) { return; }
+
+        window.showConfirm?.(L.ChangeAccountKind, (chosen) => {
+            const kind = normalizeAccountKind(chosen);
+            if (kind === current) { return; }   // Nothing to change; the server would accept a no-op write.
+            return postAccountKind(id, kind, getOcCreateEditInstance());
+        }, {
+            entityName: email,
+            type: 'primary',
+            confirmButtonText: L.ChangeAccountKind,
+            showInput: true,
+            inputType: 'select',
+            inputLabel: L.AccountKindNewLabel,
+            inputOptions: {
+                Unknown: L.AccountKindUnknown,
+                Human: L.AccountKindHuman,
+                Service: L.AccountKindService
+            },
+            inputRequired: true,
+            inputValidationMessage: L.AccountKindNewRequired
+        });
+    };
+
     const openCreateOffcanvas = () => {
         editingId = null;
         resetCreateEditForm();
@@ -666,6 +733,20 @@ const UsersList = (function () {
             document.getElementById('userFirstName').value = d.firstName || '';
             document.getElementById('userLastName').value = d.lastName || '';
             document.getElementById('userIsActive').checked = !!d.isActive;
+            /*
+             * The read-only kind and the button that changes it. The VALUE is shown as a word, never as the enum
+             * number, and the button carries what the change needs so the dialog does not go looking for it.
+             */
+            const kindRead = document.getElementById('userAccountKindRead');
+            const kindButton = document.getElementById('btnUserAccountKindChange');
+            const currentKind = normalizeAccountKind(d.accountKind);
+            if (kindRead) { kindRead.value = accountKindLabel(currentKind); }
+            if (kindButton) {
+                kindButton.dataset.userId = d.id || '';
+                kindButton.dataset.userEmail = d.email || '';
+                kindButton.dataset.userKind = currentKind;
+                kindButton.classList.toggle('d-none', !canManageKind());
+            }
         } catch (error) {
             console.error('[Users] Failed to load user for edit.', error);
             window.showToast?.(L.ErrorOccurred, 'error');
@@ -880,32 +961,11 @@ const UsersList = (function () {
             const email = btn?.dataset.userEmail || '';
             const kind = normalizeAccountKind(document.getElementById('oc-accountkind-select')?.value);
             if (!id) return;
-            window.showConfirm?.(L.ChangeAccountKind, async () => {
-                try {
-                    const res = await fetch(`/Users/api/${id}/account-kind`, {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': getAntiForgeryToken(),
-                            ...getAuthHeaders()
-                        },
-                        body: JSON.stringify({ kind })
-                    });
-                    const json = await res.json().catch(() => ({}));
-                    if (!res.ok) {
-                        throw new Error((json.errors && json.errors[0]) || json.detail || L.ErrorOccurred);
-                    }
-                    suppressResponsiveReturn = true;
-                    responsiveReturnModalEl = null;
-                    getOcDetailsInstance()?.hide();
-                    reloadWithSuccessToast('AccountKindChanged');
-                } catch (error) {
-                    console.error('[Users] Account kind change failed.', error);
-                    window.showToast?.(error.message || L.ErrorOccurred, 'error');
-                }
-            }, { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', confirmButtonText: L.ChangeAccountKind });
+            window.showConfirm?.(L.ChangeAccountKind, () => postAccountKind(id, kind, getOcDetailsInstance()),
+                { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', confirmButtonText: L.ChangeAccountKind });
         });
+
+        document.getElementById('btnUserAccountKindChange')?.addEventListener('click', askAccountKindChange);
 
         document.getElementById('oc-btn-edit')?.addEventListener('click', () => {
             const id = document.getElementById('oc-btn-edit')?.dataset.editId;

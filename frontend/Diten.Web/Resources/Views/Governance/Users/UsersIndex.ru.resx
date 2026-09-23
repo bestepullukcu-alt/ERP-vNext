@@ -50,4 +50,7 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Оставьте пустым, чтобы учётная запись осталась неподтверждённой.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Ссылка-приглашение (разработка)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Отправьте пользователю эту ссылку для установки пароля. Показывается только в среде разработки.</value></data>
+  <data name="AccountKindEditHint" xml:space="preserve"><value>Тип здесь не редактируется — он меняется отдельным действием, и изменение фиксируется.</value></data>
+  <data name="AccountKindNewLabel" xml:space="preserve"><value>Новый тип учётной записи</value></data>
+  <data name="AccountKindNewRequired" xml:space="preserve"><value>Выберите новый тип.</value></data>
 </root>
