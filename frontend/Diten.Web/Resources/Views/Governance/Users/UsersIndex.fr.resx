@@ -50,4 +50,7 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Laissez vide pour garder le compte non confirmé.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Lien d'invitation (développement)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Transmettez ce lien de définition du mot de passe à l'utilisateur. Affiché uniquement en développement.</value></data>
+  <data name="AccountKindEditHint" xml:space="preserve"><value>Le type ne se modifie pas ici : il se change par son action propre, et le changement est enregistré.</value></data>
+  <data name="AccountKindNewLabel" xml:space="preserve"><value>Nouveau type de compte</value></data>
+  <data name="AccountKindNewRequired" xml:space="preserve"><value>Choisissez le nouveau type.</value></data>
 </root>

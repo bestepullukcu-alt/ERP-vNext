@@ -50,4 +50,7 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Leave unset to keep the account unconfirmed.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Invite link (development)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Send this set-password link to the user. Shown in development only.</value></data>
+  <data name="AccountKindEditHint" xml:space="preserve"><value>The type is not edited here — it is changed through its own action, and the change is recorded.</value></data>
+  <data name="AccountKindNewLabel" xml:space="preserve"><value>New account type</value></data>
+  <data name="AccountKindNewRequired" xml:space="preserve"><value>Choose the new type.</value></data>
 </root>

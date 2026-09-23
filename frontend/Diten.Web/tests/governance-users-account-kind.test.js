@@ -308,3 +308,81 @@ describe("the account-kind selects are select2, and both of its seams are honour
     expect(source).toMatch(/setSelectHidden\(kindSelect, !canManageKind\(\)\)/);
   });
 });
+
+/*
+ * ── THE TYPE IS CHANGED FROM THE EDIT FORM TOO (owner report, 2026-09-23) ────────────────────────────────
+ *
+ * The owner opened Edit, looked for "change type", and found nothing: it lived only in the quick view. The
+ * reason was sound — `UpdateUser` carries no kind, so a saveable box on the edit form would be the defect we
+ * had just fixed on the task form, a promise the server drops. The cure is the same shape as the handover:
+ * the field is SHOWN read-only and the change is offered as the audited call it already is.
+ *
+ * ⚠ AND ONE CALL, TWO DOORS. The quick view and the edit form now post through a single function. Two copies
+ * of a write that carries a permission and an audit trail is how they end up disagreeing.
+ */
+describe("the account type can be changed from the edit form, without becoming a saveable field", () => {
+  const offcanvas = () => read("Views", "Governance", "Users", "_CreateEditOffcanvas.cshtml");
+  const js = () => read("wwwroot", "assets", "js", "Governance", "Users", "index.js");
+
+  test("edit shows the type read-only, in the product's immutable-field paint", () => {
+    const source = offcanvas();
+    const row = source.slice(source.indexOf('id="userAccountKindReadRow"'), source.indexOf("AccountKindEditHint"));
+    expect(row, "the read-only row is gone").toBeTruthy();
+    expect(row).toMatch(/id="userAccountKindRead"[^>]*readonly/);
+    expect(row, "an unpainted readonly box reads as editable").toMatch(/bg-label-secondary/);
+    expect(row, "the change button is missing beside it").toContain('id="btnUserAccountKindChange"');
+  });
+
+  test("both rows sit inside the same explicit-grant-only gate", () => {
+    const block = gatedBlockContaining(offcanvas(), 'id="userAccountKindReadRow"');
+    expect(block, "the read-only row is drawn outside the account-kind.manage gate").toBeTruthy();
+    expect(block, "the create picker and the edit row drifted apart").toContain('id="userAccountKindRow"');
+  });
+
+  test("create shows the picker, edit shows the read-only row — never both", () => {
+    const source = js();
+    expect(source).toMatch(/userAccountKindRow'\)\?\.classList\.toggle\('d-none', !isCreate\)/);
+    expect(source).toMatch(/userAccountKindReadRow'\)\?\.classList\.toggle\('d-none', isCreate\)/);
+  });
+
+  test("the new value is chosen inside the SHARED confirm — this screen opens no dialog of its own", () => {
+    const ask = js().slice(js().indexOf("const askAccountKindChange"), js().indexOf("const openCreateOffcanvas"));
+    expect(ask).toContain("window.showConfirm");
+    expect(ask).toMatch(/inputType: 'select'/);
+    expect(ask).toMatch(/inputOptions:/);
+    expect(ask, "the picker offers something the enum does not have").toMatch(/Unknown:[\s\S]{0,60}Human:[\s\S]{0,60}Service:/);
+    expect(ask, "a no-op write is sent when the reader picks what is already set").toMatch(/kind === current/);
+    expect(js(), "a second dialog was opened instead of the shared one").not.toMatch(/\bSwal\.fire\(/);
+  });
+
+  test("one network call serves both doors", () => {
+    const source = js();
+    const posts = source.match(/\/Users\/api\/\$\{id\}\/account-kind/g) || [];
+    expect(posts.length, "the account-kind write exists in more than one place again").toBe(1);
+    expect(source).toContain("const postAccountKind = async (id, kind, offcanvasToHide)");
+    // Both doors reach it.
+    expect(source).toMatch(/postAccountKind\(id, kind, getOcDetailsInstance\(\)\)/);
+    expect(source).toMatch(/postAccountKind\(id, kind, getOcCreateEditInstance\(\)\)/);
+  });
+
+  test("the box shows a word, never the enum number", () => {
+    expect(js()).toMatch(/kindRead\.value = accountKindLabel\(currentKind\)/);
+  });
+
+  ["AccountKindEditHint", "AccountKindNewLabel", "AccountKindNewRequired"].forEach((key) => {
+    test(`${key} exists in all seven languages, translated`, () => {
+      const en = new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`)
+        .exec(read("Resources", "Views", "Governance", "Users", "UsersIndex.en.resx"))[1];
+      LANGS.forEach((lang) => {
+        const resx = read("Resources", "Views", "Governance", "Users", `UsersIndex.${lang}.resx`);
+        const m = new RegExp(`<data name="${key}"[^>]*>\\s*<value>([^<]+)</value>`).exec(resx);
+        expect(m, `${key} missing in ${lang}`).toBeTruthy();
+        if (lang !== "en") {
+          expect(m[1], `${lang} carries untranslated English for ${key}`).not.toBe(en);
+        }
+      });
+      expect(read("Views", "Governance", "Users", "_IndexL10n.cshtml"))
+        .toMatch(new RegExp(`${key} = Localizer\\["${key}"\\]\\.Value`));
+    });
+  });
+});

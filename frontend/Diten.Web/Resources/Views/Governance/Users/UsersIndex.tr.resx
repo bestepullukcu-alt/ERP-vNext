@@ -50,4 +50,7 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Boş bırakılırsa hesap onaylanmamış kalır.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Davet bağlantısı (geliştirme)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Bu şifre belirleme bağlantısını kullanıcıya iletin. Yalnızca geliştirme ortamında görünür.</value></data>
+  <data name="AccountKindEditHint" xml:space="preserve"><value>Tür burada düzenlenmez; kendi işlemiyle değiştirilir ve değişiklik kayda geçer.</value></data>
+  <data name="AccountKindNewLabel" xml:space="preserve"><value>Yeni hesap türü</value></data>
+  <data name="AccountKindNewRequired" xml:space="preserve"><value>Yeni türü seçin.</value></data>
 </root>
