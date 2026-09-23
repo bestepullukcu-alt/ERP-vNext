@@ -87,7 +87,7 @@ public sealed class UsersController : Controller
             // it is null in Production, so nothing leaks to the UI there.
             return response.IsSuccessStatusCode
                 ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
@@ -120,7 +120,7 @@ public sealed class UsersController : Controller
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/users/{id}", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
@@ -318,7 +318,7 @@ public sealed class UsersController : Controller
             // return no body, so ExtractSetupUrlAsync yields null there. Always null in prod.
             return response.IsSuccessStatusCode
                 ? Json(new { success = true, setupUrl = await ExtractSetupUrlAsync(response) })
-                : Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response) });
+                : await GatewayFailureAsync(response);
         }
         catch (Exception ex)
         {
@@ -354,6 +354,41 @@ public sealed class UsersController : Controller
     {
         var message = ex.GetBaseException().Message;
         return [string.IsNullOrWhiteSpace(message) ? _sharedLocalizer["GatewayError"].Value : message];
+    }
+
+    /*
+     * WP-AUTH-INVITED-LIFECYCLE-01 — a failed hop as the screen reads it: the gateway's text (English fallback) PLUS
+     * the first stable code from the Response envelope's errorCodes, so index.js can show the sentence in the
+     * reader's language (USER_EMAIL_TAKEN, USER_INVITATION_PENDING, …). Text-only failures carry errorCode = null.
+     */
+    private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
+        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response) });
+
+    private static async Task<string?> ExtractGatewayErrorCodeAsync(HttpResponseMessage response)
+    {
+        try
+        {
+            var raw = await response.Content.ReadAsStringAsync();
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            using var doc = JsonDocument.Parse(raw);
+            if (doc.RootElement.ValueKind == JsonValueKind.Object
+                && doc.RootElement.TryGetProperty("errorCodes", out var codes)
+                && codes.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var entry in codes.EnumerateArray())
+                {
+                    if (entry.ValueKind == JsonValueKind.Object
+                        && entry.TryGetProperty("code", out var code)
+                        && code.ValueKind == JsonValueKind.String
+                        && !string.IsNullOrWhiteSpace(code.GetString()))
+                    {
+                        return code.GetString();
+                    }
+                }
+            }
+        }
+        catch { }
+        return null;
     }
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

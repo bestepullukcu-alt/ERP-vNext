@@ -55,6 +55,13 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
                 403);
         }
 
+        // WP-AUTH-INVITED-LIFECYCLE-01 — the edit form is the second administrator door to activation; it answers
+        // exactly like the kebab's enable (UserLifecycle), before anything is written.
+        if (UserLifecycle.RefusesActivation(user, request.IsActive))
+        {
+            return UserLifecycle.InvitationPendingRefusal<UserDto>();
+        }
+
         user.UpdateProfile(request.FirstName, request.LastName);
         if (request.IsActive) user.Activate(); else user.Deactivate();
         var kindChange = hasKind ? _kindWriter.Apply(user, newKind) : null;
@@ -73,6 +80,6 @@ public sealed class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand
 
         return Response<UserDto>.Success(new UserDto(user.Id, user.Email, user.FirstName, user.LastName, user.IsActive, roles, user.TenantId,
             user.LastLoginAt, user.FailedLoginAttempts, user.MustChangePassword, "TenantPolicy",
-            AccountKind: user.AccountKind.ToString()));
+            AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user)));
     }
 }

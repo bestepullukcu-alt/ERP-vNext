@@ -92,6 +92,9 @@
                                 <div class="mt-1">
                                     <span id="oc-status" class="badge bg-label-secondary">-</span>
                                 </div>
+                                @* WP-AUTH-INVITED-LIFECYCLE-01 — why neither "Activate" nor "Reset password" is offered for
+                                   an invited account, said where the reader is looking. Shown by index.js for Invited only. *@
+                                <div id="oc-invite-pending-hint" class="form-text d-none">@Localizer["InvitationPendingHint"]</div>
                             </div>
                         </div>
                     </div>

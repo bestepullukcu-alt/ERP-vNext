@@ -1,7 +1,9 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
+using Diten.AuthService.Application.Common.Exceptions;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using MediatR;
@@ -65,11 +67,22 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         }
 
         var existing = await _userRepository.GetByEmailAndTenantAsync(request.Email, _tenantContext.TenantId, ct);
-        if (existing != null) return Response<UserDto>.Fail("Email is already in use.", 409);
+        // WP-AUTH-INVITED-LIFECYCLE-01 — a LIVE user only: the probe and the users e-mail unique index both ignore
+        // soft-deleted accounts, so a deleted user's address opens a NEW account (owner decision A — the old record
+        // and its history stay; its roles belong to the old id and are never carried over). The index is still the
+        // last word: a concurrent insert that wins the race surfaces here as 409 too, not as a 500.
+        if (existing != null) return UserLifecycle.EmailTakenRefusal<UserDto>();
 
-        return string.IsNullOrWhiteSpace(request.Password)
-            ? await CreateByInvitationAsync(request, ct)
-            : await CreateSelfServiceAsync(request, ct);
+        try
+        {
+            return string.IsNullOrWhiteSpace(request.Password)
+                ? await CreateByInvitationAsync(request, ct)
+                : await CreateSelfServiceAsync(request, ct);
+        }
+        catch (DuplicateUserEmailException)
+        {
+            return UserLifecycle.EmailTakenRefusal<UserDto>();
+        }
     }
 
     // The kind the new account gets: the caller's explicit, permitted choice, else Unknown. Parsed from the NAME the
@@ -101,7 +114,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 
         return Response<UserDto>.Success(
             new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
-                AccountKind: created.AccountKind.ToString()),
+                AccountKind: created.AccountKind.ToString(), Status: UserLifecycle.StatusOf(created)),
             201);
     }
 
@@ -134,7 +147,7 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
         return Response<UserDto>.Success(
             new UserDto(created.Id, created.Email, created.FirstName, created.LastName, created.IsActive, new List<string>(), created.TenantId,
                 created.LastLoginAt, created.FailedLoginAttempts, created.MustChangePassword, "TenantPolicy", setupDelivery.SetupUrl,
-                created.AccountKind.ToString()),
+                created.AccountKind.ToString(), UserLifecycle.StatusOf(created)),
             201);
     }
 

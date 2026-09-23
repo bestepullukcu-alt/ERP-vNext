@@ -50,4 +50,8 @@
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Déjelo vacío para mantener la cuenta sin confirmar.</value></data>
   <data name="InviteLinkTitle" xml:space="preserve"><value>Enlace de invitación (desarrollo)</value></data>
   <data name="InviteLinkHint" xml:space="preserve"><value>Envíe al usuario este enlace para establecer la contraseña. Solo se muestra en desarrollo.</value></data>
+  <data name="StatusInvited" xml:space="preserve"><value>Invitado</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>Invitación pendiente: la cuenta se activa cuando la persona establece su contraseña mediante el enlace enviado por correo. Hasta entonces no se puede restablecer la contraseña; reenvíe la invitación en su lugar.</value></data>
+  <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Ya existe un usuario con esta dirección de correo electrónico.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Este usuario aún no ha aceptado la invitación. La cuenta se activa cuando establezca su contraseña; reenvíe la invitación si es necesario.</value></data>
 </root>
