@@ -29,9 +29,9 @@
   <data name="LanguageCode" xml:space="preserve"><value>Dil</value></data>
   <data name="ContentVersion" xml:space="preserve"><value>İçerik Sürümü</value></data>
   <data name="Summary" xml:space="preserve"><value>Özet</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
-  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>Konu</value></data>
+  <data name="TopicId" xml:space="preserve"><value>Başlık</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>Hedef Kitle Profili</value></data>
   <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
   <data name="BrandId" xml:space="preserve"><value>Marka</value></data>
   <data name="ProductId" xml:space="preserve"><value>Ürün</value></data>
@@ -82,18 +82,18 @@
   <data name="ContentPointerRequired" xml:space="preserve"><value>En az bir içerik işaretçisi zorunludur.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
   <data name="TaxonomyTab" xml:space="preserve"><value>Taksonomi</value></data>
-  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
-  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
-  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
-  <data name="CreateSubject" xml:space="preserve"><value>Subject Oluştur</value></data>
-  <data name="CreateTopic" xml:space="preserve"><value>Topic Oluştur</value></data>
-  <data name="CreateProfile" xml:space="preserve"><value>Profil Oluştur</value></data>
-  <data name="EditSubject" xml:space="preserve"><value>Subject Düzenle</value></data>
-  <data name="EditTopic" xml:space="preserve"><value>Topic Düzenle</value></data>
-  <data name="EditProfile" xml:space="preserve"><value>Profil Düzenle</value></data>
-  <data name="ArchiveSubject" xml:space="preserve"><value>Subject Arşivle</value></data>
-  <data name="ArchiveTopic" xml:space="preserve"><value>Topic Arşivle</value></data>
-  <data name="ArchiveProfile" xml:space="preserve"><value>Profil Arşivle</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>Konular</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>Başlıklar</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>Hedef Kitle Profilleri</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>Konu Oluştur</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>Başlık Oluştur</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>Hedef Kitle Profili Oluştur</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>Konu Düzenle</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>Başlık Düzenle</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>Hedef Kitle Profili Düzenle</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>Konu Arşivle</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>Başlık Arşivle</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>Hedef Kitle Profili Arşivle</value></data>
   <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Bu satır arşivlensin mi? Mevcut içerik sınıflandırmasını korur; yalnızca yeni bağlama engellenir.</value></data>
   <data name="Name" xml:space="preserve"><value>Ad</value></data>
   <data name="Code" xml:space="preserve"><value>Kod</value></data>
@@ -101,7 +101,7 @@
   <data name="Status" xml:space="preserve"><value>Durum</value></data>
   <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
   <data name="ProfileType" xml:space="preserve"><value>Profil Türü</value></data>
-  <data name="ParentTopicId" xml:space="preserve"><value>Üst Topic ID</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>Üst Başlık</value></data>
   <data name="Active" xml:space="preserve"><value>Aktif</value></data>
   <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
   <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
@@ -141,11 +141,11 @@
   <data name="SelectValues" xml:space="preserve"><value>Değer seçin</value></data>
   <data name="CustomAxisPlaceholder" xml:space="preserve"><value>Eksen kodu (ör. bölge)</value></data>
   <data name="CustomValuesPlaceholder" xml:space="preserve"><value>Değer yazıp Enter'a basın</value></data>
-  <data name="SubjectSource" xml:space="preserve"><value>Subject kaynağı</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>Konu kaynağı</value></data>
   <data name="FromGlobalProduct" xml:space="preserve"><value>Global Product'tan</value></data>
   <data name="CustomSubject" xml:space="preserve"><value>Özel</value></data>
   <data name="SelectGlobalProduct" xml:space="preserve"><value>Global Product seçin</value></data>
-  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Subject'i MDM ana kaydına bağlar ve adı öndoldurur (düzenlenebilir).</value></data>
+  <data name="GlobalProductSubjectHint" xml:space="preserve"><value>Konuyu MDM ana kaydına bağlar ve adı önceden doldurur (düzenlenebilir).</value></data>
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Global Product listesi kullanılamıyor; özel bir subject girin.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>Global Product servisi mevcut değil; özel bir subject girin.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>Global Product görüntüleme izniniz yok; özel bir subject girin.</value></data>
