@@ -33,7 +33,8 @@ public sealed record ContentSetRevisionDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    ReleaseStateDto? ReleaseState = null);
 
 public sealed record ContentSetRevisionListDto(IReadOnlyList<ContentSetRevisionDto> Items, int Total);
 
@@ -47,3 +48,16 @@ public sealed record RenderedArtifactDto(
     string FileName,
     DateTimeOffset RenderedAtUtc,
     string? RenderedBy);
+
+/// <summary>SCMM-17 — the release lifecycle state returned by release / withdraw and projected on the revision read. The
+/// released artifact is manifest-bound by <see cref="ReleasedArtifactContentId"/> + <see cref="ReleasedArtifactChecksum"/>.
+/// </summary>
+public sealed record ReleaseStateDto(
+    string ReleaseStatus,
+    Guid ReleasedArtifactContentId,
+    string ReleasedArtifactChecksum,
+    DateTimeOffset ReleasedAtUtc,
+    string? ReleasedBy,
+    DateTimeOffset? WithdrawnAtUtc,
+    string? WithdrawnBy,
+    string? WithdrawalReason);

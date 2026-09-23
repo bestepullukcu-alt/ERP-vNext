@@ -31,7 +31,19 @@ public static class ContentSetRevisionMapper
         r.UpdatedBy,
         r.ArchivedAt,
         r.ArchivedBy,
-        r.IsArchived());
+        r.IsArchived(),
+        ToDto(r.ReleaseState));
+
+    /// <summary>SCMM-17 — project the release lifecycle state (null until released).</summary>
+    public static ReleaseStateDto? ToDto(ContentSetReleaseState? s) => s is null ? null : new(
+        s.ReleaseStatus,
+        s.ReleasedArtifactContentId,
+        s.ReleasedArtifactChecksum,
+        s.ReleasedAtUtc,
+        s.ReleasedBy,
+        s.WithdrawnAtUtc,
+        s.WithdrawnBy,
+        s.WithdrawalReason);
 
     private static ContentSetComponentDto ToDto(ContentSetComponent c) => new(
         c.SelectionId, c.KnowledgeContentId, c.ContentVersion, c.LanguageCode, c.Role, ToDto(c.Arrangement));

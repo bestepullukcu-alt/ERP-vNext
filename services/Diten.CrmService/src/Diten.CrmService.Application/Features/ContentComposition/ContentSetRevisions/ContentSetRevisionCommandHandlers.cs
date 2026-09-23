@@ -364,3 +364,199 @@ public sealed class RenderContentSetRevisionHandler
         return new Guid(MD5.HashData(seed));
     }
 }
+
+/// <summary>
+/// SCMM-17 (CAND-CAP-0011, SCMM-17) — release a rendered revision's artifact. The released artifact's ContentId +
+/// Checksum are pinned into the release state (manifest-bound, AT05). Preconditions: the revision must be rendered (else
+/// 409) and the releaser must differ from the reviewer (separation of duties, else 403 — author → reviewer → releaser are
+/// three distinct roles). Idempotent: an already-released revision returns its state (200); a withdrawn revision cannot be
+/// re-released (409). Audit is fail-soft.
+/// </summary>
+public sealed class ReleaseContentSetRevisionHandler
+    : IRequestHandler<ReleaseContentSetRevisionCommand, Response<ReleaseStateDto>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IActorContext _actor;
+    private readonly IContentSetRevisionRepository _revisions;
+    private readonly IContentCompositionAuditPublisher _audit;
+
+    public ReleaseContentSetRevisionHandler(
+        ITenantContext tenant, IActorContext actor, IContentSetRevisionRepository revisions,
+        IContentCompositionAuditPublisher audit)
+    {
+        _tenant = tenant;
+        _actor = actor;
+        _revisions = revisions;
+        _audit = audit;
+    }
+
+    public async Task<Response<ReleaseStateDto>> Handle(
+        ReleaseContentSetRevisionCommand request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<ReleaseStateDto>.Fail("Tenant context is required.", 400);
+        }
+
+        var revision = await _revisions.GetByIdAsync(tenantId, request.RevisionId, cancellationToken);
+        if (revision is null)
+        {
+            return Response<ReleaseStateDto>.Fail("Content set revision not found.", 404);
+        }
+
+        // Idempotent replay: already released → return the existing state. Withdrawn is terminal → a re-release is 409.
+        if (revision.IsReleased())
+        {
+            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+        }
+
+        if (revision.IsWithdrawn())
+        {
+            return Response<ReleaseStateDto>.Fail(
+                "A withdrawn content set revision cannot be re-released; create a new revision.", 409);
+        }
+
+        // Precondition: only a rendered revision has an artifact to release.
+        if (revision.RenderedArtifact is not { } artifact)
+        {
+            return Response<ReleaseStateDto>.Fail(
+                "The content set revision has not been rendered; render it before releasing.", 409);
+        }
+
+        // Separation of duties: the releaser must differ from the reviewer. An approved revision always carries a review
+        // decision with a reviewer; a missing reviewer would make SoD unverifiable, so it is a controlled 409, not a bypass.
+        var reviewerId = revision.Decision?.ReviewerId;
+        if (string.IsNullOrWhiteSpace(reviewerId))
+        {
+            return Response<ReleaseStateDto>.Fail(
+                "The content set revision has no recorded reviewer; it cannot be released.", 409);
+        }
+
+        if (string.Equals(_actor.ActorName ?? string.Empty, reviewerId, StringComparison.OrdinalIgnoreCase))
+        {
+            return Response<ReleaseStateDto>.Fail(
+                "The releaser must differ from the reviewer (separation of duties).", 403);
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        revision.ReleaseState = new ContentSetReleaseState
+        {
+            ReleaseStatus = ContentSetReleaseStatuses.Released,
+            ReleasedArtifactContentId = artifact.ContentId,   // manifest-bound pin
+            ReleasedArtifactChecksum = artifact.Checksum,
+            ReleasedAtUtc = now,
+            ReleasedBy = _actor.ActorName
+        };
+        revision.UpdatedAt = now;
+        revision.UpdatedBy = _actor.ActorName;
+
+        await _revisions.UpdateAsync(revision, cancellationToken);
+
+        await ContentSetRevisionAudit.SafePublishAsync(
+            _audit, tenantId, ContentSetRevisionReasonCodes.Released, revision,
+            $"revision={revision.RevisionCode};contentId={artifact.ContentId:D}", cancellationToken);
+
+        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+    }
+}
+
+/// <summary>
+/// SCMM-17 (CAND-CAP-0011, SCMM-17) — managed withdrawal of a released revision. Only a released revision can be withdrawn
+/// (else 409) and a reason is required (else 400). Idempotent: an already-withdrawn revision returns its state (200).
+/// ⛔ Withdrawal is a <b>state change, not a deletion</b> — it records who/when/why and never removes the stored artifact
+/// bytes (AD-6). It is terminal: a withdrawn revision is never re-released. This handler has NO artifact-store dependency,
+/// so there is structurally no delete/compensate/purge path it can reach.
+/// </summary>
+public sealed class WithdrawContentSetRevisionHandler
+    : IRequestHandler<WithdrawContentSetRevisionCommand, Response<ReleaseStateDto>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IActorContext _actor;
+    private readonly IContentSetRevisionRepository _revisions;
+    private readonly IContentCompositionAuditPublisher _audit;
+
+    public WithdrawContentSetRevisionHandler(
+        ITenantContext tenant, IActorContext actor, IContentSetRevisionRepository revisions,
+        IContentCompositionAuditPublisher audit)
+    {
+        _tenant = tenant;
+        _actor = actor;
+        _revisions = revisions;
+        _audit = audit;
+    }
+
+    public async Task<Response<ReleaseStateDto>> Handle(
+        WithdrawContentSetRevisionCommand request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<ReleaseStateDto>.Fail("Tenant context is required.", 400);
+        }
+
+        var revision = await _revisions.GetByIdAsync(tenantId, request.RevisionId, cancellationToken);
+        if (revision is null)
+        {
+            return Response<ReleaseStateDto>.Fail("Content set revision not found.", 404);
+        }
+
+        // Idempotent replay: already withdrawn → return the existing state (a retry needs no fresh reason).
+        if (revision.IsWithdrawn())
+        {
+            return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(revision.ReleaseState)!, 200);
+        }
+
+        // Only a released revision can be withdrawn.
+        if (!revision.IsReleased())
+        {
+            return Response<ReleaseStateDto>.Fail(
+                "Only a released content set revision can be withdrawn.", 409);
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Reason))
+        {
+            return Response<ReleaseStateDto>.Fail("A withdrawal reason is required.", 400);
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var state = revision.ReleaseState!;                 // released ⇒ present
+        state.ReleaseStatus = ContentSetReleaseStatuses.Withdrawn;
+        state.WithdrawnAtUtc = now;
+        state.WithdrawnBy = _actor.ActorName;
+        state.WithdrawalReason = request.Reason.Trim();
+        revision.UpdatedAt = now;
+        revision.UpdatedBy = _actor.ActorName;
+
+        // NO byte deletion: the stored artifact is retained (AD-6). This handler never calls the artifact store.
+        await _revisions.UpdateAsync(revision, cancellationToken);
+
+        await ContentSetRevisionAudit.SafePublishAsync(
+            _audit, tenantId, ContentSetRevisionReasonCodes.Withdrawn, revision,
+            $"revision={revision.RevisionCode};contentId={state.ReleasedArtifactContentId:D}", cancellationToken);
+
+        return Response<ReleaseStateDto>.Success(ContentSetRevisionMapper.ToDto(state)!, 200);
+    }
+}
+
+/// <summary>Fail-soft audit helper for the SCMM-17 release/withdraw transitions — an audit outage never breaks a completed
+/// state change (mirrors the IContentCompositionAuditPublisher fail-soft contract). Detail is counts/ids only (no PII).</summary>
+internal static class ContentSetRevisionAudit
+{
+    public static async Task SafePublishAsync(
+        IContentCompositionAuditPublisher audit, Guid tenantId, string eventName, ContentSetRevision revision,
+        string detail, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await audit.PublishAsync(
+                eventName, tenantId, "ContentSetRevision", revision.Id, revision.Version, detail, cancellationToken);
+        }
+        catch
+        {
+            // Audit is a side effect, not a gate.
+        }
+    }
+}

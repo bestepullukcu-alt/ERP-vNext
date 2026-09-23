@@ -31,3 +31,16 @@ public sealed record RecordReviewDecisionCommand(
 /// route, never a client-supplied content id.</summary>
 public sealed record RenderContentSetRevisionCommand(Guid RevisionId)
     : IRequest<Response<RenderedArtifactDto>>;
+
+/// <summary>SCMM-17 (CAND-CAP-0011, SCMM-17) — release a rendered revision's artifact (manifest-bound: the
+/// RenderedArtifact ContentId + Checksum are pinned into the release state). Preconditions: the revision must be rendered
+/// (else 409) and the releaser must differ from the reviewer (separation of duties, else 403). Idempotent — an
+/// already-released revision returns its release state; a withdrawn revision cannot be re-released (409).</summary>
+public sealed record ReleaseContentSetRevisionCommand(Guid RevisionId)
+    : IRequest<Response<ReleaseStateDto>>;
+
+/// <summary>SCMM-17 — managed withdrawal of a released revision. Only a released revision can be withdrawn (else 409); a
+/// reason is required (else 400). Idempotent — an already-withdrawn revision returns its state. Withdrawal is a managed
+/// state change: the stored artifact bytes are never deleted (AD-6), and it is terminal (no re-release).</summary>
+public sealed record WithdrawContentSetRevisionCommand(Guid RevisionId, string Reason)
+    : IRequest<Response<ReleaseStateDto>>;

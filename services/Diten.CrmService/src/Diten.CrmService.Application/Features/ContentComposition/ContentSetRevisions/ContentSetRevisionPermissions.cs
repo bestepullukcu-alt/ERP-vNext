@@ -16,7 +16,14 @@ public static class ContentSetRevisionPermissions
     /// producing the released output is its own operation. Needs an AuthService catalog entry + 97c5 grant to seed.</summary>
     public const string Render = "crm.content-set.render";
 
+    /// <summary>SCMM-17 — release a rendered revision's artifact. A SEPARATE capability so the releaser can be held to a
+    /// third role (author → reviewer → releaser); the runtime SoD guard also blocks the reviewer from releasing.</summary>
+    public const string Release = "crm.content-set.release";
+
+    /// <summary>SCMM-17 — managed withdrawal of a released revision (a state change, never a deletion).</summary>
+    public const string Withdraw = "crm.content-set.withdraw";
+
     /// <summary>The keys these WPs introduce (Read/Submit already existed under ContentSet; Review = SCMM-15;
-    /// Render = SCMM-16B).</summary>
-    public static readonly IReadOnlyList<string> New = new[] { Review, Render };
+    /// Render = SCMM-16B; Release/Withdraw = SCMM-17).</summary>
+    public static readonly IReadOnlyList<string> New = new[] { Review, Render, Release, Withdraw };
 }

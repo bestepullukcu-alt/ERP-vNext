@@ -628,6 +628,9 @@ public static class DependencyInjection
         // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
         Map<ContentSetRenderedArtifact>(map =>
             map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
+        // SCMM-17 — the release state. The pinned released-artifact content id takes the same string-Guid convention.
+        Map<ContentSetReleaseState>(map =>
+            map.GetMemberMap(x => x.ReleasedArtifactContentId).SetSerializer(stringGuid));
 
         Map<KnowledgeExternalReference>(_ => { });
 

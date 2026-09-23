@@ -72,4 +72,21 @@ public sealed class ContentSetRevisionsController : CustomBaseController
 
         return File(response.Data.Content, response.Data.MediaType, response.Data.FileName);
     }
+
+    // SCMM-17 — release a rendered revision's artifact (manifest-bound). Separation of duties: the reviewer cannot release
+    // (403). Idempotent; a withdrawn revision cannot be re-released (409).
+    [HttpPost(Base + "/{revisionId:guid}/release")]
+    [HasPermission(Perms.Release)]
+    public async Task<IActionResult> Release(Guid revisionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new ReleaseContentSetRevisionCommand(revisionId), cancellationToken));
+
+    // SCMM-17 — managed withdrawal of a released revision (a state change, never a deletion of the stored bytes). The
+    // reason is required; withdrawal is terminal.
+    [HttpPost(Base + "/{revisionId:guid}/withdraw")]
+    [HasPermission(Perms.Withdraw)]
+    public async Task<IActionResult> Withdraw(
+        Guid revisionId, [FromBody] WithdrawContentSetRevisionRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new WithdrawContentSetRevisionCommand(revisionId, request.Reason), cancellationToken));
 }

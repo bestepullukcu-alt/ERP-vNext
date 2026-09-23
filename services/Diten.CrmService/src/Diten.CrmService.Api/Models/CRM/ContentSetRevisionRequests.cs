@@ -8,3 +8,6 @@ public sealed record SubmitContentSetRevisionRequest(Guid ContentSetId, int? Exp
 
 /// <summary>Record a review decision. <see cref="Decision"/> is "approve" | "reject".</summary>
 public sealed record RecordReviewDecisionRequest(string Decision, string? Reason = null);
+
+/// <summary>SCMM-17 — managed withdrawal of a released revision. <see cref="Reason"/> is required.</summary>
+public sealed record WithdrawContentSetRevisionRequest(string Reason);

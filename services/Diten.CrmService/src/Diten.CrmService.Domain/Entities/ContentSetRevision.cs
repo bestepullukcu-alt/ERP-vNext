@@ -64,6 +64,14 @@ public sealed class ContentSetRevision : EntityBase
     /// </summary>
     public ContentSetRenderedArtifact? RenderedArtifact { get; set; }
 
+    // ── release / managed withdrawal (SCMM-17; additive) ────────────────────────────────────────────────────────────
+    /// <summary>The release lifecycle of the rendered artifact (SCMM-17), or null until the revision is released. This is
+    /// the ONLY field release/withdrawal writes — the frozen snapshot, the review status/decision and the rendered
+    /// artifact are never mutated by it. At release the <see cref="RenderedArtifact"/> ContentId + Checksum are pinned into
+    /// the state (manifest-bound), so what was released stays immutably identified. Withdrawal is a managed state change,
+    /// not a deletion — the stored bytes are never removed (AD-6).</summary>
+    public ContentSetReleaseState? ReleaseState { get; set; }
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -76,6 +84,13 @@ public sealed class ContentSetRevision : EntityBase
 
     /// <summary>True once a rendered artifact has been bound to this revision (SCMM-16B).</summary>
     public bool IsRendered() => RenderedArtifact is not null;
+
+    /// <summary>True once the rendered artifact has been released (SCMM-17) and not since withdrawn.</summary>
+    public bool IsReleased() => ReleaseState is { ReleaseStatus: ContentSetReleaseStatuses.Released };
+
+    /// <summary>True once a released artifact has been withdrawn (SCMM-17). Terminal — a withdrawn revision is never
+    /// re-released; a fresh revision is required.</summary>
+    public bool IsWithdrawn() => ReleaseState is { ReleaseStatus: ContentSetReleaseStatuses.Withdrawn };
 }
 
 /// <summary>
@@ -97,6 +112,41 @@ public sealed class ContentSetRenderedArtifact
     public string FileName { get; set; } = string.Empty;
     public DateTimeOffset RenderedAtUtc { get; set; }
     public string? RenderedBy { get; set; }
+}
+
+/// <summary>
+/// SCMM-17 (CAND-CAP-0011, SCMM-17) — the release lifecycle of a revision's rendered artifact. Additive to the
+/// SCMM-15/16B contract; the frozen snapshot, review and render are never mutated. <b>Manifest-bound (AT05):</b> the
+/// released artifact's ContentId + Checksum are pinned here at release, so the release is defined against a specific,
+/// immutable output. <b>Managed withdrawal (AT07 / AD-6):</b> withdrawal flips the status and records who/when/why; it
+/// never deletes the stored bytes and is terminal (no re-release).
+/// </summary>
+public sealed class ContentSetReleaseState
+{
+    /// <summary><see cref="ContentSetReleaseStatuses"/> — released / withdrawn.</summary>
+    public string ReleaseStatus { get; set; } = ContentSetReleaseStatuses.Released;
+
+    /// <summary>The pinned released artifact's FU01 content id (manifest-bound).</summary>
+    public Guid ReleasedArtifactContentId { get; set; }
+
+    /// <summary>The pinned released artifact's SHA-256 checksum (manifest-bound).</summary>
+    public string ReleasedArtifactChecksum { get; set; } = string.Empty;
+
+    public DateTimeOffset ReleasedAtUtc { get; set; }
+    public string? ReleasedBy { get; set; }
+
+    // Withdrawal — recorded on a managed withdraw; the pinned release identity above is preserved.
+    public DateTimeOffset? WithdrawnAtUtc { get; set; }
+    public string? WithdrawnBy { get; set; }
+    public string? WithdrawalReason { get; set; }
+}
+
+/// <summary>SCMM-17 release lifecycle. <c>withdrawn</c> is terminal (no re-release); there is no delete/purge here
+/// (AD-6 — withdrawal is a state, not a destruction).</summary>
+public static class ContentSetReleaseStatuses
+{
+    public const string Released = "released";
+    public const string Withdrawn = "withdrawn";
 }
 
 /// <summary>SCMM-15 — the recorded review outcome of a revision. Embedded VO. <see cref="ReviewerId"/> is the deciding
@@ -157,4 +207,16 @@ public static class ContentSetRevisionReasonCodes
 
     /// <summary>SCMM-16B — render was refused because the revision is not approved.</summary>
     public const string NotApproved = "content_set_revision_not_approved";
+
+    /// <summary>SCMM-17 — a rendered revision's artifact was released (manifest-bound).</summary>
+    public const string Released = "content_set_revision_released";
+
+    /// <summary>SCMM-17 — a released revision's artifact was withdrawn (managed; bytes retained).</summary>
+    public const string Withdrawn = "content_set_revision_withdrawn";
+
+    /// <summary>SCMM-17 — release refused because the revision has no rendered artifact.</summary>
+    public const string NotRendered = "content_set_revision_not_rendered";
+
+    /// <summary>SCMM-17 — release refused because the releaser is the reviewer (separation of duties).</summary>
+    public const string ReleaseSoD = "content_set_revision_release_sod";
 }
