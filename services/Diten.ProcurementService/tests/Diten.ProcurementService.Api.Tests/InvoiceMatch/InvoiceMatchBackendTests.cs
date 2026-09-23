@@ -58,6 +58,7 @@ public sealed class InvoiceMatchBackendTests
         public RunThreeWayMatchHandler Match(FakeMatchTolerancePolicy policy) => new(Invoices, PurchaseOrders, Grns, policy);
         public ResolveMatchExceptionHandler Resolve() => new(Invoices, new FakeCurrentUserContext());
         public GetInvoiceByIdHandler Get() => new(Invoices);
+        public ListInvoicesHandler ListInvoices() => new(Invoices);
         public ListMatchExceptionsHandler ListExceptions() => new(Invoices);
         public DeleteInvoiceHandler Delete() => new(Invoices);
         public BulkDeleteInvoiceHandler BulkDelete() => new(Invoices);
@@ -518,6 +519,63 @@ public sealed class InvoiceMatchBackendTests
         Assert.False(v.Validate(new ResolveMatchExceptionCommand("EXC-1", "maybe", null, null)).IsValid);
         Assert.True(v.Validate(new ResolveMatchExceptionCommand("EXC-1", "approve", null, null)).IsValid);
         Assert.True(v.Validate(new ResolveMatchExceptionCommand("EXC-1", "tolerance-override", null, null)).IsValid);
+    }
+
+    // ══ LIST INVOICES (register list surface — contract listInvoices, exception kuyruğundan bağımsız) ══
+
+    [Fact]
+    public async Task ListInvoices_returns_scoped_invoices_ordered_and_filters_by_status_and_supplier()
+    {
+        var f = NewFixture();
+        await SeedSupplierAndPo(f);
+        await SeedGrn(f);
+
+        var captured = await CaptureAsync(f, NewCapture(invoiceNumber: "INV-A"));
+        var matched = await CaptureAsync(f, NewCapture(invoiceNumber: "INV-B"));
+        await f.Match(new FakeMatchTolerancePolicy()).Handle(new RunThreeWayMatchCommand(matched, null, null), default);
+
+        // Unfiltered: both invoices, ordered by InvoiceId (stable cursor key).
+        var all = await f.ListInvoices().Handle(new ListInvoicesQuery(), default);
+        Assert.True(all.IsSuccessful);
+        Assert.Equal(2, all.Data!.Items.Count);
+        var ids = all.Data.Items.Select(x => x.InvoiceId).ToList();
+        Assert.Equal(ids.OrderBy(x => x, StringComparer.Ordinal), ids);
+
+        // Status filter: only the Matched one.
+        var matchedOnly = await f.ListInvoices().Handle(new ListInvoicesQuery(Status: InvoiceStatus.Matched), default);
+        Assert.Single(matchedOnly.Data!.Items);
+        Assert.Equal(matched, matchedOnly.Data.Items[0].InvoiceId);
+
+        // Status filter with no hit (control): empty, not error.
+        var rejected = await f.ListInvoices().Handle(new ListInvoicesQuery(Status: InvoiceStatus.Rejected), default);
+        Assert.Empty(rejected.Data!.Items);
+
+        // Supplier filter: matches the seeded supplier; a foreign supplier yields nothing.
+        Assert.Equal(2, (await f.ListInvoices().Handle(new ListInvoicesQuery(SupplierId: Sup1), default)).Data!.Items.Count);
+        Assert.Empty((await f.ListInvoices().Handle(new ListInvoicesQuery(SupplierId: "SUP-OTHER"), default)).Data!.Items);
+    }
+
+    [Fact]
+    public async Task ListInvoices_does_not_leak_across_legal_entities()
+    {
+        var invoiceStore = new List<InvoiceEntity>();
+        var exceptionStore = new List<MatchExceptionEntity>();
+        var supplierStore = new List<SupplierEntity>();
+        var poStore = new List<PurchaseOrderEntity>();
+        var products = new FakeProductReferenceValidator(new[] { Item1, Item2 });
+
+        var repoA = new FakeInvoiceMatchRepository(invoiceStore, exceptionStore, TenantA, LeA);
+        var repoB = new FakeInvoiceMatchRepository(invoiceStore, exceptionStore, TenantA, LeB);
+        var suppliersA = new FakeSupplierRepository(supplierStore, TenantA, LeA);
+        var posA = new FakePurchaseOrderRepository(poStore, TenantA, LeA);
+
+        await suppliersA.CreateAsync(new SupplierEntity { SupplierId = Sup1 }, default);
+        await posA.CreateAsync(new PurchaseOrderEntity { PoId = Po1, SupplierId = Sup1, Currency = Ccy }, default);
+        await new CaptureInvoiceHandler(repoA, suppliersA, posA, products).Handle(NewCapture(), default);
+
+        // LE-A sees its invoice; LE-B (same tenant, same store) sees none.
+        Assert.Single((await new ListInvoicesHandler(repoA).Handle(new ListInvoicesQuery(), default)).Data!.Items);
+        Assert.Empty((await new ListInvoicesHandler(repoB).Handle(new ListInvoicesQuery(), default)).Data!.Items);
     }
 
     // ══ TENANT + LE ISOLATION + SOFT DELETE ═══════════════════════════════════════════════════════

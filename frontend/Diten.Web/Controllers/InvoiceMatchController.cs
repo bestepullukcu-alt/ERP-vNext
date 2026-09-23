@@ -17,10 +17,12 @@ namespace Diten.Web.Controllers;
 // reads the exception queue and deletes straight through the Gateway (window.API.procurement + /api/invoice-match).
 // The MATCH contract exposes NO invoice update endpoint (capture + match + resolve only) → no update proxy;
 // the Edit page exists only for compact file-contract parity (ASSUMPTION-P2P-FE-01).
-// ASSUMPTION-P2P-FE-02: the contract exposes no GetInvoiceList endpoint — the only list surface is GET /exceptions.
-// The Index DataTable is therefore backed by the exception queue (each row is an invoice with an open/resolved
-// exception); individual invoices are reached via Details (GET /invoices/{id}) from the queue, a create redirect,
-// or a direct URL. No list endpoint is fabricated (K12 no-invention).
+// ASSUMPTION-P2P-FE-02: the Index DataTable is backed by the exception queue (GET /exceptions) — each row is an
+// invoice with an open/resolved exception; individual invoices are reached via Details (GET /invoices/{id}) from the
+// queue, a create redirect, or a direct URL. NOTE: a listInvoices endpoint (GET /api/invoice-match/invoices) now
+// exists in the MATCH contract (added post-freeze, tenant+LE-scoped register list); the Index intentionally keeps the
+// exception-queue view as its primary surface — switching the register to the full invoice list is a deliberate UX
+// follow-up, not a fabrication (K12).
 [Authorize]
 [Route("InvoiceMatch")]
 public sealed class InvoiceMatchController : Controller
