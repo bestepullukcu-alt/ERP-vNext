@@ -6185,6 +6185,13 @@ belirler; bu yüzden CT tek başına karar vermiyor, ekip tartışması için bu
 Sıra zorunlu; her paket ayrı prompt, CT kabul eder. Ölçüm (paket 0): Kullanıcılar 17 sapma; Golden Slim/Compact yeni kontrollerde temiz,
 yalnız eski `personalizationClient` kontrolü kırmızı (HEAD'de de kırmızıydı, ayrı borç).
 
+**Paket 1 notları (2026-09-23, WP-UI-LIST-SHELL-01):** `_ListShell.cshtml` + `DataTableListShellViewModel` (TableId/DataMode required,
+DataMode fail-closed); iki altın `_DataTable.cshtml` kabuğu kullanıyor; render eşitliği testi önce/sonra HTML'i teste gömülü tutuyor.
+İki bilinen zayıflık, bilerek ertelendi: (a) doğrulayıcı Razor yorumlarını okuyor — altın `Index.cshtml` v2 işaretini yorumda taşıyor ve
+`is_v2` oradan geçiyor; yorum ayıklama 138 sayfanın sonucunu değiştirir → paket 4'te kural dosyalarıyla birlikte; (b) kabuk başlıkları
+`.Value` ile aldığı için HTML-encode ediyor, eski `@Localizer[...]` etmiyordu — `_BulkActionBar` ile aynı davranış, altın başlıklarda
+özel karakter yok; resx'e HTML koyan bir sayfa kabuğa geçerken bunu görecek.
+
 ---
 
 ### BL-393
