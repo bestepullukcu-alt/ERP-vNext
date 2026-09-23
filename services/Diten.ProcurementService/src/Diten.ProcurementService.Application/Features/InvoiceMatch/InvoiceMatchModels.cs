@@ -77,6 +77,13 @@ public sealed record MatchExceptionListResultDto(
     string? NextCursor,
     string ContractVersion);
 
+/// <summary>Fatura register sayfası — contract listInvoices {items, nextCursor, contractVersion}. Kardeş modüllerin
+/// (PO/Requisition/GRN/Contract) list-result şekliyle aynı; InvoiceId sıralı cursor sayfalama.</summary>
+public sealed record InvoiceListResultDto(
+    IReadOnlyList<InvoiceDto> Items,
+    string? NextCursor,
+    string ContractVersion);
+
 // ══ REQUEST / INPUT records (controller body binding — contract InvoiceUpsert vb.) ══
 
 /// <summary>contract InvoiceLine request satırı (lineAmount opsiyonel; verilmezse server-hesaplı).</summary>

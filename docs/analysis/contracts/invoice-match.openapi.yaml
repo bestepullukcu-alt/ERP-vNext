@@ -9,8 +9,8 @@ info:
     Tenant + Legal-Entity scoped; server-resolved. Parasal alanlar Decimal (string); float YASAK.
     ASSUMPTION-P2P-01: tolerans POLICY-DRIVEN (toleranceProfileId + qty/price/amount toleransı);
     mismatch → exception queue. Sabit sayısal varsayılan GÖMÜLMEZ (EA/Finance-TBD).
-  version: 1.0.0
-  x-status: REVIEW
+  version: 1.1.0                    # 1.0.0 → 1.1.0: listInvoices + pack §14 delete/bulk-delete folded in (additive; existing ops unchanged)
+  x-status: FROZEN                  # frozen 2026-09-23 (CT A2); shape stable & policy-driven (x-open-decision = runtime tolerance VALUE, not shape)
   x-owner: MOD-0143
   x-authored-by: control-tower
   x-min-contract: MATCH-BUNDLE
@@ -20,6 +20,24 @@ servers: [{ url: /api/invoice-match }]
 security: [{ bearerAuth: [] }]
 paths:
   /invoices:
+    get:
+      operationId: listInvoices
+      summary: Fatura register listesi (tenant+LE scoped; exception kuyruğundan bağımsız)
+      parameters:
+        - { name: supplierId, in: query, required: false, schema: { type: string } }
+        - { name: status, in: query, required: false, schema: { $ref: '#/components/schemas/InvoiceStatus' } }
+        - { name: cursor, in: query, required: false, schema: { type: string } }
+      responses:
+        '200':
+          description: Fatura sayfası (InvoiceId sıralı cursor sayfalama)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Invoice' } }
+                  nextCursor: { type: string, nullable: true }
+                  contractVersion: { type: string }
     post:
       operationId: captureInvoice
       summary: Fatura yakala (supplier faturası; PO'ya referanslı)
@@ -47,6 +65,28 @@ paths:
       responses:
         '200': { description: Fatura, content: { application/json: { schema: { $ref: '#/components/schemas/Invoice' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteInvoice
+      summary: "Soft delete (pack §14 procurement.invoice-match.delete; yalnız Captured — eşleşmiş fatura → 409). Hard delete YOK."
+      parameters: [{ name: invoiceId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Fatura soft-delete edildi }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /invoices/bulk:
+    delete:
+      operationId: bulkDeleteInvoices
+      summary: "Toplu soft delete (pack §14 procurement.invoice-match.bulk-delete; yalnız Captured)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "invoiceId listesi" }
+            example: ["INV-2026-771", "INV-2026-772"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /invoices/{invoiceId}/match:
     post:
       operationId: runThreeWayMatch
