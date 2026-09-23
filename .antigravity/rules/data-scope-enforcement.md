@@ -89,8 +89,23 @@ Dört davranış ezberlenir:
 - Kiracı içinde herkese açık olduğu **modül paketinde yazılı** olan referans/sözlük verisi.
 - Platform yöneticisi yüzeyleri (kiracı üstü). Platform aktörü tek bir kiracının org ağacında çözülmez; o sınır
   kiracının kendisidir.
+- **Yönetim yüzeyleri: sınırı yetkinin kendisi olan ekranlar.** Kullanıcı ve rol yönetimi bunlardır. Kapsanacak
+  bir alan yoktur: kayıt bir kişinin HESABIDIR, organizasyondaki yeri değil — birim bilgisi pozisyon atamasında,
+  başka bir serviste durur. `auth.users.manage` yetkisini kime verdiğin zaten "kim kullanıcıları yönetebilir"
+  sorusunun cevabıdır.
 
-Hangi istisnanın geçerli olduğu modül paketinde bir cümleyle yazılır; yazılmamışsa kural uygulanır.
+  ⚠ BU İSTİSNA İŞ VERİSİNE UZANMAZ. Müşteri, sipariş, görev, toplantı bir yönetim yüzeyi değildir; "yetki zaten
+  sınır" cümlesi oralarda kuralı kaldırmaz, yalnız kuralın uygulanmadığını gizler. İstisna, yönettiği şey
+  hesabın kendisi olan ekranla sınırlıdır.
+
+  ⚠ VE DEVREDİLMİŞ YÖNETİM BU İSTİSNANIN ALTINDA SAKLANAMAZ. "Türkiye tüzel kişiliğinin kullanıcılarını yalnız
+  Cem yönetsin" gerçek ve yaygın bir ihtiyaçtır (Oracle'da data role, SAP'de kullanıcı grubu). O gün geldiğinde
+  cevap "istisnamız var" değil, kendi iş paketidir: hesabı organizasyona bağlamak servisler arası bir iştir ve
+  öyle planlanır.
+
+Hangi istisnanın geçerli olduğu modül paketinde bir cümleyle yazılır; yazılmamışsa kural uygulanır. Ölçüldü
+(2026-09-23): Kullanıcılar listesi (`GetAllUsersQueryHandler` → `GetAllByTenantAsync`) yalnız `TenantId` ile
+süzüyor ve bu dördüncü duruma girer — paketine o cümle yazılana kadar kural onu da bağlar.
 
 ---
 
