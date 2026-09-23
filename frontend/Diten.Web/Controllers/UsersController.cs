@@ -20,6 +20,8 @@ namespace Diten.Web.Controllers;
 // server-side from the auth cookie, the upstream status passes through verbatim, and the browser never
 // addresses a service port. Create additionally forwards an optional AccountKind; AuthService refuses it
 // with 403 unless the caller holds auth.users.account-kind.manage (explicit-grant-only).
+// WP-AUTH-USER-KIND-UPDATE-01 — Edit forwards it too (the edit form's select, saved by "Update"); AuthService
+// refuses a kind CHANGE without the same key, and takes it through the same writer + audit row as account-kind.
 [Authorize]
 [Route("Users")]
 public sealed class UsersController : Controller
@@ -108,7 +110,13 @@ public sealed class UsersController : Controller
 
         try
         {
-            var payload = new UserUpdatePayload { FirstName = model.FirstName, LastName = model.LastName, IsActive = model.IsActive };
+            var payload = new UserUpdatePayload
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                IsActive = model.IsActive,
+                AccountKind = ReadEditAccountKind()
+            };
             var response = await _httpClient.PutAsJsonAsync($"{_gatewayUrl}/api/users/{id}", payload, _jsonOptions);
             return response.IsSuccessStatusCode
                 ? Json(new { success = true })
@@ -119,6 +127,21 @@ public sealed class UsersController : Controller
             _logger.LogError(ex, "Users edit failed for {UserId}.", id);
             return Json(new { success = false, errors = BuildExceptionErrors(ex) });
         }
+    }
+
+    /*
+     * WP-AUTH-USER-KIND-UPDATE-01 — what the edit form says about the kind, as the enum NAME or null.
+     * ABSENT field (Razor drew no select: the reader lacks auth.users.account-kind.manage) ⇒ null ⇒ AuthService
+     * leaves the kind alone. PRESENT and empty ⇒ "Unknown": on edit the select's empty option is a real choice
+     * (back to unconfirmed), not "unset" as on create — dropping it would silently keep a Human/Service kind.
+     */
+    private string? ReadEditAccountKind()
+    {
+        if (!Request.HasFormContentType || !Request.Form.ContainsKey("AccountKind"))
+            return null;
+
+        var value = Request.Form["AccountKind"].ToString().Trim();
+        return string.IsNullOrWhiteSpace(value) ? "Unknown" : value;
     }
 
     [HttpGet("get/{id:guid}")]
@@ -152,7 +175,8 @@ public sealed class UsersController : Controller
                     lastLoginAt = model.LastLoginAt,
                     failedLoginAttempts = model.FailedLoginAttempts,
                     mustChangePassword = model.MustChangePassword,
-                    mfaStatus = model.MfaStatus
+                    mfaStatus = model.MfaStatus,
+                    accountKind = model.AccountKind
                 }
             });
         }

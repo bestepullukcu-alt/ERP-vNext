@@ -164,7 +164,12 @@ public sealed class UsersController : CustomBaseController
     [HasPermission("auth.users.update")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateUserRequest request, CancellationToken ct)
     {
-        var command = new UpdateUserCommand(id, request.FirstName, request.LastName, request.IsActive);
+        // WP-AUTH-USER-KIND-UPDATE-01 — the classification right is read from the principal's claims exactly as Create
+        // reads it, never from the body; the handler refuses a kind CHANGE without it (403 PERM_DENIED).
+        var callerCanManageAccountKind = User.HasClaim("permission", ExplicitGrantOnlyPermissions.UsersAccountKindManage);
+        var command = new UpdateUserCommand(
+            id, request.FirstName, request.LastName, request.IsActive,
+            request.AccountKind, callerCanManageAccountKind, HttpContext.TraceIdentifier);
         var result = await _mediator.Send(command, ct);
         return CreateActionResultInstance(result);
     }

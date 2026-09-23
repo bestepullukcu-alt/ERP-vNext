@@ -37,6 +37,9 @@ public sealed class UserDetailViewModel
     public int FailedLoginAttempts { get; set; }
     public bool MustChangePassword { get; set; }
     public string? MfaStatus { get; set; }
+
+    // WP-AUTH-USER-KIND-UPDATE-01 — the enum NAME AuthService reports; the edit form's select starts from it.
+    public string? AccountKind { get; set; }
 }
 
 // AuthService CreateUserRequest: { email, firstName, lastName }. Password is intentionally omitted —
@@ -48,10 +51,12 @@ public sealed class UserCreatePayload
     public string LastName { get; set; } = string.Empty;
 }
 
-// AuthService UpdateUserRequest: { firstName, lastName, isActive } (email immutable).
+// AuthService UpdateUserRequest: { firstName, lastName, isActive, accountKind? } (email immutable).
+// AccountKind null ⇒ the kind is not touched; a change needs auth.users.account-kind.manage (403 otherwise).
 public sealed class UserUpdatePayload
 {
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public string? AccountKind { get; set; }
 }

@@ -3,6 +3,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
 using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Features.Users.Validators;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
@@ -247,10 +248,194 @@ public sealed class AccountKindTests
         Assert.Equal(expectedValid, result.IsValid);
     }
 
+    // ── UpdateUserCommand: the edit form's "Update" carries the kind (WP-AUTH-USER-KIND-UPDATE-01) ──
+
+    [Fact]
+    public async Task Update_changing_the_kind_without_the_manage_right_is_403_PERM_DENIED_and_writes_nothing()
+    {
+        var user = new User("u@acme.test", "hash:x", "Umut", "Kaya", TenantA);
+        var repo = new TrackingUserRepository([user]);
+        var audit = new CapturingAudit();
+
+        var result = await UpdateHandler(repo, audit).Handle(
+            new UpdateUserCommand(user.Id, "Changed", "Name", true, AccountKind: "Human", CallerCanManageAccountKind: false),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccessful);
+        Assert.Equal(403, result.StatusCode);
+        Assert.Equal(CreateUserCommandHandler.PermissionDeniedCode, Assert.Single(result.ErrorCodes).Code);
+        // Refused as a WHOLE: not the kind, not the profile, no write, no row.
+        Assert.Equal(AccountKind.Unknown, user.AccountKind);
+        Assert.Equal("Umut", user.FirstName);
+        Assert.Equal(0, repo.UpdatesForTenant);
+        Assert.Empty(audit.Records);
+    }
+
+    /// <summary>
+    /// ⚠ ORDER, NOT JUST PRESENCE — the gap CT's own sabotage found (2026-09-23).
+    ///
+    /// <para>Both handlers say in their comments that the audit row follows the persisted change, and both do it —
+    /// but nothing held them to it. Moving `RecordAsync` above `UpdateForTenantAsync` left every test green,
+    /// including the one that asserts the row's shape: an audit row is written whether or not the write that
+    /// follows it succeeds. A failed persist would then leave a record claiming a change that never happened, and
+    /// the record is exactly what a later reader trusts over their memory.</para>
+    ///
+    /// <para>So the tape below pins the sequence for BOTH doors, and it is the only assertion here: the shape of
+    /// the row is already covered by the test underneath.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(true)]   // PUT api/users/{id}
+    [InlineData(false)]  // POST api/users/{id}/account-kind
+    public async Task The_kind_is_persisted_before_it_is_audited(bool viaUpdate)
+    {
+        var tape = new List<string>();
+        var user = new User("order@acme.test", "hash:x", "Sıra", "Kontrol", TenantA);
+        var repo = new TrackingUserRepository([user], tape);
+        var audit = new CapturingAudit(tape);
+
+        var result = viaUpdate
+            ? await UpdateHandler(repo, audit).Handle(
+                new UpdateUserCommand(user.Id, "Sıra", "Kontrol", true, AccountKind: "Human", CallerCanManageAccountKind: true),
+                CancellationToken.None)
+            : (dynamic)await SetHandler(repo, audit).Handle(
+                new SetAccountKindCommand(user.Id, "Human", "corr-order"), CancellationToken.None);
+
+        Assert.True((bool)result.IsSuccessful);
+        Assert.Equal(new[] { "persist", "audit" }, tape);
+    }
+
+    [Fact]
+    public async Task Update_with_the_manage_right_changes_the_kind_in_one_tenant_scoped_write_and_the_SAME_audit_row_as_the_endpoint()
+    {
+        var viaUpdate = new User("u@acme.test", "hash:x", "Umut", "Kaya", TenantA);
+        var viaEndpoint = new User("e@acme.test", "hash:x", "Ece", "Kaya", TenantA);
+        var updateRepo = new TrackingUserRepository([viaUpdate]);
+        var endpointRepo = new TrackingUserRepository([viaEndpoint]);
+        var updateAudit = new CapturingAudit();
+        var endpointAudit = new CapturingAudit();
+
+        var updated = await UpdateHandler(updateRepo, updateAudit).Handle(
+            new UpdateUserCommand(viaUpdate.Id, "Umut", "Kaya", true, AccountKind: "service", CallerCanManageAccountKind: true, CorrelationId: "corr-u"),
+            CancellationToken.None);
+        await SetHandler(endpointRepo, endpointAudit).Handle(
+            new SetAccountKindCommand(viaEndpoint.Id, "service", "corr-e"), CancellationToken.None);
+
+        Assert.True(updated.IsSuccessful);
+        Assert.Equal("Service", updated.Data!.AccountKind);
+        Assert.Equal(AccountKind.Service, viaUpdate.AccountKind);
+        Assert.Equal(1, updateRepo.UpdatesForTenant);            // profile + kind in ONE replace
+        Assert.Equal((viaUpdate.Id, TenantA), updateRepo.UpdatedForTenant);
+
+        // Two doors, one row shape: same event name, same metadata keys, same old→new.
+        var u = Assert.Single(updateAudit.Records);
+        var e = Assert.Single(endpointAudit.Records);
+        Assert.Equal(e.EventName, u.EventName);
+        Assert.Equal(AccountKindWriter.AuditEventName, u.EventName);
+        using var ud = JsonDocument.Parse(JsonSerializer.Serialize(u.Metadata));
+        using var ed = JsonDocument.Parse(JsonSerializer.Serialize(e.Metadata));
+        Assert.Equal(
+            ed.RootElement.EnumerateObject().Select(p => p.Name).ToArray(),
+            ud.RootElement.EnumerateObject().Select(p => p.Name).ToArray());
+        Assert.Equal(viaUpdate.Id.ToString(), ud.RootElement.GetProperty("targetUserId").GetString());
+        Assert.Equal("Unknown", ud.RootElement.GetProperty("previousKind").GetString());
+        Assert.Equal("Service", ud.RootElement.GetProperty("newKind").GetString());
+        Assert.Equal("corr-u", ud.RootElement.GetProperty("correlationId").GetString());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Update_resending_the_current_kind_needs_no_right_and_produces_no_kind_write(bool canManage)
+    {
+        var user = new User("u@acme.test", "hash:x", "Umut", "Kaya", TenantA);
+        user.SetAccountKind(AccountKind.Human);
+        var stampedBefore = user.UpdatedAt;
+        var repo = new TrackingUserRepository([user]);
+        var audit = new CapturingAudit();
+
+        var result = await UpdateHandler(repo, audit).Handle(
+            new UpdateUserCommand(user.Id, "Umut", "Kaya", true, AccountKind: "HUMAN", CallerCanManageAccountKind: canManage),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(AccountKind.Human, user.AccountKind);
+        Assert.Empty(audit.Records);                              // no kind change ⇒ no row
+        Assert.Equal(1, repo.UpdatesForTenant);                   // the profile save itself still happens
+        Assert.True(stampedBefore <= user.UpdatedAt);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("  ")]
+    public async Task Update_without_a_kind_leaves_the_kind_alone_whatever_the_callers_rights(string? kind)
+    {
+        var user = new User("u@acme.test", "hash:x", "Umut", "Kaya", TenantA);
+        user.SetAccountKind(AccountKind.Service);
+        var audit = new CapturingAudit();
+
+        var result = await UpdateHandler(new TrackingUserRepository([user]), audit).Handle(
+            new UpdateUserCommand(user.Id, "New", "Name", false, AccountKind: kind, CallerCanManageAccountKind: false),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Equal(AccountKind.Service, user.AccountKind);
+        Assert.Equal("New", user.FirstName);
+        Assert.False(user.IsActive);
+        Assert.Empty(audit.Records);
+    }
+
+    [Fact]
+    public async Task Update_cross_tenant_target_is_404_before_any_kind_decision()
+    {
+        var foreign = new User("f@acme.test", "hash:x", "F", "Oreign", TenantB);
+        var audit = new CapturingAudit();
+
+        var result = await UpdateHandler(new TrackingUserRepository([foreign]), audit).Handle(
+            new UpdateUserCommand(foreign.Id, "X", "Y", true, AccountKind: "Human", CallerCanManageAccountKind: true),
+            CancellationToken.None);
+
+        Assert.Equal(404, result.StatusCode);
+        Assert.Equal(AccountKind.Unknown, foreign.AccountKind);
+        Assert.Empty(audit.Records);
+    }
+
+    [Fact]
+    public async Task Update_handler_refuses_an_undefined_kind_even_if_the_validator_were_bypassed()
+    {
+        var user = new User("u@acme.test", "hash:x", "U", "Ser", TenantA);
+        var repo = new TrackingUserRepository([user]);
+
+        var result = await UpdateHandler(repo, new CapturingAudit()).Handle(
+            new UpdateUserCommand(user.Id, "U", "Ser", true, AccountKind: "1", CallerCanManageAccountKind: true),
+            CancellationToken.None);
+
+        Assert.Equal(400, result.StatusCode);
+        Assert.Equal(AccountKind.Unknown, user.AccountKind);
+        Assert.Equal(0, repo.UpdatesForTenant);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData("", true)]
+    [InlineData("Human", true)]
+    [InlineData("unknown", true)]
+    [InlineData("Robot", false)]
+    [InlineData("2", false)]
+    public void Update_validator_vets_the_kind_only_when_one_is_supplied(string? kind, bool expectedValid)
+    {
+        var result = new UpdateUserCommandValidator().Validate(new UpdateUserCommand(Guid.NewGuid(), "U", "K", true, kind));
+
+        Assert.Equal(expectedValid, result.IsValid);
+    }
+
     // ── wiring ──
 
     private static SetAccountKindCommandHandler SetHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, TenantContextFor(TenantA), audit, NullLogger<SetAccountKindCommandHandler>.Instance);
+        => new(repo, TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<SetAccountKindCommandHandler>.Instance);
+
+    private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, CapturingAudit audit)
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<UpdateUserCommandHandler>.Instance);
 
     private static CreateUserCommandHandler CreateHandler(InMemoryUserRepository repo, FakeInvitationEmailService email)
         => new(
@@ -273,22 +458,24 @@ public sealed class AccountKindTests
 
     // ── fakes ──
 
-    private sealed class CapturingAudit : IRbacAuditRecorder
+    private sealed class CapturingAudit(List<string>? tape = null) : IRbacAuditRecorder
     {
         public List<(string EventName, Guid TenantId, object Metadata)> Records { get; } = [];
 
         public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default)
         {
             Records.Add((eventName, tenantId, metadata));
+            tape?.Add("audit");
             return Task.CompletedTask;
         }
     }
 
     /// <summary>InMemoryUserRepository plus a record of the TENANT-SCOPED update the handler must use.</summary>
-    private sealed class TrackingUserRepository(IEnumerable<User> users) : IUserRepository
+    private sealed class TrackingUserRepository(IEnumerable<User> users, List<string>? tape = null) : IUserRepository
     {
         private readonly InMemoryUserRepository _inner = new(users);
         public (Guid UserId, Guid TenantId)? UpdatedForTenant { get; private set; }
+        public int UpdatesForTenant { get; private set; }
 
         public Task<User?> GetByEmailAndTenantAsync(string email, Guid tenantId, CancellationToken ct) => _inner.GetByEmailAndTenantAsync(email, tenantId, ct);
         public Task<User?> GetByUserNameAndTenantAsync(string normalizedUserName, Guid tenantId, CancellationToken ct) => _inner.GetByUserNameAndTenantAsync(normalizedUserName, tenantId, ct);
@@ -302,9 +489,20 @@ public sealed class AccountKindTests
         public Task<User> UpdateForTenantAsync(User user, Guid tenantId, CancellationToken ct)
         {
             UpdatedForTenant = (user.Id, tenantId);
+            UpdatesForTenant++;
+            tape?.Add("persist");
             return Task.FromResult(user);
         }
         public Task SoftDeleteAsync(Guid id, Guid tenantId, CancellationToken ct) => _inner.SoftDeleteAsync(id, tenantId, ct);
+    }
+
+    private sealed class NoRolesRepository : IUserRoleRepository
+    {
+        public Task<IEnumerable<string>> GetRolesByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.FromResult<IEnumerable<string>>([]);
+        public Task AssignAsync(UserRole userRole, CancellationToken ct) => Task.CompletedTask;
+        public Task RevokeAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+        public Task<bool> ExistsAsync(Guid userId, Guid roleId, Guid tenantId, CancellationToken ct) => Task.FromResult(false);
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsByRoleAsync(Guid roleId, Guid tenantId, CancellationToken ct) => Task.FromResult<IReadOnlyCollection<Guid>>([]);
     }
 
     private sealed class FakePasswordHasher : IPasswordHasher
