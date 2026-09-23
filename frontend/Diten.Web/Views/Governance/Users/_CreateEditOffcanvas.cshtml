@@ -58,10 +58,12 @@
                     <div class="invalid-feedback"></div>
                 </div>
 
-                @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — account classification on create. UAS-001 shape: a caller without
+                @* WP-INFRA-AUTH-ACCOUNT-KIND-01 — account classification. UAS-001 shape: a caller without
                    auth.users.account-kind.manage gets NO control here (not a disabled one), and the backend refuses a
-                   supplied kind from such a caller with 403 anyway — this gate is display only. Shown only on create
-                   (toggled in index.js): UpdateUser carries no kind, the quick view's "Change type" is the edit path.
+                   supplied kind CHANGE from such a caller with 403 anyway — this gate is display only.
+                   WP-AUTH-USER-KIND-UPDATE-01 — the same select on create AND edit, saved by the form's own button:
+                   UpdateUser carries the kind and takes it through the same writer + audit row as the quick view's
+                   "Change type". On edit the empty option means "back to Unknown" (the proxy sends it as such).
                    Deliberately not a .diten-field wrapper: the offcanvas icon map pins the three typed fields. *@
                 @if (Perms.Has("auth.users.account-kind.manage"))
                 {
@@ -72,25 +74,8 @@
                             <option value="Human">@Localizer["AccountKindHuman"]</option>
                             <option value="Service">@Localizer["AccountKindService"]</option>
                         </select>
-                        <div class="form-text">@Localizer["AccountKindCreateHint"]</div>
-                    </div>
-
-                    @* ── THE SAME FIELD ON EDIT: SHOWN, NOT EDITED (2026-09-23, owner report) ──────────────────
-                       The owner looked for "change type" on the edit form and found nothing — it lived only in the
-                       quick view, because `UpdateUser` carries no kind and a saveable box here would be a promise
-                       the server drops (the defect we had just fixed on the task form). So the field is READ-ONLY
-                       and the change is offered as what it already is on the server: its own audited call to
-                       `/Users/api/{id}/account-kind`, with a confirm that names the old value and the new one.
-                       Filled and wired by index.js; both rows are inside the same permission gate. *@
-                    <div class="col-12 d-none" id="userAccountKindReadRow">
-                        <label for="userAccountKindRead" class="form-label fw-medium">@Localizer["AccountKind"]</label>
-                        <div class="d-flex align-items-center gap-2">
-                            <input type="text" id="userAccountKindRead" class="form-control bg-label-secondary" readonly />
-                            <button type="button" id="btnUserAccountKindChange" class="btn btn-label-primary text-nowrap">
-                                <i class="bx bx-id-card me-1" aria-hidden="true"></i>@Localizer["ChangeAccountKind"]
-                            </button>
-                        </div>
-                        <div class="form-text">@Localizer["AccountKindEditHint"]</div>
+                        @* "Leave unset…" is a create-time sentence; on edit the empty option is a choice, so the hint hides. *@
+                        <div class="form-text" id="userAccountKindCreateHint">@Localizer["AccountKindCreateHint"]</div>
                     </div>
                 }
 
