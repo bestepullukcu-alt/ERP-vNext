@@ -863,11 +863,20 @@ const UsersList = (function () {
         });
 
         // ── Admin actions (disable/enable/resend/reset) → MVC proxy → AuthService ──
+        /*
+         * ⚠ EACH CONFIRM CARRIES THE GLYPH OF THE ACTION THAT OPENED IT (owner report, 2026-09-23).
+         *
+         * All four opened with the builder's default question mark, because this screen never passed the `icon`
+         * seam `showConfirm` has had all along. A question mark says "are you sure" and nothing else; the four
+         * actions behind it are send, reset, suspend and restore — and the one the reader clicked a moment ago
+         * had its own picture in the menu. The dialog now shows THAT picture, so the menu item and the
+         * confirmation are visibly the same act rather than two screens asking unrelated questions.
+         */
         const adminActions = {
-            'js-user-disable': { url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', confirm: L.Disable, type: 'warning' },
-            'js-user-enable': { url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', confirm: L.Enable, type: 'primary' },
-            'js-user-resend': { url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', confirm: L.ResendInvitation, type: 'primary' },
-            'js-user-reset': { url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', confirm: L.ResetPassword, type: 'warning' }
+            'js-user-disable': { url: (id) => `/Users/disable/${id}`, toast: 'UserDisabled', confirm: L.Disable, type: 'warning', icon: 'bx-minus-circle' },
+            'js-user-enable': { url: (id) => `/Users/enable/${id}`, toast: 'UserEnabled', confirm: L.Enable, type: 'primary', icon: 'bx-check-circle' },
+            'js-user-resend': { url: (id) => `/Users/resend-invite/${id}`, toast: 'InvitationResent', confirm: L.ResendInvitation, type: 'primary', icon: 'bx-mail-send' },
+            'js-user-reset': { url: (id) => `/Users/reset-password/${id}`, toast: 'PasswordReset', confirm: L.ResetPassword, type: 'warning', icon: 'bx-key' }
         };
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.js-user-disable, .js-user-enable, .js-user-resend, .js-user-reset');
@@ -903,7 +912,7 @@ const UsersList = (function () {
                     console.error('[Users] Admin action failed.', error);
                     window.showToast?.(error.message || L.ErrorOccurred, 'error');
                 }
-            }, { entityName: data.email, type: cfg.type, confirmButtonText: cfg.confirm || '' });
+            }, { entityName: data.email, type: cfg.type, icon: cfg.icon, confirmButtonText: cfg.confirm || '' });
         });
 
         document.getElementById('btnSaveUser')?.addEventListener('click', submitCreateEditForm);
@@ -918,7 +927,7 @@ const UsersList = (function () {
             const kind = normalizeAccountKind(document.getElementById('oc-accountkind-select')?.value);
             if (!id) return;
             window.showConfirm?.(L.ChangeAccountKind, () => postAccountKind(id, kind, getOcDetailsInstance()),
-                { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', confirmButtonText: L.ChangeAccountKind });
+                { entityName: `${email} → ${accountKindLabel(kind)}`, type: 'primary', icon: 'bx-id-card', confirmButtonText: L.ChangeAccountKind });
         });
 
         document.getElementById('oc-btn-edit')?.addEventListener('click', () => {

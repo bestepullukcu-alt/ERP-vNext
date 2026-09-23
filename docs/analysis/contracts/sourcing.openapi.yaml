@@ -8,8 +8,8 @@ info:
     award (kazanan). Award çıktısı MOD-0141 requisition/PO'ya beslenebilir (downstream).
     Ürün kimliği MOD-0290'dan (consume). Tenant + Legal-Entity scoped; server-resolved.
     Parasal alanlar Decimal (string); float YASAK.
-  version: 1.0.0
-  x-status: REVIEW
+  version: 1.1.0                    # 1.0.0 → 1.1.0: pack §14 delete/bulk-delete folded in (additive; existing ops unchanged)
+  x-status: FROZEN                  # frozen 2026-09-23 (CT A2); implementation-accurate, additive-only sonrası genişletilir
   x-owner: MOD-0145
   x-authored-by: control-tower
   x-min-contract: SOURCING-BUNDLE
@@ -59,6 +59,28 @@ paths:
       responses:
         '200': { description: RFx, content: { application/json: { schema: { $ref: '#/components/schemas/RfxEvent' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      operationId: deleteRfxEvent
+      summary: "Soft delete (pack §14 procurement.sourcing.delete; yalnız Draft — yayınlanmış RFx → 409). Hard delete YOK."
+      parameters: [{ name: rfxId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: RFx soft-delete edildi }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /events/bulk:
+    delete:
+      operationId: bulkDeleteRfxEvents
+      summary: "Toplu soft delete (pack §14 procurement.sourcing.bulk-delete; yalnız Draft)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "rfxId listesi" }
+            example: ["RFX-1001", "RFX-1002"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /events/{rfxId}/publish:
     post:
       operationId: publishRfxEvent

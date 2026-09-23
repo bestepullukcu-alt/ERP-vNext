@@ -7,8 +7,8 @@ info:
     Sözleşme + clause library + clause deviation + approval. Award (MOD-0145) veya
     supplier (MOD-0140) bağlanabilir; evidence/retention MOD-0029/0031 üzerinden (binary burada tutulmaz).
     Tenant + Legal-Entity scoped; server-resolved. Parasal alanlar Decimal (string); float YASAK.
-  version: 1.0.0
-  x-status: REVIEW
+  version: 1.1.0                    # 1.0.0 → 1.1.0: pack §14 update/terminate/delete/bulk-delete folded in (additive; existing ops unchanged)
+  x-status: FROZEN                  # frozen 2026-09-23 (CT A2); implementation-accurate, additive-only sonrası genişletilir
   x-owner: MOD-0144
   x-authored-by: control-tower
   x-min-contract: CLM-CONTRACT-BUNDLE
@@ -62,6 +62,28 @@ paths:
       responses:
         '200': { description: Sözleşme, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      operationId: updateContract
+      summary: "Sözleşme güncelle (pack §14 procurement.contracts.update; ASSUMPTION-0144-01 additive; yalnız Draft — aktif → 409)."
+      parameters: [{ name: contractId, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContractUpsert' }
+      responses:
+        '200': { description: Güncellendi, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    delete:
+      operationId: deleteContract
+      summary: "Soft delete (pack §14 procurement.contracts.delete; yalnız Draft — aktive edilmiş → 409). Hard delete YOK."
+      parameters: [{ name: contractId, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: Sözleşme soft-delete edildi }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
   /{contractId}/activate:
     post:
       operationId: activateContract
@@ -73,6 +95,31 @@ paths:
         '200': { description: Aktif, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/StateConflict' }
+  /{contractId}/terminate:
+    post:
+      operationId: terminateContract
+      summary: "Sözleşmeyi sonlandır (pack §14 procurement.contracts.update; ASSUMPTION-0144-02 additive; Active→Terminated — aksi 409)."
+      parameters:
+        - { name: contractId, in: path, required: true, schema: { type: string } }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      responses:
+        '200': { description: Sonlandırıldı, content: { application/json: { schema: { $ref: '#/components/schemas/Contract' } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/StateConflict' }
+  /bulk:
+    delete:
+      operationId: bulkDeleteContracts
+      summary: "Toplu soft delete (pack §14 procurement.contracts.bulk-delete; yalnız Draft)."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: array, items: { type: string }, description: "contractId listesi" }
+            example: ["CTR-6001", "CTR-6002"]
+      responses:
+        '200':
+          description: Silinen kayıt sayısı
+          content: { application/json: { schema: { type: object, properties: { deletedCount: { type: integer }, contractVersion: { type: string } } } } }
   /clauses:
     get:
       operationId: listClauseLibrary
