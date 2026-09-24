@@ -6589,6 +6589,20 @@ tohumu), .ics ekli şablonların düzeni. Sıra: Kullanıcılar modülü testi b
 
 ---
 
+### BL-455
+
+**Ctrl+K komut arar mı? — bugün yalnız sayfa; "Kullanıcı ekle" gibi eylemler ayrı iş**
+
+DURUM: AÇIK — sahip 2026-09-24: v1 böyle kalsın, komutlar backlog · SAHİP: CT (WorkCenter/UI) · KAYIT: 2026-09-24
+
+Ölçüldü: `TenantSearchController` kenar menüsüyle aynı kaynağı okur (`/api/platform/navigation/menu`, abonelik + yetki süzgeçli) →
+Ctrl+K yalnız kullanıcının açabildiği SAYFALARI listeler; CRM yetkisi olmayan CRM görmez (doğru). "Kullanıcı ekle" yazınca Kullanıcılar
+sayfası çıkar, ekleme formu açılmaz. SAP Fiori arama: uygulamalar (rol kataloğu) + kayıtlar; Oracle: gezgin rol bazlı, komut yok.
+İleride: "komut" kalemleri (sayfa + eylem, ör. `/Users?create=1` ile ekleme formu açık; görev oluştur; toplantı planla), aynı yetki
+süzgeciyle, 7 dilde ad; kısayol katmanı (BL-438) ile ortak kayıt. Karar gelince paket.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
