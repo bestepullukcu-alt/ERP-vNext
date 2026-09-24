@@ -92,6 +92,13 @@ function Protect-Text([string]$text) {
     })
     # mongodb://user:pass@host
     $text = [regex]::Replace($text, '(?i)(mongodb(\+srv)?://)([^:@/"\s]+):([^@"\s]+)@', '$1***:***@')
+    # Baglanti cumlelerindeki Password=...; / Pwd=...; (SQL Server, PostgreSQL, RabbitMQ)
+    $text = [regex]::Replace($text, '(?i)\b(password|pwd)\s*=\s*([^;"]*)', {
+        param($m)
+        return ($m.Groups[1].Value + "=" + (Get-Masked $m.Groups[2].Value))
+    })
+    # amqp://user:pass@host ve benzeri URI kimlik bilgileri
+    $text = [regex]::Replace($text, '(?i)\b([a-z][a-z0-9+.-]*://)([^:@/"\s]+):([^@"\s]+)@', '$1***:***@')
     return $text
 }
 
