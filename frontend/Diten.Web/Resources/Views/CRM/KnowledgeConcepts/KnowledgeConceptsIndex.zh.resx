@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>不在主干上</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>该主题尚无概念类型。</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>连接、不符合项和版本 — 即将推出</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>有效</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>至少需要 2 个类型</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>已冻结</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>删除分支</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>显示回退箭头</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>前移</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>后移</value></data>
 </root>

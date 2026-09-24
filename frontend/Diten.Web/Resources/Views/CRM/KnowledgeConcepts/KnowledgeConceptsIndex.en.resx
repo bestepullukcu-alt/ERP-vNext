@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>not on spine</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>This subject has no concept types yet.</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>Connections, non-conforming and versions — coming soon</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Valid</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>At least 2 types required</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Delete branch</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Show back arrows</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Move earlier</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Move later</value></data>
 </root>

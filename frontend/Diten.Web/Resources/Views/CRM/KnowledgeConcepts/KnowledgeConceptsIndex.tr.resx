@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>omurgada yok</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>Bu konunun henüz kavram tipi yok.</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>Bağlantılar, uyumsuzlar ve sürümler — yakında</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Geçerli</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>En az 2 tip gerekli</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Donmuş</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Dalı sil</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Geri okları göster</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Öne al</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Sona al</value></data>
 </root>

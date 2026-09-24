@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>hors ossature</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>Ce sujet n'a pas encore de types de concept.</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>Liens, non-conformités et versions — bientôt</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Valide</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>Au moins 2 types requis</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Figée</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Supprimer la branche</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Afficher les flèches retour</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Avancer</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Reculer</value></data>
 </root>

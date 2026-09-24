@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>خارج العمود الفقري</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>لا توجد أنواع مفاهيم لهذا الموضوع بعد.</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>الروابط وغير المطابق والإصدارات — قريبًا</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>صالح</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>مطلوب نوعان على الأقل</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>مجمّد</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>حذف الفرع</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>إظهار أسهم الرجوع</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>نقل للأمام</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>نقل للخلف</value></data>
 </root>

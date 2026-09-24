@@ -214,4 +214,11 @@
   <data name="NotOnSpine" xml:space="preserve"><value>вне каркаса</value></data>
   <data name="TypePaletteEmpty" xml:space="preserve"><value>У этой темы пока нет типов понятий.</value></data>
   <data name="SidePanelComingSoon" xml:space="preserve"><value>Связи, несоответствия и версии — скоро</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Корректно</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>Нужно не менее 2 типов</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Заморожено</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Удалить ветвь</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Показать обратные стрелки</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Переместить раньше</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Переместить позже</value></data>
 </root>

@@ -13,7 +13,10 @@
         "RecordCreated", "RecordUpdated", "ErrorState", "AddToSequence",
         "Prev", "Next", "BranchLabel", "Steps", "AddStep", "Details",
         // WP-CT-FE-2: type palette (left panel) + side-panel placeholder.
-        "TypePalette", "NodeCount", "BranchUsage", "NotOnSpine", "TypePaletteEmpty", "NodePickerSubjectFirst" };
+        "TypePalette", "NodeCount", "BranchUsage", "NotOnSpine", "TypePaletteEmpty", "NodePickerSubjectFirst",
+        // WP-CT-FE-3: type-lane diagram (middle panel).
+        "Spine", "SpineStatusValid", "SpineStatusNeedsTwo", "SpineStatusFrozen", "DeleteBranch", "BackEdgesToggle",
+        "MoveEarlier", "MoveLater" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>
