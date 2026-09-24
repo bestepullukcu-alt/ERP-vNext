@@ -6369,6 +6369,10 @@ DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 20
 bekleniyor — …" (resx: `…duraklatıldı: {0}` ×2, `NoticeWaitingExternal`, `{0} bekleniyor — {1}`). Bilgi aynı, dört kaynak
 (durum şeridi rehberi + BL-437/439 rehberi + bekleme notu + bekleme çipi). Tek cümle + çip yeter; hangisinin kalacağı UX kararı.
 
+**Sahip kararı bekliyor (2026-09-24, kontrol turu sonrasına ertelendi).** CT önerisi: üstteki durum şeridi ("Şu an duraklatıldı: …") ve satır çipi
+("X bekleniyor — …") kalır; "Bu görev duraklatıldı: …" rehber kutusu ve "Bu görev başkasından gelecek bilgiyi bekliyor." notu kalkar.
+İş küçük (WCN app.js, metin silinmez, yalnız çizim), CT yapar.
+
 ---
 
 ### BL-445
@@ -6480,6 +6484,39 @@ DURUM: AÇIK — KARAR BEKLİYOR (sahip sordu 2026-09-24) · SAHİP: CT · KAYIT
 olacak ("kendi planladığım işte sunucu sert engeller"), talep sahibinin başkasının gününe blok koyması anlamsız. SAP/Oracle'da da
 iş planı (ne zaman yapılacağı) işi yapanın, talep sahibinin elindeki alan son tarihtir. CT önerisi: `plan` yalnız tutan kişide;
 talep sahibi beklentiyi kaynak son tarihle ifade eder. Karar gelince BL-361 kural tablosu ve projeksiyon güncellenir (küçük iş).
+
+---
+
+### BL-450
+
+**Kullanıcı silme koruma kodları ekranda ham kod olarak görünüyor — 2 anahtar × 7 dil**
+
+DURUM: AÇIK · SAHİP: l10n prompt (CT yazar) · BULAN: CT (Kullanıcılar testi, paket 5 kabulü) · KAYIT: 2026-09-24
+
+Auth `DeleteUserCommandHandler` iki reddi kodla döner: `USER_DELETE_SELF` (kendini silemezsin) ve `USER_DELETE_LAST_STEWARD`
+(son yöneticiyi silemezsin). Kullanıcılar ekranının hata köprüsünde (`Governance/Users/index.js` → `UsersIndex.*.resx`) bu iki
+kodun karşılığı yok → toast ham kodu basar. İş: köprüye iki anahtar + 7 resx'e metin; guard: kod ⇔ köprü ⇔ resx (Auth
+`UserLifecycleErrorCodeContractTests` kalıbı). Kural gereği metin işi l10n ajanına gider (Tenant = 7 dil).
+
+---
+
+### BL-451
+
+**Takvim başlangıç kabulleri — sahip kararı bekliyor (kontrol turu sonrasına ertelendi)**
+
+DURUM: AÇIK — KARAR BEKLİYOR · SAHİP: sahip (karar), CT (prompt) · KAYIT: 2026-09-24
+
+Ortak takvim (Görev Merkezi + Toplantılar, MOD-0357 S3b; tasarım kararları 2026-09-17 konuşmasında verildi: ay/hafta/gün, ay'a
+bırakma = gün, hafta/güne bırakma = saat bloğu, bırakma = Planla, çakışma = kendi işinde sert engel / davette uyarı, sol panel üç
+sekme, WCN kartı yeniden kullanılır, FullCalendar yerel paket + 7 dil + RTL, Codex ile sınır: tek kişisel plan bloğu MOD-0024'ün).
+Prompt yazılmadan önce üç kabul:
+1. **Çalışma saatleri:** v1'de kiracı düzeyi varsayılan saatler + çalışma takvimi (CAND-CAP-0010) günleri; kişi/vardiya HR (MOD-0280)
+   gelince aynı yerden okunur. Ölçüldü: projede vardiya/çalışma düzeni varlığı yok; HumanCapitalService'teki "TimeAttendanceLeave"
+   yalnız hazırlık kaydı.
+2. **Önce motor:** `TaskItem`'a planlanan başlangıç saati + süre; "Planla" saat alır; çakışma kuralı sunucuda; sonra bileşen.
+3. **Ekstra özellik listesi:** sahip hatırlamıyor → yok sayılır; aklına gelince backlog.
+BL-449 (talep sahibinde "Planla") ile birlikte karar. Sonra iki prompt: (2a) motor plan bloğu, (2b) bileşen + Görev Merkezi görünümü;
+(2c) Toplantılar sayfası + davet kartları. Timesheet (DEC-002, MOD-0280 zaman girişi dilimi) ayrı, takvimden sonra.
 
 ---
 
