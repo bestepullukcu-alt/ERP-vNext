@@ -9,6 +9,7 @@ const { bootSurface, app } = require("./wcn-boot");
  * requester matters), self-assigned work (nothing to add), questions and approvals (untouched).
  */
 const RAISED = "aaaaaaaa-0000-4000-8000-000000000001";
+const RAISED2 = "aaaaaaaa-0000-4000-8000-000000000004";
 const INBOX = "aaaaaaaa-0000-4000-8000-000000000002";
 const SELF = "aaaaaaaa-0000-4000-8000-000000000003";
 const ME = "11111111-1111-1111-1111-111111111111";
@@ -39,6 +40,13 @@ const items = () => [
     viewerRelation: "initiator",
     requester: { id: ME, displayName: "Diten Admin", isCurrentUser: true },
     assignee: { id: ALI, displayName: "Ali Veli", isCurrentUser: false }
+  }),
+  // raised by me, held by Ayşe → Başlattıklarım (the filter has two holders to choose from)
+  task(RAISED2, {
+    viewerRelation: "initiator",
+    title: { kind: "display", text: "Etiket kontrolü", locale: "und" },
+    requester: { id: ME, displayName: "Diten Admin", isCurrentUser: true },
+    assignee: { id: AYSE, displayName: "Ayşe Korkmaz", isCurrentUser: false }
   }),
   // raised by Ayşe, held by me → İşlerim
   task(INBOX, {
@@ -92,5 +100,62 @@ describe("Başlattıklarım names the holder, everything else keeps the requeste
     expect(chips[0].text).toBe("Diten Admin");
     expect(chips[0].title).toBe("");
     expect(chips[0].icon).not.toContain("bx-user-check");
+  });
+});
+
+describe("Başlattıklarım can be narrowed to one holder (CT)", () => {
+  const openFilters = () => { const toggle = app().querySelector("[data-wcn-filter-toggle]"); if (toggle) toggle.click(); };
+  const assigneeSelect = () => app().querySelector('select[data-wcn-filter="assignee"]');
+
+  it("offers a holder filter listing the holders present, only on Başlattıklarım", async () => {
+    await bootSurface({ items: items(), wcn: translator });
+    app().querySelector('[data-wcn-tab="baslattiklarim"]').click();
+    await tick();
+    openFilters();
+    await tick();
+    const select = assigneeSelect();
+    expect(select, "the holder filter is drawn").not.toBeNull();
+    expect(select.getAttribute("data-placeholder")).toBe("Atanan");
+    expect([...select.options].map((o) => o.value)).toEqual(["Ali Veli", "Ayşe Korkmaz"]);
+
+    app().querySelector('[data-wcn-tab="islerim"]').click();
+    await tick();
+    openFilters();
+    await tick();
+    expect(assigneeSelect(), "no holder filter where the holder is always me").toBeNull();
+  });
+
+  it("picking Ali leaves only Ali's work on screen, and resetting brings Ayşe's back", async () => {
+    await bootSurface({ items: items(), wcn: translator });
+    app().querySelector('[data-wcn-tab="baslattiklarim"]').click();
+    await tick();
+    openFilters();
+    await tick();
+    const select = assigneeSelect();
+    [...select.options].forEach((o) => { o.selected = o.value === "Ali Veli"; });
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    await tick();
+    const rows = () => [...app().querySelectorAll("[data-wcn-row]")].map((r) => r.getAttribute("data-wcn-row"));
+    expect(rows()).toEqual([RAISED]);
+
+    // Clearing the pick (the way select2's "×" does it) brings every holder back.
+    [...assigneeSelect().options].forEach((o) => { o.selected = false; });
+    assigneeSelect().dispatchEvent(new Event("change", { bubbles: true }));
+    await tick();
+    expect(rows().sort()).toEqual([RAISED, RAISED2].sort());
+  });
+
+  it("the search box finds work by its holder's name", async () => {
+    await bootSurface({ items: items(), wcn: translator });
+    app().querySelector('[data-wcn-tab="baslattiklarim"]').click();
+    await tick();
+    const search = app().querySelector("input[data-wcn-search]");
+    expect(search, "the search box").not.toBeNull();
+    search.value = "Ali";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    // the box debounces before it filters
+    await new Promise((resolve) => { setTimeout(resolve, 600); });
+    const rows = [...app().querySelectorAll("[data-wcn-row]")].map((r) => r.getAttribute("data-wcn-row"));
+    expect(rows).toEqual([RAISED]);
   });
 });

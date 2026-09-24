@@ -6446,6 +6446,28 @@ cevapsız. Düzeltme: satır, okuyanın başlattığı ve ADI BİLİNEN başka b
 `bx-user-check`, tooltip `DetailAssignee` = "Atanan", 7 dilde var); gelen kutusu, kendine açılan iş, soru ve onay kalemleri
 aynen kalır. Guard `tests/wcn-outbox-assignee-chip-ct.test.js` (3): sabotaj (eski davranış) ilk testi kırmızı yapar.
 
+**İkinci yarı (sahip, aynı gün): "filtreden de seçemiyorum".** Filtre panelinde yalnız Başlattıklarım sekmesinde "Atanan" seçicisi
+(çoklu; seçenekler sekmede gerçekten var olan tutan kişiler, yer tutucu/etiket `DetailAssignee`, yeni metin yok); arama kutusu
+artık tutan kişinin adıyla da buluyor; sıfırlama iki yolda da ekseni temizliyor. Guard +3 (seçici yalnız Başlattıklarım'da ve
+tutanları listeler · seçince yalnız o kişinin işi kalır, temizleyince hepsi döner · arama adla bulur); üç sabotaj (süzgeç kaldırıldı ·
+arama atananı görmüyor · seçici her sekmede) ayrı ayrı kırmızı. Canlı (2026-09-24, admin): S10B-Planla Testi Ayşe'ye atandı →
+Başlattıklarım satırında "Ayşe Korkmaz" çipi (tooltip Atanan), filtrede "Atanan" seçicisi tek seçenekle Ayşe.
+
+---
+
+### BL-449
+
+**Talep sahibi başkasının tuttuğu görevde "Planla" görüyor — kural mı, kusur mu?**
+
+DURUM: AÇIK — KARAR BEKLİYOR (sahip sordu 2026-09-24) · SAHİP: CT · KAYIT: 2026-09-24
+
+Ölçüldü (admin, Başlattıklarım, Ayşe'nin tuttuğu S10B-Planla Testi): eylemler `reassign` (birincil), `plan`, `cancel`,
+`scheduleReviewMeeting`; satır menüsünde "Planla" görünüyor. Bu, 2026-09-11 kural incelemesinde (BL-361) yazılan kuralın sonucu:
+"planla = tutan VEYA talep sahibi". Yani bugün kusur değil, karar. Ancak takvim kararlarıyla çelişir: planlama kişisel zaman bloğu
+olacak ("kendi planladığım işte sunucu sert engeller"), talep sahibinin başkasının gününe blok koyması anlamsız. SAP/Oracle'da da
+iş planı (ne zaman yapılacağı) işi yapanın, talep sahibinin elindeki alan son tarihtir. CT önerisi: `plan` yalnız tutan kişide;
+talep sahibi beklentiyi kaynak son tarihle ifade eder. Karar gelince BL-361 kural tablosu ve projeksiyon güncellenir (küçük iş).
+
 ---
 
 ### BL-393
