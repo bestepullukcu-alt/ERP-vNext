@@ -6004,7 +6004,23 @@ tags.diten-tags .tagify__input {
     border: 1px solid var(--bs-border-color) !important; box-shadow: none !important;
     transform: none !important; translate: none !important;
 }
-.wcn-keyboard-menu { min-inline-size: 17rem; max-inline-size: 22rem; padding: .625rem .75rem; color: var(--bs-secondary-color); font-size: .75rem; line-height: 1.45; white-space: normal; }
+/* WP-UI-SHORTCUTS-01 (BL-438) — the `?` shortcut list (assets/js/shared/diten-shortcuts.js), opened inside the
+   shared SweetAlert look. It replaced `.wcn-keyboard-menu`, the dropdown that listed four of seven keys. */
+.diten-shortcuts { text-align: start; }
+.diten-shortcuts-scope + .diten-shortcuts-scope { margin-block-start: 1rem; }
+.diten-shortcuts-scope-title { margin-block-end: .375rem; font-size: .8125rem; font-weight: 600; text-transform: uppercase; color: var(--bs-heading-color); }
+.diten-shortcuts-table { margin-block-end: 0; }
+.diten-shortcuts-table th,
+.diten-shortcuts-table td { padding-block: .375rem; vertical-align: middle; border-color: var(--bs-border-color); }
+.diten-shortcuts-keys { inline-size: 1%; white-space: nowrap; padding-inline-end: 1rem; font-weight: 400; }
+.diten-shortcuts-desc { color: var(--bs-body-color); font-size: .8125rem; }
+.diten-shortcuts-or { margin-inline: .25rem; color: var(--bs-secondary-color); }
+.diten-kbd {
+    display: inline-block; min-inline-size: 1.625rem; padding: .125rem .375rem; text-align: center;
+    font-family: var(--bs-font-monospace); font-size: .75rem; line-height: 1.25;
+    color: var(--bs-heading-color); background: var(--bs-paper-bg);
+    border: 1px solid var(--bs-border-color); border-block-end-width: 2px; border-radius: .25rem;
+}
 
 .wcn-filters { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 /* Inside the collapsible panel: reuse the golden `.dt-filter-host` select2 look;

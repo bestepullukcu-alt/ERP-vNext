@@ -31,6 +31,8 @@ const loadModules = () => {
   loadScript("wwwroot/assets/js/shared/diten-dialog.js");
   loadScript("wwwroot/assets/js/shared/diten-person-picker.js");
   loadScript("wwwroot/assets/js/shared/diten-related-records.js");
+  // WP-UI-SHORTCUTS-01 — the shared shortcut layer app.js registers its keys with (Views/Shared/_DitenShortcuts).
+  loadScript("wwwroot/assets/js/shared/diten-shortcuts.js");
   loadScript(SCRIPT_ROOT + "fixture-contract.js");
   loadScript(SCRIPT_ROOT + "task-detail-resolver.js");
   loadScript(SCRIPT_ROOT + "trigger-response-resolver.js");

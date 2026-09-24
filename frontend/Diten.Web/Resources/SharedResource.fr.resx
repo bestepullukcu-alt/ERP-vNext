@@ -899,4 +899,22 @@
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>La mise à jour d'une facture n'est pas prise en charge ; corrigez-la en relançant le rapprochement à 3 voies ou en résolvant son exception, pas par une modification.</value></data>
   <data name="Copied" xml:space="preserve"><value>Copié</value></data>
   <data name="Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Raccourcis clavier</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Fermer</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Les raccourcis sont inactifs pendant la saisie dans un champ ou lorsqu'une boîte de dialogue ou un panneau latéral est ouvert.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Afficher cette liste</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Espace</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Partout</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Centre des tâches</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Détails de la tâche</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Sélectionner l'élément suivant</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Sélectionner l'élément précédent</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Ouvrir l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Ouvrir la ligne active</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Accepter ou approuver l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Rejeter ou renvoyer l'élément sélectionné</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Effacer la sélection</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Passer d'un onglet à l'autre (sur un onglet actif)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Modifier la tâche</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Retour à la liste des tâches</value></data>
 </root>
