@@ -115,7 +115,17 @@ public static class DataSeeder
         "mdm.global-products.create"
     };
 
-    public static async Task SeedAsync(IMongoDatabase database)
+    /// <summary>
+    /// Opt-in switch for the five mock users per dev tenant (john.doe, jane.smith, …). Absent means false: the
+    /// mock users used to come back on EVERY Auth start whenever a tenant held only its admin — measured 2026-09-24,
+    /// in the middle of the owner's control round, right after the test users had been deleted on purpose. The
+    /// switch is read together with the Development environment in <c>DependencyInjection.AddPersistence</c>
+    /// (both must hold), the same gate Platform's <c>PositionSeed</c> uses; set it only in a local, never-committed
+    /// appsettings.Development.json.
+    /// </summary>
+    public const string MockUsersOptInConfigurationKey = "DevSeeds:MockUsers";
+
+    public static async Task SeedAsync(IMongoDatabase database, bool seedMockUsers = false)
     {
         try 
         {
@@ -126,7 +136,7 @@ public static class DataSeeder
             await SeedRolesAsync(database);
             
             Console.WriteLine("Seeding users...");
-            await SeedUsersAsync(database);
+            await SeedUsersAsync(database, seedMockUsers);
 
             Console.WriteLine("Seeding tenant-97c5 BRD consumer grant...");
             await SeedTenant97c5BusinessReferenceDataConsumerGrantAsync(database);
@@ -981,7 +991,7 @@ public static class DataSeeder
         await AssignMod0251PlatformIntegrationGrantsAsync(permCol, rpCol, admin);
     }
 
-    private static async Task SeedUsersAsync(IMongoDatabase database)
+    private static async Task SeedUsersAsync(IMongoDatabase database, bool seedMockUsers)
     {
         var userCol = database.GetCollection<User>("users");
         var roleCol = database.GetCollection<Role>("roles");
@@ -1043,9 +1053,13 @@ public static class DataSeeder
             }
         }
 
-        // Seed 5 additional mock users for DefaultTenantId and Tenant97c5Id
-        await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
-        await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        // Five mock users per dev tenant — OPT-IN only (MockUsersOptInConfigurationKey). Default: nothing is seeded,
+        // so a tenant that was emptied on purpose stays empty across restarts.
+        if (seedMockUsers)
+        {
+            await SeedMockUsersForTenantAsync(userCol, DefaultTenantId);
+            await SeedMockUsersForTenantAsync(userCol, Tenant97c5Id);
+        }
     }
 
     private static async Task SeedMockUsersForTenantAsync(IMongoCollection<User> userCol, Guid tenantId)

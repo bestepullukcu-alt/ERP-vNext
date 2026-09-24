@@ -6549,6 +6549,23 @@ GxP: kalite kaydı listesinin dışa aktarımı kontrollü kopya (kim/ne zaman/f
 
 ---
 
+### BL-453
+
+**Auth her açılışta beş sahte kullanıcı ekliyordu — kontrol turu ortasında silinen kullanıcılar "geri geldi"**
+
+DURUM: KAPANDI — `chore/ct-round-2` (2026-09-24) · SAHİP: CT · BULAN: sahip (kontrol turu: "benim açmadığım bir sürü kullanıcı geldi") · KAYIT: 2026-09-24
+
+Ölçüldü: `DataSeeder.SeedMockUsersForTenantAsync` (Auth Persistence), DefaultTenant ve Tenant97c5 için kiracıda admin dışında
+kullanıcı yoksa (`count <= 1`) john.doe/jane.smith/bob.johnson/alice.williams/charlie.brown (`.def@diten.com`, Aktif, rolsüz)
+ekliyor; anahtar yok, her Auth açılışında koşuyor. Sahip test kullanıcılarını silip servisler yeniden başlayınca beş kişi belirdi.
+
+Düzeltme: tohum opt-in — `DevSeeds:MockUsers` (Platform `PositionSeed` kalıbı: Development VE anahtar); `SeedAsync(database,
+seedMockUsers=false)`, DI kapısı `AddPersistence`. Varsayılan kapalı; yerel, commit'lenmeyen appsettings ile açılır. Auth tohum
+testleri 282/283 (tek kırmızı eski `PermissionScopePreservationTests`). Sahip beş sahte kullanıcıyı ekrandan siler; Auth yeniden
+başlasa da dönmez (canlı kanıt bekleniyor).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
