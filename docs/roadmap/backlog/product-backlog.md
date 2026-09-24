@@ -6342,7 +6342,13 @@ talep sahibi, izleyici, yönetici) zaten okuma kuralından geçiyor.
 
 **Diyalog içindeki kişi seçicide seçeneğe fareyle tıklayınca diyalog kapanıyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+DURUM: KAPANDI — YANLIŞ ALARM (CT ölçüm hatası, 2026-09-24 akşam) · SAHİP: CT · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+**Düzeltme:** kusur yok. Sabahki iki kapanma, CT'nin tarayıcı bölmesinde yanlış koordinat çerçevesiyle tıklamasından oldu (ekran
+görüntüsü 800×763 iken 1333 genişlik varsayıldı; tıklamalar diyaloğun dışına, arka plana düştü; arka plana tıklama diyaloğu
+tasarım gereği kapatır). Akşam aynı diyalogda gerçek fare tıklamasıyla kutu açıldı, "Ayşe Korkmaz" seçildi, diyalog açık kaldı
+(iki kez: programatik açılış ve gerçek tıklama). Açılır liste popup'ın içinde (`dropdownParent`), SweetAlert 11.14.5. Kod
+değişikliği yok.
 
 Ölçüldü: WCN "Bilgi bekle" diyaloğunda `#wcnWaitingOn` select2 seçicisi (`DitenDialog.bindDialogSelect2`); açılır listeden
 "Ayşe Korkmaz"a fareyle tıklanınca SweetAlert diyaloğu seçim yapılmadan kapandı (iki kez). Klavye (Aşağı + Enter) çalıştı.
