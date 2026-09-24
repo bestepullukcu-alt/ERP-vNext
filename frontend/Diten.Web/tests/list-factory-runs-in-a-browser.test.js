@@ -46,7 +46,7 @@ describe("diten-datatable.js (the list factory) runs with a browser's globals an
   });
 
   test("createList's fail-closed exits run there too (they must not reach for anything Node-only)", async () => {
-    await expect(DitenDataTable.createList({ tableEl: document.createElement("table"), dataMode: "server" })).rejects.toThrow(/package 3/);
+    await expect(DitenDataTable.createList({ tableEl: document.createElement("table"), dataMode: "sever" })).rejects.toThrow(/got 'sever'/);
     await expect(DitenDataTable.createList({ tableEl: document.createElement("table") })).rejects.toThrow(/required/);
   });
 

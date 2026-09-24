@@ -65,16 +65,29 @@ public sealed class ListShellRenderEqualityTests : IClassFixture<WebApplicationF
 
     // ── the claim ────────────────────────────────────────────────────────────────────────────────────────
 
+    // The frozen HTML is history and stays as it was; the ONE deliberate change since is the data mode: BL-440
+    // package 3 (WP-UI-LIST-SERVER-01) made Golden Compact the server-mode reference. Everything else must still be
+    // byte-equal, so the expectation is the frozen HTML with exactly that attribute value replaced — nothing looser.
     [Theory]
-    [InlineData(SlimPartial, SlimBefore)]
-    [InlineData(CompactPartial, CompactBefore)]
-    public async Task The_golden_partial_renders_the_same_HTML_through_the_shell_as_it_did_by_hand(string viewPath, string before)
+    [InlineData(SlimPartial, SlimBefore, "client")]
+    [InlineData(CompactPartial, CompactBefore, "server")]
+    public async Task The_golden_partial_renders_the_same_HTML_through_the_shell_as_it_did_by_hand(string viewPath, string before, string dataMode)
     {
         var after = Normalize(await RenderAsync(viewPath));
 
         _output.WriteLine($"{viewPath} — {after.Length} chars after normalisation");
 
-        Assert.Equal(Normalize(before), after);
+        const string frozenMode = "data-dt-data-mode=\"client\"";
+        Assert.Equal(1, CountOf(before, frozenMode));
+        Assert.Equal(Normalize(before.Replace(frozenMode, $"data-dt-data-mode=\"{dataMode}\"")), after);
+    }
+
+    private static int CountOf(string text, string value)
+    {
+        var count = 0;
+        for (var i = text.IndexOf(value, StringComparison.Ordinal); i >= 0; i = text.IndexOf(value, i + value.Length, StringComparison.Ordinal))
+            count++;
+        return count;
     }
 
     // ── non-vacuity: the frozen reference really is the golden shape, not an empty string ──────────────

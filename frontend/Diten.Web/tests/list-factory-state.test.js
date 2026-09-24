@@ -40,23 +40,22 @@ describe("dataMode is fail-closed (the same discipline as the shell's DataMode)"
     expect(() => D.assertDataMode("")).toThrow(/dataMode is required/);
   });
 
-  test("'server' → throws pointing at package 3 and promising NOT to run as client", () => {
-    expect(() => D.assertDataMode("server")).toThrow(/package 3[\s\S]*NOT silently run as 'client'/);
-  });
-
-  test("a typo → throws; 'client' → accepted", () => {
+  test("a typo → throws; 'client' and 'server' → accepted (server mode is package 3, WP-UI-LIST-SERVER-01)", () => {
     expect(() => D.assertDataMode("clint")).toThrow(/got 'clint'/);
+    expect(() => D.assertDataMode("Server")).toThrow(/got 'Server'/);
     expect(D.assertDataMode("client")).toBe("client");
+    expect(D.assertDataMode("server")).toBe("server");
   });
 
-  test("createList refuses before touching anything when dataMode is missing or 'server'", async () => {
+  test("createList refuses before touching anything when dataMode is missing; 'server' passes the mode gate", async () => {
     await expect(D.createList({ tableEl: { id: "t", dataset: {} } })).rejects.toThrow(/dataMode is required/);
-    await expect(D.createList({ tableEl: { id: "t", dataset: {} }, dataMode: "server" })).rejects.toThrow(/package 3/);
+    // Past the mode gate the next requirement is DtDefaults — proof the mode itself was accepted.
+    await expect(D.createList({ tableEl: { id: "t", dataset: {} }, dataMode: "server" })).rejects.toThrow(/DtDefaults is required/);
   });
 
   test("createCrudTable (the 84 legacy callers) validates a dataMode it is handed, never invents one", () => {
-    // Handed 'server' it must throw like the factory; handed nothing it keeps the legacy behaviour (no DtDefaults → its own error).
-    expect(() => D.createCrudTable({ tableEl: { id: "t", dataset: {} }, dataMode: "server" })).toThrow(/package 3/);
+    expect(() => D.createCrudTable({ tableEl: { id: "t", dataset: {} }, dataMode: "serv" })).toThrow(/got 'serv'/);
+    expect(() => D.createCrudTable({ tableEl: { id: "t", dataset: {} }, dataMode: "server" })).toThrow(/DtDefaults is required/);
     expect(() => D.createCrudTable({ tableEl: { id: "t", dataset: {} } })).toThrow(/DtDefaults is required/);
   });
 });

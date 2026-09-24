@@ -79,6 +79,24 @@ ile beyan eder; `verify_datatable_page.py` ikisini karşılaştırır ve davran�
 | Veri | DataTables `start/length/search/order` + filtreler sunucuya; servis `total` döner; `serverSide: true` | Tüm küme tek istekte; **URL'de `pageSize=` YASAK**; servis `total` döner; `total > gelen` ise ekran bunu gösterir (sessiz kesme yasak) |
 | Filtre | sorgu parametresi | tarayıcıda (`ext.search`) |
 | Save View | aynı sözleşme; state sorguya çevrilir | aynı sözleşme; tarayıcıda uygulanır |
+| Referans | **Golden Compact** (`data_mode: server`) | **Golden Slim** (`data_mode: client`, `data_mode_max_rows: 200`) |
+
+### Sunucu modu sözleşmesi (BL-440 paket 3, WP-UI-LIST-SERVER-01)
+
+Sayfa yalnız `DitenDataTable.createList({ dataMode: 'server', … })` der; çeviriyi **fabrika** yapar (`diten-datatable.js`
+→ `toServerQuery` / `toDataTablesResponse`). Sayfa `serverSide`, `ajax.data`, `ext.search` ya da filtre `matches:` yazmaz.
+
+| | Tel üzerinde | Not |
+|---|---|---|
+| **İstek** (GET, düz sorgu) | `start` · `length` · `search` · `orderBy` · `orderDir` (`asc`\|`desc`) · `draw` · uygulanmış filtreler **anahtar adıyla** | `orderBy` = sıralanan sütunun `columns[i].data` adı. Çoklu filtre **tekrarlı** parametre (`status=Active&status=Passive`), tekli bir kez (`priority=70`), boş filtre gönderilmez. DataTables'ın `columns[i][…]`/`order[i][…]` gürültüsü **gönderilmez** |
+| **Cevap** (servis zarfı) | `{ …, data: { items: [...], total, filteredTotal } }` | `total` = kiracının tüm listesi, `filteredTotal` = arama+filtre sonrası. İkisi de **`TenantId` ile sınırlı** sorgudan sayılır |
+| **DataTables'a** (fabrika `ajax.dataFilter`) | `{ draw, recordsTotal: total, recordsFiltered: filteredTotal, data: items }` | `draw` isteğin kendi URL'inden okunur (geç gelen cevap kendi numarasını taşır). `filteredTotal > gelen` **sayfalamadır**, kayıp değil — istemci modundaki "`total > gelen` ise göster" kuralı burada uygulanmaz |
+| **Servis kuralları** | `orderBy` beyaz listesi dışı → **400** · `orderDir` asc/desc dışı → 400 · `length` 1…500 · arama büyük-küçük duyarsız ve **metin** (regex değil) | Eşit sıralama değerinde sayfalar arası kayma olmasın diye sıralama daima `Id` ile biter. Parametresiz çağrı eski şeklini korur (tüm liste, dizi) — başka tüketiciler (lookup proxy) onu okur |
+| **Davranış** | Apply/Reset → parametre değişir + yeni istek (Reset sayfa 1'e döner) · arama/sıralama sunucuya | Save View sözleşmesi **aynı** (`captureView`/`applyViewToTable`); filtre+arama+sıralama sunucuya gider, colVis/columnOrder tarayıcıda kalır. Kayıtlı görünümün filtreleri **ilk** isteğe biner |
+| **Sayfaya açık** | `handle.lastResponse` (son zarf) · `onResponse(json)` seçeneği | Özet/KPI buradan okunur; ikinci bir istek atılmaz |
+
+Doğrulayıcı üç beyanı karşılaştırır — pack `data_mode` (pack front matter'ından kendisi okur), `<table data-dt-data-mode>`,
+`createList({ dataMode })` — ve sunucu modunda "serverSide açık" + "tarayıcıda filtre kancası yok" kontrollerini fabrikadan çözer.
 
 > ⚠ ÖLÇÜLDÜ (2026-09-23): 138 listenin çoğu istemci modunda ve JS'inde sabit `pageSize=` taşıyor (200×45, 100×9, 500×5, 1000×4).
 > Kullanıcılar `pageSize=1000` → 1001. kullanıcı asla görünmez, hata da vermez. 13 liste `serverSide:true` ama kural bunu hiç yazmamıştı.

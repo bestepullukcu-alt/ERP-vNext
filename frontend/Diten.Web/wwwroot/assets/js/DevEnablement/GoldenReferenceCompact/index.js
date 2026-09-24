@@ -5,6 +5,11 @@
  * THE LIST IS A COMPONENT (BL-440 package 2): Save View, column state, filters, the inline bar and the
  * responsive-modal return come from DitenDataTable.createList. This file writes only what is Compact's own:
  * columns and renderers, its badge maps, its lookups and its endpoints. Before the factory: 685 lines.
+ *
+ * THE SERVER-MODE REFERENCE (BL-440 package 3, data_mode: server). Paging, search, sort and the filters below run on
+ * the service: the factory sends start/length/search/orderBy/orderDir + each applied filter by its key, and reads
+ * back { items, total, filteredTotal }. So the filter fields carry no `matches` — the browser never filters a row.
+ * (Golden Slim is the client-mode reference: a bounded set, filtered in the browser.)
  */
 'use strict';
 
@@ -28,7 +33,7 @@ const GoldenReferenceCompactList = (function () {
     });
 
     const filterFields = [
-        { id: 'filterStatus', key: 'status', kind: 'multi', matches: (row, selected) => !selected.length || selected.includes(row.isActive ? 'Active' : 'Passive') },
+        { id: 'filterStatus', key: 'status', kind: 'multi' },
         { id: 'filterReferenceType', key: 'referenceType', kind: 'multi' },
         { id: 'filterCategory', key: 'category', kind: 'multi' },
         { id: 'filterOwner', key: 'owner', kind: 'multi' },
@@ -101,7 +106,7 @@ const GoldenReferenceCompactList = (function () {
 
         list = await window.DitenDataTable.createList({
             tableEl: dtTableEl,
-            dataMode: 'client',
+            dataMode: 'server',
             bulk: bulkOptions,
             ajax: { url: apiUrl + '/api/golden-reference-compact', type: 'GET', xhrFields: { withCredentials: true } },
             actions: { onRowAction: rowActionHandlers },

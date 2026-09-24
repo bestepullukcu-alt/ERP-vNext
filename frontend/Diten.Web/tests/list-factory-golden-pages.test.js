@@ -15,9 +15,11 @@ const web = (...p) => path.join(repoRoot, "frontend", "Diten.Web", ...p);
 const read = (...p) => fs.readFileSync(web(...p), "utf8");
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:'"`])\/\/.*$/gm, "$1");
 
+// [folder, line budget, data mode] — two references, two modes (BL-440 package 3): Slim is the bounded client-mode
+// set, Compact the server-mode list. Compact's budget fell to 200 when its row matchers left for the service.
 const GOLDEN = [
-  ["GoldenReferenceSlim", 400],
-  ["GoldenReferenceCompact", 280]
+  ["GoldenReferenceSlim", 400, "client"],
+  ["GoldenReferenceCompact", 200, "server"]
 ];
 
 /** The 79 copied names, by family — the same list the work package measured on the Users screen. */
@@ -57,11 +59,11 @@ describe("the 79 plumbing names live in the factory, not on the page", () => {
 });
 
 describe("the golden pages go through the factory and only the factory", () => {
-  test.each(GOLDEN)("%s/index.js calls DitenDataTable.createList with dataMode:'client' and stays under %i lines", (folder, maxLines) => {
+  test.each(GOLDEN)("%s/index.js calls DitenDataTable.createList and stays under %i lines, in %s mode", (folder, maxLines, mode) => {
     const raw = read("wwwroot", "assets", "js", "DevEnablement", folder, "index.js");
     const source = stripComments(raw);
     expect(source).toMatch(/window\.DitenDataTable\.createList\(\{/);
-    expect(source).toMatch(/dataMode: 'client'/);
+    expect(source).toMatch(new RegExp(`dataMode: '${mode}'`));
     expect(raw.split("\n").length, `${folder} is longer than the ≤60% budget`).toBeLessThanOrEqual(maxLines);
   });
 
