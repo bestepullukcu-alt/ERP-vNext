@@ -8,6 +8,7 @@ using Diten.MdmService.Infrastructure.Security;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MongoDB.Driver;
 using Xunit;
 
 namespace Diten.MdmService.Application.Tests;
@@ -94,6 +95,42 @@ public sealed class DependencyInjectionSmokeTests
                 [AuditIntentTemporalMigrationCommandLine.ExactArgument, AuditIntentTemporalMigrationCommandLine.ExactArgument])).Message);
         Assert.False(AuditIntentTemporalMigrationCommandLine.IsRequested(
             [AuditIntentTemporalMigrationCommandLine.ExactArgument.ToUpperInvariant()]));
+    }
+
+    [Fact]
+    public void Persistence_api_serving_mode_skips_startup_migration_and_preserves_repository_registrations()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Mongo:ConnectionString"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=25",
+                ["Mongo:DatabaseName"] = "mdm_startup_mode_contract"
+            })
+            .Build();
+        var services = new ServiceCollection();
+
+        Diten.MdmService.Persistence.DependencyInjection.AddPersistence(
+            services,
+            configuration,
+            runStartupMaintenance: false);
+
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IMongoClient));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IMongoDatabase));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(ILegalEntityRepository));
+        Assert.Contains(services, descriptor => descriptor.ServiceType == typeof(IGlobalProductRepository));
+    }
+
+    [Fact]
+    public void Persistence_default_keeps_normal_startup_maintenance_enabled()
+    {
+        var method = typeof(Diten.MdmService.Persistence.DependencyInjection)
+            .GetMethods()
+            .Single(candidate => candidate.Name == nameof(Diten.MdmService.Persistence.DependencyInjection.AddPersistence)
+                                 && candidate.GetParameters().Length == 3);
+        var parameter = method.GetParameters()[2];
+
+        Assert.True(parameter.HasDefaultValue);
+        Assert.Equal(true, parameter.DefaultValue);
     }
 
     private static string ReadRepoFile(string relativePath)

@@ -13,7 +13,10 @@ public static class DependencyInjection
 {
     private static bool _guidSerializerRegistered;
 
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPersistence(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool runStartupMaintenance = true)
     {
         RegisterGuidSerializer();
 
@@ -35,12 +38,15 @@ public static class DependencyInjection
         clientSettings.GuidRepresentation = GuidRepresentation.Standard;
         var client = new MongoClient(clientSettings);
 
-        // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
-        // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
-        Configurations.LegalEntityOperationalStatusMigration
-            .MigrateAsync(client.GetDatabase(databaseName))
-            .GetAwaiter()
-            .GetResult();
+        if (runStartupMaintenance)
+        {
+            // MOD-0220 FULL — one-shot, idempotent backfill of legacy LifecycleStatus → OperationalStatus, run before
+            // any request hits the typed repository (matches Platform's synchronous startup-migration convention).
+            Configurations.LegalEntityOperationalStatusMigration
+                .MigrateAsync(client.GetDatabase(databaseName))
+                .GetAwaiter()
+                .GetResult();
+        }
 
         services.AddSingleton<IMongoClient>(client);
         services.AddScoped<IMongoDatabase>(_ => client.GetDatabase(databaseName));

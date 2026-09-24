@@ -59,7 +59,11 @@ namespace Diten.Platform.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+    public static IServiceCollection AddInfrastructure(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment,
+        bool runStartupMaintenance = true)
     {
         services.AddSecretsProvider(configuration, environment, options => options.ServiceName = "Platform");
         services.ValidateRequiredSecrets(configuration, environment, "Platform", BuildSecretRequirements(configuration));
@@ -501,59 +505,62 @@ public static class DependencyInjection
         services.AddScoped<AuditOutboxProcessor>();
         services.AddHostedService<AuditOutboxWorker>();
 
-        LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
-        ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+        if (runStartupMaintenance)
+        {
+            LegacySavedViewMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // MC-2 — drop duplicate live module-service rows before the unique partial index is (re)created.
+            ModuleServiceDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
 
-        // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
-        // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
-        ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-DEDUP — collapse cross-format duplicate domain rows + backfill CodeKey BEFORE the unique
+            // partial index (ux_platform_module_domains_code_key) is (re)created, else the index build would fail.
+            ModuleDomainDeduplicationMigration.MigrateAsync(database).GetAwaiter().GetResult();
 
-        // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
-        // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
-        // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
-        // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
-        // any lingering copy in an old dev DB is a harmless orphan.
-        MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
-        var auditRetentionSeedOptions = configuration
-            .GetSection(AuditRetentionSeedOptions.SectionName)
-            .Get<AuditRetentionSeedOptions>()
-            ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
-        AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
-        PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
-        // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
-        // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
-        // row an operator created.
-        NotificationMessagingSettingsSeed.EnsureSeededAsync(
-                database,
-                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
-            .GetAwaiter().GetResult();
-        // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
-        // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
-        // Inbox. Idempotent: only unstamped rows are touched.
-        TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
-        // until FU04A adds seed content.
-        NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
-        // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
-        ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
-        // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
-        // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
-        ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
-        // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
-        // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
-        TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
-        PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
-        PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // NOTE (2026-08-28 main-sync): the pre-refactor MongoDbIndexConfigurations.ReconcileDevelopmentIndexesAsync
+            // dev-only drop was removed here — main's refactor folded drop-before-rebuild into PlatformSchemaMigrations
+            // (run first by EnsureIndexesAsync). The one index it dropped, "ux_dm_collection_instances_corporate_owner_
+            // baseline_node_active", is not a name main's manifest recreates, so it can never raise IndexOptionsConflict;
+            // any lingering copy in an old dev DB is a harmless orphan.
+            MongoDbIndexConfigurations.EnsureIndexesAsync(database).GetAwaiter().GetResult();
+            var auditRetentionSeedOptions = configuration
+                .GetSection(AuditRetentionSeedOptions.SectionName)
+                .Get<AuditRetentionSeedOptions>()
+                ?? throw new InvalidOperationException($"Configuration error: '{AuditRetentionSeedOptions.SectionName}' is missing in appsettings.json.");
+            AuditRetentionPolicySeed.EnsureSeededAsync(database, auditRetentionSeedOptions).GetAwaiter().GetResult();
+            PlatformAdministratorSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            TenantSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            NotificationTemplateSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // WC-4 — the platform-default messaging settings row. Without it QueueEmailNotificationHandler refuses at its
+            // FIRST line and no producer's notification ever reaches a template, a locale or a provider. Derived from the
+            // Smtp section so that block finally configures what it appears to configure. Idempotent; never overrides a
+            // row an operator created.
+            NotificationMessagingSettingsSeed.EnsureSeededAsync(
+                    database,
+                    configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions())
+                .GetAwaiter().GetResult();
+            // BL-042 — stamp AcceptedByUserId on tasks accepted under the OLD inferred rule. Without this every
+            // already-accepted task reverts to pendingAcceptance on deploy and the tenant's My Work empties into the
+            // Inbox. Idempotent: only unstamped rows are touched.
+            TaskAcceptanceBackfillMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // MOD-0027-FU03A (Bridge) — PlatformSeed/SystemSeed notification events; runs after templates exist. No-op
+            // until FU04A adds seed content.
+            NotificationEventSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleCatalogSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleDomainSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            ModuleServiceSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-SERVICE-CANONICAL — must run AFTER the domain/service lookups are seeded: pins catalog
+            // Domain/Service to canonical Codes and fixes the 'Servicec' DisplayName typo. Marker-gated + idempotent.
+            ModuleCatalogTaxonomyCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-DOMAIN-NORMALIZATION — runs AFTER the marker-gated canonicalization above and is itself NOT
+            // marker-gated: re-runnable and idempotent, so catalog rows that drifted after that one-shot ran
+            // (two spellings of one domain → the sidebar heading rendered twice) are healed on every startup.
+            ModuleCatalogDomainCanonicalizationMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            // FIX-TASKS-MODULE-NAME — the tasks module was renamed "Görevler" → "Görev Tanımları"; catalog
+            // DisplayName is SOFT (operator-owned) so a manifest re-push would NOT carry it. Rewrites only a
+            // row still holding the exact old seed, so it is idempotent and never clobbers an operator rename.
+            TaskModuleDisplayNameRenameMigration.MigrateAsync(database).GetAwaiter().GetResult();
+            PositionSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+            PositionAssignmentSeed.EnsureSeededAsync(database).GetAwaiter().GetResult();
+        }
 
         services.AddScoped<IOutboxEventRepository, OutboxEventRepository>();
         services.AddScoped<EventOutboxWriter>(sp => sp.GetRequiredService<IOutboxEventRepository>());
@@ -568,7 +575,7 @@ public static class DependencyInjection
         services.AddScoped<OutboxPublisherProcessor>();
         services.AddScoped<HangfireBackgroundJobExecutor>();
 
-        ConfigureHangfire(services, configuration, mongoSettings);
+        ConfigureHangfire(services, configuration, mongoSettings, runStartupMaintenance);
 
         var eventingOptions = configuration.GetSection(RabbitMqEventingOptions.SectionName).Get<RabbitMqEventingOptions>()
                               ?? new RabbitMqEventingOptions();
@@ -606,12 +613,15 @@ public static class DependencyInjection
         }
 
         services.AddHostedService<OutboxPublisherWorker>();
-        services.AddHostedService<SubscriptionPlanStartupInitializer>();
+        if (runStartupMaintenance)
+        {
+            services.AddHostedService<SubscriptionPlanStartupInitializer>();
 
-        RunMongoStartupInitialization(
-            database,
-            mongoSettings,
-            configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
+            RunMongoStartupInitialization(
+                database,
+                mongoSettings,
+                configuration.GetSection(SmtpOptions.SectionName).Get<SmtpOptions>() ?? new SmtpOptions());
+        }
 
         return services;
     }
@@ -709,7 +719,11 @@ public static class DependencyInjection
         }
     }
 
-    private static void ConfigureHangfire(IServiceCollection services, IConfiguration configuration, MongoDbSettings mongoSettings)
+    private static void ConfigureHangfire(
+        IServiceCollection services,
+        IConfiguration configuration,
+        MongoDbSettings mongoSettings,
+        bool runStartupMaintenance)
     {
         var schedulerOptions = configuration.GetSection(BackgroundJobSchedulerOptions.SectionName)
             .Get<BackgroundJobSchedulerOptions>() ?? new BackgroundJobSchedulerOptions();
@@ -745,7 +759,7 @@ public static class DependencyInjection
         });
         services.AddSingleton<IBackgroundJobScheduler, HangfireBackgroundJobScheduler>();
 
-        if (schedulerOptions.Enabled)
+        if (schedulerOptions.Enabled && runStartupMaintenance)
         {
             services.AddHangfireServer(options =>
             {

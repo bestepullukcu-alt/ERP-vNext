@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 
-var builder = WebApplication.CreateBuilder(args);
+var apiStartupExecutionMode = ApiStartupExecutionMode.Parse(args);
 var runProductLegalEntityScopeOperational =
     ProductLegalEntityScopeOperationalCommandLine.IsRequested(args);
 var runAuditIntentTemporalMigration =
@@ -31,7 +31,7 @@ var runGlobalProductRetirementRecovery =
     GlobalProductRetirementRequestRecoveryCommandLine.IsRequested(args);
 var runLskuIdentityWorkflowRecovery = LskuIdentityWorkflowRecoveryCommandLine.IsRequested(args);
 var runLskuRetirementRequestRecovery = LskuRetirementRequestRecoveryCommandLine.IsRequested(args);
-if ((runProductLegalEntityScopeOperational ? 1 : 0)
+var operationalCommandCount = (runProductLegalEntityScopeOperational ? 1 : 0)
     + (runLskuIdentityWorkflowRecovery ? 1 : 0)
     + (runLskuRetirementRequestRecovery ? 1 : 0)
     + (runAuditIntentTemporalMigration ? 1 : 0)
@@ -40,10 +40,15 @@ if ((runProductLegalEntityScopeOperational ? 1 : 0)
     + (runFirstGskuIdentityWorkflowRecovery ? 1 : 0)
     + (runGskuCorrectionRecovery ? 1 : 0)
     + (runGskuRetirementRequestRecovery ? 1 : 0)
-    + (runGlobalProductRetirementRecovery ? 1 : 0) > 1)
+    + (runGlobalProductRetirementRecovery ? 1 : 0);
+apiStartupExecutionMode.EnsureNoOperationalCommandConflict(operationalCommandCount);
+if (operationalCommandCount > 1)
 {
     throw new InvalidOperationException("MDM_OPERATIONAL_COMMAND_AMBIGUOUS");
 }
+
+var builder = WebApplication.CreateBuilder(args);
+apiStartupExecutionMode.EnsureEnvironment(builder.Environment.EnvironmentName);
 var auditIntentTemporalMigrationRequest = runAuditIntentTemporalMigration
     ? AuditIntentTemporalMigrationCommandLine.ValidateAndCreateRequest(builder.Environment, builder.Configuration)
     : null;
@@ -68,7 +73,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddPersistence(builder.Configuration, apiStartupExecutionMode.RunStartupMaintenance);
 builder.Services.AddProductLegalEntityScopeOperational(builder.Configuration);
 builder.Services.Configure<AuditIntentTemporalMigrationOptions>(
     builder.Configuration.GetSection(AuditIntentTemporalMigrationOptions.SectionName));
@@ -356,7 +361,7 @@ builder.Services.Configure<PlatformRegistrationOptions>(builder.Configuration.Ge
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IModuleManifestProvider, LegalEntityManifestProvider>();
 builder.Services.AddSingleton<IModuleManifestProvider, ProductItemSkuMasterManifestProvider>();
-builder.Services.AddHostedService<ModuleRegistrationHostedService>();
+apiStartupExecutionMode.AddModuleRegistrationHostedService(builder.Services);
 
 // MOD-0021 Faz 2 — forward MDM audit events to Platform's central store (S2S), reusing the same Platform base URL +
 // internal key as module self-registration. Actor/tenant are read from the current request's JWT.
