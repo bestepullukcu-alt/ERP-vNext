@@ -9,10 +9,13 @@
       3. IIS URL Rewrite 2.1 (http->https yonlendirme ve tenant giris yonlendirmesi icin)
       4. .NET 8 Hosting Bundle (IIS'ten SONRA kurulmali) ve .NET 8 SDK (sunucuda derleme icin)
       5. Git for Windows (main dalini cekmek icin)
-      6. MongoDB 7.0.14 - eski sunucuyla AYNI surum, ayni duzen:
+      6. MongoDB. Makinede MongoDB servisi VARSA kurulum yapilmaz, yalnizca incelenir (surum, mongod.cfg,
+         mevcut veritabanlari, replica set). Replica set yoksa ancak -EnableReplicaSet verilirse mongod.cfg
+         yedeklenip "replSetName: rs0" eklenir ve servis bir kez yeniden baslatilir.
+         Servis YOKSA MongoDB 7.0.14 eski sunucuyla AYNI surum ve duzende kurulur:
             C:\mongodb\bin, C:\mongodb\data, C:\mongodb\log, C:\mongodb\mongod.cfg
             yalnizca 127.0.0.1, replica set "rs0" (Platform servisi transaction icin bunu sart kosar)
-         + mongosh ve MongoDB Database Tools (mongorestore)
+         mongosh / mongorestore bulunamazsa C:\DitenMigration\tools\bin altina indirilir.
       7. Guvenlik duvari: yalnizca 80 ve 443 disariya acilir. 27017 ve 5000-5065 ACILMAZ.
       8. Klasorler: C:\inetpub\diten, C:\DitenMigration
 
@@ -32,6 +35,7 @@ param(
     [string]$MongoshZipUrl    = "https://downloads.mongodb.com/compass/mongosh-2.3.1-win32-x64.zip",
     [string]$MongoToolsZipUrl = "https://fastdl.mongodb.org/tools/db/mongodb-database-tools-windows-x86_64-100.10.0.zip",
     [string]$MongoRoot        = "C:\mongodb",
+    [switch]$EnableReplicaSet,
     [switch]$SkipSdk,
     [switch]$SkipGit
 )
@@ -79,7 +83,7 @@ $installType = $cv.InstallationType
 Write-Host ("  " + $os.Caption + " | surum " + $cv.DisplayVersion + $cv.ReleaseId + " | build " + $cv.CurrentBuild + " | tur: " + $installType)
 $isServer = $installType -like "Server*"
 $isCore = $installType -eq "Server Core"
-if ([int]$cv.CurrentBuild -lt 17763) { Write-Host "  UYARI: MongoDB 7.0 icin Windows Server 2019 / Windows 10 1809 veya ustu gerekir." -ForegroundColor Yellow }
+if ([int]$cv.CurrentBuild -lt 17763) { Write-Host "  BILGI: Windows Server 2016 / eski surum - MongoDB 7.0'in resmi destek listesi burada dogrulanmali; mevcut kurulum calisiyorsa sorun degil." -ForegroundColor Yellow }
 
 # ---------------------------------------------------------------------------------------------
 Step "2. IIS"
@@ -155,31 +159,54 @@ else {
 }
 
 # ---------------------------------------------------------------------------------------------
-Step "6. MongoDB 7.0.14 (replica set rs0, yalnizca 127.0.0.1)"
-$mongoBin = Join-Path $MongoRoot "bin"
-$mongod = Join-Path $mongoBin "mongod.exe"
-$mongoCfg = Join-Path $MongoRoot "mongod.cfg"
-New-Item -ItemType Directory -Force -Path $mongoBin, (Join-Path $MongoRoot "data"), (Join-Path $MongoRoot "log") | Out-Null
+Step "6. MongoDB (replica set rs0, yalnizca 127.0.0.1)"
+$toolsBin = Join-Path $work "tools\bin"
+New-Item -ItemType Directory -Force -Path $toolsBin | Out-Null
+
+# mongosh / mongorestore: once mongod'un yaninda, sonra PATH, sonra C:\DitenMigration\tools\bin; yoksa oraya indirilir.
+function Get-MongoTool([string]$exeName, [string]$zipUrl, [string]$zipName, [string]$besideDir) {
+    foreach ($dir in @($besideDir, $toolsBin)) {
+        if ($dir -and (Test-Path (Join-Path $dir $exeName))) { return (Join-Path $dir $exeName) }
+    }
+    $c = Get-Command $exeName -ErrorAction SilentlyContinue
+    if ($c) { return $c.Source }
+    $f = Get-File $zipUrl $zipName
+    $tmp = Join-Path $downloads ($zipName + "-extract")
+    Expand-Archive -Path $f -DestinationPath $tmp -Force
+    Get-ChildItem $tmp -Recurse -File | Where-Object { $_.Extension -in ".exe", ".dll" -and $_.DirectoryName -like "*\bin" } |
+        ForEach-Object { Copy-Item $_.FullName -Destination $toolsBin -Force }
+    Ok ($exeName + " indirildi: " + $toolsBin)
+    return (Join-Path $toolsBin $exeName)
+}
 
 $existingSvc = Get-CimInstance Win32_Service -Filter "Name='MongoDB'" -ErrorAction SilentlyContinue
-if ($existingSvc -and $existingSvc.PathName -notlike ("*" + $mongod + "*")) {
-    throw ("Bu makinede baska bir MongoDB servisi zaten var: " + $existingSvc.PathName + " - ustune kurulum yapilmadi. Once bana bildirin.")
-}
-
-if (Test-Path $mongod) { Skip "mongod.exe mevcut" }
-else {
-    $f = Get-File $MongoZipUrl "mongodb-7.0.14.zip"
-    $tmp = Join-Path $downloads "mongodb-extract"
-    Expand-Archive -Path $f -DestinationPath $tmp -Force
-    $binSrc = Get-ChildItem $tmp -Directory -Recurse | Where-Object { $_.Name -eq "bin" -and (Test-Path (Join-Path $_.FullName "mongod.exe")) } | Select-Object -First 1
-    Copy-Item (Join-Path $binSrc.FullName "*") -Destination $mongoBin -Recurse -Force
-    Ok ("mongod kopyalandi: " + $mongoBin)
-}
-& $mongod --version | Select-Object -First 1 | Write-Host
-
-if (Test-Path $mongoCfg) { Skip ("mongod.cfg mevcut, degistirilmedi: " + $mongoCfg) }
-else {
-    @"
+$usingExisting = [bool]$existingSvc
+if ($usingExisting) {
+    # --- Mevcut MongoDB: kurulum YAPILMAZ, yalnizca incelenir. Degisiklik yalnizca -EnableReplicaSet ile. ---
+    Write-Host ("  Mevcut MongoDB servisi bulundu: " + $existingSvc.PathName)
+    if ($existingSvc.PathName -match '^"?([^"]*mongod\.exe)"?') { $mongod = $Matches[1] } else { throw "mongod.exe yolu servis tanimindan okunamadi." }
+    $mongoCfg = $null
+    if ($existingSvc.PathName -match '(?i)--config\s+"?([^"]+?\.cfg)"?(\s|$)') { $mongoCfg = $Matches[1] }
+    $mongoBin = Split-Path $mongod -Parent
+    Write-Host ("  Servis durumu: " + $existingSvc.State + " / baslangic: " + $existingSvc.StartMode + " / hesap: " + $existingSvc.StartName)
+} else {
+    # --- Temiz kurulum: eski sunucuyla ayni duzen ---
+    $mongoBin = Join-Path $MongoRoot "bin"
+    $mongod = Join-Path $mongoBin "mongod.exe"
+    $mongoCfg = Join-Path $MongoRoot "mongod.cfg"
+    New-Item -ItemType Directory -Force -Path $mongoBin, (Join-Path $MongoRoot "data"), (Join-Path $MongoRoot "log") | Out-Null
+    if (Test-Path $mongod) { Skip "mongod.exe mevcut" }
+    else {
+        $f = Get-File $MongoZipUrl "mongodb-7.0.14.zip"
+        $tmp = Join-Path $downloads "mongodb-extract"
+        Expand-Archive -Path $f -DestinationPath $tmp -Force
+        $binSrc = Get-ChildItem $tmp -Directory -Recurse | Where-Object { $_.Name -eq "bin" -and (Test-Path (Join-Path $_.FullName "mongod.exe")) } | Select-Object -First 1
+        Copy-Item (Join-Path $binSrc.FullName "*") -Destination $mongoBin -Recurse -Force
+        Ok ("mongod kopyalandi: " + $mongoBin)
+    }
+    if (Test-Path $mongoCfg) { Skip ("mongod.cfg mevcut, degistirilmedi: " + $mongoCfg) }
+    else {
+        @"
 storage:
   dbPath: $MongoRoot\data
 systemLog:
@@ -192,39 +219,77 @@ net:
 replication:
   replSetName: rs0
 "@ | Set-Content -Path $mongoCfg -Encoding ASCII
-    Ok ("mongod.cfg yazildi: " + $mongoCfg)
-}
-
-foreach ($tool in @(@{ Name = "mongosh.exe"; Url = $MongoshZipUrl; Zip = "mongosh.zip" },
-                    @{ Name = "mongorestore.exe"; Url = $MongoToolsZipUrl; Zip = "mongodb-database-tools.zip" })) {
-    if (Test-Path (Join-Path $mongoBin $tool.Name)) { Skip ($tool.Name + " mevcut"); continue }
-    $f = Get-File $tool.Url $tool.Zip
-    $tmp = Join-Path $downloads ($tool.Zip + "-extract")
-    Expand-Archive -Path $f -DestinationPath $tmp -Force
-    Get-ChildItem $tmp -Recurse -File | Where-Object { $_.Extension -in ".exe", ".dll" -and $_.DirectoryName -like "*\bin" } |
-        ForEach-Object { Copy-Item $_.FullName -Destination $mongoBin -Force }
-    Ok ($tool.Name + " kopyalandi")
-}
-
-if (-not (Get-Service -Name MongoDB -ErrorAction SilentlyContinue)) {
+        Ok ("mongod.cfg yazildi: " + $mongoCfg)
+    }
     # Eski sunucudaki gibi LocalSystem altinda, otomatik baslayan servis.
     New-Service -Name MongoDB -DisplayName "MongoDB" -StartupType Automatic `
         -BinaryPathName ("`"" + $mongod + "`" --config `"" + $mongoCfg + "`" --service") | Out-Null
     Ok "MongoDB servisi olusturuldu"
 }
+
+Write-Host ("  mongod: " + $mongod + " | " + ((& $mongod --version | Select-Object -First 1)))
+$mongosh = Get-MongoTool "mongosh.exe" $MongoshZipUrl "mongosh.zip" $mongoBin
+$mongorestore = Get-MongoTool "mongorestore.exe" $MongoToolsZipUrl "mongodb-database-tools.zip" $mongoBin
+Write-Host ("  mongosh: " + $mongosh)
+Write-Host ("  mongorestore: " + $mongorestore)
+
+$cfgText = ""
+if ($mongoCfg -and (Test-Path $mongoCfg)) {
+    $cfgText = Get-Content $mongoCfg -Raw
+    Write-Host ("  --- " + $mongoCfg + " ---")
+    ($cfgText -split "`r?`n") | Where-Object { $_ -and $_ -notmatch '^\s*#' } | ForEach-Object { Write-Host ("    " + $_) }
+} else {
+    Write-Host "  UYARI: mongod.cfg bulunamadi; servis ayar dosyasi olmadan calisiyor olabilir." -ForegroundColor Yellow
+}
+if ($cfgText -match '(?m)^\s*bindIp:\s*(.+)$') {
+    $bind = $Matches[1].Trim()
+    if ($bind -notmatch '^(127\.0\.0\.1|localhost)$') { Write-Host ("  UYARI: bindIp = " + $bind + " (yalnizca 127.0.0.1 onerilir; degistirilmedi)") -ForegroundColor Yellow }
+    else { Ok ("bindIp = " + $bind) }
+}
+if ($cfgText -match '(?m)^\s*authorization:\s*enabled') { Write-Host "  BILGI: kimlik dogrulama ACIK - baglanti adreslerine kullanici/sifre eklenecek." -ForegroundColor Yellow }
+
 if ((Get-Service MongoDB).Status -ne "Running") { Start-Service MongoDB; Start-Sleep -Seconds 5 }
 Ok ("MongoDB servisi: " + (Get-Service MongoDB).Status)
 
-$mongosh = Join-Path $mongoBin "mongosh.exe"
-$rsState = & $mongosh "mongodb://127.0.0.1:27017/?directConnection=true" --quiet --eval "try { rs.status().ok } catch (e) { e.codeName }" 2>&1
-if ("$rsState" -match '^1$') { Skip "replica set rs0 zaten baslatilmis" }
-else {
-    $init = & $mongosh "mongodb://127.0.0.1:27017/?directConnection=true" --quiet --eval "JSON.stringify(rs.initiate({ _id: 'rs0', members: [ { _id: 0, host: 'localhost:27017' } ] }))" 2>&1
-    Write-Host ("  rs.initiate: " + $init)
-    Start-Sleep -Seconds 5
+$direct = "mongodb://127.0.0.1:27017/?directConnection=true"
+# Mevcut veritabanlari: geri yuklenecek adlarla cakisma var mi?
+$dbList = & $mongosh $direct --quiet --eval "db.getMongo().setReadPref('primaryPreferred'); db.adminCommand({ listDatabases: 1 }).databases.map(function (d) { return d.name + ' (' + (d.sizeOnDisk / 1048576).toFixed(1) + ' MB)'; }).join('; ')" 2>&1
+Write-Host ("  Mevcut veritabanlari: " + $dbList)
+$ditenDbs = @("diten_auth_v3", "diten_personalization_v3", "diten_background_jobs", "DitenERP", "DitenEnterpriseDb",
+              "DitenHumanCapital", "DitenTalentEcosystem", "diten_deven_v1", "diten_procurement_v1", "diten_ppm")
+$clash = $ditenDbs | Where-Object { "$dbList" -match ('(^|; )' + [regex]::Escape($_) + ' \(') }
+if ($clash) { Write-Host ("  UYARI: bu makinede zaten Diten veritabanlari var: " + ($clash -join ", ") + " - geri yuklemeden once karar verilmeli.") -ForegroundColor Yellow }
+else { Ok "Diten veritabani adlariyla cakisma yok" }
+
+# Replica set
+$hasReplSet = $cfgText -match '(?m)^\s*replSetName:\s*\S+'
+if (-not $hasReplSet) {
+    if ($EnableReplicaSet -and $mongoCfg) {
+        if ($cfgText -match '(?m)^replication:') { throw "mongod.cfg icinde 'replication:' bolumu var ama replSetName yok - elle duzenlenmeli." }
+        $backup = $mongoCfg + ".bak-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        Copy-Item $mongoCfg $backup
+        Add-Content -Path $mongoCfg -Value "`r`nreplication:`r`n  replSetName: rs0" -Encoding ASCII
+        Ok ("replSetName: rs0 eklendi (yedek: " + $backup + "), servis yeniden baslatiliyor")
+        Restart-Service MongoDB
+        Start-Sleep -Seconds 8
+        $hasReplSet = $true
+    } else {
+        Write-Host "  !! MongoDB replica set olarak CALISMIYOR. Platform servisi bunu sart kosar." -ForegroundColor Yellow
+        Write-Host "     Onayliyorsaniz scripti -EnableReplicaSet ile tekrar calistirin: mongod.cfg yedeklenir," -ForegroundColor Yellow
+        Write-Host "     'replication: replSetName: rs0' eklenir ve MongoDB servisi bir kez yeniden baslatilir." -ForegroundColor Yellow
+    }
 }
-$primary = & $mongosh "mongodb://localhost:27017/?replicaSet=rs0" --quiet --eval "db.hello().isWritablePrimary" 2>&1
-if ("$primary" -match 'true') { Ok "replica set rs0 hazir (PRIMARY)" } else { Write-Host ("  UYARI: rs0 PRIMARY dogrulanamadi: " + $primary) -ForegroundColor Yellow }
+if ($hasReplSet) {
+    $rsState = & $mongosh $direct --quiet --eval "try { rs.status().ok } catch (e) { e.codeName }" 2>&1
+    if ("$rsState" -match '^1$') { Skip "replica set zaten baslatilmis" }
+    else {
+        $init = & $mongosh $direct --quiet --eval "JSON.stringify(rs.initiate({ _id: 'rs0', members: [ { _id: 0, host: 'localhost:27017' } ] }))" 2>&1
+        Write-Host ("  rs.initiate: " + $init)
+        Start-Sleep -Seconds 5
+    }
+    $rsName = & $mongosh $direct --quiet --eval "try { rs.conf()._id + ' / ' + db.hello().isWritablePrimary } catch (e) { e.codeName }" 2>&1
+    if ("$rsName" -match 'true') { Ok ("replica set hazir: " + $rsName) } else { Write-Host ("  UYARI: replica set PRIMARY dogrulanamadi: " + $rsName) -ForegroundColor Yellow }
+}
 
 # ---------------------------------------------------------------------------------------------
 Step "7. Guvenlik duvari"
