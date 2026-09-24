@@ -54,7 +54,9 @@ $services = @(
     @{ Key = "platform";           Port = 5057; Proj = "services\Diten.Platform\src\Diten.Platform.API\Diten.Platform.API.csproj" },
     @{ Key = "deven";              Port = 5058; Proj = "services\Diten.DevEnablementService\src\Diten.DevEnablementService.Api\Diten.DevEnablementService.Api.csproj" },
     @{ Key = "mdm";                Port = 5059; Proj = "services\Diten.MdmService\src\Diten.MdmService.Api\Diten.MdmService.Api.csproj" },
-    @{ Key = "hcm";                Port = 5060; Proj = "services\Diten.HcmService\src\Diten.HcmService.Api\Diten.HcmService.Api.csproj" },
+    # HCM kendi Kestrel'ini localhost:5060'a baglar (UseKestrel + UseUrls, UseIIS yok) - IIS icinde (in-process) calisamaz.
+    # Out-of-process: IIS 5060'i dinler, istekleri 127.0.0.1:15060'daki HCM surecine iletir.
+    @{ Key = "hcm";                Port = 5060; OutOfProcessPort = 15060; Proj = "services\Diten.HcmService\src\Diten.HcmService.Api\Diten.HcmService.Api.csproj" },
     @{ Key = "crm";                Port = 5061; Proj = "services\Diten.CrmService\src\Diten.CrmService.Api\Diten.CrmService.Api.csproj" },
     @{ Key = "ppm";                Port = 5062; Proj = "services\Diten.PpmService\src\Diten.PpmService.Api\Diten.PpmService.Api.csproj" },
     @{ Key = "humancapital";       Port = 5063; Proj = "services\Diten.HumanCapitalService\src\Diten.HumanCapitalService.Api\Diten.HumanCapitalService.Api.csproj" },
@@ -141,7 +143,11 @@ function Write-SiteConfig($s, [string]$dir) {
     }
     $vars["ASPNETCORE_ENVIRONMENT"] = "Production"
     if ($Rehearsal -and $s.Key -eq "platform") {
-        $vars["BackgroundJobs__Enabled"] = "false"; $vars["Eventing__WorkerEnabled"] = "false"; $vars["Smtp__Enabled"] = "false"
+        # Enabled=false tek basina Platform'u acilista dusurur: EmailDispatchSweepJob her zaman kayitli ama
+        # IBackgroundJobScheduler yalnizca Hangfire yapilandirilinca kaydediliyor (ValidateOnBuild=true).
+        # DashboardEnabled=true Hangfire'i yapilandirir ama is sunucusunu BASLATMAZ - hicbir is calismaz.
+        $vars["BackgroundJobs__Enabled"] = "false"; $vars["BackgroundJobs__DashboardEnabled"] = "true"
+        $vars["Eventing__WorkerEnabled"] = "false"; $vars["Smtp__Enabled"] = "false"
     }
     if ($Rehearsal -and $s.Key -eq "auth") { $vars["Smtp__Enabled"] = "false" }
 
@@ -150,6 +156,11 @@ function Write-SiteConfig($s, [string]$dir) {
     [xml]$x = Get-Content $wcPath -Raw
     $anc = $x.SelectSingleNode("//aspNetCore")
     $anc.SetAttribute("stdoutLogEnabled", "true")
+    if ($s.OutOfProcessPort) {
+        $anc.SetAttribute("hostingModel", "outofprocess")
+        $vars["ASPNETCORE_PORT"] = [string]$s.OutOfProcessPort
+        $vars["ASPNETCORE_URLS"] = "http://127.0.0.1:" + $s.OutOfProcessPort
+    }
     $anc.SetAttribute("stdoutLogFile", ".\logs\stdout")
     $envNode = $anc.SelectSingleNode("environmentVariables")
     if ($envNode) { $anc.RemoveChild($envNode) | Out-Null }
