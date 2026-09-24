@@ -3,6 +3,8 @@ using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Models;
+using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Infrastructure.Authorization;
@@ -26,11 +28,38 @@ public sealed class UsersController : CustomBaseController
 
     [HttpGet]
     [HasPermission("auth.users.read")]
-    public async Task<IActionResult> GetAll(int page = 1, int pageSize = 20, CancellationToken ct = default)
+    public async Task<IActionResult> GetAll(
+        int page = 1,
+        int pageSize = 20,
+        [FromQuery] int start = 0,
+        [FromQuery] int length = UserListRules.DefaultLength,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] string[]? status = null,
+        [FromQuery] Guid[]? roleId = null,
+        [FromQuery] string[]? accountKind = null,
+        CancellationToken ct = default)
     {
-        var result = await _mediator.Send(new GetAllUsersQuery(page, pageSize), ct);
-        return Ok(result);
+        // WP-AUTH-USERS-LIST-QUERY-01 — any of the list parameters selects the server-side list contract
+        // ({ success, data: { items, total, filteredTotal, summary } }). None of them = the legacy page/pageSize call,
+        // which keeps answering the PaginatedResult its callers were written against.
+        if (!ListParameters.Any(Request.Query.ContainsKey))
+        {
+            var legacy = await _mediator.Send(new GetAllUsersQuery(page, pageSize), ct);
+            var data = legacy.Data!;
+            return Ok(new PaginatedResult<UserDto>(data.Items, data.Total, Math.Max(page, 1), pageSize < 1 ? UserListRules.DefaultLength : pageSize));
+        }
+
+        var list = new UserListRequest(start, length, search, orderBy, orderDir, status, roleId, accountKind);
+        var result = await _mediator.Send(new GetAllUsersQuery(List: list), ct);
+        return result.IsSuccessful
+            ? Ok(new { success = true, data = result.Data })
+            : CreateActionResultInstance(result);
     }
+
+    private static readonly string[] ListParameters =
+        ["start", "length", "search", "orderBy", "orderDir", "status", "roleId", "accountKind"];
 
     [HttpGet("{id:guid}")]
     [HasPermission("auth.users.read")]
