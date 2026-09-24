@@ -198,7 +198,7 @@ public sealed class CreateConceptNodeWithRelationshipHandler
 
         // V16 — template conformance (derived, never rejects).
         var subjectTemplates = await _templates.ListBySubjectAsync(tenantId, request.SubjectId, cancellationToken);
-        var isConforming = ConceptRelationshipGraph.IsConforming(subjectTemplates, fromTypeId, toTypeId);
+        var isConforming = ConceptRelationshipGraph.IsConforming(subjectTemplates, fromTypeId, toTypeId, relationshipType);
 
         var edge = new RelationshipEntity
         {

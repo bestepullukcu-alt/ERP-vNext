@@ -108,6 +108,11 @@ public sealed record UpdateConceptChainTemplateRequest(
     string? ModeratorRoleType = null,
     IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null);
 
+// WP-CT-BE-A — supplied-spine conformance diagnostics (read-only; the draft editor posts its live, unsaved spine).
+public sealed record ChainTemplateConformanceDiagnosticsRequest(
+    Guid SubjectId,
+    IReadOnlyList<Guid>? OrderedConceptTypeIds = null);
+
 public sealed record CreateContentConceptLinkRequest(
     Guid KnowledgeContentId,
     Guid ConceptNodeId,

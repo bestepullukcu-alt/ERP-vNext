@@ -64,6 +64,16 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptChainTemplateCommand(templateId), cancellationToken));
 
+    // WP-CT-BE-A — read-only diagnostics against a SUPPLIED (possibly unsaved) spine. POST only because the spine travels
+    // in the body; nothing is written. Read permission, not TemplateManage.
+    [HttpPost("api/crm/knowledge/concept-chain-templates/conformance-diagnostics")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ConformanceDiagnostics(
+        [FromBody] ChainTemplateConformanceDiagnosticsRequest request, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetChainTemplateConformanceDiagnosticsQuery(request.SubjectId, request.OrderedConceptTypeIds),
+            cancellationToken));
+
     // SCMM-10 (③) — maps the API branch request shape onto the application command input. Null stays null (legacy mode).
     private static IReadOnlyList<ConceptChainBranchInput>? ToBranchInputs(IReadOnlyList<ConceptChainBranchRequest>? branches)
         => branches?.Select(b => new ConceptChainBranchInput(
