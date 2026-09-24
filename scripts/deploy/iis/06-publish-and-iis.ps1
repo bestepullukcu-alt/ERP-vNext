@@ -66,7 +66,13 @@ $services = @(
     @{ Key = "gateway";            Port = 5000; Proj = "gateway\Diten.ApiGateway\Diten.ApiGateway.csproj" },
     @{ Key = "web";                Port = 5001; Proj = "frontend\Diten.Web\Diten.Web.csproj" }
 )
-if ($Only.Count -gt 0) { $services = $services | Where-Object { $Only -contains $_.Key } }
+# "powershell -File ... -Only platform,hcm" diziyi tek metin olarak gecirir; virgulle ayir.
+$Only = @($Only | ForEach-Object { $_ -split '[,; ]+' } | Where-Object { $_ })
+if ($Only.Count -gt 0) {
+    $unknown = $Only | Where-Object { ($services | ForEach-Object { $_.Key }) -notcontains $_ }
+    if ($unknown) { throw ("Bilinmeyen servis adi: " + ($unknown -join ", ") + ". Gecerli adlar: " + (($services | ForEach-Object { $_.Key }) -join ", ")) }
+    $services = @($services | Where-Object { $Only -contains $_.Key })
+}
 
 # ------------------------------------------------------------------------------------------------
 Step "0. On kontroller"
