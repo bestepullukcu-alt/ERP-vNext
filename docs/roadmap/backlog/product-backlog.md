@@ -6398,6 +6398,27 @@ boşluğu — bu sınıf hatayı geçen testler görmez, yalnız işaretleme sı
 
 ---
 
+### BL-446
+
+**CI phase1 kapısı main'de 2026-08-10'dan beri kırmızı — runner'ın dili boş, görünüm testleri düşüyor**
+
+DURUM: KAPANDI — entegrasyon dalında düzeltildi (2026-09-24, PR #122) · SAHİP: CT · BULAN: PR #122 CI'ı · KAYIT: 2026-09-24
+
+Ölçüldü: `phase1-gates` main'de son beş koşuda kırmızı (452a6be, f53e29ec, 7ea32d45, f1681da2, 5500530a); her seferinde aynı altı test:
+`ActiveSwitchBindingTests` × `Views/Tasks/FieldDefinitions/_Form.cshtml` (3 test × 2 anahtar), hata
+`MissingManifestResourceException: No manifests exist for the current culture` — görünümün 16. satırı
+`StringLocalizer.GetAllStrings(includeParentCultures: true)` (2026-08-10, be7918ed) çağırıyor; ubuntu runner'da `LANG` boş →
+süreç kültürü invariant → nötr resx olmadığı için kaynak kümesi yok. Geliştirici makinesinde tr/en olduğu için yeşil.
+Üretimde RequestLocalization her isteğe desteklenen 7 dilden birini verir; test yardımcısı (`RenderAsync`) boru hattını atlayıp
+süreç kültürünü miras alıyordu. Düzeltme: yardımcı üretimin garantisini sabitliyor (`CurrentUICulture = en`, try/finally).
+Sabotaj: yardımcıya invariant sabitlenince aynı 6 kırmızı; düzeltmeyle 12/12 ve Web 229/229.
+
+Aynı deseni kullanan diğer görünümler (`_DitenShortcuts`, WCN `_L10n`, RoleAssignments `_IndexL10n`, `_WorkflowL10n`) CI'da
+render edilmiyor; edilirse aynı sabitleme gerekir. Not: `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` bunu taklit ETMEZ
+(`new CultureInfo("en")` orada CultureNotFound verir); doğru taklit süreç içinde `CultureInfo.InvariantCulture` sabitlemek.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

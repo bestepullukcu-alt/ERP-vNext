@@ -209,6 +209,28 @@ public sealed class ActiveSwitchBindingTests : IClassFixture<WebApplicationFacto
 
     private async Task<string> RenderAsync(string viewPath)
     {
+        // The request pipeline always renders under one of the SUPPORTED cultures (RequestLocalization picks a
+        // default when the browser names none); this harness bypasses the pipeline and inherits the process
+        // culture instead. On the CI runner that is the INVARIANT culture, which has no satellite resources, so a
+        // view that reads its whole resource set (`GetAllStrings(includeParentCultures: true)`, e.g. Tasks/
+        // FieldDefinitions/_Form) throws MissingManifestResourceException there and nowhere else — measured
+        // 2026-09-24 (phase1 red on ubuntu, green on a tr/en developer machine). Pin what production guarantees.
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUiCulture = CultureInfo.CurrentUICulture;
+        CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = new CultureInfo("en");
+        try
+        {
+            return await RenderUnderCurrentCultureAsync(viewPath);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUiCulture;
+        }
+    }
+
+    private async Task<string> RenderUnderCurrentCultureAsync(string viewPath)
+    {
         using var scope = _factory.Services.CreateScope();
         var services = scope.ServiceProvider;
 
