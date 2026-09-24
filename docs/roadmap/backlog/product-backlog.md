@@ -6603,6 +6603,25 @@ süzgeciyle, 7 dilde ad; kısayol katmanı (BL-438) ile ortak kayıt. Karar geli
 
 ---
 
+### BL-456
+
+**Kullanıcı yaşam döngüsü denetlenmiyor — ekleme/silme/davet/parola sıfırlama hiçbir denetim günlüğüne yazılmıyor**
+
+DURUM: AÇIK · SAHİP: CT (Auth/Platform) · BULAN: sahip (platform kontrolü P1: "en son kayıt bu mu?") · KAYIT: 2026-09-24
+
+Ölçüldü: `CreateUserCommandHandler` ve `DeleteUserCommandHandler` ne `IRbacAuditRecorder` ne `IAuditableCommand` çağırıyor;
+Auth'un kendi günlüğü (`AuthAuditLog`) yalnız kayıt (Register), hesap türü (SetAccountKind) ve RBAC olaylarını (rol/izin/atama)
+tutuyor ve ekranı yok. Platform Denetim Günlüğü (`audit_events`) Auth olaylarını almıyor (MDM'nin S2S iletimi gibi bir köprü yok).
+Sahibin platformda gördüğü son kayıt ("Execute → AuditEvent, DataPrivacy, kiracı …2121") başka bir kiracıda bir denetim
+kaydının görüntülenmesi/maskelenmesi olayı — kullanıcı eklemeyle ilgisiz. GxP + KVKK: kimlik değişiklikleri denetlenmek zorunda.
+
+İş: (1) Auth: kullanıcı oluştur/güncelle/sil/pasifleştir/aktifleştir/davet yeniden gönder/parola sıfırla → `IRbacAuditRecorder`
+kalıbıyla `authAuditLogs` (kim, kime, önce/sonra, korelasyon); (2) Auth → Platform merkezi denetime S2S iletim (MDM `Faz 2`
+deseni) → Platform Denetim Günlüğü'nde "Kimlik" kategorisi; (3) ekran: Platform Denetim Günlüğü kiracıyı adıyla göstersin
+(bugün GUID), kategori/kiracı filtresi; Auth günlüğü için ayrı ekran gerekmez. Gerileme riski düşük (eklemeli).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
