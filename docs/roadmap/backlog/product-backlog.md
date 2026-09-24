@@ -6203,6 +6203,15 @@ captured == saved bayt bayt aynı): `applyState` filtreleri `applyViewToTable`'�
 tetiklediği search/order olayları dirty'yi eski (boş) filtrelerle hesaplıyordu. Düzeltildi (filtreler önce, sonda senkron);
 guard `list-factory-wiring.test.js` 3b — sayfanın lookup fetch'ini taklit eden bir await ile (onsuz hata görünmez).
 
+**Paket 3 notları (2026-09-24, WP-UI-LIST-SERVER-01, merge 650057798):** fabrika `dataMode:'server'` (düz sorgu: start/length/search/
+orderBy/orderDir/draw + filtreler anahtarıyla; zarf `{items,total,filteredTotal}` → DataTables); DevEnablement compact liste sorgusu
+(orderBy beyaz listesi 400, Regex.Escape arama, Id ile biten sort, TenantId ile sınırlı sayımlar); Altın Compact = **sunucu referansı**
+(`data_mode: server`), Slim = istemci (`client`, 200). Doğrulayıcı pack front matter'ını üçüncü kaynak olarak okuyor. Ajanın bulduğu:
+ilk istek DataTables'ın 0. sütunuyla (`orderBy=id`) gidiyordu → kayıtlı görünümün/sayfanın sırası. CT'nin 6 sabotajından 2'si yeşil
+kalmıştı (URL kodlama, orderDir büyük/küçük) → `list-factory-server-mode-wire-ct.test.js`. Canlı (14 geçici kayıt, sonra silindi):
+sayfalama 15/10+5, sıralama priority desc, arama 5/15, filtre `status=Passive` 8/15, Save View → yeniden yükle → uygulanıyor, Save gizli;
+telde `columns[` yok. Açık: liste sorgusu için Mongo indeksi yok (büyük kiracıda düşünülmeli); eski `personalizationClient` kırmızısı duruyor.
+
 ---
 
 ### BL-393
