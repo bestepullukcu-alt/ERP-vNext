@@ -6091,7 +6091,7 @@ Gelecek gerileme riski: düşük (yalnız projeksiyon; iş akışı kuralları d
 
 **Klavye kısayolları tek ekranda yaşıyor, yarısı hiçbir yerde yazmıyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+DURUM: KAPANDI (kısmi canlı) — `dc1e0b8b0` → integration `22074790e` (WP-UI-SHORTCUTS-01, 2026-09-24) · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
 
 Ölçüldü: kısayollar yalnız `WorkCenterNext/app.js:10038-10082`'de tanımlı ve `document`'e bağlı. Tuşlar:
 `j` sonraki, `k` önceki, `Enter`/`o` aç, `a` kabul, `r` reddet, `Escape` seçimi temizle, sekme şeridinde
@@ -6103,6 +6103,14 @@ bir kısayol katmanı yok; Görevler ekranlarında kısayol hiç çalışmıyor.
 küçük ekranlarda da erişilebilir. Yeni eylemler (devret, onaya git, soruyu cevapla) listeye oradan girer.
 Gelecek gerileme riski: orta — `document` seviyesinde tuş yakalayan ortak katman, form alanlarında ve
 diyaloglarda susmak zorunda; bunun testi baştan yazılır.
+
+**Kapanış (2026-09-24):** `wwwroot/assets/js/shared/diten-shortcuts.js` (`window.DitenShortcuts`: register/unregister/open/list) tek
+dinleyici + susma kuralı (alan, contenteditable, açık modal/offcanvas/swal, Ctrl/Cmd/Alt) + gürültülü çakışma reddi + `?` listesi
+(kayıtlı olandan üretilir, ortak diyalog görünümü, her genişlikte). WCN kaydoldu (j/k/Enter/o/Space/a/r/Esc + sekme okları), Görev
+detayı `e`/Esc (başlıktaki bağlantıya basar), Create/Edit yalnız `?` (forma harf bağlamak yarım formu gönderirdi). Metinler
+`SharedResource` 7 dil × 18 anahtar. Kanıt: +56 test, ajan 6 + CT 6 sabotaj kırmızı. Canlı (CT): `?` listesi 9 satırla açıldı,
+dialog açıkken `j` sessiz, arama kutusunda `j` harf, görev detayında `e` → Düzenle, Esc → geri. **Sahibe kalan:** WCN j/k/Enter
+(CT oturumu "süresi doldu" verdi, liste boştu), dar ekranda klavye düğmesi, `ar` sağdan sola diyalog görünümü.
 
 ---
 
@@ -6219,6 +6227,21 @@ orderBy/orderDir/status/roleId/accountKind → `{items,total,filteredTotal,summa
 Ajanın bilinçli seçimleri: varsayılan sıra createdAt desc; length>500 → 400; eski çağrıda pageSize=0 → 20. **Paket 5'e taşınan:** sayfanın
 filtre değeri `Passive`, Auth `Inactive` bekler (eşleme); `USERS_LIST_*` kodları için Web'de 7 dilli köprü; liste sorgusu için Mongo indeksi yok.
 Ajanın bildirdiği sınır ihlali: kendi `.bak` dosyasını `rm` ile sildi — yalnız o dosya, kayda geçti.
+
+**Paket 5 notları (2026-09-24, WP-UI-USERS-LIST-01, feat a69630b92 → integration dd22b4f6f):** Kullanıcılar `_ListShell` + `createList`
+(`dataMode:'server'`) üzerinde; index.js 1162 → 435; 79 tesisat ismi yok; dokunma protokolü 17 → 1 sapma; `_Filter` `Inactive`;
+rol filtresi id; KPI'lar `data.summary`'den; #10 silme onayı 7 dil; K17/#12 bilinçli (toplu uç nokta yok, `HasSelection = false`
+beyanı doğrulayıcıda tek istisna). CT: 7 ayrı sabotaj kırmızı; vitest tek başına 24 (paralel yükte iki "gerçek DataTables" testi
+4–5 sn zaman aşımı — kırılgan, `list-factory-server-mode-real-datatables` ve `governance-users-list-server-wire`, süre artırılmalı).
+Canlı (CT): tel `start/length/orderBy=email/orderDir`, filtre `status=Inactive|Invited` (0 / 7 satır, hepsi davetli), Reset, KPI 8/1/0/7,
+hızlı görünüm, silme onayı metni + çöp ikonu, "+ Ekle" var, toplu çubuk yok, iskelet ortak. **Sahibe kararlar:** (a) Users pack'i yok —
+MOD-0018-FU9 beş ekranı kapsıyor; pack şemasına ekran başına `data_mode` (ör. `screens:` haritası) eklensin mi? (b) "İşlem" menüsündeki
+fabrika varsayılanı "İçe aktar (Yakında)" Kullanıcılar'da kalsın mı? **CT'ye kalan küçükler:** silme koruması kodları (`USER_DELETE_SELF`,
+`USER_DELETE_LAST_STEWARD`) ekranda hâlâ "Delete failed." — önceden de öyleydi, 2 anahtar × 7 dil; K16/#11 dışa aktarma görünür
+sütunlar (dt-defaults, sunucu modunda yalnız sayfa — tam dışa aktarma sunucu ucu ister). **Fabrika istekleri (paket 2.1, CT):**
+`hideQuickView`/suppress, form başarı kancası (davet diyaloğu), antiforgery yardımcısı, kayıtlı filtre eşanlamı, dışa aktarma seçenekleri.
+**Kanca:** ana checkout'un dalında yok (integration main'e girene kadar oradan açılan sohbetlerde koşmaz); kök artık düzenlenen dosyanın
+worktree'sinden (a5af7f7bb).
 
 ---
 
