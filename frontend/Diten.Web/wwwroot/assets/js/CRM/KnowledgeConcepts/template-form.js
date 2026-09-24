@@ -96,6 +96,69 @@
 
     const cardinality = s => `${s.min == null || s.min === '' ? 1 : s.min}–${s.max == null || s.max === '' ? '∞' : s.max}`;
 
+    // ─── WP-CT-FE-2: type palette (left panel) ────────────────────────────────────────────────────────────────────
+    // Every type of the selected subject with: its node count (subject-scoped concept-nodes read), how many branches
+    // use it, and a "not on spine" badge when no branch uses it (the spine is derived from the branches). Rows carry
+    // draggable-ready hooks (js-palette-type / js-palette-handle) — drag behaviour is FE-4; a click is a no-op today.
+    const nodeCountByType = {};
+    let nodeCountsFor = null;      // subject id the counts belong to
+    let nodeCountsReady = false;   // false → counts unknown (loading / failed): the cell shows "—", never a fake 0
+    let nodeCountsPending = null;  // { subjectId, promise } — de-dupes the native + jQuery change double fire
+    const loadNodeCounts = subjectId => {
+        if (nodeCountsPending && nodeCountsPending.subjectId === subjectId) return nodeCountsPending.promise;
+        Object.keys(nodeCountByType).forEach(k => delete nodeCountByType[k]);
+        nodeCountsFor = subjectId || null;
+        nodeCountsReady = false;
+        const promise = (async () => {
+            if (!subjectId) return;
+            try {
+                const data = await getJson(`/concept-nodes?subjectId=${encodeURIComponent(subjectId)}&includeArchived=false`);
+                if (nodeCountsFor !== subjectId) return;   // a newer subject won the race
+                (data?.items || []).forEach(n => {
+                    if (n.isArchived || String(n.subjectId) !== String(subjectId)) return;
+                    nodeCountByType[n.conceptTypeId] = (nodeCountByType[n.conceptTypeId] || 0) + 1;
+                });
+                nodeCountsReady = true;
+            } catch { /* counts stay unknown → "—" */ }
+        })();
+        nodeCountsPending = { subjectId, promise };
+        return promise;
+    };
+    const fmt = (template, n) => String(template || '{0}').replace('{0}', String(n));
+    const swatch = c => c
+        ? `<span class="d-inline-block rounded-circle flex-shrink-0" style="width:10px;height:10px;background:${esc(c)};border:1px solid rgba(0,0,0,.15)"></span>`
+        : '';
+    const renderPalette = () => {
+        const host = document.getElementById('tplTypePalette');
+        const empty = document.getElementById('tplTypePaletteEmpty');
+        if (!host) return;
+        const subjectId = val('tplSubjectId');
+        const spine = new Set(spineFromBranches());
+        const used = new Set(branches.flatMap(b => b.steps.map(s => String(s.conceptTypeId))));
+        // Live types of the subject, plus an archived one still used by a branch (so the palette never hides a step's type).
+        const list = subjectId
+            ? types.filter(t => String(t.subjectId) === String(subjectId) && (!t.isArchived || used.has(String(t.conceptTypeId))))
+            : [];
+        if (empty) {
+            empty.textContent = subjectId ? (L.TypePaletteEmpty || '') : (L.NodePickerSubjectFirst || '');
+            empty.classList.toggle('d-none', list.length > 0);
+        }
+        host.innerHTML = list.map(t => {
+            const id = String(t.conceptTypeId);
+            const usage = branches.filter(b => b.steps.some(s => String(s.conceptTypeId) === id)).length;
+            const count = nodeCountsReady ? (nodeCountByType[id] || 0) : null;
+            const countBadge = `<span class="badge bg-label-secondary">${esc(count == null ? '—' : fmt(L.NodeCount, count))}</span>`;
+            const usageBadge = usage > 0 ? `<span class="badge bg-label-info">${esc(fmt(L.BranchUsage, usage))}</span>` : '';
+            const spineBadge = spine.has(id) ? '' : `<span class="badge bg-label-warning">${esc(L.NotOnSpine || '')}</span>`;
+            return `<li class="diten-checkitem flex-wrap js-palette-type" data-ct="${esc(id)}" draggable="false">
+                    <span class="diten-checkitem-grip js-palette-handle flex-shrink-0 opacity-50" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>
+                    ${swatch(t.color)}
+                    <span class="diten-checkitem-text text-truncate" title="${esc(t.conceptTypeName)}">${esc(t.conceptTypeName)}</span>
+                    <span class="d-flex flex-wrap gap-1 w-100 ps-4">${countBadge}${usageBadge}${spineBadge}</span>
+                </li>`;
+        }).join('');
+    };
+
     // ─── Branches builder (SCMM-10-MOD-E: Tasks-checklist vertical step rows) ─────────────────────────────────────
     // The visible branch (one per page) lists its steps as full-width `card border shadow-none` rows: drag grip
     // (SortableJS handle) + ↑↓ + order # + name + Concept-Type code badge + min–max chip + Details (collapse → Min/Max
@@ -182,6 +245,7 @@
         const total = branches.length;
         empty?.classList.toggle('d-none', total > 0);
         setVal('tplOrderedConceptTypes', spineFromBranches().join(','));
+        renderPalette();   // WP-CT-FE-2: branch usage / not-on-spine follow every structural change
         if (total === 0) { host.innerHTML = ''; wireSortable(); return; }
 
         branchPage = Math.min(Math.max(0, branchPage), total - 1);
@@ -307,7 +371,7 @@
             loadModeratorOptions(),
             getJson('/contract').catch(() => null)
         ]);
-        types = (tps?.items || []).map(t => ({ conceptTypeId: t.conceptTypeId, subjectId: t.subjectId, conceptTypeCode: t.conceptTypeCode, conceptTypeName: t.conceptTypeName, isArchived: t.isArchived }));
+        types = (tps?.items || []).map(t => ({ conceptTypeId: t.conceptTypeId, subjectId: t.subjectId, conceptTypeCode: t.conceptTypeCode, conceptTypeName: t.conceptTypeName, isArchived: t.isArchived, color: t.color }));
         types.forEach(t => {
             typeNameById[t.conceptTypeId] = `${t.conceptTypeCode} — ${t.conceptTypeName}`;
             typeCodeById[t.conceptTypeId] = t.conceptTypeCode;
@@ -380,6 +444,9 @@
         if (crumb && row) crumb.textContent = row.chainCode || (L.EditTemplate || '');
 
         renderBranches();
+        // WP-CT-FE-2: the palette renders at once (counts "—"), then again when the subject's node counts arrive.
+        await loadNodeCounts(val('tplSubjectId'));
+        renderPalette();
     };
 
     // ─── event wiring ─────────────────────────────────────────────────────────────
@@ -392,6 +459,10 @@
         const onSubjectChange = () => { if (templateReadOnly) return; branches = [{ name: '', steps: [] }]; branchPage = 0; renderBranches(); };
         subj?.addEventListener('change', () => { if (!subj.disabled) onSubjectChange(); });
         if ($) $(subj).on('change', () => { if (!subj.disabled) onSubjectChange(); });
+        // WP-CT-FE-2: a (create-mode) subject change re-reads that subject's node counts for the palette.
+        const onSubjectPalette = () => { if (subj.disabled) return; void loadNodeCounts(val('tplSubjectId')).then(renderPalette); };
+        subj?.addEventListener('change', onSubjectPalette);
+        if ($) $(subj).on('change', onSubjectPalette);
 
         // Structural builder actions.
         document.addEventListener('click', event => {

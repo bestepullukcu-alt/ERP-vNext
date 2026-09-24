@@ -208,4 +208,10 @@
   <data name="BranchCount" xml:space="preserve"><value>الفروع</value></data>
   <data name="StatusVersion" xml:space="preserve"><value>الحالة / الإصدار</value></data>
   <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} منشور</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>الأنواع</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} عُقد</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>في {0} فروع</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>خارج العمود الفقري</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>لا توجد أنواع مفاهيم لهذا الموضوع بعد.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>الروابط وغير المطابق والإصدارات — قريبًا</value></data>
 </root>

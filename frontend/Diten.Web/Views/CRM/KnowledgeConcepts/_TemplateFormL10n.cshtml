@@ -11,7 +11,9 @@
         "ModeratorHint", "ForWhomHint", "ConceptType",
         "SequenceMinTwo", "PublishedSequenceFrozen", "NewVersion", "SelectOption", "ImmutableAfterCreate",
         "RecordCreated", "RecordUpdated", "ErrorState", "AddToSequence",
-        "Prev", "Next", "BranchLabel", "Steps", "AddStep", "Details" };
+        "Prev", "Next", "BranchLabel", "Steps", "AddStep", "Details",
+        // WP-CT-FE-2: type palette (left panel) + side-panel placeholder.
+        "TypePalette", "NodeCount", "BranchUsage", "NotOnSpine", "TypePaletteEmpty", "NodePickerSubjectFirst" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

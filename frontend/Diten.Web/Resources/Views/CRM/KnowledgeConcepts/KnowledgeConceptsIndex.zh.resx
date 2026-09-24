@@ -208,4 +208,10 @@
   <data name="BranchCount" xml:space="preserve"><value>分支</value></data>
   <data name="StatusVersion" xml:space="preserve"><value>状态 / 版本</value></data>
   <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} 已发布</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>类型</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} 个节点</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>用于 {0} 个分支</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>不在主干上</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>该主题尚无概念类型。</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>连接、不符合项和版本 — 即将推出</value></data>
 </root>

@@ -208,4 +208,10 @@
   <data name="BranchCount" xml:space="preserve"><value>Branches</value></data>
   <data name="StatusVersion" xml:space="preserve"><value>Statut / version</value></data>
   <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} publiée</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>Types</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} nœuds</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>dans {0} branches</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>hors ossature</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>Ce sujet n'a pas encore de types de concept.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>Liens, non-conformités et versions — bientôt</value></data>
 </root>

@@ -208,4 +208,10 @@
   <data name="BranchCount" xml:space="preserve"><value>Dal</value></data>
   <data name="StatusVersion" xml:space="preserve"><value>Durum / sürüm</value></data>
   <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} yayında</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>Tipler</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} düğüm</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>{0} dalda</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>omurgada yok</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>Bu konunun henüz kavram tipi yok.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>Bağlantılar, uyumsuzlar ve sürümler — yakında</value></data>
 </root>

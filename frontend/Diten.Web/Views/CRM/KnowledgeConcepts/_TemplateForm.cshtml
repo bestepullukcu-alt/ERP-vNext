@@ -18,8 +18,14 @@
     <input type="hidden" id="templateFormId" />
     <input type="hidden" id="tplOrderedConceptTypes" />
 
+    @* WP-CT-FE-2 (mockup v2 Ekran 2): 3 columns — left = identity + type palette, middle = the branch builder (FE-3
+       diagram will replace it), right = side-panel placeholder (FE-5 tabs) + reference fields. Stacks below lg. Every
+       input id is unchanged, so template-form.js load/submit/spine derivation is untouched. *@
+    @* FE-6 reserves this strip for the published / read-only band. *@
+    <div id="tplReadOnlyBand" class="d-none mb-3"></div>
+
     <div class="row g-4">
-        <div class="col-12 col-lg-8">
+        <div class="col-12 col-lg-3">
             <section class="card mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
@@ -29,24 +35,24 @@
                             <select id="tplSubjectId" class="form-select tpl-select2" data-placeholder="@Localizer["SelectOption"]" required></select>
                             <div class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label for="tplChainCode" class="form-label fw-medium">@Localizer["ChainCode"] <span class="text-danger">*</span></label>
                             <input type="text" id="tplChainCode" class="form-control" maxlength="120" required />
                             <div class="form-text" id="tplChainCodeHint">@Localizer["ImmutableAfterCreate"]</div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label for="tplChainName" class="form-label fw-medium">@Localizer["ChainName"] <span class="text-danger">*</span></label>
                             <input type="text" id="tplChainName" class="form-control" maxlength="240" required />
                         </div>
                         @* SCMM-10-MOD-C: Moderator + ForWhom are TEMPLATE-level (delivery identity), not step-level.
                            Moderator = content-moderator-role published value (who presents the chain); ForWhom =
                            AudienceProfile refs (the chain's target audience). Both optional. *@
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label for="tplModeratorRoleType" class="form-label fw-medium">@Localizer["Moderator"]</label>
                             <select id="tplModeratorRoleType" class="form-select tpl-select2" data-placeholder="@Localizer["ModeratorPlaceholder"]"></select>
                             <div class="form-text">@Localizer["ModeratorHint"]</div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-12">
                             <label for="tplForWhom" class="form-label fw-medium">@Localizer["ForWhom"]</label>
                             <select id="tplForWhom" class="form-select tpl-select2" multiple data-placeholder="@Localizer["ForWhomPlaceholder"]"></select>
                             <div class="form-text">@Localizer["ForWhomHint"]</div>
@@ -59,6 +65,18 @@
                 </div>
             </section>
 
+            @* Type palette: each subject type with its node count, how many branches use it and a "not on spine"
+               badge. Rows carry draggable-ready hooks (js-palette-type / js-palette-handle); drag itself is FE-4. *@
+            <section class="card mb-4">
+                <div class="card-body p-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["TypePalette"]</h6>
+                    <ul id="tplTypePalette" class="list-unstyled d-flex flex-column gap-2 mb-0"></ul>
+                    <div id="tplTypePaletteEmpty" class="form-text">@Localizer["NodePickerSubjectFirst"]</div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-12 col-lg-6">
             @* SCMM-10 (③) branched builder — each branch is an ordered step list; the OrderedConceptTypes spine
                (min 2 distinct types) is derived from all branches. *@
             <section class="card mb-4">
@@ -77,7 +95,15 @@
             </section>
         </div>
 
-        <div class="col-12 col-lg-4">
+        <div class="col-12 col-lg-3">
+            @* FE-5: Connections / Non-conforming / Versions tabs land here. *@
+            <section class="card mb-4" id="tplSidePanel">
+                <div class="card-body p-4">
+                    <div class="text-muted small text-center py-4">
+                        <i class="bx bx-layout d-block mb-2 fs-3"></i>@Localizer["SidePanelComingSoon"]
+                    </div>
+                </div>
+            </section>
             <section class="card mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ReferenceSection"]</h6>
