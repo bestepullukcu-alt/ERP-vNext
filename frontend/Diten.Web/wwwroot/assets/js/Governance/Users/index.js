@@ -28,6 +28,7 @@ const UsersList = (function () {
     const can = (key) => window.Permissions?.has?.(key) === true;
     const canCreate = () => can('auth.users.create');
     const canUpdate = () => can('auth.users.update');
+    const isCurrentUser = (row) => { const me = window.CurrentUser || {}; const id = me.id ?? me.userId ?? me.Id ?? null; return !!id && String(row?.id) === String(id); };
     const canDelete = () => can('auth.users.delete');
     // Explicit-grant-only key (owner decision 2026-09-11): never in any default role.
     const canManageKind = () => can('auth.users.account-kind.manage');
@@ -125,13 +126,11 @@ const UsersList = (function () {
     const initOffcanvasSelect2 = () => {
         if (!window.jQuery || !$.fn.select2) return;
         [
-            { panel: '#offcanvasCreateEdit', select: '#userAccountKind', width: '100%', selectionCssClass: 'form-select' },
-            // Sits inline beside the "Change type" button, so it keeps the small, shrink-to-fit shape it had.
-            { panel: '#offcanvasDetailsPreview', select: '#oc-accountkind-select', width: 'auto', selectionCssClass: 'form-select form-select-sm' }
+            { panel: '#offcanvasCreateEdit', select: '#userAccountKind', width: '100%', selectionCssClass: 'form-select' }
         ].forEach(({ panel, select, width, selectionCssClass }) => {
             const $panel = $(panel);
             const $el = $panel.find(select);
-            if (!$el.length) return; // Razor draws neither control without auth.users.account-kind.manage.
+            if (!$el.length) return; // Razor draws the select only with auth.users.account-kind.manage.
             if ($el.hasClass('select2-hidden-accessible')) $el.select2('destroy');
             $el.select2({ dropdownParent: $panel, width, selectionCssClass, minimumResultsForSearch: Infinity });
         });
@@ -165,24 +164,13 @@ const UsersList = (function () {
         statusEl.innerText = status.title || '-';
         byId('oc-invite-pending-hint')?.classList.toggle('d-none', userStatusOf(data) !== 'Invited');
 
-        // Account kind: the badge for every reader; the change control only where the server drew it AND the
-        // snapshot agrees (the server gate is the one that matters; this keeps the two from disagreeing).
+        // Account kind: the badge, for every reader.
         const kindEl = byId('oc-accountkind');
         if (kindEl) {
             kindEl.className = `badge ${accountKindBadgeClass(data.accountKind)}`;
             kindEl.innerText = accountKindLabel(data.accountKind);
         }
-        const kindSelect = byId('oc-accountkind-select');
-        const kindBtn = byId('oc-btn-accountkind');
-        if (kindSelect) {
-            setSelectValue(kindSelect, normalizeAccountKind(data.accountKind));
-            setSelectHidden(kindSelect, !canManageKind());
-        }
-        if (kindBtn) {
-            kindBtn.dataset.userId = data.id || '';
-            kindBtn.dataset.userEmail = data.email || '';
-            kindBtn.classList.toggle('d-none', !canManageKind());
-        }
+        // No change control here (owner, 2026-09-24): the quick view is a preview; the kind is changed on the edit form.
 
         // Security metrics (from the row — no extra fetch).
         [['oc-lastlogin', data.lastLoginAt ? new Date(data.lastLoginAt).toLocaleString() : (L().Never || '')],
@@ -259,19 +247,6 @@ const UsersList = (function () {
         return json;
     };
 
-    // The quick view's "Change type" — its own audited route; the edit form's select rides "Update" instead.
-    const postAccountKind = async (id, kind) => {
-        try {
-            const res = await fetch(`/Users/api/${id}/account-kind`, { method: 'POST', credentials: 'same-origin', headers: postHeaders(true), body: JSON.stringify({ kind }) });
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error((json.errors && json.errors[0]) || json.detail || L().ErrorOccurred);
-            window.bootstrap?.Offcanvas.getInstance(byId('offcanvasDetailsPreview'))?.hide();
-            list.reload('AccountKindChanged');
-        } catch (error) {
-            console.error('[Users] Account kind change failed.', error);
-            window.showToast?.(error.message || L().ErrorOccurred, 'error');
-        }
-    };
 
     /*
      * Dev-only: the copyable set-password link (setupUrl is null in prod). ⚠ IT WEARS THE PRODUCT'S DIALOG: a raw
@@ -365,7 +340,9 @@ const UsersList = (function () {
             actions.push(adminAction('resend', full, rowJson, userStatusOf(full) === 'Invited' ? { title: L().InvitationPendingHint || '' } : null));
         }
         if (canUpdate() && full.isActive && !full.mustChangePassword) actions.push(adminAction('reset', full, rowJson));
-        if (canDelete()) actions.push({ key: 'delete', className: 'delete-record text-danger', icon: 'bx bx-trash', text: L().Delete, attrs: { 'data-json': rowJson } });
+        // Your own row offers no Delete (owner, 2026-09-24): the server refuses it anyway (BL-450), and a menu item that
+        // only ever fails is not an action. The last-steward rule stays server-side — the list cannot know it.
+        if (canDelete() && !isCurrentUser(full)) actions.push({ key: 'delete', className: 'delete-record text-danger', icon: 'bx bx-trash', text: L().Delete, attrs: { 'data-json': rowJson } });
         return window.DitenDataTable.renderActions(actions);
     };
 
@@ -408,17 +385,7 @@ const UsersList = (function () {
     };
 
     const bindEvents = () => {
-        // Change account kind (quick view) → same-origin proxy → AuthService POST /api/users/{id}/account-kind.
-        // One dialog body (window.showConfirm, BL-367); the entity line names the account and the target kind.
-        byId('oc-btn-accountkind')?.addEventListener('click', () => {
-            if (!canManageKind()) return;
-            const btn = byId('oc-btn-accountkind');
-            const id = btn?.dataset.userId;
-            const kind = normalizeAccountKind(byId('oc-accountkind-select')?.value);
-            if (!id) return;
-            window.showConfirm?.(L().ChangeAccountKind, () => postAccountKind(id, kind),
-                { entityName: `${btn?.dataset.userEmail || ''} → ${accountKindLabel(kind)}`, type: 'primary', icon: 'bx-id-card', confirmButtonText: L().ChangeAccountKind });
-        });
+        // The quick view no longer changes the account kind (owner, 2026-09-24): the edit form is the one write path.
         byId('oc-btn-edit')?.addEventListener('click', () => {
             const id = byId('oc-btn-edit')?.dataset.editId;
             if (id) list?.openEdit(id);
