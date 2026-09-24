@@ -138,6 +138,7 @@ public static class DependencyInjection
         // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
         services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
         services.AddScoped<IContentSetRepository, ContentSetRepository>();
+        services.AddScoped<IContentSetRevisionRepository, ContentSetRevisionRepository>();
 
         // MOD-0162 FU04 — KnowledgePath master (steps embedded, D2 → one collection, one repository). No delete method
         // (soft archive). The read-only consumption seam a future MOD-0155/MOD-0309 consumer reads makes no decision.
@@ -190,6 +191,11 @@ public static class DependencyInjection
         // reports bindings only: no MicroTarget, no VisitFrequencyPolicy, no CampaignTarget is ever produced here.
         services.AddScoped<IStrategyTemplateRepository, StrategyTemplateRepository>();
         services.AddScoped<Application.Features.StrategyTemplate.Binding.StrategyTemplateBindingValidator>();
+        // WP-ST-SCOPE - the play scope write gate. Scoped like every other write-path component; it holds the shared
+        // read-only reference/MDM seams (reused from the campaign/cycle-period path) and no repository. The scope-options
+        // handler is a MediatR handler, auto-registered by assembly scan; its seams are already registered above/in
+        // Infrastructure (IReferenceDataCatalogReader, ICyclePeriodLegalEntityCatalog, ITerritoryBusinessUnitCatalog).
+        services.AddScoped<Application.Features.StrategyTemplate.Services.StrategyTemplateScopeWriteValidator>();
         services.AddScoped<
             Application.Features.StrategyTemplate.Binding.IStrategyTemplateReader,
             Application.Features.StrategyTemplate.Binding.StrategyTemplateReader>();
@@ -612,6 +618,20 @@ public static class DependencyInjection
             map.GetMemberMap(x => x.PolicyId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
 
+        // SCMM-15 (CAND-CAP-0011) — ContentSetRevision (frozen manifest). ContentSetId takes the string-Guid convention
+        // (the new-aggregate class-map trap); the snapshot value objects reuse the already-registered ContentSet* maps.
+        // ContentSetReviewDecision carries no Guid member — registered so the driver maps it explicitly, not anonymously.
+        Map<ContentSetRevision>(map =>
+            map.GetMemberMap(x => x.ContentSetId).SetSerializer(stringGuid));
+        Map<ContentSetReviewDecision>(_ => { });
+        // SCMM-16B — the rendered-artifact pointer. ContentId is a FU01 content id and takes the same string-Guid
+        // convention (the new-aggregate class-map trap) so it round-trips as a string rather than a binary sub type.
+        Map<ContentSetRenderedArtifact>(map =>
+            map.GetMemberMap(x => x.ContentId).SetSerializer(stringGuid));
+        // SCMM-17 — the release state. The pinned released-artifact content id takes the same string-Guid convention.
+        Map<ContentSetReleaseState>(map =>
+            map.GetMemberMap(x => x.ReleasedArtifactContentId).SetSerializer(stringGuid));
+
         Map<KnowledgeExternalReference>(_ => { });
 
         // MOD-0162 FU03 — Concept graph. Every Guid FK takes the string-Guid convention like every other CRM aggregate:
@@ -776,6 +796,11 @@ public static class DependencyInjection
         {
             map.GetMemberMap(t => t.VersionLineageId).SetSerializer(stringGuid);
             map.GetMemberMap(t => t.SupersededByTemplateId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+            // WP-ST-SCOPE - the legal-entity scope reference is a new Guid FK, so it takes the same string-Guid
+            // convention as every other CRM FK. Without this it would store as binary (sub-type 4) while any by-ref
+            // filter serializes a string, and the scope lookup would silently return nothing (the new-field class-map
+            // trap). CountryScope / BusinessUnitId / ScopeType are strings and AutoMap handles them.
+            map.GetMemberMap(t => t.LegalEntityId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
         });
         if (!BsonClassMap.IsClassMapRegistered(typeof(StrategyTemplateSegmentBinding)))
         {

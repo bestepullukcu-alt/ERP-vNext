@@ -8,6 +8,11 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!-- SCMM-16B (CAND-CAP-0011) — PDF render engine for ContentSetRevision artifacts. PDFsharp/MigraDoc 6.x is MIT
+         (no commercial or AGPL restriction) and cross-platform. The first PDF dependency in CrmService. -->
+    <PackageReference Include="PDFsharp-MigraDoc" Version="6.1.1" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Diten.CrmService.Application\Diten.CrmService.Application.csproj" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
+using Diten.CrmService.Application.Features.StrategyTemplate.Services;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using TemplateEntity = Diten.CrmService.Domain.Entities.StrategyTemplate;
@@ -27,6 +28,16 @@ internal static class StrategyTemplateTestDoubles
         context.SetTenant(id);
         return context;
     }
+
+    /// <summary>WP-ST-SCOPE — a default scope write validator for handler construction. With nothing published and a
+    /// referenceable verdict, a tenant-scoped play (the builder default, no country/LE/BU) needs no I/O and passes, so
+    /// every pre-scope test keeps working unchanged. Scope-specific tests supply configured doubles instead.</summary>
+    public static StrategyTemplateScopeWriteValidator DefaultScope(
+        CampaignScopeTestDoubles.FakeReferenceValidator? references = null,
+        CampaignScopeTestDoubles.FakeLegalEntityValidator? legalEntities = null)
+        => new(
+            references ?? new CampaignScopeTestDoubles.FakeReferenceValidator(),
+            legalEntities ?? new CampaignScopeTestDoubles.FakeLegalEntityValidator());
 }
 
 /// <summary>Template store. Reads hand back a COPY, exactly as a document store does, so a handler that mutates what it
@@ -117,6 +128,9 @@ internal sealed class FakeStrategyTemplateRepository : IStrategyTemplateReposito
             TemplateVersion = source.TemplateVersion,
             VersionLineageId = source.VersionLineageId,
             SupersededByTemplateId = source.SupersededByTemplateId,
+            ScopeType = source.ScopeType,
+            CountryScope = source.CountryScope,
+            LegalEntityId = source.LegalEntityId,
             BusinessUnitId = source.BusinessUnitId,
             Description = source.Description,
             Notes = source.Notes,

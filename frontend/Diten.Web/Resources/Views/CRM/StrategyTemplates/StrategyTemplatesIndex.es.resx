@@ -29,10 +29,34 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Aquí no se verifica si un SKU pertenece al producto seleccionado: compruébelo usted mismo.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Contenido</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Solo se puede enlazar contenido publicado y no archivado, fijado a esa versión exacta.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Solo se puede enlazar un knowledge-path o content-engagement-journey publicado; las referencias se fijan a la versión (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Contenido</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Tipo de contenido</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>Qué relato — contenido</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Contenido — qué relato</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>fijado</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>Ruta de conocimiento</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>Recorrido</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>No hay más contenido para añadir.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>publicado · fijado</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>borrador · no seleccionable</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>archivado · no seleccionable</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>No hay contenido disponible para enlazar.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>Historial de versiones</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>actual</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>activo</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>borrador</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>archivado</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Usar en campaña</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>Disponible con la integración de campañas.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Solo lectura — crea una nueva versión para editar.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>Sin SKU especificado</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>Unidad de negocio / Territorio</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Última actualización {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Los enlaces son inmutables; solo lectura.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>Alcance de {segments} segmentos en {scope}, con {products} productos (Σ{weight}%) y {contents} contenidos fijados.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>SIN ELIMINACIÓN — los planes solo se archivan; las versiones activas son inmutables.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Crear plantilla de estrategia</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Un ritmo declarado registra la intención del autor. No es vinculante y el resolutor de frecuencia no lo lee.</value></data>
   <data name="Description" xml:space="preserve"><value>Descripción</value></data>
@@ -48,7 +72,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>Referencie una política activa existente, declare un ritmo no vinculante o elija ninguno. Desde aquí nunca se escribe una política.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>Intención de frecuencia</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>Política de frecuencia de visitas</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>Con qué frecuencia — intención</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Intención de frecuencia — Con qué frecuencia</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>Frecuencia</value></data>
   <data name="Frozen" xml:space="preserve"><value>congelado</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>Este plan está activo, por lo que sus enlaces están congelados. Cree una nueva versión para cambiarlos; el nombre y las notas siguen editables.</value></data>
@@ -66,18 +90,30 @@
   <data name="NewVersion" xml:space="preserve"><value>Nueva versión</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>¿Crear una nueva versión borrador de este plan? La versión actual sigue siendo legible.</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>Sin contenido enlazado. Entonces el plan no tiene dimensión de contenido.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Aún no hay contenido — elige el relato que contará este plan.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>Un plan enlaza la identidad de un segmento. Nunca lista ni cuenta a las personas que contiene.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>Sin línea de producto. Entonces el plan no tiene dimensión de producto.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>Ningún segmento enlazado. Un plan sin segmento no responde a «¿quién?».</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Aún no hay líneas de producto — añade los productos que lleva este plan.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Aún no hay segmentos — elige a quién se aplica el plan.</value></data>
   <data name="Notes" xml:space="preserve"><value>Notas</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Playbooks reutilizables que enlazan un segmento, una intención de frecuencia, una mezcla producto/SKU y contenido. Una plantilla enlaza; nunca produce.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Toda la empresa</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Todos los países</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Nueva jugada</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Plantillas que vinculan alcance, segmento, peso de producto e historia. Sin eliminación: solo archivo.</value></data>
+  <data name="Play" xml:space="preserve"><value>Jugada</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Jugadas estratégicas</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>jugadas</value></data>
+  <data name="Scope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>País</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Entidad jurídica</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Inquilino</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Pasivo</value></data>
   <data name="Percentage" xml:space="preserve"><value>Cuota %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Período</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>No tiene permiso para consultar esta lista.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Líneas de producto</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>Qué — mezcla de producto y SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Producto + SKU% — Qué</value></data>
   <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Activado.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Archivado.</value></data>
@@ -92,7 +128,7 @@
   <data name="Segment" xml:space="preserve"><value>Segmento</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>Segmentos</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>Un segmento enlazado queda fijado a esa versión exacta. La lista es una enumeración: aquí no se aplica unión ni exclusión.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>Quién — segmentos</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Segmentos — Quién</value></data>
   <data name="SelectOption" xml:space="preserve"><value>Seleccionar…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>Todos</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>Filas SKU</value></data>
@@ -104,16 +140,131 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Plantillas de estrategia</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Tipo de sujeto</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>A qué apunta el plan. Inmutable tras la creación; cada segmento enlazado debe coincidir.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>Persona</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>Organización</value></data>
   <data name="Superseded" xml:space="preserve"><value>reemplazado</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Código</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Clave de negocio estable. Nunca se renombra: cambie el nombre en su lugar.</value></data>
   <data name="TemplateName" xml:space="preserve"><value>Nombre</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Estado</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Versión</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>Las cuotas SKU de cada línea asignada deben sumar exactamente 100,00. Nada se redondea ni se normaliza por usted.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Las cuotas de todas las líneas de producto deben sumar exactamente 100,00. Nada se redondea ni se normaliza por usted.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Total</value></data>
   <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
   <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Ámbito — Dónde</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Nivel de ámbito</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Todo el inquilino</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>País</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Entidad legal</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>toda la empresa</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>un solo mercado</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>entidad legal</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>UN · territorio</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>País</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Entidad legal</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>Unidad de negocio</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Filtrar unidades de negocio por país</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Determina el ámbito al que se aplica esta estrategia: todo el inquilino, o un solo país, entidad legal o unidad de negocio.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>El ámbito puede cambiarse. Solo se conserva la referencia del nivel elegido.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>El conjunto de referencia gobernado aún no está publicado. Un operador debe publicarlo.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>La dependencia no respondió, por lo que no se pudo cargar esta lista.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Ningún plan territorial coincide, por lo que se muestra la lista publicada completa.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>Ámbito resuelto</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>aún no resuelto</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>¿Qué hará esta jugada?</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>DÓNDE</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>QUIÉN</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>FRECUENCIA</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>QUÉ</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>HISTORIA</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>segmentos</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>líneas de producto</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>peso %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>contenidos</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>Secciones</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>Identidad</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>Segmentos</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>Frecuencia</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>Productos + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>Contenido</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>Validación MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>Ciclo de vida</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>Borrador</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>Activo</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Guardar borrador</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Guardar (activo)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Guardar y activar</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Guardar (bloqueado)</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>Congela la jugada actual y abre una copia nueva</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>Una StrategyTemplate no produce nada por sí sola: vincula un segmento, una política de frecuencia de visita, productos y contenido aprobado en una sola plantilla. La ejecución ocurre a través de CyclePeriod y Campaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>La frecuencia se gestiona en las Políticas de frecuencia de visita</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — este campo es solo una referencia. La frecuencia de visita real se guarda por objetivo/segmento en un módulo aparte.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>Abrir políticas ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Abrir política</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» se dirige a {who} con {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Esta jugada</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>Sin especificar</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>Vinculado a una política</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>Intención declarada</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} visitas / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} listo</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>Se requieren código y nombre.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>Todo el inquilino — alcance no restringido.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>Vincula al menos un segmento.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>{n} segmento(s) vinculado(s).</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>El puntero está vacío — es opcional.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>Vinculado a una política de frecuencia de visita.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>Intención declarada (no vinculante).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>La intención de frecuencia está incompleta.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>Añade al menos una línea de producto.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>La asignación de SKU no es 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} línea(s) de producto.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>El contenido es opcional.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>{n} contenido(s) vinculado(s).</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>El runtime valida cuando se elige un producto.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>Todas las líneas tienen un producto.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>Algunas líneas no tienen producto.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>¿A quién se dirige esta jugada, con qué historia y con qué ponderación de productos?</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>persona / médico</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>organización / cuenta</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>principal</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>secundario</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>nota de exclusión</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} segmento · tipo {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>No hay más segmentos para añadir.</value></data>
+  <!-- WP-ST-EDIT-M — etiquetas choice-box del MODO de intención de frecuencia (título + subtítulo) + FrequencyType/PeriodType. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>Referencia de política</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>Intención declarada</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>Ninguno</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>el motor la lee</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>solo documentación</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>sin referencia</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>Semanal</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>Quincenal</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>Mensual</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>Basado en ciclo</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>Personalizado</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>Día</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>Semana</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>Mes</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>Trimestre</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>Ciclo</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>Período de campaña</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>Personalizado</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Total de productos</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Los productos se validan con el catálogo MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Añadir un producto…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>opcional</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Producto</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Porcentaje</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Distribuir equitativamente</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>El porcentaje de producto no es 100%. Total calculado {total}% — diferencia de {diff} puntos. Corrija las filas para guardar.</value></data>
 </root>

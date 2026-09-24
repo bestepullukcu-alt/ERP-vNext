@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>Kayıt başarıyla oluşturuldu.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>Kayıt aktifleştirildi.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>Kaydedildi, ancak aktifleştirilemedi.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>Kayıt başarıyla silindi.</value>
   </data>

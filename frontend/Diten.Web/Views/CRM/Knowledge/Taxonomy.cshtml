@@ -296,7 +296,10 @@
                 <label class="form-label" for="taxStatus">@Localizer["Status"]</label>
                 <select id="taxStatus" class="form-select tax-select2" data-placeholder="@Localizer["SelectOption"]"></select>
             </div>
-            <div class="mb-3"><label class="form-label" for="taxSortOrder">@Localizer["SortOrder"]</label><input id="taxSortOrder" type="number" class="form-control" value="0" /></div>
+            @* WP-KNOWLEDGE-SORTORDER-UX: the sort order is no longer typed by hand — a new row auto-appends to the end of
+               its scope (taxonomy.js) and order is changed in the drag-drop "Reorder" panel. The input stays (hidden) so
+               the value still rides the create/update payload; the field is never shown to the user. *@
+            <div class="mb-3 d-none"><label class="form-label" for="taxSortOrder">@Localizer["SortOrder"]</label><input id="taxSortOrder" type="number" class="form-control" value="0" /></div>
             <div class="mb-3"><label class="form-label" for="taxDescription">@Localizer["Description"]</label><textarea id="taxDescription" class="form-control" rows="2"></textarea></div>
             <div class="d-flex justify-content-end gap-2">
                 <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
@@ -306,10 +309,35 @@
     </div>
 </div>
 
+@* WP-KNOWLEDGE-SORTORDER-UX: drag-drop "Reorder" panel — a SEPARATE flat sortable list (never the DataTable tbody, which
+   would break the grid's paging/sort/redraw). Renders the active rows of the current tab in sort order; Save renumbers
+   10/20/30… and persists each changed row through the existing update endpoint. Topics are scoped to a parent Subject. *@
+<div class="offcanvas offcanvas-end" tabindex="-1" id="taxonomyReorderCanvas">
+    <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title mb-0" id="taxonomyReorderTitle">@Localizer["Reorder"]</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="@Localizer["Cancel"]"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="form-text mb-3" id="taxonomyReorderHelp">@Localizer["ReorderHelp"]</div>
+        <div class="mb-3 d-none" id="taxReorderSubjectWrap">
+            <label class="form-label" for="taxReorderSubject">@Localizer["SubjectId"]</label>
+            <select id="taxReorderSubject" class="form-select"></select>
+        </div>
+        <ul class="list-group mb-3" id="taxReorderList"></ul>
+        <div id="taxReorderEmpty" class="form-text mb-3 d-none">@Localizer["EmptyState"]</div>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-label-secondary" data-bs-dismiss="offcanvas">@Localizer["Cancel"]</button>
+            <button type="button" class="btn btn-primary" id="taxonomyReorderSave">@Localizer["SaveOrder"]</button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/CRM/Knowledge/_IndexL10n.cshtml" />
     <script src="~/assets/js/CRM/Knowledge/index.l10n.js" asp-append-version="true"></script>
     <script>window.KnowledgeTaxonomyCanManage = @(canManage ? "true" : "false");</script>
+    @* WP-KNOWLEDGE-SORTORDER-UX: SortableJS for the flat drag-drop reorder list (same vendor KnowledgePaths uses). *@
+    <script src="~/assets/vendor/libs/sortablejs/sortable.js" asp-append-version="true"></script>
     <script src="~/assets/js/CRM/Knowledge/taxonomy.js" asp-append-version="true"></script>
 }

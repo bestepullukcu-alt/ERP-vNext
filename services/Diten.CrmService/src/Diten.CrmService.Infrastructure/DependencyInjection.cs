@@ -70,6 +70,16 @@ public static class DependencyInjection
         services.AddScoped<Application.Features.ConsentPreference.IContactConsentPreferenceReader,
             ConsentPreference.NullContactConsentPreferenceReader>();
 
+        // SCMM-16B (CAND-CAP-0011) — ContentSetRevision render pipeline. The PDF renderer is stateless (singleton). The
+        // artifact store is a typed Gateway client that forwards the caller's token to the MOD-0262-FU01 document
+        // repository (fail-closed: a store failure fails the render). Platform/FU01 is consumed as-is, never modified.
+        services.AddSingleton<
+            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentSetRevisionRenderer,
+            ContentComposition.Rendering.PdfSharpContentSetRevisionRenderer>();
+        services.AddHttpClient<
+            Application.Features.ContentComposition.ContentSetRevisions.Rendering.IContentArtifactStore,
+            ContentComposition.Rendering.HttpContentArtifactStore>();
+
         // MOD-0167 FU02 - class-X criterion VALUE proof (MDM global product / product / brand) over the Gateway.
         // Deliberately cacheless, 3s budget, one transient retry; 404 makes the rule un-authorable (400) and an
         // unreachable dependency is a 503 with nothing persisted. It never derives membership.

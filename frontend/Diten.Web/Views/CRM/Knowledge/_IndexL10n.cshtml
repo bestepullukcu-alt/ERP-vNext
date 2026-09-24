@@ -19,7 +19,9 @@
         "Deprecated", "AxisAccountType", "AxisContactType", "AxisMedicalSpecialty", "AxisCustom", "SelectValues",
         "CustomAxisPlaceholder", "CustomValuesPlaceholder",
         // WP-MOD0162-SUBJECT-UI: Global Product picker graceful-degradation reasons (JS reads L[reason]).
-        "GlobalProductPickerUnavailable", "GlobalProductEndpointMissing", "GlobalProductPermissionMissing" };
+        "GlobalProductPickerUnavailable", "GlobalProductEndpointMissing", "GlobalProductPermissionMissing",
+        // WP-KNOWLEDGE-SORTORDER-UX: the drag-drop "Reorder" panel labels (JS reads L.Reorder etc.).
+        "Reorder", "ReorderSubjects", "ReorderTopics", "ReorderProfiles", "ReorderHelp", "SaveOrder" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
     values["Active"] = Localizer["Active"].Value;
     values["Passive"] = Localizer["Passive"].Value;

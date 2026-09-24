@@ -1,0 +1,105 @@
+@model Diten.Web.Models.CRM.StrategyTemplateEditViewModel
+@using Diten.Web.Views.CRM.StrategyTemplates
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
+
+@*
+    WP-ST-EDIT-B — the Düzenle/Oluştur right-hand sticky panel, mirroring the VisitFrequencyPolicies editor
+    (_Editor.cshtml side aside): a live "BU OYUN NE YAPACAK?" summary (recipe + stat tiles), a "BÖLÜMLER" checklist
+    (✓/!/– + "N/M hazır"), and the "YAŞAM DÖNGÜSÜ" actions. It is READ-ONLY over the form: form.js derives every value
+    from the real form state — no value is authored here. The save buttons submit the existing MVC form through the
+    `form="strategyTemplateForm"` attribute, so the create/update flow is untouched; New version / Archive reuse the
+    existing template endpoints exactly as details.js does.
+*@
+@{
+    var isEdit = Model.TemplateId.HasValue;
+    var statusLower = (Model.TemplateStatus ?? "draft").ToLowerInvariant();
+    var isActive = statusLower == "active";
+}
+
+<div class="st-side-panel">
+
+    @* ── BU OYUN NE YAPACAK? — live recipe + stat tiles ───────────────────────── *@
+    <section class="card st-card mb-3">
+        <div class="card-body p-3">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-bulb dt-card-icon" aria-hidden="true"></i>@Localizer["WhatTitle"]</h6>
+            <dl class="st-recipe" id="stRecipe">
+                <div class="st-recipe-row"><dt>@Localizer["RecipeWhere"]</dt><dd id="stRecipeWhere">@Localizer["RecipeNone"]</dd></div>
+                <div class="st-recipe-row"><dt>@Localizer["RecipeWho"]</dt><dd id="stRecipeWho">@Localizer["RecipeNone"]</dd></div>
+                <div class="st-recipe-row"><dt>@Localizer["RecipeHowOften"]</dt><dd id="stRecipeHowOften">@Localizer["RecipeNone"]</dd></div>
+                <div class="st-recipe-row"><dt>@Localizer["RecipeWhat"]</dt><dd id="stRecipeWhat">@Localizer["RecipeNone"]</dd></div>
+                <div class="st-recipe-row"><dt>@Localizer["RecipeStory"]</dt><dd id="stRecipeStory">@Localizer["RecipeNone"]</dd></div>
+            </dl>
+            <p class="st-recipe-sentence" id="stSummarySentence"></p>
+        </div>
+        <div class="st-stats">
+            <div class="st-stat"><span class="st-stat-value" id="stStatSegments">0</span><span class="st-stat-label">@Localizer["StatSegments"]</span></div>
+            <div class="st-stat"><span class="st-stat-value" id="stStatProducts">0</span><span class="st-stat-label">@Localizer["StatProductLines"]</span></div>
+            <div class="st-stat"><span class="st-stat-value" id="stStatWeight">0</span><span class="st-stat-label">@Localizer["StatWeightTotal"]</span></div>
+            <div class="st-stat"><span class="st-stat-value" id="stStatContents">0</span><span class="st-stat-label">@Localizer["StatContents"]</span></div>
+        </div>
+    </section>
+
+    @* ── BÖLÜMLER — live checklist ─────────────────────────────────────────────── *@
+    <section class="card st-card mb-3">
+        <div class="card-body p-3">
+            <div class="st-sections-head">
+                <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-list-check dt-card-icon" aria-hidden="true"></i>@Localizer["SectionsTitle"]</h6>
+                <span class="st-ready-pill" id="stReadyPill"></span>
+            </div>
+            <div class="st-ready-track"><div class="st-ready-bar" id="stReadyBar"></div></div>
+            <ul class="st-checklist" id="stChecklist">
+                <li class="st-check" data-check="identity"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecIdentity"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="scope"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecScope"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="segments"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecSegments"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="frequency"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecFrequency"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="products"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecProducts"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="content"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["ChkSecContent"]</span><span class="st-check-detail"></span></span></li>
+                <li class="st-check" data-check="mdm"><i class="bx st-check-icon"></i><span class="st-check-body"><span class="st-check-title">@Localizer["MdmValidation"]</span><span class="st-check-detail"></span></span></li>
+            </ul>
+        </div>
+    </section>
+
+    @* ── YAŞAM DÖNGÜSÜ — status + actions (save buttons submit the existing MVC form) ─ *@
+    <section class="card st-card mb-3">
+        <div class="card-body p-3">
+            <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-refresh dt-card-icon" aria-hidden="true"></i>@Localizer["LifecycleActionsTitle"]</h6>
+            @* WP-ST-EDIT-C — the Geçerlilik dates moved here from the removed _Form Lifecycle card. They sit OUTSIDE the
+               <form> element (this panel is a sibling aside), so each input carries form="strategyTemplateForm" to stay
+               in the submission — the same association the save buttons already use. Model binding is unchanged. *@
+            <div class="st-life-dates mb-3">
+                <div class="mb-2">
+                    <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
+                    <input asp-for="EffectiveFrom" form="strategyTemplateForm" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
+                    <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
+                </div>
+                <div>
+                    <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
+                    <input asp-for="EffectiveTo" form="strategyTemplateForm" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
+                </div>
+            </div>
+            <div class="st-life-tabs" role="group" aria-label="@Localizer["LifecycleActionsTitle"]">
+                <span class="st-life-tab @(isActive ? "" : "is-current")">@Localizer["LifecycleDraftTab"]</span>
+                <span class="st-life-tab @(isActive ? "is-current" : "")">@Localizer["LifecycleActiveTab"]</span>
+            </div>
+            <div class="st-life-actions">
+                @* WP-ST-EDIT-W — the primary Save is DYNAMIC: form.js rewrites its label and enabled state from the live
+                   readiness (Kaydet aktif / ve aktifleştir / engellendi) and sets the #activateAfterSave flag on click.
+                   "Taslak kaydet" always saves as-is (flag false). Both still submit the same MVC form. *@
+                <button type="submit" form="strategyTemplateForm" id="btnPrimarySave" class="btn btn-primary w-100" data-mode="save">@Localizer["Save"]</button>
+                <button type="submit" form="strategyTemplateForm" id="btnSaveDraft" class="btn btn-label-secondary w-100">@Localizer["SaveDraft"]</button>
+                @if (isEdit)
+                {
+                    <div class="st-life-divider"></div>
+                    <button type="button" class="btn btn-label-secondary w-100 st-life-newversion" id="btnPanelNewVersion" data-id="@Model.TemplateId">
+                        <span class="st-life-newversion-title">@Localizer["NewVersion"]</span>
+                        <span class="st-life-newversion-sub">@Localizer["NewVersionDetailTpl"]</span>
+                    </button>
+                    <button type="button" class="btn btn-label-danger w-100 st-life-archive" id="btnPanelArchive" data-id="@Model.TemplateId">@Localizer["ArchiveStrategyTemplate"]</button>
+                }
+            </div>
+        </div>
+    </section>
+
+    <div class="st-side-foot">@Localizer["SidePanelFootNote"]</div>
+</div>

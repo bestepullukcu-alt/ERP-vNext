@@ -7,30 +7,44 @@
     Layout = "_LayoutTenantShell";
 }
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <div>
-        <h5 class="mb-0">@Localizer["EditStrategyTemplate"]</h5>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates">@Localizer["StrategyTemplatesTitle"]</a></li>
-                <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates/Details/@Model.TemplateId">@Model.TemplateCode</a></li>
-                <li class="breadcrumb-item active text-primary">@Localizer["EditStrategyTemplate"]</li>
-            </ol>
-        </nav>
+@* WP-ST-EDIT-B — two-column editor (mirrors the VisitFrequencyPolicies _Editor layout): left = the existing _Form
+   sections, right = a sticky panel (live summary + BÖLÜMLER checklist + YAŞAM DÖNGÜSÜ actions). The panel's save
+   buttons submit this same form via form="strategyTemplateForm", so the MVC update flow is unchanged. *@
+<div class="st-editor-scope">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h5 class="mb-0">@Localizer["EditStrategyTemplate"]</h5>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates">@Localizer["StrategyTemplatesTitle"]</a></li>
+                    <li class="breadcrumb-item"><a href="/CRM/StrategyTemplates/Details/@Model.TemplateId">@Model.TemplateCode</a></li>
+                    <li class="breadcrumb-item active text-primary">@Localizer["EditStrategyTemplate"]</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/CRM/StrategyTemplates/Details/@Model.TemplateId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
+        </div>
     </div>
-    <div class="d-flex align-items-center gap-2">
-        <a href="/CRM/StrategyTemplates/Details/@Model.TemplateId" class="btn btn-label-secondary">@Localizer["Cancel"]</a>
-        <button type="submit" form="strategyTemplateForm" class="btn btn-primary">@Localizer["Save"]</button>
+
+    <div class="st-editor-layout">
+        <div class="st-editor-main">
+            <form asp-action="Edit" asp-route-id="@Model.TemplateId" method="post" id="strategyTemplateForm" class="needs-validation" novalidate>
+                @Html.AntiForgeryToken()
+                <partial name="~/Views/CRM/StrategyTemplates/_Form.cshtml" model="Model" />
+            </form>
+        </div>
+        <aside class="st-editor-side">
+            <div class="st-side-sticky">
+                <partial name="~/Views/CRM/StrategyTemplates/_SidePanel.cshtml" model="Model" />
+            </div>
+        </aside>
     </div>
 </div>
 
-<form asp-action="Edit" asp-route-id="@Model.TemplateId" method="post" id="strategyTemplateForm" class="needs-validation" novalidate>
-    @Html.AntiForgeryToken()
-    <partial name="~/Views/CRM/StrategyTemplates/_Form.cshtml" model="Model" />
-</form>
-
 @section Styles {
     <link rel="stylesheet" href="~/assets/vendor/libs/flatpickr/flatpickr.css" />
+    <link rel="stylesheet" href="~/assets/css/strategy-create.css" asp-append-version="true" />
 }
 
 @section Scripts {

@@ -2,6 +2,8 @@ using Diten.CrmService.Application.Common;
 using Diten.CrmService.Application.Common.Models;
 using Diten.CrmService.Application.Features.StrategyTemplate.Binding;
 using Diten.CrmService.Application.Features.StrategyTemplate.Commands;
+using Diten.CrmService.Application.Features.StrategyTemplate.Rules;
+using Diten.CrmService.Application.Features.StrategyTemplate.Services;
 using Diten.CrmService.Domain.Entities;
 using Diten.CrmService.Domain.Repositories;
 using MediatR;
@@ -25,19 +27,22 @@ public sealed class CreateStrategyTemplateHandler : IRequestHandler<CreateStrate
     private readonly IStrategyTemplateRepository _templates;
     private readonly StrategyTemplateBindingValidator _bindings;
     private readonly IStrategyTemplateProductReferenceValidator _references;
+    private readonly StrategyTemplateScopeWriteValidator _scope;
 
     public CreateStrategyTemplateHandler(
         ITenantContext tenant,
         IActorContext actor,
         IStrategyTemplateRepository templates,
         StrategyTemplateBindingValidator bindings,
-        IStrategyTemplateProductReferenceValidator references)
+        IStrategyTemplateProductReferenceValidator references,
+        StrategyTemplateScopeWriteValidator scope)
     {
         _tenant = tenant;
         _actor = actor;
         _templates = templates;
         _bindings = bindings;
         _references = references;
+        _scope = scope;
     }
 
     public async Task<Response<Guid>> Handle(
@@ -107,6 +112,20 @@ public sealed class CreateStrategyTemplateHandler : IRequestHandler<CreateStrate
             return Response<Guid>.Fail(
                 StrategyTemplateWriteGuards.ToErrors(bindingFailure), bindingFailure.StatusCode);
         }
+
+        // WP-ST-SCOPE — the scope gate joins the cross-service proof aisle: the legal-entity check is an MDM call too,
+        // so like the product proof it is fail-closed and runs BEFORE the insert (503 -> nothing persisted). One place
+        // applies the address (create + update), so they cannot drift.
+        var scopeResult = await _scope.ValidateAsync(
+            request.ScopeType, request.CountryScope, request.LegalEntityId, request.BusinessUnitId,
+            current: null, cancellationToken);
+        if (scopeResult.Failure is { } scopeFailure)
+        {
+            return Response<Guid>.Fail(
+                new[] { scopeFailure.ReasonCode, scopeFailure.Error }, scopeFailure.StatusCode);
+        }
+
+        StrategyTemplateScopeRules.Apply(entity, scopeResult.Scope!);
 
         // Cross-service proof BEFORE the insert: on 503 nothing is persisted at all.
         var referenceFailure = await StrategyTemplateWriteGuards.ValidateCrossServiceReferencesAsync(

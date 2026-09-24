@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>Запись успешно создана.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>Запись активирована.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>Сохранено, но активировать не удалось.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>Запись успешно удалена.</value>
   </data>

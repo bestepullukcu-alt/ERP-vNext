@@ -227,6 +227,10 @@ public sealed class LocalFileSystemContentStorageGateway : IContentStorageGatewa
         {
             ContentStorageScope.Templates => "templates",
             ContentStorageScope.TaskAttachments => "task-attachments",
+            // WP-SCMM-16A (CAND-CAP-0011 / SCMM-16) — a new scope value MUST get its own folder segment here, or the
+            // `_ => "documents"` default silently files it under the documents partition with no way to tell them
+            // apart on disk. That is the exact MOD-0024 trap called out above; ContentMessagingArtifacts gets its own.
+            ContentStorageScope.ContentMessagingArtifacts => "content-messaging-artifacts",
             _ => "documents"
         };
         if (!string.IsNullOrWhiteSpace(request.StoragePartition))

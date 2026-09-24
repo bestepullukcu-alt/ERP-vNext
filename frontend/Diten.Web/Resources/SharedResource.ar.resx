@@ -81,6 +81,12 @@
   <data name="RecordCreated" xml:space="preserve">
     <value>تم إنشاء السجل بنجاح.</value>
   </data>
+  <data name="RecordActivated" xml:space="preserve">
+    <value>تم تفعيل السجل.</value>
+  </data>
+  <data name="SavedNotActivated" xml:space="preserve">
+    <value>تم الحفظ، لكن تعذّر التفعيل.</value>
+  </data>
   <data name="RecordDeleted" xml:space="preserve">
     <value>تم حذف السجل بنجاح.</value>
   </data>

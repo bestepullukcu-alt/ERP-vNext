@@ -29,10 +29,34 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>Столбцы</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>Принадлежность SKU выбранному продукту здесь не проверяется — проверьте её самостоятельно.</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>Контент</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Связать можно только опубликованный и неархивный контент, закреплённый за конкретной версией.</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>Можно связать только опубликованный knowledge-path или content-engagement-journey; ссылки закрепляются за версией (pinned).</value></data>
   <data name="ContentRef" xml:space="preserve"><value>Контент</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>Тип контента</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>Какая история — контент</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>Контент — какая история</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>закреплено</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>Путь знаний</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>Путь взаимодействия</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>Больше нет контента для добавления.</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>опубликовано · закреплено</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>черновик · нельзя выбрать</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>в архиве · нельзя выбрать</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>Нет контента для связывания.</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>История версий</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>текущая</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>активно</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>черновик</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>в архиве</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>Использовать в кампании</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>Появится с интеграцией кампаний.</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>Только чтение — создайте новую версию для редактирования.</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>SKU не указан</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>Бизнес-единица / Территория</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>Последнее обновление {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>Привязки неизменяемы; только просмотр.</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>Охват {segments} сегментов в рамках {scope}, {products} продуктов (Σ{weight}%) и {contents} закреплённых материалов.</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>БЕЗ УДАЛЕНИЯ — планы только архивируются; активные версии неизменяемы.</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>Создать шаблон стратегии</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>Объявленный ритм фиксирует намерение автора. Он необязателен, и решатель частоты его не читает.</value></data>
   <data name="Description" xml:space="preserve"><value>Описание</value></data>
@@ -48,7 +72,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>Сошлитесь на действующую политику, объявите необязывающий ритм или выберите «нет». Политика отсюда никогда не записывается.</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>Намерение по частоте</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>Политика частоты визитов</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>Как часто — намерение</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>Намерение по частоте — Как часто</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>Частота</value></data>
   <data name="Frozen" xml:space="preserve"><value>заморожено</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>План активен, поэтому его связи заморожены. Создайте новую версию, чтобы изменить их; название и заметки остаются редактируемыми.</value></data>
@@ -66,18 +90,30 @@
   <data name="NewVersion" xml:space="preserve"><value>Новая версия</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>Создать новую черновую версию плана? Текущая версия останется доступной для чтения.</value></data>
   <data name="No" xml:space="preserve"><value>Нет</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>Контент не связан. Тогда у плана нет контентного измерения.</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>Пока нет контента — выберите историю, которую расскажет этот план.</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>План связывает идентичность сегмента. Он никогда не перечисляет и не считает людей внутри.</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>Нет продуктовых строк. Тогда у плана нет продуктового измерения.</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>Сегмент не связан. План без сегмента не отвечает на вопрос «кто?».</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>Пока нет продуктовых строк — добавьте продукты, которые несёт этот план.</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>Пока нет сегментов — выберите, к кому применяется план.</value></data>
   <data name="Notes" xml:space="preserve"><value>Заметки</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Многоразовые планы, связывающие сегмент, намерение по частоте, продуктовый/SKU-микс и контент. Шаблон связывает и ничего не создаёт.</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>Вся компания</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>Все страны</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>Новый сценарий</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Шаблоны, связывающие область, сегмент, вес продукта и контент. Без удаления — только архив.</value></data>
+  <data name="Play" xml:space="preserve"><value>Сценарий</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>Стратегические сценарии</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>сценариев</value></data>
+  <data name="Scope" xml:space="preserve"><value>Область</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>Страна</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>Арендатор</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>Неактивный</value></data>
   <data name="Percentage" xml:space="preserve"><value>Доля %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>Период</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>У вас нет прав для просмотра этого списка.</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>Продуктовые строки</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>Что — продукт и микс SKU</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>Продукт + SKU% — Что</value></data>
   <data name="QuickView" xml:space="preserve"><value>Быстрый просмотр</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>Активировано.</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Отправлено в архив.</value></data>
@@ -92,7 +128,7 @@
   <data name="Segment" xml:space="preserve"><value>Сегмент</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>Сегменты</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>Связанный сегмент закрепляется за конкретной версией. Список — это перечисление: объединение и исключение здесь не применяются.</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>Кто — сегменты</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>Сегменты — Кто</value></data>
   <data name="SelectOption" xml:space="preserve"><value>Выберите…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>Все</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>Строки SKU</value></data>
@@ -104,16 +140,131 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>Шаблоны стратегии</value></data>
   <data name="SubjectType" xml:space="preserve"><value>Тип субъекта</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>На что нацелен план. После создания не меняется; каждый связанный сегмент должен совпадать.</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>Человек</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>Организация</value></data>
   <data name="Superseded" xml:space="preserve"><value>заменено</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>Код</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>Устойчивый бизнес-ключ. Он не переименовывается — измените название.</value></data>
   <data name="TemplateName" xml:space="preserve"><value>Название</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>Статус</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>Версия</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>Доли SKU каждой распределённой строки должны давать ровно 100,00. Ничего не округляется и не нормализуется автоматически.</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>Доли всех продуктовых строк должны давать ровно 100,00. Ничего не округляется и не нормализуется автоматически.</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>Итого</value></data>
   <data name="Unknown" xml:space="preserve"><value>Неизвестно</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Обновлено</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>Подробнее</value></data>
   <data name="Yes" xml:space="preserve"><value>Да</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>Область — Где</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>Уровень области</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>Весь тенант</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>Страна</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>вся компания</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>один рынок</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>юридическое лицо</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>БЕ · территория</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>Страна</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>Юридическое лицо</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>Бизнес-единица</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>Фильтровать бизнес-единицы по стране</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>Определяет область применения этой стратегии: весь тенант либо одна страна, юридическое лицо или бизнес-единица.</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>Область можно изменить. Сохраняется только ссылка выбранного уровня.</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>Управляемый набор справочных данных ещё не опубликован. Его должен опубликовать оператор.</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>Зависимость не ответила, поэтому список не загружен.</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>Нет подходящего территориального плана, показан полный опубликованный список.</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>Разрешённая область</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>ещё не разрешено</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>Что сделает эта стратегия?</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>ГДЕ</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>КТО</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>КАК ЧАСТО</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>ЧТО</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>ИСТОРИЯ</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>сегментов</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>строк товаров</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>вес %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>материалов</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>Разделы</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>Идентификация</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>Область</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>Сегменты</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>Частота</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>Товары + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>Контент</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>Проверка MDM</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>Жизненный цикл</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>Черновик</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>Активно</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>Сохранить черновик</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>Сохранить (активно)</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>Сохранить и активировать</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>Сохранить (заблокировано)</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>Замораживает текущую стратегию и открывает новую копию</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate сам по себе ничего не создаёт — он связывает сегмент, политику частоты визитов, товары и утверждённый контент в один шаблон. Исполнение происходит через CyclePeriod и Campaign.</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>Частота управляется в политиках частоты визитов</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — это поле только для справки. Реальная частота визитов хранится по цели/сегменту в отдельном модуле.</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>Открыть политики ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>Открыть политику</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>«{name}» нацелена на {who} с {what} — {howoften}.</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>Эта стратегия</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>Не указано</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>Привязано к политике</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>Заявленное намерение</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} визитов / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} готово</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>Требуются код и имя.</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>Весь арендатор — область не сужена.</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>Привяжите хотя бы один сегмент.</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>Привязано сегментов: {n}.</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>Указатель пуст — это необязательно.</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>Привязано к политике частоты визитов.</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>Заявленное намерение (необязательное).</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>Намерение по частоте неполное.</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>Добавьте хотя бы одну строку товара.</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>Распределение SKU не равно 100%.</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>Строк товаров: {n}.</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>Контент необязателен.</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>Привязано материалов: {n}.</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>Среда выполнения проверит после выбора товара.</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>Во всех строках выбран товар.</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>В некоторых строках нет товара.</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>На кого нацелена эта стратегия, с какой историей и с каким весом продуктов?</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>человек / врач</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>организация / клиент</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>основной</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>вторичный</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>заметка-исключение</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} сегмент · тип {type}</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>Больше нет сегментов для добавления.</value></data>
+  <!-- WP-ST-EDIT-M — метки choice-box РЕЖИМА намерения частоты (заголовок + подпись) + дружелюбные FrequencyType/PeriodType. -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>Ссылка на политику</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>Заявленное намерение</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>Нет</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>читает движок</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>только документация</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>ссылка не указана</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>Еженедельно</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>Раз в две недели</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>Ежемесячно</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>По циклу</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>День</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>Неделя</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>Месяц</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>Квартал</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>Цикл</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>Период кампании</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>Пользовательский</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>Итого по продуктам</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>Продукты проверяются по каталогу MDM Global Product.</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>Добавить продукт…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>необязательно</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>Продукт</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>Процент</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>Распределить поровну</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>Процент продукта не равен 100%. Расчётный итог {total}% — отклонение {diff} пунктов. Исправьте строки, чтобы сохранить.</value></data>
 </root>

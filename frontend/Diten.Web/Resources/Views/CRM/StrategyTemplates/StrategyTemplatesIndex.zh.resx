@@ -29,10 +29,34 @@
   <data name="ColumnVisibility" xml:space="preserve"><value>列</value></data>
   <data name="ContainmentNotVerifiedHelp" xml:space="preserve"><value>此处不校验 SKU 是否属于所选产品，请自行确认。</value></data>
   <data name="ContentBindingCount" xml:space="preserve"><value>内容</value></data>
-  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>只能绑定已发布且未归档的内容，并固定到该版本。</value></data>
+  <data name="ContentPublishedOnlyHelp" xml:space="preserve"><value>只能绑定已发布的 knowledge-path 或 content-engagement-journey；引用会固定到该版本 (pinned)。</value></data>
   <data name="ContentRef" xml:space="preserve"><value>内容</value></data>
   <data name="ContentRefType" xml:space="preserve"><value>内容类型</value></data>
-  <data name="ContentSection" xml:space="preserve"><value>讲什么——内容</value></data>
+  <data name="ContentSection" xml:space="preserve"><value>内容 — 讲什么</value></data>
+  <data name="ContentPinned" xml:space="preserve"><value>已固定</value></data>
+  <data name="ContentKindKnowledgePath" xml:space="preserve"><value>知识路径</value></data>
+  <data name="ContentKindJourney" xml:space="preserve"><value>旅程</value></data>
+  <data name="ContentPickerClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="ContentPickerEmpty" xml:space="preserve"><value>没有更多内容可添加。</value></data>
+  <data name="ContentStatusPublished" xml:space="preserve"><value>已发布 · 固定</value></data>
+  <data name="ContentStatusDraft" xml:space="preserve"><value>草稿 · 不可选</value></data>
+  <data name="ContentStatusArchived" xml:space="preserve"><value>已归档 · 不可选</value></data>
+  <data name="ContentGridEmpty" xml:space="preserve"><value>没有可绑定的内容。</value></data>
+  <data name="VersionHistory" xml:space="preserve"><value>版本历史</value></data>
+  <data name="CurrentVersion" xml:space="preserve"><value>当前</value></data>
+  <data name="VerStatusActive" xml:space="preserve"><value>已激活</value></data>
+  <data name="VerStatusDraft" xml:space="preserve"><value>草稿</value></data>
+  <data name="VerStatusArchived" xml:space="preserve"><value>已归档</value></data>
+  <data name="UseInCampaign" xml:space="preserve"><value>在营销活动中使用</value></data>
+  <data name="UseInCampaignSoon" xml:space="preserve"><value>将随营销活动集成推出。</value></data>
+  <data name="DetailReadOnlyNote" xml:space="preserve"><value>只读 — 如需编辑请创建新版本。</value></data>
+  <data name="NoSkuSpecified" xml:space="preserve"><value>未指定 SKU</value></data>
+  <data name="DetailScopeLegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="DetailScopeBusinessUnit" xml:space="preserve"><value>业务单元 / 区域</value></data>
+  <data name="LastUpdatedTpl" xml:space="preserve"><value>最后更新 {date}</value></data>
+  <data name="VersionFrozenNote" xml:space="preserve"><value>绑定不可变，仅供查看。</value></data>
+  <data name="DetailSummaryTpl" xml:space="preserve"><value>在 {scope} 范围内覆盖 {segments} 个细分，包含 {products} 个产品（Σ{weight}%）和 {contents} 项固定内容。</value></data>
+  <data name="ContentNoDeleteNote" xml:space="preserve"><value>不可删除 — 方案只能归档；已激活版本不可变更。</value></data>
   <data name="CreateStrategyTemplate" xml:space="preserve"><value>创建策略模板</value></data>
   <data name="DeclaredIntentNotBindingHelp" xml:space="preserve"><value>声明的节奏只记录作者意图，不具约束力，频次解析器不会读取它。</value></data>
   <data name="Description" xml:space="preserve"><value>描述</value></data>
@@ -48,7 +72,7 @@
   <data name="FrequencyIntentHelp" xml:space="preserve"><value>引用现有的启用策略、声明一个非约束性节奏，或选择“无”。此处永不写入策略。</value></data>
   <data name="FrequencyIntentMode" xml:space="preserve"><value>频次意图</value></data>
   <data name="FrequencyPolicy" xml:space="preserve"><value>拜访频次策略</value></data>
-  <data name="FrequencySection" xml:space="preserve"><value>频次——意图</value></data>
+  <data name="FrequencySection" xml:space="preserve"><value>频次意图 — 多久一次</value></data>
   <data name="FrequencyType" xml:space="preserve"><value>频次</value></data>
   <data name="Frozen" xml:space="preserve"><value>已冻结</value></data>
   <data name="FrozenBindingsHelp" xml:space="preserve"><value>该方案已上线，绑定被冻结。请创建新版本来修改；名称与备注仍可编辑。</value></data>
@@ -66,18 +90,30 @@
   <data name="NewVersion" xml:space="preserve"><value>新版本</value></data>
   <data name="NewVersionConfirm" xml:space="preserve"><value>创建此方案的新草稿版本？当前版本仍可读。</value></data>
   <data name="No" xml:space="preserve"><value>否</value></data>
-  <data name="NoContentBindings" xml:space="preserve"><value>未绑定内容，方案即没有内容维度。</value></data>
+  <data name="NoContentBindings" xml:space="preserve"><value>暂无内容 — 选择此方案要讲述的故事。</value></data>
   <data name="NoMembersEverHelp" xml:space="preserve"><value>方案绑定的是细分的身份，绝不列出或统计其中的人员。</value></data>
-  <data name="NoProductLines" xml:space="preserve"><value>没有产品行，方案即没有产品维度。</value></data>
-  <data name="NoSegmentBindings" xml:space="preserve"><value>尚未绑定细分。没有细分的方案回答不了“谁”。</value></data>
+  <data name="NoProductLines" xml:space="preserve"><value>暂无产品行 — 添加此方案所承载的产品。</value></data>
+  <data name="NoSegmentBindings" xml:space="preserve"><value>还没有细分——请选择方案适用于谁。</value></data>
   <data name="Notes" xml:space="preserve"><value>备注</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>可复用的行动方案，绑定细分、频次意图、产品/SKU 组合与内容。模板只做绑定，不生成任何记录。</value></data>
+  <data name="AllCompany" xml:space="preserve"><value>整个公司</value></data>
+  <data name="AllCountries" xml:space="preserve"><value>所有国家</value></data>
+  <data name="NewPlay" xml:space="preserve"><value>新建策略</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>绑定范围、细分、产品权重和内容的模板。不可删除——仅归档。</value></data>
+  <data name="Play" xml:space="preserve"><value>策略</value></data>
+  <data name="PlaysHeading" xml:space="preserve"><value>策略方案</value></data>
+  <data name="PlaysUnit" xml:space="preserve"><value>个策略</value></data>
+  <data name="Scope" xml:space="preserve"><value>范围</value></data>
+  <data name="ScopeTypeBusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ScopeTypeCountry" xml:space="preserve"><value>国家</value></data>
+  <data name="ScopeTypeLegalEntity" xml:space="preserve"><value>法律实体</value></data>
+  <data name="ScopeTypeTenant" xml:space="preserve"><value>租户</value></data>
+  <data name="SkuUnit" xml:space="preserve"><value>SKU</value></data>
   <data name="Passive" xml:space="preserve"><value>停用</value></data>
   <data name="Percentage" xml:space="preserve"><value>占比 %</value></data>
   <data name="PeriodType" xml:space="preserve"><value>周期</value></data>
   <data name="PickerUnavailable" xml:space="preserve"><value>您无权浏览该列表。</value></data>
   <data name="ProductLineCount" xml:space="preserve"><value>产品行</value></data>
-  <data name="ProductSection" xml:space="preserve"><value>什么——产品与 SKU 组合</value></data>
+  <data name="ProductSection" xml:space="preserve"><value>产品 + SKU% — 什么</value></data>
   <data name="QuickView" xml:space="preserve"><value>快速查看</value></data>
   <data name="RecordActivated" xml:space="preserve"><value>已启用。</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>已归档。</value></data>
@@ -92,7 +128,7 @@
   <data name="Segment" xml:space="preserve"><value>细分</value></data>
   <data name="SegmentBindingCount" xml:space="preserve"><value>细分</value></data>
   <data name="SegmentBindingHelp" xml:space="preserve"><value>绑定的细分固定到该版本。列表只是枚举——此处不做并集或排除运算。</value></data>
-  <data name="SegmentSection" xml:space="preserve"><value>谁——细分</value></data>
+  <data name="SegmentSection" xml:space="preserve"><value>细分——谁</value></data>
   <data name="SelectOption" xml:space="preserve"><value>请选择…</value></data>
   <data name="ShowAll" xml:space="preserve"><value>全部</value></data>
   <data name="SkuAllocationCount" xml:space="preserve"><value>SKU 行</value></data>
@@ -104,16 +140,131 @@
   <data name="StrategyTemplatesTitle" xml:space="preserve"><value>策略模板</value></data>
   <data name="SubjectType" xml:space="preserve"><value>主体类型</value></data>
   <data name="SubjectTypeHelp" xml:space="preserve"><value>方案针对的对象。创建后不可更改；所有绑定的细分必须一致。</value></data>
+  <data name="SubjectTypeContact" xml:space="preserve"><value>个人</value></data>
+  <data name="SubjectTypeAccount" xml:space="preserve"><value>机构</value></data>
   <data name="Superseded" xml:space="preserve"><value>已被取代</value></data>
   <data name="TemplateCode" xml:space="preserve"><value>编码</value></data>
   <data name="TemplateCodeHelp" xml:space="preserve"><value>稳定的业务主键，不可重命名——请改名称字段。</value></data>
   <data name="TemplateName" xml:space="preserve"><value>名称</value></data>
   <data name="TemplateStatus" xml:space="preserve"><value>状态</value></data>
   <data name="TemplateVersion" xml:space="preserve"><value>版本</value></data>
-  <data name="TotalMustBe100" xml:space="preserve"><value>每个已分配行的 SKU 占比必须正好合计 100.00。系统不会替您四舍五入或归一化。</value></data>
+  <data name="TotalMustBe100" xml:space="preserve"><value>所有产品行的占比必须正好合计 100.00。系统不会替您四舍五入或归一化。</value></data>
   <data name="TotalPercentage" xml:space="preserve"><value>合计</value></data>
   <data name="Unknown" xml:space="preserve"><value>未知</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>更新时间</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>查看详情</value></data>
   <data name="Yes" xml:space="preserve"><value>是</value></data>
+  <data name="ScopeSection" xml:space="preserve"><value>范围 — 在哪里</value></data>
+  <data name="ScopeType" xml:space="preserve"><value>范围层级</value></data>
+  <data name="ScopeType_tenant" xml:space="preserve"><value>整个租户</value></data>
+  <data name="ScopeType_country" xml:space="preserve"><value>国家</value></data>
+  <data name="ScopeType_legal-entity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="ScopeType_business-unit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="ScopeTypeSub_tenant" xml:space="preserve"><value>整个公司</value></data>
+  <data name="ScopeTypeSub_country" xml:space="preserve"><value>单一市场</value></data>
+  <data name="ScopeTypeSub_legal-entity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="ScopeTypeSub_business-unit" xml:space="preserve"><value>业务单元 · 区域</value></data>
+  <data name="CountryScope" xml:space="preserve"><value>国家</value></data>
+  <data name="LegalEntity" xml:space="preserve"><value>法人实体</value></data>
+  <data name="BusinessUnit" xml:space="preserve"><value>业务单元</value></data>
+  <data name="BusinessUnitCountryFilter" xml:space="preserve"><value>按国家筛选业务单元</value></data>
+  <data name="ScopeHelp" xml:space="preserve"><value>它决定此策略适用的范围：整个租户，或某个国家、法人实体或业务单元。</value></data>
+  <data name="ScopeEditableHint" xml:space="preserve"><value>范围可以更改。仅保留所选层级的引用。</value></data>
+  <data name="ReferenceSetUnpublished" xml:space="preserve"><value>受管引用数据集尚未发布，需由运维人员发布。</value></data>
+  <data name="DependencyUnavailable" xml:space="preserve"><value>依赖服务未响应，无法加载此列表。</value></data>
+  <data name="NoTerritoryPlanMatches" xml:space="preserve"><value>没有匹配的区域计划，因此显示完整的已发布列表。</value></data>
+  <data name="ResolvedScope" xml:space="preserve"><value>已解析范围</value></data>
+  <data name="ResolvedScopeNone" xml:space="preserve"><value>尚未解析</value></data>
+  <data name="WhatTitle" xml:space="preserve"><value>此策略将做什么？</value></data>
+  <data name="RecipeWhere" xml:space="preserve"><value>在哪里</value></data>
+  <data name="RecipeWho" xml:space="preserve"><value>谁</value></data>
+  <data name="RecipeHowOften" xml:space="preserve"><value>频率</value></data>
+  <data name="RecipeWhat" xml:space="preserve"><value>什么</value></data>
+  <data name="RecipeStory" xml:space="preserve"><value>内容</value></data>
+  <data name="RecipeNone" xml:space="preserve"><value>—</value></data>
+  <data name="StatSegments" xml:space="preserve"><value>细分</value></data>
+  <data name="StatProductLines" xml:space="preserve"><value>产品行</value></data>
+  <data name="StatWeightTotal" xml:space="preserve"><value>权重 %</value></data>
+  <data name="StatContents" xml:space="preserve"><value>内容</value></data>
+  <data name="SectionsTitle" xml:space="preserve"><value>各部分</value></data>
+  <data name="ChkSecIdentity" xml:space="preserve"><value>标识</value></data>
+  <data name="ChkSecScope" xml:space="preserve"><value>范围</value></data>
+  <data name="ChkSecSegments" xml:space="preserve"><value>细分</value></data>
+  <data name="ChkSecFrequency" xml:space="preserve"><value>频率</value></data>
+  <data name="ChkSecProducts" xml:space="preserve"><value>产品 + SKU%</value></data>
+  <data name="ChkSecContent" xml:space="preserve"><value>内容</value></data>
+  <data name="MdmValidation" xml:space="preserve"><value>MDM 校验</value></data>
+  <data name="LifecycleActionsTitle" xml:space="preserve"><value>生命周期</value></data>
+  <data name="LifecycleDraftTab" xml:space="preserve"><value>草稿</value></data>
+  <data name="LifecycleActiveTab" xml:space="preserve"><value>启用</value></data>
+  <data name="SaveDraft" xml:space="preserve"><value>保存草稿</value></data>
+  <data name="SaveActive" xml:space="preserve"><value>保存（已激活）</value></data>
+  <data name="SaveAndActivate" xml:space="preserve"><value>保存并激活</value></data>
+  <data name="SaveBlocked" xml:space="preserve"><value>保存（已阻止）</value></data>
+  <data name="NewVersionDetailTpl" xml:space="preserve"><value>冻结当前策略并打开新副本</value></data>
+  <data name="SidePanelFootNote" xml:space="preserve"><value>StrategyTemplate 本身不产生任何内容——它将细分、拜访频率策略、产品和已批准内容绑定到一个模板中。执行通过 CyclePeriod 和 Campaign 完成。</value></data>
+  <data name="FreqInfoStrong" xml:space="preserve"><value>频率在拜访频率策略中管理</value></data>
+  <data name="FreqInfoBody" xml:space="preserve"><value> — 此字段仅供参考。真实拜访频率按目标/细分保存在单独的模块中。</value></data>
+  <data name="FreqInfoLink" xml:space="preserve"><value>打开策略 ↗</value></data>
+  <data name="FreqOpenPolicySingle" xml:space="preserve"><value>打开此策略</value></data>
+  <data name="SummarySentenceTpl" xml:space="preserve"><value>“{name}”面向 {who}，使用 {what} — {howoften}。</value></data>
+  <data name="SummaryEmptyName" xml:space="preserve"><value>此策略</value></data>
+  <data name="FrequencyNone" xml:space="preserve"><value>未指定</value></data>
+  <data name="FrequencyPolicyRef" xml:space="preserve"><value>已绑定策略</value></data>
+  <data name="FrequencyDeclared" xml:space="preserve"><value>声明的意图</value></data>
+  <data name="VisitsPerPeriodTpl" xml:space="preserve"><value>{count} 次拜访 / {period}</value></data>
+  <data name="ReadyCountTpl" xml:space="preserve"><value>{done}/{total} 就绪</value></data>
+  <data name="ChkIdentityEmptyDesc" xml:space="preserve"><value>需要代码和名称。</value></data>
+  <data name="ChkScopeTenantDesc" xml:space="preserve"><value>整个租户——范围未收窄。</value></data>
+  <data name="ChkSegmentsEmptyDesc" xml:space="preserve"><value>至少绑定一个细分。</value></data>
+  <data name="ChkSegmentsCountDesc" xml:space="preserve"><value>已绑定 {n} 个细分。</value></data>
+  <data name="ChkFrequencyNoneDesc" xml:space="preserve"><value>指针为空——此项可选。</value></data>
+  <data name="ChkFrequencyPolicyDesc" xml:space="preserve"><value>已绑定拜访频率策略。</value></data>
+  <data name="ChkFrequencyDeclaredDesc" xml:space="preserve"><value>声明的意图（非约束）。</value></data>
+  <data name="ChkFrequencyIncompleteDesc" xml:space="preserve"><value>频率意图不完整。</value></data>
+  <data name="ChkProductsEmptyDesc" xml:space="preserve"><value>至少添加一个产品行。</value></data>
+  <data name="ChkProductsWeightOffDesc" xml:space="preserve"><value>SKU 分配不等于 100%。</value></data>
+  <data name="ChkProductsOkDesc" xml:space="preserve"><value>{n} 个产品行。</value></data>
+  <data name="ChkContentEmptyDesc" xml:space="preserve"><value>内容为可选。</value></data>
+  <data name="ChkContentCountDesc" xml:space="preserve"><value>已绑定 {n} 个内容。</value></data>
+  <data name="ChkMdmNeutralDesc" xml:space="preserve"><value>选择产品后由运行时校验。</value></data>
+  <data name="ChkMdmOkDesc" xml:space="preserve"><value>所有行均已选产品。</value></data>
+  <data name="ChkMdmMissingDesc" xml:space="preserve"><value>部分行未选产品。</value></data>
+  <data name="DescriptionPlaceholder" xml:space="preserve"><value>这个策略针对谁、用什么故事、以及怎样的产品权重？</value></data>
+  <data name="SegTypeContact" xml:space="preserve"><value>个人 / 医生</value></data>
+  <data name="SegTypeAccount" xml:space="preserve"><value>机构 / 客户</value></data>
+  <data name="BindingRole_primary" xml:space="preserve"><value>主要</value></data>
+  <data name="BindingRole_secondary" xml:space="preserve"><value>次要</value></data>
+  <data name="BindingRole_exclusion-note" xml:space="preserve"><value>排除备注</value></data>
+  <data name="SegmentSummaryTpl" xml:space="preserve"><value>{n} 个细分 · {type} 类型</value></data>
+  <data name="SegmentPickerClose" xml:space="preserve"><value>关闭</value></data>
+  <data name="SegmentPickerEmpty" xml:space="preserve"><value>没有更多可添加的细分。</value></data>
+  <!-- WP-ST-EDIT-M — 频率意图模式的选择框标签（标题 + 副标签）+ 友好的 FrequencyType/PeriodType 标签。 -->
+  <data name="FrequencyMode_policy-reference" xml:space="preserve"><value>政策指针</value></data>
+  <data name="FrequencyMode_declared-intent" xml:space="preserve"><value>声明意图</value></data>
+  <data name="FrequencyMode_none" xml:space="preserve"><value>无</value></data>
+  <data name="FrequencyModeSub_policy-reference" xml:space="preserve"><value>引擎读取</value></data>
+  <data name="FrequencyModeSub_declared-intent" xml:space="preserve"><value>仅文档</value></data>
+  <data name="FrequencyModeSub_none" xml:space="preserve"><value>未提供引用</value></data>
+  <data name="FrequencyType_weekly" xml:space="preserve"><value>每周</value></data>
+  <data name="FrequencyType_biweekly" xml:space="preserve"><value>每两周</value></data>
+  <data name="FrequencyType_monthly" xml:space="preserve"><value>每月</value></data>
+  <data name="FrequencyType_cycle-based" xml:space="preserve"><value>基于周期</value></data>
+  <data name="FrequencyType_custom" xml:space="preserve"><value>自定义</value></data>
+  <data name="PeriodType_day" xml:space="preserve"><value>天</value></data>
+  <data name="PeriodType_week" xml:space="preserve"><value>周</value></data>
+  <data name="PeriodType_month" xml:space="preserve"><value>月</value></data>
+  <data name="PeriodType_quarter" xml:space="preserve"><value>季度</value></data>
+  <data name="PeriodType_cycle" xml:space="preserve"><value>周期</value></data>
+  <data name="PeriodType_campaign-period" xml:space="preserve"><value>活动周期</value></data>
+  <data name="PeriodType_custom" xml:space="preserve"><value>自定义</value></data>
+  <data name="ProductWeightTotalLabel" xml:space="preserve"><value>产品合计</value></data>
+  <data name="ProductCatalogHelp" xml:space="preserve"><value>产品依据 MDM 全球产品目录进行校验。</value></data>
+  <data name="ProductAddPicker" xml:space="preserve"><value>添加产品…</value></data>
+  <data name="SkuOptionalPlaceholder" xml:space="preserve"><value>可选</value></data>
+  <data name="ProductColProduct" xml:space="preserve"><value>产品</value></data>
+  <data name="ProductColSku" xml:space="preserve"><value>SKU</value></data>
+  <data name="ProductColWeight" xml:space="preserve"><value>百分比</value></data>
+  <data name="EqualDistribute" xml:space="preserve"><value>平均分配</value></data>
+  <data name="ProductTotalWarning" xml:space="preserve"><value>产品百分比不是 100%。计算总计 {total}% — 相差 {diff} 个百分点。请修正各行后再保存。</value></data>
 </root>

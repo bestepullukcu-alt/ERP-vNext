@@ -22,4 +22,10 @@ public sealed record UpdateStrategyTemplateCommand(
     StrategyTemplateFrequencyIntentInput? FrequencyIntent,
     IReadOnlyList<StrategyTemplateProductLineInput>? ProductLines,
     IReadOnlyList<StrategyTemplateContentBindingInput>? ContentBindings,
-    int? ExpectedVersion) : IRequest<Response<bool>>;
+    int? ExpectedVersion,
+    // WP-ST-SCOPE — the play's scope. EDITABLE metadata: it may be corrected even on a frozen/active version (only the
+    // four binding lists are frozen). Optional with defaults so a caller written against the pre-scope contract keeps
+    // compiling; on update an absent ScopeType derives from BusinessUnitId exactly as it does on create.
+    string? ScopeType = null,
+    string? CountryScope = null,
+    Guid? LegalEntityId = null) : IRequest<Response<bool>>;

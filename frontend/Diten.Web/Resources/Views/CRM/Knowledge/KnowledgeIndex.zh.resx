@@ -29,9 +29,9 @@
   <data name="LanguageCode" xml:space="preserve"><value>Language</value></data>
   <data name="ContentVersion" xml:space="preserve"><value>Content Version</value></data>
   <data name="Summary" xml:space="preserve"><value>Summary</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
-  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>主题</value></data>
+  <data name="TopicId" xml:space="preserve"><value>话题</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>受众画像</value></data>
   <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
   <data name="BrandId" xml:space="preserve"><value>Brand</value></data>
   <data name="ProductId" xml:space="preserve"><value>Product</value></data>
@@ -82,26 +82,26 @@
   <data name="ContentPointerRequired" xml:space="preserve"><value>At least one content pointer is required.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
   <data name="TaxonomyTab" xml:space="preserve"><value>Taxonomy</value></data>
-  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
-  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
-  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
-  <data name="CreateSubject" xml:space="preserve"><value>Create Subject</value></data>
-  <data name="CreateTopic" xml:space="preserve"><value>Create Topic</value></data>
-  <data name="CreateProfile" xml:space="preserve"><value>Create Profile</value></data>
-  <data name="EditSubject" xml:space="preserve"><value>Edit Subject</value></data>
-  <data name="EditTopic" xml:space="preserve"><value>Edit Topic</value></data>
-  <data name="EditProfile" xml:space="preserve"><value>Edit Profile</value></data>
-  <data name="ArchiveSubject" xml:space="preserve"><value>Archive Subject</value></data>
-  <data name="ArchiveTopic" xml:space="preserve"><value>Archive Topic</value></data>
-  <data name="ArchiveProfile" xml:space="preserve"><value>Archive Profile</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>主题</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>话题</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>受众画像</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>创建主题</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>创建话题</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>创建受众画像</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>编辑主题</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>编辑话题</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>编辑受众画像</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>归档主题</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>归档话题</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>归档受众画像</value></data>
   <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Archive this row? Existing content keeps its classification; only new attachment is blocked.</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
   <data name="Status" xml:space="preserve"><value>状态</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
-  <data name="ProfileType" xml:space="preserve"><value>Profile Type</value></data>
-  <data name="ParentTopicId" xml:space="preserve"><value>Parent Topic ID</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>画像类型</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>父话题</value></data>
   <data name="Active" xml:space="preserve"><value>启用</value></data>
   <data name="Passive" xml:space="preserve"><value>停用</value></data>
   <data name="Unknown" xml:space="preserve"><value>未知</value></data>
@@ -122,7 +122,7 @@
   <data name="Deactivate" xml:space="preserve"><value>停用</value></data>
   <data name="Restore" xml:space="preserve"><value>还原</value></data>
   <data name="RestoredAsInactive" xml:space="preserve"><value>已还原为停用状态。</value></data>
-  <data name="ParentSubjectId" xml:space="preserve"><value>上级主题</value></data>
+  <data name="ParentSubjectId" xml:space="preserve"><value>父主题</value></data>
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>全局产品列表不可用；请输入自定义主题。</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>全局产品服务不可用；请输入自定义主题。</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>您无权浏览全局产品；请输入自定义主题。</value></data>
+  <data name="Reorder" xml:space="preserve"><value>排序</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>排序主题</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>排序话题</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>排序受众画像</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>拖动行以更改顺序，然后保存。</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>保存顺序</value></data>
 </root>

@@ -1,0 +1,686 @@
+/**
+ * WP-ST-EDIT-B — StrategyTemplate Create/Edit two-column editor + right sticky panel (MOD-0167-FU04, frontend only).
+ *
+ * Mirrors the VisitFrequencyPolicies editor (visit-frequency-create.css .vfp-create-scope): a two-column layout with a
+ * sticky right panel that carries a live "BU OYUN NE YAPACAK?" summary, a "BÖLÜMLER" checklist and the "YAŞAM DÖNGÜSÜ"
+ * actions, plus the Frekans info-box. Everything is nested under `.st-editor-scope` so nothing leaks to the app shell,
+ * and the neutrals bind to the theme-aware Bootstrap variables (light/dark). The accent is `--bs-primary`; the only
+ * literal white left is a foreground on an accent fill. The existing _Form card chrome carries no `st-*` class and is
+ * left completely alone.
+ */
+
+.st-editor-scope {
+    --st-accent: var(--bs-primary);
+    --st-accent-soft: rgba(var(--bs-primary-rgb), 0.10);
+    --st-accent-border: rgba(var(--bs-primary-rgb), 0.28);
+    --st-card-bg: var(--bs-card-bg);
+    --st-card-border: var(--bs-border-color);
+    --st-muted: var(--bs-secondary-color);
+    --st-text: var(--bs-body-color);
+    --st-ok: var(--bs-success);
+    --st-warn: var(--bs-warning);
+    --st-track: var(--bs-secondary-bg);
+    --st-heading: var(--bs-heading-color);
+}
+
+/* ── WP-ST-EDIT-C — typography aligned to the Task Center create cards ─────────
+   The panel used its own ad-hoc pixel sizes, which read as a different font next to the /Tasks/Create form. It now
+   binds to the theme body font and uses the same relative scale and weights as those cards: card titles like
+   `.text-heading.fw-semibold`, labels like `.form-label.fw-medium`. */
+.st-side-panel {
+    font-family: var(--bs-body-font-family);
+}
+
+/* ── two-column layout ─────────────────────────────────────────────────────── */
+.st-editor-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+.st-editor-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.st-editor-side {
+    flex: 0 0 320px;
+    max-width: 320px;
+}
+.st-side-sticky {
+    position: sticky;
+    top: 78px;
+}
+@media (max-width: 991.98px) {
+    .st-editor-layout { flex-direction: column; }
+    .st-editor-side { flex-basis: auto; max-width: none; width: 100%; }
+    .st-side-sticky { position: static; }
+}
+
+/* ── panel cards ───────────────────────────────────────────────────────────── */
+.st-side-panel .st-card {
+    border: 1px solid var(--st-card-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+/* WP-ST-EDIT-X — the side-panel card titles now use the golden .dt-card-icon + h6 header standard (Task/Create), so the
+   former .st-card-head strip and .st-card-kicker span styles are retired. */
+
+/* ── recipe (NEREDE / KİM / …) ─────────────────────────────────────────────── */
+.st-recipe {
+    margin: 0 0 2px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.st-recipe-row {
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    margin: 0;
+}
+.st-recipe-row dt {
+    flex: 0 0 66px;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--st-muted);
+    font-weight: 500;
+    margin: 0;
+}
+.st-recipe-row dd {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--st-text);
+    word-break: break-word;
+}
+.st-recipe-sentence {
+    margin: 11px 0 0;
+    padding-top: 10px;
+    border-top: 1px dashed var(--st-card-border);
+    font-size: 0.8125rem;
+    color: var(--st-muted);
+}
+.st-recipe-sentence:empty { display: none; }
+
+/* ── stat tiles (2×2) ──────────────────────────────────────────────────────── */
+.st-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--st-card-border);
+}
+.st-stat {
+    padding: 11px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.st-stat:nth-child(odd) { border-right: 1px solid var(--st-card-border); }
+.st-stat:nth-child(n+3) { border-top: 1px solid var(--st-card-border); }
+.st-stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--st-text);
+    font-variant-numeric: tabular-nums;
+}
+.st-stat-value.is-off { color: var(--st-warn); }
+.st-stat-label {
+    font-size: 0.75rem;
+    color: var(--st-muted);
+}
+
+/* ── checklist (BÖLÜMLER) ──────────────────────────────────────────────────── */
+.st-sections-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 9px;
+}
+.st-ready-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--st-track);
+    color: var(--st-muted);
+}
+.st-ready-pill.is-ready {
+    background: rgba(var(--bs-success-rgb), 0.14);
+    color: var(--st-ok);
+}
+.st-ready-track {
+    height: 4px;
+    border-radius: 3px;
+    background: var(--st-track);
+    margin-bottom: 11px;
+    overflow: hidden;
+}
+.st-ready-bar {
+    height: 100%;
+    width: 0;
+    border-radius: 3px;
+    background: var(--st-accent);
+    transition: width 0.2s ease;
+}
+.st-ready-bar.is-ready { background: var(--st-ok); }
+.st-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.st-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+.st-check-icon {
+    flex: 0 0 auto;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--st-muted);
+}
+/* The glyph itself (bx-check-circle / bx-error-circle / bx-minus-circle) is stamped onto the element by form.js per
+   check state; boxicons renders it via `.bx`. This just guarantees a visible, consistently sized icon slot. */
+.st-check.is-ok .st-check-icon { color: var(--st-ok); }
+.st-check.is-warn .st-check-icon { color: var(--st-warn); }
+.st-check.is-neutral .st-check-icon { color: var(--st-muted); }
+.st-check-body { min-width: 0; display: flex; flex-direction: column; }
+.st-check-title { font-size: 0.8125rem; font-weight: 600; color: var(--st-text); }
+.st-check-detail {
+    font-size: 0.75rem;
+    color: var(--st-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.st-check-detail:empty { display: none; }
+
+/* ── lifecycle actions (YAŞAM DÖNGÜSÜ) ─────────────────────────────────────── */
+.st-life-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--st-track);
+    border: 1px solid var(--st-card-border);
+    border-radius: 6px;
+    margin-bottom: 11px;
+}
+.st-life-tab {
+    flex: 1 1 0;
+    text-align: center;
+    padding: 6px 8px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--st-muted);
+    border-radius: 4px;
+}
+.st-life-tab.is-current {
+    background: var(--st-card-bg);
+    color: var(--st-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+.st-life-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.st-life-divider {
+    height: 1px;
+    background: var(--st-card-border);
+    margin: 3px 0;
+}
+.st-life-newversion {
+    text-align: left;
+    line-height: 1.25;
+}
+.st-life-newversion-title { display: block; font-weight: 600; }
+.st-life-newversion-sub {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--st-muted);
+}
+.st-side-foot {
+    padding: 11px 13px;
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--st-card-border);
+    border-radius: 6px;
+    color: var(--st-muted);
+    font-size: 0.75rem;
+}
+
+/* ── frekans info-box (in the left _Form frequency section) ─────────────────── */
+/* WP-ST-EDIT-M — the info-box carries a PRIMARY tint (mockup): a primary-subtle wash + a primary left dot/border and a
+   primary link, matching the active choice-box. Only the colour changed; the text and the link target/logic are untouched. */
+.st-editor-scope .st-freq-info {
+    display: flex;
+    gap: 10px;
+    padding: 11px 12px;
+    margin-bottom: 13px;
+    background: var(--bs-primary-bg-subtle);
+    border: 1px solid var(--st-accent-border);
+    border-radius: 6px;
+}
+.st-freq-info-dot {
+    flex: 0 0 auto;
+    width: 6px;
+    height: 6px;
+    margin-top: 6px;
+    border-radius: 50%;
+    background: var(--st-accent);
+}
+.st-freq-info-body { min-width: 0; font-size: 12.5px; }
+/* WP-ST-EDIT-N — the strong lead ("Frequency is managed in Visit Frequency Policies") takes the same primary colour as
+   the info-link, so the whole info-box reads as one primary-tinted note. Only the colour changed. */
+.st-freq-info-strong { font-weight: 600; color: var(--bs-primary); }
+.st-freq-info-text { color: var(--st-muted); }
+.st-freq-info-link { margin-left: 3px; font-weight: 600; white-space: nowrap; color: var(--bs-primary); }
+
+/* ── WP-ST-EDIT-M — Frekans MODE seçici: choice-box kartları (KAPSAM .st-scope-type deseniyle aynı görünüm) ────────────
+   The raw frequency-mode <select> became three choice-box buttons (Politikaya işaretçi / Beyan edilen niyet / Yok), each
+   with a title over a small sub-label (motor okur / yalnızca doküman / referans verilmedi). Unselected is bg-body + a
+   subtle border; the selected one gets a primary border, a primary-subtle wash and a primary title — the same language as
+   the KAPSAM level buttons. Unlike scope, the mode IS disabled when the bindings are frozen (it is a binding attribute). */
+.st-editor-scope .st-freq-mode {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    text-align: left;
+    padding: 0.5rem 0.875rem;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+.st-editor-scope .st-freq-mode:hover:not(.active):not(:disabled) {
+    border-color: color-mix(in sRGB, var(--bs-primary) 45%, var(--bs-border-color));
+    background: rgba(var(--bs-primary-rgb), 0.035);
+}
+.st-editor-scope .st-freq-mode.active {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary-bg-subtle);
+}
+.st-editor-scope .st-freq-mode:disabled { opacity: 0.55; cursor: not-allowed; }
+.st-editor-scope .st-freq-mode-title { font-size: 0.8125rem; font-weight: 500; line-height: 1.2; }
+.st-editor-scope .st-freq-mode.active .st-freq-mode-title { color: var(--bs-primary); }
+.st-editor-scope .st-freq-mode-sub { font-size: 11px; line-height: 1.2; opacity: 0.75; }
+.st-editor-scope .st-freq-mode-sub:empty { display: none; }
+
+/* ── WP-ST-EDIT-H — KAPSAM: ScopeType buttons use the Task Center .choice-box card look ──── */
+/* The Bootstrap btn-outline-primary classes were dropped (no filled active state); the .st-scope-type class now owns
+   the whole appearance, mirroring backbone-custom.css `.choice-box` / `.choice-box:has(:checked)`: unselected is
+   bg-body + a subtle border; selected gets a primary border, a faint primary-subtle wash and a primary title. The
+   container is still a plain d-flex flex-wrap gap-2 in the markup (widths untouched), and the title stacks over a
+   small sub-label inside each button. Scope stays editable even when the bindings are frozen (the address is an
+   attribute, not identity), so these are never disabled by the frozen state. */
+.st-editor-scope .st-scope-type {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+    text-align: left;
+    padding: 0.5rem 0.875rem;
+    background: var(--bs-card-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+}
+.st-editor-scope .st-scope-type:hover:not(.active) {
+    border-color: color-mix(in sRGB, var(--bs-primary) 45%, var(--bs-border-color));
+    background: rgba(var(--bs-primary-rgb), 0.035);
+}
+.st-editor-scope .st-scope-type.active {
+    border-color: var(--bs-primary);
+    background: var(--bs-primary-bg-subtle);
+}
+.st-editor-scope .st-scope-type-title { font-size: 0.8125rem; font-weight: 500; line-height: 1.2; }
+.st-editor-scope .st-scope-type.active .st-scope-type-title { color: var(--bs-primary); }
+.st-editor-scope .st-scope-type-sub { font-size: 11px; line-height: 1.2; opacity: 0.75; }
+.st-editor-scope .st-scope-type-sub:empty { display: none; }
+
+/* ── WP-ST-EDIT-E — ÇÖZÜMLENEN KAPSAM box (bg-body, not the mockup's literal grey) */
+.st-editor-scope .st-resolved-scope {
+    margin-top: 14px;
+    padding: 9px 11px;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.st-editor-scope .st-resolved-scope-label {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-resolved-scope-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--st-heading);
+}
+.st-editor-scope .st-resolved-scope-value.is-empty { color: var(--bs-danger); }
+
+/* ── WP-ST-EDIT-G — Segmentler bölümü (özet + display satır + rol toggle + dashed boş-hal + picker) ────────────────
+   Aligns the segment section to the mockup while staying theme-aware (bg-body, Bootstrap tokens). The row shows the
+   bound segment's name + SEG code + a type badge (NO member count — the backend list carries none) and a segmented
+   role toggle; adding is done through the inline "+ Segment ekle" picker. Everything is scoped under .st-editor-scope. */
+.st-editor-scope .st-segment-summary {
+    font-family: var(--bs-font-monospace);
+    font-size: 11px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+/* ── WP-ST-EDIT-I — segment satırları/picker beyaz (card-bg) + Task Center tipografisi (body-font, küçük boyutlar) +
+   rounded-pill tip badge (form.js). EDIT-G'de yüzeyler bg-body (gri sayfa zemini) idi ve fontlar büyük inherit'ti; kart
+   içinde gri görünüyordu. Beyaz için var(--bs-card-bg), aile için var(--bs-body-font-family) ve boyutlar /Tasks/Create
+   satırlarıyla hizalı. Tema-duyarlı; hover/is-active vurguları korunur. */
+/* WP-ST-EDIT-Q — the product empty-state reuses the segment section's dashed box (same theme-aware surface). */
+.st-editor-scope .st-segment-empty,
+.st-editor-scope .st-prod-empty {
+    padding: 17px;
+    text-align: center;
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    color: var(--bs-secondary-color);
+    background: var(--bs-card-bg);
+    font-family: var(--bs-body-font-family);
+    font-size: 0.875rem;
+}
+.st-editor-scope .st-seg-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 9px 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+    font-family: var(--bs-body-font-family);
+}
+.st-editor-scope .st-seg-main { flex: 1 1 180px; min-width: 0; }
+.st-editor-scope .st-seg-name {
+    /* WP-ST-EDIT-L — smaller (0.8125rem/13px) and darker: bs-heading-color read as mid-grey in this theme, so use the
+       high-emphasis token (Bootstrap 5.3 ~black; theme-aware, light in dark mode) with a near-black fallback. */
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-seg-meta {
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-seg-type { flex: 0 0 auto; }
+/* WP-ST-EDIT-L — the role toggle button group (.st-seg-role*) is retired; the role is now a single select2 dropdown
+   (.js-role). The container gives it a fixed, compact width and lets the select2 box (or the plain <select> when select2
+   is unavailable) fill it. */
+.st-editor-scope .st-seg-roles { flex: 0 0 auto; width: 150px; }
+.st-editor-scope .st-seg-roles .select2-container { width: 100% !important; }
+
+.st-editor-scope .st-segment-add {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    background: var(--bs-card-bg);
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--st-text);
+    cursor: pointer;
+}
+.st-editor-scope .st-segment-add:hover { border-color: var(--st-accent); color: var(--st-accent); }
+.st-editor-scope .st-segment-add:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.st-editor-scope .st-segment-picker {
+    margin-top: 9px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+.st-editor-scope .st-segment-choice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 11px;
+    background: var(--bs-card-bg);
+    border: 0;
+    border-bottom: 1px solid var(--bs-border-color);
+    text-align: left;
+    color: var(--st-text);
+    cursor: pointer;
+}
+.st-editor-scope .st-segment-choice:last-child { border-bottom: 0; }
+.st-editor-scope .st-segment-choice:hover { background: rgba(var(--bs-primary-rgb), 0.07); }
+.st-editor-scope .st-segment-choice-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    /* WP-ST-EDIT-L — matches the display row: 0.8125rem + high-emphasis (near-black) colour. */
+    font-size: 0.8125rem;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-segment-choice-code {
+    flex: 0 0 auto;
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+.st-editor-scope .st-segment-picker-note {
+    padding: 11px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--bs-secondary-color);
+    background: var(--bs-body-bg);
+}
+
+/* ── WP-ST-EDIT-V — İçerik checkbox kart ızgarası (mockup). Grid auto-fit; her kart = checkbox + ad + kind·kod (mono) +
+   durum rozeti. Yalnız yayında kart seçilebilir (yeşil vurgu, :has(:checked)); taslak/arşiv is-disabled (soluk, pasif).
+   Altta mono uppercase "SİLME YOK" notu. ──────────────────────────────────────────────────────────────────────────── */
+.st-editor-scope .st-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 10px;
+}
+.st-editor-scope .st-content-grid-empty {
+    padding: 14px;
+    font-size: 0.875rem;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-content-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+    cursor: pointer;
+}
+.st-editor-scope .st-content-choice:has(.js-content-check:checked) {
+    border-color: var(--bs-success);
+    background: rgba(var(--bs-success-rgb), 0.06);
+}
+.st-editor-scope .st-content-choice.is-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: var(--bs-body-bg);
+}
+.st-editor-scope .st-content-choice .js-content-check { flex: 0 0 auto; margin-top: 2px; }
+.st-editor-scope .st-content-choice-body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.st-editor-scope .st-content-choice-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.st-editor-scope .st-content-choice-meta {
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-content-choice-status { flex: 0 0 auto; align-self: flex-start; }
+.st-editor-scope .st-content-nodelete {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+
+/* ── WP-ST-EDIT-P — Ürün bölümü DÜZ (mockup): başlık altı Σ badge + "Eşit dağıt" kontrol satırı, Σ≠100 uyarı kutusu ve
+   her satır = ürün picker (ad + alt-satır MDM-GP kod) + yüzde + kaldır ikon. Segment satırı (.st-seg-row) görünüm
+   diliyle aynı hizada. ─────────────────────────────────────────────────────────────────────────────────────────── */
+.st-editor-scope .st-prod-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 11px;
+}
+.st-editor-scope .st-prod-total-label {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope #productWeightBadge { font-variant-numeric: tabular-nums; }
+.st-editor-scope .st-prod-warn {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 11px;
+    border-radius: 6px;
+    background: var(--bs-danger-bg-subtle);
+    border: 1px solid var(--bs-danger-border-subtle);
+    color: var(--bs-danger-text-emphasis);
+    font-size: 12.5px;
+}
+.st-editor-scope .st-prod-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 11px;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 6px;
+    background: var(--bs-card-bg);
+}
+.st-editor-scope .st-prod-main { flex: 1 1 200px; min-width: 0; }
+/* WP-ST-EDIT-R — the optional per-line SKU column (mockup ÜRÜN | SKU | YÜZDE), fixed width between the product label and
+   the weight so the column head lines up over it. WP-ST-EDIT-T — the cell now holds a searchable gsku select2; force the
+   select2 container to fill the fixed column so it does not overflow the row/head alignment. */
+.st-editor-scope .st-prod-sku { flex: 0 0 auto; width: 160px; }
+.st-editor-scope .st-prod-sku .select2-container { width: 100% !important; }
+.st-editor-scope .st-prod-meta {
+    margin-top: 4px;
+    font-family: var(--bs-font-monospace);
+    font-size: 10.5px;
+    color: var(--bs-secondary-color);
+    min-height: 1em;
+}
+.st-editor-scope .st-prod-weight {
+    flex: 0 0 auto;
+    width: 116px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.st-editor-scope .st-prod-weight .js-weight { text-align: right; }
+.st-editor-scope .st-prod-weight-sign {
+    font-family: var(--bs-font-monospace);
+    font-size: 12px;
+    color: var(--bs-secondary-color);
+}
+
+/* ── WP-ST-EDIT-Q — aramalı "Ürün ekle…" picker + sabit ürün ad etiketi + Σ progress bar (mockup). Theme-aware Bootstrap
+   tokens, scoped under .st-editor-scope. ───────────────────────────────────────────────────────────────────────────── */
+/* The picker sits above the line list; its wrapper is the select2 dropdownParent, so the box fills the card width. */
+.st-editor-scope .st-prod-picker { margin-bottom: 11px; }
+.st-editor-scope .st-prod-picker .select2-container { width: 100% !important; }
+
+/* The row's product is now a read-only label (name + MDM-GP code beneath), matching the segment display row typography. */
+.st-editor-scope .st-prod-name {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #2f3349;
+    color: var(--bs-emphasis-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The Σ progress bar grows to fill the control row between the label and "Eşit dağıt"; the fill colour tracks the badge
+   (success at exactly 100.00, danger otherwise). form.js sets the width and toggles is-ok/is-danger. */
+.st-editor-scope .st-prod-progress {
+    flex: 1 1 120px;
+    min-width: 90px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bs-secondary-bg);
+    overflow: hidden;
+}
+.st-editor-scope .st-prod-progress-bar {
+    display: block;
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: var(--bs-danger);
+    transition: width 0.2s ease, background-color 0.2s ease;
+}
+.st-editor-scope .st-prod-progress-bar.is-ok { background: var(--bs-success); }
+.st-editor-scope .st-prod-progress-bar.is-danger { background: var(--bs-danger); }
+
+/* ── WP-ST-EDIT-R — ÜRÜN | SKU | YÜZDE kolon başlık satırı (mockup). Kolon genişlikleri .st-prod-row ile birebir hizalı:
+   ürün-main esnek (1 1 200) · sku sabit 160 · weight sabit 116 · kaldır ikonu için spacer. ─────────────────────────── */
+.st-editor-scope .st-prod-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 11px;
+    margin-bottom: 2px;
+}
+.st-editor-scope .st-prod-head > span {
+    font-family: var(--bs-font-monospace);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+.st-editor-scope .st-prod-head-product { flex: 1 1 200px; min-width: 0; }
+.st-editor-scope .st-prod-head-sku { flex: 0 0 auto; width: 160px; }
+.st-editor-scope .st-prod-head-weight { flex: 0 0 auto; width: 116px; text-align: right; }
+.st-editor-scope .st-prod-head-spacer { flex: 0 0 auto; width: 30px; }

@@ -29,9 +29,9 @@
   <data name="LanguageCode" xml:space="preserve"><value>Language</value></data>
   <data name="ContentVersion" xml:space="preserve"><value>Content Version</value></data>
   <data name="Summary" xml:space="preserve"><value>Summary</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="TopicId" xml:space="preserve"><value>Topic</value></data>
-  <data name="AudienceProfileId" xml:space="preserve"><value>Audience Profile</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="TopicId" xml:space="preserve"><value>العنوان</value></data>
+  <data name="AudienceProfileId" xml:space="preserve"><value>ملف الجمهور</value></data>
   <data name="ConceptNodeId" xml:space="preserve"><value>Concept Node</value></data>
   <data name="BrandId" xml:space="preserve"><value>Brand</value></data>
   <data name="ProductId" xml:space="preserve"><value>Product</value></data>
@@ -82,26 +82,26 @@
   <data name="ContentPointerRequired" xml:space="preserve"><value>At least one content pointer is required.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
   <data name="TaxonomyTab" xml:space="preserve"><value>Taxonomy</value></data>
-  <data name="SubjectsTab" xml:space="preserve"><value>Subjects</value></data>
-  <data name="TopicsTab" xml:space="preserve"><value>Topics</value></data>
-  <data name="ProfilesTab" xml:space="preserve"><value>Audience Profiles</value></data>
-  <data name="CreateSubject" xml:space="preserve"><value>Create Subject</value></data>
-  <data name="CreateTopic" xml:space="preserve"><value>Create Topic</value></data>
-  <data name="CreateProfile" xml:space="preserve"><value>Create Profile</value></data>
-  <data name="EditSubject" xml:space="preserve"><value>Edit Subject</value></data>
-  <data name="EditTopic" xml:space="preserve"><value>Edit Topic</value></data>
-  <data name="EditProfile" xml:space="preserve"><value>Edit Profile</value></data>
-  <data name="ArchiveSubject" xml:space="preserve"><value>Archive Subject</value></data>
-  <data name="ArchiveTopic" xml:space="preserve"><value>Archive Topic</value></data>
-  <data name="ArchiveProfile" xml:space="preserve"><value>Archive Profile</value></data>
+  <data name="SubjectsTab" xml:space="preserve"><value>المواضيع</value></data>
+  <data name="TopicsTab" xml:space="preserve"><value>العناوين</value></data>
+  <data name="ProfilesTab" xml:space="preserve"><value>ملفات الجمهور</value></data>
+  <data name="CreateSubject" xml:space="preserve"><value>إنشاء موضوع</value></data>
+  <data name="CreateTopic" xml:space="preserve"><value>إنشاء عنوان</value></data>
+  <data name="CreateProfile" xml:space="preserve"><value>إنشاء ملف جمهور</value></data>
+  <data name="EditSubject" xml:space="preserve"><value>تعديل الموضوع</value></data>
+  <data name="EditTopic" xml:space="preserve"><value>تعديل العنوان</value></data>
+  <data name="EditProfile" xml:space="preserve"><value>تعديل ملف الجمهور</value></data>
+  <data name="ArchiveSubject" xml:space="preserve"><value>أرشفة الموضوع</value></data>
+  <data name="ArchiveTopic" xml:space="preserve"><value>أرشفة العنوان</value></data>
+  <data name="ArchiveProfile" xml:space="preserve"><value>أرشفة ملف الجمهور</value></data>
   <data name="ArchiveTaxonomyConfirm" xml:space="preserve"><value>Archive this row? Existing content keeps its classification; only new attachment is blocked.</value></data>
   <data name="Name" xml:space="preserve"><value>Name</value></data>
   <data name="Code" xml:space="preserve"><value>Code</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
   <data name="Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="Description" xml:space="preserve"><value>Description</value></data>
-  <data name="ProfileType" xml:space="preserve"><value>Profile Type</value></data>
-  <data name="ParentTopicId" xml:space="preserve"><value>Parent Topic ID</value></data>
+  <data name="ProfileType" xml:space="preserve"><value>نوع الملف</value></data>
+  <data name="ParentTopicId" xml:space="preserve"><value>العنوان الأصلي</value></data>
   <data name="Active" xml:space="preserve"><value>نشط</value></data>
   <data name="Passive" xml:space="preserve"><value>غير نشط</value></data>
   <data name="Unknown" xml:space="preserve"><value>غير معروف</value></data>
@@ -122,7 +122,7 @@
   <data name="Deactivate" xml:space="preserve"><value>إلغاء التفعيل</value></data>
   <data name="Restore" xml:space="preserve"><value>استعادة</value></data>
   <data name="RestoredAsInactive" xml:space="preserve"><value>تمت الاستعادة كغير نشط.</value></data>
-  <data name="ParentSubjectId" xml:space="preserve"><value>الموضوع الأصل</value></data>
+  <data name="ParentSubjectId" xml:space="preserve"><value>الموضوع الأصلي</value></data>
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
   <data name="ConceptNodeSubjectNote" xml:space="preserve"><value>The node list follows the Subject and Concept Type chosen above.</value></data>
   <data name="ConceptNodePickerUnavailable" xml:space="preserve"><value>The concept node list could not be loaded, so the current value is kept as-is.</value></data>
@@ -141,7 +141,7 @@
   <data name="SelectValues" xml:space="preserve"><value>اختر القيم</value></data>
   <data name="CustomAxisPlaceholder" xml:space="preserve"><value>رمز المحور (مثل المنطقة)</value></data>
   <data name="CustomValuesPlaceholder" xml:space="preserve"><value>اكتب قيمة واضغط Enter</value></data>
-  <data name="SubjectSource" xml:space="preserve"><value>مصدر Subject</value></data>
+  <data name="SubjectSource" xml:space="preserve"><value>مصدر الموضوع</value></data>
   <data name="FromGlobalProduct" xml:space="preserve"><value>من Global Product</value></data>
   <data name="CustomSubject" xml:space="preserve"><value>مخصص</value></data>
   <data name="SelectGlobalProduct" xml:space="preserve"><value>اختر Global Product</value></data>
@@ -149,4 +149,10 @@
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>قائمة Global Product غير متاحة؛ أدخل موضوعًا مخصصًا.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>خدمة Global Product غير متوفرة؛ أدخل موضوعًا مخصصًا.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>ليس لديك إذن لتصفح Global Products؛ أدخل موضوعًا مخصصًا.</value></data>
+  <data name="Reorder" xml:space="preserve"><value>إعادة الترتيب</value></data>
+  <data name="ReorderSubjects" xml:space="preserve"><value>إعادة ترتيب المواضيع</value></data>
+  <data name="ReorderTopics" xml:space="preserve"><value>إعادة ترتيب العناوين</value></data>
+  <data name="ReorderProfiles" xml:space="preserve"><value>إعادة ترتيب ملفات الجمهور</value></data>
+  <data name="ReorderHelp" xml:space="preserve"><value>اسحب الصفوف لتغيير ترتيبها ثم احفظ.</value></data>
+  <data name="SaveOrder" xml:space="preserve"><value>حفظ الترتيب</value></data>
 </root>

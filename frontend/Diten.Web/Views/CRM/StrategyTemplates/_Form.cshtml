@@ -5,6 +5,17 @@
 @inject IHtmlLocalizer<StrategyTemplatesIndex> Localizer
 @{
     var jsonOpts = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
+    // WP-ST-EDIT-D — Kimlik başlığı badge'leri DISPLAY-only: durum ve sürüm doğrudan Model'den okunur,
+    // form alanı değildir. Durum etiketi mevcut yaşam-döngüsü L10n anahtarları ile eşlenir (yeni anahtar yok).
+    var identityStatusKey = (Model.TemplateStatus ?? "draft").ToLowerInvariant();
+    var identityStatusLabel = identityStatusKey switch
+    {
+        "active" => Localizer["Active"],
+        "inactive" => Localizer["Passive"],
+        "archived" => Localizer["Archived"],
+        _ => Localizer["LifecycleDraftTab"]
+    };
 }
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -14,11 +25,29 @@
 }
 
 <div class="row g-4">
-    <div class="col-12 col-lg-8">
+    <div class="col-12">
+
+        @* WP-ST-EDIT-C — SubjectType is DERIVED, not chosen: a hidden field the segment binding builder fills from the
+           first bound segment on create, and that keeps its immutable value on edit. The backend still requires it and
+           still enforces one homogeneous type. TemplateStatus is DISPLAY-only (shown as tabs in the right panel) and is
+           posted back unchanged so the update flow is untouched. Both cards that used to render these controls were
+           removed; the Geçerlilik dates moved to the right panel's YAŞAM DÖNGÜSÜ card. *@
+        <input type="hidden" asp-for="SubjectType" />
+        <input type="hidden" asp-for="TemplateStatus" />
+        @* WP-ST-EDIT-W — one-click "save + activate" flag. A plain hidden input (name binds to the ViewModel bool; a
+           string "true"/"false" parses cleanly) rather than asp-for, which would render a bool as a checkbox. form.js
+           sets it to 'true' only when the primary button is in "Kaydet ve aktifleştir" mode, 'false' otherwise. *@
+        <input type="hidden" name="ActivateAfterSave" id="activateAfterSave" value="false" />
 
         <section class="card mb-4">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["IdentitySection"]</h6>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-purchase-tag-alt dt-card-icon" aria-hidden="true"></i>@Localizer["IdentitySection"]</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-label-secondary">@identityStatusLabel</span>
+                        <span class="badge bg-label-secondary">v@(Model.TemplateVersion)</span>
+                    </div>
+                </div>
                 <div class="row g-3">
                     <div class="col-12 col-md-4">
                         <label asp-for="TemplateCode" class="form-label fw-medium">@Localizer["TemplateCode"] <span class="text-danger">*</span></label>
@@ -33,11 +62,88 @@
                     </div>
                     <div class="col-12">
                         <label asp-for="Description" class="form-label fw-medium">@Localizer["Description"]</label>
-                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000"></textarea>
+                        <textarea asp-for="Description" class="form-control" rows="3" maxlength="2000" placeholder="@Localizer["DescriptionPlaceholder"]"></textarea>
                     </div>
+                    @* WP-ST-EDIT-D — Notlar alanı Kimlik kartından kaldırıldı; ancak değer edit'te kaybolmasın diye
+                       hidden olarak POST edilir (TemplateStatus deseniyle aynı). Notes VM property'si korunur. *@
+                    <input type="hidden" asp-for="Notes" />
+                </div>
+            </div>
+        </section>
+
+        @*
+            KAPSAM — NEREDE (WP-ST-EDIT-A). A mirror of the Campaign scope section: the play's address level plus the
+            cascading reference (Country → Legal entity → Business unit / Territory). Unlike a cycle period's scope this
+            one is EDITABLE — a play's address is an attribute, not its identity. Exactly ONE reference is posted
+            (single-reference); the JS clears the others and the runtime refuses a second one regardless. The
+            scope-options feed is loaded client-side from the same-origin proxy, exactly as the Campaign form does.
+        *@
+        <section class="card mb-4">
+            <div class="card-body p-4">
+                @* WP-ST-EDIT-F — the ScopeHelp text moved up as a section sub-header, right under the KAPSAM heading;
+                   the duplicate form-text help at the bottom of the box was removed. *@
+                <h6 class="text-uppercase text-heading fw-semibold mb-2 d-flex align-items-center gap-2"><i class="bx bx-map dt-card-icon" aria-hidden="true"></i>@Localizer["ScopeSection"]</h6>
+                <p class="text-muted small mb-4">@Localizer["ScopeHelp"]</p>
+                <div class="row g-3" id="strategyTemplateScopeSection"
+                     data-scope-options-url="/CRM/StrategyTemplates/api/scope-options">
+                    @* WP-ST-EDIT-E — the scope LEVEL is chosen with a segmented button group, not a dropdown. The value
+                       still posts through a hidden #scopeType input (asp-for="ScopeType"), so the backend, the cascade
+                       and the single-reference invariant are unchanged; form.js builds the buttons and drives that
+                       hidden input on click. *@
                     <div class="col-12">
-                        <label asp-for="Notes" class="form-label fw-medium">@Localizer["Notes"]</label>
-                        <textarea asp-for="Notes" class="form-control" rows="2" maxlength="2000"></textarea>
+                        <label asp-for="ScopeType" class="form-label fw-medium">
+                            @Localizer["ScopeType"] <span class="text-danger">*</span>
+                        </label>
+                        <input type="hidden" asp-for="ScopeType" id="scopeType" data-selected="@Model.ScopeType" />
+                        <div class="d-flex flex-wrap gap-2" id="scopeTypeButtons" role="group"
+                             aria-label="@Localizer["ScopeType"]"></div>
+                        <div class="form-text">@Localizer["ScopeEditableHint"]</div>
+                    </div>
+
+                    @* Exactly ONE reference block is visible at a time — the address is discriminated, never combined. *@
+                    <div class="col-12 col-md-4 d-none" data-scope-block="country">
+                        <label asp-for="CountryScope" class="form-label fw-medium">@Localizer["CountryScope"]</label>
+                        <select asp-for="CountryScope" id="countryScope" class="form-select"
+                                data-selected="@Model.CountryScope"></select>
+                        <div class="form-text d-none" data-scope-note="country"></div>
+                    </div>
+
+                    <div class="col-12 col-md-4 d-none" data-scope-block="legal-entity">
+                        <label asp-for="LegalEntityId" class="form-label fw-medium">@Localizer["LegalEntity"]</label>
+                        <select asp-for="LegalEntityId" id="legalEntityId" class="form-select"
+                                data-selected="@(Model.LegalEntityId?.ToString())"></select>
+                        <div class="form-text d-none" data-scope-note="legal-entity"></div>
+                    </div>
+
+                    @* Business unit is a country-first cascade: the country filter narrows the list to the units the
+                       tenant's territory plans actually cover. The filter is NOT the play's scope and is never posted. *@
+                    @* WP-ST-EDIT-F — the country filter and the business-unit picker sit side by side (row g-2) instead
+                       of stacked; only the layout changed — buFilterCountry → loadScopeOptions → territory-derived BU
+                       fill is untouched, and the filter is still never posted. *@
+                    @* WP-ST-EDIT-H — the business-unit block spans the full card width (col-12, no col-md-4) so its two
+                       side-by-side selects stay wide; country/legal-entity stay col-md-4 (they are single-field). *@
+                    <div class="col-12 d-none" data-scope-block="business-unit">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label asp-for="BusinessUnitCountryFilter" class="form-label fw-medium">
+                                    @Localizer["BusinessUnitCountryFilter"]
+                                </label>
+                                <select asp-for="BusinessUnitCountryFilter" id="buFilterCountry" class="form-select"
+                                        data-selected="@Model.BusinessUnitCountryFilter"></select>
+                            </div>
+                            <div class="col-6">
+                                <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnit"]</label>
+                                <select asp-for="BusinessUnitId" id="businessUnitId" class="form-select"
+                                        data-selected="@Model.BusinessUnitId"></select>
+                            </div>
+                        </div>
+                        <div class="form-text d-none" data-scope-note="business-unit"></div>
+                    </div>
+
+                    <div class="col-12">
+                        @* WP-ST-EDIT-E — ÇÖZÜMLENEN KAPSAM: an always-visible bordered box (bg-body). form.js paints the
+                           mono label + the resolved value (danger "henüz çözümlenmedi" when empty, breadcrumb when set). *@
+                        <div class="st-resolved-scope" id="resolvedScope"></div>
                     </div>
                 </div>
             </div>
@@ -55,15 +161,24 @@
         }
 
         @* BINDING 1 — "who". Embedded repeater; a play with no segment is not authorable. *@
+        @* WP-ST-EDIT-G — the section was realigned to the mockup: the heading reads "Segmentler — Kim" (the required
+           glyph moved off the heading — the section is still required, stated in the sub-header + right-panel checklist);
+           the count summary "N segment · {tip} tipi" sits on the right; each bound segment is shown as a display row
+           (name + type badge + SEG code, NO member count — the backend segment list carries none) with a segmented role
+           toggle (birincil / ikincil / hariç-not); the empty state is a dashed bg-body box; and "+ Segment ekle" opens an
+           inline picker. The SegmentBindingsJson contract (segmentId / bindingRole / sortOrder — sortOrder now an
+           automatic index) and the homogeneous SubjectType derivation are unchanged; only the markup + form.js changed. *@
         <section class="card mb-4" id="segmentBindingSection">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["SegmentSection"] <span class="text-danger">*</span></h6>
-                    <button type="button" id="btnAddSegmentBinding" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddSegmentBinding"]</button>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-group dt-card-icon" aria-hidden="true"></i>@Localizer["SegmentSection"]</h6>
+                    <span id="segmentSummary" class="st-segment-summary d-none"></span>
                 </div>
                 <small class="text-muted d-block mb-3">@Localizer["SegmentBindingHelp"]</small>
                 <div id="segmentBindingList" class="d-flex flex-column gap-2"></div>
-                <div id="segmentBindingEmpty" class="text-muted d-none">@Localizer["NoSegmentBindings"]</div>
+                <div id="segmentBindingEmpty" class="st-segment-empty d-none">@Localizer["NoSegmentBindings"]</div>
+                <div id="segmentPicker" class="st-segment-picker d-none"></div>
+                <button type="button" id="btnAddSegmentBinding" class="st-segment-add mt-2"><i class="bx bx-plus me-1"></i>@Localizer["AddSegmentBinding"]</button>
                 <input type="hidden" asp-for="SegmentBindingsJson" id="SegmentBindingsJson" />
             </div>
         </section>
@@ -71,16 +186,37 @@
         @* BINDING 2 — "how often". Three shapes, none of which writes a MOD-0165 policy. *@
         <section class="card mb-4" id="frequencySection">
             <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-3">@Localizer["FrequencySection"]</h6>
+                <h6 class="text-uppercase text-heading fw-semibold mb-3 d-flex align-items-center gap-2"><i class="bx bx-time-five dt-card-icon" aria-hidden="true"></i>@Localizer["FrequencySection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["FrequencyIntentHelp"]</small>
-                <div class="row g-3" id="frequencyEditor">
-                    <div class="col-12 col-md-4">
-                        <label class="form-label fw-medium" for="frequencyMode">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>
-                        <select id="frequencyMode" class="form-select"></select>
+                @* WP-ST-EDIT-B — frequency is a POINTER only: the real cadence lives in the Visit Frequency Policies
+                   module (MOD-0165). This info-box states that and links out; the frequency FIELD logic is unchanged. *@
+                <div class="st-freq-info" role="note">
+                    <span class="st-freq-info-dot" aria-hidden="true"></span>
+                    <div class="st-freq-info-body">
+                        <span class="st-freq-info-strong">@Localizer["FreqInfoStrong"]</span><span class="st-freq-info-text">@Localizer["FreqInfoBody"]</span>
+                        <a href="/CRM/VisitFrequencyPolicies" class="st-freq-info-link" target="_blank" rel="noopener">@Localizer["FreqInfoLink"]</a>
                     </div>
+                </div>
+                <div class="row g-3" id="frequencyEditor">
+                    @* WP-ST-EDIT-M — the frequency intent MODE is chosen with three choice-box buttons (policy-reference /
+                       declared-intent / none), not a raw <select>. The value still posts through the hidden #frequencyMode
+                       input, so readFrequency() and the FrequencyIntentJson contract are unchanged; form.js builds the
+                       buttons (title + sub-label) and drives that hidden input on click. *@
+                    <div class="col-12">
+                        <label class="form-label fw-medium">@Localizer["FrequencyIntentMode"] <span class="text-danger">*</span></label>
+                        <input type="hidden" id="frequencyMode" />
+                        <div class="d-flex flex-wrap gap-2" id="frequencyModeButtons" role="group"
+                             aria-label="@Localizer["FrequencyIntentMode"]"></div>
+                    </div>
+                    @* WP-ST-EDIT-N — the policy select sits side by side with a "Politikayı aç ↗" button that opens the
+                       SELECTED single policy's detail (info-box link opens the whole LIST); form.js drives its href and
+                       disables it while no policy is chosen. The select + FrequencyIntentJson logic is unchanged. *@
                     <div class="col-12 col-md-8 d-none" id="frequencyPolicyBlock">
                         <label class="form-label fw-medium" for="frequencyPolicyId">@Localizer["FrequencyPolicy"] <span class="text-danger">*</span></label>
-                        <select id="frequencyPolicyId" class="form-select"></select>
+                        <div class="d-flex align-items-center gap-2">
+                            <select id="frequencyPolicyId" class="form-select"></select>
+                            <a id="frequencyPolicyOpen" class="btn btn-outline-primary btn-sm text-nowrap disabled" target="_blank" rel="noopener" aria-disabled="true" tabindex="-1">@Localizer["FreqOpenPolicySingle"] ↗</a>
+                        </div>
                     </div>
                     <div class="col-12 col-md-4 d-none frequency-declared">
                         <label class="form-label fw-medium" for="frequencyType">@Localizer["FrequencyType"] <span class="text-danger">*</span></label>
@@ -111,90 +247,73 @@
         @* BINDING 3 — "what". Product lines with the SKU split; the live total is a display only, the runtime decides. *@
         <section class="card mb-4" id="productSection">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ProductSection"]</h6>
-                    <button type="button" id="btnAddProductLine" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddProductLine"]</button>
+                @* WP-ST-EDIT-Q — the section head no longer carries a "+ ekle" button; a product is added through the
+                   searchable "Ürün ekle…" picker below (mockup). The heading + Σ badge move together on one row. *@
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <h6 class="text-uppercase text-heading fw-semibold mb-0 d-flex align-items-center gap-2"><i class="bx bx-package dt-card-icon" aria-hidden="true"></i>@Localizer["ProductSection"]</h6>
+                    <span class="badge bg-label-secondary" id="productWeightBadge">Σ 0.00%</span>
                 </div>
+                @* WP-ST-EDIT-Q — provenance sub-header (mockup): the products are validated against the MDM Global
+                   Product catalogue. *@
+                <p class="text-muted small mb-2">@Localizer["ProductCatalogHelp"]</p>
                 <small class="text-muted d-block mb-2">@Localizer["TotalMustBe100"]</small>
                 <div class="alert alert-secondary py-2 small" role="alert">
                     <i class="bx bx-info-circle me-1"></i>@Localizer["ContainmentNotVerifiedHelp"]
                 </div>
-                <div id="productLineList" class="d-flex flex-column gap-3"></div>
-                <div id="productLineEmpty" class="text-muted d-none">@Localizer["NoProductLines"]</div>
+                @* WP-ST-EDIT-Q — the searchable single-select "Ürün ekle…" picker (no button). form.js paints the pool
+                   (products not already on a line), binds select2 search, and appends a product-only line on pick; it is
+                   disabled with a reason when the actor may not browse MDM or the line limit is reached. The wrapper is
+                   the select2 dropdownParent. *@
+                <div class="st-prod-picker">
+                    <select id="productAddPicker" class="form-select form-select-sm"
+                            aria-label="@Localizer["AddProductLine"]"></select>
+                </div>
+                @* WP-ST-EDIT-P/Q — the flat product section: each line is a product + weight %, every line totals 100.00.
+                   This control row carries the live Σ progress bar + "Eşit dağıt"; form.js drives the bar width/colour and
+                   the even split. The SKU-allocation mode toggle and the per-line SKU sub-rows were removed from this
+                   screen — the backend still supports them, this UI does not edit them, and an incoming sku-allocated line
+                   round-trips untouched through ProductLinesJson. *@
+                <div class="st-prod-controls">
+                    <span class="st-prod-total-label">@Localizer["ProductWeightTotalLabel"]</span>
+                    <div class="st-prod-progress"><span class="st-prod-progress-bar" id="productWeightBar"></span></div>
+                    @* WP-ST-EDIT-R — bx-distribute-horizontal is not defined in the iconify set (renders as tofu); bx-equalizer
+                       is defined and carries the "even out" meaning. *@
+                    <button type="button" class="btn btn-sm btn-label-secondary" id="btnDistributeProducts">
+                        <i class="bx bx-equalizer me-1"></i>@Localizer["EqualDistribute"]
+                    </button>
+                </div>
+                @* Σ≠100 warning box (mockup). form.js fills the format text ({total}/{diff}) and toggles visibility. *@
+                <div class="st-prod-warn d-none" id="productWeightWarn" role="alert"></div>
+                @* WP-ST-EDIT-R — column header row (mockup ÜRÜN | SKU | YÜZDE). Its column widths track the .st-prod-row
+                   layout so the labels sit over their inputs; it is hidden while there are no lines (form.js toggles it
+                   with the empty-state). The trailing spacer keeps the labels clear of the remove icon column. *@
+                <div id="productLineHead" class="st-prod-head d-none">
+                    <span class="st-prod-head-product">@Localizer["ProductColProduct"]</span>
+                    <span class="st-prod-head-sku">@Localizer["ProductColSku"]</span>
+                    <span class="st-prod-head-weight">@Localizer["ProductColWeight"]</span>
+                    <span class="st-prod-head-spacer" aria-hidden="true"></span>
+                </div>
+                <div id="productLineList" class="d-flex flex-column gap-2"></div>
+                @* WP-ST-EDIT-Q — dashed empty-state box (the segment section pattern), not a bare text line. *@
+                <div id="productLineEmpty" class="st-prod-empty d-none">@Localizer["NoProductLines"]</div>
                 <input type="hidden" asp-for="ProductLinesJson" id="ProductLinesJson" />
             </div>
         </section>
 
         @* BINDING 4 — "which story". Typed and published-only. *@
+        @* WP-ST-EDIT-V — the content section is a CHECKBOX CARD GRID (mockup), replacing the EDIT-U inline picker. form.js
+           paints one card per knowledge-path + engagement-journey (name + kind·code + status badge); only published refs
+           are selectable (their checkbox toggles the binding), draft/archived cards are disabled and greyed. The footer
+           note states the ship invariant (no delete — plays are only archived, active versions are immutable). The
+           ContentBindingsJson contract (contentRefType / contentRefId / sortOrder — an automatic index — / notes) and the
+           typed + published + pinned invariant are unchanged; only the markup + form.js changed. *@
         <section class="card mb-4" id="contentSection">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="text-uppercase text-heading fw-semibold mb-0">@Localizer["ContentSection"]</h6>
-                    <button type="button" id="btnAddContentBinding" class="btn btn-sm btn-primary"><i class="bx bx-plus me-1"></i>@Localizer["AddContentBinding"]</button>
-                </div>
+                <h6 class="text-uppercase text-heading fw-semibold mb-1 d-flex align-items-center gap-2"><i class="bx bx-book-content dt-card-icon" aria-hidden="true"></i>@Localizer["ContentSection"]</h6>
                 <small class="text-muted d-block mb-3">@Localizer["ContentPublishedOnlyHelp"]</small>
-                <div id="contentBindingList" class="d-flex flex-column gap-2"></div>
-                <div id="contentBindingEmpty" class="text-muted d-none">@Localizer["NoContentBindings"]</div>
+                <div id="contentBindingList" class="st-content-grid"></div>
+                <p class="st-content-nodelete mt-3 mb-0">@Localizer["ContentNoDeleteNote"]</p>
                 <input type="hidden" asp-for="ContentBindingsJson" id="ContentBindingsJson" />
-            </div>
-        </section>
-    </div>
-
-    <div class="col-12 col-lg-4">
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["ClassificationSection"]</h6>
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label asp-for="SubjectType" class="form-label fw-medium">@Localizer["SubjectType"] <span class="text-danger">*</span></label>
-                        <select asp-for="SubjectType" class="select2 form-select" disabled="@(Model.TemplateId.HasValue)" required>
-                            @foreach (var x in Model.SubjectTypes) { <option value="@x">@x</option> }
-                        </select>
-                        @if (Model.TemplateId.HasValue)
-                        {
-                            @* Immutable after create, so it is posted back as a hidden field rather than silently lost. *@
-                            <input type="hidden" asp-for="SubjectType" />
-                        }
-                        <span asp-validation-for="SubjectType" class="text-danger small mt-1"></span>
-                        <small class="text-muted">@Localizer["SubjectTypeHelp"]</small>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="BusinessUnitId" class="form-label fw-medium">@Localizer["BusinessUnitId"]</label>
-                        <input asp-for="BusinessUnitId" class="form-control" maxlength="64" />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="card mb-4">
-            <div class="card-body p-4">
-                <h6 class="text-uppercase text-heading fw-semibold mb-4">@Localizer["LifecycleSection"]</h6>
-                <div class="row g-3">
-                    <div class="col-12">
-                        @* No required star: the status is DISPLAY-only here. The author never fills it — the lifecycle
-                           moves through Activate / Archive, and the server ignores any status in the payload. *@
-                        <label asp-for="TemplateStatus" class="form-label fw-medium">@Localizer["TemplateStatus"]</label>
-                        <select asp-for="TemplateStatus" class="select2 form-select" disabled>
-                            @foreach (var x in Model.TemplateStatuses) { <option value="@x">@x</option> }
-                        </select>
-                        <input type="hidden" asp-for="TemplateStatus" />
-                        <small class="text-muted">@Localizer["StatusSeparateEndpointHelp"]</small>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="EffectiveFrom" class="form-label fw-medium">@Localizer["EffectiveFrom"] <span class="text-danger">*</span></label>
-                        <input asp-for="EffectiveFrom" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveFrom?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" required />
-                        <span asp-validation-for="EffectiveFrom" class="text-danger small mt-1"></span>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="EffectiveTo" class="form-label fw-medium">@Localizer["EffectiveTo"]</label>
-                        <input asp-for="EffectiveTo" type="text" class="form-control flatpickr-date" value="@(Model.EffectiveTo?.ToString("yyyy-MM-dd"))" placeholder="YYYY-MM-DD" autocomplete="off" />
-                    </div>
-                    <div class="col-12">
-                        <div class="alert alert-secondary mb-0 py-2 small">
-                            <i class="bx bx-info-circle me-1"></i>@Localizer["ApplyIsMicroTargetHelp"]
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     </div>
@@ -205,6 +324,9 @@
 <script id="strategyTemplateFormBootstrap" type="application/json">@Html.Raw(JsonSerializer.Serialize(new {
     templateId = Model.TemplateId,
     subjectType = Model.SubjectType,
+    // WP-ST-EDIT-W — the current lifecycle status drives the dynamic Save label (active → "Kaydet (aktif)", otherwise
+    // "Kaydet ve aktifleştir"). Display-only; it never changes what is posted.
+    templateStatus = Model.TemplateStatus,
     areBindingsFrozen = Model.AreBindingsFrozen,
     endpoint = "/CRM/StrategyTemplates/api",
     bindingRoles = Model.BindingRoles,

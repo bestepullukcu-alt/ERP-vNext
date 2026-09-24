@@ -407,7 +407,7 @@
             colReorder: { columns: ':gt(0):not(:last-child)' },
             order: spec.order,
             language: { emptyTable: L.EmptyState, processing: L.Loading },
-            buttons: window.DtDefaults ? window.DtDefaults.exportButtons(
+            buttons: (function () { const __base = window.DtDefaults ? window.DtDefaults.exportButtons(
                 canManage ? spec.createText : '',
                 canManage ? { 'data-tax-create': kind } : {},
                 {
@@ -424,7 +424,9 @@
                         action: async function (e, api) { const fn = api?.table?.().container?.().__taxSaveView; if (fn) await fn(); }
                     }
                 },
-                { exportColumns: spec.managedColumns, colvisColumns: spec.managedColumns }) : [],
+                { exportColumns: spec.managedColumns, colvisColumns: spec.managedColumns }) : [];
+                // WP-KNOWLEDGE-SORTORDER-UX: append a manage-only "Reorder" button group (dt-defaults untouched).
+                return canManage ? __base.concat([{ buttons: [reorderToolbarButton(kind)] }]) : __base; })(),
             initComplete: function () {
                 const api = this.api();
                 mountInlineFilter(spec.hostId, api);
@@ -946,6 +948,98 @@
         }));
     };
 
+    // ─── Auto-append sort order ──────────────────────────────────────────────
+    // WP-KNOWLEDGE-SORTORDER-UX: the "Sıra" field is hidden; a new row goes to the END of its scope
+    // (max active sortOrder + 10; empty scope → 10). Scope: subjects = all subjects, audience-profiles = all profiles,
+    // topics = the chosen parent Subject's topics. Edit keeps the stored value (only create auto-appends).
+    const nextSortOrder = (kind, src) => {
+        let rows = state[kind].rows.filter(r => !r.isArchived);
+        if (kind === 'topics') { const sid = src?.subjectId; rows = rows.filter(r => String(r.subjectId) === String(sid || '')); }
+        const max = rows.reduce((m, r) => Math.max(m, Number(r.sortOrder) || 0), 0);
+        return max + 10;
+    };
+
+    // ─── Reorder (sort-order) offcanvas — flat sortable list, NOT the DataTable tbody ─────────────
+    // A separate flat list keeps the grid's paging/sort/redraw intact (applying Sortable to a DataTable
+    // tbody is the fragile path). Save renumbers the visible order 10/20/30… and persists each changed
+    // row through the existing update endpoint (KP persistOrder idiom: changed-only, toast, reload).
+    let reorderKind = null;
+    let reorderSortable = null;
+    const reorderCanvas = () => window.bootstrap?.Offcanvas.getOrCreateInstance(document.getElementById('taxonomyReorderCanvas'));
+    const reorderToolbarButton = kind => ({
+        text: '<i class="icon-base bx bx-sort icon-sm"></i><span class="ms-2 d-none d-lg-inline-block">' + (L.Reorder || '') + '</span>',
+        className: 'btn btn-label-secondary dt-reorder-btn',
+        attr: { title: L.Reorder, 'data-bs-toggle': 'tooltip', 'data-tax-reorder': kind },
+        action: () => openReorder(kind)
+    });
+    const reorderTitleFor = kind => kind === 'topics' ? (L.ReorderTopics || L.Reorder)
+        : kind === 'audience-profiles' ? (L.ReorderProfiles || L.Reorder) : (L.ReorderSubjects || L.Reorder);
+    const activeOf = kind => state[kind].rows.filter(r => !r.isArchived);
+    const reorderScope = (kind, subjectId) => {
+        let rows = activeOf(kind);
+        if (kind === 'topics') rows = rows.filter(r => String(r.subjectId) === String(subjectId || ''));
+        return rows.slice().sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0)
+            || String(a.name || '').localeCompare(String(b.name || '')));
+    };
+    const renderReorderList = (kind, subjectId) => {
+        const host = document.getElementById('taxReorderList');
+        if (!host) return;
+        const rows = reorderScope(kind, subjectId);
+        host.innerHTML = rows.map(r => `
+            <li class="list-group-item d-flex align-items-center gap-2 js-reorder-row" data-id="${esc(r.id)}">
+                <i class="bx bx-grid-vertical text-muted js-reorder-handle" role="button" style="cursor:grab" aria-hidden="true"></i>
+                <span class="flex-grow-1 text-truncate">${esc(r.code)} — ${esc(r.name)}</span>
+                <span class="btn-group btn-group-sm ms-auto">
+                    <button type="button" class="btn btn-icon btn-label-secondary js-reorder-up"><i class="bx bx-chevron-up"></i></button>
+                    <button type="button" class="btn btn-icon btn-label-secondary js-reorder-down"><i class="bx bx-chevron-down"></i></button>
+                </span>
+            </li>`).join('');
+        document.getElementById('taxReorderEmpty')?.classList.toggle('d-none', rows.length > 0);
+        // Fresh Sortable per render (DUR fallback: the ▲/▼ buttons move rows even if Sortable is unavailable).
+        if (reorderSortable) { try { reorderSortable.destroy(); } catch (e) { /* already gone */ } reorderSortable = null; }
+        if (window.Sortable && rows.length) {
+            reorderSortable = window.Sortable.create(host, { handle: '.js-reorder-handle', animation: 150, ghostClass: 'opacity-50' });
+        }
+    };
+    const openReorder = kind => {
+        if (!canManage) return;
+        reorderKind = kind;
+        document.getElementById('taxonomyReorderTitle').textContent = reorderTitleFor(kind);
+        const help = document.getElementById('taxonomyReorderHelp'); if (help) help.textContent = L.ReorderHelp || '';
+        const wrap = document.getElementById('taxReorderSubjectWrap');
+        const sel = document.getElementById('taxReorderSubject');
+        if (kind === 'topics') {
+            const subjects = activeOf('subjects').slice().sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+            sel.innerHTML = subjects.map(s => `<option value="${esc(s.id)}">${esc(s.code)} — ${esc(s.name)}</option>`).join('');
+            wrap?.classList.remove('d-none');
+            renderReorderList('topics', sel.value);
+        } else {
+            wrap?.classList.add('d-none');
+            renderReorderList(kind, null);
+        }
+        reorderCanvas()?.show();
+    };
+    const persistReorder = async () => {
+        if (!reorderKind) return;
+        const kind = reorderKind;
+        const host = document.getElementById('taxReorderList');
+        const orderedIds = Array.from(host.querySelectorAll('.js-reorder-row')).map(el => el.dataset.id);
+        const changed = [];
+        orderedIds.forEach((id, i) => {
+            const row = findRow(kind, id);
+            const desired = (i + 1) * 10;
+            if (row && (Number(row.sortOrder) || 0) !== desired) changed.push(Object.assign({}, row, { sortOrder: desired }));
+        });
+        if (!changed.length) { reorderCanvas()?.hide(); return; }
+        try {
+            // changed-only full-replace update; a partial failure surfaces a toast and the reload re-syncs the grid.
+            for (const src of changed) await save(kind, src.id, src);
+            window.showToast?.(L.RecordUpdated, 'success');
+        } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
+        reorderCanvas()?.hide();
+        await load(kind);
+    };
+
     document.addEventListener('click', async event => {
         // "Create" lives in each table's toolbar (add-new slot) tagged with data-tax-create.
         const create = event.target.closest('[data-tax-create]');
@@ -1027,12 +1121,29 @@
                 src.externalReferences = others;
             }
         }
+        // WP-KNOWLEDGE-SORTORDER-UX: a new row auto-appends to the end of its scope (the "Sıra" field is hidden, so the
+        // user never types a number). Edit keeps whatever sort order the row already has.
+        if (!id) src.sortOrder = nextSortOrder(kind, src);
         try {
             await save(kind, id, src);
             window.showToast?.(id ? L.RecordUpdated : L.RecordCreated, 'success');
             canvas()?.hide();
             await load(kind);
         } catch (error) { window.showToast?.(error.message || L.ErrorState, 'error'); }
+    });
+
+    // ─── Reorder panel wiring ────────────────────────────────────────────────
+    document.getElementById('taxonomyReorderSave')?.addEventListener('click', persistReorder);
+    document.getElementById('taxReorderSubject')?.addEventListener('change', event => renderReorderList('topics', event.target.value));
+    // ▲/▼ move a row within the flat list (a keyboard/click fallback that works with or without drag-drop).
+    document.getElementById('taxReorderList')?.addEventListener('click', event => {
+        const li = event.target.closest('.js-reorder-row');
+        if (!li) return;
+        if (event.target.closest('.js-reorder-up') && li.previousElementSibling) {
+            li.parentNode.insertBefore(li, li.previousElementSibling);
+        } else if (event.target.closest('.js-reorder-down') && li.nextElementSibling) {
+            li.parentNode.insertBefore(li.nextElementSibling, li);
+        }
     });
 
     // ─── Filter apply / reset ────────────────────────────────────────────────
