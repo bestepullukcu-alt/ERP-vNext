@@ -6070,7 +6070,7 @@ Gelecek gerileme riski: düşük (yeni bir uç nokta, mevcut davranış değişm
 
 **Onay iş kaleminin başlığı "Onay: tasks &lt;guid&gt;" — onaylayan neye onay verdiğini görmüyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+DURUM: KAPANDI — `db44c3bec` → integration `86aced98f` (WP-PSS-WA-APPROVAL-TITLE-01, 2026-09-24; canlı doğrulandı) · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
 
 Ölçüldü: `WorkItemProjectionService.cs:25` sabit bir kaynak anahtarı kuruyor —
 `WorkAggregation_Title_Approval` → tr metni `Onay: {objectType} {objectId}`. Görevin başlığı hiç kullanılmıyor.
@@ -6084,6 +6084,16 @@ zorunda. Bu, toplantı → karar → görev → onay zincirini test edilemez de 
 İstenen: başlık kaynak görevin başlığını taşısın, `Requester` doldurulsun, kaynağa tıklanır bağlantı ve tek
 cümlelik sebep eklensin ("X onayını bekliyor"). Projeksiyon katmanında toplu iş; metinler yedi dilde.
 Gelecek gerileme riski: düşük (yalnız projeksiyon; iş akışı kuralları değişmiyor).
+
+**Kapanış (2026-09-24):** `IApprovalSourceResolver` (WorkAggregation) → `TaskApprovalSourceResolver` (MOD-0024, salt okunur, sayfa
+başına toplu): başlık = görevin kendisi, talep sahibi = incelemeye SON gönderen (onay/iş talebi: oluşturucu), `DeepLink` → /Tasks/{id},
+yeni sözleşme alanı `ArrivalReason` (2 anahtar × 7 dil; adsız cümle ayrı, ad yerine asla id). CT guard'ları (ajanın 6 sabotajının ötesinde
+6 boşluk): en son gönderen, id-yerine-ad, IsCurrentUser, boşluk bağlantı, XSS kaçışı, {name} yer tutucu. **Canlı (CT, admin oturumu):**
+mevcut görev incelemeye alınıp `accept → start → submitReview` sonrası gelen kutusunda "CT canlı: toplantıdan doğan görev" başlığı,
+"Diten Admin bu görevi onayına gönderdi · Kaynak kaydını aç" cümlesi ve `/Tasks/{id}` bağlantısı; guid yok. Not: dev kiracısında
+pozisyon/atama yok → yeni görev açılamıyor (`ORGANIZATION_UNIT_UNRESOLVED`, BL-358/366) — canlı zincir var olan görevle koşuldu;
+kontrol turundan önce organizasyon verisi gerekir. Sahibe kalan: iki kişili senaryo (gönderen ≠ okuyan) ve "Görevi aç" metni tercihi
+(bugün `DetailOpenSource` "Kaynak kaydını aç").
 
 ---
 
