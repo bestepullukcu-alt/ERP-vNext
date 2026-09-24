@@ -35,12 +35,14 @@ public sealed record CreateConceptChainTemplateCommand(
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<ConceptChainBranchInput>? Branches = null,
     string? ModeratorRoleType = null,
-    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null) : IRequest<Response<Guid>>;
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null) : IRequest<Response<Guid>>;
 
 /// <summary>Full replace of the mutable fields. <c>ChainCode</c> and <c>SubjectId</c> are immutable. A published version
 /// freezes <c>OrderedConceptTypes</c>, <c>Branches</c> AND the template-level <c>ModeratorRoleType</c> /
 /// <c>ForWhomAudienceProfileIds</c> (D-f) — changing any of them on a published template is rejected (make a new
-/// version).</summary>
+/// version). WP-CT-BE-B: <c>IgnoredNonConformingRelationshipIds</c> null = keep the stored set (so a save that does not
+/// carry resolutions never wipes them); a supplied set replaces it and is frozen on a published template too.</summary>
 public sealed record UpdateConceptChainTemplateCommand(
     Guid ConceptChainTemplateId,
     string ChainName,
@@ -52,6 +54,13 @@ public sealed record UpdateConceptChainTemplateCommand(
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<ConceptChainBranchInput>? Branches = null,
     string? ModeratorRoleType = null,
-    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null) : IRequest<Response<bool>>;
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null) : IRequest<Response<bool>>;
 
 public sealed record ArchiveConceptChainTemplateCommand(Guid ConceptChainTemplateId) : IRequest<Response<bool>>;
+
+/// <summary>WP-CT-BE-B — immediate "Yok say" write: REPLACES the ignored (resolved) relationship set of a saved,
+/// non-published template. Published → 409 (frozen). A record only — relationships are never touched (D8).</summary>
+public sealed record SetConceptChainTemplateConformanceResolutionsCommand(
+    Guid ConceptChainTemplateId,
+    IReadOnlyList<Guid>? IgnoredRelationshipIds) : IRequest<Response<bool>>;

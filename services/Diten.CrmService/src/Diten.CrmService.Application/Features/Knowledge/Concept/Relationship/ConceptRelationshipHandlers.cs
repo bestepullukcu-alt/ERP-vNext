@@ -65,7 +65,7 @@ internal static class ConceptRelationshipGraph
     }
 
     /// <summary>Is (fromType → toType), read in chain direction for the relationship type (addresses / evidences are
-    /// reversed — WP-CT-BE-A D2), an adjacent ordered pair in any non-archived chain template of the subject? Wraps the
+    /// reversed — WP-CT-BE-A D2), a forward-ordered pair in any non-archived chain template of the subject? Wraps the
     /// single classifier <see cref="ConceptChainConformance.Classify"/>.</summary>
     public static bool IsConforming(
         IReadOnlyList<ConceptChainTemplate> subjectTemplates, Guid fromTypeId, Guid toTypeId, string? relationshipType)

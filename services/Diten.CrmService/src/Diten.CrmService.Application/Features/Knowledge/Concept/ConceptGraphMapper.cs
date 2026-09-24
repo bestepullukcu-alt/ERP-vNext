@@ -25,7 +25,8 @@ public static class ConceptGraphMapper
         c.Id, c.SubjectId, c.ChainCode, c.ChainName, c.Description, c.OrderedConceptTypes.ToList(),
         ToBranchDtos(c), c.ModeratorRoleType, c.ForWhomAudienceProfileIds.ToList(), c.Status,
         c.ChainVersion, c.EffectiveFrom, c.EffectiveTo,
-        c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.ArchivedAt, c.ArchivedBy, c.IsArchived());
+        c.CreatedAt, c.CreatedBy, c.UpdatedAt, c.UpdatedBy, c.ArchivedAt, c.ArchivedBy, c.IsArchived(),
+        c.IgnoredNonConformingRelationshipIds.ToList());
 
     /// <summary>SCMM-10 (③) read-time migration: an explicit branch structure is projected as-is; a legacy flat template
     /// (no branches) is projected as a SINGLE branch derived from <c>OrderedConceptTypes</c> (each type → one

@@ -668,6 +668,10 @@ public static class DependencyInjection
             // string — AutoMap handles it, and an old document without either element reads back as null / empty (additive).
             map.GetMemberMap(x => x.ForWhomAudienceProfileIds)
                 .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
+            // WP-CT-BE-B — ignored (resolved) relationship ids: same List<Guid> string-Guid trap. An old document without
+            // the element reads back as an empty list (additive).
+            map.GetMemberMap(x => x.IgnoredNonConformingRelationshipIds)
+                .SetSerializer(new EnumerableInterfaceImplementerSerializer<List<Guid>, Guid>(stringGuid));
         });
         // SCMM-10 (③) — the embedded branch/step value objects MUST register their own class map or the step's
         // ConceptTypeId Guid falls through to the global Standard (binary sub-type 4) serializer and every branch-step

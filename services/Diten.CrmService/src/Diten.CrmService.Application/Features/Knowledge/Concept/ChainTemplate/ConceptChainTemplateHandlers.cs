@@ -101,6 +101,85 @@ internal static class ConceptChainTemplateRules
         return null;
     }
 
+    // ─── WP-CT-BE-B cardinality bounds / publish readiness / conformance resolutions ─────────────
+
+    public const int MinSelectionCeiling = 9;
+    public const int MaxSelectionCeiling = 9;
+    public const int PublishedMinStepsPerBranch = 2;
+
+    /// <summary>Per-step cardinality bounds (400 message or null): MinSelection 0–9, MaxSelection null or 1–9 (the
+    /// existing Max ≥ Min rule stays in <see cref="ValidateBranchesShape"/>). Run on create and whenever the branch
+    /// structure changes — a frozen published structure is never re-judged.</summary>
+    public static string? ValidateStepBounds(IReadOnlyList<ConceptChainBranchInput>? branches)
+    {
+        foreach (var branch in branches ?? Array.Empty<ConceptChainBranchInput>())
+        {
+            var code = branch.BranchCode?.Trim() ?? string.Empty;
+            foreach (var step in branch.Steps ?? Array.Empty<ConceptChainStepInput>())
+            {
+                if (step.MinSelection is < 0 or > MinSelectionCeiling)
+                {
+                    return $"Branch '{code}': MinSelection must be between 0 and {MinSelectionCeiling}.";
+                }
+
+                if (step.MaxSelection is { } max && max is < 1 or > MaxSelectionCeiling)
+                {
+                    return $"Branch '{code}': MaxSelection must be empty or between 1 and {MaxSelectionCeiling}.";
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>Publish readiness (400 message or null), checked only when a template BECOMES published: every branch
+    /// has at least two steps (a draft may keep one) and at least one for-whom audience is set (optional on a draft).
+    /// A legacy template without branches is judged by its spine, which already holds ≥ 2 types.</summary>
+    public static string? ValidatePublishReadiness(
+        IReadOnlyList<ConceptChainBranch> branches, IReadOnlyCollection<Guid> forWhomAudienceProfileIds)
+    {
+        var shortBranches = branches
+            .Where(b => b.Steps.Count < PublishedMinStepsPerBranch)
+            .Select(b => b.BranchCode)
+            .ToList();
+        if (shortBranches.Count > 0)
+        {
+            return $"A published template needs at least {PublishedMinStepsPerBranch} steps in every branch; "
+                + $"too short: {string.Join(", ", shortBranches)}.";
+        }
+
+        return forWhomAudienceProfileIds.Count == 0
+            ? "A published template needs at least one target audience (ForWhomAudienceProfileIds)."
+            : null;
+    }
+
+    /// <summary>Distinct, non-empty ignored relationship ids (order-insensitive set).</summary>
+    public static List<Guid> NormalizeIgnored(IReadOnlyList<Guid>? ids)
+        => (ids ?? Array.Empty<Guid>()).Where(id => id != Guid.Empty).Distinct().ToList();
+
+    /// <summary>Every ignored id must be a relationship of the template's subject (tenant-scoped; any status — an
+    /// archived edge may stay resolved). Fail-closed, pre-persist.</summary>
+    public static async Task<string?> ValidateIgnoredAsync(
+        IConceptRelationshipRepository relationships,
+        Guid tenantId,
+        Guid subjectId,
+        IReadOnlyList<Guid> ignoredRelationshipIds,
+        CancellationToken cancellationToken)
+    {
+        if (ignoredRelationshipIds.Count == 0)
+        {
+            return null;
+        }
+
+        var subjectEdgeIds = (await relationships.ListBySubjectAsync(tenantId, subjectId, cancellationToken))
+            .Select(r => r.Id)
+            .ToHashSet();
+        var unknown = ignoredRelationshipIds.FirstOrDefault(id => !subjectEdgeIds.Contains(id));
+        return unknown == Guid.Empty
+            ? null
+            : $"IgnoredNonConformingRelationshipIds references a relationship that is not part of this subject ({unknown}).";
+    }
+
     /// <summary>Distinct concept-type ids across all branch steps — used for the same-subject membership check.</summary>
     public static IReadOnlyList<Guid> BranchTypeIds(IReadOnlyList<ConceptChainBranchInput> branches)
         => branches.SelectMany(b => b.Steps).Select(s => s.ConceptTypeId).Distinct().ToList();
@@ -206,6 +285,7 @@ public sealed class CreateConceptChainTemplateHandler
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
     private readonly IAudienceProfileRepository _audienceProfiles;
+    private readonly IConceptRelationshipRepository _relationships;
     private readonly IKnowledgeConceptAuditPublisher? _audit;
 
     public CreateConceptChainTemplateHandler(
@@ -214,6 +294,7 @@ public sealed class CreateConceptChainTemplateHandler
         IConceptChainTemplateRepository templates,
         IConceptTypeRepository types,
         IAudienceProfileRepository audienceProfiles,
+        IConceptRelationshipRepository relationships,
         IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
@@ -221,6 +302,7 @@ public sealed class CreateConceptChainTemplateHandler
         _templates = templates;
         _types = types;
         _audienceProfiles = audienceProfiles;
+        _relationships = relationships;
         _audit = audit;
     }
 
@@ -253,7 +335,8 @@ public sealed class CreateConceptChainTemplateHandler
         }
 
         // SCMM-10 (③, RM2) — optional branch structure shape + same-subject membership.
-        var branchShapeError = ConceptChainTemplateRules.ValidateBranchesShape(request.Branches);
+        var branchShapeError = ConceptChainTemplateRules.ValidateBranchesShape(request.Branches)
+            ?? ConceptChainTemplateRules.ValidateStepBounds(request.Branches);
         if (branchShapeError is not null)
         {
             return Response<Guid>.Fail(branchShapeError, 400);
@@ -280,10 +363,28 @@ public sealed class CreateConceptChainTemplateHandler
             return Response<Guid>.Fail(forWhomError, 400);
         }
 
+        // WP-CT-BE-B — resolutions (a new version carries the previous version's set, sent by the caller).
+        var ignored = ConceptChainTemplateRules.NormalizeIgnored(request.IgnoredNonConformingRelationshipIds);
+        var ignoredError = await ConceptChainTemplateRules.ValidateIgnoredAsync(
+            _relationships, tenantId, request.SubjectId, ignored, cancellationToken);
+        if (ignoredError is not null)
+        {
+            return Response<Guid>.Fail(ignoredError, 400);
+        }
+
+        var branches = ConceptChainTemplateRules.ToDomain(request.Branches);
+
         // V13 — a published version must not overlap another published version of the same code.
         var status = ConceptChainStatuses.Normalize(request.Status);
         if (string.Equals(status, ConceptChainStatuses.Published, StringComparison.OrdinalIgnoreCase))
         {
+            // WP-CT-BE-B — publish readiness (≥ 2 steps per branch, ≥ 1 audience).
+            var readinessError = ConceptChainTemplateRules.ValidatePublishReadiness(branches, forWhom);
+            if (readinessError is not null)
+            {
+                return Response<Guid>.Fail(readinessError, 400);
+            }
+
             var sameCode = await _templates.ListByCodeAsync(
                 tenantId, request.SubjectId, request.ChainCode.Trim(), cancellationToken);
             if (ConceptChainTemplateRules.FindPublishedOverlap(
@@ -304,9 +405,10 @@ public sealed class CreateConceptChainTemplateHandler
             ChainName = request.ChainName.Trim(),
             Description = KnowledgeValidation.Trim(request.Description),
             OrderedConceptTypes = request.OrderedConceptTypes.ToList(),
-            Branches = ConceptChainTemplateRules.ToDomain(request.Branches),
+            Branches = branches,
             ModeratorRoleType = moderatorRoleType,
             ForWhomAudienceProfileIds = forWhom,
+            IgnoredNonConformingRelationshipIds = ignored,
             Status = status,
             ChainVersion = string.IsNullOrWhiteSpace(request.ChainVersion) ? "1.0" : request.ChainVersion.Trim(),
             EffectiveFrom = request.EffectiveFrom,
@@ -337,6 +439,7 @@ public sealed class UpdateConceptChainTemplateHandler
     private readonly IConceptChainTemplateRepository _templates;
     private readonly IConceptTypeRepository _types;
     private readonly IAudienceProfileRepository _audienceProfiles;
+    private readonly IConceptRelationshipRepository _relationships;
 
     private readonly IKnowledgeConceptAuditPublisher? _audit;
 
@@ -346,6 +449,7 @@ public sealed class UpdateConceptChainTemplateHandler
         IConceptChainTemplateRepository templates,
         IConceptTypeRepository types,
         IAudienceProfileRepository audienceProfiles,
+        IConceptRelationshipRepository relationships,
         IKnowledgeConceptAuditPublisher? audit = null)
     {
         _tenant = tenant;
@@ -353,6 +457,7 @@ public sealed class UpdateConceptChainTemplateHandler
         _templates = templates;
         _types = types;
         _audienceProfiles = audienceProfiles;
+        _relationships = relationships;
         _audit = audit;
     }
 
@@ -407,15 +512,43 @@ public sealed class UpdateConceptChainTemplateHandler
             entity.ModeratorRoleType ?? string.Empty, newModerator ?? string.Empty, StringComparison.Ordinal);
         var forWhomChanged = !ConceptChainTemplateRules.ForWhomEqual(entity.ForWhomAudienceProfileIds, newForWhom);
 
-        // A published version freezes its sequence, its branch structure AND its template-level Moderator / ForWhom —
-        // changing any of them needs a new version.
+        // WP-CT-BE-B — null keeps the stored resolutions; a supplied set replaces them (same set-equality as ForWhom).
+        var newIgnored = request.IgnoredNonConformingRelationshipIds is null
+            ? entity.IgnoredNonConformingRelationshipIds.ToList()
+            : ConceptChainTemplateRules.NormalizeIgnored(request.IgnoredNonConformingRelationshipIds);
+        var ignoredChanged = !ConceptChainTemplateRules.ForWhomEqual(entity.IgnoredNonConformingRelationshipIds, newIgnored);
+
+        // A published version freezes its sequence, its branch structure, its template-level Moderator / ForWhom AND its
+        // conformance resolutions — changing any of them needs a new version.
         var sequenceChanged = !entity.OrderedConceptTypes.SequenceEqual(request.OrderedConceptTypes);
-        if (entity.IsPublished() && (sequenceChanged || branchesChanged || moderatorChanged || forWhomChanged))
+        if (entity.IsPublished()
+            && (sequenceChanged || branchesChanged || moderatorChanged || forWhomChanged || ignoredChanged))
         {
             return Response<bool>.Fail(
-                "OrderedConceptTypes, Branches, ModeratorRoleType and ForWhomAudienceProfileIds are frozen on a "
-                + "published template; create a new version to change them.",
+                "OrderedConceptTypes, Branches, ModeratorRoleType, ForWhomAudienceProfileIds and "
+                + "IgnoredNonConformingRelationshipIds are frozen on a published template; create a new version to "
+                + "change them.",
                 409);
+        }
+
+        // WP-CT-BE-B — cardinality bounds are judged only when the structure changes (a frozen one is never re-judged).
+        if (branchesChanged)
+        {
+            var boundsError = ConceptChainTemplateRules.ValidateStepBounds(request.Branches);
+            if (boundsError is not null)
+            {
+                return Response<bool>.Fail(boundsError, 400);
+            }
+        }
+
+        if (ignoredChanged)
+        {
+            var ignoredError = await ConceptChainTemplateRules.ValidateIgnoredAsync(
+                _relationships, tenantId, entity.SubjectId, newIgnored, cancellationToken);
+            if (ignoredError is not null)
+            {
+                return Response<bool>.Fail(ignoredError, 400);
+            }
         }
 
         if (sequenceChanged)
@@ -456,6 +589,17 @@ public sealed class UpdateConceptChainTemplateHandler
         var status = ConceptChainStatuses.Normalize(request.Status ?? entity.Status);
         if (string.Equals(status, ConceptChainStatuses.Published, StringComparison.OrdinalIgnoreCase))
         {
+            // WP-CT-BE-B — publish readiness is judged on the draft → published transition only, so an already
+            // published (frozen) legacy template never becomes un-updatable.
+            if (!entity.IsPublished())
+            {
+                var readinessError = ConceptChainTemplateRules.ValidatePublishReadiness(newBranches, newForWhom);
+                if (readinessError is not null)
+                {
+                    return Response<bool>.Fail(readinessError, 400);
+                }
+            }
+
             var sameCode = await _templates.ListByCodeAsync(
                 tenantId, entity.SubjectId, entity.ChainCode, cancellationToken);
             if (ConceptChainTemplateRules.FindPublishedOverlap(
@@ -475,6 +619,7 @@ public sealed class UpdateConceptChainTemplateHandler
         entity.Branches = newBranches;
         entity.ModeratorRoleType = newModerator;
         entity.ForWhomAudienceProfileIds = newForWhom;
+        entity.IgnoredNonConformingRelationshipIds = newIgnored;
         entity.Status = status;
         if (!string.IsNullOrWhiteSpace(request.ChainVersion))
         {
@@ -550,6 +695,86 @@ public sealed class ArchiveConceptChainTemplateHandler
         {
             await _audit.PublishAsync(ConceptGraphReasonCodes.ChainTemplateArchived, tenantId,
                 KnowledgeConceptAuditEntities.ConceptChainTemplate, entity.Id, entity.Version, entity.ChainCode, cancellationToken);
+        }
+
+        return Response<bool>.Success(true);
+    }
+}
+
+/// <summary>WP-CT-BE-B — immediate "Yok say" write. Replaces the ignored relationship set of a saved template that is not
+/// published (published → 409, frozen; archived → 409). Records the decision only: no relationship is changed, deleted
+/// or re-derived, and conformance is never enforced (D8).</summary>
+public sealed class SetConceptChainTemplateConformanceResolutionsHandler
+    : IRequestHandler<SetConceptChainTemplateConformanceResolutionsCommand, Response<bool>>
+{
+    private readonly ITenantContext _tenant;
+    private readonly IActorContext _actor;
+    private readonly IConceptChainTemplateRepository _templates;
+    private readonly IConceptRelationshipRepository _relationships;
+    private readonly IKnowledgeConceptAuditPublisher? _audit;
+
+    public SetConceptChainTemplateConformanceResolutionsHandler(
+        ITenantContext tenant,
+        IActorContext actor,
+        IConceptChainTemplateRepository templates,
+        IConceptRelationshipRepository relationships,
+        IKnowledgeConceptAuditPublisher? audit = null)
+    {
+        _tenant = tenant;
+        _actor = actor;
+        _templates = templates;
+        _relationships = relationships;
+        _audit = audit;
+    }
+
+    public async Task<Response<bool>> Handle(
+        SetConceptChainTemplateConformanceResolutionsCommand request, CancellationToken cancellationToken)
+    {
+        if (_tenant.TenantId is not { } tenantId)
+        {
+            return Response<bool>.Fail("Tenant context is required.", 400);
+        }
+
+        var entity = await _templates.GetByIdAsync(tenantId, request.ConceptChainTemplateId, cancellationToken);
+        if (entity is null)
+        {
+            return Response<bool>.Fail("Concept chain template not found.", 404);
+        }
+
+        if (entity.IsArchived())
+        {
+            return Response<bool>.Fail("An archived concept chain template cannot be updated.", 409);
+        }
+
+        if (entity.IsPublished())
+        {
+            return Response<bool>.Fail(
+                "Conformance resolutions are frozen on a published template; create a new version to change them.", 409);
+        }
+
+        var ignored = ConceptChainTemplateRules.NormalizeIgnored(request.IgnoredRelationshipIds);
+        var ignoredError = await ConceptChainTemplateRules.ValidateIgnoredAsync(
+            _relationships, tenantId, entity.SubjectId, ignored, cancellationToken);
+        if (ignoredError is not null)
+        {
+            return Response<bool>.Fail(ignoredError, 400);
+        }
+
+        if (ConceptChainTemplateRules.ForWhomEqual(entity.IgnoredNonConformingRelationshipIds, ignored))
+        {
+            return Response<bool>.Success(true); // idempotent — nothing to write
+        }
+
+        entity.IgnoredNonConformingRelationshipIds = ignored;
+        entity.UpdatedAt = DateTimeOffset.UtcNow;
+        entity.UpdatedBy = _actor.ActorName;
+
+        await _templates.UpdateAsync(entity, cancellationToken);
+        if (_audit is not null)
+        {
+            await _audit.PublishAsync(ConceptGraphReasonCodes.ChainTemplateUpdated, tenantId,
+                KnowledgeConceptAuditEntities.ConceptChainTemplate, entity.Id, entity.Version, entity.ChainCode,
+                cancellationToken);
         }
 
         return Response<bool>.Success(true);

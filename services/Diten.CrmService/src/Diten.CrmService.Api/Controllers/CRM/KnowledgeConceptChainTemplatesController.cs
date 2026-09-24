@@ -44,7 +44,8 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             new CreateConceptChainTemplateCommand(
                 request.SubjectId, request.ChainCode, request.ChainName, request.OrderedConceptTypes,
                 request.EffectiveFrom, request.Description, request.Status, request.ChainVersion, request.EffectiveTo,
-                ToBranchInputs(request.Branches), request.ModeratorRoleType, request.ForWhomAudienceProfileIds),
+                ToBranchInputs(request.Branches), request.ModeratorRoleType, request.ForWhomAudienceProfileIds,
+                request.IgnoredNonConformingRelationshipIds),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}")]
@@ -55,7 +56,7 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
             new UpdateConceptChainTemplateCommand(
                 templateId, request.ChainName, request.OrderedConceptTypes, request.EffectiveFrom, request.Description,
                 request.Status, request.ChainVersion, request.EffectiveTo, ToBranchInputs(request.Branches),
-                request.ModeratorRoleType, request.ForWhomAudienceProfileIds),
+                request.ModeratorRoleType, request.ForWhomAudienceProfileIds, request.IgnoredNonConformingRelationshipIds),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/concept-chain-templates/{templateId:guid}/archive")]
@@ -63,6 +64,17 @@ public sealed class KnowledgeConceptChainTemplatesController : CustomBaseControl
     public async Task<IActionResult> Archive(Guid templateId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
             new ArchiveConceptChainTemplateCommand(templateId), cancellationToken));
+
+    // WP-CT-BE-B — immediate "Yok say" write on a saved, non-published template (published → 409). Records the
+    // decision only; relationships are untouched (D8).
+    [HttpPut("api/crm/knowledge/concept-chain-templates/{templateId:guid}/conformance-resolutions")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> ConformanceResolutions(
+        Guid templateId, [FromBody] ChainTemplateConformanceResolutionsRequest request,
+        CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new SetConceptChainTemplateConformanceResolutionsCommand(templateId, request.IgnoredRelationshipIds),
+            cancellationToken));
 
     // WP-CT-BE-A — read-only diagnostics against a SUPPLIED (possibly unsaved) spine. POST only because the spine travels
     // in the body; nothing is written. Read permission, not TemplateManage.

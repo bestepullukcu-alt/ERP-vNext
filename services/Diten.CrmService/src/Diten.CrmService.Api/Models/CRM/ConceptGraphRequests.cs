@@ -94,7 +94,8 @@ public sealed record CreateConceptChainTemplateRequest(
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<ConceptChainBranchRequest>? Branches = null,
     string? ModeratorRoleType = null,
-    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null);
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null);
 
 public sealed record UpdateConceptChainTemplateRequest(
     string ChainName,
@@ -106,12 +107,16 @@ public sealed record UpdateConceptChainTemplateRequest(
     DateTimeOffset? EffectiveTo = null,
     IReadOnlyList<ConceptChainBranchRequest>? Branches = null,
     string? ModeratorRoleType = null,
-    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null);
+    IReadOnlyList<Guid>? ForWhomAudienceProfileIds = null,
+    IReadOnlyList<Guid>? IgnoredNonConformingRelationshipIds = null);
 
 // WP-CT-BE-A — supplied-spine conformance diagnostics (read-only; the draft editor posts its live, unsaved spine).
 public sealed record ChainTemplateConformanceDiagnosticsRequest(
     Guid SubjectId,
     IReadOnlyList<Guid>? OrderedConceptTypeIds = null);
+
+// WP-CT-BE-B — replaces the template's ignored ("Yok say") relationship set.
+public sealed record ChainTemplateConformanceResolutionsRequest(IReadOnlyList<Guid>? IgnoredRelationshipIds = null);
 
 public sealed record CreateContentConceptLinkRequest(
     Guid KnowledgeContentId,

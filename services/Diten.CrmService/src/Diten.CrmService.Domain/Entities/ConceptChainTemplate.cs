@@ -45,6 +45,12 @@ public sealed class ConceptChainTemplate : EntityBase
     /// only — a reference, never a membership evaluation (D8).</summary>
     public List<Guid> ForWhomAudienceProfileIds { get; set; } = new();
 
+    /// <summary>WP-CT-BE-B — conformance resolutions: the relationship ids the author chose to IGNORE in this template's
+    /// non-conforming list ("Yok say"). A record only — the relationship is never changed or deleted and conformance is
+    /// never enforced (D8). Carried into a new version by the caller (Create), frozen once published. Empty on legacy
+    /// documents (additive).</summary>
+    public List<Guid> IgnoredNonConformingRelationshipIds { get; set; } = new();
+
     /// <summary><see cref="ConceptChainStatuses"/> — draft / review / approved / published / inactive / archived.</summary>
     public string Status { get; set; } = ConceptChainStatuses.Draft;
 
