@@ -36,7 +36,8 @@ param(
     [string]$DefaultTenantId = "",
     [string[]]$Only = @(),
     [switch]$Rehearsal,
-    [switch]$SkipBuild
+    [switch]$SkipBuild,
+    [string]$ArrMsiUrl = "https://download.microsoft.com/download/E/9/8/E9849D6A-020E-47E4-9FD0-A023E99B54EB/requestRouter_amd64.msi"
 )
 
 $ErrorActionPreference = "Stop"
@@ -88,6 +89,25 @@ $maxPatch = ($runtimes | Measure-Object -Maximum).Maximum
 Ok ("ASP.NET Core 8 runtime: 8.0." + $maxPatch)
 if ($maxPatch -lt 10) { Warn "Runtime cok eski (8.0.$maxPatch). Guvenlik icin Hosting Bundle'i guncelleyin (IIS bir kez yeniden baslar)." }
 if ($Rehearsal) { Warn "PROVA MODU: arka plan isleri, outbox ve SMTP kapali calisacak." }
+
+# Tarayici API'yi ayni adresten cagirir (https://<alan>/api/...); IIS bunu icerideki Gateway'e (5000) iletmeli.
+# Bunun icin URL Rewrite'a ek olarak ARR (Application Request Routing) ve sunucu duzeyinde proxy gerekir.
+if (-not (Test-Path "$env:windir\System32\inetsrv\requestRouter.dll")) {
+    Write-Host "  ARR kuruluyor (IIS kisa sure yeniden baslayabilir)..."
+    $arrMsi = "C:\DitenMigration\downloads\requestRouter_amd64.msi"
+    if (-not (Test-Path $arrMsi)) {
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $ArrMsiUrl -OutFile $arrMsi -UseBasicParsing
+    }
+    $p = Start-Process msiexec.exe -ArgumentList @("/i", "`"$arrMsi`"", "/qn", "/norestart") -Wait -PassThru
+    if ($p.ExitCode -notin 0, 3010) { throw ("ARR kurulamadi (cikis " + $p.ExitCode + ")") }
+    Ok "ARR kuruldu"
+} else { Ok "ARR kurulu" }
+$proxyOn = (Get-WebConfigurationProperty -PSPath "MACHINE/WEBROOT/APPHOST" -Filter "system.webServer/proxy" -Name "enabled").Value
+if (-not $proxyOn) {
+    Set-WebConfigurationProperty -PSPath "MACHINE/WEBROOT/APPHOST" -Filter "system.webServer/proxy" -Name "enabled" -Value $true
+    Ok "IIS proxy acildi"
+} else { Ok "IIS proxy acik" }
 
 $cert = $null
 foreach ($store in @("WebHosting", "My")) {
@@ -185,6 +205,10 @@ function Write-SiteConfig($s, [string]$dir) {
         if ($cert) {
             $rules += "<rule name='https' stopProcessing='true'><match url='(.*)' /><conditions><add input='{HTTPS}' pattern='off' /><add input='{HTTP_HOST}' pattern='$hostRx' /></conditions><action type='Redirect' url='https://{HTTP_HOST}/{R:1}' redirectType='Permanent' /></rule>"
         }
+        # /api/* -> Gateway. Web uygulamasinin kendi karsiladigi /api adresleri haric (tasks, platform/catalog, personalization/views).
+        $gw = ($services | Where-Object { $_.Key -eq "gateway" } | Select-Object -First 1)
+        $gwPort = if ($gw) { $gw.Port } else { 5000 }
+        $rules += "<rule name='api-to-gateway' stopProcessing='true'><match url='^api/(.*)' /><conditions><add input='{URL}' pattern='^/api/(tasks|platform/catalog|personalization/views)(/|$)' negate='true' /></conditions><action type='Rewrite' url='http://127.0.0.1:$gwPort/api/{R:1}' /></rule>"
         if ($DefaultTenantId) {
             $rules += "<rule name='tenant-login' stopProcessing='true'><match url='^account/login$' /><conditions><add input='{REQUEST_METHOD}' pattern='^GET$' /><add input='{QUERY_STRING}' pattern='tenantId=' negate='true' /><add input='{HTTP_HOST}' pattern='$hostRx' /></conditions><action type='Redirect' url='/account/login?tenantId=$DefaultTenantId' appendQueryString='true' redirectType='Found' /></rule>"
         }
