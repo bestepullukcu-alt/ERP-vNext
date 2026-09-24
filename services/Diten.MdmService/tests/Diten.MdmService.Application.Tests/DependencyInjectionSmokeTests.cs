@@ -1,13 +1,20 @@
 using Diten.MdmService.Api.Configuration;
+using Diten.MdmService.Application.Common;
 using Diten.MdmService.Application.Contracts;
 using Diten.MdmService.Application.Contracts.Authorization;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Lifecycle.Handlers.CommandHandlers;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow;
+using Diten.MdmService.Application.Features.ProductItemSkuMaster.Workflow.Handlers.CommandHandlers;
 using Diten.MdmService.Application.Features.ProductLegalEntityScopes;
 using Diten.MdmService.Domain.Repositories;
+using Diten.MdmService.Infrastructure;
 using Diten.MdmService.Persistence.Repositories;
 using Diten.MdmService.Infrastructure.Security;
+using Diten.MdmService.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Xunit;
 
@@ -131,6 +138,200 @@ public sealed class DependencyInjectionSmokeTests
 
         Assert.True(parameter.HasDefaultValue);
         Assert.Equal(true, parameter.DefaultValue);
+    }
+
+    [Fact]
+    public void Production_registration_seams_validate_and_supply_required_scoped_dependencies()
+    {
+        var configuration = CreateHostConfiguration();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddHttpClient();
+        services.AddHttpContextAccessor();
+        services.AddInfrastructure(configuration);
+        services.AddPersistence(configuration, runStartupMaintenance: false);
+        ConfigureGlobalProductWorkflowWorkerOptions(services, configuration);
+        services.AddGlobalProductWorkflowExecutionConfigurations();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var scope = provider.CreateScope();
+        scope.ServiceProvider.GetRequiredService<TenantContext>().SetTenant(Guid.NewGuid());
+
+        Assert.IsType<ProductLegalEntityScopeOperationalReadinessRepository>(
+            scope.ServiceProvider.GetRequiredService<IProductLegalEntityScopeOperationalReadinessRepository>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<ProductIdentityWorkflowExecutionConfiguration>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<GlobalProductCorrectionExecutionConfiguration>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<GlobalProductRetirementRequestExecutionConfiguration>());
+        AssertConstructorConsumes<StartGlobalProductIdentityWorkflowHandler,
+            ProductIdentityWorkflowExecutionConfiguration>();
+        AssertConstructorConsumes<WithdrawGlobalProductIdentityApprovalHandler,
+            ProductIdentityWorkflowExecutionConfiguration>();
+        AssertConstructorConsumes<StartGlobalProductCorrectionWorkflowHandler,
+            GlobalProductCorrectionExecutionConfiguration>();
+        AssertConstructorConsumes<StartGlobalProductRetirementRequestWorkflowHandler,
+            GlobalProductRetirementRequestExecutionConfiguration>();
+        AssertConstructorConsumes<ProductLegalEntityScopeWriteFenceCoordinator,
+            IProductLegalEntityScopeOperationalReadinessRepository>();
+    }
+
+    [Fact]
+    public void Production_execution_configuration_seam_is_scoped_and_uses_default_disabled_worker_options()
+    {
+        var configuration = CreateHostConfiguration();
+        var services = new ServiceCollection();
+        ConfigureGlobalProductWorkflowWorkerOptions(services, configuration);
+        services.AddGlobalProductWorkflowExecutionConfigurations();
+
+        using var provider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateOnBuild = true,
+            ValidateScopes = true
+        });
+        using var firstScope = provider.CreateScope();
+        using var secondScope = provider.CreateScope();
+
+        var identity = firstScope.ServiceProvider
+            .GetRequiredService<ProductIdentityWorkflowExecutionConfiguration>();
+        var correction = firstScope.ServiceProvider
+            .GetRequiredService<GlobalProductCorrectionExecutionConfiguration>();
+        var retirement = firstScope.ServiceProvider
+            .GetRequiredService<GlobalProductRetirementRequestExecutionConfiguration>();
+
+        Assert.False(firstScope.ServiceProvider
+            .GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value.Enabled);
+        Assert.False(firstScope.ServiceProvider
+            .GetRequiredService<IOptions<GlobalProductCorrectionWorkflowWorkerOptions>>().Value.Enabled);
+        Assert.False(firstScope.ServiceProvider
+            .GetRequiredService<IOptions<GlobalProductRetirementRequestWorkflowWorkerOptions>>().Value.Enabled);
+        Assert.Equal(TimeSpan.FromSeconds(60), identity.LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(30), identity.RetryDelay);
+        Assert.Equal(TimeSpan.FromSeconds(60), correction.LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(10), correction.RetryDelay);
+        Assert.Equal(TimeSpan.FromSeconds(60), retirement.LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(10), retirement.RetryDelay);
+        Assert.NotSame(identity, secondScope.ServiceProvider
+            .GetRequiredService<ProductIdentityWorkflowExecutionConfiguration>());
+        Assert.NotSame(correction, secondScope.ServiceProvider
+            .GetRequiredService<GlobalProductCorrectionExecutionConfiguration>());
+        Assert.NotSame(retirement, secondScope.ServiceProvider
+            .GetRequiredService<GlobalProductRetirementRequestExecutionConfiguration>());
+    }
+
+    [Fact]
+    public void Production_execution_configuration_seam_flows_valid_custom_worker_windows()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{ProductIdentityWorkflowWorkerOptions.SectionName}:LeaseSeconds"] = "75",
+                [$"{ProductIdentityWorkflowWorkerOptions.SectionName}:RetryDelaySeconds"] = "12",
+                [$"{GlobalProductCorrectionWorkflowWorkerOptions.SectionName}:LeaseSeconds"] = "76",
+                [$"{GlobalProductCorrectionWorkflowWorkerOptions.SectionName}:RetryDelaySeconds"] = "13",
+                [$"{GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName}:LeaseSeconds"] = "77",
+                [$"{GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName}:RetryDelaySeconds"] = "14"
+            })
+            .Build();
+        var services = new ServiceCollection();
+        ConfigureGlobalProductWorkflowWorkerOptions(services, configuration);
+        services.AddGlobalProductWorkflowExecutionConfigurations();
+
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = provider.CreateScope();
+
+        Assert.Equal(TimeSpan.FromSeconds(75), scope.ServiceProvider
+            .GetRequiredService<ProductIdentityWorkflowExecutionConfiguration>().LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(12), scope.ServiceProvider
+            .GetRequiredService<ProductIdentityWorkflowExecutionConfiguration>().RetryDelay);
+        Assert.Equal(TimeSpan.FromSeconds(76), scope.ServiceProvider
+            .GetRequiredService<GlobalProductCorrectionExecutionConfiguration>().LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(13), scope.ServiceProvider
+            .GetRequiredService<GlobalProductCorrectionExecutionConfiguration>().RetryDelay);
+        Assert.Equal(TimeSpan.FromSeconds(77), scope.ServiceProvider
+            .GetRequiredService<GlobalProductRetirementRequestExecutionConfiguration>().LeaseDuration);
+        Assert.Equal(TimeSpan.FromSeconds(14), scope.ServiceProvider
+            .GetRequiredService<GlobalProductRetirementRequestExecutionConfiguration>().RetryDelay);
+    }
+
+    [Theory]
+    [InlineData(ProductIdentityWorkflowWorkerOptions.SectionName,
+        nameof(ProductIdentityWorkflowWorkerOptions.LeaseSeconds), "9",
+        "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID",
+        typeof(ProductIdentityWorkflowExecutionConfiguration))]
+    [InlineData(GlobalProductCorrectionWorkflowWorkerOptions.SectionName,
+        nameof(GlobalProductCorrectionWorkflowWorkerOptions.RetryDelaySeconds), "0",
+        "GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID",
+        typeof(GlobalProductCorrectionExecutionConfiguration))]
+    [InlineData(GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName,
+        nameof(GlobalProductRetirementRequestWorkflowWorkerOptions.LeaseSeconds), "901",
+        "GLOBAL_PRODUCT_RETIREMENT_WORKER_CONFIGURATION_INVALID",
+        typeof(GlobalProductRetirementRequestExecutionConfiguration))]
+    public void Production_execution_configuration_seam_rejects_invalid_windows_while_workers_are_disabled(
+        string section,
+        string key,
+        string value,
+        string expectedError,
+        Type configurationType)
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [$"{section}:{key}"] = value,
+                [$"{section}:Enabled"] = "false"
+            })
+            .Build();
+        var services = new ServiceCollection();
+        ConfigureGlobalProductWorkflowWorkerOptions(services, configuration);
+        services.AddGlobalProductWorkflowExecutionConfigurations();
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = provider.CreateScope();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            scope.ServiceProvider.GetRequiredService(configurationType));
+
+        Assert.Equal(expectedError, exception.Message);
+    }
+
+    [Fact]
+    public void Program_uses_the_tested_production_execution_configuration_seam()
+    {
+        var program = ReadRepoFile(
+            "services/Diten.MdmService/src/Diten.MdmService.Api/Program.cs");
+
+        Assert.Contains(
+            "builder.Services.AddGlobalProductWorkflowExecutionConfigurations();",
+            program,
+            StringComparison.Ordinal);
+    }
+
+    private static IConfiguration CreateHostConfiguration() =>
+        new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Mongo:ConnectionString"] = "mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=25",
+                ["Mongo:DatabaseName"] = "mdm_host_di_contract"
+            })
+            .Build();
+
+    private static void ConfigureGlobalProductWorkflowWorkerOptions(
+        IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ProductIdentityWorkflowWorkerOptions>(
+            configuration.GetSection(ProductIdentityWorkflowWorkerOptions.SectionName));
+        services.Configure<GlobalProductCorrectionWorkflowWorkerOptions>(
+            configuration.GetSection(GlobalProductCorrectionWorkflowWorkerOptions.SectionName));
+        services.Configure<GlobalProductRetirementRequestWorkflowWorkerOptions>(
+            configuration.GetSection(GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName));
+    }
+
+    private static void AssertConstructorConsumes<TConsumer, TDependency>()
+    {
+        var constructor = Assert.Single(typeof(TConsumer).GetConstructors());
+        Assert.Contains(constructor.GetParameters(), parameter => parameter.ParameterType == typeof(TDependency));
     }
 
     private static string ReadRepoFile(string relativePath)

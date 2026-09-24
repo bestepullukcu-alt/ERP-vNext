@@ -1,4 +1,8 @@
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Encodings.Web;
 using Diten.MdmService.Api.Configuration;
 using Diten.MdmService.Api.ModuleRegistration;
@@ -283,6 +287,74 @@ public sealed class ApiStartupExecutionModeMongoTests(AuditIntentTemporalMongoFi
     : IClassFixture<AuditIntentTemporalMongoFixture>
 {
     [Fact]
+    public async Task Actual_development_api_host_builds_and_serves_health_without_startup_maintenance()
+    {
+        var databaseName = $"diten_mdm_api_host_di_{Guid.NewGuid():N}";
+        var client = new MongoClient(mongo.StandaloneConnectionString);
+        var database = client.GetDatabase(databaseName);
+        var collection = database.GetCollection<BsonDocument>("mdm_legal_entities");
+        var id = Guid.NewGuid();
+        await collection.InsertOneAsync(new BsonDocument
+        {
+            ["_id"] = new BsonBinaryData(id, GuidRepresentation.Standard),
+            ["TenantId"] = new BsonBinaryData(Guid.NewGuid(), GuidRepresentation.Standard),
+            ["LifecycleStatus"] = 2
+        });
+
+        var port = ReserveLoopbackPort();
+        var repoRoot = FindRepoRoot();
+        var apiDirectory = Path.Combine(
+            repoRoot,
+            "services",
+            "Diten.MdmService",
+            "src",
+            "Diten.MdmService.Api");
+        var apiAssembly = Path.Combine(
+            apiDirectory,
+            "bin",
+            "Release",
+            "net8.0",
+            "Diten.MdmService.Api.dll");
+        Assert.True(File.Exists(apiAssembly), $"MDM API Release assembly was not found: {apiAssembly}");
+
+        using var process = CreateApiProcess(
+            apiAssembly,
+            apiDirectory,
+            databaseName,
+            port);
+        var output = new StringBuilder();
+        process.OutputDataReceived += (_, eventArgs) => AppendLine(output, eventArgs.Data);
+        process.ErrorDataReceived += (_, eventArgs) => AppendLine(output, eventArgs.Data);
+
+        try
+        {
+            Assert.True(process.Start(), "MDM API child host did not start.");
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            var health = await WaitForHealthyAsync(process, port, TimeSpan.FromSeconds(20));
+
+            Assert.True(health, $"MDM API child host did not become healthy.{Environment.NewLine}{output}");
+            Assert.False(process.HasExited);
+            var persisted = await collection.Find(Builders<BsonDocument>.Filter.Eq(
+                "_id",
+                new BsonBinaryData(id, GuidRepresentation.Standard))).SingleAsync();
+            Assert.Equal(2, persisted["LifecycleStatus"].AsInt32);
+            Assert.False(persisted.Contains("OperationalStatus"));
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                process.Kill(entireProcessTree: true);
+                await process.WaitForExitAsync();
+            }
+
+            await client.DropDatabaseAsync(databaseName);
+        }
+    }
+
+    [Fact]
     public async Task Api_serving_mode_does_not_run_legal_entity_startup_migration()
     {
         var databaseName = $"diten_mdm_api_startup_mode_{Guid.NewGuid():N}";
@@ -322,6 +394,117 @@ public sealed class ApiStartupExecutionModeMongoTests(AuditIntentTemporalMongoFi
         finally
         {
             await client.DropDatabaseAsync(databaseName);
+        }
+    }
+
+    private Process CreateApiProcess(
+        string apiAssembly,
+        string workingDirectory,
+        string databaseName,
+        int port)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true
+        };
+        startInfo.ArgumentList.Add(apiAssembly);
+        startInfo.ArgumentList.Add(ApiStartupExecutionMode.ExactArgument);
+        startInfo.Environment["ASPNETCORE_ENVIRONMENT"] = Environments.Development;
+        startInfo.Environment["DOTNET_ENVIRONMENT"] = Environments.Development;
+        startInfo.Environment["ASPNETCORE_URLS"] = $"http://127.0.0.1:{port}";
+        startInfo.Environment["Mongo__ConnectionString"] = mongo.StandaloneConnectionString;
+        startInfo.Environment["Mongo__DatabaseName"] = databaseName;
+        startInfo.Environment["JwtSettings__Secret"] =
+            "test-only-mdm-host-di-secret-with-at-least-thirty-two-bytes";
+        startInfo.Environment["JwtSettings__Issuer"] = "mdm-host-di-test";
+        startInfo.Environment["JwtSettings__Audience"] = "mdm-host-di-test";
+        startInfo.Environment["TenantResolution__DevBypassEnabled"] = "false";
+        startInfo.Environment["AuditIntentDeliveryWorker__Enabled"] = "false";
+        startInfo.Environment["ProductIdentityWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["GlobalProductCorrectionWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["GlobalProductRetirementRequestWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["FirstGskuIdentityWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["GskuCorrectionWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["GskuRetirementRequestWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["LskuIdentityWorkflowWorker__Enabled"] = "false";
+        startInfo.Environment["LskuRetirementRequestWorkflowWorker__Enabled"] = "false";
+        return new Process { StartInfo = startInfo };
+    }
+
+    private static async Task<bool> WaitForHealthyAsync(Process process, int port, TimeSpan timeout)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(1) };
+        var deadline = DateTimeOffset.UtcNow + timeout;
+        while (DateTimeOffset.UtcNow < deadline)
+        {
+            if (process.HasExited)
+            {
+                return false;
+            }
+
+            try
+            {
+                using var response = await client.GetAsync($"http://127.0.0.1:{port}/health");
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    return true;
+                }
+            }
+            catch (HttpRequestException)
+            {
+                // The bounded poll distinguishes normal listener startup from a container-build failure.
+            }
+            catch (TaskCanceledException)
+            {
+                // The next bounded attempt may observe the listener after startup completes.
+            }
+
+            await Task.Delay(100);
+        }
+
+        return false;
+    }
+
+    private static int ReserveLoopbackPort()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            return ((IPEndPoint)listener.LocalEndpoint).Port;
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    private static string FindRepoRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "AGENTS.md")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("REPO_ROOT_NOT_FOUND");
+    }
+
+    private static void AppendLine(StringBuilder buffer, string? line)
+    {
+        if (!string.IsNullOrWhiteSpace(line))
+        {
+            buffer.AppendLine(line);
         }
     }
 }

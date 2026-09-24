@@ -92,6 +92,7 @@ builder.Services.Configure<GlobalProductRetirementRequestWorkflowOptions>(
     builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowOptions.SectionName));
 builder.Services.Configure<GlobalProductRetirementRequestWorkflowWorkerOptions>(
     builder.Configuration.GetSection(GlobalProductRetirementRequestWorkflowWorkerOptions.SectionName));
+builder.Services.AddGlobalProductWorkflowExecutionConfigurations();
 builder.Services.AddScoped(sp =>
 {
     var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowOptions>>().Value;
@@ -617,5 +618,61 @@ static void ValidateRequiredJwtSetting(string? value, string key)
     if (string.IsNullOrWhiteSpace(value))
     {
         throw new InvalidOperationException($"Configuration error: '{key}' is missing or empty.");
+    }
+}
+
+public static class GlobalProductWorkflowExecutionConfigurationRegistrations
+{
+    public static IServiceCollection AddGlobalProductWorkflowExecutionConfigurations(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddScoped(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<ProductIdentityWorkflowWorkerOptions>>().Value;
+            EnsureExecutionWindowIsValid(
+                options.LeaseSeconds,
+                options.RetryDelaySeconds,
+                "PRODUCT_IDENTITY_WORKFLOW_WORKER_CONFIGURATION_INVALID");
+            return new ProductIdentityWorkflowExecutionConfiguration(
+                TimeSpan.FromSeconds(options.LeaseSeconds),
+                TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        });
+        services.AddScoped(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<GlobalProductCorrectionWorkflowWorkerOptions>>().Value;
+            EnsureExecutionWindowIsValid(
+                options.LeaseSeconds,
+                options.RetryDelaySeconds,
+                "GLOBAL_PRODUCT_CORRECTION_WORKER_CONFIGURATION_INVALID");
+            return new GlobalProductCorrectionExecutionConfiguration(
+                TimeSpan.FromSeconds(options.LeaseSeconds),
+                TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        });
+        services.AddScoped(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<GlobalProductRetirementRequestWorkflowWorkerOptions>>().Value;
+            EnsureExecutionWindowIsValid(
+                options.LeaseSeconds,
+                options.RetryDelaySeconds,
+                "GLOBAL_PRODUCT_RETIREMENT_WORKER_CONFIGURATION_INVALID");
+            return new GlobalProductRetirementRequestExecutionConfiguration(
+                TimeSpan.FromSeconds(options.LeaseSeconds),
+                TimeSpan.FromSeconds(options.RetryDelaySeconds));
+        });
+
+        return services;
+    }
+
+    private static void EnsureExecutionWindowIsValid(
+        int leaseSeconds,
+        int retryDelaySeconds,
+        string errorCode)
+    {
+        if (leaseSeconds is < 10 or > 900 || retryDelaySeconds is < 1 or > 3_600)
+        {
+            throw new InvalidOperationException(errorCode);
+        }
     }
 }
