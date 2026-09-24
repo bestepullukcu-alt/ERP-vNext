@@ -6419,6 +6419,21 @@ render edilmiyor; edilirse aynı sabitleme gerekir. Not: `DOTNET_SYSTEM_GLOBALIZ
 
 ---
 
+### BL-447
+
+**Toplantı dilimlerinin sırası — takvim (S3b) tutanak (S6) ve takipten (S7) önce mi?**
+
+DURUM: AÇIK — KARAR BEKLİYOR (sahip 2026-09-24: "sonra konuşuruz, acil değil") · SAHİP: CT · KAYIT: 2026-09-24
+
+MOD-0357 kalan dilimler: S6 tutanak → S7 takip → S3b takvim → S9 inceleme kapısı → S11 tekrarlama → S10 canlı geçiş.
+Sahip takvimi öne almak istiyor (Görev Merkezi + Toplantılar ortak bileşen). Takvim S6/S7'ye bağımlı değil (kabul edilen +
+bekleyen davetler zaten projeksiyonda; reddedilenler gizli). Karar: (a) S3b önce, S6/S7 sonra — takvim erken görünür, tutanak
+gecikir; (b) sıra korunur — ISO 9001 §9.3.2 (önceki toplantının açık aksiyonları sonraki gündemde) S7 ile kapanır, takvim bekler.
+CT önerisi: (a), çünkü takvim iki motor dilimini (plan bloğu) tetikliyor ve Kanban/WCN ile aynı dosyalara dokunuyor; S6/S7 toplantı
+tarafında ayrı ilerler. Karar takvim konuşmasında verilecek.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
