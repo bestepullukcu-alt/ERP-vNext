@@ -6212,6 +6212,14 @@ kalmıştı (URL kodlama, orderDir büyük/küçük) → `list-factory-server-mo
 sayfalama 15/10+5, sıralama priority desc, arama 5/15, filtre `status=Passive` 8/15, Save View → yeniden yükle → uygulanıyor, Save gizli;
 telde `columns[` yok. Açık: liste sorgusu için Mongo indeksi yok (büyük kiracıda düşünülmeli); eski `personalizationClient` kırmızısı duruyor.
 
+**Paket 3a notları (2026-09-24, WP-AUTH-USERS-LIST-QUERY-01, merge 1296644ab):** `GET api/users` sunucu sözleşmesi (start/length/search/
+orderBy/orderDir/status/roleId/accountKind → `{items,total,filteredTotal,summary}`), parametresiz çağrı eski şekil; `IUserListReader`
+(türetilmiş durum tek aggregate ifadesi; rol adları tek $lookup; TenantId her sorguda); `UserListRules` (400 + `USERS_LIST_*`). Auth
+925/926 → 1008/1009. CT'nin 6 sabotajından 3'ü yeşil kalmıştı (yabancı rolün adı, çok kelimeli arama, yalnız roleId) → `UserListQueryTests.Ct.cs`.
+Ajanın bilinçli seçimleri: varsayılan sıra createdAt desc; length>500 → 400; eski çağrıda pageSize=0 → 20. **Paket 5'e taşınan:** sayfanın
+filtre değeri `Passive`, Auth `Inactive` bekler (eşleme); `USERS_LIST_*` kodları için Web'de 7 dilli köprü; liste sorgusu için Mongo indeksi yok.
+Ajanın bildirdiği sınır ihlali: kendi `.bak` dosyasını `rm` ile sildi — yalnız o dosya, kayda geçti.
+
 ---
 
 ### BL-393
