@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>Задача передана.</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>Больше некому передать эту задачу.</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Назначение не редактируют — его передают, а причина остаётся в истории задачи.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Напишите ответ перед отправкой.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>Ответ слишком длинный. Не более 4000 символов.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Этот вопрос больше не ждёт вашего ответа: на него уже ответили или его отозвали. Обновите список.</value>
+  </data>
 </root>

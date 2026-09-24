@@ -7,6 +7,7 @@ using Diten.Platform.Application.Features.WorkAggregation;
 using Diten.Platform.Domain.Entities.Organization;
 using Diten.Platform.Domain.Entities.Tasks;
 using Diten.Platform.Domain.Enums.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Diten.Platform.Application.Tests.Tasks;
@@ -220,13 +221,18 @@ public sealed class TaskWaitingOnPersonTests
 
         public FakeTaskItemRepository Tasks { get; }
 
+        /// <summary>BL-439 — what the handlers asked to be sent, so the question's own notice can be asserted.</summary>
+        public FakeTaskNotificationService Notifications { get; } = new();
+
         public Task<Application.Common.Response<Application.Common.NoContent>> InquireAsync(
             string reason, Guid? waitingOn = null)
             => new InquireTaskItemHandler(
                     Tasks, new TaskLifecycleService(), new FakeCurrentUserContext(TaskTestData.Me),
                     new FakePositionAssignmentRepository([.. _seats]),
                     new FakePositionRepository([.. _positions]),
-                    new FakeOrganizationUnitRepository([.. _units]))
+                    new FakeOrganizationUnitRepository([.. _units]),
+                    Notifications,
+                    NullLogger<InquireTaskItemHandler>.Instance)
                 .Handle(
                     new InquireTaskItemCommand(
                         Task.Id, new InquireTaskItemRequest(Task.Version, reason, waitingOn), "corr"),

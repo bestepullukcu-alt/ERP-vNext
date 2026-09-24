@@ -26,7 +26,7 @@ public static class TaskTransitionRoutes
     /// Route-constraint pattern for the <c>transition</c> segment. MUST list exactly <see cref="All"/>.
     /// Anchored so a code is matched whole — an unanchored pattern would forward <c>cancel-everything</c>.
     /// </summary>
-    public const string Pattern = "^(accept|claim|release|plan|start|inquire|submitReview|return|reassign|complete|cancel)$";
+    public const string Pattern = "^(accept|claim|release|plan|start|inquire|answer|submitReview|return|reassign|complete|cancel)$";
 
     /// <summary>
     /// Every transition code the proxy forwards, in the order they appear in <see cref="Pattern"/>.
@@ -45,6 +45,9 @@ public static class TaskTransitionRoutes
         "plan",
         "start",
         "inquire",
+        // BL-439 — the ANSWER to a waiting task's question, by the person it is asking. Posted by the addressee,
+        // who holds nothing else on the task: Platform's endpoint asks only READ and the handler decides who.
+        "answer",
         "submitReview",
         "return",
         "reassign",

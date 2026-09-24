@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>The task was handed over.</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>There is nobody else this task can be handed to.</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>An assignment is not edited — it is handed over, with a reason that stays in the task's history.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Write an answer before sending.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>The answer is too long. Keep it under 4000 characters.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>This question is no longer waiting on you — it was answered or withdrawn. Refresh the list.</value>
+  </data>
 </root>

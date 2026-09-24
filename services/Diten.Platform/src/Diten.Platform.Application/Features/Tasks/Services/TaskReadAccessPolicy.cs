@@ -14,8 +14,9 @@ namespace Diten.Platform.Application.Features.Tasks.Services;
 /// watcher, the assignee/pool-holder of the PARENT task (so a subtask panel keeps working for whoever can already
 /// see the parent), inside their <see cref="TaskAssignmentScope"/> for the task's own organization unit
 /// (<see cref="TaskAssigneeEligibility.AllowsUnit"/> — the same scope leg <see cref="TaskAssignmentGuard"/> asks
-/// on the write side), the manager of the task's holder in the org chart (the subordinate leg, below), or holds
-/// <see cref="TaskPermissions.ReadAll"/>.</para>
+/// on the write side), the manager of the task's holder in the org chart (the subordinate leg, below), the person
+/// a WAITING task is asking a question of, while it is asking (BL-439, <see cref="TaskInquiryRules.IsAskedOf"/>),
+/// or holds <see cref="TaskPermissions.ReadAll"/>.</para>
 ///
 /// <para><b>The subordinate leg (BL-417 option a, DCP-004 "Decision amendment 2026-09-15").</b> A task on the
 /// caller's Ekibim list is readable by the caller. It is decided by the SAME resolver that builds that list
@@ -41,7 +42,7 @@ public interface ITaskReadAccessPolicy
 
     /// <summary>
     /// The DATA legs alone, ENUMERATED rather than asked about one actor: assignee, pool holders, creator,
-    /// watchers, and the parent task's assignee/pool holders. This is exactly the "future consumer" the class doc
+    /// watchers, the person a waiting task is asking (BL-439), and the parent task's assignee/pool holders. This is exactly the "future consumer" the class doc
     /// above anticipated — an @mention candidate list needs "who", not "can this one person" — and it is written
     /// as a refactor of <see cref="CanReadAsync"/>'s own legs rather than a second copy of them, so the two
     /// cannot drift apart. Deliberately excludes the scope, subordinate and read-all legs: all three only answer for
@@ -135,6 +136,22 @@ public sealed class TaskReadAccessPolicy : ITaskReadAccessPolicy
             {
                 candidates.Add(watcher.UserId);
             }
+        }
+
+        /*
+         * BL-439 — THE PERSON THIS TASK IS ASKING, and only while it is asking (TaskInquiryRules.IsAskedOf — the
+         * SAME predicate the answer handler and the inbox item ask). Fail-closed on both ends: the moment the
+         * question is answered or withdrawn, ClearWaiting drops the id and the leg answers no.
+         *
+         * THIS task only — deliberately absent from the parent leg below: being asked about a subtask admits the
+         * addressee to that subtask, never to its parent or its siblings.
+         *
+         * Reading is ALL it grants. Every write keeps asking its own holder/requester question, which the
+         * addressee does not pass; the one write they can reach is the answer itself.
+         */
+        if (task.WaitingOnUserId is { } asked && TaskInquiryRules.IsAskedOf(task, asked))
+        {
+            candidates.Add(asked);
         }
 
         // The parent leg is narrower than the direct leg on purpose (class doc): only the parent's assignee and

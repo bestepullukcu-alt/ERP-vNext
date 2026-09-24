@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>任务已移交。</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>没有其他人可以接手此任务。</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>分配不是编辑出来的，而是移交的；移交原因会保留在任务历史中。</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>发送前请先填写回答。</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>回答过长，请控制在 4000 个字符以内。</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>此问题已不再等待您的回答：它已被回答或撤回。请刷新列表。</value>
+  </data>
 </root>

@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>تم تسليم المهمة.</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>لا يوجد شخص آخر يمكن تسليم المهمة إليه.</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>الإسناد لا يُعدَّل بل يُسلَّم، مع سبب يبقى في سجل المهمة.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>اكتب إجابة قبل الإرسال.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>الإجابة طويلة جدًا. يجب ألا تتجاوز 4000 حرف.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>لم يعد هذا السؤال بانتظارك، فقد تمت الإجابة عنه أو سحبه. حدِّث القائمة.</value>
+  </data>
 </root>

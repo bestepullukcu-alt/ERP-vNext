@@ -2364,4 +2364,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Bu görevi tamamlamadan önce bir dosya seçin.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Kanıt ekle</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} kanıt dosyası</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Soru</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Soru · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Cevapla</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Cevabınızı görevin geçmişine yazar ve görevi önceki durumuna döndürür</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Sorulan soru</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Cevabınız</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>İstenen bilgiyi yazın…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Göndermeden önce bir cevap yazın.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} cevapladı</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} size soruyor: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>Bu görevde cevabınız bekleniyor.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} cevapladı: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Soru cevaplandı</value>
+  </data>
 </root>

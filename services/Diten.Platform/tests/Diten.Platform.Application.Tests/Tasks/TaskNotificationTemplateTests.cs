@@ -37,7 +37,10 @@ public sealed class TaskNotificationTemplateTests
         // the other five — a sixth event added without its templates is an email that silently never arrives.
         "platform.tasks.commented",
         // WP-PSS-MOD0024-TASK-MENTIONS-01 — a direct @mention, same gate.
-        "platform.tasks.mentioned"
+        "platform.tasks.mentioned",
+        // BL-439 — the two halves of "Bilgi bekle": the question reaches its addressee, the answer its holder.
+        "platform.tasks.inquiryasked",
+        "platform.tasks.inquiryanswered"
     ];
 
     [Fact]

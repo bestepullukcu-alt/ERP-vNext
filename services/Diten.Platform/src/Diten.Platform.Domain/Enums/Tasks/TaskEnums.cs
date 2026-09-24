@@ -136,7 +136,17 @@ public enum TaskTransitionKind
     /// <para>ONE entry per SAVE, never per field — see <c>TaskTransition.FieldChanges</c>. "Ali moved the due
     /// date and raised the priority" is how a person remembers it; five rows is not.</para>
     /// </summary>
-    Edited = 15
+    Edited = 15,
+
+    /// <summary>
+    /// The person a waiting task was asked about ANSWERED (BL-439) — the second half of "Bilgi bekle".
+    ///
+    /// <para>Its own kind rather than <see cref="Resumed"/>: resuming is the holder's act, and this is somebody
+    /// else's — the addressee of the question. <c>Reason</c> carries their answer, in their own words, and the
+    /// entry's actor is who answered. The task goes back to the lifecycle it had BEFORE it was parked, which is
+    /// why the kind cannot be inferred from the target alone.</para>
+    /// </summary>
+    InquiryAnswered = 16
 }
 
 /// <summary>Assignment/ownership history event kinds (append-only audit of who held the task).</summary>
