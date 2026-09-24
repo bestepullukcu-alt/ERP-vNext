@@ -891,13 +891,10 @@ window.DitenDataTable = (function () {
 
         var toolbar = options.toolbar || {};
         var l = L();
+        // No import entry, and no "coming soon" stand-in for one (owner decision 2026-09-24, BL-441): importing is a
+        // central module's job — template, validation, audit trail — the way SAP's Migration Cockpit and Oracle's
+        // Import Management do it, not a per-page button. Pages do not ask for one; the factory does not offer one.
         var extraButtons = Object.assign({
-            importBtn: {
-                text: '<i class="icon-base bx bx-import icon-sm"></i>',
-                className: 'btn btn-icon btn-label-secondary',
-                attr: { title: l.Import, 'data-bs-toggle': 'tooltip' },
-                action: function () { window.showToast?.(l.ComingSoon, 'warning'); }
-            },
             filterBtn: {
                 text: '<i class="icon-base bx bx-filter-alt icon-sm"></i>',
                 className: 'btn btn-icon btn-label-secondary dt-filter-btn position-relative',

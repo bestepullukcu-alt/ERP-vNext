@@ -6254,6 +6254,41 @@ sütunlar (dt-defaults, sunucu modunda yalnız sayfa — tam dışa aktarma sunu
 worktree'sinden (a5af7f7bb).
 
 ---
+### BL-441
+
+**İçe aktarma merkezi bir modül olmalı — sayfa başına "İçe aktar" düğmesi kaldırıldı**
+
+DURUM: AÇIK — KARAR VERİLDİ (sahip, 2026-09-24) · SAHİP: CT (düğme kaldırma yapıldı; modül BL olarak bekliyor) · KAYIT: 2026-09-24
+
+**Ne vardı:** `createList` fabrikası her liste ekranının Action menüsüne "İçe aktar" kalemi koyuyordu; tıklayınca yalnız
+"Yakında" toast'ı çıkıyordu. Kullanıcılar ekranı testinde sahip fark etti: her sayfada var, hiçbirinde çalışmıyor.
+
+**Karar (sahip):** düğme hiç konmaz — ne şimdi ne "Yakında" diye. İçe aktarma ilerde tek bir merkezi modülün işi olur;
+ajanlar sayfa yaparken "içe aktarma ister misin" diye sormaz.
+
+**Neden merkezi (Blueprint + SAP + Oracle):**
+
+| | Sayfa başına düğme | Merkezi modül |
+|---|---|---|
+| SAP S/4HANA | Yok. Migration Cockpit (LTMC/LTMOM) ve Fiori "Import Data" uygulamaları: şablon indir → doldur → yükle → simülasyon → hata listesi → yükleme günlüğü | ✔ |
+| Oracle Fusion | Yok. Import Management (CX) ve FBDI (ERP): şablon (xlsm) → CSV/ZIP → UCM'e yükle → ESS işi → hata raporu | ✔ |
+| GxP (Veeva/MasterControl) | Yok. Yükleme = veri girişi olayı: kim, ne zaman, hangi dosya, hangi satır reddedildi; denetim izinde | ✔ |
+| Blueprint | İçe aktarma satırı yok — bu BL onu açıyor | — |
+
+En kolay olan (her sayfaya bir düğme) en doğru olan değil: doğrulama, eşleme, hata raporu ve denetim izi her sayfada
+ayrı ayrı yazılamaz; yazılırsa her biri farklı davranır.
+
+**Yapıldı (2026-09-24, entegrasyon dalı):** fabrikadaki `importBtn` varsayılanı silindi; `dt-defaults.js` içindeki
+opt-in `extraButtons.importBtn` yolu duruyor (çağıran sayfa yok — 0 ölçüldü) ama kural onu yasaklıyor; kural satırı
+`frontend-datatable-template.md` başlık bloğuna eklendi; guard `tests/list-factory-no-import-button-ct.test.js`
+(fabrikanın DtDefaults'a verdiği toolbar'da `importBtn` yok + kaynakta `bx-import` yok).
+
+**Modülün kapsamı (yapılınca):** varlık başına şablon (kolon sözlüğü + zorunlu alanlar), yükleme (dosya → satır
+doğrulama → önizleme → onay), hata raporu (satır/kolon/sebep), kısmi yükleme kuralı (ya hep ya hiç mi, satır satır mı —
+GxP için ya hep ya hiç), denetim izi (`IAuditableCommand`), yetki (`{module}.import` anahtarı), 7 dil. Tenant modülü.
+
+---
+
 
 ### BL-393
 

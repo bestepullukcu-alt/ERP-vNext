@@ -22,6 +22,7 @@ Alan sayımı yalnızca kullanıcının formda doldurduğu modül alanlarıdır.
 > - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
 > - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
 > - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
+> - **İçe aktarma düğmesi YOK (sahip kararı 2026-09-24, BL-441):** Liste ekranına, toolbar'a veya Action menüsüne "İçe aktar" konmaz — "Yakında" diye de konmaz. İçe aktarma merkezi bir modülün işidir (şablon indir → doldur → yükle → doğrulama → hata raporu → denetim izi; SAP S/4HANA Migration Cockpit ve Oracle Fusion Import Management / FBDI deseni). Ajan sayfa başına sormaz; `createList` fabrikası da sunmaz.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/SampleModule/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/SampleModule/Index.cshtml`
