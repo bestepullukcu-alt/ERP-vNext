@@ -61,8 +61,8 @@
     const commentMentionState = new Map();
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
-    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
-    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event' };
+    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite', inquiry: 'TypeInquiry' };
+    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event', inquiry: 'bx-question-mark' };
     const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt',
         snoozed: 'bx-moon' };
     const MODE_KEY = { direct: 'ModeDirect', approval: 'ModeApproval', groupQueue: 'ModeGroupQueue', offered: 'ModeOffered' };
@@ -1269,7 +1269,9 @@
         { key: 'review', labelKey: 'TypeReview', icon: TYPE_ICON_MAP.review },
         { key: 'issue', labelKey: 'TypeIssue', icon: TYPE_ICON_MAP.issue },
         { key: 'exception', labelKey: 'TypeException', icon: TYPE_ICON_MAP.exception },
-        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' }
+        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' },
+        // BL-439 — a question somebody else's task is asking the reader: a first decision (answer), like the rest.
+        { key: 'inquiry', labelKey: 'TypeInquiry', icon: TYPE_ICON_MAP.inquiry }
     ];
     const INBOX_RISK = ['sla-risk', 'escalated'];   // "Bloke" is post-acceptance → not here
 
@@ -1480,7 +1482,7 @@
             `<option value="${esc(m)}"${selectedModules.includes(m) ? ' selected' : ''}>${esc(m)}</option>`).join('');
         const wtSel = Array.isArray(draft.worktype) ? draft.worktype : (draft.worktype && draft.worktype !== 'all' ? [draft.worktype] : []);
         const wtLabel = (k) => k === 'meetingInvite' ? t('ChipMeetingInvite') : t(TYPE_KEY[k]);
-        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'issue', 'exception'].map((k) =>
+        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'inquiry', 'issue', 'exception'].map((k) =>
                 `<option value="${k}"${wtSel.includes(k) ? ' selected' : ''}>${esc(wtLabel(k))}</option>`).join('');
         // İş türü duplicates the visible type chips → hidden in İşlerim (kept in Havuz/Geçmiş
         // where the chips curate differently). Atama modu is dead in İşlerim (everything is
@@ -1550,6 +1552,35 @@
         if (!signal) { return ''; }
         return signal.count > 1 ? tf('ReturnedCount', signal.count) : t('ReturnedLabel');
     };
+    /*
+     * ── THE ANSWERED SIGNAL (BL-439) ─────────────────────────────────────────────────────────────────────
+     *
+     * The other half of the waiting chip. Read through helpers for the reason `returnedSignal` is: `at` is the
+     * guard the contract requires, so a malformed block draws nothing rather than an empty chip.
+     *
+     * ⚠ `answeredBy` IS STILL A PERSON OBJECT HERE. toPresentation flattens assignee/requester to strings, but
+     * it leaves this block alone — so the name is read off `.displayName`, with the same "Me" / name-unavailable
+     * fallbacks every other person gets, never a GUID.
+     */
+    const inquiryAnsweredSignal = (item) =>
+        (item && item.inquiryAnswer && item.inquiryAnswer.at) ? item.inquiryAnswer : null;
+
+    const inquiryAnsweredText = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        return signal ? (data.resolveLabel(signal.answer) || '') : '';
+    };
+
+    const inquiryAnsweredName = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        if (!signal) { return ''; }
+        const person = signal.answeredBy || null;
+        return person?.displayName
+            || (person?.isCurrentUser ? t('PersonSelf') : t('PersonNameUnavailable'));
+    };
+
+    const inquiryAnsweredChipText = (item) =>
+        (inquiryAnsweredSignal(item) ? tf('InquiryAnsweredBy', inquiryAnsweredName(item)) : '');
+
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
@@ -1587,6 +1618,14 @@
          */
         returnedSignal(item) && !isTerminal(item)
             ? chip('warning', 'bx-undo', returnedChipText(item), returnedReasonText(item))
+            : '',
+        /*
+         * BL-439 — YOUR QUESTION WAS ANSWERED: "X cevapladı", with the answer itself as the tooltip — the same
+         * "chip clips, title carries the full sentence" rule the waiting and returned chips follow. The server
+         * sends it only while the answer is the latest word and never on finished work.
+         */
+        inquiryAnsweredSignal(item)
+            ? chip('success', 'bx-reply', inquiryAnsweredChipText(item), inquiryAnsweredText(item))
             : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
@@ -1724,6 +1763,8 @@
         // MOD-0357 S5c — same tone as accept/decline above, the codes just differ (acceptInvite/declineInvite).
         acceptInvite: 'bx-check', declineInvite: 'bx-x-circle',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
+        // BL-439 — the other half of `inquire`: the addressee replies.
+        answer: 'bx-reply',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         scheduleReviewMeeting: 'bx-calendar-event',
         /*
@@ -2130,6 +2171,16 @@
     };
 
     const guidanceFor = (item) => {
+        /*
+         * BL-439 — a QUESTION addressed to the reader says who is asking and what, in one sentence, before
+         * anything else: it is the whole reason the page is open. `requester` is already the asker's name
+         * (toPresentation), and the question is the item's own summary.
+         */
+        if (item.itemType === 'inquiry') {
+            return item.summary
+                ? { kind: 'primary', text: tf('GuidanceInquiryAsked', item.requester || t('PersonNameUnavailable'), item.summary) }
+                : { kind: 'primary', key: 'GuidanceInquiryAskedNoText' };
+        }
         if (item.admissionState === 'pendingAcceptance') { return { kind: 'primary', key: 'GuidancePendingAcceptance' }; }
         if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
         if (item.gates?.approval?.status === 'pending') { return { kind: 'warning', key: 'GuidanceApprovalPending' }; }
@@ -2139,6 +2190,13 @@
             return waitingSentence(item)
                 ? { kind: 'warning', text: tf('GuidanceWaitingBecause', waitingSentence(item)) }
                 : { kind: 'warning', key: 'GuidanceWaiting' };
+        }
+        // BL-439 — the other half: the question this task was parked on came back answered.
+        if (inquiryAnsweredSignal(item)) {
+            const answerText = inquiryAnsweredText(item);
+            return answerText
+                ? { kind: 'success', text: tf('GuidanceInquiryAnswered', inquiryAnsweredName(item), answerText) }
+                : { kind: 'success', text: inquiryAnsweredChipText(item) };
         }
         return null;
     };
@@ -2187,6 +2245,7 @@
         plan: 'OutcomePlan',
         start: 'OutcomeStart',
         inquire: 'OutcomeInquire',
+        answer: 'OutcomeAnswer',
         return: 'OutcomeReturn',
         reassign: 'OutcomeReassign',
         complete: 'OutcomeComplete',
@@ -7315,6 +7374,12 @@
          */
         inquire: ({ expectedVersion, reason, waitingOnUserId }) =>
             ({ expectedVersion, reason, waitingOnUserId: waitingOnUserId || undefined }),
+        /*
+         * BL-439 — the addressee's ANSWER, sent as `answer`, never as `reason`: the server's union payload has its
+         * own field for it (WorkItemActionPayloadDto.Answer), because an answer is neither an explanation of an
+         * act nor a note on one. The dialog collects it in the same textarea every reason uses.
+         */
+        answer: ({ expectedVersion, reason }) => ({ expectedVersion, answer: reason }),
         return: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
@@ -9457,7 +9522,12 @@
                 }
             }
 
-            const options = people
+            // BL-439 — nobody waits on themselves: the holder is dropped from the "waiting on" list (the server
+            // refuses it too). The reassign picker is untouched — handing work on is a different question.
+            const offered = offersWaitingOn && item.assigneeId
+                ? people.filter((person) => personUserId(person) !== item.assigneeId)
+                : people;
+            const options = offered
                 .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
@@ -9471,7 +9541,20 @@
              * "you have not chosen yet". An empty list simply draws no field: nobody to name is not an error
              * here, unlike the required case above.
              */
-            const waitingOnField = offersWaitingOn && people.length
+            /*
+             * BL-439 — the ANSWER dialog asks for an answer, not a reason, and shows the QUESTION it answers. The
+             * question is the item's own summary (the asker's sentence, already resolved by toPresentation); it is
+             * quoted above the textarea so the reader writes looking at what was asked rather than from memory.
+             * Every other reason-capturing action keeps its labels exactly as they were.
+             */
+            const isAnswer = action.code === 'answer';
+            const questionQuote = isAnswer && item.summary
+                ? `<p class="form-label d-block text-start mb-1">${esc(t('InquiryQuestionLabel'))}</p>`
+                  + `<blockquote class="wcn-dialog-lead text-start">${esc(item.summary)}</blockquote>`
+                : '';
+            const textLabel = isAnswer ? t('InquiryAnswerLabel') : t('ReasonLabel');
+
+            const waitingOnField = offersWaitingOn && offered.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
                   + `<select id="wcnWaitingOn" class="form-select">`
                   + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
@@ -9505,11 +9588,16 @@
                  * The CIRCLE and its colour are still `type`'s — `info`, untouched.
                  */
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + questionQuote
                     + assigneeField
                     + waitingOnField
-                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
-                    + `<textarea id="wcnReasonText" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
+                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
+                    // The server's ceiling for an answer is a task description's (4000); saying so here means the
+                    // textarea stops the reader rather than a 400 after they have written it.
+                    + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
+                    + (isAnswer
+                        ? `placeholder="${esc(t('InquiryAnswerPlaceholder'))}"></textarea>`
+                        : `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`),
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
@@ -9520,7 +9608,10 @@
                 },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
-                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
+                    if (!reason) {
+                        global.Swal.showValidationMessage(t(isAnswer ? 'InquiryAnswerRequired' : 'ReasonRequired'));
+                        return false;
+                    }
 
                     if (!needsAssignee) {
                         // Empty is a real answer here, so it is passed through untouched and NOT validated.

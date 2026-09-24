@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>La tâche a été transférée.</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>Il n'y a personne d'autre à qui confier cette tâche.</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Une affectation ne se modifie pas : elle se transfère, avec un motif conservé dans l'historique.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Rédigez une réponse avant d'envoyer.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>La réponse est trop longue. Limitez-la à 4000 caractères.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Cette question ne vous attend plus : elle a reçu une réponse ou a été retirée. Actualisez la liste.</value>
+  </data>
 </root>

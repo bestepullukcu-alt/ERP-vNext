@@ -108,7 +108,23 @@ public sealed record WorkItemActionPayloadDto(
     /// </summary>
     [property: System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<WorkItemFieldValueDto>? ClosureFieldValues = null);
+    IReadOnlyList<WorkItemFieldValueDto>? ClosureFieldValues = null,
+    /// <summary>
+    /// BL-439 — MOD-0024 only. The addressee's ANSWER to the question a waiting task is asking, read only by
+    /// <c>answer</c>.
+    ///
+    /// <para>Its own field rather than a reuse of <see cref="Reason"/> or <see cref="Note"/>: a reason explains an
+    /// act, a note annotates one, and an answer is neither — it is the information the other person was waiting
+    /// for. Folding it into <c>reason</c> would have the history, the dispatcher and the next reader each guess
+    /// which of the three a given string was.</para>
+    ///
+    /// <para>Trailing, defaulted and omitted when null for the reason <see cref="ClosureFieldValues"/> gives: every
+    /// request that does not carry it serializes byte-identical to one from before it existed. Stripped on the way
+    /// out to a remote module (<c>HttpWorkItemActionDispatcher</c>), which has no such field.</para>
+    /// </summary>
+    [property: System.Text.Json.Serialization.JsonIgnore(
+        Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? Answer = null);
 
 /// <summary>
 /// Faz 2a-rest — one configurable field's value, in THIS envelope's own neutral vocabulary.

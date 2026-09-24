@@ -460,6 +460,52 @@ public sealed class TaskManifestProvider : IModuleManifestProvider
                     LinkPolicy: "TargetPage",
                     Status: "Active"),
 
+                /*
+                 * BL-439 — the two halves of "Bilgi bekle", on the module's one notification road. Neither carries
+                 * the question or the answer TEXT: both are behind the task read rule, and an e-mail is not.
+                 */
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.InquiryAsked,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.inquiryasked",
+                    DisplayNameKey: "NotificationEvent_TaskInquiryAsked",
+                    FallbackDisplayName: "Task question for you",
+                    Description: "Sent to the person a task is parked waiting on: they have a question to answer.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
+                new ModuleManifestNotificationEvent(
+                    EventCode: TaskNotificationEvents.InquiryAnswered,
+                    Channel: "Email",
+                    DefaultTemplateKey: "platform.tasks.inquiryanswered",
+                    DisplayNameKey: "NotificationEvent_TaskInquiryAnswered",
+                    FallbackDisplayName: "Task question answered",
+                    Description: "Sent to the holder when the person their task was waiting on answers.",
+                    RequiredVariables:
+                    [
+                        new ModuleManifestNotificationVariable("TaskTitle"),
+                        new ModuleManifestNotificationVariable("TaskId")
+                    ],
+                    OptionalVariables: null,
+                    TargetPageCode: PageTaskDetail,
+                    RequiredPermissionKey: TaskPermissions.Read,
+                    CanTenantOverride: true,
+                    UsageType: "SystemEvent",
+                    SeverityDefault: "Info",
+                    LinkPolicy: "TargetPage",
+                    Status: "Active"),
+
                 // Declared now, dispatched in Phase 3 when the MOD-0023 handoff lands.
                 new ModuleManifestNotificationEvent(
                     EventCode: TaskNotificationEvents.ApprovalRequested,

@@ -2370,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>请先选择文件，再完成此任务。</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>添加证明文件</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} 个证明文件</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>问题</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>问题 · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>回答</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>将您的回答记入任务历史，并使任务恢复到之前的状态</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>所提问题</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>您的回答</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>请填写对方需要的信息…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>发送前请先填写回答。</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} 已回答</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} 向您提问：{1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>有人在等待您对此任务的回答。</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} 已回答：{1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>问题已回答</value>
+  </data>
 </root>

@@ -92,8 +92,12 @@ public sealed class HttpWorkItemActionDispatcher : IWorkItemActionDispatcher
          * payload to this provider must not leak it onward regardless. `ClosureFieldValues` carries
          * `JsonIgnoreCondition.WhenWritingNull`, so this also guarantees the body a remote module receives is
          * byte-identical to the one it received before this field existed.
+         *
+         * BL-439 — `Answer` is the same kind of field (MOD-0024's own, no remote module has it) and is stripped
+         * the same way, for the same two reasons.
          */
-        var body = new RemoteWorkItemActionRequest(_row.ProviderCode, request.Payload with { ClosureFieldValues = null });
+        var body = new RemoteWorkItemActionRequest(
+            _row.ProviderCode, request.Payload with { ClosureFieldValues = null, Answer = null });
 
         // The write path's own budget, from the SAME option the aggregation loop uses for reads. Linked to the
         // caller's token so a reader who navigates away still cancels the call in flight.

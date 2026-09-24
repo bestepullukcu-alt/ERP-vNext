@@ -252,4 +252,13 @@
   <data name="ReassignDone" xml:space="preserve"><value>La tarea se ha entregado.</value></data>
   <data name="ReassignNoPeople" xml:space="preserve"><value>No hay nadie más a quien entregar esta tarea.</value></data>
   <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Una asignación no se edita: se entrega, con un motivo que permanece en el historial.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Escriba una respuesta antes de enviar.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>La respuesta es demasiado larga. No debe superar los 4000 caracteres.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Esta pregunta ya no le espera: fue respondida o retirada. Actualice la lista.</value>
+  </data>
 </root>

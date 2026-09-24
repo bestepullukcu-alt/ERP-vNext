@@ -115,6 +115,21 @@ public sealed class TaskItemRepository : TenantRepository<TaskItem>, ITaskItemRe
     }
 
     /// <summary>
+    /// BL-439 — the questions waiting on this user. See the interface for why Waiting is part of the filter
+    /// rather than left to the caller.
+    /// </summary>
+    public async Task<IReadOnlyList<TaskItem>> ListWaitingOnUserAsync(
+        Guid userId,
+        CancellationToken ct = default)
+    {
+        var filter = Builders<TaskItem>.Filter.And(
+            ExecutionFilter,
+            Builders<TaskItem>.Filter.Eq(x => x.WaitingOnUserId, (Guid?)userId),
+            Builders<TaskItem>.Filter.Eq(x => x.Lifecycle, TaskLifecycle.Waiting));
+        return await Collection.Find(filter).SortBy(x => x.DueAt).ToListAsync(ct);
+    }
+
+    /// <summary>
     /// A new task, with the <see cref="TaskTransitionKind.Created"/> entry that opens its history.
     ///
     /// <para>The entry is what makes "this task has no history" ANSWERABLE rather than ambiguous. Every task

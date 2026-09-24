@@ -108,6 +108,11 @@ public static class WorkItemContract
     // already spelled it this way for the trigger-only showcase this replaces — one name, not two.
     public const string IntentMeetingInvite = "meetingInvite";
 
+    // BL-439 — the QUESTION a waiting task is asking the reader, in their inbox with one action (answer). Its own
+    // intent rather than a `task`: the reader does not hold the work, and every task-shaped surface (lifecycle
+    // strip, checklist, closure) would offer them things they may not do.
+    public const string IntentInquiry = "inquiry";
+
     // assignmentMode
     public const string AssignmentApproval = "approval";
 
@@ -688,7 +693,29 @@ public sealed record WorkItemProjectionDto(
     /// silent rather than inventing a reason.</para>
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    WorkItemLabelDto? ArrivalReason = null);
+    WorkItemLabelDto? ArrivalReason = null,
+    /// <summary>
+    /// BL-439 — the question this task was parked on has been ANSWERED, and this is still the latest word on it.
+    /// Trailing, optional and omitted when null, like every field after the core: a provider with no questions
+    /// says nothing, and the executable contract validates it only when present.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemInquiryAnswerDto? InquiryAnswer = null);
+
+/// <summary>
+/// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log
+/// (<c>TaskTransitionKind.InquiryAnswered</c>), never stored on the task — the same rule
+/// <see cref="WorkItemReturnedDto"/> follows.
+/// </summary>
+/// <param name="At">When the answer landed.</param>
+/// <param name="AnsweredBy">Who answered. A person, never an id standing in for one.</param>
+/// <param name="Answer">Their own words — a DISPLAY label, never a resource key.</param>
+public sealed record WorkItemInquiryAnswerDto(
+    DateTimeOffset At,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? AnsweredBy,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Answer);
 
 /// <summary>
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/

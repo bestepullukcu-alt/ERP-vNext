@@ -173,7 +173,8 @@ public sealed class TaskTransitionLogTests
                         // assignment picker uses; these tests never name one, so empty directories are
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
-                        new FakeOrganizationUnitRepository())
+                        new FakeOrganizationUnitRepository(),
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
             .Handle(
                 new InquireTaskItemCommand(
                     task.Id,
@@ -515,7 +516,8 @@ public sealed class TaskTransitionLogTests
                         // assignment picker uses; these tests never name one, so empty directories are
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
-                        new FakeOrganizationUnitRepository())
+                        new FakeOrganizationUnitRepository(),
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
                     .Handle(
                         new InquireTaskItemCommand(
                             task.Id, new InquireTaskItemRequest(task.Version, "Blocked on procurement"), "corr"),
@@ -601,6 +603,23 @@ public sealed class TaskTransitionLogTests
                 var task = AssignedTask(TaskLifecycle.Open);
                 var repository = new FakeTaskItemRepository(task);
                 await Return(repository, task, "Not my remit");
+                return Last(repository);
+            },
+            // BL-439 — the person a parked task is asking answers it.
+            [TaskTransitionKind.InquiryAnswered] = async () =>
+            {
+                var task = AssignedTask(TaskLifecycle.Waiting);
+                task.WaitingReason = "Which lot?";
+                task.WaitingOnUserId = TaskTestData.Other;
+                var repository = new FakeTaskItemRepository(task);
+                await new AnswerInquiryHandler(
+                        repository, repository.Transitions, new TaskLifecycleService(),
+                        new FakeCurrentUserContext(TaskTestData.Other), new FakeWorkflowTransitionGate(),
+                        new FakeTaskDependencyRepository(), new FakeTaskNotificationService(),
+                        NullLogger<AnswerInquiryHandler>.Instance)
+                    .Handle(
+                        new AnswerInquiryCommand(task.Id, new AnswerInquiryRequest(task.Version, "Lot 42"), "corr"),
+                        CancellationToken.None);
                 return Last(repository);
             }
         };
