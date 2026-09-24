@@ -6375,7 +6375,14 @@ bekleniyor — …" (resx: `…duraklatıldı: {0}` ×2, `NoticeWaitingExternal`
 
 **Görev bildirim e-postaları Türkçe kiracıda İngilizce gidiyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+DURUM: KAPANDI — VERİ, kod kusuru değil (CT ölçümü 2026-09-24 akşam) · SAHİP: sahip (ayar) · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+**Ölçüldü:** dil zinciri kodda yazılı (`TenantNotificationLocaleResolver`): çağıranın verdiği dil → `Tenant.Settings.Language` →
+`Tenant.DefaultLanguage` → "en". Kullanıcı başına dil alanı YOK (Auth `User` entity'sinde Locale/Language yok; resolver yorumu bunu
+"bilinen boşluk" diye yazmış). admin@diten.com'un kiracısı `00000000-…-0001` = "Platform Admin Tenant" (kod PLATFORM), dili
+`DefaultLanguage=en`, `Settings.Language=en` → e-postalar İngilizce. Arayüzün Türkçe olması tarayıcı çerezinden (kültür çerezi),
+kiracı dilinden değil. **Sahip adımı:** Kiracı Ayarları'nda dil = tr (ya da "Dev Tenant" gibi tr kiracıyla test). Kalan ürün
+boşluğu: kullanıcı başına tercih dili (Auth alanı + resolver 1.5. halka) — ayrı karar, şimdilik açılmadı.
 
 Ölçüldü: `platform.tasks.inquiryasked` ve `inquiryanswered` şablonları 7 dilde tohumlu; dispatch günlüğü `Locale="en"`;
 Mailpit'teki iki e-posta İngilizce ("A task is waiting for your answer", "Your question was answered"); arayüz Türkçe.
