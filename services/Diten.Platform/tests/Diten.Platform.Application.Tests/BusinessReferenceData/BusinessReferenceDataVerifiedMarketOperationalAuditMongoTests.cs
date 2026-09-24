@@ -72,6 +72,8 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
     [InlineData("foreign-tenant")]
     [InlineData("wrong-version")]
     [InlineData("wrong-fingerprint")]
+    [InlineData("wrong-actor")]
+    [InlineData("blank-actor")]
     public void Bind_RejectsFactsOutsideLockedOperationalScope(string mutation)
     {
         var (adapter, _, _) = Adapter();
@@ -81,6 +83,8 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
             "foreign-tenant" => facts with { ReferenceTenantId = Guid.NewGuid() },
             "wrong-version" => facts with { CatalogVersion = "wrong" },
             "wrong-fingerprint" => facts with { CatalogFingerprint = new string('0', 64) },
+            "wrong-actor" => facts with { ActorId = "42b66b40-f47f-4d7b-9a90-15a654333d48" },
+            "blank-actor" => facts with { ActorId = " " },
             _ => facts
         };
 
@@ -167,6 +171,10 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
                 && request.EntityId == version.BusinessReferenceDataVersionId
                 && request.RequestType == "BusinessReferenceData.publish"
                 && request.Operation == AuditOperation.Activate
+                && request.ActorType == AuditActorType.PlatformAdministrator
+                && request.ActorId == Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedActorId)
+                && request.Metadata["actor"]!.ToString() == VerifiedMarketOperationalProvisioningOptions.LockedActorId
+                && request.Metadata["actorType"]!.ToString() == AuditActorType.PlatformAdministrator.ToString()
                 && request.Metadata["publicationOperationKey"]!.ToString() == version.LastPublishIdempotencyKey),
             It.IsAny<CancellationToken>()), Times.Once);
         preflight.VerifyAll();
@@ -279,7 +287,7 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalAuditMongoTest
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
         Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId),
-        "market-operator",
+        VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-operational-test");
 
     private static BusinessReferenceDataVersion Version()

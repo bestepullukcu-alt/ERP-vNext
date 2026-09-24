@@ -64,7 +64,7 @@ public sealed class DevelopmentBusinessReferenceDataVerifiedMarketOperationalEli
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.IdempotencyNamespaceEnvironmentKey, $"{VerifiedMarketOperationalProvisioningOptions.SectionName}:IdempotencyNamespace")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.CatalogLoadEnabledEnvironmentKey, "BusinessReferenceData:CatalogLoad:Enabled")
             || !IsExactProcessResolvedValue(VerifiedMarketOperationalProvisioningOptions.ReferenceTenantEnvironmentKey, $"{BusinessReferenceDataProviderOptions.SectionName}:ReferenceTenantId")
-            || string.IsNullOrWhiteSpace(options.ActorId)
+            || !string.Equals(options.ActorId, VerifiedMarketOperationalProvisioningOptions.LockedActorId, StringComparison.Ordinal)
             || !IsValidNamespace(options.IdempotencyNamespace)
             || options.ExpectedCatalogVersion != VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion
             || !string.Equals(options.ExpectedCatalogFingerprint, VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint, StringComparison.Ordinal))
@@ -96,7 +96,7 @@ public sealed class DevelopmentBusinessReferenceDataVerifiedMarketOperationalEli
                 options.ExpectedCatalogVersion,
                 fingerprint,
                 provider.ReferenceTenantId,
-                options.ActorId.Trim(),
+                options.ActorId,
                 options.IdempotencyNamespace.Trim());
             return new VerifiedMarketOperationalEligibilityDecision(
                 true,

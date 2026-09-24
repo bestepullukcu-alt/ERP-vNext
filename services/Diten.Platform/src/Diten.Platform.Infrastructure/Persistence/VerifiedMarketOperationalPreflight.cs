@@ -15,6 +15,8 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
     private const string MarketSetCode = "market";
     private const string AuditRequestType = "BusinessReferenceData.publish";
     private const string AuditEntityType = "BusinessReferenceDataVersion";
+    private const string LockedActorId = "11111111-1111-1111-1111-111111111111";
+    private static readonly Guid LockedActorGuid = Guid.Parse(LockedActorId);
     private readonly IMongoDatabase _database;
 
     public VerifiedMarketOperationalPreflight(IMongoDatabase database)
@@ -50,7 +52,7 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
             || request.EntityId == Guid.Empty
             || string.IsNullOrWhiteSpace(request.AuditIdempotencyKey)
             || string.IsNullOrWhiteSpace(request.PublicationCorrelationId)
-            || string.IsNullOrWhiteSpace(request.ActorId)
+            || !string.Equals(request.ActorId, LockedActorId, StringComparison.Ordinal)
             || !string.Equals(request.RequestType, AuditRequestType, StringComparison.Ordinal)
             || !string.Equals(request.EntityType, AuditEntityType, StringComparison.Ordinal)
             || request.Operation != AuditOperation.Activate
@@ -438,6 +440,8 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
 
         var payload = payloadValue.AsBsonDocument;
         if (!DocumentGuidEquals(payload, "TargetTenantId", expected.TenantId)
+            || !DocumentEnumEquals(payload, "ActorType", AuditActorType.PlatformAdministrator)
+            || !DocumentGuidEquals(payload, "ActorId", LockedActorGuid)
             || !DocumentStringEquals(payload, "SourceService", "Diten.Platform")
             || !DocumentStringEquals(payload, "SourceModule", "MOD-0048-FU01")
             || !DocumentEnumEquals(payload, "Outcome", AuditOutcome.Succeeded)
@@ -457,9 +461,7 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
                && DocumentStringEquals(
                    metadata,
                    "actorType",
-                   Guid.TryParse(expected.ActorId, out _)
-                       ? AuditActorType.TenantUser.ToString()
-                       : AuditActorType.System.ToString());
+                   AuditActorType.PlatformAdministrator.ToString());
     }
 
     private static bool TryUnwrapExactMetadata(BsonValue value, out BsonDocument metadata)
@@ -602,7 +604,7 @@ public sealed class VerifiedMarketOperationalPreflight : IVerifiedMarketOperatio
             || !string.Equals(facts.CatalogFingerprint, "b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039", StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(facts.CatalogPath)
             || !string.Equals(Path.GetFileName(facts.CatalogPath), "mod-0290-market-reference.json", StringComparison.Ordinal)
-            || string.IsNullOrWhiteSpace(facts.ActorId)
+            || !string.Equals(facts.ActorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(facts.IdempotencyNamespace)
             || !string.Equals(facts.IdempotencyNamespace, facts.IdempotencyNamespace.Trim(), StringComparison.Ordinal))
         {

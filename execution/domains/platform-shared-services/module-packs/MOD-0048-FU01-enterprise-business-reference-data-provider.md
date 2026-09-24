@@ -2544,6 +2544,27 @@ allow-list.
   Hangfire, Rabbit consumer, generic event-outbox publisher, generic audit worker, health endpoint, HTTP listener or
   other hosted service.
 
+#### Authorized amendment — canonical Platform Admin operational actor semantics (2026-09-24)
+
+- This Development-only Market operational path accepts exactly Platform Admin Tenant
+  `00000000-0000-0000-0000-000000000001` and canonical Platform Administrator actor
+  `11111111-1111-1111-1111-111111111111`. Empty, whitespace, malformed, different or another-tenant actor input,
+  and any tenant mismatch, fail closed before publication, validation-result, operation or audit-outbox mutation.
+- The operational audit adapter records this operation with canonical actor type `PlatformAdministrator` and actor id
+  `11111111-1111-1111-1111-111111111111`; it must not infer or persist `TenantUser`. Durable outbox proof must match
+  both values in the same correlation/idempotency chain before operational success is returned.
+- Negative mutation evidence includes `business_reference_data_validation_results`: rejected actor or tenant input
+  must leave that collection, as well as Market set/version/pointer/operation and audit-outbox state, unchanged.
+- This amendment is bounded to the existing Section 20 allow-list, specifically the operational options,
+  eligibility, governance-audit adapter and preflight runtime paths plus
+  `VerifiedMarketOperationalEligibilityTests.cs`, `VerifiedMarketOperationalProvisioningRunnerTests.cs`,
+  `BusinessReferenceDataVerifiedMarketOperationalAuditMongoTests.cs` and
+  `BusinessReferenceDataVerifiedMarketOperationalMongoTests.cs`. It grants no additional runtime, test, project,
+  package, configuration or governance path.
+- Normal Platform host startup, generic BRD publishing, generic audit behavior, other actor types and
+  Staging/Production behavior remain unchanged. This amendment authorizes code/test alignment only; it grants no live
+  Market publication, Mongo operation, staging, commit, push or merge authority.
+
 #### Acceptance and test gates
 
 - [ ] Normal no-argument Platform behavior is unchanged and the operational service collection is not constructed.

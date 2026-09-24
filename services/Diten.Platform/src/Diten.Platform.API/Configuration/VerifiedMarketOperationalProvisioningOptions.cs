@@ -15,6 +15,7 @@ public sealed class VerifiedMarketOperationalProvisioningOptions
     public const string LockedCatalogVersion = "UNSD-M49-2026-08-08";
     public const string LockedCatalogFingerprint = "b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039";
     public const string LockedReferenceTenantId = "00000000-0000-0000-0000-000000000001";
+    public const string LockedActorId = "11111111-1111-1111-1111-111111111111";
     public bool Enabled { get; set; }
     public string CatalogPath { get; set; } = string.Empty;
     public string ExpectedCatalogVersion { get; set; } = string.Empty;

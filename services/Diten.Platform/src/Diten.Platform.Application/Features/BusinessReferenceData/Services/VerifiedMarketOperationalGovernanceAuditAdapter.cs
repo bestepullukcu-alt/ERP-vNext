@@ -15,6 +15,8 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
     private const string SourceModule = "MOD-0048-FU01";
     private const string LockedCatalogVersion = "UNSD-M49-2026-08-08";
     private const string LockedCatalogFingerprint = "b94c45280195b0cb5faa155656c4690938790144d148fba279d2232204360039";
+    private const string LockedActorId = "11111111-1111-1111-1111-111111111111";
+    private static readonly Guid LockedActorGuid = Guid.Parse(LockedActorId);
     private const string LockedOverrideReason = "BusinessReferenceData catalog load override";
 
     private readonly IAuditService _auditService;
@@ -37,7 +39,7 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
             || facts.ReferenceTenantId != LockedReferenceTenantId
             || !string.Equals(facts.CatalogVersion, LockedCatalogVersion, StringComparison.Ordinal)
             || !string.Equals(facts.CatalogFingerprint, LockedCatalogFingerprint, StringComparison.Ordinal)
-            || string.IsNullOrWhiteSpace(facts.ActorId)
+            || !string.Equals(facts.ActorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(facts.IdempotencyNamespace))
         {
             throw new InvalidOperationException("VERIFIED_MARKET_OPERATIONAL_AUDIT_SCOPE_VIOLATION");
@@ -77,11 +79,11 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
             || !string.Equals(version.LastPublishIdempotencyKey, BuildOperationKey(facts), StringComparison.Ordinal)
             || version.TenantId != LockedReferenceTenantId
             || version.BusinessReferenceDataVersionId == Guid.Empty
-            || string.IsNullOrWhiteSpace(actorId)
+            || !string.Equals(actorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(publicationCorrelationId)
-            || !string.Equals(actorId.Trim(), facts.ActorId, StringComparison.Ordinal)
+            || !string.Equals(actorId, facts.ActorId, StringComparison.Ordinal)
             || pending.VersionId != version.BusinessReferenceDataVersionId
-            || !string.Equals(pending.ActorId, actorId.Trim(), StringComparison.Ordinal)
+            || !string.Equals(pending.ActorId, actorId, StringComparison.Ordinal)
             || !string.Equals(pending.PublicationCorrelationId, publicationCorrelationId, StringComparison.Ordinal)
             || !string.Equals(version.LastCorrelationId, publicationCorrelationId, StringComparison.Ordinal)
             || !string.Equals(version.OverrideReason, LockedOverrideReason, StringComparison.Ordinal)
@@ -92,15 +94,13 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
 
         var operationKey = version.LastPublishIdempotencyKey;
         var auditCorrelationId = BuildDeterministicCorrelationId(operationKey);
-        var normalizedActor = actorId.Trim();
-        var parsedActor = Guid.TryParse(normalizedActor, out var actorIdValue);
         var request = new AuditAppendRequest
         {
             CorrelationId = auditCorrelationId,
             RequestType = RequestType,
-            ActorType = parsedActor ? AuditActorType.TenantUser : AuditActorType.System,
-            ActorId = parsedActor ? actorIdValue : null,
-            ActorDisplayName = normalizedActor,
+            ActorType = AuditActorType.PlatformAdministrator,
+            ActorId = LockedActorGuid,
+            ActorDisplayName = LockedActorId,
             TargetTenantId = version.TenantId,
             Category = AuditCategory.ReferenceData,
             EntityType = EntityType,
@@ -116,8 +116,8 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
                 ["publicationOperationKey"] = operationKey,
                 ["catalogVersion"] = "UNSD-M49-2026-08-08",
                 ["setCode"] = "market",
-                ["actor"] = normalizedActor,
-                ["actorType"] = parsedActor ? AuditActorType.TenantUser.ToString() : AuditActorType.System.ToString()
+                ["actor"] = LockedActorId,
+                ["actorType"] = AuditActorType.PlatformAdministrator.ToString()
             },
             SourceModule = SourceModule
         };
@@ -141,7 +141,7 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
                 AuditOperation.Activate,
                 GovernanceEvent,
                 publishMode,
-                normalizedActor,
+                LockedActorId,
                 operationKey,
                 "UNSD-M49-2026-08-08",
                 "market"),
@@ -192,9 +192,9 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
             || _pendingOverride is not null
             || version.TenantId != LockedReferenceTenantId
             || version.BusinessReferenceDataVersionId == Guid.Empty
-            || string.IsNullOrWhiteSpace(actorId)
+            || !string.Equals(actorId, LockedActorId, StringComparison.Ordinal)
             || string.IsNullOrWhiteSpace(correlationId)
-            || !string.Equals(actorId.Trim(), facts.ActorId, StringComparison.Ordinal)
+            || !string.Equals(actorId, facts.ActorId, StringComparison.Ordinal)
             || !string.Equals(overrideReason, LockedOverrideReason, StringComparison.Ordinal)
             || !string.Equals(version.OverrideReason, LockedOverrideReason, StringComparison.Ordinal)
             || version.Values.Count != 249)
@@ -202,7 +202,7 @@ public sealed class VerifiedMarketOperationalGovernanceAuditAdapter : IBusinessR
             return Reject();
         }
 
-        _pendingOverride = new PendingOverride(version.BusinessReferenceDataVersionId, actorId.Trim(), correlationId);
+        _pendingOverride = new PendingOverride(version.BusinessReferenceDataVersionId, actorId, correlationId);
         return Task.CompletedTask;
     }
 

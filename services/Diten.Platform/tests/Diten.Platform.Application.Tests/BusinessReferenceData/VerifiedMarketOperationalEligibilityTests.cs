@@ -29,7 +29,7 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         Assert.NotNull(decision.Authorization);
         Assert.NotNull(decision.Facts);
         Assert.Equal(Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId), decision.Facts.ReferenceTenantId);
-        Assert.Equal("actor", decision.Facts.ActorId);
+        Assert.Equal(VerifiedMarketOperationalProvisioningOptions.LockedActorId, decision.Facts.ActorId);
         Assert.Equal("market-run", decision.Facts.IdempotencyNamespace);
         Assert.True(sut.IsAuthorized(decision.Authorization, decision.Facts));
         Assert.False(sut.IsAuthorized(decision.Authorization, decision.Facts with { CatalogFingerprint = new string('0', 64) }));
@@ -125,6 +125,25 @@ public sealed class VerifiedMarketOperationalEligibilityTests
 
     [Theory]
     [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("not-a-guid")]
+    [InlineData("42b66b40-f47f-4d7b-9a90-15a654333d48")]
+    public async Task NonCanonicalActor_IsFailClosedBeforeAuthorization(string actorId)
+    {
+        var options = Valid();
+        options.ActorId = actorId;
+        using var environment = TemporaryProcessEnvironment.Apply(ProcessValues(options));
+
+        var decision = await Create(options).EvaluateAsync();
+
+        Assert.False(decision.IsEligible);
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_CONFIGURATION_INVALID", decision.ReasonCode);
+        Assert.Null(decision.Facts);
+        Assert.Null(decision.Authorization);
+    }
+
+    [Theory]
+    [InlineData("")]
     [InlineData(" market-run")]
     [InlineData("market-run ")]
     [InlineData("market:run")]
@@ -158,7 +177,7 @@ public sealed class VerifiedMarketOperationalEligibilityTests
         CatalogPath = BusinessReferenceDataTestHarness.GetSeedPath(VerifiedMarketOperationalProvisioningOptions.LockedCatalogFileName),
         ExpectedCatalogVersion = VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         ExpectedCatalogFingerprint = VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
-        ActorId = "actor",
+        ActorId = VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         IdempotencyNamespace = "market-run"
     };
 

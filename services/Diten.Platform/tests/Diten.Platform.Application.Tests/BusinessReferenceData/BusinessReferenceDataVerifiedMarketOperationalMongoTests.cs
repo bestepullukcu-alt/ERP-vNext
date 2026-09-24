@@ -3,6 +3,7 @@ using Diten.Platform.API.Services.BusinessReferenceData;
 using Diten.Platform.Application.Contracts.Audit;
 using Diten.Platform.Application.Features.BusinessReferenceData.Services;
 using Diten.Platform.Domain.Entities;
+using Diten.Platform.Domain.Enums;
 using Diten.Platform.Domain.Repositories;
 using Diten.Platform.Infrastructure.Persistence;
 using Diten.Platform.Infrastructure.Persistence.Schema;
@@ -41,10 +42,21 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
         await harness.RunAsync();
         var countsAfterReplay = await harness.TargetCountsAsync();
 
-        Assert.Equal((1L, 1L, 1L, 1L, 0L, 0L), countsAfterFirst);
+        Assert.Equal((1L, 1L, 1L, 1L, 25L, 0L, 0L), countsAfterFirst);
         Assert.Equal(countsAfterFirst, countsAfterReplay);
         Assert.Equal(invariantsBefore, await harness.InvariantSnapshotAsync());
         Assert.Equal(beforeArtifact, await File.ReadAllBytesAsync(harness.Facts.CatalogPath));
+        var audit = await harness.Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
+            .Find(FilterDefinition<BsonDocument>.Empty)
+            .SingleAsync();
+        var payload = audit["Payload"].AsBsonDocument;
+        Assert.Equal(AuditActorType.PlatformAdministrator.ToString(), payload["ActorType"].AsString);
+        Assert.Equal(
+            Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedActorId),
+            payload["ActorId"].AsBsonBinaryData.ToGuid());
+        var metadata = payload["Metadata"].AsBsonDocument["_v"].AsBsonDocument;
+        Assert.Equal(VerifiedMarketOperationalProvisioningOptions.LockedActorId, metadata["actor"].AsString);
+        Assert.Equal(AuditActorType.PlatformAdministrator.ToString(), metadata["actorType"].AsString);
         var publication = await harness.ReadVerifiedPublicationAsync();
         Assert.NotNull(publication);
         Assert.Equal(249, publication.Version.Values.Count);
@@ -61,11 +73,32 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
         await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(
             _fixture.Replica,
             facts: foreignFacts);
+        await harness.SeedReadOnlyInvariantsAsync();
+        var invariantsBefore = await harness.InvariantSnapshotAsync();
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
 
         Assert.Equal("VERIFIED_MARKET_OPERATIONAL_AUDIT_SCOPE_VIOLATION", exception.Message);
-        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+        Assert.Equal(invariantsBefore, await harness.InvariantSnapshotAsync());
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("42b66b40-f47f-4d7b-9a90-15a654333d48")]
+    public async Task NonCanonicalActor_IsRejectedBeforeAnyOperationalWrite(string actorId)
+    {
+        var facts = VerifiedMarketOperationalReplicaHarness.LockedFacts() with { ActorId = actorId };
+        await using var harness = await VerifiedMarketOperationalReplicaHarness.CreateAsync(_fixture.Replica, facts);
+        await harness.SeedReadOnlyInvariantsAsync();
+        var invariantsBefore = await harness.InvariantSnapshotAsync();
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
+
+        Assert.Equal("VERIFIED_MARKET_OPERATIONAL_AUDIT_SCOPE_VIOLATION", exception.Message);
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+        Assert.Equal(invariantsBefore, await harness.InvariantSnapshotAsync());
     }
 
     [Fact]
@@ -78,7 +111,7 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
 
         Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REQUIRED_INDEX_MISMATCH", exception.Message);
-        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
     }
 
     [Fact]
@@ -98,7 +131,7 @@ public sealed class BusinessReferenceDataVerifiedMarketOperationalMongoTests
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => harness.RunAsync());
 
         Assert.Equal("VERIFIED_MARKET_OPERATIONAL_REQUIRED_INDEX_MISMATCH", exception.Message);
-        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
+        Assert.Equal((0L, 0L, 0L, 0L, 0L, 0L, 0L), await harness.TargetCountsAsync());
     }
 
     [Fact]
@@ -282,7 +315,7 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
         ReferenceTenantId,
-        "market-operator",
+        VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-operational-replica-test");
 
     public async Task RunAsync()
@@ -321,7 +354,7 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
         Assert.Equal(1, result.ModifiedCount);
     }
 
-    public async Task<(long Sets, long Versions, long Operations, long Audits, long Assignments, long IntegrationEvents)> TargetCountsAsync()
+    public async Task<(long Sets, long Versions, long Operations, long Audits, long Validations, long Assignments, long IntegrationEvents)> TargetCountsAsync()
     {
         var tenant = Facts.ReferenceTenantId;
         var sets = await Database.GetCollection<BusinessReferenceDataSet>(PlatformCollections.BusinessReferenceDataSets)
@@ -332,11 +365,13 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
             .CountDocumentsAsync(value => value.TenantId == tenant && value.IdempotencyKey == OperationKey);
         var audits = await Database.GetCollection<BsonDocument>(AuditCollectionNames.AuditOutbox)
             .CountDocumentsAsync(Builders<BsonDocument>.Filter.Eq("TenantId", new BsonBinaryData(tenant, GuidRepresentation.Standard)));
+        var validations = await Database.GetCollection<BusinessReferenceDataValidationResult>(PlatformCollections.BusinessReferenceDataValidationResults)
+            .CountDocumentsAsync(value => value.TenantId == tenant);
         var assignments = await Database.GetCollection<BusinessReferenceDataTenantAssignment>(PlatformCollections.BusinessReferenceDataTenantAssignments)
             .CountDocumentsAsync(value => value.TenantId == tenant);
         var integrationEvents = await Database.GetCollection<BusinessReferenceDataIntegrationEvent>(PlatformCollections.BusinessReferenceDataIntegrationEvents)
             .CountDocumentsAsync(value => value.TenantId == tenant);
-        return (sets, versions, operations, audits, assignments, integrationEvents);
+        return (sets, versions, operations, audits, validations, assignments, integrationEvents);
     }
 
     public async Task SeedReadOnlyInvariantsAsync()
@@ -356,6 +391,16 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
                 ["TestInvariantMarker"] = "consumer-assignment",
                 ["IsDeleted"] = false
             });
+        await Database.GetCollection<BsonDocument>(PlatformCollections.BusinessReferenceDataValidationResults)
+            .InsertOneAsync(new BsonDocument
+            {
+                ["_id"] = ObjectId.GenerateNewId(),
+                ["TenantId"] = new BsonBinaryData(HistoricalOwnerId, GuidRepresentation.Standard),
+                ["BusinessReferenceDataVersionId"] = Guid.NewGuid().ToString("D"),
+                ["RuleId"] = "RDV-001",
+                ["TestInvariantMarker"] = "old-owner-validation",
+                ["IsDeleted"] = false
+            });
     }
 
     public async Task<string> InvariantSnapshotAsync()
@@ -366,7 +411,8 @@ internal sealed class VerifiedMarketOperationalReplicaHarness : IAsyncDisposable
                      PlatformCollections.BusinessReferenceDataSets,
                      PlatformCollections.BusinessReferenceDataVersions,
                      PlatformCollections.BusinessReferenceDataPublishOperations,
-                     PlatformCollections.BusinessReferenceDataTenantAssignments
+                     PlatformCollections.BusinessReferenceDataTenantAssignments,
+                     PlatformCollections.BusinessReferenceDataValidationResults
                  })
         {
             var documents = await Database.GetCollection<BsonDocument>(collectionName)

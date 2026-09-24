@@ -289,7 +289,7 @@ public sealed class VerifiedMarketOperationalProvisioningRunnerTests
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogVersion,
         VerifiedMarketOperationalProvisioningOptions.LockedCatalogFingerprint,
         Guid.Parse(VerifiedMarketOperationalProvisioningOptions.LockedReferenceTenantId),
-        "actor",
+        VerifiedMarketOperationalProvisioningOptions.LockedActorId,
         "market-run");
 
     private sealed class Authorization : IBusinessReferenceDataVerifiedMarketOperationalAuthorization;
