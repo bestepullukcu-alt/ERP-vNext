@@ -25,6 +25,8 @@
        re-checks every key. Loaded first so window.Permissions exists before app.js renders the header. *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
+    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
     @* Tasks strings + engine client, needed by the quick-create offcanvas above. *@
     <partial name="~/Views/Tasks/_IndexL10n.cshtml" />
     <script src="~/assets/js/shared/premium-modal.js" asp-append-version="true"></script>

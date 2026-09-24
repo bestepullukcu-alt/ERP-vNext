@@ -202,3 +202,13 @@ When the Blueprint has no capability and no existing MOD/FU fits, use a temporar
 `python3 .antigravity/scripts/verify_module_id.py . --candidate CAND-CAP-#### --name "Capability Name"`
 
 Lifecycle: `legacy ID → deprecated alias to CAND-CAP-#### → later deprecated alias to the EA-assigned canonical MOD-xxxx`. New-module identity rule: **Blueprint lookup → existing MOD or FU when available → otherwise CAND-CAP only → never invent a MOD / PSS / NEW identity.**
+
+## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
+
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
+`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
+(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
+*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
+test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+
+Pack'te `golden_reference` ile birlikte `data_mode` (ve istemci modunda `data_mode_max_rows`) zorunludur; eksikse pack ready-for-dev olamaz.

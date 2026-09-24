@@ -240,4 +240,25 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Este elemento requiere evidencia antes de poder completarse.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>No se pudo subir este archivo. Compruebe su tipo y tamaño e inténtelo de nuevo.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Los adjuntos, incluida la evidencia, se pueden añadir una vez creada la tarea.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Transferir</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Entregar esta tarea a otra persona</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>La nueva persona responsable ve la tarea de inmediato. El motivo queda en el historial.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Nueva persona responsable</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Elija una persona</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Motivo de la entrega</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>p. ej. De permiso hasta el 5 de octubre; Ayşe se encarga de la auditoría.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Elija quién asume la tarea.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Escriba por qué cambia de responsable.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>La tarea se ha entregado.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>No hay nadie más a quien entregar esta tarea.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Una asignación no se edita: se entrega, con un motivo que permanece en el historial.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Escriba una respuesta antes de enviar.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>La respuesta es demasiado larga. No debe superar los 4000 caracteres.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Esta pregunta ya no le espera: fue respondida o retirada. Actualice la lista.</value>
+  </data>
 </root>

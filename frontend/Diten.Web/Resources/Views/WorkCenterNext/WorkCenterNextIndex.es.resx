@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Se detectó una diferencia de 84.750 TRY con el libro mayor.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Reunión de revisión del presupuesto del T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} le ha enviado esta tarea para su aprobación</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Esta tarea se le ha enviado para su aprobación</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Aprobación: {objectType} {objectId}</value>
   </data>
@@ -2364,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Elija un archivo antes de completar esta tarea.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Añadir evidencia</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} archivo(s) de evidencia</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Pregunta</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Pregunta · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Responder</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Registra su respuesta en el historial de la tarea y la devuelve a su estado anterior</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Pregunta formulada</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Su respuesta</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Escriba la información solicitada…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Escriba una respuesta antes de enviar.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} respondió</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} le pregunta: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>Alguien espera su respuesta en esta tarea.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} respondió: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Pregunta respondida</value>
+  </data>
 </root>

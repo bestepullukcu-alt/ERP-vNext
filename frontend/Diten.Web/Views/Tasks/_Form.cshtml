@@ -128,7 +128,14 @@
             <section class="card mb-4">
                 <div class="card-body p-4">
                     <h6 class="text-uppercase text-heading fw-semibold mb-4 d-flex align-items-center gap-2"><i class="bx bx-user-pin dt-card-icon" aria-hidden="true"></i>@Localizer["SectionAssignment"]</h6>
-                    <div class="row g-3">
+                    @* ⚠ HIDDEN ON EDIT, NOT REMOVED (2026-09-23, owner report). The server's UpdateTaskItemRequest
+                       carries no assignment field at all, so everything typed here on an edit was accepted by the
+                       form and dropped by the server while the screen said "saved". The controls stay in the DOM —
+                       the payload builder reads them, and posting the unchanged values costs nothing — but the
+                       user is no longer offered a choice the server will not honour. Handing work on has its own
+                       audited route, in the read-only rows below.
+                       One CARD either way: the two-column grid pins eleven of them (tasks-form-grid-structure). *@
+                    <div class="row g-3@(isEdit ? " d-none" : "")" data-task-section="assignment-edit">
                         <div class="col-md-6">
                                 <label class="form-label fw-medium" for="taskAssignmentTarget">
                                     @Localizer["FieldAssignmentTarget"] <span class="text-danger">*</span>
@@ -191,9 +198,44 @@
                            already visible: every person and position option reads "Name — Position — Unit".
                            The contract keeps OrganizationUnitId nullable, because an integration may genuinely
                            know the unit; only the FORM withdraws the question. *@
-                    </div>
+                    
+                    @* ── WHO IS DOING IT, AND HOW IT CHANGES HANDS (2026-09-23) ──────────────────────────────
+                       Read-only on purpose: an assignment is not a field you retype, it is a HANDOVER. The server
+                       has always modelled it that way — `POST /{id}/reassign` takes the new person AND a mandatory
+                       reason, and refuses a pool task — while the edit form modelled it as a text box nobody saved.
+                       SAP and Oracle draw the same line: forwarding a work item is an operation with its own
+                       record, because "who handed this to whom, when and why" is the question asked six months
+                       later. Filled by form-page.js from the loaded task; the button is wired by Tasks/reassign.js. *@
+                    @if (isEdit)
+                    {
+                        <div class="row g-3" id="taskAssignmentSummary">
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="taskAssignmentTargetRead">@Localizer["FieldAssignmentTarget"]</label>
+                                <div class="diten-field">
+                                    <i class="bx bx-directions diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="taskAssignmentTargetRead" class="form-control bg-label-secondary" readonly />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-medium" for="taskAssigneeRead">@Localizer["FieldAssignee"]</label>
+                                <div class="diten-field">
+                                    <i class="bx bx-user-check diten-field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="taskAssigneeRead" class="form-control bg-label-secondary" readonly />
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="form-text mb-0">@Localizer["AssignmentReadOnlyHint"]</div>
+                                @* Drawn for every reader; shown by reassign.js only where the server would accept it. *@
+                                <button type="button" id="btnTaskReassign" class="btn btn-label-primary d-none">
+                                    <i class="bx bx-transfer me-1" aria-hidden="true"></i>@Localizer["ReassignAction"]
+                                </button>
+                            </div>
+                        </div>
+                    }
+</div>
                 </div>
             </section>
+
 
             <section class="card mb-4">
                 <div class="card-body p-4">

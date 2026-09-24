@@ -46,6 +46,8 @@ domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
 golden_reference: slim
+data_mode: client
+data_mode_max_rows: 200
 entity_base: GlobalEntity
 status: draft
 owner: ali.tufanoglu
@@ -66,6 +68,8 @@ form_field_count: 7
 | `service` | string | Zorunlu | Backend servis projesinin adi (`Diten.Platform`, `Diten.MdmService`, `Diten.DevEnablementService`, `Diten.AuthService`) |
 | `shell` | enum | Zorunlu | `platform-admin` \| `tenant` \| `none` — frontend layout zorunlulugunu turetir |
 | `golden_reference` | enum | DataTable modullerinde zorunlu | `slim` (≤8 form alani) \| `compact` (>8 form alani) \| `none` (DataTable disi modul) |
+| `data_mode` | enum | DataTable modullerinde zorunlu | `server` (sinirsiz varlik listesi — varsayilan) \| `client` (tasarimda sinirli kume; ust siniri `data_mode_max_rows` ile yazilir, oneri ≤ 200) — bkz. `frontend-datatable-template.md` → Veri modeli |
+| `screens` | list | Cok ekranli paketlerde | Paket birden fazla liste ekrani kapsiyorsa ekran basina karar: `- module: {Views klasor adi}` + `data_mode` (+ `data_mode_max_rows`). Paket duzeyi `data_mode` bes ekran icin tek sey soyleyemez; `verify_datatable_page.py` ekrani once `name`, sonra `screens[].module` ile bulur. Olculmeyen ekran yazilmaz. |
 | `entity_base` | enum | Zorunlu | `EntityBase` \| `BaseEntity` \| `GlobalEntity` — somut sinif adi (servis bazli) |
 | `status` | enum | Zorunlu | `draft` \| `approved` \| `ready-for-dev` \| `in-progress` \| `review` \| `done` \| `blocked` |
 | `owner` | string | Zorunlu | Sorumlu kisi veya ekip |
@@ -129,6 +133,31 @@ Form alan sayimi sadece kullanicinin create/edit formunda doldurdugu modul alanl
 |---|---|
 | `8 ve alti` | `golden_reference: slim` → Index icinde create/edit offcanvas + QuickView offcanvas |
 | `8'den fazla` | `golden_reference: compact` → ayri `Create/Edit/Details` sayfalari |
+
+---
+
+### Veri modeli karari (`data_mode`)
+
+`golden_reference` sayfanin **seklini**, `data_mode` sayfanin **verisini** belirler; ikisi birlikte yazilir. Sayfa `<table data-dt-data-mode="...">`
+ile ayni karari beyan eder; `verify_datatable_page.py --data-mode` pack ile sayfayi karsilastirir.
+
+| Kume | Karar |
+|---|---|
+| Kiracinin sinirsiz ekleyebildigi varlik (kullanici, urun, gorev, dokuman…) | `data_mode: server` |
+| Tasarimda sinirli kume (sistem sozlugu, yapilandirma, rol/izin) — ust sinir olculur | `data_mode: client` + `data_mode_max_rows: N` |
+
+Istemci modunda JS'te sabit `pageSize=` YASAKTIR; servis `total` doner ve ekran `total > gelen` durumunu gosterir.
+
+Cok ekranli paket (or. MOD-0018-FU9 bes ekran): karar ekran basina `screens:` altinda yazilir —
+
+```yaml
+screens:
+  - module: Users
+    data_mode: server
+  - module: Roles
+    data_mode: client
+    data_mode_max_rows: 50
+```
 
 ---
 
@@ -456,6 +485,8 @@ domain: platform-shared-services
 service: Diten.Platform
 shell: platform-admin
 golden_reference: slim
+data_mode: client
+data_mode_max_rows: 200
 entity_base: GlobalEntity
 status: draft
 owner: ali.tufanoglu

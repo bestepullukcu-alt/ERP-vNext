@@ -111,6 +111,18 @@ public sealed record InquireTaskItemCommand(Guid Id, InquireTaskItemRequest Requ
     : IRequest<Response<NoContent>>;
 
 /// <summary>
+/// BL-439 — the addressee of a waiting task's question answers it. The second half of "Bilgi bekle": the answer
+/// lands in the task's history, the waiting story is cleared, and the task returns to the lifecycle it had before
+/// it was parked.
+///
+/// <para>Its own command, not a <see cref="TransitionTaskItemCommand"/>, because the actor is NOT the holder and
+/// must not become one: every generic transition asks a holder/requester question this person cannot pass, and
+/// widening those gates to admit them would hand them start/complete/cancel along with the answer.</para>
+/// </summary>
+public sealed record AnswerInquiryCommand(Guid Id, AnswerInquiryRequest Request, string CorrelationId)
+    : IRequest<Response<NoContent>>;
+
+/// <summary>
 /// Give assigned work back to whoever asked for it.
 ///
 /// <para><b>`return` is also MOD-0023's verb.</b> An approver returns an approval or a review to its submitter,

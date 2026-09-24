@@ -23,6 +23,10 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
 
     // Localization resource keys (resource-key form; wiring is WC-1b).
     private const string TitleApprovalKey = "WorkAggregation_Title_Approval";
+    // BL-437 — why the approval reached the reader. Two keys, not one with an optional slot: a sentence with its
+    // subject missing is not a sentence in every language, so the nameless form is written whole.
+    private const string ArrivalSentForApprovalKey = "WorkAggregation_ArrivalReason_SentForApproval";
+    private const string ArrivalSentForApprovalUnnamedKey = "WorkAggregation_ArrivalReason_SentForApprovalUnnamed";
     private const string NativeStatusKeyPrefix = "WorkAggregation_NativeStatus_";
     private const string ActionApproveKey = "WorkAggregation_Action_Approve";
     private const string ActionRejectKey = "WorkAggregation_Action_Reject";
@@ -37,7 +41,8 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
         WorkflowInstance? instance,
         WorkItemActor actor,
         string providerCode,
-        string providerContractVersion)
+        string providerContractVersion,
+        ApprovalSourceContext? sourceContext = null)
     {
         // Delegated → hidden from this actor (a disposition, not active work).
         if (task.Status == ApprovalTaskStatus.Delegated)
@@ -60,19 +65,32 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
             ProviderContractVersion: providerContractVersion,
             ObjectType: instance.ObjectType,
             ObjectId: instance.ObjectId,
-            DeepLink: null); // provider-owned; null in the MOD-0023-only phase (actionDepth stays inline).
+            // BL-437 — the source owner's address for the object, when it gave one. actionDepth stays inline: the
+            // decision is still taken on the row; the link is the way to read what is being decided.
+            DeepLink: string.IsNullOrWhiteSpace(sourceContext?.DeepLink) ? null : sourceContext.DeepLink);
 
         var nativeStatus = new WorkItemNativeStatusDto(
             Code: task.Status.ToString(),
             Label: WorkItemLabelDto.Resource(NativeStatusKeyPrefix + task.Status));
 
-        var title = WorkItemLabelDto.Resource(
-            TitleApprovalKey,
-            new Dictionary<string, string>
-            {
-                ["objectType"] = instance.ObjectType,
-                ["objectId"] = instance.ObjectId
-            });
+        /*
+         * BL-437 — the title is WHAT IS BEING DECIDED, in its owner's words. The generic key below printed the
+         * object type and its GUID ("Onay: task-review 3f2c…"), and the approver could not tell which of their
+         * tasks had come back to them or why. The owner's title is a DISPLAY label: a person typed it, and routing
+         * it through a resource key would put a raw key on screen for every title nobody translated.
+         *
+         * The generic key stays as the fallback for an object whose owner cannot answer — an approval over a
+         * module with no resolver yet, or a source record that no longer exists.
+         */
+        var title = !string.IsNullOrWhiteSpace(sourceContext?.Title)
+            ? WorkItemLabelDto.Display(sourceContext.Title.Trim())
+            : WorkItemLabelDto.Resource(
+                TitleApprovalKey,
+                new Dictionary<string, string>
+                {
+                    ["objectType"] = instance.ObjectType,
+                    ["objectId"] = instance.ObjectId
+                });
 
         // Terminal items are read-only: no enabled inline state-changing action (contract invariant).
         var actions = isTerminal
@@ -134,7 +152,29 @@ public sealed class WorkItemProjectionService : IWorkItemProjectionService
              * this falls back to now exactly as before rather than inventing an instant.
              */
             SlaState: _sla.Resolve(task.DueAt, (isTerminal ? task.CompletedAt : null) ?? DateTimeOffset.UtcNow),
-            ClosedAt: isTerminal ? task.CompletedAt : null);
+            ClosedAt: isTerminal ? task.CompletedAt : null,
+            Requester: sourceContext?.Requester,
+            ArrivalReason: ArrivalReasonFor(sourceContext));
+    }
+
+    /*
+     * BL-437 — "{name} sent this task for your approval". Only when the owner answered at all: an approval with
+     * no source context says nothing rather than claiming someone sent it. A requester whose name the directory
+     * could not resolve gets the whole nameless sentence — never their id in the name slot.
+     */
+    private static WorkItemLabelDto? ArrivalReasonFor(ApprovalSourceContext? sourceContext)
+    {
+        if (sourceContext is null)
+        {
+            return null;
+        }
+
+        var name = sourceContext.Requester?.DisplayName;
+        return string.IsNullOrWhiteSpace(name)
+            ? WorkItemLabelDto.Resource(ArrivalSentForApprovalUnnamedKey)
+            : WorkItemLabelDto.Resource(
+                ArrivalSentForApprovalKey,
+                new Dictionary<string, string> { ["name"] = name.Trim() });
     }
 
     // Charter §10.1 — raw ApprovalTaskStatus is mapped by the enum, never by parsing status text.

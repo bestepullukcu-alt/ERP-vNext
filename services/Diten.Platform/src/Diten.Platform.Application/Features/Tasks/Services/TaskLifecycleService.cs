@@ -212,4 +212,25 @@ public sealed class TaskLifecycleService : ITaskLifecycleService
         return allowed;
     }
 
+    public TaskLifecycle ResolveInquiryReturn(TaskLifecycle? enteredWaitingFrom)
+        => enteredWaitingFrom switch
+        {
+            /*
+             * Exactly the three states CanTransition lets INTO Waiting. The task picks up where it was: an
+             * unstarted task is still unstarted, a planned one keeps its plan, and work that was running runs.
+             *
+             * Returning to InProgress does not re-ask the approval or dependency gates, and does not need to —
+             * the task was already InProgress when it was parked, which it could only have reached through them.
+             */
+            TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress => enteredWaitingFrom.Value,
+
+            /*
+             * NO RECORD of how the wait began (a task parked before the log existed, or a log that cannot be
+             * read). OPEN, because it is the one answer that can never skip a gate: an Open task has to be
+             * started again, through every gate `start` asks. InProgress would have been the shorter guess and
+             * the unsafe one — a task parked before its approval came through would be answered straight into
+             * running work.
+             */
+            _ => TaskLifecycle.Open
+        };
 }

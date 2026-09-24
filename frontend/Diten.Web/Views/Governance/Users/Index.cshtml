@@ -24,7 +24,8 @@
     <p class="mb-0 text-muted">@Localizer["PageDescription"]</p>
 </div>
 
-@* KPI cards — live counts computed client-side from the loaded users dataset (see index.js). *@
+@* KPI cards — AuthService's tenant-wide summary (data.summary of every list response, independent of the filters),
+   written by index.js from the factory's onResponse. Never counted from the rows in hand: those are one page. *@
 <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4 mb-4">
     <div class="col">
         <div class="card h-100">
@@ -72,13 +73,18 @@
     </div>
 </div>
 
+@* Contract marker: <partial name="_Filter" /> *@
 <partial name="~/Views/Governance/Users/_Filter.cshtml" />
+@* No bulk action bar: the list has no selection column (K17 — no bulk endpoint for users). *@
+@* Contract markers are rendered by _DataTable.cshtml: the shared <partial name="_TableSkeleton" /> (which carries id="skeleton-loader"), <table id="dt-users" data-dt-standard="v2"> *@
 <partial name="~/Views/Governance/Users/_DataTable.cshtml" />
+@* Contract marker rendered by _DetailsQuickView.cshtml: id="offcanvasDetailsPreview" *@
 <partial name="~/Views/Governance/Users/_DetailsQuickView.cshtml" />
 <partial name="~/Views/Governance/Users/_CreateEditOffcanvas.cshtml" />
 
 @section Scripts {
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
+    @* Contract marker: <partial name="_IndexL10n" /> *@
     <partial name="~/Views/Governance/Users/_IndexL10n.cshtml" />
     <script src="~/assets/js/Governance/Users/index.l10n.js" asp-append-version="true"></script>
     <script src="~/assets/js/Governance/Users/index.js" asp-append-version="true"></script>

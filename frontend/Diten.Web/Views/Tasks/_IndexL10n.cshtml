@@ -231,6 +231,10 @@
         ErrorTaskInvalidState = Localizer["ErrorTaskInvalidState"].Value,
         ErrorCancelNotRequester = Localizer["ErrorCancelNotRequester"].Value,
         ErrorWaitingReasonRequired = Localizer["ErrorWaitingReasonRequired"].Value,
+        // BL-439 — the answer to a waiting task's question: empty, too long, or no longer the reader's to give.
+        ErrorInquiryAnswerRequired = Localizer["ErrorInquiryAnswerRequired"].Value,
+        ErrorInquiryAnswerTooLong = Localizer["ErrorInquiryAnswerTooLong"].Value,
+        ErrorInquiryNotAddressee = Localizer["ErrorInquiryNotAddressee"].Value,
         ErrorTitleRequired = Localizer["ErrorTitleRequired"].Value,
         ErrorTitleTooLong = Localizer["ErrorTitleTooLong"].Value,
         ErrorHandoverReasonRequired = Localizer["ErrorHandoverReasonRequired"].Value,
@@ -257,6 +261,19 @@
         ErrorAttachmentNotFound = Localizer["ErrorAttachmentNotFound"].Value,
         ErrorAttachmentChecklistItemNotFound = Localizer["ErrorAttachmentChecklistItemNotFound"].Value,
         ErrorChecklistEvidenceRequired = Localizer["ErrorChecklistEvidenceRequired"].Value,
-        ErrorAttachmentInvalid = Localizer["ErrorAttachmentInvalid"].Value
+        ErrorAttachmentInvalid = Localizer["ErrorAttachmentInvalid"].Value,
+        @* MOD-0024 — handing work on (Tasks/reassign.js). The dialog writes every one of these. *@
+        ReassignAction = Localizer["ReassignAction"].Value,
+        ReassignTitle = Localizer["ReassignTitle"].Value,
+        ReassignHint = Localizer["ReassignHint"].Value,
+        ReassignAssigneeLabel = Localizer["ReassignAssigneeLabel"].Value,
+        ReassignAssigneePlaceholder = Localizer["ReassignAssigneePlaceholder"].Value,
+        ReassignReasonLabel = Localizer["ReassignReasonLabel"].Value,
+        ReassignReasonPlaceholder = Localizer["ReassignReasonPlaceholder"].Value,
+        ReassignAssigneeRequired = Localizer["ReassignAssigneeRequired"].Value,
+        ReassignReasonRequired = Localizer["ReassignReasonRequired"].Value,
+        ReassignDone = Localizer["ReassignDone"].Value,
+        ReassignNoPeople = Localizer["ReassignNoPeople"].Value,
+        AssignmentReadOnlyHint = Localizer["AssignmentReadOnlyHint"].Value
     })
 </script>

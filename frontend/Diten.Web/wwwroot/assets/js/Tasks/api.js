@@ -216,6 +216,15 @@
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
         /*
+         * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
+         * question was answered or withdrawn while their screen still showed it, so the sentence says that and
+         * tells them to refresh, rather than the generic 403 ("you are not allowed"), which would send them looking
+         * for a permission that could never help.
+         */
+        TASK_INQUIRY_ANSWER_REQUIRED: 'errorInquiryAnswerRequired',
+        TASK_INQUIRY_ANSWER_TOO_LONG: 'errorInquiryAnswerTooLong',
+        TASK_INQUIRY_NOT_ADDRESSEE: 'errorInquiryNotAddressee',
+        /*
          * BL-040/BL-048 — codes DERIVED from a FluentValidation rule, not curated by hand.
          *
          * `VALIDATION_<FIELD>_<RULE>` is what ValidationReasonCode builds when a rule does not name its own code,

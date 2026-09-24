@@ -240,4 +240,25 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Bu madde tamamlanmadan önce kanıt gerektiriyor.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Bu dosya yüklenemedi. Türünü ve boyutunu kontrol edip tekrar deneyin.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Ekler (kanıt dahil) görev oluşturulduktan sonra eklenebilir.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Devret</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Görevi başka birine devret</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>Yeni sorumlu görevi hemen görür. Gerekçe görevin geçmişinde saklanır.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Yeni sorumlu</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Bir kişi seçin</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Devir gerekçesi</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>örn. 5 Ekim'e kadar izindeyim, denetimi Ayşe yürütecek.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Görevi kimin devralacağını seçin.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Görevin neden el değiştirdiğini yazın.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>Görev devredildi.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>Bu görevin devredilebileceği başka kimse yok.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Atama düzenlenmez; gerekçesiyle birlikte devredilir ve gerekçe görevin geçmişinde kalır.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Göndermeden önce bir cevap yazın.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>Cevap çok uzun. 4000 karakteri geçmemeli.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Bu soru artık sizi beklemiyor; cevaplanmış ya da geri çekilmiş. Listeyi yenileyin.</value>
+  </data>
 </root>

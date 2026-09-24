@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>تم العثور على فرق قدره 84,750 ليرة مع دفتر الأستاذ العام.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>اجتماع مراجعة ميزانية الربع الثالث</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 يوليو 2026، 14:00–15:00 · Teams · المنظم: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك من {name} للموافقة عليها</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك للموافقة عليها</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>موافقة: {objectType} {objectId}</value>
   </data>
@@ -2364,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>اختر ملفًا قبل إكمال هذه المهمة.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>إضافة إثبات</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} ملف إثبات</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>سؤال</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>سؤال · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>أجب</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>تسجّل إجابتك في سجل المهمة وتعيد المهمة إلى حالتها السابقة</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>السؤال المطروح</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>إجابتك</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>اكتب المعلومات المطلوبة…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>اكتب إجابة قبل الإرسال.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>أجاب {0}</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>يسألك {0}: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>هناك من ينتظر إجابتك على هذه المهمة.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>أجاب {0}: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>تمت الإجابة عن السؤال</value>
+  </data>
 </root>

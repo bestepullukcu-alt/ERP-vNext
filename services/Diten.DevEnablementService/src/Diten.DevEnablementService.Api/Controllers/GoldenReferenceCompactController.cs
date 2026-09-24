@@ -1,6 +1,8 @@
+using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact.Commands;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact.Queries;
 using Diten.DevEnablementService.Infrastructure.Authorization;
+using Diten.Shared.Core;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +21,47 @@ public sealed class GoldenReferenceCompactController : CustomBaseController
         _mediator = mediator;
     }
 
+    /// <summary>
+    /// The list, in two shapes (WP-UI-LIST-SERVER-01, BL-440 package 3).
+    /// With ANY list parameter (start, length, search, orderBy, orderDir, draw, a filter) it is the server-mode page:
+    /// `data = { items, total, filteredTotal }`, which the list factory translates for DataTables.
+    /// With NONE it is the pre-server-mode answer, unchanged: `data = [ ...every row of the tenant... ]` — the MVC
+    /// lookups proxy (Diten.Web GoldenReferenceCompactController.Lookups) reads that array to build the filter options.
+    /// `draw` is accepted and not echoed: the factory stamps it back on the response itself.
+    /// </summary>
     [HttpGet]
     [HasPermission("goldencompact.records.read")]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int? start,
+        [FromQuery] int? length,
+        [FromQuery] string? search,
+        [FromQuery] string? orderBy,
+        [FromQuery] string? orderDir,
+        [FromQuery] int? draw,
+        [FromQuery] string[]? status,
+        [FromQuery] string[]? referenceType,
+        [FromQuery] string[]? category,
+        [FromQuery] string[]? owner,
+        [FromQuery] int? priority,
+        CancellationToken cancellationToken)
+    {
+        var isListRequest = start.HasValue || length.HasValue || search is not null || orderBy is not null || orderDir is not null
+            || draw.HasValue || status is { Length: > 0 } || referenceType is { Length: > 0 } || category is { Length: > 0 }
+            || owner is { Length: > 0 } || priority.HasValue;
+        if (!isListRequest)
+            return await WholeList(cancellationToken);
+
+        var response = await _mediator.Send(new GetGoldenReferenceCompactListQuery(
+            start, length, search, orderBy, orderDir, status, referenceType, category, owner, priority), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
+    private async Task<IActionResult> WholeList(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetGoldenReferenceCompactListQuery(), cancellationToken);
-        return CreateActionResultInstance(response);
+        return CreateActionResultInstance(response.IsSuccessful
+            ? Response<IReadOnlyList<GoldenReferenceCompactListItemDto>>.Success(response.Data!.Items, response.StatusCode)
+            : Response<IReadOnlyList<GoldenReferenceCompactListItemDto>>.Fail(response.Errors, response.StatusCode));
     }
 
     [HttpGet("{id:guid}")]
@@ -74,19 +111,11 @@ public sealed class GoldenReferenceCompactController : CustomBaseController
     // are not fabricated catalog entries.
     [HttpGet("export")]
     [HasPermission("goldencompact.records.export")]
-    public async Task<IActionResult> Export(CancellationToken cancellationToken)
-    {
-        var response = await _mediator.Send(new GetGoldenReferenceCompactListQuery(), cancellationToken);
-        return CreateActionResultInstance(response);
-    }
+    public Task<IActionResult> Export(CancellationToken cancellationToken) => WholeList(cancellationToken);
 
     // Reports summary = an aggregate read surface (reports.view). API-only for now (no frontend route yet), so it
     // is NOT a catalog page; the permission still exists system-wide via this gate.
     [HttpGet("reports/summary")]
     [HasPermission("goldencompact.reports.view")]
-    public async Task<IActionResult> ReportSummary(CancellationToken cancellationToken)
-    {
-        var response = await _mediator.Send(new GetGoldenReferenceCompactListQuery(), cancellationToken);
-        return CreateActionResultInstance(response);
-    }
+    public Task<IActionResult> ReportSummary(CancellationToken cancellationToken) => WholeList(cancellationToken);
 }

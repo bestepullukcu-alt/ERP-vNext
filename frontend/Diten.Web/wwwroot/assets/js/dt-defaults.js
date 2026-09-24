@@ -501,6 +501,23 @@ window.DtDefaults = (function () {
     function create(userConfig) {
         var merged = $.extend(true, {}, baseConfig, userConfig);
         var l = L();
+
+        /*
+         * ── ONE LOADING LANGUAGE AT A TIME (owner report, 2026-09-21) ────────────────────────────────────
+         *
+         * The product had already chosen the skeleton: `backbone-custom.css` carries a "NO NEW SKELETON
+         * LANGUAGE" warning and 226 views ship placeholder markup. What it did not have was a working way to
+         * SHOW one on a list — so every list opened with the theme's `sk-fold` cube instead, which is what the
+         * owner saw and asked about.
+         *
+         * ⚠ AND THE FIRST FIX FOR IT DID NOT RUN. MEASURED in the vendored DataTables: `preXhr` is an EVENT,
+         * not an init option — the options registered as callbacks are drawCallback, initComplete,
+         * preDrawCallback, rowCallback and the state ones. Setting `merged.preXhr` therefore called nothing,
+         * on any page, and the tests that drove that function directly were green the whole time. So the
+         * mechanism moved out of JavaScript: `_TableSkeleton.cshtml` renders the placeholder VISIBLE, a CSS
+         * sibling rule keeps the table (and the cube inside it) out of the page while that element is there,
+         * and the block below removes the element once the table has drawn. Nothing has to fire.
+         */
         merged.language.searchPlaceholder = merged.language.searchPlaceholder || l.Search || sharedL10n().Search || 'Search...';
 
         // DataTables i18n mapping. Each slot left undefined is a slot DataTables fills with its own English —
@@ -511,6 +528,13 @@ window.DtDefaults = (function () {
         var infoEmpty = dtText('DtInfoEmpty');
         var infoFiltered = dtText('DtInfoFiltered');
         var emptyTable = dtText('DtEmptyTable');
+        /*
+         * ⚠ AND THE THIRD VOICE GOES QUIET. Left unset, DataTables writes its own English "Loading..." into the
+         * body while the skeleton is drawn above it — an untranslated sentence on every list in the product.
+         * The skeleton already says "this is loading", so the row says nothing rather than saying it in the
+         * wrong language. No new resource key: there is nothing to translate.
+         */
+        merged.language.loadingRecords = merged.language.loadingRecords || '';
         if (noRecords) merged.language.zeroRecords = noRecords;
         if (info) merged.language.info = info;
         if (infoEmpty) merged.language.infoEmpty = infoEmpty;
@@ -534,12 +558,42 @@ window.DtDefaults = (function () {
             delete merged.buttons;
         }
 
+        /*
+         * ⚠ REVEALING THE TABLE IS ONE ACT, AND EVERY EXIT HAS TO PERFORM IT (2026-09-23, owner report).
+         *
+         * MEASURED: the shaped placeholder hides the table through a CSS sibling rule, so what reveals the table
+         * is REMOVING the element — hiding it is not enough. Only `initComplete` removed it, and DataTables does
+         * not call `initComplete` when the first ajax FAILS. With the golden reference pages' service down, the
+         * placeholder stayed in the DOM, the rule kept matching, and the page showed nothing at all. Before the
+         * shaped placeholder existed the same failure left an empty table on screen — so the change turned
+         * "service down" into "page down".
+         *
+         * Now the draw path and the ajax error path perform the same act. A list that still carries the old
+         * hidden block keeps falling through to the fade, exactly as before.
+         */
+        var revealTable = function () {
+            // `document`, never `global`: the browser has no `global` (only Node does — which is why vitest stayed green
+            // while every list page threw ReferenceError inside initComplete, 2026-09-23 14:16–15:00).
+            var shaped = document.querySelector('#skeleton-loader[data-table-skeleton]');
+            if (shaped) {
+                shaped.remove();
+                return true;
+            }
+            try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+            return false;
+        };
+
         // Centralized Ajax error handler (helps diagnose DataTables "Ajax error" tn/7 quickly)
         // Note: DataTables treats `ajax: { ... }` as an $.ajax config object.
         if (merged.ajax && typeof merged.ajax === 'object') {
             merged.ajax.xhrFields = $.extend(true, {}, merged.ajax.xhrFields, { withCredentials: true });
-            merged.ajax.error = merged.ajax.error || function (xhr, textStatus, errorThrown) {
-                try { $('#skeleton-loader').fadeOut(200); } catch (e) { }
+            // A page that brings its own handler keeps it — but the placeholder is removed on failure regardless,
+            // or that page would show a placeholder forever when its service is down.
+            var pageAjaxError = typeof merged.ajax.error === 'function' ? merged.ajax.error : null;
+            merged.ajax.error = pageAjaxError
+                ? function (xhr, textStatus, errorThrown) { revealTable(); return pageAjaxError.call(this, xhr, textStatus, errorThrown); }
+                : function (xhr, textStatus, errorThrown) {
+                revealTable();
 
                 var status = xhr && xhr.status ? xhr.status : 0;
                 var url = merged.ajax && merged.ajax.url ? merged.ajax.url : '(unknown url)';
@@ -570,19 +624,26 @@ window.DtDefaults = (function () {
             };
         }
 
-        // AJAX isteği başladığında skeleton'ı göster (Eğer varsa)
-        var originalPreXhr = merged.preXhr;
-        merged.preXhr = function (settings, data) {
-            $('#skeleton-loader').fadeIn(100);
-            if (typeof originalPreXhr === 'function') {
-                originalPreXhr.call(this, settings, data);
-            }
-        };
-
         // Auto-hide skeleton + apply class fixes
         var originalInitComplete = merged.initComplete;
         merged.initComplete = function (settings, json) {
-            $('#skeleton-loader').fadeOut(300);
+            /*
+             * ⚠ REMOVED, NOT HIDDEN. The CSS keeps the table out of the page for as long as this element is its
+             * sibling, so taking the element away IS what reveals the table — one act, no second class to get
+             * out of step with. A list still carrying the old hidden block falls through to the fadeOut below,
+             * exactly as before.
+             */
+            if (revealTable()) {
+                /*
+                 * A table that was not rendered has no column widths worth keeping. DataTables recomputes on
+                 * demand, so ask it once, now that the table is actually on screen.
+                 */
+                try {
+                    var api = new DataTable.Api(settings);
+                    api.columns.adjust();
+                    if (api.responsive && typeof api.responsive.recalc === 'function') { api.responsive.recalc(); }
+                } catch (e) { }
+            }
             applySneatClassFixes();
             if (typeof originalInitComplete === 'function') {
                 originalInitComplete.call(this, settings, json);
@@ -592,7 +653,13 @@ window.DtDefaults = (function () {
         // Redraw durumunda class fixleri tazele
         var originalDrawCallback = merged.drawCallback;
         merged.drawCallback = function (settings) {
-            $('#skeleton-loader').fadeOut(200);
+            /*
+             * ⚠ NOT A REVEAL EXIT. DataTables draws the table ONCE, EMPTY, before the ajax request is answered
+             * (measured on 2.1.8: first drawCallback fires with the response still pending). Revealing here took
+             * the shaped placeholder away at init and every list opened on the three dots instead of its shape —
+             * the owner saw it the same afternoon it shipped (2026-09-23). The answer arrives through
+             * initComplete (success) or ajax.error (failure); those two are the only exits.
+             */
             applySneatClassFixes();
             if (typeof originalDrawCallback === 'function') {
                 originalDrawCallback.call(this, settings);

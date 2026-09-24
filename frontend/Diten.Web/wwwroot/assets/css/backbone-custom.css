@@ -369,6 +369,71 @@ html[data-template="vertical-menu-template"] .container-p-y:not([class^="pt-"]):
     margin-bottom: 0;
 }
 
+/* ── ONE LOADING LANGUAGE AT A TIME (2026-09-21, owner report) ─────────────
+   While a list loads for the FIRST time the skeleton above the table is the answer, so the theme's spinning
+   cube is suppressed for that one table. MEASURED before this rule: both ran together — grey placeholder rows
+   with a cube spinning on top of them, and DataTables' own English "Loading..." in the body behind both.
+
+   ⚠ SCOPED TO THE FIRST LOAD, AND TO ONE TABLE. `dt-defaults.js` puts `.dt-first-load` on that table's wrapper
+   in `preXhr` and takes it off in `initComplete`. Every later request — filter, page, search, reload — keeps
+   the cube it has always had, because by then the rows are on screen and turning them back into grey blocks
+   reads as going backwards.
+
+   Both spellings are listed on purpose: the processing element is `div.dt-processing` in DataTables 2 and
+   `.dataTables_processing` in 1.x, and this product still has tables on both. */
+.dt-first-load div.dt-processing,
+.dt-first-load .dataTables_processing {
+    display: none !important;
+}
+
+/* ── THE LIST'S OWN SHAPE WHILE IT LOADS (2026-09-21, owner report) ────────
+   "Anlaşılmıyor, sayfa geldikten sonra yukarıdan aşağı yükleniyor." Five identical bars said nothing about what
+   was coming and sat above the real table header, so the toolbar and the pager popped in afterwards.
+
+   ⚠ THIS IS LAYOUT, NOT A NEW SKELETON LANGUAGE. The blocks are still `.shimmer` + `.skeleton-row`; these rules
+   only place them — a toolbar row, a header bar, body rows, a footer — so the group reads as the list it is
+   standing in for. A second animation or a second grey would be what the warning above forbids.
+
+   Sizes are the list's own: 2.25rem is the height of the search box and the toolbar buttons, 2.75rem a table
+   row, and the cells share one flexible track so a narrow screen shrinks them together instead of wrapping. */
+.dt-skeleton .dt-skeleton-toolbar,
+.dt-skeleton .dt-skeleton-row,
+.dt-skeleton .dt-skeleton-footer {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+.dt-skeleton .dt-skeleton-toolbar { margin-block-end: 1.25rem; }
+.dt-skeleton .dt-skeleton-search { block-size: 2.25rem; inline-size: 14rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-button { block-size: 2.25rem; inline-size: 6rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-button:first-of-type { margin-inline-start: auto; }
+
+.dt-skeleton .dt-skeleton-head { block-size: 2.5rem; margin-block-end: .75rem; }
+
+.dt-skeleton .dt-skeleton-row { margin-block-end: .625rem; }
+.dt-skeleton .dt-skeleton-cell { block-size: 1.125rem; flex: 1 1 0; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-cell--sm { flex: 0 0 3.5rem; }
+.dt-skeleton .dt-skeleton-cell--lg { flex: 2 1 0; }
+
+.dt-skeleton .dt-skeleton-footer { margin-block-start: 1.25rem; }
+.dt-skeleton .dt-skeleton-info { block-size: 1.125rem; inline-size: 12rem; margin-block-end: 0; }
+.dt-skeleton .dt-skeleton-pager { block-size: 2.25rem; inline-size: 9rem; margin-block-end: 0; margin-inline-start: auto; }
+
+/* ⚠ THE REAL TABLE WAITS ITS TURN, AND CSS IS WHAT MAKES IT WAIT — not a script. While the placeholder is still
+   a sibling, the table (and the spinner DataTables draws inside it) is not rendered at all; `dt-defaults.js`
+   REMOVES the placeholder once the table has drawn, and this selector stops matching, so the table appears.
+
+   MEASURED, and this is why the mechanism moved out of JavaScript: the first version asked DataTables to show
+   the placeholder from a `preXhr` init option, and DataTables has no such option — `preXhr` is an event, and
+   the init callbacks it registers are drawCallback, initComplete, preDrawCallback, rowCallback and the state
+   ones. That function never ran, so the placeholder never appeared and the spinner was still the only thing
+   anyone saw. Markup plus one selector cannot fail that way. */
+[data-table-skeleton] ~ .card-datatable,
+[data-table-skeleton] ~ .table-responsive {
+    display: none !important;
+}
+
 /* Shared offcanvas preview pattern — fully theme-aware so the theme customizer
    (light / dark / bordered skin) drives every surface. The panel background uses
    the SAME variable as the list-page body; the header & section cards use the card
@@ -5939,7 +6004,23 @@ tags.diten-tags .tagify__input {
     border: 1px solid var(--bs-border-color) !important; box-shadow: none !important;
     transform: none !important; translate: none !important;
 }
-.wcn-keyboard-menu { min-inline-size: 17rem; max-inline-size: 22rem; padding: .625rem .75rem; color: var(--bs-secondary-color); font-size: .75rem; line-height: 1.45; white-space: normal; }
+/* WP-UI-SHORTCUTS-01 (BL-438) — the `?` shortcut list (assets/js/shared/diten-shortcuts.js), opened inside the
+   shared SweetAlert look. It replaced `.wcn-keyboard-menu`, the dropdown that listed four of seven keys. */
+.diten-shortcuts { text-align: start; }
+.diten-shortcuts-scope + .diten-shortcuts-scope { margin-block-start: 1rem; }
+.diten-shortcuts-scope-title { margin-block-end: .375rem; font-size: .8125rem; font-weight: 600; text-transform: uppercase; color: var(--bs-heading-color); }
+.diten-shortcuts-table { margin-block-end: 0; }
+.diten-shortcuts-table th,
+.diten-shortcuts-table td { padding-block: .375rem; vertical-align: middle; border-color: var(--bs-border-color); }
+.diten-shortcuts-keys { inline-size: 1%; white-space: nowrap; padding-inline-end: 1rem; font-weight: 400; }
+.diten-shortcuts-desc { color: var(--bs-body-color); font-size: .8125rem; }
+.diten-shortcuts-or { margin-inline: .25rem; color: var(--bs-secondary-color); }
+.diten-kbd {
+    display: inline-block; min-inline-size: 1.625rem; padding: .125rem .375rem; text-align: center;
+    font-family: var(--bs-font-monospace); font-size: .75rem; line-height: 1.25;
+    color: var(--bs-heading-color); background: var(--bs-paper-bg);
+    border: 1px solid var(--bs-border-color); border-block-end-width: 2px; border-radius: .25rem;
+}
 
 .wcn-filters { display: inline-flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
 /* Inside the collapsible panel: reuse the golden `.dt-filter-host` select2 look;
@@ -7661,6 +7742,24 @@ tags.diten-tags .tagify__input {
 .swal2-container .swal2-modal.swal2-popup .swal2-input-label,
 .swal2-container .swal2-modal.swal2-popup .swal2-html-container .form-label {
     margin-block: 0.875rem 0.25rem;
+}
+
+/* ── A LONE BUTTON SITS ON THE CONTENT EDGE (2026-09-21, owner report) ─────
+   MEASURED on the invite-link dialog, live: the title, the description, the field and the action row all
+   started at x=95, and the single "Kapat" button started at x=111 — 16px in from everything above it.
+
+   IT IS NOT THE PACKAGE, IT IS THE THEME'S GAP RULE MEETING A DIALOG IT NEVER MET. The theme's own
+   `sweetalert2.css` spaces buttons with `.swal2-actions button + button { margin-inline-start: 1rem }`, and
+   SweetAlert does not REMOVE the buttons a dialog declined — it leaves `.swal2-cancel` and `.swal2-deny` in
+   the DOM carrying `style="display: none"`. So the only visible button is still somebody's next sibling, and
+   still pays for a gap with nothing on the other side of it.
+
+   ⚠ WHY THIS SELECTOR AND NOT A SMALLER ONE: the margin is only ever wrong when the button BEFORE it is
+   hidden, and that is exactly what is matched. A dialog with two real buttons keeps the theme's spacing — and
+   in any case the package lays that row out with `justify-content: space-between`, which pushes the pair to
+   opposite ends where a 16px inset on the right-hand one changes nothing anyone can see. */
+.swal2-container .swal2-modal.swal2-popup .swal2-actions button[style*="display: none"] + button {
+    margin-inline-start: 0;
 }
 
 /* ── THE DIALOG'S SELECT2 IS A FIELD LIKE THE OTHERS ───────────────────────

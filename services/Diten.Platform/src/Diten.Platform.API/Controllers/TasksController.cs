@@ -172,6 +172,21 @@ public sealed class TasksController : CustomBaseController
     }
 
     /// <summary>
+    /// BL-439 — the person a waiting task is asking ANSWERS it. Route segment MUST match the projected action code
+    /// (<c>answer</c>).
+    ///
+    /// <para>READ, not Update: the addressee holds nothing and must be handed nothing. The rule that decides is not
+    /// a key — it is "this task is asking you", enforced by <see cref="AnswerInquiryCommand"/>'s handler.</para>
+    /// </summary>
+    [HttpPost("{id:guid}/answer")]
+    [HasPermission(TaskPermissions.Read)]
+    public async Task<IActionResult> Answer(Guid id, [FromBody] AnswerInquiryRequest request, CancellationToken ct)
+    {
+        var response = await _mediator.Send(new AnswerInquiryCommand(id, request, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
+    /// <summary>
     /// Give assigned work back to whoever asked for it. Route segment MUST match the projected action code.
     ///
     /// <para>MOD-0023 has a <c>return</c> of its own — an approver sending an approval or review back to its

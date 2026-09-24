@@ -22,6 +22,7 @@ Alan sayımı yalnızca kullanıcının formda doldurduğu modül alanlarıdır.
 > - **Delete Endpoint Ownership (ZORUNLU):** Tekil silme ve bulk silme çağrıları yalnızca modülün kendi resource endpoint’ine gider (`/api/{module}` ve `/api/{module}/bulk`). Kardeş modül endpoint’i kullanmak YASAKTIR.
 > - **Bulk Delete Confirmation Parity (ZORUNLU):** Bulk delete için generic/yanlış modal değil, tekil silme ile aynı görsel dilde confirm akışı (`window.showConfirm` standardı) kullanılmalıdır.
 > - **Save View CTA (ZORUNLU):** DataTable toolbar’ında `dt-save-filter-btn` başlangıçta `d-none` olsa bile render edilmek zorundadır; dirty-state olduğunda görünür olmalıdır.
+> - **İçe aktarma düğmesi YOK (sahip kararı 2026-09-24, BL-441):** Liste ekranına, toolbar'a veya Action menüsüne "İçe aktar" konmaz — "Yakında" diye de konmaz. İçe aktarma merkezi bir modülün işidir (şablon indir → doldur → yükle → doğrulama → hata raporu → denetim izi; SAP S/4HANA Migration Cockpit ve Oracle Fusion Import Management / FBDI deseni). Ajan sayfa başına sormaz; `createList` fabrikası da sunmaz.
 > - **`{AreaName}` = klasör gruplaması (Örn: `MDM`, `Identity`), ASP.NET Areas routing DEĞİLDİR.**
 >   - ✅ DOĞRU: `Views/MDM/SampleModule/Index.cshtml`
 >   - ❌ YANLIŞ: `Areas/MDM/Views/SampleModule/Index.cshtml`
@@ -65,6 +66,58 @@ Zorunlu uygulama:
 - Compact Details read-only section kartları `card backbone-preview-section` class'larını birlikte kullanır ve shared CSS standardı üzerinden standart `.card` shadow + no extra preview border davranışını alır. Page-level `box-shadow`, global `.card` override veya view içine özel shadow CSS yazılmaz.
 - Required marker ve input tipi ilgili alanın kendi bölümünde kalır; status/select/switch alanları classification kartına karıştırılmaz.
 - Teslimden önce `_Form.cshtml` ve `Details.cshtml` yan yana kontrol edilir: bölüm sayısı, bölüm başlıkları ve alanların bölüm sahipliği eşleşmelidir.
+
+---
+
+## Veri modeli (`data_mode`) — sunucu mu, istemci mi
+
+Module pack `golden_reference`'ın yanında **`data_mode: server | client`** taşır; sayfa aynı kararı `<table data-dt-data-mode="server|client">`
+ile beyan eder; `verify_datatable_page.py` ikisini karşılaştırır ve davranışı ölçer. Ayrım kümenin büyüklüğü değil, **sınırlı olup olmadığıdır**.
+
+| | `server` (varsayılan) | `client` (istisna) |
+|---|---|---|
+| Ne zaman | Kiracının **sınırsız ekleyebildiği** her varlık: kullanıcı, ürün, hesap, görev, doküman, toplantı… | Tasarımda **sınırlı** kümeler: sistem sözlükleri, yapılandırma listeleri, rol/izin tabloları — üst sınır ölçülür ve pack'e yazılır (öneri ≤ 200 satır) |
+| Veri | DataTables `start/length/search/order` + filtreler sunucuya; servis `total` döner; `serverSide: true` | Tüm küme tek istekte; **URL'de `pageSize=` YASAK**; servis `total` döner; `total > gelen` ise ekran bunu gösterir (sessiz kesme yasak) |
+| Filtre | sorgu parametresi | tarayıcıda (`ext.search`) |
+| Save View | aynı sözleşme; state sorguya çevrilir | aynı sözleşme; tarayıcıda uygulanır |
+| Referans | **Golden Compact** (`data_mode: server`) | **Golden Slim** (`data_mode: client`, `data_mode_max_rows: 200`) |
+
+### Sunucu modu sözleşmesi (BL-440 paket 3, WP-UI-LIST-SERVER-01)
+
+Sayfa yalnız `DitenDataTable.createList({ dataMode: 'server', … })` der; çeviriyi **fabrika** yapar (`diten-datatable.js`
+→ `toServerQuery` / `toDataTablesResponse`). Sayfa `serverSide`, `ajax.data`, `ext.search` ya da filtre `matches:` yazmaz.
+
+| | Tel üzerinde | Not |
+|---|---|---|
+| **İstek** (GET, düz sorgu) | `start` · `length` · `search` · `orderBy` · `orderDir` (`asc`\|`desc`) · `draw` · uygulanmış filtreler **anahtar adıyla** | `orderBy` = sıralanan sütunun `columns[i].data` adı. Çoklu filtre **tekrarlı** parametre (`status=Active&status=Passive`), tekli bir kez (`priority=70`), boş filtre gönderilmez. DataTables'ın `columns[i][…]`/`order[i][…]` gürültüsü **gönderilmez** |
+| **Cevap** (servis zarfı) | `{ …, data: { items: [...], total, filteredTotal } }` | `total` = kiracının tüm listesi, `filteredTotal` = arama+filtre sonrası. İkisi de **`TenantId` ile sınırlı** sorgudan sayılır |
+| **DataTables'a** (fabrika `ajax.dataFilter`) | `{ draw, recordsTotal: total, recordsFiltered: filteredTotal, data: items }` | `draw` isteğin kendi URL'inden okunur (geç gelen cevap kendi numarasını taşır). `filteredTotal > gelen` **sayfalamadır**, kayıp değil — istemci modundaki "`total > gelen` ise göster" kuralı burada uygulanmaz |
+| **Servis kuralları** | `orderBy` beyaz listesi dışı → **400** · `orderDir` asc/desc dışı → 400 · `length` 1…500 · arama büyük-küçük duyarsız ve **metin** (regex değil) | Eşit sıralama değerinde sayfalar arası kayma olmasın diye sıralama daima `Id` ile biter. Parametresiz çağrı eski şeklini korur (tüm liste, dizi) — başka tüketiciler (lookup proxy) onu okur |
+| **Davranış** | Apply/Reset → parametre değişir + yeni istek (Reset sayfa 1'e döner) · arama/sıralama sunucuya | Save View sözleşmesi **aynı** (`captureView`/`applyViewToTable`); filtre+arama+sıralama sunucuya gider, colVis/columnOrder tarayıcıda kalır. Kayıtlı görünümün filtreleri **ilk** isteğe biner |
+| **Sayfaya açık** | `handle.lastResponse` (son zarf) · `onResponse(json)` seçeneği | Özet/KPI buradan okunur; ikinci bir istek atılmaz |
+
+Doğrulayıcı üç beyanı karşılaştırır — pack `data_mode` (pack front matter'ından kendisi okur), `<table data-dt-data-mode>`,
+`createList({ dataMode })` — ve sunucu modunda "serverSide açık" + "tarayıcıda filtre kancası yok" kontrollerini fabrikadan çözer.
+
+> ⚠ ÖLÇÜLDÜ (2026-09-23): 138 listenin çoğu istemci modunda ve JS'inde sabit `pageSize=` taşıyor (200×45, 100×9, 500×5, 1000×4).
+> Kullanıcılar `pageSize=1000` → 1001. kullanıcı asla görünmez, hata da vermez. 13 liste `serverSide:true` ama kural bunu hiç yazmamıştı.
+> SAP SmartTable (büyüyen liste, OData `$top/$skip`) ve Oracle JET (DataProvider `fetchByOffset`) sunucuyu varsayılan alır; küçük
+> value-help'ler istemcide kalır. Blueprint'te satır yok; kural budur.
+
+## Dokunma protokolü — eski bir liste ekranına dokunan herkes için
+
+Eski liste ekranları (bugün 132'si sapmış) **program olarak göç ettirilmez**; her biri ya modül test turunda ya da **bir görev ona dokunduğunda** düşer.
+Bir görev bir liste ekranının `Index.cshtml`, `_DataTable.cshtml`, `_Filter.cshtml` ya da `index.js` dosyasına dokunuyorsa:
+
+1. Ajan `python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturur
+   (Claude Code'da `.claude/settings.json` PostToolUse kancası bunu düzenlemeden hemen sonra **otomatik** yapar ve sapmaları bağlama düşürür —
+   `.antigravity/` otomatik yüklenmediği için kural değil kanca güvence).
+2. Sapmaları raporunda **numaralı listeyle** gösterir ve sahibe **sorar**: *"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"*
+3. **Evet** → aynı dalda **ayrı commit** (görevin commit'ine karışmaz). **Hayır** → modülün test kaydına "bilinen sapma" olarak yazılır; iş bitmemiş sayılmaz.
+4. **Sessizce düzeltmek yasak** (kapsam disiplini) · **sessizce atlamak yasak** (sapma görünmez kalamaz).
+
+Bu protokol yalnız orchestrator'ın değil, liste dosyasına dokunan her ajanın (`frontend-ui-ux`, `code-quality-agent`, `testing-agent`,
+`module-pack-author`, `performance-optimizer`) yükümlülüğüdür.
 
 ---
 

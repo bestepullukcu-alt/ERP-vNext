@@ -50,7 +50,10 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
             ["inquire"] = TaskPermissions.Update,
             ["return"] = TaskPermissions.Update,
             ["reassign"] = TaskPermissions.Assign,
-            ["cancel"] = TaskPermissions.Cancel
+            ["cancel"] = TaskPermissions.Cancel,
+            // BL-439 — the addressee's answer. READ, the key TasksController's `answer` endpoint carries: the rule
+            // that matters is "this task is asking you", which AnswerInquiryHandler enforces, not a key.
+            ["answer"] = TaskPermissions.Read
         };
 
     public IReadOnlyCollection<string> SupportedActionCodes { get; } = Permissions.Keys.ToArray();
@@ -131,6 +134,20 @@ public sealed class TaskWorkItemActionDispatcher : IWorkItemActionDispatcher
                     new InquireTaskItemCommand(
                         request.ItemId,
                         new InquireTaskItemRequest(version, payload.Reason!, payload.WaitingOnUserId),
+                        request.CorrelationId), ct), request);
+
+            case "answer":
+                // Refused here rather than sent on empty, like inquire's reason: the handler would refuse it too,
+                // but the envelope's own code names the missing FIELD, which is the more useful answer.
+                if (string.IsNullOrWhiteSpace(payload.Answer))
+                {
+                    return WorkItemActionDispatchResults.PayloadInvalid(request, nameof(payload.Answer));
+                }
+
+                return Map(await _mediator.Send(
+                    new AnswerInquiryCommand(
+                        request.ItemId,
+                        new AnswerInquiryRequest(version, payload.Answer!),
                         request.CorrelationId), ct), request);
 
             case "return":

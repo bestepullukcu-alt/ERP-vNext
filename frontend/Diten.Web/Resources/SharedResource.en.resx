@@ -957,4 +957,23 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Receiving (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Updating a GRN is not supported; a posted receipt is corrected with a reversing movement, not an edit.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Updating an invoice is not supported; correct it by re-running the 3-way match or resolving its exception, not by an edit.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copied</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Keyboard shortcuts</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Shortcuts do not run while you type in a field or while a dialog or side panel is open.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Show this list</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Space</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Everywhere</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Task Center</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Task details</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Select the next item</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Select the previous item</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Open the selected item</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Open the focused row</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Accept or approve the selected item</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Reject or return the selected item</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Clear the selection</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Move between tabs (on a focused tab)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Edit the task</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Back to the task list</value></data>
 </root>

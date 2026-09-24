@@ -86,5 +86,19 @@
     "additionalDirectories": [
       "C:\\tmp"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 .antigravity/scripts/list_screen_touch_hook.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

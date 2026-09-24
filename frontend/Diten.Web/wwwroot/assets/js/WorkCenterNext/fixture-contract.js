@@ -8,7 +8,13 @@
      * is not new: app.js's own icon/chip/filter maps (`TYPE_ICON_MAP`, `TYPE_KEY`) and the trigger-only
      * showcase this replaces already spelled it exactly this way.
      */
-    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception', 'meetingInvite'];
+    /*
+     * BL-439 — `inquiry` ADDED (CT decision, 2026-09-23), the SEVENTH value: the QUESTION a waiting task is asking
+     * the reader, in their inbox with exactly one action (`answer`). Its own intent rather than a `task`, because
+     * the reader does not hold the work — every task-shaped surface (lifecycle strip, checklist, closure) would
+     * offer them acts they may not take. A REAL source, like `meetingInvite`: TaskWorkItemProvider emits it.
+     */
+    const WORK_INTENTS = ['task', 'approval', 'review', 'issue', 'exception', 'meetingInvite', 'inquiry'];
     const ASSIGNMENT_MODES = ['direct', 'approval', 'groupQueue', 'offered'];
     const OWNERSHIP_STATES = ['unowned', 'assigned', 'owned', 'notApplicable'];
     const ADMISSION_STATES = ['pendingAcceptance', 'pendingClaim', 'pendingOffer', 'admitted', 'notApplicable'];
@@ -156,6 +162,8 @@
         // A FIELD EDIT (2026-08-23) — the task stayed where it was and something about it changed. It is the one
         // code whose sentence names WHAT changed rather than which act occurred.
         'edited',
+        // BL-439 — the person a waiting task was asking answered; the entry's reason is their answer.
+        'inquiryAnswered',
         'unknown'
     ];
 
@@ -367,6 +375,24 @@
                 push(errors, fixture, 'MEETING_INVITE_SECONDARY_ACTION_INVALID', 'secondaryActionCodes');
             }
         }
+        /*
+         * BL-439 — a question is ONE decision: answer it. The action set is closed to exactly that code, as the
+         * primary, for the reason the invite's is closed to its two: the card was built for that shape, and a
+         * question that grew a `complete` or a `cancel` would be handing the reader the task itself.
+         *
+         * The question text rides `summary` and is NOT required here, deliberately: InquireTaskItemHandler already
+         * refuses a wait without a reason, and requiring it again would DROP the card — the one way to make sure
+         * the addressee never learns there is a question at all.
+         */
+        if (fixture.workIntent === 'inquiry') {
+            const inquiryCodes = (fixture.actions || []).map((action) => action.code);
+            if (inquiryCodes.length !== 1 || inquiryCodes[0] !== 'answer') {
+                push(errors, fixture, 'INQUIRY_ACTIONS_INVALID', 'actions');
+            }
+            if (fixture.primaryActionCode !== 'answer') {
+                push(errors, fixture, 'INQUIRY_PRIMARY_ACTION_INVALID', 'primaryActionCode');
+            }
+        }
         if ((fixture.normalizedStatus === 'Waiting') !== !!fixture.waitingContext) { push(errors, fixture, 'WAITING_CONTEXT_BIDIRECTIONAL', 'waitingContext'); }
         // An unknown type is a CONTRACT error, not a rendering quirk: the shell can only translate what it is
         // told about, so a type nobody declared reaches the user as silence.
@@ -375,6 +401,11 @@
         }
         if (fixture.waitingContext && !isPersonRef(fixture.waitingContext.waitingOn)) {
             push(errors, fixture, 'WAITING_CONTEXT_WAITING_ON_INVALID', 'waitingContext.waitingOn');
+        }
+        // BL-437 — why the item reached the reader. Optional (a provider that cannot say stays silent), but when
+        // present it must be a real label: a malformed one would render as a raw key or as nothing at all.
+        if (fixture.arrivalReason !== undefined && fixture.arrivalReason !== null && !isLabel(fixture.arrivalReason)) {
+            push(errors, fixture, 'ARRIVAL_REASON_INVALID', 'arrivalReason');
         }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
@@ -485,6 +516,24 @@
             }
             if (returned.reason !== undefined && returned.reason !== null && !isLabel(returned.reason)) {
                 push(errors, fixture, 'RETURNED_REASON_INVALID', 'returned');
+            }
+        }
+        /*
+         * inquiryAnswer — BL-439: the question this task was parked on was answered, and that is still the latest
+         * word. Validated WHEN PRESENT, never required (the BL-038 rule: validateItems DROPS what it rejects).
+         * `at` is required with the block — an answer that cannot say when cannot be ordered against the next
+         * wait; `answeredBy` is a typed person or nothing, and `answer` is a label (the answerer's own words).
+         */
+        if (fixture.inquiryAnswer !== undefined && fixture.inquiryAnswer !== null) {
+            const answered = fixture.inquiryAnswer;
+            if (Number.isNaN(new Date(answered.at).getTime())) {
+                push(errors, fixture, 'INQUIRY_ANSWER_AT_INVALID', 'inquiryAnswer');
+            }
+            if (!isPersonRef(answered.answeredBy)) {
+                push(errors, fixture, 'INQUIRY_ANSWER_BY_INVALID', 'inquiryAnswer');
+            }
+            if (answered.answer !== undefined && answered.answer !== null && !isLabel(answered.answer)) {
+                push(errors, fixture, 'INQUIRY_ANSWER_TEXT_INVALID', 'inquiryAnswer');
             }
         }
         /*

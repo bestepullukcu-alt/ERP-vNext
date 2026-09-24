@@ -897,4 +897,24 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Recepción (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>No se admite la edición de un GRN; una recepción contabilizada se corrige con un movimiento de reversión, no con una edición.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>No se admite actualizar una factura; corríjala volviendo a ejecutar la conciliación de 3 vías o resolviendo su excepción, no mediante una edición.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Copiado</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Atajos de teclado</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Los atajos no funcionan mientras escribe en un campo o mientras hay un cuadro de diálogo o un panel lateral abierto.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Mostrar esta lista</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Espacio</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>En todas partes</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Centro de tareas</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Detalle de la tarea</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Seleccionar el elemento siguiente</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Seleccionar el elemento anterior</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Abrir el elemento seleccionado</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Abrir la fila enfocada</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Aceptar o aprobar el elemento seleccionado</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Rechazar o devolver el elemento seleccionado</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Borrar la selección</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Moverse entre pestañas (con una pestaña enfocada)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Editar la tarea</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Volver a la lista de tareas</value></data>
 </root>

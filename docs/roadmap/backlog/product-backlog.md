@@ -5944,6 +5944,481 @@ Gelecek gerileme riski: düşük (yalnız iki ekranın diyalog çağrısı).
 
 ---
 
+### BL-432
+
+**Eski modüller veri kapsamını hiç sormuyor — okuma yetkisi olan kiracının bütün satırlarını görüyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "kişiyi organizasyon birimine atıyorsun, o şekilde datayı görmüyor mu?") · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `IDataScopeResolver` üretim kodunda yalnız üç yüzeyde tüketiliyor —
+`Features/Tasks/Handlers/QueryHandlers/WorkReportQueryHandler.cs` (+ `WorkReportScopeSource`),
+`Features/Tasks/Services/TaskAssignmentScopeResolver.cs` ve `API/Authorization/Explain/SelfAccessExplainService.cs`.
+Motor çalışıyor ve gerçek: `OrgDataScopeResolver` (MOD-0018-FU15) MOD-0288 organizasyon verisinden OrgUnit (alt ağaç
+düzleştirilmiş) · Position · ManagerChain · LegalEntity üretiyor, döngü güvenli ve kapalı başlıyor. Sorulmuyor.
+
+Sonuç: bir modülün okuma yetkisini alan kişi, bir birime atanmış olsa bile o modülün kiracıdaki **bütün**
+satırlarını görüyor. Kiracı izolasyonu sağlam (`TenantId` her sorguda); eksik olan aynı şirket içindeki ayrım.
+
+Yeni iş bu kapıdan geçemez: kural `.antigravity/rules/data-scope-enforcement.md` (SEC-002) olarak yazıldı ve yeni
+modüller ile hâlen üzerinde çalışılan modüller için bugünden geçerli. Bu madde **geriye dönük** bağlama işidir.
+
+İstenen (modül başına ayrı dilim, sırayla): CRM önce — hangi alan kapsamı taşır (müşteri sahibi / birim), kapsam
+çevirisi `WorkReportScope` kalıbıyla, tenant-wide için ayrı izin (`<modül>.<özellik>.read-tenant-wide`), iki kişi
+iki birim testi + sabotaj. Ardından Satınalma, Doküman Yönetimi, MDM listeleri.
+Gelecek gerileme riski: orta. Bugün herkes her satırı görüyor; kapsam açıldığında bazı kullanıcıların listesi
+kısalacak. Bu bir gerileme değil düzeltmedir, ama kiracı yöneticisine önceden söylenmeden açılmaz — her modül
+dilimi kendi geçiş cümlesini yazar (kimin neyi görmeyi bırakacağı).
+
+---
+
+### BL-433
+
+**Servis hesabı bugün yalnız bir etiket — ekrandan giriş yapabiliyor, kişi seçicilerde çıkıyor, görev sahibi olabiliyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "bu servis hesabı nasıl olmalı, etiketleme dışında ne işe yarar?") · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `AccountKind` (Unknown | Human | Service) `Diten.AuthService.Domain/Enums/AccountKind.cs`'de
+tanımlı; değiştirmek `auth.users.account-kind.manage` iznini istiyor ve bu izin `ExplicitGrantOnlyPermissions`
+listesinde (hiçbir role kendiliğinden gelmez, SuperAdmin otomatiği dahil); `GET api/users/{id}/account-assertion`
+kararı değil olguyu döndürüyor (`Active` + `AccountKind`), kararı çağıran (PPM) veriyor; tohumlama hiçbir hesabı
+sınıflandırmıyor (`DataSeeder` → `AccountKind.Unknown`). Yani sınıflandırma katmanı doğru kurulmuş.
+
+Davranış katmanı yok. `Service` işaretli bir hesap bugün: `/account/login` ekranından şifreyle girebiliyor,
+kişi/atama seçicilerinde insanların arasında listeleniyor, görev sahibi ve onaycı olabiliyor. Bir denetçi "bu
+onayı kim verdi" diye sorduğunda cevap bir robot olabilir ve ekranda insandan ayırt edilmiyor.
+
+İstenen (küçük, tek dilim): `Service` hesabı (1) etkileşimli giriş akışında reddedilir — hata metni kendi kodunu
+taşır, "şifre yanlış" denmez; (2) kişi seçicilerinden ve atama havuzlarından düşer; (3) görev sahibi/onaycı
+olamaz. Üçü de tek bir "bu hesap insan mı" sorusunu okur; test: her üç yüzey için `Service` ile kırmızı, `Human`
+ile yeşil. Kimlik/anahtar tarafı buraya girmez — o BL-434.
+Gelecek gerileme riski: düşük. Bugün hiçbir hesap `Service` değil (tohumlama `Unknown` veriyor), yani kural
+açıldığında kimsenin girişi kesilmez; yanlış işaretlenmiş bir hesap ise zaten bugün de yanlış.
+
+---
+
+### BL-434
+
+**Servis hesabının kimlik bilgisi yok — insan şifresiyle çalışan entegrasyon, süresi ve iptali olmayan erişim demek**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT (sahip sorusu: "servis hesabı belli süreliğine mi açılıyor, o hesaba belli sayfalar yetki mi veriliyor?") · KAYIT: 2026-09-21
+
+Bugünkü durum: bir entegrasyonun sistemimize bağlanma yolu, birinin insan hesabı açıp şifresini entegrasyona
+vermesidir. Bunun üç sonucu var — şifre bir insanın parola politikasına tabi (dolayısıyla bir gün süresi dolar ve
+entegrasyon gece yarısı durur), kimsenin elinde "bu anahtar nerede kullanılıyor" listesi yoktur, ve erişimi
+kesmenin tek yolu hesabı kapatmaktır (hangi entegrasyonun kırılacağı bilinmeden).
+
+SAP ve Oracle bu ihtiyacı ayrı bir kullanıcı türüyle karşılar: SAP'de `System`/`Communication` kullanıcı türü
+(diyalog girişi yapamaz, parola politikası ayrıdır), Oracle'da entegrasyon kullanıcısı + belirteç. Bizde karşılığı
+`AccountKind.Service`, ama yalnız sınıflandırma tarafı var (BL-433).
+
+İstenen (büyük — kendi iş paketi, tek dilimde yapılmaz): servis hesabına ait anahtar/istemci kimliği, verilme ve
+bitiş tarihi, planlı döndürme (eskisi geçerliyken yenisi çalışır), anında iptal, ve her kullanımın denetim kaydı
+(hangi anahtar, hangi IP, hangi uç nokta). Yetki tarafı mevcut RBAC'tir — servis hesabına da rol verilir; gördüğü
+veri BL-432'deki kapsam kuralıyla belirlenir (servis hesabına da pozisyon/birim verilir, ayrı bir veri mekanizması
+kurulmaz).
+Gelecek gerileme riski: yüksekse de yönetilebilir — bu iş Auth'un kimlik doğrulama yoluna dokunur. Bu yüzden
+BL-433'ten sonra ve ayrı bir iş paketi olarak planlanır; ikisi tek dilime konmaz.
+
+---
+
+### BL-435
+
+**PPM Girişimler ekranı ortak onay bileşenini atlayıp kendi diyaloğunu açıyor — "üründe tek diyalog" kuralı kırık**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ (PPM) · BULAN: CT (Kullanıcılar davet diyaloğunu düzeltirken tam paket koşusu) · KAYIT: 2026-09-21
+
+Ölçüldü (`origin/main`, 2026-09-21): `tests/dialog-one-implementation.test.js` → "opens no dialog outside the
+shared component" tek bir dosyayı işaret ediyor: `wwwroot/assets/js/PPM/Initiatives/index.js`. Kural ürün
+genelinde ve bilerek öyle: ham `Swal.fire` yazan dosya ya `window.showConfirm`'e geçer ya da gerekçesiyle
+`KNOWN_RAW` listesine yazılır. Bu dosya ikisini de yapmamış, yani main'de bu test bugün kırmızı (CI vitest
+koşmadığı için görünmüyor — BL-431 ile aynı aile).
+
+Ham diyalog tek başına yasak değildir; alan taşıyan bir diyalog ham olmak zorundadır. Kural, ham olanın da
+ürünün görünümünü **okumasını** ister: `window.DitenDialogAppearance` paketi + `iconHtml` + `description`.
+Kullanıcılar modülündeki aynı hata bugün düzeltildi ve örneği orada duruyor
+(`Governance/Users/index.js` → `showInviteLink`).
+
+İstenen: PPM sahibi ya `showConfirm`'e geçer ya da gerekçesini yazıp `KNOWN_RAW`'a ekler **ve** yayımlanmış
+paketi okur. Test gevşetilmez. CT tarafında yapılacak bir şey yok; kayıt bilgi amaçlı.
+Gelecek gerileme riski: düşük (tek ekranın diyalog çağrısı).
+
+---
+
+### BL-436
+
+**Hiç değer almamış alan tanımı silinemiyor — yanlışlıkla açılan satır listede sonsuza kadar kalıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (organizasyon alan tanımlarını girerken) · KAYIT: 2026-09-21
+
+Ölçüldü: MOD-0288-FU02'de tanım için **silme uç noktası yok**; tek eylem `deactivate` (tekil + toplu).
+Denetleyicinin kendi cümlesi: *"IT DEACTIVATES; IT DOES NOT DELETE."* Bu, kullanılmış bir tanım için doğru —
+kaydedilmiş her değer tanımı kimliğiyle işaret ediyor ve yazıldığı andaki tipini/sınıflandırmasını kopyalıyor,
+tanım silinirse yorumlanamayan değerler kalır. Oracle'da kullanılmış flexfield segmenti devre dışı bırakılır,
+SAP'de karakteristik ancak hiç kullanılmamışsa silinir.
+
+Eksik olan ikinci yarı: **hiç değer yazılmamış** bir tanım da silinemiyor. `Kod` oluşturulduktan sonra
+değiştirilemediği ve pasife alma tek yönlü olduğu için, yazım hatasıyla açılmış bir tanım kalıcı: listede
+durur, 50'lik kotadan düşmez (pasifler sayılmıyor, bu doğru) ama gözden hiç kalkmaz.
+
+İstenen: "değeri yoksa silinir, varsa silinemez" kuralı — silme, o tanıma ait değer sayısı sıfırsa kabul edilir,
+değilse 409 ve mevcut pasife alma yolu önerilir. Sayım sunucuda yapılır.
+Gelecek gerileme riski: düşük (yeni bir uç nokta, mevcut davranış değişmiyor).
+
+---
+
+### BL-437
+
+**Onay iş kaleminin başlığı "Onay: tasks &lt;guid&gt;" — onaylayan neye onay verdiğini görmüyor**
+
+DURUM: KAPANDI — `db44c3bec` → integration `86aced98f` (WP-PSS-WA-APPROVAL-TITLE-01, 2026-09-24; canlı doğrulandı) · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: `WorkItemProjectionService.cs:25` sabit bir kaynak anahtarı kuruyor —
+`WorkAggregation_Title_Approval` → tr metni `Onay: {objectType} {objectId}`. Görevin başlığı hiç kullanılmıyor.
+"Bu bana neden geldi" bilgisi de yok: `Requester` alanı DTO'da var ama onay yolunda doldurulmuyor
+(`WorkAggregationModels.cs:358`; görev projeksiyonu dolduruyor, onay projeksiyonu doldurmuyor), kaynak görev
+bağlantısı `DeepLink: null` (`:58-63`), bekleme sebebi bilerek null (`:88`).
+
+Sonuç: onaylayan kişi gelen kutusunda ham bir kimlik görüyor ve neyi onayladığını anlamak için tahmin etmek
+zorunda. Bu, toplantı → karar → görev → onay zincirini test edilemez de kılıyor.
+
+İstenen: başlık kaynak görevin başlığını taşısın, `Requester` doldurulsun, kaynağa tıklanır bağlantı ve tek
+cümlelik sebep eklensin ("X onayını bekliyor"). Projeksiyon katmanında toplu iş; metinler yedi dilde.
+Gelecek gerileme riski: düşük (yalnız projeksiyon; iş akışı kuralları değişmiyor).
+
+**Kapanış (2026-09-24):** `IApprovalSourceResolver` (WorkAggregation) → `TaskApprovalSourceResolver` (MOD-0024, salt okunur, sayfa
+başına toplu): başlık = görevin kendisi, talep sahibi = incelemeye SON gönderen (onay/iş talebi: oluşturucu), `DeepLink` → /Tasks/{id},
+yeni sözleşme alanı `ArrivalReason` (2 anahtar × 7 dil; adsız cümle ayrı, ad yerine asla id). CT guard'ları (ajanın 6 sabotajının ötesinde
+6 boşluk): en son gönderen, id-yerine-ad, IsCurrentUser, boşluk bağlantı, XSS kaçışı, {name} yer tutucu. **Canlı (CT, admin oturumu):**
+mevcut görev incelemeye alınıp `accept → start → submitReview` sonrası gelen kutusunda "CT canlı: toplantıdan doğan görev" başlığı,
+"Diten Admin bu görevi onayına gönderdi · Kaynak kaydını aç" cümlesi ve `/Tasks/{id}` bağlantısı; guid yok. Not: dev kiracısında
+pozisyon/atama yok → yeni görev açılamıyor (`ORGANIZATION_UNIT_UNRESOLVED`, BL-358/366) — canlı zincir var olan görevle koşuldu;
+kontrol turundan önce organizasyon verisi gerekir. Sahibe kalan: iki kişili senaryo (gönderen ≠ okuyan) ve "Görevi aç" metni tercihi
+(bugün `DetailOpenSource` "Kaynak kaydını aç").
+
+---
+
+### BL-438
+
+**Klavye kısayolları tek ekranda yaşıyor, yarısı hiçbir yerde yazmıyor**
+
+DURUM: KAPANDI (kısmi canlı) — `dc1e0b8b0` → integration `22074790e` (WP-UI-SHORTCUTS-01, 2026-09-24) · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+
+Ölçüldü: kısayollar yalnız `WorkCenterNext/app.js:10038-10082`'de tanımlı ve `document`'e bağlı. Tuşlar:
+`j` sonraki, `k` önceki, `Enter`/`o` aç, `a` kabul, `r` reddet, `Escape` seçimi temizle, sekme şeridinde
+ok tuşları. İpucu açılır menüsü (`app.js:1230`, metin `KeyboardHint`) bunların yalnız **dördünü** yazıyor —
+`o`, `Escape` ve oklar hiçbir yerde geçmiyor — ve menü `d-none d-lg-block` ile küçük ekranlarda gizli. Ortak
+bir kısayol katmanı yok; Görevler ekranlarında kısayol hiç çalışmıyor.
+
+İstenen: ortak kısayol katmanı (tek yerde tanımlı, her ekranın kaydolduğu) + `?` tuşuyla açılan tam liste,
+küçük ekranlarda da erişilebilir. Yeni eylemler (devret, onaya git, soruyu cevapla) listeye oradan girer.
+Gelecek gerileme riski: orta — `document` seviyesinde tuş yakalayan ortak katman, form alanlarında ve
+diyaloglarda susmak zorunda; bunun testi baştan yazılır.
+
+**Kapanış (2026-09-24):** `wwwroot/assets/js/shared/diten-shortcuts.js` (`window.DitenShortcuts`: register/unregister/open/list) tek
+dinleyici + susma kuralı (alan, contenteditable, açık modal/offcanvas/swal, Ctrl/Cmd/Alt) + gürültülü çakışma reddi + `?` listesi
+(kayıtlı olandan üretilir, ortak diyalog görünümü, her genişlikte). WCN kaydoldu (j/k/Enter/o/Space/a/r/Esc + sekme okları), Görev
+detayı `e`/Esc (başlıktaki bağlantıya basar), Create/Edit yalnız `?` (forma harf bağlamak yarım formu gönderirdi). Metinler
+`SharedResource` 7 dil × 18 anahtar. Kanıt: +56 test, ajan 6 + CT 6 sabotaj kırmızı. Canlı (CT): `?` listesi 9 satırla açıldı,
+dialog açıkken `j` sessiz, arama kutusunda `j` harf, görev detayında `e` → Düzenle, Esc → geri. **Sahibe kalan:** WCN j/k/Enter
+(CT oturumu "süresi doldu" verdi, liste boştu), dar ekranda klavye düğmesi, `ar` sağdan sola diyalog görünümü.
+
+---
+
+### BL-439
+
+**Soru sorulan kişiye hiçbir şey gitmiyor — "Bilgi bekle" akışının ikinci yarısı yok**
+
+DURUM: KAPANDI (sahip yeniden testi bekliyor) — WP-PSS-TASK-INQUIRY-02, `aa452d0bf` (feat/pss-task-inquiry, 61ad9b41d tabanı)
+→ merge `9d711ae18` + CT guard `154f9e2fb` (integration/2026-09-21-test, 2026-09-24) · SAHİP: CT · BULAN: sahip (Görev Merkezi
+geri bildirimi) · KAYIT: 2026-09-23
+
+**Ne yapıldı:** "Bilgi bekle" ile kişi seçilince o kişinin gelen kutusuna ayrı bir kalem düşüyor (`workIntent=inquiry`,
+tek eylem `answer`; soru gövdede, soran "talep eden" satırında; "Kaynak kaydını aç" bağlantısı görevin detayına).
+Cevap görevin geçmişine `inquiryAnswered` olarak yazılıyor, bekleme temizleniyor, görev park edildiği yaşam döngüsüne dönüyor;
+çalışan işe dönüş `resume`'un sorduğu onay (MOD-0023) ve bağımlılık kapılarını yeniden soruyor — engel varsa Open'a iner,
+cevap yine kaydedilir. Tek yüklem (`TaskInquiryRules.IsAskedOf` = Waiting ∧ WaitingOnUserId): kim görür, kim okur, kim
+cevaplar aynı kişi; okuma kuralına EKLEMELİ (mevcut erişim daralmadı; talep sahibi sorulduğunda detay sayfası duruyor).
+Kendine bekleme reddi (answer, resume'un etrafından dolanamaz). Soran bildirim: `platform.tasks.inquiryasked`; cevap gelince
+sahibe `platform.tasks.inquiryanswered` (şablon tohumu 7 dil). Sahibin kartı "X cevapladı" çipi + cevabı tooltip'te — yalnız
+açık işte ve son söz cevapken. WCN + Tasks resx 13+3 anahtar × 7 dil.
+
+**CT kabulü:** Platform 5096/49 kırmızı = taban (İş Referans Verisi Mongo, eski borç); vitest 3133/24 = taban; Web 229; mimari 18.
+CT sabotajları (ajanınkinden farklı) 7/8 kırmızı: yaşam döngüsüz IsAskedOf · kapısız dönüş · daimi okuma · kiracısız Mongo
+sorgusu (HTTP+Mongo tel testi yakaladı) · kendine bekleme · answer→reason · ar `{title}`. Kırmızı vermeyen C6 (bitmiş işte
+çip) için `TaskInquiryCtTests` eklendi. Merge çakışması yalnız `WorkAggregationModels.cs` (BL-437 ArrivalReason + BL-439
+InquiryAnswer, ikisi de tutuldu). Birleşik ağaç: subset 166, Web 229, vitest 3235/24 = taban, Platform 5121/50 → fazladan tek
+kırmızı `BusinessReferenceDataMongoResidueSweeperTests` "database is currently being dropped" yarışı, tek başına 5/5 yeşil.
+
+**Canlı (2026-09-24, birleşik yapı, iki kullanıcı — kayıt `docs/records/tests/task-center/2026-09-24-inquiry.md`):**
+admin "Bilgi bekle" ile Ayşe'ye sordu → Ayşe'ye e-posta (Mailpit; ilk deneme Mailpit kapalıyken reddedildi, kuyruk 1 dk sonra
+teslim etti) → Ayşe'nin gelen kutusunda tek kalem "Soru · S10B-Planla Testi", tek eylem Cevapla; görevi okuyabildi (200) →
+cevapladı → listesi boşaldı, görev ona 404 → admin'e e-posta → görev InProgress v4, kartta `inquiryAnswer`, detayda "Ayşe
+Korkmaz cevapladı: …", Etkinlik'te "Soru cevaplandı". Ön koşul: dev org verisi (HEADQUARTERS ekrandan yumuşak silinmişti)
+sahip tarafından yeniden kuruldu. Bulgular: BL-443 (seçicide fare tıklaması diyaloğu kapatıyor), BL-444 (detayda dört
+bekleme kutusu), BL-445 (bildirim e-postası dili en).
+
+**Bilinen boşluk (ayrı kayıt):** BL-442 — yorum ekleme uç noktası okuma kuralını sormuyor.
+
+Ölçüldü: soru hem "kime" hem "neden" olarak saklanıyor (`TaskItem.WaitingOnUserId`, `WaitingReason`;
+`InquireTaskItemRequest(ExpectedVersion, Reason, WaitingOnUserId?)`) ve **soranın** kartında doğru gösteriliyor
+(`app.js:2104-2110` → "X bekleniyor (sebep)"). Görev soranın üzerinde `Waiting` durumunda kalıyor.
+
+Eksik olan: **sorulan kişiye giden hiçbir şey yok.** `TaskNotificationService` ve `TaskReadAccessPolicy` içinde
+`WaitingOnUserId` hiç geçmiyor (grep boş) — ne bildirim, ne gelen kutusunda bir kalem. O kişi sorulduğunu ancak
+soran söylerse öğreniyor. Yani özellik yarım: soru kaydediliyor, iletilmiyor.
+
+İstenen (ayrı iş paketi): sorulan kişiye bir iş kalemi düşsün ("X sana sordu: …"), cevapladığında görev
+beklemeden çıksın, cevap görevin geçmişine yazılsın. Bildirim yolu + yeni kalem türü + cevap akışı + kimin
+neyi okuyabileceği kuralı gerekiyor.
+Gelecek gerileme riski: orta-yüksek — yeni bir gelen kutusu kalemi türü, MOD-0024 projeksiyonuna dokunur.
+
+---
+
+### BL-440
+
+**Liste ekranları referansı kopyalıyor, kullanmıyor — 138 listede yapı tek tek elle yazılıyor**
+
+DURUM: KARAR VERİLDİ, YÜRÜYOR · SAHİP: CT (paketler prompt olarak çıkar) · BULAN: CT + sahip (Kullanıcılar modülü testi) · KAYIT: 2026-09-23 · KARAR: 2026-09-23
+
+Ölçüldü (2026-09-23, test dalı):
+
+| | |
+|---|---|
+| Liste bileşeni (`_DataTable.cshtml`) | **138** |
+| `data-dt-standard="v2"` taşıyan | 133 |
+| Bir tür iskelet markup'ı olan | 132 |
+| **Toplu seçim sütunu (`dt-checkboxes`) olan** | **26** |
+| Ortak şekilli iskelet parçasını kullanan | 6 |
+
+Altın referans (Golden Reference Slim/Compact) bugünkü kuralların hepsini taşıyor: alan ikonları, değişmez
+alan boyası, offcanvas select2, seçim sütunu, yeni iskelet parçası. **Referans doğru; ekranlar ona bakmıyor.**
+
+Kullanıcılar ekranı bunun canlı örneği: JS'i referanstan kopyalanmış (`bindBulkSelection` çağırıyor) ama
+markup'ı kopyalanmamış (seçim sütunu yok) → toplu eylem çubuğu hiç çıkmıyor. Aynı boşluktan üç bulgu daha
+çıktı: gizli sütunlar dışa aktarmada görünüyor (sütun listesi ekranda elle sabitlenmiş), yükleme göstergesi
+farklı (eski iskelet bloğu), araç çubuğu ikonlarının hizası farklı.
+
+⚠ DÜZELTME: CT ilk ölçümünde "ekranların yarısı ortak katmandan geçmiyor" dedi; yanlıştı. Kullanıcılar
+`DitenDataTable.createCrudTable` → `DtDefaults.create` zincirinden geçiyor (`diten-datatable.js:263`).
+Sorun ortak katmanın yokluğu değil, **markup ile JS'in ayrı ayrı yazılması**.
+
+**İki model, karar ekibin:**
+
+1. **Guard** (ucuz, hızlı): bir test, JS'in beklediği ile markup'ın sunduğunu karşılaştırsın — toplu çubuk
+   bekleyen ekranın seçim sütunu olsun, iskelet bekleyen ekranın parçası olsun. Bugün uymayanlar gerekçesiyle
+   listelenir; yeni ekran listeye eklenemez. **Bu bir iskele, model değil** — kozmetik sapmayı değil gerçek
+   kusuru yakalar, ama kopyalamayı ortadan kaldırmaz.
+2. **Bileşen** (doğru model, pahalı): liste bir kopyalama kaynağı değil, **kullanılan bir bileşen** olsun —
+   ekran sütunlarını ve seçeneklerini verir; kart, iskelet, araç çubuğu, seçim sütunu ve tablo kabuğu
+   bileşenden gelir. Kopya olmayınca ayrışacak bir şey de olmaz. SAP Fiori (SmartTable / List Report) ve
+   Oracle Redwood sayfa şablonları bu modeli seçmiştir; ikisi de "şu sayfaya bak ve benzet" demez.
+
+**CT'nin önerisi:** (1) şimdi, doğru biçimiyle (tutarlılık guard'ı) · (2) bir sonraki YENİ liste ekranında
+doğsun, 138 ekranlık göç programı olarak değil · eskiler modül test turlarında tek tek düşsün (Kullanıcılar'da
+bugün yapıldığı gibi).
+
+Gelecek gerileme riski: (1) düşük — yalnız test. (2) YÜKSEK ve bilinçli: ürünün bütün listelerinin şeklini
+belirler; bu yüzden CT tek başına karar vermiyor, ekip tartışması için buraya yazıldı.
+
+**KARAR (sahip, 2026-09-23, ekip sayfası: "Altın Referans Sözleşmesi"):** ikisi de — guard şimdi, bileşen ilk yeni listede.
+İki ek karar:
+1. **Veri modeli her sayfada sunucu değil, kurala göre:** module pack `data_mode: server | client` (+ istemcide `data_mode_max_rows`);
+   ayrım kümenin sınırlı olup olmadığı. Kural: `frontend-datatable-template.md` → Veri modeli; `module-pack-standard.md`.
+2. **Eski sayfalar şimdi değişmez; dokunma protokolü:** eski bir liste ekranına dokunan görev sapmaları listeler ve sahibe sorar
+   (`frontend-datatable-template.md` → Dokunma protokolü; altı ajan; Claude Code PostToolUse kancası `list_screen_touch_hook.py`).
+
+**Paketler:** 0 guard'lar + kural + kanca (CT, bitti) · 1 liste kabuğu bileşeni · 2 JS fabrikası (`createCrudTable` büyür) ·
+3 sunucu veri modu (pilot Auth/Users sorgusu) · 4 altın referanslar bileşene + kural dosyaları · 5 Kullanıcılar pilot ekran.
+Sıra zorunlu; her paket ayrı prompt, CT kabul eder. Ölçüm (paket 0): Kullanıcılar 17 sapma; Golden Slim/Compact yeni kontrollerde temiz,
+yalnız eski `personalizationClient` kontrolü kırmızı (HEAD'de de kırmızıydı, ayrı borç).
+
+**Paket 1 notları (2026-09-23, WP-UI-LIST-SHELL-01):** `_ListShell.cshtml` + `DataTableListShellViewModel` (TableId/DataMode required,
+DataMode fail-closed); iki altın `_DataTable.cshtml` kabuğu kullanıyor; render eşitliği testi önce/sonra HTML'i teste gömülü tutuyor.
+İki bilinen zayıflık, bilerek ertelendi: (a) doğrulayıcı Razor yorumlarını okuyor — altın `Index.cshtml` v2 işaretini yorumda taşıyor ve
+`is_v2` oradan geçiyor; yorum ayıklama 138 sayfanın sonucunu değiştirir → paket 4'te kural dosyalarıyla birlikte; (b) kabuk başlıkları
+`.Value` ile aldığı için HTML-encode ediyor, eski `@Localizer[...]` etmiyordu — `_BulkActionBar` ile aynı davranış, altın başlıklarda
+özel karakter yok; resx'e HTML koyan bir sayfa kabuğa geçerken bunu görecek.
+
+**Paket 2 notları (2026-09-23, WP-UI-LIST-FACTORY-01, merge e9e00106e):** `DitenDataTable.createList` (dataMode fail-closed, filters,
+savedView, quickView, form, toolbar); Golden Slim 991→246, Compact 685→163; 79 tesisat ismi fabrikada. CT'nin 6 sabotajından 4'ü
+yeşil kalmıştı — tesisat boşlukları (arama sonrası dirty, populate, isDefault, filtre kancası kapsamı) → `list-factory-wiring.test.js`.
+Canlı (DevEnablement açık): Apply/Reset/rozet/panel, Save View kaydet → yeniden yükle → otomatik uygulanıyor → sil, hızlı görünüm,
+toplu seçim, düzenleme offcanvas'ı — hepsi ölçüldü. Bilinen: `createCrudTable` 84 eski çağıran için `dataMode`'suz kalıyor (bilinçli;
+zorunluluk `createList`'te); `normalizeScalar` sayıyı `String()` yapıyor (eski sayfalar `''` yapıyordu — `1 ≡ "1"` kuralının doğru hâli).
+**CT canlı bulgusu (paket 2 kabulü):** kayıtlı görünümle açılan sayfa dirty görünüyordu (Save View düğmesi görünür, oysa
+captured == saved bayt bayt aynı): `applyState` filtreleri `applyViewToTable`'ın çiziminden SONRA atıyordu, çizimin
+tetiklediği search/order olayları dirty'yi eski (boş) filtrelerle hesaplıyordu. Düzeltildi (filtreler önce, sonda senkron);
+guard `list-factory-wiring.test.js` 3b — sayfanın lookup fetch'ini taklit eden bir await ile (onsuz hata görünmez).
+
+**Paket 3 notları (2026-09-24, WP-UI-LIST-SERVER-01, merge 650057798):** fabrika `dataMode:'server'` (düz sorgu: start/length/search/
+orderBy/orderDir/draw + filtreler anahtarıyla; zarf `{items,total,filteredTotal}` → DataTables); DevEnablement compact liste sorgusu
+(orderBy beyaz listesi 400, Regex.Escape arama, Id ile biten sort, TenantId ile sınırlı sayımlar); Altın Compact = **sunucu referansı**
+(`data_mode: server`), Slim = istemci (`client`, 200). Doğrulayıcı pack front matter'ını üçüncü kaynak olarak okuyor. Ajanın bulduğu:
+ilk istek DataTables'ın 0. sütunuyla (`orderBy=id`) gidiyordu → kayıtlı görünümün/sayfanın sırası. CT'nin 6 sabotajından 2'si yeşil
+kalmıştı (URL kodlama, orderDir büyük/küçük) → `list-factory-server-mode-wire-ct.test.js`. Canlı (14 geçici kayıt, sonra silindi):
+sayfalama 15/10+5, sıralama priority desc, arama 5/15, filtre `status=Passive` 8/15, Save View → yeniden yükle → uygulanıyor, Save gizli;
+telde `columns[` yok. Açık: liste sorgusu için Mongo indeksi yok (büyük kiracıda düşünülmeli); eski `personalizationClient` kırmızısı duruyor.
+
+**Paket 3a notları (2026-09-24, WP-AUTH-USERS-LIST-QUERY-01, merge 1296644ab):** `GET api/users` sunucu sözleşmesi (start/length/search/
+orderBy/orderDir/status/roleId/accountKind → `{items,total,filteredTotal,summary}`), parametresiz çağrı eski şekil; `IUserListReader`
+(türetilmiş durum tek aggregate ifadesi; rol adları tek $lookup; TenantId her sorguda); `UserListRules` (400 + `USERS_LIST_*`). Auth
+925/926 → 1008/1009. CT'nin 6 sabotajından 3'ü yeşil kalmıştı (yabancı rolün adı, çok kelimeli arama, yalnız roleId) → `UserListQueryTests.Ct.cs`.
+Ajanın bilinçli seçimleri: varsayılan sıra createdAt desc; length>500 → 400; eski çağrıda pageSize=0 → 20. **Paket 5'e taşınan:** sayfanın
+filtre değeri `Passive`, Auth `Inactive` bekler (eşleme); `USERS_LIST_*` kodları için Web'de 7 dilli köprü; liste sorgusu için Mongo indeksi yok.
+Ajanın bildirdiği sınır ihlali: kendi `.bak` dosyasını `rm` ile sildi — yalnız o dosya, kayda geçti.
+
+**Paket 5 notları (2026-09-24, WP-UI-USERS-LIST-01, feat a69630b92 → integration dd22b4f6f):** Kullanıcılar `_ListShell` + `createList`
+(`dataMode:'server'`) üzerinde; index.js 1162 → 435; 79 tesisat ismi yok; dokunma protokolü 17 → 1 sapma; `_Filter` `Inactive`;
+rol filtresi id; KPI'lar `data.summary`'den; #10 silme onayı 7 dil; K17/#12 bilinçli (toplu uç nokta yok, `HasSelection = false`
+beyanı doğrulayıcıda tek istisna). CT: 7 ayrı sabotaj kırmızı; vitest tek başına 24 (paralel yükte iki "gerçek DataTables" testi
+4–5 sn zaman aşımı — kırılgan, `list-factory-server-mode-real-datatables` ve `governance-users-list-server-wire`, süre artırılmalı).
+Canlı (CT): tel `start/length/orderBy=email/orderDir`, filtre `status=Inactive|Invited` (0 / 7 satır, hepsi davetli), Reset, KPI 8/1/0/7,
+hızlı görünüm, silme onayı metni + çöp ikonu, "+ Ekle" var, toplu çubuk yok, iskelet ortak. **Sahibe kararlar:** (a) Users pack'i yok —
+MOD-0018-FU9 beş ekranı kapsıyor; pack şemasına ekran başına `data_mode` (ör. `screens:` haritası) eklensin mi? (b) "İşlem" menüsündeki
+fabrika varsayılanı "İçe aktar (Yakında)" Kullanıcılar'da kalsın mı? **CT'ye kalan küçükler:** silme koruması kodları (`USER_DELETE_SELF`,
+`USER_DELETE_LAST_STEWARD`) ekranda hâlâ "Delete failed." — önceden de öyleydi, 2 anahtar × 7 dil; K16/#11 dışa aktarma görünür
+sütunlar (dt-defaults, sunucu modunda yalnız sayfa — tam dışa aktarma sunucu ucu ister). **Fabrika istekleri (paket 2.1, CT):**
+`hideQuickView`/suppress, form başarı kancası (davet diyaloğu), antiforgery yardımcısı, kayıtlı filtre eşanlamı, dışa aktarma seçenekleri.
+**Kanca:** ana checkout'un dalında yok (integration main'e girene kadar oradan açılan sohbetlerde koşmaz); kök artık düzenlenen dosyanın
+worktree'sinden (a5af7f7bb).
+
+---
+### BL-441
+
+**İçe aktarma merkezi bir modül olmalı — sayfa başına "İçe aktar" düğmesi kaldırıldı**
+
+DURUM: AÇIK — KARAR VERİLDİ (sahip, 2026-09-24) · SAHİP: CT (düğme kaldırma yapıldı; modül BL olarak bekliyor) · KAYIT: 2026-09-24
+
+**Ne vardı:** `createList` fabrikası her liste ekranının Action menüsüne "İçe aktar" kalemi koyuyordu; tıklayınca yalnız
+"Yakında" toast'ı çıkıyordu. Kullanıcılar ekranı testinde sahip fark etti: her sayfada var, hiçbirinde çalışmıyor.
+
+**Karar (sahip):** düğme hiç konmaz — ne şimdi ne "Yakında" diye. İçe aktarma ilerde tek bir merkezi modülün işi olur;
+ajanlar sayfa yaparken "içe aktarma ister misin" diye sormaz.
+
+**Neden merkezi (Blueprint + SAP + Oracle):**
+
+| | Sayfa başına düğme | Merkezi modül |
+|---|---|---|
+| SAP S/4HANA | Yok. Migration Cockpit (LTMC/LTMOM) ve Fiori "Import Data" uygulamaları: şablon indir → doldur → yükle → simülasyon → hata listesi → yükleme günlüğü | ✔ |
+| Oracle Fusion | Yok. Import Management (CX) ve FBDI (ERP): şablon (xlsm) → CSV/ZIP → UCM'e yükle → ESS işi → hata raporu | ✔ |
+| GxP (Veeva/MasterControl) | Yok. Yükleme = veri girişi olayı: kim, ne zaman, hangi dosya, hangi satır reddedildi; denetim izinde | ✔ |
+| Blueprint | İçe aktarma satırı yok — bu BL onu açıyor | — |
+
+En kolay olan (her sayfaya bir düğme) en doğru olan değil: doğrulama, eşleme, hata raporu ve denetim izi her sayfada
+ayrı ayrı yazılamaz; yazılırsa her biri farklı davranır.
+
+**Yapıldı (2026-09-24, entegrasyon dalı):** fabrikadaki `importBtn` varsayılanı silindi; `dt-defaults.js` içindeki
+opt-in `extraButtons.importBtn` yolu duruyor (çağıran sayfa yok — 0 ölçüldü) ama kural onu yasaklıyor; kural satırı
+`frontend-datatable-template.md` başlık bloğuna eklendi; guard `tests/list-factory-no-import-button-ct.test.js`
+(fabrikanın DtDefaults'a verdiği toolbar'da `importBtn` yok + kaynakta `bx-import` yok).
+
+**Modülün kapsamı (yapılınca):** varlık başına şablon (kolon sözlüğü + zorunlu alanlar), yükleme (dosya → satır
+doğrulama → önizleme → onay), hata raporu (satır/kolon/sebep), kısmi yükleme kuralı (ya hep ya hiç mi, satır satır mı —
+GxP için ya hep ya hiç), denetim izi (`IAuditableCommand`), yetki (`{module}.import` anahtarı), 7 dil. Tenant modülü.
+
+---
+
+
+### BL-442
+
+**Yorum ekleme, görevi okuyamayan kişiye de açık — uç nokta yetki anahtarına bakıyor, okuma kuralına değil**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: WP-PSS-TASK-INQUIRY-02 ajanı (rapor), CT doğruladı · KAYIT: 2026-09-24
+
+Ölçüldü: `POST api/v1/tasks/{id}/comments` yalnız `[HasPermission(TaskPermissions.Read)]` ile korunuyor;
+`AddTaskCommentHandler` `ITaskReadAccessPolicy`'yi yalnız @bahsedilen kişileri doğrulamak için kullanıyor
+(`TaskMentionValidation`), yazarın görevi okuyabilip okuyamadığını sormuyor. `platform.tasks.read` anahtarı olan herkes
+kiracıdaki her göreve (okuyamadığı dahil) yorum yazabilir; aynı kişi görevi GET ile açamaz (okuma kuralı 404 verir) ama id'yi
+bilirse yorum bırakır. BL-439 bunu büyütmedi (sorulan kişi zaten okuma kazanıyor) ama gördü.
+
+Düzeltme: handler'da `_readAccess.CanReadAsync(task, _currentUser.UserId)` → değilse 404 (okuma kuralının verdiği cevapla
+aynı; 403 görevin varlığını sızdırır). PUT/DELETE yorum yolları da aynı soruyu sormalı. Test: okuyamayan yazar → 404,
+hiçbir yorum yazılmadı; sorulan kişi (BL-439) → yazabilir. Gerileme riski: düşük — ek kontrol, mevcut yazarlar (holder,
+talep sahibi, izleyici, yönetici) zaten okuma kuralından geçiyor.
+
+---
+
+### BL-443
+
+**Diyalog içindeki kişi seçicide seçeneğe fareyle tıklayınca diyalog kapanıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: WCN "Bilgi bekle" diyaloğunda `#wcnWaitingOn` select2 seçicisi (`DitenDialog.bindDialogSelect2`); açılır listeden
+"Ayşe Korkmaz"a fareyle tıklanınca SweetAlert diyaloğu seçim yapılmadan kapandı (iki kez). Klavye (Aşağı + Enter) çalıştı.
+Olası neden: select2 açılır listesi popup'ın dışına çiziliyor ve SweetAlert `allowOutsideClick` bunu dışarı tıklama sayıyor;
+ya da `dropdownParent` popup değil. "Başkasına ata" aynı yardımcıyı kullanır — onda da beklenir. Test: gerçek DOM'da
+select2 seçeneğine mousedown+click → diyalog açık kalmalı, değer seçilmeli.
+
+---
+
+### BL-444
+
+**Bekleyen görevin detay sayfasında aynı bekleme cümlesi dört kutuda tekrar ediyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: görev Waiting'e alınınca WCN detayında üst üste dört kutu: "Şu an duraklatıldı: Ayşe Korkmaz bekleniyor — …",
+"Bu görev duraklatıldı: Ayşe Korkmaz bekleniyor — …", "Bu görev başkasından gelecek bilgiyi bekliyor.", "Ayşe Korkmaz
+bekleniyor — …" (resx: `…duraklatıldı: {0}` ×2, `NoticeWaitingExternal`, `{0} bekleniyor — {1}`). Bilgi aynı, dört kaynak
+(durum şeridi rehberi + BL-437/439 rehberi + bekleme notu + bekleme çipi). Tek cümle + çip yeter; hangisinin kalacağı UX kararı.
+
+---
+
+### BL-445
+
+**Görev bildirim e-postaları Türkçe kiracıda İngilizce gidiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: `platform.tasks.inquiryasked` ve `inquiryanswered` şablonları 7 dilde tohumlu; dispatch günlüğü `Locale="en"`;
+Mailpit'teki iki e-posta İngilizce ("A task is waiting for your answer", "Your question was answered"); arayüz Türkçe.
+Alıcının dili çözülmüyor (kullanıcı tercihi / kiracı varsayılanı) ya da varsayılan en. Karar: alıcı dili = kullanıcı tercihi →
+kiracı varsayılanı → en; ölçüm: Türkçe tercihli alıcıya tr şablon.
+
+---
+
+### BL-332
+
+**KYS Tasarımcısı'nda üç switch her kayıtta sessizce false'a düşüyor**
+
+DURUM: AÇIK · SAHİP: DOKÜMAN YÖNETİMİ GELİŞTİRİCİSİ (bu modül bizim değil — sahip kararı 2026-09-02: dokunulmadı, yalnız kayda geçirildi) · BULAN: CT · KAYIT: 2026-09-02 (eski `docs/product-backlog.md`'den taşındı 2026-09-24)
+
+Modül: Doküman Yönetimi · Sayfa: KYS Temel Çizgileri → Tasarımcı (`/DocumentManagement/QmsBaselines/Designer`) ·
+Konum: `frontend/Diten.Web/Views/DocumentManagement/QmsBaselines/Designer.cshtml:158-174`.
+
+Ölçüm (2026-09-02): MVC aynı adlı iki alandan ilkini bağlar. `allowsManualChildren` (158→159) checkbox önce, hidden sonra → doğru;
+`templatesAllowed` (163→164), `isMandatory` (168→169), `isProtected` (173→174) hidden ÖNCE → hep false. Daha kötüsü: panel mevcut
+değeri yükleyip switch'i AÇIK gösteriyor (`designer.js:435-438`), kullanıcı başka alanı değiştirip kaydedince üçü false yazılıyor;
+`isProtected` bir koruma bayrağı, sessizce temizleniyor, uyarı yok.
+
+Düzeltme küçük: üç `<input type="hidden">`'ı kendi checkbox'larının ALTINA almak (158-159 deseni). Aynı desen daha önce dört formda
+düzeltilmişti; artıklar: CRM "Birincil kişi" switch'i, Dev Sandbox (Golden Slim/Compact) switch'leri. İlgili: canlı doğrulama
+boşluğu — bu sınıf hatayı geçen testler görmez, yalnız işaretleme sırası ya da canlı ekran gösterir.
+
+---
+
+### BL-446
+
+**CI phase1 kapısı main'de 2026-08-10'dan beri kırmızı — runner'ın dili boş, görünüm testleri düşüyor**
+
+DURUM: KAPANDI — entegrasyon dalında düzeltildi (2026-09-24, PR #122) · SAHİP: CT · BULAN: PR #122 CI'ı · KAYIT: 2026-09-24
+
+Ölçüldü: `phase1-gates` main'de son beş koşuda kırmızı (452a6be, f53e29ec, 7ea32d45, f1681da2, 5500530a); her seferinde aynı altı test:
+`ActiveSwitchBindingTests` × `Views/Tasks/FieldDefinitions/_Form.cshtml` (3 test × 2 anahtar), hata
+`MissingManifestResourceException: No manifests exist for the current culture` — görünümün 16. satırı
+`StringLocalizer.GetAllStrings(includeParentCultures: true)` (2026-08-10, be7918ed) çağırıyor; ubuntu runner'da `LANG` boş →
+süreç kültürü invariant → nötr resx olmadığı için kaynak kümesi yok. Geliştirici makinesinde tr/en olduğu için yeşil.
+Üretimde RequestLocalization her isteğe desteklenen 7 dilden birini verir; test yardımcısı (`RenderAsync`) boru hattını atlayıp
+süreç kültürünü miras alıyordu. Düzeltme: yardımcı üretimin garantisini sabitliyor (`CurrentUICulture = en`, try/finally).
+Sabotaj: yardımcıya invariant sabitlenince aynı 6 kırmızı; düzeltmeyle 12/12 ve Web 229/229.
+
+Aynı deseni kullanan diğer görünümler (`_DitenShortcuts`, WCN `_L10n`, RoleAssignments `_IndexL10n`, `_WorkflowL10n`) CI'da
+render edilmiyor; edilirse aynı sabitleme gerekir. Not: `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` bunu taklit ETMEZ
+(`new CultureInfo("en")` orada CultureNotFound verir); doğru taklit süreç içinde `CultureInfo.InvariantCulture` sabitlemek.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

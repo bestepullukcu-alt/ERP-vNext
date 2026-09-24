@@ -221,6 +221,22 @@ public static class TaskReasonCodes
     /// <summary>Entering Waiting without saying what is being waited for.</summary>
     public const string WaitingReasonRequired = "TASK_WAITING_REASON_REQUIRED";
 
+    /// <summary>BL-439 — answering the question a waiting task was parked on, with nothing to say.</summary>
+    public const string InquiryAnswerRequired = "TASK_INQUIRY_ANSWER_REQUIRED";
+
+    /// <summary>BL-439 — the answer is longer than a task's own description may be.</summary>
+    public const string InquiryAnswerTooLong = "TASK_INQUIRY_ANSWER_TOO_LONG";
+
+    /// <summary>
+    /// BL-439 — only the person the waiting task is asking may answer it, and only while it is still asking.
+    ///
+    /// <para>A 403 of its OWN, not the generic permission refusal: the caller holds every key the endpoint asks
+    /// for, and what they lack is the relationship — they are not the one being asked (or no longer are: the
+    /// question was answered or withdrawn meanwhile). Told "no access", they would go looking for a permission
+    /// that could never help.</para>
+    /// </summary>
+    public const string InquiryNotAddressee = "TASK_INQUIRY_NOT_ADDRESSEE";
+
     /// <summary>Handing work back or on without saying why. Both are statements to another person.</summary>
     public const string HandoverReasonRequired = "TASK_HANDOVER_REASON_REQUIRED";
 
@@ -645,6 +661,19 @@ public static class TaskNotificationEvents
     /// without double-sending.
     /// </summary>
     public const string Mentioned = "platform.tasks.mentioned";
+
+    /// <summary>
+    /// BL-439 — somebody parked their task waiting on YOU. Sent to the person named in
+    /// <c>WaitingOnUserId</c>, and only to them: the question sits in their Task Center inbox as its own item, and
+    /// this is what tells them it is there.
+    /// </summary>
+    public const string InquiryAsked = "platform.tasks.inquiryasked";
+
+    /// <summary>
+    /// BL-439 — the person a waiting task was asked about answered, and the task is back where it was. Sent to
+    /// the task's holder — the one who asked, and whose work was blocked.
+    /// </summary>
+    public const string InquiryAnswered = "platform.tasks.inquiryanswered";
 }
 
 /// <summary>Contract limits, mirrored from fixture-contract.js LIMITS. The contract is the authority.</summary>
@@ -845,6 +874,16 @@ public sealed record PlanTaskItemRequest(int ExpectedVersion, DateTimeOffset Pla
 /// caller — and the client that has not learned about it yet — compiles and behaves exactly as before.</para>
 /// </summary>
 public sealed record InquireTaskItemRequest(int ExpectedVersion, string Reason, Guid? WaitingOnUserId = null);
+
+/// <summary>
+/// BL-439 — the ANSWER to the question a waiting task was parked on, given by the person it was asked of
+/// (<see cref="Diten.Platform.Domain.Entities.Tasks.TaskItem.WaitingOnUserId"/>).
+///
+/// <para><paramref name="Answer"/> is required and is TEXT the addressee typed — it lands in the task's history
+/// (<c>TaskTransitionKind.InquiryAnswered</c>) exactly as the question did, never as a resource key. At most
+/// <see cref="TaskFieldLimits.MaxDescriptionLength"/> characters, the same ceiling a task's own description has.</para>
+/// </summary>
+public sealed record AnswerInquiryRequest(int ExpectedVersion, string Answer);
 
 /// <summary>
 /// Hand assigned work BACK to whoever asked for it. <paramref name="Reason"/> is required: a refusal the

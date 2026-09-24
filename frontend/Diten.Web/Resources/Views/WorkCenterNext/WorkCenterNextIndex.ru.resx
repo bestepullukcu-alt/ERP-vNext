@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Обнаружено расхождение 84 750 лир с главной книгой.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Встреча по корректировке бюджета за 3 квартал</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 июля 2026, 14:00–15:00 · Teams · Организатор: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>От {name}: задача передана вам на согласование</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Задача передана вам на согласование</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Согласование: {objectType} {objectId}</value>
   </data>
@@ -2364,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Выберите файл перед завершением этой задачи.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Добавить подтверждение</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>Файлов подтверждения: {0}</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Вопрос</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Вопрос · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Ответить</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Записывает ваш ответ в историю задачи и возвращает её в прежнее состояние</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Заданный вопрос</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Ваш ответ</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Напишите запрошенную информацию…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Напишите ответ перед отправкой.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} ответил(а)</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} спрашивает вас: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>По этой задаче ждут вашего ответа.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} ответил(а): {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Ответ на вопрос получен</value>
+  </data>
 </root>

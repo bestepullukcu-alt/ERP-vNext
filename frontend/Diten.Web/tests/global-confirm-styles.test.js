@@ -161,3 +161,27 @@ describe("the input stays where the library can find it", () => {
     expect(VIEW_CODE).not.toContain("wcn-date-input");
   });
 });
+
+describe("a dialog with one button", () => {
+  /*
+   * OWNER REPORT 2026-09-21, measured live on the invite-link dialog before the rule below existed:
+   *   title x=95 · description x=95 · field x=95 · "Kapat" x=111
+   *
+   * The 16px is the theme's own button spacing — `.swal2-actions button + button { margin-inline-start: 1rem }`
+   * in `sweetalert2.css` — meeting a dialog it was never written for. SweetAlert does not REMOVE the buttons a
+   * dialog declined; `.swal2-cancel` and `.swal2-deny` stay in the DOM carrying `style="display: none"`, so the
+   * only visible button is still a sibling and still pays for a gap with nothing beside it.
+   */
+  it("starts on the same edge as the title and the field", () => {
+    const body = ruleBody('.swal2-container .swal2-modal.swal2-popup .swal2-actions button[style*="display: none"] + button');
+    expect(body, "the lone-button rule is gone — a single-button dialog opens 16px in").toBeTruthy();
+    expect(body).toContain("margin-inline-start: 0");
+  });
+
+  it("does not disturb a dialog that really has two", () => {
+    // The gap rule itself is untouched; only the case where the earlier sibling is HIDDEN is corrected.
+    const css = CSS.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css, "the correction was widened to every button pair").not.toMatch(
+      /\.swal2-actions button \+ button \{\s*margin-inline-start: 0/);
+  });
+});

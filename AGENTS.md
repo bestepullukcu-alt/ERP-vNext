@@ -4,7 +4,7 @@ Bu dosya, Claude Code, Codex ve diğer AI ajanlarının repo genelinde uyması g
 
 ⚠ **Claude Code bu dosyayı otomatik yüklemez** — yalnız `CLAUDE.md`'yi yükler. 2026-09-08'de
 canlı oturumda ölçüldü: bağlamdaki tek proje dosyası `MEMORY.md`'ydi; bu dosya da,
-`.antigravity/` altındaki 39 kural / 20 ajan / 18 akış da yoktu.
+`.antigravity/` altındaki 41 kural / 20 ajan / 18 akış da yoktu.
 
 Bu yüzden repo kökünde **kısa bir `CLAUDE.md`** durur ve tek işi okuyucuyu buraya
 göndermektir. Sembolik bağ denendi ve **geri alındı**: ekipte Windows kullanan var, ve
@@ -147,8 +147,12 @@ dotnet test tests/architecture/TenantArchitecture.ArchitectureTests
 
 ### DataTable Kontrat Doğrulama (Frontend)
 ```bash
-python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact
+python3 .antigravity/scripts/verify_datatable_page.py . --area {AreaName} --module {ModuleName} --reference slim|compact [--data-mode server|client] [--format gaps]
 ```
+
+> Eski bir liste ekranına dokunan görev **dokunma protokolüne** tabidir (`frontend-datatable-template.md` → Dokunma protokolü):
+> sapmalar `--format gaps` ile listelenir, sahibe sorulur, sessizce ne düzeltilir ne atlanır. Claude Code'da `.claude/settings.json`
+> PostToolUse kancası (`list_screen_touch_hook.py`) bunu düzenlemeden hemen sonra otomatik koşturur.
 
 ---
 
@@ -186,7 +190,7 @@ Alan sayımı yalnızca create/edit formunda kullanıcının doldurduğu modül 
 
 ## 6.1 Kural Haritası — hangi işte hangi kural
 
-`.antigravity/rules/` altında 39 kural var ve **hiçbiri otomatik yüklenmez.**
+`.antigravity/rules/` altında 41 kural var ve **hiçbiri otomatik yüklenmez.**
 `.antigravity/rules/GEMINI.md` yalnız Antigravity'de `always_on`'dur; Claude Code
 ve Codex o klasörü hiç okumaz. Bu dosya (`AGENTS.md` = `CLAUDE.md`) her üç araçta
 da yüklenen tek dosyadır, bu yüzden harita burada durur.
@@ -217,7 +221,8 @@ create/edit → `frontend-form-template`
 
 ### Yetki, izin, lookup dokunuyorsan
 `permission-key-standard` izin anahtarı · `business-module-enforcement-standard`
-modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
+modül yetki zorlaması · `data-scope-enforcement` hangi satırları görür (SEC-002) ·
+`platform-lookups-reference-data` referans veri ·
 `platform-global-search-registry` Ctrl+K kaydı
 
 ### Yeni modül / pack açıyorsan
@@ -226,7 +231,8 @@ modül yetki zorlaması · `platform-lookups-reference-data` referans veri ·
 
 ### Ortam, çalıştırma, kayıt
 `dev-runbook` yerel ortam · `configuration-safety` ayar ve bağımlılık ·
-`logging-observability` log · `git-backup-policy` yedek ve isimlendirme
+`logging-observability` log · `git-backup-policy` yedek ve isimlendirme ·
+`status-reporting-and-evidence` çok modüllü durum raporu ve kanıt (REP-001)
 
 ### Mimari kararlar
 `erp-architecture` · `diten_standards`

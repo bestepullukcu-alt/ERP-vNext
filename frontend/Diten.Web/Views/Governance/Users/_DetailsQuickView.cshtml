@@ -73,7 +73,7 @@
                                        /Users/api/{id}/account-kind, never to a service port. *@
                                     @if (Perms.Has("auth.users.account-kind.manage"))
                                     {
-                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto" aria-label="@Localizer["AccountKind"]">
+                                        <select id="oc-accountkind-select" class="form-select form-select-sm w-auto select2-offcanvas" aria-label="@Localizer["AccountKind"]">
                                             <option value="Unknown">@Localizer["AccountKindUnknown"]</option>
                                             <option value="Human">@Localizer["AccountKindHuman"]</option>
                                             <option value="Service">@Localizer["AccountKindService"]</option>
@@ -92,6 +92,9 @@
                                 <div class="mt-1">
                                     <span id="oc-status" class="badge bg-label-secondary">-</span>
                                 </div>
+                                @* WP-AUTH-INVITED-LIFECYCLE-01 — why neither "Activate" nor "Reset password" is offered for
+                                   an invited account, said where the reader is looking. Shown by index.js for Invited only. *@
+                                <div id="oc-invite-pending-hint" class="form-text d-none">@Localizer["InvitationPendingHint"]</div>
                             </div>
                         </div>
                     </div>

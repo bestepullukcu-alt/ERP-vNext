@@ -329,6 +329,354 @@ def check_form_required_contract(root: Path, form_path: Path, form_text: str) ->
     return checks
 
 
+# ── The list shell (BL-440 package 1, 2026-09-23) ─────────────────────────────────────────────────────────
+# A _DataTable.cshtml that calls <partial name="~/Views/Shared/Components/DataTable/_ListShell.cshtml" model="…">
+# no longer carries the table markup in its own text: the v2 marker, the placeholder, the selection column and the
+# data mode are rendered by the shell FROM the page's model setup. The markers are therefore resolved from two
+# production sources — the page's `new DataTableListShellViewModel { … }` block and the shell file itself — and
+# every marker is emitted only when BOTH sides carry it. A marker missing from the shell file, or `HasSelection =
+# false` on the page, leaves the effective markup without it, so the existing checks go red exactly as they would
+# on a hand-written page. Nothing here trusts a comment or a copy.
+
+LIST_SHELL_CALL = re.compile(r"<partial\s+name\s*=\s*\"[^\"]*_ListShell(?:\.cshtml)?\"\s+model\s*=\s*\"(\w+)\"")
+LIST_SHELL_RELATIVE = Path("frontend") / "Diten.Web" / "Views" / "Shared" / "Components" / "DataTable" / "_ListShell.cshtml"
+TABLE_SKELETON_RELATIVE = Path("frontend") / "Diten.Web" / "Views" / "Shared" / "_TableSkeleton.cshtml"
+
+
+def strip_razor_comments(text: str) -> str:
+    return re.sub(r"@\*[\s\S]*?\*@", "", text)
+
+
+def declares_no_selection(data_table_html: str) -> bool:
+    """True only when the page calls _ListShell AND writes `HasSelection = false` literally (BL-440 package 5).
+
+    A list with no bulk endpoint (Users: AuthService has none) has nothing a selection could act on, and a checkbox
+    that selects into nothing is the defect the shell exists to prevent. The exemption from the bulk surface is
+    therefore a DECLARATION, never an absence: a page that omits HasSelection (the C# default is also false) or
+    draws its own table stays under the full bulk contract. The coherence check still fails such a page if its JS
+    binds bulk selection anyway."""
+    page = strip_razor_comments(data_table_html)
+    return bool(LIST_SHELL_CALL.search(page)) and bool(re.search(r"\bHasSelection\s*=\s*false\b", page))
+
+
+def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) -> Tuple[str, List[Check]]:
+    """Return the markup the page EFFECTIVELY renders, plus a red check per marker the shell file itself lacks.
+
+    Unchanged (and no checks) when the page does not call the shell. The shell checks are emitted only when they
+    fail: the golden pages' report keeps its size, and a shell that lost a marker is named directly instead of
+    surfacing as a page defect — the Index of a golden page quotes the markers in a Razor comment, which the page
+    checks (is_v2, the v2 table id) still read, so without these the loss would be invisible there."""
+    page = strip_razor_comments(data_table_html)
+    if not LIST_SHELL_CALL.search(page):
+        return data_table_html, []
+
+    shell_path = root / LIST_SHELL_RELATIVE
+    shell = strip_razor_comments(read_text(shell_path)) if shell_path.exists() else ""
+    skeleton_path = root / TABLE_SKELETON_RELATIVE
+    skeleton = strip_razor_comments(read_text(skeleton_path)) if skeleton_path.exists() else ""
+
+    def setting(pattern: str) -> Optional[str]:
+        m = re.search(pattern, page)
+        return m.group(1) if m else None
+
+    table_id = setting(r"\bTableId\s*=\s*\"([^\"]*)\"")
+    data_mode = setting(r"\bDataMode\s*=\s*\"([^\"]*)\"")
+    slug = setting(r"\bSlug\s*=\s*\"([^\"]*)\"")
+    has_selection = setting(r"\bHasSelection\s*=\s*(true|false)\b") == "true"
+
+    shell_has_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", shell))
+    shell_has_skeleton = bool(re.search(r"<partial\s+name\s*=\s*\"_TableSkeleton\"\s*/>", shell))
+    shell_has_select_all = "dt-checkboxes-select-all" in shell
+    shell_has_data_mode = "data-dt-data-mode" in shell
+    skeleton_has_id = bool(re.search(r"id\s*=\s*\"skeleton-loader\"", skeleton))
+
+    missing = [name for name, ok in (
+        ("data-dt-standard=\"v2\"", shell_has_v2),
+        ("<partial name=\"_TableSkeleton\" />", shell_has_skeleton),
+        ("dt-checkboxes-select-all", shell_has_select_all),
+        ("data-dt-data-mode", shell_has_data_mode),
+    ) if not ok]
+    print(f"[shell] {data_table_path.name} calls _ListShell — markers resolved from the model setup "
+          f"(TableId={table_id!r}, DataMode={data_mode!r}, HasSelection={str(has_selection).lower()}) and {shell_path}")
+    if missing:
+        print(f"[shell] WARNING: the shell file itself lacks {', '.join(missing)} — reported below as a red 'List shell file carries …' check")
+
+    parts: List[str] = []
+    if shell_has_skeleton:
+        parts.append('<partial name="_TableSkeleton" />')
+        if skeleton_has_id:
+            parts.append('<div id="skeleton-loader" class="dt-skeleton" data-table-skeleton></div>')
+    attrs: List[str] = []
+    if table_id:
+        attrs.append(f'id="{table_id}"')
+    if shell_has_v2:
+        attrs.append('data-dt-standard="v2"')
+    if shell_has_data_mode and data_mode in ("server", "client"):
+        attrs.append(f'data-dt-data-mode="{data_mode}"')
+    attrs.append(f'class="datatables-{slug} table border-top"' if slug else 'class="table border-top"')
+    parts.append('<div class="card-datatable table-responsive"><table ' + " ".join(attrs) + '><thead><tr><th></th>')
+    if has_selection and shell_has_select_all:
+        parts.append('<th class="cell-fit"><input type="checkbox" class="dt-checkboxes-select-all form-check-input"></th>')
+    parts.append('</tr></thead></table></div>')
+    shell_checks = [Check(f"List shell file carries {name}", False, f"{shell_path} no longer renders {name} — every list that calls the shell lost it at once")
+                    for name in missing]
+    return data_table_html + "\n" + "".join(parts), shell_checks
+
+
+# ── The list factory (BL-440 package 2, 2026-09-23) ───────────────────────────────────────────────────────
+# A page whose index.js calls `DitenDataTable.createList({ dataMode: 'client', … })` no longer carries the Save View
+# machine, the inline filter bar, the DataTables constructor or the bulk wiring in its own text: those live in
+# diten-datatable.js. Exactly like resolve_list_shell, the markers the page checks look for are resolved from TWO
+# production sources — the page's factory call and the factory file — and each marker is emitted only when the factory
+# demonstrably carries the mechanic behind it. A mechanic missing from the factory is reported as its own red check;
+# nothing is taken from a comment or a copy.
+
+LIST_FACTORY_CALL = re.compile(r"DitenDataTable\.createList\(")
+LIST_FACTORY_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "diten-datatable.js"
+
+
+def strip_js_comments(text: str) -> str:
+    text = re.sub(r"/\*[\s\S]*?\*/", "", text)
+    return re.sub(r"(^|[^:'\"`])//.*$", r"\1", text, flags=re.MULTILINE)
+
+
+def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mode: Optional[str]) -> Tuple[str, List[Check]]:
+    """Return the JS the page EFFECTIVELY runs (page + resolved factory markers), plus red checks for what the factory lacks."""
+    page = strip_js_comments(js_text)
+    if not LIST_FACTORY_CALL.search(page):
+        return js_text, []
+
+    factory_path = root / LIST_FACTORY_RELATIVE
+    factory = strip_js_comments(read_text(factory_path)) if factory_path.exists() else ""
+    checks: List[Check] = []
+
+    mode = re.search(r"\bdataMode\s*:\s*['\"]([^'\"]*)['\"]", page)
+    js_mode = mode.group(1) if mode else None
+    if js_mode is None:
+        checks.append(Check("List factory call declares dataMode", False, f"createList(...) without dataMode: the factory throws at runtime (file: {index_js})"))
+    elif page_data_mode and js_mode != page_data_mode:
+        checks.append(Check("List factory dataMode agrees with the page marker", False, f"index.js says dataMode '{js_mode}', the <table> says '{page_data_mode}' (file: {index_js})"))
+
+    apply_block = re.search(r"applyBtn \|\| 'btnFilterApply'\)\?\.addEventListener\('click', function \(\) \{([\s\S]*?)\n\s*\}\);", factory)
+    reset_block = re.search(r"resetBtn \|\| 'btnFilterReset'\)\?\.addEventListener\('click', function \(e\) \{([\s\S]*?)\n\s*\}\);", factory)
+    baseline_fn = re.search(r"function baseline\(\) \{[\s\S]*?filters: emptyFilters\(\), search: '', colVis: defaultColVis\(\), columnOrder: identityOrder\(\), order: baseOrder", factory)
+    config_block = re.search(r"var config = Object\.assign\(\{\}, pageConfig, \{([\s\S]*?)initComplete:", factory)
+    # The factory binds bulk selection with whatever `bulk` the page hands it; a page that hands none (a list with no
+    # selection column) binds nothing, so the selection tokens are resolved only for a page that passes `bulk:`.
+    # Resolving them unconditionally made every no-selection list read as "JS binds bulk, markup has no column".
+    page_binds_bulk = bool(re.search(r"\bbulk\s*:", page))
+    bulk_tokens = ("bindBulkSelection(tableEl, dt, bulkOptions); reloadWithToast(dt, tableEl, key); clearSelection(tableEl, bulkOptions);"
+                   if page_binds_bulk else "reloadWithToast(dt, tableEl, key);")
+
+    mechanics = [
+        # (name, verified-in-factory, tokens the page checks look for)
+        ("Save View button rendered (dt-save-filter-btn)",
+         "className: 'btn btn-label-primary d-none dt-save-filter-btn'" in factory,
+         "var saveBtn = document.querySelector('.dt-save-filter-btn');"),
+        ("Apply binding: #btnFilterApply → applied state, dirty recomputed, panel closed",
+         bool(apply_block) and "syncDirty(api)" in apply_block.group(1) and "collapseOf(collapseId)?.hide()" in apply_block.group(1),
+         "document.getElementById('btnFilterApply').addEventListener('click', function () { setSaveFilterVisible(isDirtyComparedToDefault(api)); });"),
+        ("Reset binding: #btnFilterReset → preventDefault, factory baseline (never the saved view), dirty recomputed",
+         bool(reset_block) and "e.preventDefault()" in reset_block.group(1) and "applyState(api, state.baseline())" in reset_block.group(1)
+         and "store.saved" not in reset_block.group(1) and "syncDirty(api)" in reset_block.group(1),
+         "document.getElementById('btnFilterReset').addEventListener('click', function (e) { e.preventDefault(); applySavedTableState(api, getResetBaselineState()); setSaveFilterVisible(isDirtyComparedToDefault(api)); });"),
+        ("Reset baseline = empty filters + empty search + default colVis + identity columnOrder + baseOrder",
+         bool(baseline_fn),
+         "var getResetBaselineState = function () { return { filters: emptyFilters(), search: '', colVis: defaultColVis(), columnOrder: Array.from({ length: n }, function (_, i) { return i; }), order: baseOrder }; };"),
+        ("Save View payload has a non-empty default name",
+         bool(re.search(r"viewName: \(record\?\.viewName \|\| record\?\.ViewName \|\| L\(\)\.SaveView \|\| 'Default'\)\.trim\(\)", factory)),
+         "var saveDefaultView = function (view) { var payload = { viewName: (savedName || L.SaveView || 'Default').trim() }; };"),
+        ("No filter-control change toggles Save View",
+         "change.saveFilter" not in factory and not re.search(r"change[^\n]*\n[^\n]*setSaveVisible", factory),
+         ""),
+        ("stateSave:false written explicitly",
+         bool(config_block) and bool(re.search(r"stateSave:\s*false", config_block.group(1))),
+         "stateSave: false"),
+        ("DataTables v2 constructor + DtDefaults.create + DtDefaults.exportButtons",
+         bool(re.search(r"new DataTable\(options\.tableEl, window\.DtDefaults\.create\(config\)\)", factory)) and "window.DtDefaults.exportButtons(" in factory,
+         "var dt = new DataTable(tableEl, window.DtDefaults.create(config)); var buttons = window.DtDefaults.exportButtons(addNewText, addNewAttr, extraButtons, options);"),
+        ("Row-action delegation (closest on the trigger, inside the table or the responsive modal)",
+         "var trigger = event.target.closest(selector);" in factory and "closest('.modal.dtr-bs-modal')" in factory and "key: 'quickView'" in page,
+         "document.addEventListener('click', function (e) { var trigger = e.target.closest('.js-quick-view'); });"),
+        ("Bulk selection + reload-with-toast + clear-selection wiring",
+         "bindBulkSelection(options.tableEl, dt, options.bulk || {});" in factory and "reloadWithToast(dt, tableEl, messageKey, interpolationValue, options.bulk || {});" in factory and "function clearSelection(tableEl, options)" in factory,
+         bulk_tokens),
+        ("Shared layer: createList builds through createCrudTable",
+         "dt = createCrudTable({" in factory,
+         "DitenDataTable.createCrudTable({ tableEl: tableEl });"),
+        ("Inline filter host mounted with px-3 (frontend-ui-ux 24–25 select2 contract)",
+         "host.classList.add('px-3');" in factory and "dropdownParent: $(document.body)" in factory and "dropdownCssClass: 'dt-inline-filter-dropdown'" in factory
+         and "width: 'element'" in factory and "selectionCssClass: 'form-select form-select-sm'" in factory,
+         "host.classList.add('px-3'); $s.select2({ dropdownParent: $(document.body), dropdownCssClass: 'dt-inline-filter-dropdown', selectionCssClass: 'form-select form-select-sm', width: 'element' });"),
+    ]
+
+    # ── Server mode (BL-440 package 3, WP-UI-LIST-SERVER-01) ──────────────────────────────────────────────────
+    # A page calling createList({ dataMode: 'server' }) does not write `serverSide: true` or its request mapping; the
+    # factory does. So "serverSide is on" resolves to the factory's server branch, and "no client-side filter hook"
+    # resolves to the factory's hook being CLIENT-ONLY: an unguarded hook is resolved INTO the page's effective text,
+    # where the coherence check below counts it red — exactly what the page would run.
+    if js_mode == "server":
+        server_branch = bool(re.search(r"if \(isServer\) \{\s*config\.serverSide = true;", factory)) \
+            and "return toServerQuery(dtRequest, fields, appliedFilters);" in factory \
+            and "toDataTablesResponse(json, drawOfRequest(" in factory
+        hook_calls = len(re.findall(r"ext\.search\.push\(", factory))
+        hook_client_only = hook_calls == 0 or (hook_calls == 1 and bool(re.search(r"if \(!isServer && [^\n]*\n[\s\S]{0,400}?ext\.search\.push\(", factory)))
+        mechanics.append((
+            "Server mode branch: serverSide + processing, the flat request (toServerQuery) and the response translation (toDataTablesResponse)",
+            server_branch,
+            "serverSide: true, processing: true, ajax: { data: toServerQuery, dataFilter: toDataTablesResponse }"))
+        if not hook_client_only:
+            checks.append(Check("List factory keeps its filter hook client-only", False,
+                                f"{factory_path} registers ext.search.push without the `!isServer` guard — every server-mode list filters rows in the browser too"))
+            resolved_hook = "$.fn.dataTable.ext.search.push(function () { /* resolved: the factory's unguarded hook */ });"
+        else:
+            resolved_hook = ""
+        page_matchers = re.findall(r"\bmatches\s*:", page)
+        if page_matchers:
+            checks.append(Check("Server mode: the page's filter fields carry no row matcher (matches:)", False,
+                                f"{len(page_matchers)} `matches:` in {index_js} — in server mode the service filters; a matcher is dead code that reads like a filter"))
+    else:
+        resolved_hook = ""
+
+    resolved: List[str] = []
+    if resolved_hook:
+        resolved.append(resolved_hook)
+    verified = 0
+    for name, ok, tokens in mechanics:
+        if ok:
+            verified += 1
+            if tokens:
+                resolved.append(tokens)
+        else:
+            checks.append(Check(f"List factory carries: {name}", False, f"{factory_path} no longer carries it — every list built by createList lost it at once"))
+
+    print(f"[factory] {index_js.name} calls DitenDataTable.createList (dataMode={js_mode!r}) — {verified}/{len(mechanics)} mechanics verified in {factory_path}")
+    return js_text + "\n/* resolved from the list factory */\n" + "\n".join(resolved) + "\n", checks
+
+
+def find_screen_data_mode(front_matter: str, module: str) -> Optional[str]:
+    """`screens:` entries of a multi-screen pack — `- module: X` followed by its `data_mode`. None when the module is not listed."""
+    block = re.search(r"^screens:\s*\n((?:[ \t]+.*\n?)+)", front_matter, flags=re.MULTILINE)
+    if not block:
+        return None
+    for entry in re.split(r"^\s*-\s+", block.group(1), flags=re.MULTILINE):
+        name = re.search(r"^module:\s*(.+?)\s*$", entry, flags=re.MULTILINE)
+        if not name or re.sub(r"\s+", "", name.group(1)).lower() != module.lower():
+            continue
+        mode = re.search(r"^\s*data_mode:\s*(server|client)\s*$", entry, flags=re.MULTILINE)
+        return mode.group(1) if mode else None
+    return None
+
+
+def find_pack_data_mode(root: Path, module: str) -> Tuple[Optional[str], Optional[Path]]:
+    """The module pack's `data_mode` — the pack whose front-matter `name`, spaces removed, is the module folder name.
+
+    BL-440 package 3: the declaration lives in THREE places (pack `data_mode`, <table data-dt-data-mode>, the JS
+    `createList({ dataMode })`) and all three must agree. Before this, the pack's value reached the verifier only when a
+    caller remembered `--data-mode`; a pack that said `server` over a page that said `client` stayed green.
+    Returns (None, None) when no single pack names this module or it declares no data_mode.
+    """
+    matches: List[Tuple[Optional[str], Path]] = []
+    for pack in sorted((root / "execution" / "domains").glob("*/module-packs/*.md")):
+        text = read_text(pack)
+        front = re.match(r"---\n([\s\S]*?)\n---", text)
+        if not front:
+            continue
+        name = re.search(r"^name:\s*(.+?)\s*$", front.group(1), flags=re.MULTILINE)
+        if name and re.sub(r"\s+", "", name.group(1)).lower() == module.lower():
+            mode = re.search(r"^data_mode:\s*(server|client)\s*$", front.group(1), flags=re.MULTILINE)
+            matches.append((mode.group(1) if mode else None, pack))
+            continue
+        # A pack that covers SEVERAL screens (owner decision 2026-09-24): `screens:` lists them by Views/{Area}/{Module}
+        # folder name, each with its own data_mode. The pack-level `data_mode` cannot say one thing for five screens.
+        screen_mode = find_screen_data_mode(front.group(1), module)
+        if screen_mode is not None:
+            matches.append((screen_mode, pack))
+    if len(matches) != 1:
+        return None, None
+    return matches[0]
+
+
+def check_list_screen_coherence(
+    data_table_path: Path,
+    data_table_html: str,
+    index_path: Path,
+    index_html: str,
+    js_path: Path,
+    js_text: str,
+    data_mode_arg: Optional[str],
+    is_v2: bool,
+) -> List[Check]:
+    """The four coherence rules a copied page silently breaks (BL-440, 2026-09-23).
+
+    1. data_mode — declared (module pack `data_mode`, page marker `data-dt-data-mode`) and honoured:
+       server → DataTables serverSide, no client-side filter hook; client → no serverSide.
+    2. No hard-coded page cap (`pageSize=N`) in the page's JS — in EITHER mode. A capped client-side list
+       shows N rows and calls it the total (Users: pageSize=1000 → the 1001st user never appears, no error).
+    3. Selection column ↔ bulk JS ↔ bulk bar: JS that binds bulk selection needs the checkbox column, the
+       column needs the bar, the bar needs the JS. Any one without the others is a dead feature.
+    4. The shaped placeholder partial on v2 pages (the old hidden five-bar block is the un-migrated look).
+    Plus: the list goes through the shared layer (DitenDataTable.createCrudTable or DtDefaults.create).
+    """
+    out: List[Check] = []
+    js_no_comments = re.sub(r"/\*[\s\S]*?\*/", "", js_text)
+    js_no_comments = re.sub(r"(^|[^:])//.*$", r"\1", js_no_comments, flags=re.MULTILINE)
+
+    marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
+    page_mode = marker.group(1) if marker else None
+    if data_mode_arg and page_mode and data_mode_arg != page_mode:
+        out.append(Check("Data mode: page marker agrees with the module pack",
+                         False, f"page says {page_mode}, pack says {data_mode_arg} (file: {data_table_path})"))
+    effective_mode = data_mode_arg or page_mode
+    if effective_mode is None:
+        out.append(Check("Data mode declared (data_mode in the module pack, data-dt-data-mode on the <table>)",
+                         False, f"Undeclared: is this list server-paged or a bounded client-side set? (file: {data_table_path})"))
+    else:
+        out.append(Check(f"Data mode declared: {effective_mode}", True))
+        server_side = bool(re.search(r"\bserverSide\s*:\s*true\b", js_no_comments))
+        client_filter_hook = bool(re.search(r"ext\.search\.push\(", js_no_comments))
+        if effective_mode == "server":
+            out.append(Check("Server mode: DataTables serverSide is on", server_side,
+                             "" if server_side else f"data_mode=server but index.js has no `serverSide: true` (file: {js_path})"))
+            out.append(Check("Server mode: no client-side filter hook", not client_filter_hook,
+                             "" if not client_filter_hook else f"data_mode=server but filters run in the browser via ext.search.push (file: {js_path})"))
+        else:
+            out.append(Check("Client mode: DataTables serverSide is off", not server_side,
+                             "" if not server_side else f"data_mode=client but index.js sets `serverSide: true` (file: {js_path})"))
+
+    cap = re.search(r"pageSize=(\d+)", js_no_comments)
+    out.append(Check("No hard-coded page cap in the page's JS", cap is None,
+                     "" if cap is None else f"`pageSize={cap.group(1)}` — rows past {cap.group(1)} are silently cut, the pager calls {cap.group(1)} the total (file: {js_path})"))
+
+    js_binds_bulk = bool(re.search(r"bindBulkSelection\(|\bbulk\s*:", js_no_comments))
+    markup_has_selection = "dt-checkboxes-select-all" in data_table_html
+    index_has_bar = "_BulkActionBar" in index_html
+    if js_binds_bulk and not markup_has_selection:
+        out.append(Check("Selection column ↔ bulk JS", False,
+                         f"index.js binds bulk selection but _DataTable.cshtml has no selection column (dt-checkboxes-select-all) — the bulk bar can never appear (file: {data_table_path})"))
+    elif markup_has_selection and not js_binds_bulk:
+        out.append(Check("Selection column ↔ bulk JS", False,
+                         f"_DataTable.cshtml has a selection column but index.js never binds it (bindBulkSelection / createCrudTable bulk) (file: {js_path})"))
+    else:
+        out.append(Check("Selection column ↔ bulk JS", True))
+    if markup_has_selection and not index_has_bar:
+        out.append(Check("Selection column ↔ bulk bar", False,
+                         f"a selection column without <partial _BulkActionBar> in Index.cshtml selects into nothing (file: {index_path})"))
+    else:
+        out.append(Check("Selection column ↔ bulk bar", True))
+
+    if is_v2:
+        shaped = bool(re.search(r"<partial\s+name\s*=\s*\"_TableSkeleton\"\s*/>", data_table_html))
+        old_block = "backbone-skeleton" in data_table_html
+        out.append(Check("Shaped placeholder: shared _TableSkeleton partial", shaped and not old_block,
+                         "" if (shaped and not old_block) else f"the list still draws the old hidden five-bar block instead of <partial name=\"_TableSkeleton\" /> (file: {data_table_path})"))
+
+    shared_layer = bool(re.search(r"DitenDataTable\.createCrudTable\(|DtDefaults\.create\(", js_no_comments))
+    out.append(Check("List goes through the shared layer (createCrudTable / DtDefaults.create)", shared_layer,
+                     "" if shared_layer else f"index.js builds its DataTable without the shared layer (file: {js_path})"))
+    return out
+
+
 def print_report(checks: List[Check]) -> None:
     failed = [c for c in checks if not c.ok]
     passed = [c for c in checks if c.ok]
@@ -351,12 +699,13 @@ def print_report(checks: List[Check]) -> None:
         print("\nResult: PASS")
 
 
-def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
+def compile_required_l10n_keys(is_v2: bool, has_bulk_surface: bool = True) -> List[Tuple[str, Pattern[str]]]:
     """
     Required L10n bridge keys for DataTable pages.
 
     v1 (legacy): minimal contract.
     v2 (data-dt-standard="v2"): toolbar/filter vocabulary keys are mandatory.
+    has_bulk_surface=False (a declared no-selection list, see declares_no_selection): no bulk vocabulary.
     """
     keys = [
         # Core shared status/actions
@@ -391,6 +740,9 @@ def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
             ]
         )
 
+    if not has_bulk_surface:
+        keys = [k for k in keys if k not in ("BulkDelete", "BulkDeleteConfirm")]
+
     # Deduplicate while keeping order
     seen = set()
     ordered = []
@@ -413,6 +765,18 @@ def main() -> int:
         choices=["slim", "compact"],
         default=None,
         help="Golden reference variant: slim (<=8 form fields, create/edit offcanvas) or compact (>8 form fields, full pages)",
+    )
+    parser.add_argument(
+        "--data-mode",
+        choices=["server", "client"],
+        default=None,
+        help="Module pack data_mode. Defaults to the page's own <table data-dt-data-mode=...> marker; both present and different is a FAIL.",
+    )
+    parser.add_argument(
+        "--format",
+        choices=["report", "gaps"],
+        default="report",
+        help="report = full pass/fail list; gaps = only the failing checks, one per line (what the touch protocol quotes).",
     )
     parser.add_argument(
         "--api-profile",
@@ -479,7 +843,33 @@ def main() -> int:
     dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
     data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
+    no_selection = declares_no_selection(data_table_html)
+    data_table_html, list_shell_checks = resolve_list_shell(root, data_table_partial, data_table_html)
+    checks.extend(list_shell_checks)
+    page_marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
+    js_text, list_factory_checks = resolve_list_factory(root, index_js, js_text, page_marker.group(1) if page_marker else None)
+    checks.extend(list_factory_checks)
+
+    # The pack is the third declaration of the data mode (BL-440 package 3). `--data-mode` still wins when given, and
+    # a flag that contradicts the pack is itself a failure — the flag is a copy of the pack, not a second opinion.
+    pack_data_mode, pack_path = find_pack_data_mode(root, module)
+    if pack_data_mode:
+        print(f"[pack] {pack_path.relative_to(root)} declares data_mode: {pack_data_mode}")
+        if args.data_mode and args.data_mode != pack_data_mode:
+            checks.append(Check("Data mode: --data-mode agrees with the module pack", False,
+                                f"--data-mode {args.data_mode}, pack says {pack_data_mode} (file: {pack_path})"))
+    effective_pack_mode = args.data_mode or pack_data_mode
+    js_mode_match = re.search(r"\bdataMode\s*:\s*['\"](server|client)['\"]", strip_js_comments(read_text(index_js)))
+    if effective_pack_mode and js_mode_match and js_mode_match.group(1) != effective_pack_mode:
+        checks.append(Check("Data mode: index.js dataMode agrees with the module pack", False,
+                            f"index.js says dataMode '{js_mode_match.group(1)}', the pack says {effective_pack_mode} (file: {index_js})"))
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
+
+    # ── Package 0 of the golden-reference plan (owner approval 2026-09-23, BL-440) ──────────────────────────
+    # Four things "look at the reference and imitate it" could not guarantee, measured on the Users screen:
+    # the data model, a hard-coded page cap, markup and JS expecting different things, and the placeholder.
+    checks.extend(check_list_screen_coherence(
+        data_table_partial, data_table_html, index_cshtml, index_html, index_js, js_text, effective_pack_mode, is_v2))
 
     checks.append(
         check_contains(
@@ -844,7 +1234,7 @@ def main() -> int:
             "Missing Object.assign merge into window.L10n in index.l10n.js",
         )
     )
-    for key, pat in compile_required_l10n_keys(is_v2):
+    for key, pat in compile_required_l10n_keys(is_v2, has_bulk_surface=not no_selection):
         checks.append(
             check_contains(
                 index_l10n_partial,
@@ -1015,7 +1405,22 @@ def main() -> int:
     # Bulk action / selection contract (v2 modules)
     # Quality gate (quality-gate-datatable.md) requires bulk surface; verifier enforces it
     # so a green static run cannot pass while bulk selection is silently broken.
-    if is_v2:
+    #
+    # ⚠ ONE EXEMPTION, AND IT IS DECLARED (BL-440 package 5): a list whose _DataTable calls the shell with
+    # `HasSelection = false` has no bulk surface to verify — Users, where AuthService has no bulk endpoint. The
+    # coherence checks above still hold it: JS that binds bulk selection with no selection column is red.
+    if is_v2 and no_selection:
+        checks.append(Check("Bulk surface: not applicable — _DataTable declares HasSelection = false (no selection column, no bulk endpoint)", True))
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"reloadWithToast\s*\(|reloadWithSuccessToast\s*\("),
+                "index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)",
+                "Missing reload-with-toast lifecycle wiring",
+            )
+        )
+    elif is_v2:
         checks.append(
             check_contains(
                 data_table_partial if data_table_partial.exists() else index_cshtml,
@@ -1083,6 +1488,11 @@ def main() -> int:
             )
         )
 
+    if args.format == "gaps":
+        gaps = [c for c in checks if not c.ok]
+        for i, c in enumerate(gaps, 1):
+            print(f"{i}) {c.name}" + (f" — {c.details}" if c.details else ""))
+        return 0 if not gaps else 1
     print_report(checks)
     return 1 if any(not c.ok for c in checks) else 0
 
