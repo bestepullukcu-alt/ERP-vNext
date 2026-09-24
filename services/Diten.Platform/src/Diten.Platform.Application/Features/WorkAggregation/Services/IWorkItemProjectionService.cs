@@ -16,5 +16,8 @@ public interface IWorkItemProjectionService
         WorkflowInstance? instance,
         WorkItemActor actor,
         string providerCode,
-        string providerContractVersion);
+        string providerContractVersion,
+        // BL-437 — the source owner's answer (title, requester, address). Optional: without it the item keeps the
+        // generic fallback title and carries no requester, link or reason — exactly today's shape.
+        ApprovalSourceContext? sourceContext = null);
 }

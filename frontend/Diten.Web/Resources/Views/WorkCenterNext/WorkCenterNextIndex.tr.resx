@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Beyanname ile genel muhasebe arasında 84.750 TL fark bulundu.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 bütçe revizyonu değerlendirme toplantısı</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 Temmuz 2026, 14:00–15:00 · Teams · Düzenleyen: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} bu görevi onayına gönderdi</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Bu görev onayına gönderildi</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Onay: {objectType} {objectId}</value>
   </data>

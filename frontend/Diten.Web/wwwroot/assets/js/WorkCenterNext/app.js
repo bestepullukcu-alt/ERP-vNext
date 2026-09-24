@@ -1660,6 +1660,21 @@
         const summary = item.itemType === 'meetingInvite'
             ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : item.summary;
+        /*
+         * BL-437 — WHY THIS IS HERE, AND WHERE IT COMES FROM. An approval row used to read "Onay: task-review
+         * 3f2c…" and nothing else; the owner could not tell which task had come back to them, or why. The
+         * provider now sends the sentence ("Ayşe bu görevi onayına gönderdi") and the task's own address, and the
+         * row says both where the summary would sit — an approval carries no summary of its own.
+         *
+         * An <a>, not a button: it NAVIGATES, exactly like the row's edit link, and the row's click handler
+         * already leaves anchors alone. No href → no link (the rule the source card learned the hard way).
+         */
+        const arrivalHref = item.arrivalReasonText ? sourceHref(item) : '';
+        const summaryHtml = item.arrivalReasonText
+            ? `${esc(item.arrivalReasonText)}${arrivalHref
+                ? ` · <a href="${esc(arrivalHref)}" data-wcn-arrival-link="${esc(item.id)}">${esc(t('DetailOpenSource'))}</a>`
+                : ''}`
+            : esc(summary);
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
             <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
             <div class="wcn-row-body">
@@ -1669,7 +1684,7 @@
                     ${onBehalfBadge}
                     ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
-                ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
+                ${compact ? '' : `<p class="wcn-row-summary">${summaryHtml}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
             <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>

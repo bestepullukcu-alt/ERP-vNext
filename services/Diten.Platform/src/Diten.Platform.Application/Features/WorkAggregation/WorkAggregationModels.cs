@@ -673,7 +673,22 @@ public sealed record WorkItemProjectionDto(
     /// provider that says nothing about it compiles and serializes unchanged.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<string>? SecondaryActionCodes = null);
+    IReadOnlyList<string>? SecondaryActionCodes = null,
+    /// <summary>
+    /// BL-437 — WHY this item reached the reader, in one translated sentence ("Ayşe bu görevi onayına gönderdi").
+    ///
+    /// <para><b>Not <see cref="WaitingContext"/>.</b> That container answers why work is PARKED and the contract
+    /// ties it to <c>Waiting</c> both ways; an approval that has just arrived is <c>Pending</c>, and borrowing the
+    /// waiting container for it would be refused by the executable contract. <b>Not <see cref="Summary"/></b>
+    /// either: that is what the work IS, in the requester's own words — a sentence the system composes does not
+    /// belong in a field that means "what the person typed".</para>
+    ///
+    /// <para>A RESOURCE label with a named argument, so every language gets the whole sentence rather than
+    /// fragments joined in JavaScript. Optional and omitted when null: a provider that cannot say why stays
+    /// silent rather than inventing a reason.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? ArrivalReason = null);
 
 /// <summary>
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/

@@ -329,6 +329,10 @@ public static class DependencyInjection
             Features.WorkAggregation.Services.WorkItemProjectionService>();
         services.AddScoped<Features.WorkAggregation.Providers.IWorkItemProvider,
             Features.WorkAggregation.Providers.WorkflowApprovalWorkItemProvider>();
+        // BL-437 — source owners that say what an approval is about (title, requester, link). Collected by the
+        // approval provider as an IEnumerable, so another module adds its own line here and nothing else.
+        services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
+            Features.Tasks.Providers.TaskApprovalSourceResolver>();
         /*
          * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
          * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"

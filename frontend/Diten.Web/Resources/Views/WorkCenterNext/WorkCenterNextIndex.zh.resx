@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>申报表与总账之间发现 84,750 里拉差异。</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>第三季度预算修订评审会议</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} 已将此任务提交给您审批</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>此任务已提交给您审批</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>审批：{objectType} {objectId}</value>
   </data>

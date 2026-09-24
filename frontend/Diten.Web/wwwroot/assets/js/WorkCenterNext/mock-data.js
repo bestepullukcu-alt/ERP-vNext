@@ -428,6 +428,9 @@
         // the wire and rendered as nothing at all.
         item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
         item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
+        // BL-437 — WHY this reached the reader ("Ayşe bu görevi onayına gönderdi"). A third question beside the
+        // two above, with its own field: an approval that has just arrived is Pending, not Waiting.
+        item.arrivalReasonText = resolveLabel(item.arrivalReason) || null;
         /*
          * WC-1 — the personal NOTES, a list now and stored on the server. `personal.notes` is what the projection
          * emits (id · text · createdAt), and the array is normalised here so every reader downstream can map over
