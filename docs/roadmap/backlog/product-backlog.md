@@ -6378,6 +6378,26 @@ kiracı varsayılanı → en; ölçüm: Türkçe tercihli alıcıya tr şablon.
 
 ---
 
+### BL-332
+
+**KYS Tasarımcısı'nda üç switch her kayıtta sessizce false'a düşüyor**
+
+DURUM: AÇIK · SAHİP: DOKÜMAN YÖNETİMİ GELİŞTİRİCİSİ (bu modül bizim değil — sahip kararı 2026-09-02: dokunulmadı, yalnız kayda geçirildi) · BULAN: CT · KAYIT: 2026-09-02 (eski `docs/product-backlog.md`'den taşındı 2026-09-24)
+
+Modül: Doküman Yönetimi · Sayfa: KYS Temel Çizgileri → Tasarımcı (`/DocumentManagement/QmsBaselines/Designer`) ·
+Konum: `frontend/Diten.Web/Views/DocumentManagement/QmsBaselines/Designer.cshtml:158-174`.
+
+Ölçüm (2026-09-02): MVC aynı adlı iki alandan ilkini bağlar. `allowsManualChildren` (158→159) checkbox önce, hidden sonra → doğru;
+`templatesAllowed` (163→164), `isMandatory` (168→169), `isProtected` (173→174) hidden ÖNCE → hep false. Daha kötüsü: panel mevcut
+değeri yükleyip switch'i AÇIK gösteriyor (`designer.js:435-438`), kullanıcı başka alanı değiştirip kaydedince üçü false yazılıyor;
+`isProtected` bir koruma bayrağı, sessizce temizleniyor, uyarı yok.
+
+Düzeltme küçük: üç `<input type="hidden">`'ı kendi checkbox'larının ALTINA almak (158-159 deseni). Aynı desen daha önce dört formda
+düzeltilmişti; artıklar: CRM "Birincil kişi" switch'i, Dev Sandbox (Golden Slim/Compact) switch'leri. İlgili: canlı doğrulama
+boşluğu — bu sınıf hatayı geçen testler görmez, yalnız işaretleme sırası ya da canlı ekran gösterir.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
