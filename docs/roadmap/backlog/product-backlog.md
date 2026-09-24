@@ -6419,6 +6419,57 @@ render edilmiyor; edilirse aynı sabitleme gerekir. Not: `DOTNET_SYSTEM_GLOBALIZ
 
 ---
 
+### BL-447
+
+**Toplantı dilimlerinin sırası — takvim (S3b) tutanak (S6) ve takipten (S7) önce mi?**
+
+DURUM: AÇIK — KARAR BEKLİYOR (sahip 2026-09-24: "sonra konuşuruz, acil değil") · SAHİP: CT · KAYIT: 2026-09-24
+
+MOD-0357 kalan dilimler: S6 tutanak → S7 takip → S3b takvim → S9 inceleme kapısı → S11 tekrarlama → S10 canlı geçiş.
+Sahip takvimi öne almak istiyor (Görev Merkezi + Toplantılar ortak bileşen). Takvim S6/S7'ye bağımlı değil (kabul edilen +
+bekleyen davetler zaten projeksiyonda; reddedilenler gizli). Karar: (a) S3b önce, S6/S7 sonra — takvim erken görünür, tutanak
+gecikir; (b) sıra korunur — ISO 9001 §9.3.2 (önceki toplantının açık aksiyonları sonraki gündemde) S7 ile kapanır, takvim bekler.
+CT önerisi: (a), çünkü takvim iki motor dilimini (plan bloğu) tetikliyor ve Kanban/WCN ile aynı dosyalara dokunuyor; S6/S7 toplantı
+tarafında ayrı ilerler. Karar takvim konuşmasında verilecek.
+
+---
+
+### BL-448
+
+**Başlattıklarım'da görevin kimde olduğu görünmüyor — her satır "talep eden" çipini çiziyor**
+
+DURUM: KAPANDI — `fix/wc-outbox-assignee` (2026-09-24; canlı doğrulama sahibin girişinden sonra) · SAHİP: CT · BULAN: sahip (kontrol turu) · KAYIT: 2026-09-24
+
+Ölçüldü: liste satırının kişi çipi her zaman `item.requester` (app.js `chip('requester', …)`); atanan yalnız detay sayfasında
+(`DetailAssignee`). Sahibin başlattığı ve başkasına verdiği işlerde çip "Ben"/kendi adı → "Ali'ye verdiğim hangisi" sorusu
+cevapsız. Düzeltme: satır, okuyanın başlattığı ve ADI BİLİNEN başka birinin tuttuğu işte tutan kişiyi çizer (ikon
+`bx-user-check`, tooltip `DetailAssignee` = "Atanan", 7 dilde var); gelen kutusu, kendine açılan iş, soru ve onay kalemleri
+aynen kalır. Guard `tests/wcn-outbox-assignee-chip-ct.test.js` (3): sabotaj (eski davranış) ilk testi kırmızı yapar.
+
+**İkinci yarı (sahip, aynı gün): "filtreden de seçemiyorum".** Filtre panelinde yalnız Başlattıklarım sekmesinde "Atanan" seçicisi
+(çoklu; seçenekler sekmede gerçekten var olan tutan kişiler, yer tutucu/etiket `DetailAssignee`, yeni metin yok); arama kutusu
+artık tutan kişinin adıyla da buluyor; sıfırlama iki yolda da ekseni temizliyor. Guard +3 (seçici yalnız Başlattıklarım'da ve
+tutanları listeler · seçince yalnız o kişinin işi kalır, temizleyince hepsi döner · arama adla bulur); üç sabotaj (süzgeç kaldırıldı ·
+arama atananı görmüyor · seçici her sekmede) ayrı ayrı kırmızı. Canlı (2026-09-24, admin): S10B-Planla Testi Ayşe'ye atandı →
+Başlattıklarım satırında "Ayşe Korkmaz" çipi (tooltip Atanan), filtrede "Atanan" seçicisi tek seçenekle Ayşe.
+
+---
+
+### BL-449
+
+**Talep sahibi başkasının tuttuğu görevde "Planla" görüyor — kural mı, kusur mu?**
+
+DURUM: AÇIK — KARAR BEKLİYOR (sahip sordu 2026-09-24) · SAHİP: CT · KAYIT: 2026-09-24
+
+Ölçüldü (admin, Başlattıklarım, Ayşe'nin tuttuğu S10B-Planla Testi): eylemler `reassign` (birincil), `plan`, `cancel`,
+`scheduleReviewMeeting`; satır menüsünde "Planla" görünüyor. Bu, 2026-09-11 kural incelemesinde (BL-361) yazılan kuralın sonucu:
+"planla = tutan VEYA talep sahibi". Yani bugün kusur değil, karar. Ancak takvim kararlarıyla çelişir: planlama kişisel zaman bloğu
+olacak ("kendi planladığım işte sunucu sert engeller"), talep sahibinin başkasının gününe blok koyması anlamsız. SAP/Oracle'da da
+iş planı (ne zaman yapılacağı) işi yapanın, talep sahibinin elindeki alan son tarihtir. CT önerisi: `plan` yalnız tutan kişide;
+talep sahibi beklentiyi kaynak son tarihle ifade eder. Karar gelince BL-361 kural tablosu ve projeksiyon güncellenir (küçük iş).
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

@@ -158,6 +158,7 @@
         modeFilter: 'all',
         moduleFilter: [],
         slaFilter: [],           // multi-select SLA state (empty = all) — replaces headings
+        assigneeFilter: [],      // BL-448 — Başlattıklarım: who holds it (display names; empty = all)
         pinnedFilter: false,     // show only pinned
         typeFilter: new Set(),   // multi-select type chips (empty = all)
         signalFilter: new Set(), // multi-select signal chips (empty = all)
@@ -848,6 +849,7 @@
         if (state.modeFilter !== 'all' && item.assignmentMode !== state.modeFilter) { return false; }
         if (state.slaFilter.length && !state.slaFilter.includes(item.slaState)) { return false; }
         if (state.pinnedFilter && !item.pinned) { return false; }
+        if (state.assigneeFilter.length && !state.assigneeFilter.includes(item.assignee)) { return false; }
         if (state.tab === 'havuz' && state.group !== 'all') {
             // The unnamed bucket matches items with NO queue name, which no plain string comparison can express.
             const matches = state.group === GROUP_UNNAMED ? !item.group : item.group === state.group;
@@ -857,7 +859,7 @@
         const q = foldForSearch(state.search.trim());   // ignore leading/trailing space
         if (q) {
             const hay = foldForSearch(
-                item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester);
+                item.title + ' ' + item.summary + ' ' + item.sourceModule + ' ' + item.sourceId + ' ' + item.requester + ' ' + (item.assignee || ''));
             if (!hay.includes(q)) { return false; }
         }
         return true;
@@ -893,6 +895,14 @@
         if (a.escalated && !b.escalated) return -1;
         if (!a.escalated && b.escalated) return 1;
         return SLA_ORDER.indexOf(a.slaState) - SLA_ORDER.indexOf(b.slaState);
+    };
+
+    const assigneeOptions = () => {
+        const names = [];
+        tabItems().forEach((item) => {
+            if (item.assigneeNameKnown && item.assignee && names.indexOf(item.assignee) < 0) { names.push(item.assignee); }
+        });
+        return names.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
     };
 
     const moduleOptions = () => {
@@ -1359,7 +1369,8 @@
             + (state.priorityFilter !== 'all' ? 1 : 0)
             + (state.modeFilter !== 'all' ? 1 : 0)
             + (state.slaFilter.length ? 1 : 0)
-            + (state.pinnedFilter ? 1 : 0);
+            + (state.pinnedFilter ? 1 : 0)
+            + (state.assigneeFilter.length ? 1 : 0);
     };
 
     const toggleTableFilter = () => {
@@ -1465,6 +1476,7 @@
         else if (which === 'worktype') { state.typeFilter = new Set(Array.isArray(value) ? value : (value && value !== 'all' ? [value] : [])); }
         else if (which === 'sla') { state.slaFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
         else if (which === 'pinned') { state.pinnedFilter = !!value; }
+        else if (which === 'assignee') { state.assigneeFilter = Array.isArray(value) ? value.slice() : (value && value !== 'all' ? [value] : []); }
         state.listPage = 0;
     };
 
@@ -1491,6 +1503,14 @@
         const hideMode = state.tab === 'inbox' || state.tab === 'islerim';
         const slaSel = state.slaFilter.slice();
         const slaOpts = SLA_ORDER.map((k) => `<option value="${k}"${slaSel.includes(k) ? ' selected' : ''}>${esc(t(SLA_GROUP_KEY[k]))}</option>`).join('');
+        /*
+         * BL-448 — WHO HOLDS IT, on Başlattıklarım only. The owner asked "Ali'ye verdiklerim hangileri" and had no
+         * way to ask the list. Options are the holders actually present in the tab (nothing to pick from an empty
+         * list), by display name, which is also what the row chip shows. Elsewhere the axis is meaningless: in
+         * İşlerim the holder is always the reader, in Havuz nobody holds anything yet.
+         */
+        const assigneeOpts = state.tab === 'baslattiklarim' ? assigneeOptions().map((name) =>
+            `<option value="${esc(name)}"${state.assigneeFilter.includes(name) ? ' selected' : ''}>${esc(name)}</option>`).join('') : null;
 
         return `<div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3" id="wcnFilterPanel">
             ${hideWorktype ? '' : `<div class="filter-chip">
@@ -1513,6 +1533,9 @@
                     <option value=""></option>
                     ${['direct', 'approval', 'groupQueue', 'offered'].map((m) => `<option value="${m}"${draft.mode === m ? ' selected' : ''}>${esc(t(MODE_KEY[m]))}</option>`).join('')}
                 </select>
+            </div>`}
+            ${assigneeOpts === null ? '' : `<div class="filter-chip">
+                <select class="form-select form-select-sm select2 wcn-select" multiple="multiple" data-wcn-filter="assignee" data-placeholder="${esc(t('DetailAssignee'))}" aria-label="${esc(t('DetailAssignee'))}">${assigneeOpts}</select>
             </div>`}
             ${state.tab === 'inbox' ? '' : `<label class="filter-chip d-inline-flex align-items-center gap-2 mb-0">
                 <input type="checkbox" class="form-check-input mt-0" data-wcn-filter="pinned"${state.pinnedFilter ? ' checked' : ''} aria-label="${esc(t('FilterPinned'))}">
@@ -1632,8 +1655,25 @@
         blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
         isSnoozed(item) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
-        item.requester ? chip('requester', 'bx-user', item.requester) : ''
+        personChip(item)
     ].join('');
+
+    /*
+     * WHO the row names. On work the reader RAISED and handed to somebody else (Başlattıklarım), the one fact
+     * the row must carry is who has it now — the requester chip would only say "Ben". Measured live 2026-09-24
+     * (owner): "Ali'ye görev atadım, listede hangisi Ali'de belli değil" — every row read the same. So a task
+     * the reader raised, held by a NAMED somebody else, shows the holder (title: Atanan); every other row keeps
+     * the requester chip exactly as before (inbox work, self-assigned work, questions, approvals).
+     *
+     * `raisedByViewer` / `viewerRole` / `assigneeNameKnown` are set by toPresentation BEFORE assignee/requester
+     * are flattened to strings (mock-data.js) — the person objects are gone by the time this runs.
+     */
+    const personChip = (item) => {
+        const heldByNamedOther = item.raisedByViewer && item.viewerRole !== 'Owner'
+            && item.assigneeNameKnown && item.assignee;
+        if (heldByNamedOther) { return chip('requester', 'bx-user-check', item.assignee, t('DetailAssignee')); }
+        return item.requester ? chip('requester', 'bx-user', item.requester) : '';
+    };
 
     const rowHtml = (item, opts) => {
         const compact = opts && opts.compact;
@@ -10342,7 +10382,7 @@
             return;
         }
         if (event.target.closest('[data-wcn-filter-reset]')) {
-            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all'; state.assigneeFilter = [];
             state.typeFilter.clear(); state.signalFilter.clear(); state.search = '';
             state.sortKey = 'sla'; state.sortDir = 'asc';
             state.tableColumnVisibility = [true, true, true, true, true, true, true, true];
@@ -10774,7 +10814,7 @@
         }
 
         if (event.target.closest('[data-wcn-clear-filters]')) {
-            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all';
+            state.moduleFilter = []; state.priorityFilter = 'all'; state.modeFilter = 'all'; state.assigneeFilter = [];
             state.typeFilter.clear(); state.signalFilter.clear(); state.search = ''; render(); return;
         }
 
