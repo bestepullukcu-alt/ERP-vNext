@@ -139,7 +139,9 @@ if ($SkipSdk) { Skip "SDK (-SkipSdk)" }
 else {
     $exe = Join-Path $env:ProgramFiles "dotnet\dotnet.exe"
     $sdks = if (Test-Path $exe) { & $exe --list-sdks 2>$null } else { @() }
-    if ($sdks -match '^8\.') { Skip ".NET 8 SDK kurulu" }
+    # 8.0.3xx oncesi derleyici, Split([',', ' '], ...) gibi collection expression cagrilarinda CS0121 verir (repo bunu kullanir).
+    $okSdk = $sdks | Where-Object { $_ -match '^8\.0\.(\d+)' -and [int]$Matches[1] -ge 300 }
+    if ($okSdk) { Skip (".NET 8 SDK yeterli: " + (($okSdk | Select-Object -First 1) -split ' ')[0]) }
     else {
         $f = Get-File $DotnetSdkUrl "dotnet-sdk-8-win-x64.exe"
         Invoke-Installer $f @("/install", "/quiet", "/norestart")
