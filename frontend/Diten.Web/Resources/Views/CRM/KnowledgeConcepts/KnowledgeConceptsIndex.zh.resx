@@ -204,4 +204,8 @@
   <data name="Steps" xml:space="preserve"><value>步骤</value></data>
   <data name="AddStep" xml:space="preserve"><value>新增步骤</value></data>
   <data name="Details" xml:space="preserve"><value>详情</value></data>
+  <data name="Spine" xml:space="preserve"><value>主干</value></data>
+  <data name="BranchCount" xml:space="preserve"><value>分支</value></data>
+  <data name="StatusVersion" xml:space="preserve"><value>状态 / 版本</value></data>
+  <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} 已发布</value></data>
 </root>

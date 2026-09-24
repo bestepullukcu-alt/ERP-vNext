@@ -200,14 +200,20 @@
         },
         'concept-chain-templates': {
             tableId: 'dt-concept-chain-templates', hostId: 'templatesFilterHost', collapseId: 'templatesFilterCollapse',
-            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplates',
+            // WP-CT-FE-1: new column layout → new pageKey, so a view saved against the old indexes can never hide or
+            // reorder the wrong columns (colVis is index-keyed).
+            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplatesV2',
             idField: 'conceptChainTemplateId', nameField: 'chainName',
             createText: () => L.CreateTemplate, editText: () => L.EditTemplate,
             archiveText: () => L.ArchiveTemplate, archiveConfirm: () => L.ArchiveTemplateConfirm,
             emptyText: () => L.TemplatesEmptyState,
             // No canvasId: the Chain Template create/edit is the Golden Compact page (SCMM-10-UI-refine), not an
             // offcanvas — this tab keeps only the list + read-only quick view and navigates to that page.
-            totalColumns: 13, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], order: [[11, 'desc']],
+            // WP-CT-FE-1 (mockup v2 Ekran 1): 1 Subject · 2 Name · 3 Code · 4 Spine · 5 Branches · 6 Moderator ·
+            // 7 ForWhom · 8 Status+version; 9–13 (length / effective window / archived / updated) stay reachable via
+            // colVis but are hidden in the factory state.
+            totalColumns: 15, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], order: [[13, 'desc']],
+            hiddenColumns: [9, 10, 11, 12, 13],
             archivedId: 'filterTemplatesArchived',
             filterFields: {
                 subjectId: { id: 'filterTemplatesSubjectId', multi: true, field: 'subjectId', options: () => subjectOptions },
@@ -396,7 +402,11 @@
         SPECS[kind].managedColumns.forEach(ci => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { /* stale index */ } });
         return r;
     };
-    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => { a[ci] = true; return a; }, {});
+    // A spec may keep detail columns hidden in its factory state (still toggleable through colVis).
+    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => {
+        a[ci] = !(SPECS[kind].hiddenColumns || []).includes(ci);
+        return a;
+    }, {});
     const captureColOrder = (kind, api) => {
         try {
             const o = api?.colReorder?.order?.();
@@ -426,8 +436,8 @@
         columnOrder: Array.isArray(v?.columnOrder) ? v.columnOrder : naturalOrder(kind),
         order: Array.isArray(v?.order) ? v.order : SPECS[kind].order
     });
-    // Reset is the FACTORY state (empty filters, no search, all managed columns visible, natural column order,
-    // the default sort) — deliberately not "back to the saved view".
+    // Reset is the FACTORY state (empty filters, no search, the managed columns' default visibility, natural column
+    // order, the default sort) — deliberately not "back to the saved view".
     const resetBaseline = kind => ({
         filters: emptyFilters(kind), search: '', colVis: defaultColVis(kind),
         columnOrder: naturalOrder(kind), order: SPECS[kind].order
@@ -529,16 +539,67 @@
     const conformanceBadge = v => v
         ? `<span class="badge bg-label-success">${esc(L.Conforming || 'Conforming')}</span>`
         : `<span class="badge bg-label-warning" title="${esc(L.NonConformingNote || '')}">${esc(L.NonConforming || 'Non-conforming')}</span>`;
-    const sequenceCell = (ids, row) => {
+    // ─── WP-CT-FE-1: enriched Chain Template list cells ──────────────────────
+    // Every reference resolves to a NAME or falls back to "—" — a raw id never reaches the cell.
+    const dash = '<span class="text-muted">—</span>';
+    const subjectCell = id => subjectMap[id] ? `<span class="text-muted">${esc(subjectMap[id])}</span>` : dash;
+    // Spine = the ordered TYPE names, joined with arrows. An unresolved type shows "—" in its slot.
+    const spineCell = ids => {
         const list = Array.isArray(ids) ? ids : [];
-        if (!list.length) return '<span class="text-muted">—</span>';
-        // SCMM-10 (③): a multi-branch template shows a branch-count badge before the spine (no extra column).
-        const branchCount = Array.isArray(row?.branches) ? row.branches.length : 0;
-        const branchBadge = branchCount > 1
-            ? `<span class="badge bg-label-info me-2"><i class="bx bx-git-branch me-1"></i>${branchCount} ${esc(L.BranchCountLabel || '')}</span>`
-            : '';
-        return `<span>${branchBadge}${list.map(id => esc(labelType(id))).join(' <i class="bx bx-chevron-right"></i> ')}</span>`;
+        if (!list.length) return dash;
+        return `<span>${list.map(id => typeNameMap[id] ? esc(typeNameMap[id]) : '—').join(' <i class="bx bx-right-arrow-alt text-muted"></i> ')}</span>`;
     };
+    // The branch count is its own column now (was a badge inside the sequence cell). A legacy flat template reads
+    // back as one branch (read-time migration), so this is ≥ 1 for any saved template.
+    const branchCountOf = row => Array.isArray(row?.branches) ? row.branches.length : 0;
+    const branchCell = row => `<span class="badge bg-label-info"><i class="bx bx-git-branch me-1"></i>${branchCountOf(row)}</span>`;
+    const moderatorCell = code => norm(code) ? esc(labelModerator(norm(code))) : dash;
+    // For-whom: the first resolved audience name, then a "+N" badge; the title lists every resolved name. Unresolved
+    // ids are counted but never printed.
+    const forWhomCell = ids => {
+        const list = Array.isArray(ids) ? ids : [];
+        if (!list.length) return dash;
+        const names = list.map(id => audienceMap[id]).filter(Boolean);
+        const first = names.length ? `<span>${esc(names[0])}</span>` : '';
+        const rest = list.length - (names.length ? 1 : 0);
+        const more = rest > 0 ? ` <span class="badge bg-label-secondary">${names.length ? '+' : ''}${rest}</span>` : '';
+        return `<span title="${esc(names.join(', '))}">${first}${more}</span>`;
+    };
+    const versionLabel = v => norm(v) ? `v${norm(v)}` : '';
+    const isEffectiveNow = r => {
+        const now = Date.now();
+        const from = r.effectiveFrom ? new Date(r.effectiveFrom).getTime() : -Infinity;
+        const to = r.effectiveTo ? new Date(r.effectiveTo).getTime() : Infinity;
+        return from <= now && now <= to;
+    };
+    // A non-published row's published sibling: same subject + chainCode, published, not archived. Every row of the tab
+    // is loaded client-side (no server paging), so the lookup is complete. Prefer the one effective now, else the
+    // highest version.
+    const publishedSibling = row => {
+        const siblings = state['concept-chain-templates'].rows.filter(r =>
+            r !== row && !r.isArchived && norm(r.status) === 'published'
+            && r.chainCode === row.chainCode && r.subjectId === row.subjectId);
+        if (!siblings.length) return null;
+        return siblings.find(isEffectiveNow)
+            || siblings.slice().sort((a, b) => norm(b.chainVersion).localeCompare(norm(a.chainVersion), undefined, { numeric: true }))[0];
+    };
+    const statusVersionCell = row => {
+        const status = norm(row.status);
+        const ver = versionLabel(row.chainVersion);
+        let html = `${statusBadge(status)}${ver ? ` <span class="text-muted small ms-1">${esc(ver)}</span>` : ''}`;
+        if (status !== 'published' && !row.isArchived) {
+            const sib = publishedSibling(row);
+            if (sib && norm(sib.chainVersion)) {
+                const hint = (L.PublishedSiblingHint || 'v{0}').replace('{0}', norm(sib.chainVersion));
+                html += `<div class="small text-success text-nowrap"><i class="bx bx-check-circle me-1"></i>${esc(hint)}</div>`;
+            }
+        }
+        return html;
+    };
+    // Row → the existing Compact editor route (an archived row is view-only: plain name, no link).
+    const chainNameCell = (v, row) => row.isArchived
+        ? nameCell(v)
+        : `<a href="${esc(templateEditUrl(row.conceptChainTemplateId))}" class="fw-medium text-heading">${esc(v)}</a>`;
 
     const columnsFor = kind => {
         const ctrl = { data: null, defaultContent: '' };
@@ -584,23 +645,31 @@
             ]
         };
 
+        // WP-CT-FE-1 (mockup v2 Ekran 1). Display renders resolve names; sort / filter / export read plain text so
+        // search matches what the user sees and sorting stays stable.
+        const plain = (display, text) => (v, t, row) => t === 'display' ? display(v, row) : text(v, row);
+        const joinNames = (ids, map, sep) => (Array.isArray(ids) ? ids : []).map(id => map[id] || '').filter(Boolean).join(sep);
         return {
-            columns: [ctrl, { data:'chainCode' }, { data:'chainName' }, { data:'subjectId' },
-                { data:'orderedConceptTypes' }, { data:'orderedConceptTypes' }, { data:'chainVersion' },
-                { data:'status' }, { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' },
-                { data:'updatedAt' }, act],
+            columns: [ctrl, { data:'subjectId' }, { data:'chainName' }, { data:'chainCode' },
+                { data:'orderedConceptTypes' }, { data:'branches' }, { data:'moderatorRoleType' },
+                { data:'forWhomAudienceProfileIds' }, { data:'status' }, { data:'orderedConceptTypes' },
+                { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' }, { data:'updatedAt' }, act],
             columnDefs: [
                 { targets:0, className:'control', orderable:false, render:() => '' },
-                { targets:2, render:v => nameCell(v) },
-                { targets:3, render:v => refCell(v, labelSubject) },
-                { targets:4, orderable:false, render:(v, t, row) => sequenceCell(v, row) },
-                { targets:5, render:v => esc(String((v || []).length)) },
-                { targets:6, render:v => muted(v) },
-                { targets:7, render:v => statusBadge(v) },
-                { targets:[8, 9], render:v => dtStamp(v) },
-                { targets:10, render:v => archivedBadge(v) },
-                { targets:11, render:v => stamp(v) },
-                actionDef(12)
+                { targets:1, render:plain(v => subjectCell(v), v => subjectMap[v] || '') },
+                { targets:2, render:plain((v, row) => chainNameCell(v, row), v => norm(v)) },
+                { targets:3, render:v => muted(v) },
+                { targets:4, orderable:false, render:plain(v => spineCell(v), v => joinNames(v, typeNameMap, ' → ')) },
+                { targets:5, className:'text-center', render:plain((v, row) => branchCell(row), (v, row) => branchCountOf(row)) },
+                { targets:6, render:plain(v => moderatorCell(v), v => norm(v) ? labelModerator(norm(v)) : '') },
+                { targets:7, render:plain(v => forWhomCell(v), v => joinNames(v, audienceMap, ', ')) },
+                { targets:8, render:plain((v, row) => statusVersionCell(row), (v, row) => `${norm(v)} ${versionLabel(row.chainVersion)}`.trim()) },
+                { targets:9, render:v => esc(String((v || []).length)) },
+                { targets:[10, 11], render:v => dtStamp(v) },
+                { targets:12, render:v => archivedBadge(v) },
+                { targets:13, render:v => stamp(v) },
+                { targets:[9, 10, 11, 12, 13], visible:false },
+                actionDef(14)
             ]
         };
     };

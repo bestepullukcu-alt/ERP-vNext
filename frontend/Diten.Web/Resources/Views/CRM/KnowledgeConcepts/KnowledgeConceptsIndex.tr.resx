@@ -204,4 +204,8 @@
   <data name="Steps" xml:space="preserve"><value>adım</value></data>
   <data name="AddStep" xml:space="preserve"><value>Yeni adım</value></data>
   <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="Spine" xml:space="preserve"><value>Omurga</value></data>
+  <data name="BranchCount" xml:space="preserve"><value>Dal</value></data>
+  <data name="StatusVersion" xml:space="preserve"><value>Durum / sürüm</value></data>
+  <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} yayında</value></data>
 </root>
