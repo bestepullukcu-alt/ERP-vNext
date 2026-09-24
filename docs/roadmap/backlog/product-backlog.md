@@ -6520,6 +6520,35 @@ BL-449 (talep sahibinde "Planla") ile birlikte karar. Sonra iki prompt: (2a) mot
 
 ---
 
+### BL-452
+
+**Dışa aktarma standardı — izin rolde, içerik ekranın tamamı, kalite kayıtlarında denetim izi**
+
+DURUM: KARAR VERİLDİ (sahip, 2026-09-24) — YÜRÜYECEK (4 prompt) · SAHİP: CT · KAYIT: 2026-09-24
+
+**Bugün:** liste ekranlarında tarayıcı tarafı düğmeler (Yazdır/CSV/Excel/PDF/Kopyala, `dt-defaults.js`); sunucu modunda yalnız
+ekrandaki sayfa çıkıyor; denetim kaydı ve yetki ayrımı yok. Doğru yapılmış iki örnek: İş Raporu (sunucu tarafı, ekranla aynı sorgu,
+kiracı denetim kaydı `IDataExportAuditWriter`, BL-346/347) ve CRM Kişiler (XLSX şablon = dışa aktarma şeması, geri yüklenebilir,
+MOD-0150). SAP: dışa aktarma ayrı yetki, ekranın filtre/sıralama/sütunlarıyla tüm satırlar, büyük veri arka plan işi, resmi çıktı
+rapor. Oracle Fusion: "Export to Excel" görünen sütun ve filtreyle tüm satırlar, BI Publisher biçimli çıktı, rolle indirme yetkisi.
+GxP: kalite kaydı listesinin dışa aktarımı kontrollü kopya (kim/ne zaman/filtre/satır denetim izinde).
+
+**Standart (sahip onayı 2026-09-24):**
+1. **İzin rolde:** modül başına `{modül}.export`; kapalıysa menü çizilmez (UAS-001 ile aynı ruh).
+2. **Menü aynı beş seçenek:** CSV, Excel, PDF, Kopyala, Yazdır.
+3. **Dosya = ekran:** görünen sütunlar (K16 ✔), uygulanan filtre + sıralama, TÜM eşleşen satırlar. Sunucu modunda dışa aktarma
+   sunucudan aynı sorguyla (İş Raporu deseni); tarayıcı tarafı düğmeler yalnız istemci modunda.
+4. **Denetim izi:** kalite kaydı taşıyan listelerde her dışa aktarma `IDataExportAuditWriter` ile (kim, ne, filtre, satır, biçim).
+5. **PDF kontrollü kopya:** başlıkta kiracı, ekran, kullanıcı, tarih, filtre özeti; altta satır sayısı, sayfa X/Y.
+6. **Eşik:** sınır üstü (öneri 50 bin satır) arka plan işi + bildirimle indirme bağlantısı (Hangfire var).
+7. **Simetri:** dışa aktarma şeması = içe aktarma şablonu (kod sütunları dahil); BL-441 modülü bunu kullanır.
+
+**Paketler:** (1) fabrikaya `export: { mode: 'server', url }` + ortak sunucu uç nokta sözleşmesi + Kullanıcılar ve Golden Compact
+(referans) · (2) PDF kontrollü kopya · (3) izin anahtarı + manifest + denetim izi · (4) arka plan işi. Kural dosyası ve doğrulayıcı
+(1) ile güncellenir; 7 dil menü metinleri zaten var.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
