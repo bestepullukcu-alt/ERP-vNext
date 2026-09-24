@@ -554,6 +554,20 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
     return js_text + "\n/* resolved from the list factory */\n" + "\n".join(resolved) + "\n", checks
 
 
+def find_screen_data_mode(front_matter: str, module: str) -> Optional[str]:
+    """`screens:` entries of a multi-screen pack — `- module: X` followed by its `data_mode`. None when the module is not listed."""
+    block = re.search(r"^screens:\s*\n((?:[ \t]+.*\n?)+)", front_matter, flags=re.MULTILINE)
+    if not block:
+        return None
+    for entry in re.split(r"^\s*-\s+", block.group(1), flags=re.MULTILINE):
+        name = re.search(r"^module:\s*(.+?)\s*$", entry, flags=re.MULTILINE)
+        if not name or re.sub(r"\s+", "", name.group(1)).lower() != module.lower():
+            continue
+        mode = re.search(r"^\s*data_mode:\s*(server|client)\s*$", entry, flags=re.MULTILINE)
+        return mode.group(1) if mode else None
+    return None
+
+
 def find_pack_data_mode(root: Path, module: str) -> Tuple[Optional[str], Optional[Path]]:
     """The module pack's `data_mode` — the pack whose front-matter `name`, spaces removed, is the module folder name.
 
@@ -569,10 +583,15 @@ def find_pack_data_mode(root: Path, module: str) -> Tuple[Optional[str], Optiona
         if not front:
             continue
         name = re.search(r"^name:\s*(.+?)\s*$", front.group(1), flags=re.MULTILINE)
-        if not name or re.sub(r"\s+", "", name.group(1)).lower() != module.lower():
+        if name and re.sub(r"\s+", "", name.group(1)).lower() == module.lower():
+            mode = re.search(r"^data_mode:\s*(server|client)\s*$", front.group(1), flags=re.MULTILINE)
+            matches.append((mode.group(1) if mode else None, pack))
             continue
-        mode = re.search(r"^data_mode:\s*(server|client)\s*$", front.group(1), flags=re.MULTILINE)
-        matches.append((mode.group(1) if mode else None, pack))
+        # A pack that covers SEVERAL screens (owner decision 2026-09-24): `screens:` lists them by Views/{Area}/{Module}
+        # folder name, each with its own data_mode. The pack-level `data_mode` cannot say one thing for five screens.
+        screen_mode = find_screen_data_mode(front.group(1), module)
+        if screen_mode is not None:
+            matches.append((screen_mode, pack))
     if len(matches) != 1:
         return None, None
     return matches[0]
