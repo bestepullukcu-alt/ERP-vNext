@@ -21,6 +21,18 @@ LIST_FILE = re.compile(
 MAX_GAPS = 12
 
 
+def repo_root_of(path: Path):
+    """The nearest ancestor that holds frontend/Diten.Web — the worktree the edited file belongs to."""
+    try:
+        current = path.resolve()
+    except OSError:
+        return None
+    for candidate in [current] + list(current.parents):
+        if (candidate / "frontend" / "Diten.Web").is_dir():
+            return candidate
+    return None
+
+
 def main() -> int:
     try:
         payload = json.loads(sys.stdin.read() or "{}")
@@ -32,7 +44,13 @@ def main() -> int:
         area = match.group("varea") or match.group("jarea")
         module = match.group("vmodule") or match.group("jmodule")
 
-        root = Path(__file__).resolve().parents[2]
+        # The ROOT is the worktree the edited file lives in, not this script's: chats open in the main checkout and
+        # work in `.claude/worktrees/<lane>`, and a hook registered from one checkout must verify the tree that was
+        # actually edited. Walk up from the file; fall back to this script's own repository.
+        root = repo_root_of(Path(file_path)) or Path(__file__).resolve().parents[2]
+        verifier = root / ".antigravity" / "scripts" / "verify_datatable_page.py"
+        if not verifier.exists():
+            verifier = Path(__file__).resolve().parents[2] / ".antigravity" / "scripts" / "verify_datatable_page.py"
         views = root / "frontend" / "Diten.Web" / "Views" / area / module
         if not (views / "_DataTable.cshtml").exists():
             return 0  # not a list screen (or a Views/{Module} page without an area folder)
@@ -43,7 +61,7 @@ def main() -> int:
         elif (views / "_Form.cshtml").exists():
             reference = "compact"
 
-        cmd = [sys.executable, str(root / ".antigravity" / "scripts" / "verify_datatable_page.py"), str(root),
+        cmd = [sys.executable, str(verifier), str(root),
                "--area", area, "--module", module, "--format", "gaps"]
         if reference:
             cmd += ["--reference", reference]
