@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>تم العثور على فرق قدره 84,750 ليرة مع دفتر الأستاذ العام.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>اجتماع مراجعة ميزانية الربع الثالث</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 يوليو 2026، 14:00–15:00 · Teams · المنظم: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك من {name} للموافقة عليها</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>هذه المهمة مُرسلة إليك للموافقة عليها</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>موافقة: {objectType} {objectId}</value>
   </data>

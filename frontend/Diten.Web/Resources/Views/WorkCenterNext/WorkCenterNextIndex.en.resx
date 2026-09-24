@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>A TRY 84,750 difference was found between the return and general ledger.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 budget revision review meeting</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 July 2026, 14:00–15:00 · Teams · Organizer: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} sent this task for your approval</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>This task was sent for your approval</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approval: {objectType} {objectId}</value>
   </data>

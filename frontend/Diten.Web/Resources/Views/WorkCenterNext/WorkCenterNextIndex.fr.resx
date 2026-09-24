@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Un écart de 84 750 TRY a été détecté avec le grand livre.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Réunion de revue du budget T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 juillet 2026, 14:00–15:00 · Teams · Organisateur : Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} vous a transmis cette tâche pour approbation</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Cette tâche vous a été transmise pour approbation</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approbation : {objectType} {objectId}</value>
   </data>

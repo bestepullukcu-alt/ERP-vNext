@@ -1484,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Se detectó una diferencia de 84.750 TRY con el libro mayor.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Reunión de revisión del presupuesto del T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 de julio de 2026, 14:00–15:00 · Teams · Organiza: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} le ha enviado esta tarea para su aprobación</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Esta tarea se le ha enviado para su aprobación</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Aprobación: {objectType} {objectId}</value>
   </data>

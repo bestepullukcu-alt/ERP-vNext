@@ -376,6 +376,11 @@
         if (fixture.waitingContext && !isPersonRef(fixture.waitingContext.waitingOn)) {
             push(errors, fixture, 'WAITING_CONTEXT_WAITING_ON_INVALID', 'waitingContext.waitingOn');
         }
+        // BL-437 — why the item reached the reader. Optional (a provider that cannot say stays silent), but when
+        // present it must be a real label: a malformed one would render as a raw key or as nothing at all.
+        if (fixture.arrivalReason !== undefined && fixture.arrivalReason !== null && !isLabel(fixture.arrivalReason)) {
+            push(errors, fixture, 'ARRIVAL_REASON_INVALID', 'arrivalReason');
+        }
         if (fixture.personal?.snoozedUntil && fixture.normalizedStatus === 'Waiting' && fixture.waitingContext?.type === 'personalSnooze') {
             push(errors, fixture, 'SNOOZE_MUST_NOT_CREATE_WAITING', 'personal.snoozedUntil');
         }
