@@ -28,9 +28,10 @@ const withoutRazorComments = (text) => text.replace(/@\*[\s\S]*?\*@/g, "");
 
 const SHELL = () => withoutRazorComments(read("Views", "Shared", "Components", "DataTable", "_ListShell.cshtml"));
 const MODEL = () => read("Models", "DataTable", "DataTableListShellViewModel.cs");
+// [area, folder, table id, data mode] — two references, two modes since BL-440 package 3 (Compact = server).
 const GOLDEN = [
-  ["DevEnablement", "GoldenReferenceSlim", "dt-goldenreferenceslim"],
-  ["DevEnablement", "GoldenReferenceCompact", "dt-goldenreferencecompact"]
+  ["DevEnablement", "GoldenReferenceSlim", "dt-goldenreferenceslim", "client"],
+  ["DevEnablement", "GoldenReferenceCompact", "dt-goldenreferencecompact", "server"]
 ];
 const SHELL_CALL = /<partial\s+name="~\/Views\/Shared\/Components\/DataTable\/_ListShell\.cshtml"\s+model="\w+"\s*\/>/;
 
@@ -86,7 +87,7 @@ describe("the list shell carries the four markers every list stands on", () => {
 });
 
 describe("the golden references USE the shell — the first two of 138", () => {
-  test.each(GOLDEN)("%s/%s writes no raw <table and calls the shell", (area, folder, tableId) => {
+  test.each(GOLDEN)("%s/%s writes no raw <table and calls the shell", (area, folder, tableId, dataMode) => {
     const source = withoutRazorComments(read("Views", area, folder, "_DataTable.cshtml"));
     expect(source, `${folder} still hand-writes its table`).not.toMatch(/<table\b/i);
     expect(source, `${folder} still hand-writes the placeholder`).not.toMatch(/_TableSkeleton|skeleton-loader/);
@@ -95,7 +96,7 @@ describe("the golden references USE the shell — the first two of 138", () => {
     // The model setup the verifier reads: id, mode, selection — and the page's own localized headers.
     expect(source).toMatch(/new DataTableListShellViewModel\s*\{/);
     expect(source).toContain(`TableId = "${tableId}"`);
-    expect(source).toMatch(/DataMode = "client"/);
+    expect(source).toContain(`DataMode = "${dataMode}"`);
     expect(source).toMatch(/HasSelection = true/);
     expect(source).toMatch(/ActionsHeader = Localizer\["Actions"\]\.Value/);
     expect(source).toMatch(/Header = SharedLocalizer\["Status"\]\.Value/);

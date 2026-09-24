@@ -492,7 +492,37 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
          "host.classList.add('px-3'); $s.select2({ dropdownParent: $(document.body), dropdownCssClass: 'dt-inline-filter-dropdown', selectionCssClass: 'form-select form-select-sm', width: 'element' });"),
     ]
 
+    # ── Server mode (BL-440 package 3, WP-UI-LIST-SERVER-01) ──────────────────────────────────────────────────
+    # A page calling createList({ dataMode: 'server' }) does not write `serverSide: true` or its request mapping; the
+    # factory does. So "serverSide is on" resolves to the factory's server branch, and "no client-side filter hook"
+    # resolves to the factory's hook being CLIENT-ONLY: an unguarded hook is resolved INTO the page's effective text,
+    # where the coherence check below counts it red — exactly what the page would run.
+    if js_mode == "server":
+        server_branch = bool(re.search(r"if \(isServer\) \{\s*config\.serverSide = true;", factory)) \
+            and "return toServerQuery(dtRequest, fields, appliedFilters);" in factory \
+            and "toDataTablesResponse(json, drawOfRequest(" in factory
+        hook_calls = len(re.findall(r"ext\.search\.push\(", factory))
+        hook_client_only = hook_calls == 0 or (hook_calls == 1 and bool(re.search(r"if \(!isServer && [^\n]*\n[\s\S]{0,400}?ext\.search\.push\(", factory)))
+        mechanics.append((
+            "Server mode branch: serverSide + processing, the flat request (toServerQuery) and the response translation (toDataTablesResponse)",
+            server_branch,
+            "serverSide: true, processing: true, ajax: { data: toServerQuery, dataFilter: toDataTablesResponse }"))
+        if not hook_client_only:
+            checks.append(Check("List factory keeps its filter hook client-only", False,
+                                f"{factory_path} registers ext.search.push without the `!isServer` guard — every server-mode list filters rows in the browser too"))
+            resolved_hook = "$.fn.dataTable.ext.search.push(function () { /* resolved: the factory's unguarded hook */ });"
+        else:
+            resolved_hook = ""
+        page_matchers = re.findall(r"\bmatches\s*:", page)
+        if page_matchers:
+            checks.append(Check("Server mode: the page's filter fields carry no row matcher (matches:)", False,
+                                f"{len(page_matchers)} `matches:` in {index_js} — in server mode the service filters; a matcher is dead code that reads like a filter"))
+    else:
+        resolved_hook = ""
+
     resolved: List[str] = []
+    if resolved_hook:
+        resolved.append(resolved_hook)
     verified = 0
     for name, ok, tokens in mechanics:
         if ok:
@@ -504,6 +534,30 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
 
     print(f"[factory] {index_js.name} calls DitenDataTable.createList (dataMode={js_mode!r}) — {verified}/{len(mechanics)} mechanics verified in {factory_path}")
     return js_text + "\n/* resolved from the list factory */\n" + "\n".join(resolved) + "\n", checks
+
+
+def find_pack_data_mode(root: Path, module: str) -> Tuple[Optional[str], Optional[Path]]:
+    """The module pack's `data_mode` — the pack whose front-matter `name`, spaces removed, is the module folder name.
+
+    BL-440 package 3: the declaration lives in THREE places (pack `data_mode`, <table data-dt-data-mode>, the JS
+    `createList({ dataMode })`) and all three must agree. Before this, the pack's value reached the verifier only when a
+    caller remembered `--data-mode`; a pack that said `server` over a page that said `client` stayed green.
+    Returns (None, None) when no single pack names this module or it declares no data_mode.
+    """
+    matches: List[Tuple[Optional[str], Path]] = []
+    for pack in sorted((root / "execution" / "domains").glob("*/module-packs/*.md")):
+        text = read_text(pack)
+        front = re.match(r"---\n([\s\S]*?)\n---", text)
+        if not front:
+            continue
+        name = re.search(r"^name:\s*(.+?)\s*$", front.group(1), flags=re.MULTILINE)
+        if not name or re.sub(r"\s+", "", name.group(1)).lower() != module.lower():
+            continue
+        mode = re.search(r"^data_mode:\s*(server|client)\s*$", front.group(1), flags=re.MULTILINE)
+        matches.append((mode.group(1) if mode else None, pack))
+    if len(matches) != 1:
+        return None, None
+    return matches[0]
 
 
 def check_list_screen_coherence(
@@ -753,13 +807,27 @@ def main() -> int:
     page_marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
     js_text, list_factory_checks = resolve_list_factory(root, index_js, js_text, page_marker.group(1) if page_marker else None)
     checks.extend(list_factory_checks)
+
+    # The pack is the third declaration of the data mode (BL-440 package 3). `--data-mode` still wins when given, and
+    # a flag that contradicts the pack is itself a failure — the flag is a copy of the pack, not a second opinion.
+    pack_data_mode, pack_path = find_pack_data_mode(root, module)
+    if pack_data_mode:
+        print(f"[pack] {pack_path.relative_to(root)} declares data_mode: {pack_data_mode}")
+        if args.data_mode and args.data_mode != pack_data_mode:
+            checks.append(Check("Data mode: --data-mode agrees with the module pack", False,
+                                f"--data-mode {args.data_mode}, pack says {pack_data_mode} (file: {pack_path})"))
+    effective_pack_mode = args.data_mode or pack_data_mode
+    js_mode_match = re.search(r"\bdataMode\s*:\s*['\"](server|client)['\"]", strip_js_comments(read_text(index_js)))
+    if effective_pack_mode and js_mode_match and js_mode_match.group(1) != effective_pack_mode:
+        checks.append(Check("Data mode: index.js dataMode agrees with the module pack", False,
+                            f"index.js says dataMode '{js_mode_match.group(1)}', the pack says {effective_pack_mode} (file: {index_js})"))
     is_v2 = bool(re.search(r"data-dt-standard\s*=\s*\"v2\"", index_html + data_table_html))
 
     # ── Package 0 of the golden-reference plan (owner approval 2026-09-23, BL-440) ──────────────────────────
     # Four things "look at the reference and imitate it" could not guarantee, measured on the Users screen:
     # the data model, a hard-coded page cap, markup and JS expecting different things, and the placeholder.
     checks.extend(check_list_screen_coherence(
-        data_table_partial, data_table_html, index_cshtml, index_html, index_js, js_text, args.data_mode, is_v2))
+        data_table_partial, data_table_html, index_cshtml, index_html, index_js, js_text, effective_pack_mode, is_v2))
 
     checks.append(
         check_contains(

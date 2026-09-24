@@ -297,9 +297,6 @@ window.DitenDataTable = (function () {
         if (mode === undefined || mode === null || mode === '') {
             throw new Error("DitenDataTable: dataMode is required ('client' | 'server') — an undeclared list is what the data_mode rule exists to catch.");
         }
-        if (mode === 'server') {
-            throw new Error("DitenDataTable: dataMode 'server' is not implemented yet (WP-UI-LIST-SERVER-01, BL-440 package 3). It will NOT silently run as 'client'.");
-        }
         if (DATA_MODES.indexOf(mode) === -1) {
             throw new Error("DitenDataTable: dataMode must be 'client' | 'server', got '" + mode + "'.");
         }
@@ -741,11 +738,76 @@ window.DitenDataTable = (function () {
         });
     }
 
+    // ── Server mode: the wire contract (WP-UI-LIST-SERVER-01, BL-440 package 3) ─────────────────────────────
+    //
+    // REQUEST. DataTables' serverSide request (`start, length, search{value}, order[{column,dir}], columns[{data,…}]`,
+    // `draw`) becomes ONE flat query: start, length, search, orderBy (the sorted column's `data` name), orderDir
+    // (asc|desc), draw, and every APPLIED filter by its key — a multi filter as a repeated parameter
+    // (status=Active&status=Passive), a single one once (priority=70). DataTables' `columns[i][…]` noise is never sent:
+    // the service reads names, not a positional column dump. Built as a string so jQuery sends exactly this.
+    //
+    // RESPONSE. The service envelope `{ …, data: { items, total, filteredTotal } }` becomes what DataTables reads:
+    // `{ draw, recordsTotal: total, recordsFiltered: filteredTotal, data: items }`. `filteredTotal` > rows is paging.
+    function toServerQuery(dtRequest, fields, appliedFilters) {
+        var parts = [];
+        var add = function (key, value) { parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value)); };
+        var d = dtRequest || {};
+        add('start', Math.max(0, Number(d.start) || 0));
+        add('length', Number(d.length) > 0 ? Number(d.length) : 10);
+        var search = normalizeScalar(d.search && typeof d.search === 'object' ? d.search.value : d.search);
+        if (search) add('search', search);
+        var first = Array.isArray(d.order) ? d.order[0] : null;
+        var column = first && Array.isArray(d.columns) ? d.columns[Number(first.column)] : null;
+        // A column the page declared not orderable (control, checkbox, actions) never becomes a sort key.
+        if (column && column.orderable !== false && typeof column.data === 'string' && column.data) {
+            add('orderBy', column.data);
+            add('orderDir', String(first.dir).toLowerCase() === 'desc' ? 'desc' : 'asc');
+        }
+        add('draw', Number(d.draw) || 0);
+        var filters = appliedFilters || {};
+        (Array.isArray(fields) ? fields : []).forEach(function (field) {
+            if (field.kind === 'multi') {
+                normalizeArray(filters[field.key]).forEach(function (value) { add(field.key, value); });
+            } else {
+                var single = normalizeScalar(filters[field.key]);
+                if (single) add(field.key, single);
+            }
+        });
+        return parts.join('&');
+    }
+
+    function toDataTablesResponse(json, draw) {
+        var page = json && typeof json === 'object' ? (json.data || json.Data || {}) : {};
+        var items = Array.isArray(page.items) ? page.items : (Array.isArray(page.Items) ? page.Items : []);
+        var total = Number(page.total ?? page.Total);
+        var filteredTotal = Number(page.filteredTotal ?? page.FilteredTotal);
+        if (!Number.isFinite(total) || !Number.isFinite(filteredTotal)) {
+            // A missing count is a broken server contract, not a zero: say so, and show what did arrive.
+            console.error('[DitenDataTable] server-mode response carries no total/filteredTotal — the pager cannot be trusted.', json);
+        }
+        return {
+            draw: Number(draw) || 0,
+            recordsTotal: Number.isFinite(total) ? total : items.length,
+            recordsFiltered: Number.isFinite(filteredTotal) ? filteredTotal : items.length,
+            data: items
+        };
+    }
+
+    // jQuery has already appended the query to the GET url when dataFilter runs; the draw is read back from it so an
+    // out-of-order answer keeps ITS draw number (DataTables drops a response older than the latest request).
+    function drawOfRequest(ajaxSettings, fallback) {
+        var text = String(ajaxSettings?.url || '') + '&' + (typeof ajaxSettings?.data === 'string' ? ajaxSettings.data : '');
+        var match = /[?&]draw=(\d+)/.exec(text);
+        return match ? Number(match[1]) : fallback;
+    }
+
     /**
      * createList(options) — the list component. Returns a Promise of the list handle.
      *
      * options = {
-     *   tableEl, dataMode ('client' | 'server' → throws), ajax, bulk, actions, config (columns/columnDefs/…),
+     *   tableEl, dataMode ('client' | 'server'), ajax, bulk, actions, config (columns/columnDefs/…),
+     *   onResponse(json) — server mode: called with every list envelope (the page's summary/KPI source);
+     *                      the last one is also on handle.lastResponse.
      *   toolbar:   { addNewText, addNewAttr, onAddNew, exportColumns, colvisColumns, extraButtons },
      *   filters:   { hostId, collapseId, applyBtn, resetBtn, fields: [{ id, key, kind, matches(row, value) }], loadOptions() },
      *   savedView: { moduleKey, pageKey, saveViewColumnIndexes, defaultVisibleColumnIndexes, baseOrder },
@@ -778,6 +840,8 @@ window.DitenDataTable = (function () {
         var armed = false;
         var dt = null;
         var handle = {};
+        var isServer = options.dataMode === 'server';
+        var lastDraw = 0;
 
         function filterCount() { return state.appliedFilterCount(appliedFilters); }
         function refreshVisual(api) { window.DtDefaults.updateVisualState(api || dt, filterCount()); }
@@ -806,8 +870,10 @@ window.DitenDataTable = (function () {
             syncDirty(api);
         }
 
-        // The client-side filter hook — registered ONCE per table, scoped to this table only.
-        if (fields.length && window.jQuery?.fn?.dataTable?.ext?.search && tableEl.dataset.ditenFilterBound !== '1') {
+        // The client-side filter hook — registered ONCE per table, scoped to this table only. CLIENT MODE ONLY: in
+        // server mode the filters travel as query parameters and the browser never filters a row (a hook here would
+        // filter the current page a second time, and silently, on whatever the server did not already drop).
+        if (!isServer && fields.length && window.jQuery?.fn?.dataTable?.ext?.search && tableEl.dataset.ditenFilterBound !== '1') {
             tableEl.dataset.ditenFilterBound = '1';
             $.fn.dataTable.ext.search.push(function (settings, _sd, dataIndex, rowData) {
                 if (settings.nTable !== tableEl) return true;
@@ -819,6 +885,9 @@ window.DitenDataTable = (function () {
 
         // `await loadDefaultView()` BEFORE the table is built (State Standard).
         await store.load();
+        // Server mode: the FIRST request already carries the saved filters (else the page asks for, and shows, an
+        // unfiltered page before the saved view lands).
+        if (isServer && store.saved) appliedFilters = state.normalizeFilters(store.saved.filters);
 
         var toolbar = options.toolbar || {};
         var l = L();
@@ -906,6 +975,8 @@ window.DitenDataTable = (function () {
             // Reset: NEVER back to the saved view — always the factory baseline.
             document.getElementById(filters.resetBtn || 'btnFilterReset')?.addEventListener('click', function (e) {
                 e.preventDefault();
+                // Server mode: the baseline is a NEW query, so it starts on page one (applyViewToTable keeps the page).
+                if (isServer) api.page?.(0);
                 applyState(api, state.baseline());
                 syncDirty(api);
             });
@@ -929,11 +1000,39 @@ window.DitenDataTable = (function () {
             document.getElementById(form.saveBtnId || 'btnSave')?.addEventListener('click', function () { handle.submitForm(); });
         }
 
+        var ajax = options.ajax;
+        if (isServer) {
+            config.serverSide = true;
+            config.processing = true;
+            // The FIRST request is already a real query: the saved view's (or the baseline's) order and search. Left to
+            // DataTables, the first request sorts by column 0 — the control column, `data: 'id'`, which no service
+            // whitelists (measured with the vendored DataTables: orderBy=id on draw 1).
+            var initialState = state.normalizeViewState(store.saved || {});
+            config.order = initialState.order;
+            if (initialState.search) config.search = Object.assign({}, config.search || {}, { search: initialState.search });
+            ajax = Object.assign({}, options.ajax || {}, {
+                dataSrc: 'data',
+                data: function (dtRequest) {
+                    lastDraw = Number(dtRequest?.draw) || lastDraw;
+                    return toServerQuery(dtRequest, fields, appliedFilters);
+                },
+                dataFilter: function (raw) {
+                    var json;
+                    try { json = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return raw; }
+                    handle.lastResponse = json;
+                    if (typeof options.onResponse === 'function') {
+                        try { options.onResponse(json); } catch (error) { console.error('[' + (savedViewSpec.pageKey || tableEl.id) + '] onResponse failed.', error); }
+                    }
+                    return JSON.stringify(toDataTablesResponse(json, drawOfRequest(this, lastDraw)));
+                }
+            });
+        }
+
         dt = createCrudTable({
             tableEl: tableEl,
             dataMode: options.dataMode,
             bulk: options.bulk,
-            ajax: options.ajax,
+            ajax: ajax,
             actions: Object.assign({}, options.actions || {}, { onRowAction: rowHandlers }),
             config: config
         });
@@ -976,6 +1075,8 @@ window.DitenDataTable = (function () {
             tableEl: tableEl,
             state: state,
             get appliedFilters() { return appliedFilters; },
+            dataMode: options.dataMode,
+            lastResponse: handle.lastResponse || null,
             reload: function (messageKey, interpolationValue) {
                 reloadWithToast(dt, tableEl, messageKey, interpolationValue, options.bulk || {});
             },
@@ -1060,6 +1161,8 @@ window.DitenDataTable = (function () {
         renderActions: renderActions,
         renderStatusBadge: renderStatusBadge,
         unwrapResponseData: unwrapResponseData,
+        toServerQuery: toServerQuery,
+        toDataTablesResponse: toDataTablesResponse,
         updateBulkBar: updateBulkBar
     };
 })();
