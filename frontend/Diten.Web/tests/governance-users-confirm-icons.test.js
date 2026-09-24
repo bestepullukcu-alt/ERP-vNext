@@ -29,9 +29,10 @@ const MENU_GLYPHS = {
 describe("every admin confirmation wears its own action's glyph", () => {
   test("the four actions each declare one", () => {
     const source = JS_SOURCE();
-    const block = source.slice(source.indexOf("const adminActions = {"), source.indexOf("document.addEventListener('click'", source.indexOf("const adminActions = {")));
+    const block = source.slice(source.indexOf("const adminActions = {"), source.indexOf("const runAdminAction", source.indexOf("const adminActions = {")));
     Object.entries(MENU_GLYPHS).forEach(([action, glyph]) => {
-      const line = block.split("\n").find((l) => l.includes(`'${action}'`));
+      // BL-440 package 5: one entry per action carries its menu class AND its glyph (the kebab is built from it).
+      const line = block.split("\n").find((l) => l.includes(`className: '${action}`));
       expect(line, `${action} is no longer in the action map`).toBeTruthy();
       expect(line, `${action} carries no icon, so its confirm opens with a question mark`).toContain(`icon: '${glyph}'`);
     });
@@ -46,12 +47,21 @@ describe("every admin confirmation wears its own action's glyph", () => {
     /*
      * The point of the change: the reader sees the picture they just clicked. If the kebab shows a plane and
      * the dialog a key, the dialog is describing a different act.
+     *
+     * BL-440 package 5: the menu item and the confirm now read ONE entry — the kebab builds `bx ${cfg.icon}` from
+     * the same `cfg` the confirm passes as `icon: cfg.icon`, so the two cannot drift apart.
      */
     const source = JS_SOURCE();
-    Object.entries(MENU_GLYPHS).forEach(([action, glyph]) => {
-      const menuLine = source.split("\n").find((l) => l.includes(`className: '${action}`) || l.includes(`className: '${action}'`));
-      expect(menuLine, `${action} has no menu entry`).toBeTruthy();
-      expect(menuLine, `${action}: the menu draws a different glyph than the confirm`).toContain(glyph);
+    const builder = source.slice(source.indexOf("const adminAction = "), source.indexOf("\n    };", source.indexOf("const adminAction = ")));
+    expect(builder, "the kebab entry no longer takes its glyph from the action's own entry").toMatch(/icon: `bx \$\{cfg\.icon\}`/);
+    expect(builder).toMatch(/className: cfg\.className/);
+    // Every entry of the map is both a kebab item and the row action that opens ITS confirm.
+    expect(source).toContain("...Object.keys(adminActions).map((key) => ({ [key]: runAdminAction(adminActions[key]) }))");
+    const block = source.slice(source.indexOf("const adminActions = {"), source.indexOf("const runAdminAction"));
+    Object.keys(MENU_GLYPHS).forEach((action) => {
+      const key = action.replace("js-user-", "");
+      expect(block, `${action} is not an entry of the action map`).toMatch(new RegExp(`^\\s+${key}: \\{ className: '${action}`, "m"));
+      expect(source, `${action} is not drawn in the kebab`).toContain(`adminAction('${key}'`);
     });
   });
 

@@ -99,7 +99,7 @@ describe("the JS gates on the same key and talks only to the same-origin proxy",
 
   test("the change goes through window.showConfirm (one dialog body, BL-367) and POSTs to /Users/api", () => {
     const source = js();
-    expect(source).toMatch(/window\.showConfirm\?\.\(L\.ChangeAccountKind/);
+    expect(source).toMatch(/window\.showConfirm\?\.\(L\(\)\.ChangeAccountKind/);
     expect(source).toMatch(/fetch\(`\/Users\/api\/\$\{id\}\/account-kind`/);
     // Never a service port, never the gateway from the browser for this mutation.
     expect(source).not.toMatch(/localhost:505\d/);
@@ -132,18 +132,27 @@ describe("the JS gates on the same key and talks only to the same-origin proxy",
     const source = js();
     const roles = source.indexOf("{ data: 'roles', name: 'roles' }");
     const kind = source.indexOf("{ data: 'accountKind', name: 'accountKind' }");
-    const status = source.indexOf("{ data: 'isActive', name: 'isActive' }");
+    // BL-440 package 5: the status column reads the service's `status` (its orderBy name), not the isActive boolean.
+    const status = source.indexOf("{ data: 'status', name: 'status' }");
     expect(roles).toBeGreaterThan(-1);
     expect(kind).toBeGreaterThan(roles);
     expect(status).toBeGreaterThan(kind);
-    expect(read("Views", "Governance", "Users", "_DataTable.cshtml")).toMatch(/@Localizer\["AccountKind"\]/);
+    // The shell's headers keep the same order: Roles, AccountKind, Status.
+    const view = read("Views", "Governance", "Users", "_DataTable.cshtml");
+    const hRoles = view.indexOf('Localizer["Roles"].Value');
+    const hKind = view.indexOf('Localizer["AccountKind"].Value');
+    const hStatus = view.indexOf('SharedLocalizer["Status"].Value');
+    expect(hRoles).toBeGreaterThan(-1);
+    expect(hKind).toBeGreaterThan(hRoles);
+    expect(hStatus).toBeGreaterThan(hKind);
   });
 
   test("the filter offers the three kinds and the create form's default is the unconfirmed state", () => {
     const filter = read("Views", "Governance", "Users", "_Filter.cshtml");
     expect(filter).toMatch(/id="filterAccountKind"/);
     KINDS.forEach((k) => expect(filter).toMatch(new RegExp(`<option value="${k}">`)));
-    expect(js()).toMatch(/matchesAccountKindFilter\(appliedFilters\.accountKinds, row\.accountKind\)/);
+    // Server mode (BL-440 package 5): the kinds travel as the service's `accountKind` parameter — no row matcher.
+    expect(js()).toMatch(/\{ id: 'filterAccountKind', key: 'accountKind', kind: 'multi' \}/);
   });
 });
 
@@ -303,7 +312,7 @@ describe("the account-kind selects are select2, and both of its seams are honour
     // A raw assignment or toggle would work in the markup and silently stop working under select2.
     expect(source).not.toMatch(/kindSelect\.value\s*=/);
     expect(source).not.toMatch(/kindSelect\.classList\.toggle\('d-none'/);
-    expect(source).toMatch(/setSelectValue\(document\.getElementById\('userAccountKind'\), ''\)/);
+    expect(source).toMatch(/setSelectValue\(byId\('userAccountKind'\), ''\)/);
     expect(source).toMatch(/setSelectValue\(kindSelect, normalizeAccountKind\(data\.accountKind\)\)/);
     expect(source).toMatch(/setSelectHidden\(kindSelect, !canManageKind\(\)\)/);
   });
@@ -361,27 +370,34 @@ describe("the account type is a select on the edit form, saved by Update", () =>
     expect(source).not.toContain("btnUserAccountKindChange");
     expect(source, "a second dialog was opened instead of the shared one").not.toMatch(/\bSwal\.fire\(/);
     // The save sends the whole form (FormData), so the named select travels with FirstName/LastName/IsActive.
-    const submit = source.slice(source.indexOf("const submitCreateEditForm"), source.indexOf("const bulkOptions"));
-    expect(submit).toMatch(/new FormData\(form\)/);
+    // BL-440 package 5: the list factory builds the FormData from the form and hands it to the page's submit.
+    const submit = source.slice(source.indexOf("const submitForm"), source.indexOf("const postAccountKind"));
+    expect(submit).toMatch(/body: formData/);
     expect(submit).toMatch(/`\/Users\/edit\/\$\{editingId\}`/);
+    expect(source).toMatch(/form: \{ formId: 'formUser'[^\n]*submit: submitForm \}/);
+    expect(read("wwwroot", "assets", "js", "diten-datatable.js")).toMatch(/form\.submit\(new FormData\(formEl\), isEdit/);
   });
 
   test("the account-kind route keeps exactly one caller: the quick view's 'Change type'", () => {
     const source = js();
     const posts = source.match(/\/Users\/api\/\$\{id\}\/account-kind/g) || [];
     expect(posts.length, "the account-kind write exists in more than one place again").toBe(1);
-    expect(source).toContain("const postAccountKind = async (id, kind, offcanvasToHide)");
+    expect(source).toContain("const postAccountKind = async (id, kind)");
     const callers = source.match(/postAccountKind\(/g) || []; // the declaration is `postAccountKind = async (`
     expect(callers.length, "postAccountKind gained or lost a caller (the quick view is the only one)").toBe(1);
-    expect(source).toMatch(/postAccountKind\(id, kind, getOcDetailsInstance\(\)\)/);
-    expect(source).not.toMatch(/postAccountKind\(id, kind, getOcCreateEditInstance\(\)\)/);
+    // The one caller sits in the quick view's "Change type" handler, and the write closes the QUICK VIEW, never the form.
+    const handler = source.slice(source.indexOf("byId('oc-btn-accountkind')?.addEventListener"));
+    expect(handler).toMatch(/postAccountKind\(id, kind\)/);
+    const post = source.slice(source.indexOf("const postAccountKind"), source.indexOf("const showInviteLink"));
+    expect(post).toMatch(/Offcanvas\.getInstance\(byId\('offcanvasDetailsPreview'\)\)\?\.hide\(\)/);
+    expect(post).not.toMatch(/offcanvasCreateEdit/);
   });
 
   test("the edit select starts from the kind AuthService reports, through the select2-safe setter", () => {
     const source = js();
-    const open = source.slice(source.indexOf("const openEditOffcanvas"), source.indexOf("const showFormErrors"));
+    const open = source.slice(source.indexOf("const loadFormFields"), source.indexOf("const ERROR_CODE_KEYS"));
     expect(open).toMatch(/const currentKind = normalizeAccountKind\(d\.accountKind\)/);
-    expect(open).toMatch(/setSelectValue\(document\.getElementById\('userAccountKind'\), currentKind === 'Unknown' \? '' : currentKind\)/);
+    expect(open).toMatch(/setSelectValue\(byId\('userAccountKind'\), currentKind === 'Unknown' \? '' : currentKind\)/);
     // And the proxy actually hands the kind over (it did not before this change — d.accountKind was undefined).
     expect(read("Controllers", "UsersController.cs")).toMatch(/accountKind = model\.AccountKind/);
   });

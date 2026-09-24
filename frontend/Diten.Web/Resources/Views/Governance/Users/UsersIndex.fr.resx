@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>Invitation en attente : le compte devient actif lorsque la personne définit son mot de passe via le lien envoyé par e-mail. La réinitialisation du mot de passe n'est pas disponible d'ici là ; renvoyez plutôt l'invitation.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Un utilisateur possède déjà cette adresse e-mail.</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Cet utilisateur n'a pas encore accepté l'invitation. Le compte s'active lorsqu'il définit son mot de passe ; renvoyez l'invitation si nécessaire.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>L'utilisateur est supprimé et ses rôles sont retirés ; le compte ne peut pas être restauré. Un nouveau compte peut être ouvert avec la même adresse e-mail.</value></data>
 </root>

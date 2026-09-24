@@ -10,14 +10,17 @@
                 <div class="dt-filter-bar d-flex flex-wrap align-items-center gap-3">
                     <div class="filter-chip filter-status">
                         <select id="filterStatus" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@SharedLocalizer["Status"]">
+                            @* Values are the SERVICE's words (GET api/users?status=Active|Inactive|Invited) — the filter runs on
+                               AuthService, which refuses any other word (USERS_LIST_STATUS_INVALID). The label stays "Pasif". *@
                             <option value="Active">@SharedLocalizer["Active"]</option>
-                            <option value="Passive">@SharedLocalizer["Passive"]</option>
+                            <option value="Inactive">@SharedLocalizer["Passive"]</option>
                             @* WP-AUTH-INVITED-LIFECYCLE-01 — the third state: invited, password never set. *@
                             <option value="Invited">@Localizer["StatusInvited"]</option>
                         </select>
                     </div>
 
-                    @* Role filter — options are populated from the loaded user rows in index.js *@
+                    @* Role filter — option VALUES are role ids (the service's roleId is a Guid), texts the role names;
+                       filled from GET api/roles by index.js. *@
                     <div class="filter-chip filter-roles">
                         <select id="filterRoles" class="form-select form-select-sm select2" multiple="multiple" data-placeholder="@Localizer["Roles"]"></select>
                     </div>

@@ -31,7 +31,8 @@ const dialogSource = () => {
   const source = JS();
   const from = source.indexOf("const showInviteLink =");
   expect(from, "showInviteLink is gone — has the dialog moved?").toBeGreaterThan(-1);
-  return source.slice(from, source.indexOf("\n    const bindEvents", from));
+  // Up to the next top-level declaration of the module (BL-440 package 5: the kebab's action map follows it).
+  return source.slice(from, source.indexOf("\n    const ", from + 1));
 };
 
 /** The published package, evaluated out of the Razor partial that owns it. */
@@ -87,7 +88,7 @@ describe("the dialog reads the product's package instead of drawing its own", ()
      * composes `iconHtml + '<span>' + title + '</span>'`; a raw dialog has to do the same thing.
      */
     const body = dialogSource();
-    expect(body).toMatch(/title: look\.iconHtml\(null, 'bx-link-alt'\) \+ `<span>\$\{L\.InviteLinkTitle\}<\/span>`/);
+    expect(body).toMatch(/title: look\.iconHtml\(null, 'bx-link-alt'\) \+ `<span>\$\{L\(\)\.InviteLinkTitle\}<\/span>`/);
     expect(body, "an icon in the collapsed slot is an icon nobody sees").not.toMatch(/\biconHtml:/);
     // And the slot really is collapsed — this is why, not an opinion.
     expect(read("wwwroot", "assets", "css", "backbone-custom.css"))
@@ -109,10 +110,11 @@ describe("the dialog reads the product's package instead of drawing its own", ()
 
   test("it closes, it does not cancel — one neutral button", () => {
     const body = dialogSource();
-    expect(body).toContain("confirmButtonText: L.Close");
+    expect(body).toContain("confirmButtonText: L().Close");
     expect(body).toContain("showCancelButton: false");
     // "İptal" was the old fallback chain's answer, and it promised an undo that does not exist.
     expect(body).not.toContain("L.Cancel");
+    expect(body).not.toContain("L().Cancel");
   });
 });
 
@@ -121,10 +123,10 @@ describe("every string on it is localized — no English fallback survives", () 
     const body = dialogSource();
     [/Invite link/i, /Share this set-password link/i, /'Copied'/, /'Copy'/, /'OK'/]
       .forEach((literal) => expect(body, `a hardcoded string is still in the dialog: ${literal}`).not.toMatch(literal));
-    expect(body).toContain("L.InviteLinkTitle");
-    expect(body).toContain("L.InviteLinkHint");
-    expect(body).toContain("L.Copy");
-    expect(body).toContain("L.Copied");
+    expect(body).toContain("L().InviteLinkTitle");
+    expect(body).toContain("L().InviteLinkHint");
+    expect(body).toContain("L().Copy");
+    expect(body).toContain("L().Copied");
   });
 
   LANGS.forEach((lang) => {

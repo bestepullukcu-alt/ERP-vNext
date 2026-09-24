@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>邀请待接受：此人通过邮件中的链接设置密码后，账户将自动激活。在此之前无法重置密码，请改为重新发送邀请。</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>已存在使用此电子邮件地址的用户。</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>该用户尚未接受邀请。用户设置密码后账户将激活；如有需要，请重新发送邀请。</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>该用户将被删除，其角色将被移除；账户无法恢复。可以使用同一电子邮件地址开设新账户。</value></data>
 </root>
