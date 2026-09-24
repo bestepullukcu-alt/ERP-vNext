@@ -6149,14 +6149,13 @@ sorgusu (HTTP+Mongo tel testi yakaladı) · kendine bekleme · answer→reason �
 InquiryAnswer, ikisi de tutuldu). Birleşik ağaç: subset 166, Web 229, vitest 3235/24 = taban, Platform 5121/50 → fazladan tek
 kırmızı `BusinessReferenceDataMongoResidueSweeperTests` "database is currently being dropped" yarışı, tek başına 5/5 yeşil.
 
-**Canlı (2026-09-24, birleşik yapı):** Görev Merkezi 12 kalem, onay kaleminde BL-437 sebep cümlesi, kısayollar kayıtlı,
-soru kalemi 0 (kimseye sorulmamış — beklenen); görev detayında "Bilgi bekle" diyaloğu açılıyor/kapanıyor, görev
-InProgress kalıyor. **Kişi seçici çıkmadı ve iki kullanıcılı cevap adımı koşulamadı:** dev kiracısında atanabilir kişi 0 —
-5 pozisyon `HEADQUARTERS` birimini (`9507cd8d…`) gösteriyor ama birim artık yok (404, liste boş; 2026-09-11 gecesi vardı),
-`/LegalEntities/api` 502 (MDM 5059 kapalı). İki kullanıcılı akış telde kanıtlı (`TaskInquiryHttpMongoTests`, gerçek Mongo +
-iki jeton: sor → soruyu yalnız sorulan görür → yabancı 403 → cevap → InProgress + çip → sorulan tekrar 404/403).
-**Sahip adımı:** organizasyon verisini geri getir (birim + pozisyonları ona bağla + admin ve ikinci kullanıcıya koltuk; MDM
-açık olmalı), ikinci kullanıcıyla giriş, sor → cevapla turu.
+**Canlı (2026-09-24, birleşik yapı, iki kullanıcı — kayıt `docs/records/tests/task-center/2026-09-24-inquiry.md`):**
+admin "Bilgi bekle" ile Ayşe'ye sordu → Ayşe'ye e-posta (Mailpit; ilk deneme Mailpit kapalıyken reddedildi, kuyruk 1 dk sonra
+teslim etti) → Ayşe'nin gelen kutusunda tek kalem "Soru · S10B-Planla Testi", tek eylem Cevapla; görevi okuyabildi (200) →
+cevapladı → listesi boşaldı, görev ona 404 → admin'e e-posta → görev InProgress v4, kartta `inquiryAnswer`, detayda "Ayşe
+Korkmaz cevapladı: …", Etkinlik'te "Soru cevaplandı". Ön koşul: dev org verisi (HEADQUARTERS ekrandan yumuşak silinmişti)
+sahip tarafından yeniden kuruldu. Bulgular: BL-443 (seçicide fare tıklaması diyaloğu kapatıyor), BL-444 (detayda dört
+bekleme kutusu), BL-445 (bildirim e-postası dili en).
 
 **Bilinen boşluk (ayrı kayıt):** BL-442 — yorum ekleme uç noktası okuma kuralını sormuyor.
 
@@ -6336,6 +6335,46 @@ Düzeltme: handler'da `_readAccess.CanReadAsync(task, _currentUser.UserId)` → 
 aynı; 403 görevin varlığını sızdırır). PUT/DELETE yorum yolları da aynı soruyu sormalı. Test: okuyamayan yazar → 404,
 hiçbir yorum yazılmadı; sorulan kişi (BL-439) → yazabilir. Gerileme riski: düşük — ek kontrol, mevcut yazarlar (holder,
 talep sahibi, izleyici, yönetici) zaten okuma kuralından geçiyor.
+
+---
+
+### BL-443
+
+**Diyalog içindeki kişi seçicide seçeneğe fareyle tıklayınca diyalog kapanıyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: WCN "Bilgi bekle" diyaloğunda `#wcnWaitingOn` select2 seçicisi (`DitenDialog.bindDialogSelect2`); açılır listeden
+"Ayşe Korkmaz"a fareyle tıklanınca SweetAlert diyaloğu seçim yapılmadan kapandı (iki kez). Klavye (Aşağı + Enter) çalıştı.
+Olası neden: select2 açılır listesi popup'ın dışına çiziliyor ve SweetAlert `allowOutsideClick` bunu dışarı tıklama sayıyor;
+ya da `dropdownParent` popup değil. "Başkasına ata" aynı yardımcıyı kullanır — onda da beklenir. Test: gerçek DOM'da
+select2 seçeneğine mousedown+click → diyalog açık kalmalı, değer seçilmeli.
+
+---
+
+### BL-444
+
+**Bekleyen görevin detay sayfasında aynı bekleme cümlesi dört kutuda tekrar ediyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: görev Waiting'e alınınca WCN detayında üst üste dört kutu: "Şu an duraklatıldı: Ayşe Korkmaz bekleniyor — …",
+"Bu görev duraklatıldı: Ayşe Korkmaz bekleniyor — …", "Bu görev başkasından gelecek bilgiyi bekliyor.", "Ayşe Korkmaz
+bekleniyor — …" (resx: `…duraklatıldı: {0}` ×2, `NoticeWaitingExternal`, `{0} bekleniyor — {1}`). Bilgi aynı, dört kaynak
+(durum şeridi rehberi + BL-437/439 rehberi + bekleme notu + bekleme çipi). Tek cümle + çip yeter; hangisinin kalacağı UX kararı.
+
+---
+
+### BL-445
+
+**Görev bildirim e-postaları Türkçe kiracıda İngilizce gidiyor**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+
+Ölçüldü: `platform.tasks.inquiryasked` ve `inquiryanswered` şablonları 7 dilde tohumlu; dispatch günlüğü `Locale="en"`;
+Mailpit'teki iki e-posta İngilizce ("A task is waiting for your answer", "Your question was answered"); arayüz Türkçe.
+Alıcının dili çözülmüyor (kullanıcı tercihi / kiracı varsayılanı) ya da varsayılan en. Karar: alıcı dili = kullanıcı tercihi →
+kiracı varsayılanı → en; ölçüm: Türkçe tercihli alıcıya tr şablon.
 
 ---
 
