@@ -6128,7 +6128,37 @@ dialog açıkken `j` sessiz, arama kutusunda `j` harf, görev detayında `e` →
 
 **Soru sorulan kişiye hiçbir şey gitmiyor — "Bilgi bekle" akışının ikinci yarısı yok**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: sahip (Görev Merkezi geri bildirimi) · KAYIT: 2026-09-23
+DURUM: KAPANDI (sahip yeniden testi bekliyor) — WP-PSS-TASK-INQUIRY-02, `aa452d0bf` (feat/pss-task-inquiry, 61ad9b41d tabanı)
+→ merge `9d711ae18` + CT guard `154f9e2fb` (integration/2026-09-21-test, 2026-09-24) · SAHİP: CT · BULAN: sahip (Görev Merkezi
+geri bildirimi) · KAYIT: 2026-09-23
+
+**Ne yapıldı:** "Bilgi bekle" ile kişi seçilince o kişinin gelen kutusuna ayrı bir kalem düşüyor (`workIntent=inquiry`,
+tek eylem `answer`; soru gövdede, soran "talep eden" satırında; "Kaynak kaydını aç" bağlantısı görevin detayına).
+Cevap görevin geçmişine `inquiryAnswered` olarak yazılıyor, bekleme temizleniyor, görev park edildiği yaşam döngüsüne dönüyor;
+çalışan işe dönüş `resume`'un sorduğu onay (MOD-0023) ve bağımlılık kapılarını yeniden soruyor — engel varsa Open'a iner,
+cevap yine kaydedilir. Tek yüklem (`TaskInquiryRules.IsAskedOf` = Waiting ∧ WaitingOnUserId): kim görür, kim okur, kim
+cevaplar aynı kişi; okuma kuralına EKLEMELİ (mevcut erişim daralmadı; talep sahibi sorulduğunda detay sayfası duruyor).
+Kendine bekleme reddi (answer, resume'un etrafından dolanamaz). Soran bildirim: `platform.tasks.inquiryasked`; cevap gelince
+sahibe `platform.tasks.inquiryanswered` (şablon tohumu 7 dil). Sahibin kartı "X cevapladı" çipi + cevabı tooltip'te — yalnız
+açık işte ve son söz cevapken. WCN + Tasks resx 13+3 anahtar × 7 dil.
+
+**CT kabulü:** Platform 5096/49 kırmızı = taban (İş Referans Verisi Mongo, eski borç); vitest 3133/24 = taban; Web 229; mimari 18.
+CT sabotajları (ajanınkinden farklı) 7/8 kırmızı: yaşam döngüsüz IsAskedOf · kapısız dönüş · daimi okuma · kiracısız Mongo
+sorgusu (HTTP+Mongo tel testi yakaladı) · kendine bekleme · answer→reason · ar `{title}`. Kırmızı vermeyen C6 (bitmiş işte
+çip) için `TaskInquiryCtTests` eklendi. Merge çakışması yalnız `WorkAggregationModels.cs` (BL-437 ArrivalReason + BL-439
+InquiryAnswer, ikisi de tutuldu). Birleşik ağaç: subset 166, Web 229, vitest 3235/24 = taban, Platform 5121/50 → fazladan tek
+kırmızı `BusinessReferenceDataMongoResidueSweeperTests` "database is currently being dropped" yarışı, tek başına 5/5 yeşil.
+
+**Canlı (2026-09-24, birleşik yapı):** Görev Merkezi 12 kalem, onay kaleminde BL-437 sebep cümlesi, kısayollar kayıtlı,
+soru kalemi 0 (kimseye sorulmamış — beklenen); görev detayında "Bilgi bekle" diyaloğu açılıyor/kapanıyor, görev
+InProgress kalıyor. **Kişi seçici çıkmadı ve iki kullanıcılı cevap adımı koşulamadı:** dev kiracısında atanabilir kişi 0 —
+5 pozisyon `HEADQUARTERS` birimini (`9507cd8d…`) gösteriyor ama birim artık yok (404, liste boş; 2026-09-11 gecesi vardı),
+`/LegalEntities/api` 502 (MDM 5059 kapalı). İki kullanıcılı akış telde kanıtlı (`TaskInquiryHttpMongoTests`, gerçek Mongo +
+iki jeton: sor → soruyu yalnız sorulan görür → yabancı 403 → cevap → InProgress + çip → sorulan tekrar 404/403).
+**Sahip adımı:** organizasyon verisini geri getir (birim + pozisyonları ona bağla + admin ve ikinci kullanıcıya koltuk; MDM
+açık olmalı), ikinci kullanıcıyla giriş, sor → cevapla turu.
+
+**Bilinen boşluk (ayrı kayıt):** BL-442 — yorum ekleme uç noktası okuma kuralını sormuyor.
 
 Ölçüldü: soru hem "kime" hem "neden" olarak saklanıyor (`TaskItem.WaitingOnUserId`, `WaitingReason`;
 `InquireTaskItemRequest(ExpectedVersion, Reason, WaitingOnUserId?)`) ve **soranın** kartında doğru gösteriliyor
@@ -6289,6 +6319,25 @@ GxP için ya hep ya hiç), denetim izi (`IAuditableCommand`), yetki (`{module}.i
 
 ---
 
+
+### BL-442
+
+**Yorum ekleme, görevi okuyamayan kişiye de açık — uç nokta yetki anahtarına bakıyor, okuma kuralına değil**
+
+DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: WP-PSS-TASK-INQUIRY-02 ajanı (rapor), CT doğruladı · KAYIT: 2026-09-24
+
+Ölçüldü: `POST api/v1/tasks/{id}/comments` yalnız `[HasPermission(TaskPermissions.Read)]` ile korunuyor;
+`AddTaskCommentHandler` `ITaskReadAccessPolicy`'yi yalnız @bahsedilen kişileri doğrulamak için kullanıyor
+(`TaskMentionValidation`), yazarın görevi okuyabilip okuyamadığını sormuyor. `platform.tasks.read` anahtarı olan herkes
+kiracıdaki her göreve (okuyamadığı dahil) yorum yazabilir; aynı kişi görevi GET ile açamaz (okuma kuralı 404 verir) ama id'yi
+bilirse yorum bırakır. BL-439 bunu büyütmedi (sorulan kişi zaten okuma kazanıyor) ama gördü.
+
+Düzeltme: handler'da `_readAccess.CanReadAsync(task, _currentUser.UserId)` → değilse 404 (okuma kuralının verdiği cevapla
+aynı; 403 görevin varlığını sızdırır). PUT/DELETE yorum yolları da aynı soruyu sormalı. Test: okuyamayan yazar → 404,
+hiçbir yorum yazılmadı; sorulan kişi (BL-439) → yazabilir. Gerileme riski: düşük — ek kontrol, mevcut yazarlar (holder,
+talep sahibi, izleyici, yönetici) zaten okuma kuralından geçiyor.
+
+---
 
 ### BL-393
 
