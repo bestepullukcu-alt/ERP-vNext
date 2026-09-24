@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>Приглашение ожидает ответа: учётная запись станет активной, когда человек задаст пароль по ссылке из письма. До этого сброс пароля недоступен — отправьте приглашение повторно.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Пользователь с таким адресом электронной почты уже существует.</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Этот пользователь ещё не принял приглашение. Учётная запись активируется, когда он задаст пароль; при необходимости отправьте приглашение повторно.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>Пользователь удаляется, его роли снимаются; учётную запись нельзя восстановить. С тем же адресом электронной почты можно открыть новую учётную запись.</value></data>
 </root>

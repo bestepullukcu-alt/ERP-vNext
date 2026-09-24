@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>Invitación pendiente: la cuenta se activa cuando la persona establece su contraseña mediante el enlace enviado por correo. Hasta entonces no se puede restablecer la contraseña; reenvíe la invitación en su lugar.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Ya existe un usuario con esta dirección de correo electrónico.</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Este usuario aún no ha aceptado la invitación. La cuenta se activa cuando establezca su contraseña; reenvíe la invitación si es necesario.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>El usuario se elimina y se le retiran sus roles; la cuenta no se puede restaurar. Se puede abrir una cuenta nueva con la misma dirección de correo electrónico.</value></data>
 </root>

@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>Invitation pending: the account becomes active when the person sets a password through the e-mailed link. Password reset is not available until then — resend the invitation instead.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>A user with this e-mail address already exists.</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>This user has not accepted the invitation yet. The account activates when they set their password; resend the invitation if needed.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>The user is deleted and their roles are removed; the account cannot be restored. A new account can be opened with the same e-mail address.</value></data>
 </root>

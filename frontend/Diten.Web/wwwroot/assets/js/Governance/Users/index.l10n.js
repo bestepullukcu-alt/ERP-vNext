@@ -12,7 +12,8 @@
         'AccountKind', 'AccountKindUnknown', 'AccountKindHuman', 'AccountKindService', 'ChangeAccountKind',
         'AccountKindChanged',
         'InviteLinkTitle', 'InviteLinkHint', 'Close', 'Copy', 'Copied',
-        'StatusInvited', 'InvitationPendingHint', 'ErrorUserEmailTaken', 'ErrorUserInvitationPending'
+        'StatusInvited', 'InvitationPendingHint', 'ErrorUserEmailTaken', 'ErrorUserInvitationPending',
+        'DeleteUserConfirmText', 'Import', 'ComingSoon'
     ];
 
     const logMissingKeys = (dictionary) => {

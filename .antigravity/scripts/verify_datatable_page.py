@@ -347,6 +347,18 @@ def strip_razor_comments(text: str) -> str:
     return re.sub(r"@\*[\s\S]*?\*@", "", text)
 
 
+def declares_no_selection(data_table_html: str) -> bool:
+    """True only when the page calls _ListShell AND writes `HasSelection = false` literally (BL-440 package 5).
+
+    A list with no bulk endpoint (Users: AuthService has none) has nothing a selection could act on, and a checkbox
+    that selects into nothing is the defect the shell exists to prevent. The exemption from the bulk surface is
+    therefore a DECLARATION, never an absence: a page that omits HasSelection (the C# default is also false) or
+    draws its own table stays under the full bulk contract. The coherence check still fails such a page if its JS
+    binds bulk selection anyway."""
+    page = strip_razor_comments(data_table_html)
+    return bool(LIST_SHELL_CALL.search(page)) and bool(re.search(r"\bHasSelection\s*=\s*false\b", page))
+
+
 def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) -> Tuple[str, List[Check]]:
     """Return the markup the page EFFECTIVELY renders, plus a red check per marker the shell file itself lacks.
 
@@ -449,6 +461,12 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
     reset_block = re.search(r"resetBtn \|\| 'btnFilterReset'\)\?\.addEventListener\('click', function \(e\) \{([\s\S]*?)\n\s*\}\);", factory)
     baseline_fn = re.search(r"function baseline\(\) \{[\s\S]*?filters: emptyFilters\(\), search: '', colVis: defaultColVis\(\), columnOrder: identityOrder\(\), order: baseOrder", factory)
     config_block = re.search(r"var config = Object\.assign\(\{\}, pageConfig, \{([\s\S]*?)initComplete:", factory)
+    # The factory binds bulk selection with whatever `bulk` the page hands it; a page that hands none (a list with no
+    # selection column) binds nothing, so the selection tokens are resolved only for a page that passes `bulk:`.
+    # Resolving them unconditionally made every no-selection list read as "JS binds bulk, markup has no column".
+    page_binds_bulk = bool(re.search(r"\bbulk\s*:", page))
+    bulk_tokens = ("bindBulkSelection(tableEl, dt, bulkOptions); reloadWithToast(dt, tableEl, key); clearSelection(tableEl, bulkOptions);"
+                   if page_binds_bulk else "reloadWithToast(dt, tableEl, key);")
 
     mechanics = [
         # (name, verified-in-factory, tokens the page checks look for)
@@ -482,7 +500,7 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
          "document.addEventListener('click', function (e) { var trigger = e.target.closest('.js-quick-view'); });"),
         ("Bulk selection + reload-with-toast + clear-selection wiring",
          "bindBulkSelection(options.tableEl, dt, options.bulk || {});" in factory and "reloadWithToast(dt, tableEl, messageKey, interpolationValue, options.bulk || {});" in factory and "function clearSelection(tableEl, options)" in factory,
-         "bindBulkSelection(tableEl, dt, bulkOptions); reloadWithToast(dt, tableEl, key); clearSelection(tableEl, bulkOptions);"),
+         bulk_tokens),
         ("Shared layer: createList builds through createCrudTable",
          "dt = createCrudTable({" in factory,
          "DitenDataTable.createCrudTable({ tableEl: tableEl });"),
@@ -662,12 +680,13 @@ def print_report(checks: List[Check]) -> None:
         print("\nResult: PASS")
 
 
-def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
+def compile_required_l10n_keys(is_v2: bool, has_bulk_surface: bool = True) -> List[Tuple[str, Pattern[str]]]:
     """
     Required L10n bridge keys for DataTable pages.
 
     v1 (legacy): minimal contract.
     v2 (data-dt-standard="v2"): toolbar/filter vocabulary keys are mandatory.
+    has_bulk_surface=False (a declared no-selection list, see declares_no_selection): no bulk vocabulary.
     """
     keys = [
         # Core shared status/actions
@@ -701,6 +720,9 @@ def compile_required_l10n_keys(is_v2: bool) -> List[Tuple[str, Pattern[str]]]:
                 "Status",
             ]
         )
+
+    if not has_bulk_surface:
+        keys = [k for k in keys if k not in ("BulkDelete", "BulkDeleteConfirm")]
 
     # Deduplicate while keeping order
     seen = set()
@@ -802,6 +824,7 @@ def main() -> int:
     dt_defaults_text = read_text(dt_defaults_js)
     css_text = read_text(backbone_custom_css)
     data_table_html = read_text(data_table_partial) if data_table_partial.exists() else ""
+    no_selection = declares_no_selection(data_table_html)
     data_table_html, list_shell_checks = resolve_list_shell(root, data_table_partial, data_table_html)
     checks.extend(list_shell_checks)
     page_marker = re.search(r"data-dt-data-mode\s*=\s*\"(server|client)\"", data_table_html + index_html)
@@ -1192,7 +1215,7 @@ def main() -> int:
             "Missing Object.assign merge into window.L10n in index.l10n.js",
         )
     )
-    for key, pat in compile_required_l10n_keys(is_v2):
+    for key, pat in compile_required_l10n_keys(is_v2, has_bulk_surface=not no_selection):
         checks.append(
             check_contains(
                 index_l10n_partial,
@@ -1363,7 +1386,22 @@ def main() -> int:
     # Bulk action / selection contract (v2 modules)
     # Quality gate (quality-gate-datatable.md) requires bulk surface; verifier enforces it
     # so a green static run cannot pass while bulk selection is silently broken.
-    if is_v2:
+    #
+    # ⚠ ONE EXEMPTION, AND IT IS DECLARED (BL-440 package 5): a list whose _DataTable calls the shell with
+    # `HasSelection = false` has no bulk surface to verify — Users, where AuthService has no bulk endpoint. The
+    # coherence checks above still hold it: JS that binds bulk selection with no selection column is red.
+    if is_v2 and no_selection:
+        checks.append(Check("Bulk surface: not applicable — _DataTable declares HasSelection = false (no selection column, no bulk endpoint)", True))
+        checks.append(
+            check_contains(
+                index_js,
+                js_text,
+                re.compile(r"reloadWithToast\s*\(|reloadWithSuccessToast\s*\("),
+                "index.js uses shared reload-with-toast lifecycle (DitenDataTable.reloadWithToast)",
+                "Missing reload-with-toast lifecycle wiring",
+            )
+        )
+    elif is_v2:
         checks.append(
             check_contains(
                 data_table_partial if data_table_partial.exists() else index_cshtml,

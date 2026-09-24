@@ -54,4 +54,5 @@
   <data name="InvitationPendingHint" xml:space="preserve"><value>الدعوة معلّقة: يصبح الحساب نشطًا تلقائيًا عندما يعيّن الشخص كلمة المرور عبر الرابط المرسل بالبريد الإلكتروني. لا تتوفر إعادة تعيين كلمة المرور حتى ذلك الحين؛ أعد إرسال الدعوة بدلًا من ذلك.</value></data>
   <data name="ErrorUserEmailTaken" xml:space="preserve"><value>يوجد مستخدم بعنوان البريد الإلكتروني هذا بالفعل.</value></data>
   <data name="ErrorUserInvitationPending" xml:space="preserve"><value>لم يقبل هذا المستخدم الدعوة بعد. يتم تفعيل الحساب عندما يعيّن كلمة المرور؛ أعد إرسال الدعوة عند الحاجة.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>يُحذف المستخدم وتُزال أدواره؛ ولا يمكن استعادة الحساب. يمكن فتح حساب جديد بعنوان البريد الإلكتروني نفسه.</value></data>
 </root>
