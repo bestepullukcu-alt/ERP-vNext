@@ -6434,6 +6434,20 @@ tarafında ayrı ilerler. Karar takvim konuşmasında verilecek.
 
 ---
 
+### BL-448
+
+**Başlattıklarım'da görevin kimde olduğu görünmüyor — her satır "talep eden" çipini çiziyor**
+
+DURUM: KAPANDI — `fix/wc-outbox-assignee` (2026-09-24; canlı doğrulama sahibin girişinden sonra) · SAHİP: CT · BULAN: sahip (kontrol turu) · KAYIT: 2026-09-24
+
+Ölçüldü: liste satırının kişi çipi her zaman `item.requester` (app.js `chip('requester', …)`); atanan yalnız detay sayfasında
+(`DetailAssignee`). Sahibin başlattığı ve başkasına verdiği işlerde çip "Ben"/kendi adı → "Ali'ye verdiğim hangisi" sorusu
+cevapsız. Düzeltme: satır, okuyanın başlattığı ve ADI BİLİNEN başka birinin tuttuğu işte tutan kişiyi çizer (ikon
+`bx-user-check`, tooltip `DetailAssignee` = "Atanan", 7 dilde var); gelen kutusu, kendine açılan iş, soru ve onay kalemleri
+aynen kalır. Guard `tests/wcn-outbox-assignee-chip-ct.test.js` (3): sabotaj (eski davranış) ilk testi kırmızı yapar.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**

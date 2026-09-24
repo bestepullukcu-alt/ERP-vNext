@@ -1632,8 +1632,25 @@
         blockedPrimaryReason(item) ? chip('secondary', 'bx-lock-alt', blockedPrimaryReason(item)) : '',
         isSnoozed(item) ? chip('secondary', 'bx-moon', tf('SnoozedUntil', item.snoozedUntil)) : '',
         (item.systemState && SYSSTATE[item.systemState]) ? chip(SYSSTATE[item.systemState].kind, SYSSTATE[item.systemState].icon, t(SYSSTATE[item.systemState].key)) : '',
-        item.requester ? chip('requester', 'bx-user', item.requester) : ''
+        personChip(item)
     ].join('');
+
+    /*
+     * WHO the row names. On work the reader RAISED and handed to somebody else (Başlattıklarım), the one fact
+     * the row must carry is who has it now — the requester chip would only say "Ben". Measured live 2026-09-24
+     * (owner): "Ali'ye görev atadım, listede hangisi Ali'de belli değil" — every row read the same. So a task
+     * the reader raised, held by a NAMED somebody else, shows the holder (title: Atanan); every other row keeps
+     * the requester chip exactly as before (inbox work, self-assigned work, questions, approvals).
+     *
+     * `raisedByViewer` / `viewerRole` / `assigneeNameKnown` are set by toPresentation BEFORE assignee/requester
+     * are flattened to strings (mock-data.js) — the person objects are gone by the time this runs.
+     */
+    const personChip = (item) => {
+        const heldByNamedOther = item.raisedByViewer && item.viewerRole !== 'Owner'
+            && item.assigneeNameKnown && item.assignee;
+        if (heldByNamedOther) { return chip('requester', 'bx-user-check', item.assignee, t('DetailAssignee')); }
+        return item.requester ? chip('requester', 'bx-user', item.requester) : '';
+    };
 
     const rowHtml = (item, opts) => {
         const compact = opts && opts.compact;
