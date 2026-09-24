@@ -206,7 +206,8 @@ public sealed class TaskWaitingAndCancelAuthorityTests
                         // assignment picker uses; these tests never name one, so empty directories are
                         // the honest arrangement.
                         new FakePositionAssignmentRepository(), new FakePositionRepository(),
-                        new FakeOrganizationUnitRepository())
+                        new FakeOrganizationUnitRepository(),
+                        new FakeTaskNotificationService(), NullLogger<InquireTaskItemHandler>.Instance)
             .Handle(
                 new InquireTaskItemCommand(task.Id, new InquireTaskItemRequest(task.Version, reason), "corr-inquire"),
                 CancellationToken.None);

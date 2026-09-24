@@ -48,4 +48,11 @@
   <data name="ChangeAccountKind" xml:space="preserve"><value>Modifier le type</value></data>
   <data name="AccountKindChanged" xml:space="preserve"><value>Type de compte mis à jour</value></data>
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Laissez vide pour garder le compte non confirmé.</value></data>
+  <data name="InviteLinkTitle" xml:space="preserve"><value>Lien d'invitation (développement)</value></data>
+  <data name="InviteLinkHint" xml:space="preserve"><value>Transmettez ce lien de définition du mot de passe à l'utilisateur. Affiché uniquement en développement.</value></data>
+  <data name="StatusInvited" xml:space="preserve"><value>Invité</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>Invitation en attente : le compte devient actif lorsque la personne définit son mot de passe via le lien envoyé par e-mail. La réinitialisation du mot de passe n'est pas disponible d'ici là ; renvoyez plutôt l'invitation.</value></data>
+  <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Un utilisateur possède déjà cette adresse e-mail.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Cet utilisateur n'a pas encore accepté l'invitation. Le compte s'active lorsqu'il définit son mot de passe ; renvoyez l'invitation si nécessaire.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>L'utilisateur est supprimé et ses rôles sont retirés ; le compte ne peut pas être restauré. Un nouveau compte peut être ouvert avec la même adresse e-mail.</value></data>
 </root>

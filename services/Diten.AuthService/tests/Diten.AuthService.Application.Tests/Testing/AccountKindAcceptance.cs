@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
+using System.Xml.Linq;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Domain.Authorization;
@@ -10,6 +11,8 @@ using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using Diten.AuthService.Persistence.Settings;
 using EphemeralMongo;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +21,31 @@ using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (R6) — the out-of-process acceptance host reuses this fixture's seed and
+// pre-flight logic (mongod start, guard checks, JWT-secret generation, repository-based SeedAsync) rather than
+// copying it. It needs `internal` access to a handful of TEST-ONLY members (the generated secret, the seed-only
+// disposal split below) that must never become part of this class's PUBLIC contract — InternalsVisibleTo, not a
+// visibility change, keeps that boundary intact.
+[assembly: InternalsVisibleTo("Diten.AuthService.AccountKindAcceptanceHost")]
+// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — the committable test project needs AccountKindSeedFailedException and
+// BeforeSeedHookForTesting to test the seed-failure DETECTION mechanism directly, in-process.
+[assembly: InternalsVisibleTo("Diten.AuthService.AccountKindAcceptanceHost.Tests")]
+
 namespace Diten.AuthService.Application.Tests.Testing;
+
+/// <summary>
+/// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — thrown ONLY when the fixture's own <c>SeedAsync</c> (repository
+/// writes + the read-back checks that verify the production DataSeeder's catalog keys actually landed) fails,
+/// never when mongod itself fails to start. The out-of-process host (W2) catches this type specifically to
+/// report protocol error code <c>seed-failed</c> (exit 4), distinct from <c>mongo-start-failed</c> (exit 2) for
+/// every other failure in the same start sequence.
+/// </summary>
+internal sealed class AccountKindSeedFailedException : Exception
+{
+    public AccountKindSeedFailedException(string message, Exception inner) : base(message, inner)
+    {
+    }
+}
 
 /// <summary>
 /// WP-INFRA-AUTH-ACCOUNT-KIND-01 — the ISOLATED real-provider acceptance fixture.
@@ -158,11 +185,77 @@ public static class AccountKindAcceptance
         private Seed? _seed;
         private readonly Dictionary<string, string?> _previousEnvironment = new();
         private bool _lockHeld;
+        private bool _isAcceptanceHostPath;
 
         public string ConnectionString => _runner?.ConnectionString ?? throw NotStarted();
         public WebApplicationFactory<Program> Factory => _factory ?? throw NotStarted();
         public Seed Seeded => _seed ?? throw NotStarted();
         public List<string> MongoLog { get; } = new();
+
+        /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (R6/C5) — TEST-ONLY. The mongod process id, for the out-of-process
+        /// host to report over the private channel (protocol §7 <c>ready.mongodPid</c>) so a supervisor's PID+
+        /// start-time verified cleanup can find it. <see cref="EphemeralMongo.IMongoRunner"/> does not expose the
+        /// process id on its public surface (measured: <c>IMongoRunner.Process</c> does not compile — that member
+        /// lives on an internal implementation type), so this resolves it the same way an external operator would:
+        /// by asking the OS which process owns the LISTEN socket on the runner's own port. Not part of the
+        /// fixture's external contract.
+        /// </summary>
+        internal int MongodProcessId
+        {
+            get
+            {
+                if (_runner is null)
+                {
+                    throw NotStarted();
+                }
+
+                var port = MongoUrl.Create(_runner.ConnectionString).Servers.Single().Port;
+                return ResolveListenerProcessId(port);
+            }
+        }
+
+        private static int ResolveListenerProcessId(int port)
+        {
+            var isWindows = OperatingSystem.IsWindows();
+            var psi = isWindows
+                ? new System.Diagnostics.ProcessStartInfo("netstat", "-ano")
+                : new System.Diagnostics.ProcessStartInfo("lsof", $"-nP -iTCP:{port} -sTCP:LISTEN -t");
+            psi.RedirectStandardOutput = true;
+            psi.UseShellExecute = false;
+
+            using var probe = System.Diagnostics.Process.Start(psi)
+                ?? throw new InvalidOperationException("could not start the process-lookup probe (lsof/netstat).");
+            var output = probe.StandardOutput.ReadToEnd();
+            probe.WaitForExit(5000);
+
+            if (isWindows)
+            {
+                foreach (var line in output.Split('\n'))
+                {
+                    if (line.Contains($":{port} ", StringComparison.Ordinal) && line.Contains("LISTENING", StringComparison.Ordinal))
+                    {
+                        var fields = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                        if (fields.Length > 0 && int.TryParse(fields[^1], out var winPid))
+                        {
+                            return winPid;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var line in output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                {
+                    if (int.TryParse(line, out var pid))
+                    {
+                        return pid;
+                    }
+                }
+            }
+
+            throw new InvalidOperationException($"could not resolve the mongod process id listening on port {port}.");
+        }
 
         /// <summary>
         /// TEST-ONLY (C1 §4/§5 leak guard). The random JWT secret THIS instance generated, exposed solely so
@@ -172,6 +265,28 @@ public static class AccountKindAcceptance
         /// Not part of the fixture's external contract.
         /// </summary>
         internal string? GeneratedJwtSecretForLeakGuardOnly { get; private set; }
+
+        /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (C8) — a fresh, random, per-instance password for the 4 SEED ACTORS
+        /// only (kindAdmin/pmo/creator/noPermission — the users a real login is performed as). Subjects (human,
+        /// unknown, service, …) keep <see cref="DisposablePassword"/> since nothing ever logs in as them. Computed
+        /// once per <see cref="AuthTestHost"/> instance so <see cref="SeedAsync"/> can hash the 4 actors with it
+        /// while every other existing caller of this fixture (in-process tests that never perform a real login)
+        /// is unaffected. Not part of the fixture's external contract.
+        /// </summary>
+        internal string ActorPassword { get; } = GenerateTestOnlyActorPassword();
+
+        private static string GenerateTestOnlyActorPassword()
+        {
+            Span<byte> bytes = stackalloc byte[18];
+            RandomNumberGenerator.Fill(bytes);
+            // Base64 can contain '/' and '+' which some password policies special-case oddly; swap for a fixed,
+            // still-random-looking separator so this never accidentally exercises a policy corner case unrelated
+            // to what the acceptance host is testing. Always includes upper/lower/digit by construction (Base64
+            // alphabet) plus one guaranteed special character appended, satisfying every PasswordPolicyService
+            // class requirement the repo's own default policy could plausibly enable.
+            return Convert.ToBase64String(bytes).Replace('/', 'x').Replace('+', 'y') + "!1Aa";
+        }
 
         /// <summary>
         /// TEST-ONLY seam (C3, T5). When set, <see cref="DisposeAsync"/> calls this INSTEAD of
@@ -192,6 +307,18 @@ public static class AccountKindAcceptance
         }
 
         /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — TEST-ONLY seam. When set, invoked AFTER the real host is
+        /// built (the production DataSeeder has already run against it) but BEFORE this fixture's own
+        /// <c>SeedAsync</c> — including its read-back checks that verify the production seeder's catalog keys
+        /// actually landed. Lets a test simulate "the production seeder silently swallowed an error" (its own
+        /// try/catch in Persistence/DependencyInjection.cs never surfaces one) by directly removing something
+        /// the production seeder just wrote, WITHOUT touching production code: the read-back check that follows
+        /// is then exercised against a genuinely corrupted catalog, the same way a real silent failure would
+        /// leave it. Not part of the fixture's external contract.
+        /// </summary>
+        internal Func<AuthTestHost, Task>? BeforeSeedHookForTesting { get; set; }
+
+        /// <summary>
         /// The isolated database, for direct reads (audit rows) — resolved from the HOST's own DI so the reads use the
         /// exact client settings and Guid representation the production code writes with. (Measured: a second
         /// MongoClient with default settings read zero audit rows while the row was there — the Guid encoding differed.)
@@ -206,7 +333,28 @@ public static class AccountKindAcceptance
             return host;
         }
 
-        public Task InitializeAsync() => InitializeCoreAsync(injectFailureForTesting: false);
+        /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (C9) — same as <see cref="StartAsync()"/>, but mongod's data
+        /// directory is the supplied (supervisor-owned, already lstat-verified 0700) directory instead of
+        /// EphemeralMongo's own auto-generated temp path. Not part of the IAsyncLifetime contract (that interface
+        /// requires a strictly parameterless InitializeAsync — see below) and never called by any existing
+        /// in-process xunit test.
+        /// <para>G1 (Aşama G) — <paramref name="emptyContentRootDirectory"/> is the run-owned, EMPTY directory the
+        /// prep host uses as its content root. Measured: the API's own Program.cs reads configuration EAGERLY
+        /// (observability options, secret validation, JwtBearer issuer/audience, Mongo settings, DataSeeder) before
+        /// <c>builder.Build()</c>, i.e. before any <c>ConfigureAppConfiguration</c> callback can clear sources — so
+        /// the only way that window never sees the API's checked-in appsettings.json is a content root with nothing
+        /// in it. A directory that has ANY entry is refused before mongod or the host is built.</para>
+        /// </summary>
+        public static async Task<AuthTestHost> StartWithMongoDataDirectoryAsync(
+            string mongoDataDirectory, string emptyContentRootDirectory, Func<AuthTestHost, Task>? beforeSeedHookForTesting = null)
+        {
+            var host = new AuthTestHost { BeforeSeedHookForTesting = beforeSeedHookForTesting };
+            await host.InitializeCoreAsync(injectFailureForTesting: false, mongoDataDirectory, emptyContentRootDirectory);
+            return host;
+        }
+
+        public Task InitializeAsync() => InitializeCoreAsync(injectFailureForTesting: false, mongoDataDirectory: null);
 
         /// <summary>
         /// TEST-ONLY seam (never used by AccountKindEndpointTests or any production-facing test). Runs the EXACT
@@ -217,10 +365,14 @@ public static class AccountKindAcceptance
         /// nothing in this process can do once the overrides are applied — see the class remarks). Not part of the
         /// fixture's external contract: <see cref="InitializeAsync"/>'s own signature and behavior are unchanged.
         /// </summary>
-        internal Task InitializeAsync_ForTestingInjectedFailure() => InitializeCoreAsync(injectFailureForTesting: true);
+        internal Task InitializeAsync_ForTestingInjectedFailure() => InitializeCoreAsync(injectFailureForTesting: true, mongoDataDirectory: null);
 
-        private async Task InitializeCoreAsync(bool injectFailureForTesting)
+        private async Task InitializeCoreAsync(bool injectFailureForTesting, string? mongoDataDirectory, string? contentRootDirectory = null)
         {
+            // G3 (Aşama G) — recorded on the instance BEFORE anything can fail, so every diagnostic site below
+            // (including DisposeResourcesAsync, which DisposeAsync also reaches later) knows which path it is on.
+            _isAcceptanceHostPath = mongoDataDirectory is not null;
+
             await StartLock.WaitAsync().ConfigureAwait(false);
             _lockHeld = true;
             Interlocked.Increment(ref ActiveCriticalSections);
@@ -230,14 +382,27 @@ public static class AccountKindAcceptance
             {
                 try
                 {
+                    // G1 (Aşama G) — refuse before mongod or the host exists: the prep host's content root must be
+                    // a fully-qualified, existing directory with no entry at all (see StartWithMongoDataDirectoryAsync).
+                    if (_isAcceptanceHostPath)
+                    {
+                        EnsureEmptyAcceptanceContentRoot(contentRootDirectory);
+                    }
+
                     var binaryDirectory = ResolveLocalMongoBinaryDirectory();
                     // EphemeralMongo.Core 1.x: synchronous Run; the option is spelled StandardOuputLogger in this version.
-                    _runner = MongoRunner.Run(new MongoRunnerOptions
+                    var runnerOptions = new MongoRunnerOptions
                     {
                         BinaryDirectory = binaryDirectory,
                         StandardOuputLogger = line => MongoLog.Add("[mongod:out] " + line),
                         StandardErrorLogger = line => MongoLog.Add("[mongod:err] " + line)
-                    });
+                    };
+                    if (mongoDataDirectory is not null)
+                    {
+                        runnerOptions.DataDirectory = mongoDataDirectory;
+                    }
+
+                    _runner = MongoRunner.Run(runnerOptions);
 
                     // C1 §1(b) — refuse BEFORE touching any data on the runner if it somehow bound the shared port.
                     AccountKindAcceptanceGuard.EnsureRunnerIsNotTheSharedServer(_runner.ConnectionString);
@@ -255,6 +420,18 @@ public static class AccountKindAcceptance
                     var jwtSecret = GenerateTestOnlyJwtSecret();
                     GeneratedJwtSecretForLeakGuardOnly = jwtSecret;
 
+                    // F10 — ONLY the acceptance-host prep path (entered via StartWithMongoDataDirectoryAsync,
+                    // i.e. mongoDataDirectory is not null) gets an isolated profile: a non-Development
+                    // environment name (Development is what gates ASP.NET's own automatic AddUserSecrets call)
+                    // and, below, a configuration chain built EXCLUSIVELY from these test-owned overrides — no
+                    // appsettings.json/appsettings.Development.json read from the API's own content root, no
+                    // user secrets. The three OTHER consumers of this fixture (AccountKindAcceptanceGuardTests,
+                    // AccountKindEndpointTests, UserDisplayLabelEndpointTests — all reach this via
+                    // InitializeAsync()/InitializeAsync_ForTestingInjectedFailure(), which always pass
+                    // mongoDataDirectory: null) are UNCHANGED: they keep "Development" exactly as before.
+                    var isAcceptanceHostPath = _isAcceptanceHostPath;
+                    var hostEnvironmentName = isAcceptanceHostPath ? "AcceptanceHostPrep" : "Development";
+
                     var overrides = new Dictionary<string, string?>
                     {
                         ["MongoDbSettings__ConnectionString"] = _runner.ConnectionString,
@@ -263,9 +440,33 @@ public static class AccountKindAcceptance
                         ["Smtp__Enabled"] = "false",
                         ["TenantResolution__DevBypassEnabled"] = "false",
                         ["Observability__Metrics__Enabled"] = "false",
-                        ["ASPNETCORE_ENVIRONMENT"] = "Development",
+                        ["ASPNETCORE_ENVIRONMENT"] = hostEnvironmentName,
                         ["JwtSettings__Secret"] = jwtSecret
                     };
+
+                    if (isAcceptanceHostPath)
+                    {
+                        // F10 — measured: with appsettings.Development.json/user secrets no longer read at all for
+                        // this path, AuthService's own required-secret validation (SecretServiceCollectionExtensions)
+                        // failed on InternalEventAuth:ApiKey / PlatformService:InternalApiKey — this prep host was
+                        // SILENTLY relying on whatever non-test-owned source (checked-in appsettings.Development.json
+                        // or real user secrets) happened to supply those two values before. Test-owned, disposable
+                        // values close that gap; this prep host's own login-settings/internal-event calls are never
+                        // actually exercised (only the production DataSeeder + this fixture's SeedAsync run here),
+                        // so these only need to satisfy startup validation, not be reachable secrets.
+                        overrides["InternalEventAuth__ApiKey"] = GenerateTestOnlyJwtSecret();
+                        overrides["PlatformService__InternalApiKey"] = GenerateTestOnlyJwtSecret();
+
+                        // G2(b)(i) (Aşama G) — the same sink-off values the API child already gets (Program.cs). They
+                        // are set as process environment variables below, so the EAGER window (CreateBuilder's own
+                        // environment source) sees them, and they are also the late window's only source. Measured:
+                        // Observability:Tracing:OtlpExporterEnabled is NOT forced — its class default is false, the
+                        // appsettings.json that set it is no longer read (G1), the host's environment allow-list
+                        // removes any inherited value, and OTEL_SDK_DISABLED=true turns the OpenTelemetry SDK off
+                        // wholesale even if an exporter were registered.
+                        overrides["Observability__Seq__Enabled"] = "false";
+                        overrides["OTEL_SDK_DISABLED"] = "true";
+                    }
                     foreach (var (key, value) in overrides)
                     {
                         _previousEnvironment[key] = Environment.GetEnvironmentVariable(key);
@@ -281,8 +482,11 @@ public static class AccountKindAcceptance
 
                     // C1 §1(c) — resolve the SAME configuration chain Program.cs will read (appsettings.json →
                     // appsettings.Development.json → user secrets → environment variables), WITHOUT building the host,
-                    // and refuse here if it does not already land on the isolated database.
-                    var preview = BuildEffectiveHostConfigurationPreview();
+                    // and refuse here if it does not already land on the isolated database. F10/G2(a) — for the
+                    // acceptance path this preview must mirror what the REAL factory build below will actually do
+                    // (the test-owned overrides only, as an in-memory source), or the §1(c) comparison would no
+                    // longer mean what it claims to.
+                    var preview = BuildEffectiveHostConfigurationPreview(isAcceptanceHostPath, overrides);
                     AccountKindAcceptanceGuard.EnsureEffectiveConfigurationTargetsTheIsolatedDatabase(
                         preview, _runner.ConnectionString, DatabaseName);
 
@@ -294,10 +498,43 @@ public static class AccountKindAcceptance
 
                     _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
                     {
-                        builder.UseEnvironment("Development");
+                        builder.UseEnvironment(hostEnvironmentName);
                         // BL-412 — additive seam, a no-op for every host but SelfRegistrationTestHost. Applied here, inside
                         // the same lock hold as the env overrides, so a derived host can never build against other settings.
                         Microsoft.AspNetCore.TestHost.WebHostBuilderExtensions.ConfigureTestServices(builder, ConfigureTestServices);
+
+                        if (isAcceptanceHostPath)
+                        {
+                            // G1 (Aşama G) — the EAGER window. UseContentRoot flows through WebApplicationFactory's
+                            // deferred host builder as host configuration (a command-line argument to the API's
+                            // CreateBuilder), exactly like UseEnvironment above — measured: the environment name
+                            // already reached CreateBuilder this way. With an empty content root, CreateBuilder's own
+                            // appsettings.json / appsettings.{Environment}.json sources find nothing, so every value
+                            // Program.cs binds BEFORE Build (observability, secret validation, JwtBearer
+                            // issuer/audience, Mongo, DataSeeder) comes only from the test-owned environment
+                            // overrides set above.
+                            builder.UseContentRoot(contentRootDirectory!);
+
+                            // F10/G2(a) — the LATE window. Strip whatever the API's own CreateBuilder() added and
+                            // rebuild from ONLY the fixture's own overrides dictionary as an in-memory source — no
+                            // file provider and no environment-variable provider, so nothing else in this process's
+                            // environment can reach the built host's configuration. ConfigureAppConfiguration
+                            // callbacks registered here run at Build, after CreateBuilder assembled its defaults.
+                            builder.ConfigureAppConfiguration((_, config) =>
+                            {
+                                config.Sources.Clear();
+                                config.AddInMemoryCollection(ToConfigurationKeys(overrides));
+                            });
+
+                            // Measured (Aşama G): AddAuthentication registers DataProtection, whose hosted service
+                            // creates a key ring at start under $HOME/.aspnet/DataProtection-Keys — a directory that is
+                            // resolved ONCE per process and cached, so an in-process test that isolates HOME for one
+                            // call left that key directory behind (dak-f10-home-*/.aspnet/DataProtection-Keys/key-*.xml)
+                            // and a test that does not isolate HOME would write under the developer's real HOME. The
+                            // prep host only seeds; its keys never need to outlive it, so they stay in memory.
+                            builder.ConfigureServices(services => services.Configure<KeyManagementOptions>(
+                                options => options.XmlRepository = new InMemoryXmlRepository()));
+                        }
                     });
 
                     // Force the host to build now so a startup failure surfaces here, with its message, not in a test.
@@ -326,9 +563,10 @@ public static class AccountKindAcceptance
                     }
                     catch (Exception cleanupEx)
                     {
-                        Console.Error.WriteLine(
-                            "[AccountKindAcceptance] cleanup after a startup failure raised its own exception "
-                            + $"(suppressed; the startup failure is what propagates): {cleanupEx}");
+                        Console.Error.WriteLine(_isAcceptanceHostPath
+                            ? AcceptancePathDiagnostic("startup-cleanup-failed", cleanupEx)
+                            : "[AccountKindAcceptance] cleanup after a startup failure raised its own exception "
+                              + $"(suppressed; the startup failure is what propagates): {cleanupEx}");
                     }
 
                     throw;
@@ -352,9 +590,14 @@ public static class AccountKindAcceptance
             // here still cleans up the resources this Start() created (mirrors the pre-build catch above).
             try
             {
+                if (BeforeSeedHookForTesting is { } beforeSeedHook)
+                {
+                    await beforeSeedHook(this);
+                }
+
                 _seed = await SeedAsync(this);
             }
-            catch
+            catch (Exception seedEx)
             {
                 try
                 {
@@ -362,12 +605,19 @@ public static class AccountKindAcceptance
                 }
                 catch (Exception cleanupEx)
                 {
-                    Console.Error.WriteLine(
-                        "[AccountKindAcceptance] cleanup after a seed failure raised its own exception "
-                        + $"(suppressed; the seed failure is what propagates): {cleanupEx}");
+                    Console.Error.WriteLine(_isAcceptanceHostPath
+                        ? AcceptancePathDiagnostic("seed-cleanup-failed", cleanupEx)
+                        : "[AccountKindAcceptance] cleanup after a seed failure raised its own exception "
+                          + $"(suppressed; the seed failure is what propagates): {cleanupEx}");
                 }
 
-                throw;
+                // WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (T11) — wrapped in a distinct exception TYPE so the
+                // out-of-process host (W2) can tell "mongod itself never came up" (mongo-start-failed) apart from
+                // "mongod is fine but seeding on top of it failed" (seed-failed) — including the case where the
+                // PRODUCTION DataSeeder silently swallowed its own error (Persistence/DependencyInjection.cs's
+                // catch) and this fixture's own read-back checks above (the two ExplicitGrantOnlyPermissions
+                // lookups) are what actually catches it. No production code changes; this is the detection.
+                throw new AccountKindSeedFailedException(seedEx.Message, seedEx);
             }
         }
 
@@ -403,7 +653,9 @@ public static class AccountKindAcceptance
                 catch (Exception ex)
                 {
                     first ??= ex;
-                    Console.Error.WriteLine($"[AccountKindAcceptance] factory disposal failed: {ex}");
+                    Console.Error.WriteLine(_isAcceptanceHostPath
+                        ? AcceptancePathDiagnostic("factory-disposal-failed", ex)
+                        : $"[AccountKindAcceptance] factory disposal failed: {ex}");
                 }
             }
 
@@ -433,7 +685,9 @@ public static class AccountKindAcceptance
                 catch (Exception ex)
                 {
                     first ??= ex;
-                    Console.Error.WriteLine($"[AccountKindAcceptance] runner disposal failed: {ex}");
+                    Console.Error.WriteLine(_isAcceptanceHostPath
+                        ? AcceptancePathDiagnostic("runner-disposal-failed", ex)
+                        : $"[AccountKindAcceptance] runner disposal failed: {ex}");
                 }
             }
 
@@ -460,6 +714,26 @@ public static class AccountKindAcceptance
             finally
             {
                 ReleaseStartLockIfHeld();
+            }
+        }
+
+        /// <summary>
+        /// WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (R6) — TEST-ONLY seam for the out-of-process acceptance host. Disposes
+        /// ONLY the in-process WebApplicationFactory (the seed-time host); the ephemeral <see cref="_runner"/>
+        /// (mongod) and its database are left running so a REAL, separate `dotnet Api.dll` process can attach to
+        /// the exact same disposable Mongo the seed just wrote into. The caller becomes responsible for the
+        /// runner's lifetime afterward — <see cref="ConnectionString"/> and <see cref="DatabaseName"/> stay valid,
+        /// but <see cref="Factory"/>/<see cref="Database"/> throw once this returns. Not part of the fixture's
+        /// external (production-test-facing) contract: <see cref="DisposeAsync"/>'s own behavior (both torn down
+        /// together) is unchanged for every existing test.
+        /// </summary>
+        internal async Task DisposeFactoryOnlyAsync()
+        {
+            if (_factory is not null)
+            {
+                var factory = _factory;
+                _factory = null;
+                await factory.DisposeAsync().ConfigureAwait(false);
             }
         }
 
@@ -499,10 +773,22 @@ public static class AccountKindAcceptance
         /// by the time this runs the overrides above are already live in THIS process's environment, so the
         /// preview resolves to exactly what Program.cs will resolve once the host is actually built.
         /// </summary>
-        private static IConfigurationRoot BuildEffectiveHostConfigurationPreview()
+        private static IConfigurationRoot BuildEffectiveHostConfigurationPreview(
+            bool isAcceptanceHostPath, IReadOnlyDictionary<string, string?> overrides)
         {
+            var builder = new ConfigurationBuilder();
+
+            // F10/G2(a) — the acceptance-host prep path never reads the API's own appsettings.json/
+            // appsettings.Development.json, user secrets or the process environment; its preview is the same
+            // in-memory override source the real build uses (see the call site).
+            if (isAcceptanceHostPath)
+            {
+                builder.AddInMemoryCollection(ToConfigurationKeys(overrides));
+                return builder.Build();
+            }
+
             var apiContentRoot = ResolveApiContentRoot();
-            var builder = new ConfigurationBuilder()
+            builder
                 .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.json"), optional: true, reloadOnChange: false)
                 .AddJsonFile(Path.Combine(apiContentRoot, "appsettings.Development.json"), optional: true, reloadOnChange: false);
 
@@ -514,6 +800,52 @@ public static class AccountKindAcceptance
 
             builder.AddEnvironmentVariables();
             return builder.Build();
+        }
+
+        /// <summary>G2(a) — environment-variable spelling ("A__B") to configuration-key spelling ("A:B"), the same
+        /// translation the environment-variable provider applies, for the in-memory override source.</summary>
+        internal static Dictionary<string, string?> ToConfigurationKeys(IReadOnlyDictionary<string, string?> overrides) =>
+            overrides.ToDictionary(pair => pair.Key.Replace("__", ":", StringComparison.Ordinal), pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>G1 — fixed text only: no path, no directory listing, no exception text.</summary>
+        private static void EnsureEmptyAcceptanceContentRoot(string? contentRootDirectory)
+        {
+            if (string.IsNullOrEmpty(contentRootDirectory)
+                || !Path.IsPathFullyQualified(contentRootDirectory)
+                || !Directory.Exists(contentRootDirectory)
+                || Directory.EnumerateFileSystemEntries(contentRootDirectory).Any())
+            {
+                throw new InvalidOperationException(
+                    "Refusing to start: the acceptance-host content root must be an existing, fully-qualified, empty directory.");
+            }
+        }
+
+        /// <summary>G3 (Aşama G) — on the acceptance-host path a fixture diagnostic carries a fixed code and the
+        /// exception's TYPE name only; never its message, inner exception or stack (those can carry paths,
+        /// connection strings or test canaries). Every other consumer keeps its existing full text.</summary>
+        private static string AcceptancePathDiagnostic(string fixedCode, Exception ex) =>
+            $"[AccountKindAcceptance] {fixedCode} ({ex.GetType().Name})";
+
+        /// <summary>Key ring storage for the prep host only — lives and dies with the host, never touches disk.</summary>
+        private sealed class InMemoryXmlRepository : IXmlRepository
+        {
+            private readonly List<XElement> _elements = new();
+
+            public IReadOnlyCollection<XElement> GetAllElements()
+            {
+                lock (_elements)
+                {
+                    return _elements.Select(element => new XElement(element)).ToList();
+                }
+            }
+
+            public void StoreElement(XElement element, string friendlyName)
+            {
+                lock (_elements)
+                {
+                    _elements.Add(new XElement(element));
+                }
+            }
         }
 
         /// <summary>
@@ -655,9 +987,9 @@ public static class AccountKindAcceptance
         await rolePermissions.AssignAsync(RolePermission.ManualGrant(pmoRole.Id, lookup.Id, tenantId, SeedActor), CancellationToken.None);
         await rolePermissions.AssignAsync(RolePermission.ManualGrant(creatorRole.Id, create.Id, tenantId, SeedActor), CancellationToken.None);
 
-        async Task<SeedUser> NewUser(string slug, string first, string last, Guid ownerTenant, AccountKind kind, bool active = true)
+        async Task<SeedUser> NewUser(string slug, string first, string last, Guid ownerTenant, AccountKind kind, bool active = true, string? password = null)
         {
-            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(DisposablePassword), first, last, ownerTenant);
+            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(password ?? DisposablePassword), first, last, ownerTenant);
             user.ConfirmEmail();
             // Tests are the ONLY place outside the SetAccountKind handler where a kind literal may appear
             // (AccountKindCreationPathsGuardTests scans src, not tests) — the fixture must create classified subjects.
@@ -671,19 +1003,25 @@ public static class AccountKindAcceptance
             return new SeedUser(created.Id, created.Email, created.FirstName, created.LastName);
         }
 
-        // Subjects (what the tests ask ABOUT).
-        var human = await NewUser("human", "Zehra", "Yıldız", tenantId, AccountKind.Human);
-        var unknown = await NewUser("unknown", "Umut", "Kaya", tenantId, AccountKind.Unknown);
-        var service = await NewUser("service", "Integration", "Bot", tenantId, AccountKind.Service);
-        var passive = await NewUser("passive", "Pasif", "Demir", tenantId, AccountKind.Human, active: false);
-        var foreign = await NewUser("foreign", "Fatma", "Öztürk", foreignTenantId, AccountKind.Human);
-        var mutable = await NewUser("mutable", "Mert", "Çelik", tenantId, AccountKind.Unknown);
+        // Subjects (what the tests ask ABOUT). WP-INFRA-AUTH-ACCEPTANCE-HOST-01 (P5): also hashed with
+        // host.ActorPassword — a fresh per-run random value, never DisposablePassword, never sent anywhere
+        // (seed-ready's `subjects` carries only {userId}, no password field at all). Nothing ever logs in as a
+        // subject; this only removes the shared constant from the acceptance host's data entirely.
+        var human = await NewUser("human", "Zehra", "Yıldız", tenantId, AccountKind.Human, password: host.ActorPassword);
+        var unknown = await NewUser("unknown", "Umut", "Kaya", tenantId, AccountKind.Unknown, password: host.ActorPassword);
+        var service = await NewUser("service", "Integration", "Bot", tenantId, AccountKind.Service, password: host.ActorPassword);
+        var passive = await NewUser("passive", "Pasif", "Demir", tenantId, AccountKind.Human, active: false, password: host.ActorPassword);
+        var foreign = await NewUser("foreign", "Fatma", "Öztürk", foreignTenantId, AccountKind.Human, password: host.ActorPassword);
+        var mutable = await NewUser("mutable", "Mert", "Çelik", tenantId, AccountKind.Unknown, password: host.ActorPassword);
 
-        // Actors (who ASKS). They are also ordinary users of the disposable tenant.
-        var kindAdmin = await NewUser("kind-admin", "Kind", "Admin", tenantId, AccountKind.Unknown);
-        var pmo = await NewUser("pmo", "Pmo", "Reader", tenantId, AccountKind.Unknown);
-        var creator = await NewUser("creator", "Only", "Creator", tenantId, AccountKind.Unknown);
-        var noPermission = await NewUser("nobody", "No", "Permission", tenantId, AccountKind.Unknown);
+        // Actors (who ASKS). They are also ordinary users of the disposable tenant. WP-INFRA-AUTH-ACCEPTANCE-HOST-01
+        // (C8): hashed with host.ActorPassword (fresh per run), NOT the shared DisposablePassword constant — the
+        // acceptance host performs a REAL login as these 4, and the constant must never be the credential a real
+        // login accepts.
+        var kindAdmin = await NewUser("kind-admin", "Kind", "Admin", tenantId, AccountKind.Unknown, password: host.ActorPassword);
+        var pmo = await NewUser("pmo", "Pmo", "Reader", tenantId, AccountKind.Unknown, password: host.ActorPassword);
+        var creator = await NewUser("creator", "Only", "Creator", tenantId, AccountKind.Unknown, password: host.ActorPassword);
+        var noPermission = await NewUser("nobody", "No", "Permission", tenantId, AccountKind.Unknown, password: host.ActorPassword);
 
         await userRoles.AssignAsync(new UserRole(kindAdmin.Id, kindAdminRole.Id, tenantId, SeedActor), CancellationToken.None);
         await userRoles.AssignAsync(new UserRole(pmo.Id, pmoRole.Id, tenantId, SeedActor), CancellationToken.None);
@@ -738,7 +1076,8 @@ public static class AccountKindAcceptance
 
         async Task<SeedUser> NewSubject(string slug, string first, string last, string? userName = null)
         {
-            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(DisposablePassword), first, last, tenantId);
+            // P5 — host.ActorPassword (fresh per run), not the shared DisposablePassword constant.
+            var user = new User($"{slug}.{stamp}@acceptance.invalid", hasher.Hash(host.ActorPassword), first, last, tenantId);
             user.ConfirmEmail();
             user.SetAccountKind(AccountKind.Human);
             if (userName is not null)

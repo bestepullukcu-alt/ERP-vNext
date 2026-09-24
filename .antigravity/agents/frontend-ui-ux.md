@@ -92,3 +92,13 @@ Senin görevin yeni tasarım "uydurmak" DEĞİLDİR. Senin görevin verilmiş ş
 ## 📐 Layout & View Architecture Rule
 - **Layout Sadakati:** Shell tipi module pack/domain kararından açık seçilmelidir. Platform/admin modülleri `Views/Platform/{ModuleName}/` altında `_LayoutPlatformAdmin.cshtml` kullanır. Tenant modülleri `Views/{ModuleName}/` veya tenant domain klasörü altında `_LayoutTenantShell.cshtml` kullanır. Eski `_Layout.cshtml` ve `_LayoutBackbone.cshtml` KESİNLİKLE KULLANILMAZ.
 - **Section Yönetimi:** Sayfaya özel JS için `@section Scripts` kullanılır. `@section Styles` yalnızca gerçekten tek sayfaya özgü stiller için kullanılabilir; tekrar kullanılabilir toolbar/filter/DataTable stilleri `backbone-custom.css` içine alınmalıdır.
+
+## Liste ekranı dokunma protokolü (2026-09-23, BL-440)
+
+Bir görev bir liste ekranının `Index.cshtml` / `_DataTable.cshtml` / `_Filter.cshtml` / `index.js` dosyasına dokunuyorsa
+`python3 .antigravity/scripts/verify_datatable_page.py . --area {Area} --module {Module} --format gaps` koşturulur
+(Claude Code'da PostToolUse kancası bunu otomatik yapar), sapmalar raporda **numaralı listeyle** gösterilir ve sahibe **sorulur**:
+*"Bu ekran referanstan N noktada sapıyor: … Bu görevde düzeltmemi ister misin?"* Evet → aynı dalda **ayrı commit**; hayır → modülün
+test kaydına "bilinen sapma". **Sessizce düzeltmek yasak, sessizce atlamak yasak.** Tam metin: `frontend-datatable-template.md` → Dokunma protokolü.
+
+Bu ajan liste dosyalarına en çok dokunan ajandır: sapmayı gördüğü hâlde sormadan teslim etmek, teslim değildir.

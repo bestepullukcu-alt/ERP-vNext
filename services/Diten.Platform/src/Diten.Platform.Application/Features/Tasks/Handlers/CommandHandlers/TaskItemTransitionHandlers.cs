@@ -162,6 +162,9 @@ public sealed class ReleaseTaskItemHandler : IRequestHandler<ReleaseTaskItemComm
         // invisible TODAY — which is precisely why it must not be left behind (BL-051).
         task.AssigneeUserId = null;
         task.ReopenAcceptanceGate();
+        // BL-439 — rewinding out of Waiting drops the waiting story too, as every other way out does (ClearWaiting):
+        // a question left on a task nobody is waiting with any more is a read grant waiting to be revived.
+        task.ClearWaiting();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(
@@ -497,7 +500,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
          */
         if (command.Target is TaskLifecycle.InProgress or TaskLifecycle.Done)
         {
-            var blocker = await FindUnsatisfiedDependencyAsync(task, command.Target, ct);
+            var blocker = await FindUnsatisfiedDependencyAsync(_dependencies, _tasks, task, command.Target, ct);
             if (blocker is not null)
             {
                 return Response<NoContent>.Fail(
@@ -751,6 +754,8 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
                 continue;
             }
 
+            // BL-439 — a cancelled child keeps no waiting story, the same rule the parent's own exit follows.
+            child.ClearWaiting();
             child.Lifecycle = TaskLifecycle.Cancelled;
             child.CancelledAt = DateTimeOffset.UtcNow;
             /*
@@ -790,13 +795,18 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
     /// <para>An edge whose far end cannot be read blocks NOTHING. That mirrors the projection, which drops such an
     /// edge rather than showing an unnamed blocker: refusing on a predecessor the caller cannot see or reach would
     /// park the task with no way to clear it.</para>
+    ///
+    /// <para>Static and internal so <see cref="AnswerInquiryHandler"/> asks the SAME rule when an answer returns a
+    /// task to InProgress (BL-439) — a second copy is how two gates come to disagree.</para>
     /// </summary>
-    private async Task<TaskItem?> FindUnsatisfiedDependencyAsync(
+    internal static async Task<TaskItem?> FindUnsatisfiedDependencyAsync(
+        ITaskDependencyRepository dependencies,
+        ITaskItemRepository tasks,
         TaskItem task,
         TaskLifecycle target,
         CancellationToken ct)
     {
-        var edges = await _dependencies.ListByTaskIdAsync(task.Id, ct);
+        var edges = await dependencies.ListByTaskIdAsync(task.Id, ct);
         if (edges.Count == 0)
         {
             return null;
@@ -815,7 +825,7 @@ public sealed class TransitionTaskItemHandler : IRequestHandler<TransitionTaskIt
         }
 
         // One batched read for every predecessor involved, never one per edge.
-        var predecessors = (await _tasks.ListByIdsAsync(
+        var predecessors = (await tasks.ListByIdsAsync(
                 relevant.Select(edge => edge.DependsOnTaskItemId).Distinct().ToList(), ct))
             .ToDictionary(item => item.Id);
 
@@ -1115,6 +1125,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
     private readonly ITaskSeatDirectory _seats;
     private readonly IPositionRepository _positions;
     private readonly IOrganizationUnitRepository _organizationUnits;
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<InquireTaskItemHandler> _logger;
 
     public InquireTaskItemHandler(
         ITaskItemRepository tasks,
@@ -1122,7 +1134,9 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         ICurrentUserContext currentUser,
         ITaskSeatDirectory seats,
         IPositionRepository positions,
-        IOrganizationUnitRepository organizationUnits)
+        IOrganizationUnitRepository organizationUnits,
+        ITaskNotificationService notifications,
+        ILogger<InquireTaskItemHandler> logger)
     {
         _tasks = tasks;
         _lifecycle = lifecycle;
@@ -1130,6 +1144,8 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
         _seats = seats;
         _positions = positions;
         _organizationUnits = organizationUnits;
+        _notifications = notifications;
+        _logger = logger;
     }
 
     public async Task<Response<NoContent>> Handle(InquireTaskItemCommand command, CancellationToken ct)
@@ -1178,7 +1194,10 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
          */
         if (command.Request.WaitingOnUserId is { } waitingOn)
         {
-            if (waitingOn == Guid.Empty)
+            // BL-439 — nor the holder themselves. Waiting on yourself is not a wait anyone can end but you, and
+            // naming yourself would make you the addressee of your own question — the one person who may answer
+            // it — which turns `answer` into a way round every gate `resume` asks.
+            if (waitingOn == Guid.Empty || waitingOn == _currentUser.UserId)
             {
                 return Response<NoContent>.Fail(
                     "The person being waited on is not valid.",
@@ -1215,7 +1234,187 @@ public sealed class InquireTaskItemHandler : IRequestHandler<InquireTaskItemComm
                 409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
         }
 
+        /*
+         * BL-439 — THE PERSON BEING ASKED IS TOLD. Until this line the question was stored ("who" and "why") and
+         * shown only on the ASKER's own card; nothing reached the one person who could unblock the work. Their
+         * Task Center inbox now carries the question as its own item (TaskWorkItemProvider), and this is what
+         * tells them it is there — through the module's one notification road, after the write committed, and
+         * never able to fail it.
+         *
+         * Nobody named, nobody told: a wait on a supplier has no addressee here.
+         */
+        if (task.WaitingOnUserId is { } asked)
+        {
+            await TaskNotificationSafely.NotifyAsync(
+                _notifications, _logger, task, TaskNotificationEvents.InquiryAsked,
+                [asked], _currentUser.UserId, ct);
+        }
+
         return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+}
+
+/// <summary>
+/// BL-439 — the ANSWER: the second half of "Bilgi bekle" (Oracle BPM "Request Information → Submit Information",
+/// SAP Inbox "Clarification").
+///
+/// <para>The person a waiting task names in <see cref="TaskItem.WaitingOnUserId"/> answers it. The answer goes into
+/// the task's history as <see cref="TaskTransitionKind.InquiryAnswered"/>, in their own words; the waiting story
+/// is cleared; the task returns to the lifecycle it had BEFORE it was parked; and the holder is told.</para>
+///
+/// <para><b>The addressee gains nothing else.</b> This handler is the ONLY write they can reach: start, complete,
+/// cancel, reassign and return all keep asking their own holder/requester questions, which the addressee does
+/// not pass. The answer is not an act on the work — it is information handed back to the person doing it.</para>
+/// </summary>
+public sealed class AnswerInquiryHandler : IRequestHandler<AnswerInquiryCommand, Response<NoContent>>
+{
+    private readonly ITaskItemRepository _tasks;
+    private readonly ITaskTransitionRepository _transitions;
+    private readonly ITaskLifecycleService _lifecycle;
+    private readonly ICurrentUserContext _currentUser;
+    private readonly IWorkflowTransitionGate _workflowGate;
+    private readonly ITaskDependencyRepository _dependencies;
+    private readonly ITaskNotificationService _notifications;
+    private readonly ILogger<AnswerInquiryHandler> _logger;
+
+    public AnswerInquiryHandler(
+        ITaskItemRepository tasks,
+        ITaskTransitionRepository transitions,
+        ITaskLifecycleService lifecycle,
+        ICurrentUserContext currentUser,
+        IWorkflowTransitionGate workflowGate,
+        ITaskDependencyRepository dependencies,
+        ITaskNotificationService notifications,
+        ILogger<AnswerInquiryHandler> logger)
+    {
+        _tasks = tasks;
+        _transitions = transitions;
+        _lifecycle = lifecycle;
+        _currentUser = currentUser;
+        _workflowGate = workflowGate;
+        _dependencies = dependencies;
+        _notifications = notifications;
+        _logger = logger;
+    }
+
+    public async Task<Response<NoContent>> Handle(AnswerInquiryCommand command, CancellationToken ct)
+    {
+        var answer = command.Request.Answer?.Trim();
+        if (string.IsNullOrWhiteSpace(answer))
+        {
+            // An empty answer unblocks nothing — the holder would be told "answered" and learn nothing.
+            return Response<NoContent>.Fail(
+                "Write the answer.", 400, TaskReasonCodes.InquiryAnswerRequired, command.CorrelationId);
+        }
+
+        if (answer.Length > TaskFieldLimits.MaxDescriptionLength)
+        {
+            return Response<NoContent>.Fail(
+                $"The answer exceeds {TaskFieldLimits.MaxDescriptionLength} characters.",
+                400, TaskReasonCodes.InquiryAnswerTooLong, command.CorrelationId);
+        }
+
+        // Tenant-bound read: another tenant's task is simply not found here, whoever is asking.
+        var task = await _tasks.GetByIdAsync(command.Id, ct);
+        if (task is null)
+        {
+            return Response<NoContent>.Fail("Task not found.", 404, TaskReasonCodes.NotFound, command.CorrelationId);
+        }
+
+        /*
+         * FAIL-CLOSED: only the person the task is asking, and only while it is still asking. The same predicate
+         * the read rule and the projection ask (TaskInquiryRules.IsAskedOf), so the person who sees the question,
+         * the person who may open the task and the person who may answer are one person.
+         *
+         * Before any write, so a refused answer leaves the task byte-identical — no history entry, no notice.
+         */
+        if (!TaskInquiryRules.IsAskedOf(task, _currentUser.UserId))
+        {
+            return Response<NoContent>.Fail(
+                "Only the person this task is waiting on can answer it.",
+                403, TaskReasonCodes.InquiryNotAddressee, command.CorrelationId);
+        }
+
+        /*
+         * WHERE THE TASK GOES BACK TO — read from the log entry that parked it. Entering Waiting is recorded as a
+         * TaskTransitionKind.Waiting entry carrying the lifecycle it left, so the way out is read from the same
+         * place rather than stored a second time on the task.
+         */
+        var history = await _transitions.ListByTaskIdAsync(task.Id, ct);
+        var parkedFrom = history
+            .Where(transition => transition.Kind == TaskTransitionKind.Waiting)
+            .OrderByDescending(transition => transition.CreatedAt)
+            .Select(transition => (TaskLifecycle?)transition.FromLifecycle)
+            .FirstOrDefault();
+
+        var returnTo = _lifecycle.ResolveInquiryReturn(parkedFrom);
+
+        /*
+         * ⚠ BACK INTO RUNNING WORK ASKS THE SAME GATES `resume` ASKS — the approval gate (MOD-0023, fail-closed)
+         * and the dependency rule. The task was InProgress when it was parked, but the world may have moved while
+         * it waited: approval switched on, a blocking predecessor added. Without this, an answer would walk the task
+         * past a gate the holder's own resume is refused by — the answer must never be a way round `resume`.
+         *
+         * A blocked return lands in OPEN rather than refusing the answer: the answer is information and it arrived;
+         * what the gate refuses is RUNNING, and Open is the state from which the holder starts again through every
+         * gate, with the reason shown beside the button.
+         */
+        if (returnTo == TaskLifecycle.InProgress && await ResumeIsBlockedAsync(task, command.CorrelationId, ct))
+        {
+            returnTo = TaskLifecycle.Open;
+        }
+
+        task.Lifecycle = returnTo;
+        task.ClearWaiting();
+        task.UpdatedBy = _currentUser.ActorName;
+        // The answer travels into the history for the reason the question did: the waiting story is cleared
+        // right here, and "what did they tell us" must still have an answer next month.
+        task.Declare(TaskTransitionKind.InquiryAnswered, _currentUser.UserId, answer);
+
+        if (!await _tasks.UpdateAsync(task, command.Request.ExpectedVersion, ct))
+        {
+            return Response<NoContent>.Fail(
+                "The task changed meanwhile; reload and retry.",
+                409, TaskReasonCodes.ConcurrencyConflict, command.CorrelationId);
+        }
+
+        /*
+         * The HOLDER is told — the person whose work was blocked, and (since only the holder may park a task) the
+         * one who asked. Through the module's existing road, never able to fail the answer that already landed.
+         */
+        if (task.AssigneeUserId is { } holder)
+        {
+            await TaskNotificationSafely.NotifyAsync(
+                _notifications, _logger, task, TaskNotificationEvents.InquiryAnswered,
+                [holder], _currentUser.UserId, ct);
+        }
+
+        return Response<NoContent>.Success(204, command.CorrelationId);
+    }
+
+    /// <summary>The two gates <see cref="TransitionTaskItemHandler"/> asks before → InProgress, asked the same way.</summary>
+    private async Task<bool> ResumeIsBlockedAsync(TaskItem task, string correlationId, CancellationToken ct)
+    {
+        if (task.ApprovalRequired)
+        {
+            var gate = await _workflowGate.EvaluateAsync(new WorkflowGateRequest(
+                ObjectType: TaskApprovalService.ApprovalObjectType,
+                ObjectId: task.Id.ToString(),
+                ObjectRef: TaskApprovalService.BuildObjectRef(task.Id),
+                RequestedTransition: "start",
+                RequestedTargetState: TaskLifecycle.InProgress.ToString(),
+                ActorId: _currentUser.UserId.ToString(),
+                ReasonCode: null,
+                CorrelationId: correlationId), ct);
+
+            if (gate.IsBlocked)
+            {
+                return true;
+            }
+        }
+
+        return await TransitionTaskItemHandler.FindUnsatisfiedDependencyAsync(
+            _dependencies, _tasks, task, TaskLifecycle.InProgress, ct) is not null;
     }
 }
 
@@ -1293,6 +1492,8 @@ public sealed class ReturnTaskItemHandler : IRequestHandler<ReturnTaskItemComman
         task.AssigneeUserId = task.CreatedByUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();
+        // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
+        task.ClearWaiting();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         /*
@@ -1460,6 +1661,8 @@ public sealed class ReassignTaskItemHandler : IRequestHandler<ReassignTaskItemCo
         task.AssigneeUserId = command.Request.AssigneeUserId;
         task.AssignmentTarget = TaskAssignmentTarget.Person;
         task.ReopenAcceptanceGate();
+        // BL-439 — the lifecycle rewinds to Open, so any waiting story goes with it (see ReleaseTaskItemHandler).
+        task.ClearWaiting();
         task.Lifecycle = TaskLifecycle.Open;
         task.UpdatedBy = _currentUser.ActorName;
         task.Declare(TaskTransitionKind.Reassigned, _currentUser.UserId, reason);

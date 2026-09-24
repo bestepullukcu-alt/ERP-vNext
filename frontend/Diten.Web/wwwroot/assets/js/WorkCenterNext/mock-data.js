@@ -55,7 +55,9 @@
     const MEETINGS = [
         { id: 'MTG-1001', title: 'Haftalık Operasyon Toplantısı', start: '14:00', end: '15:00', location: 'Teams', owner: 'Selin Aras' }
     ];
-    const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt' };
+    // BL-439 — `inquiry` (a question a waiting task is asking the reader) wears the same glyph `inquire` does:
+    // one idea, asked and answered, drawn once.
+    const TYPE_ICON = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', inquiry: 'bx-question-mark' };
     /*
      * Friendly module name for a provider code — ONE implementation, in l10n.js (WCN.moduleLabel).
      *
@@ -237,7 +239,9 @@
         // MOD-0357 S5c, K5 (BL-026): a Pending invite is exactly the kind of item this line exists for — a
         // decision waiting on the reader — and the alternative (falling through to `islerim`) is the defect
         // this rule closes: an invite is not owned work, and never becomes an İşlerim item.
-        if (['approval', 'review', 'issue', 'exception', 'meetingInvite'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
+        // BL-439: a QUESTION another person's task is asking the reader is the same kind of item — a decision
+        // (answer) waiting on them, never owned work. It must not fall through to İşlerim: the task is the holder's.
+        if (['approval', 'review', 'issue', 'exception', 'meetingInvite', 'inquiry'].includes(item.workIntent) && item.normalizedStatus === 'Pending') { return 'inbox'; }
         return 'islerim';
     };
     const segmentFor = (item) => {
@@ -261,7 +265,7 @@
         kind: ['danger', 'destructive'].includes(action.riskLevel) ? 'danger'
             : ['approve', 'complete', 'resolve', 'signoff', 'submitReview'].includes(action.code) ? 'success'
                 : action.code === 'requestInfo' ? 'warning'
-                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' || action.code === 'acceptInvite' ? 'primary'
+                    : action.code === 'accept' || action.code === 'claim' || action.code === 'start' || action.code === 'resume' || action.code === 'acceptInvite' || action.code === 'answer' ? 'primary'
                         : 'secondary',
         primary: false,
         enabled: action.enabled,
@@ -272,6 +276,10 @@
         reason: action.requiresReason,
         evidence: action.requiresEvidence,
         bulk: action.supportsBulk,
+        // WP-WCN-KANBAN-01 — the Kanban drag target, a normalizedStatus string or null (the action does not
+        // move the item's column: it changes who holds the work, not its state). Carried through untouched so
+        // the board never re-derives it from the action code.
+        targetStatus: action.targetStatus ?? null,
         /*
          * `plan` ALWAYS wants a date picker, on every provenance — derived from the CODE rather than trusted from
          * the wire, the same way `kind` and `role` above are. The engine's WorkItemActionDto carries no `input`
@@ -293,7 +301,7 @@
          */
         depth: action.depth || null,
         role: ['reject', 'return', 'declineMeeting', 'declineInvite'].includes(action.code) ? 'reject'
-            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'acceptInvite', 'submitReview'].includes(action.code) ? 'accept'
+            : ['approve', 'accept', 'claim', 'complete', 'resolve', 'signoff', 'start', 'resume', 'acceptMeeting', 'acceptInvite', 'submitReview', 'answer'].includes(action.code) ? 'accept'
                 : null
     });
     const allFixtureGroups = () => {
@@ -364,7 +372,9 @@
          * declares its own role keeps it; when neither person is the caller nothing is claimed and the chip
          * does not render at all.
          */
-        if (!item.viewerRole) {
+        // BL-439 — except on a QUESTION card: `assignee.isCurrentUser` is true there only because the question is
+        // addressed to the reader, and calling that "Owner" would claim the task, which stays the holder's.
+        if (!item.viewerRole && item.workIntent !== 'inquiry') {
             if (item.assignee?.isCurrentUser) { item.viewerRole = 'Owner'; }
             else if (item.requester?.isCurrentUser) { item.viewerRole = 'Creator'; }
         }
@@ -380,9 +390,23 @@
          * reports 'Owner' — the common case, and the one this flag has to keep saying yes to.
          */
         item.raisedByViewer = !!item.requester?.isCurrentUser;
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 CT fix — RECORDED BEFORE personName() OVERWRITES THE OBJECT, for the same
+         * reason raisedByViewer is captured above it. `personName()` can return the TRANSLATED LABEL
+         * ("Ad bilgisi yok" / PersonNameUnavailable) when the person exists but the server sent no displayName —
+         * that label is not a name, and a renderer that only checks "is this string non-empty" (the Kanban
+         * card's person footer did) mistakes the label for a real person and draws initials for someone who
+         * isn't in the projection. Downstream code must ask THIS, never compare the rendered string to the
+         * label text (a locale change would silently break that comparison anyway).
+         */
+        item.assigneeNameKnown = !!(item.assignee?.displayName || item.assignee?.isCurrentUser);
+        item.requesterNameKnown = !!(item.requester?.displayName || item.requester?.isCurrentUser);
         // A person is { id, displayName } — fixtures carry the name, the real projection cannot yet resolve it
         // (no user-directory seam in Platform), so fall back to "Me" for the caller and to a plain
         // name-unavailable label for anyone else. Never render a raw user GUID.
+        // BL-439 — the holder's ID, kept before the name replaces it: the "waiting on" picker must not offer the
+        // holder themselves (the server refuses it — waiting on yourself is a question only you could answer).
+        item.assigneeId = item.assignee?.id || null;
         item.requester = personName(item.requester);
         item.assignee = personName(item.assignee);
         item.scope = item.delegationContext ? 'onBehalf' : 'mine';
@@ -413,6 +437,9 @@
         // the wire and rendered as nothing at all.
         item.waitingOn = item.waitingContext?.waitingOn?.displayName || null;
         item.waitingReason = resolveLabel(item.waitingContext?.reason) || null;
+        // BL-437 — WHY this reached the reader ("Ayşe bu görevi onayına gönderdi"). A third question beside the
+        // two above, with its own field: an approval that has just arrived is Pending, not Waiting.
+        item.arrivalReasonText = resolveLabel(item.arrivalReason) || null;
         /*
          * WC-1 — the personal NOTES, a list now and stored on the server. `personal.notes` is what the projection
          * emits (id · text · createdAt), and the array is normalised here so every reader downstream can map over

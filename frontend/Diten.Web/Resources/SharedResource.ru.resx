@@ -902,4 +902,24 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Приёмка (GRN)</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>Изменение GRN не поддерживается; проведённая приёмка исправляется сторнирующим движением, а не редактированием.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Обновление счёта не поддерживается; исправьте его повторным сопоставлением или решением исключения, а не редактированием.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Скопировано</value></data>
+  <data name="Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Сочетания клавиш</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Закрыть</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Сочетания клавиш не работают, пока вы вводите текст в поле или пока открыт диалог или боковая панель.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Показать этот список</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Пробел</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Везде</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Центр задач</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Сведения о задаче</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Выбрать следующий элемент</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Выбрать предыдущий элемент</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Открыть выбранный элемент</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Открыть строку в фокусе</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Принять или согласовать выбранный элемент</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Отклонить или вернуть выбранный элемент</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Снять выделение</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Переход между вкладками (когда вкладка в фокусе)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Изменить задачу</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Вернуться к списку задач</value></data>
 </root>

@@ -4,13 +4,7 @@
 @inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
 
 <div class="card">
-    <div id="skeleton-loader" class="backbone-skeleton p-4">
-        <div class="shimmer skeleton-row skeleton-row-lg"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row"></div>
-        <div class="shimmer skeleton-row skeleton-row-last"></div>
-    </div>
+    <partial name="_TableSkeleton" />
 
     <div class="card-datatable table-responsive">
         <table id="dt-organizationfielddefinitions" data-dt-standard="v2" class="datatables-organizationfielddefinitions table border-top">

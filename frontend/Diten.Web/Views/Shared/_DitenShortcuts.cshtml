@@ -1,0 +1,22 @@
+@using System.Linq
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IHtmlLocalizer<Diten.Web.SharedResource> SharedLocalizer
+@*
+    WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer, and the strings its `?` list prints.
+
+    Every SharedResource key under `Shortcuts.` is emitted, enumerated rather than hand-listed, so a key added to
+    the resx reaches the browser without a second list to keep in step. JSON, not inline Razor: the encoder would
+    turn Cyrillic / Arabic / CJK into entities that then render literally.
+
+    A screen that registers shortcuts includes this partial BEFORE its own script.
+*@
+<script id="diten-shortcuts-l10n" type="application/json">
+    @{
+        var shortcutStrings = SharedLocalizer.GetAllStrings(true)
+            .Where(s => s.Name.StartsWith("Shortcuts.", System.StringComparison.Ordinal))
+            .GroupBy(s => s.Name)
+            .ToDictionary(g => g.Key, g => g.First().Value);
+    }
+    @Html.Raw(System.Text.Json.JsonSerializer.Serialize(shortcutStrings))
+</script>
+<script src="~/assets/js/shared/diten-shortcuts.js" asp-append-version="true"></script>

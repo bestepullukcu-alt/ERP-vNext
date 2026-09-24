@@ -180,6 +180,32 @@
          * the approval sentence would send the holder to the wrong person.
          */
         REVIEW_PENDING: 'errorReviewPending',
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 — two more codes the Kanban drop path can now reach (a disabled action's own
+         * reasonCode, dispatched anyway because a drag races the projection) that were unmapped until measured
+         * here: the refusal fell through to the generic "İşlem sırasında bir hata oluştu", which names nothing
+         * the reader can act on.
+         */
+        // TransitionTaskItemHandler's own refusal AT THE MOMENT complete is dispatched (TaskModels.cs
+        // TaskReasonCodes.DeliverableRequired) — a 409, not a pre-computed disabled reason. CT correction:
+        // this file previously said "the SAME reason the projection disables complete with", which measured
+        // false — TaskWorkItemProvider never sets this as a DisabledReasonCode (unlike REVIEW_MEETING_REQUIRED
+        // just below, which genuinely does), so there is no greyed button carrying this code today; only the
+        // dispatch-time gate throws it, the same placement CHECKLIST_EVIDENCE_REQUIRED uses.
+        TASK_DELIVERABLE_REQUIRED: 'errorDeliverableRequired',
+        // ReviewMeetingDecisionGate's refusal on submitReview/complete — the type requires a review meeting and
+        // no linked meeting has published minutes yet. TaskWorkItemProvider ALSO sets this as the action's own
+        // DisabledReasonCode (TaskReasonCodes.ReviewMeetingRequired), so this is genuinely "the same reason the
+        // projection disables the button with, seen from the dispatch side".
+        REVIEW_MEETING_REQUIRED: 'errorReviewMeetingRequired',
+        // CT correction — PERM_DENIED is NOT its own sentence. It is a distinct code from the projection's own
+        // WorkAggregationReasonCodes.PermissionDenied ("PERMISSION_DENIED", a disabled-reason label the server
+        // renders inline and this file never looks up by code), and every tenant language's ErrorPermDenied
+        // text was a word-for-word duplicate of ErrorNoAccess (tr: byte-identical) — the same 403 sentence
+        // failureMessage already falls back to below when a result carries no reasonCode. Routing it through the
+        // reasonCode branch was pointless duplication with its own translation-drift risk; it now reuses the
+        // one 403 sentence instead of a second copy of it.
+        PERM_DENIED: 'errorNoAccess',
         // An unmet predecessor. Same string the PROJECTION uses to disable the button, deliberately: the greyed
         // control and this refusal are one fact seen from two sides.
         DEPENDENCY_BLOCKED: 'errorDependencyBlocked',
@@ -189,6 +215,15 @@
         // reason code BEFORE the status, so this replaces the generic "you are not allowed" with the reason.
         TASK_CANCEL_NOT_REQUESTER: 'errorCancelNotRequester',
         TASK_WAITING_REASON_REQUIRED: 'errorWaitingReasonRequired',
+        /*
+         * BL-439 — AnswerInquiryHandler's three refusals. NOT_ADDRESSEE is the one a real reader meets: the
+         * question was answered or withdrawn while their screen still showed it, so the sentence says that and
+         * tells them to refresh, rather than the generic 403 ("you are not allowed"), which would send them looking
+         * for a permission that could never help.
+         */
+        TASK_INQUIRY_ANSWER_REQUIRED: 'errorInquiryAnswerRequired',
+        TASK_INQUIRY_ANSWER_TOO_LONG: 'errorInquiryAnswerTooLong',
+        TASK_INQUIRY_NOT_ADDRESSEE: 'errorInquiryNotAddressee',
         /*
          * BL-040/BL-048 — codes DERIVED from a FluentValidation rule, not curated by hand.
          *
@@ -264,6 +299,10 @@
         'CHECKLIST_INCOMPLETE',
         'DEPENDENCY_BLOCKED',
         'SUBTASK_BLOCKED',
+        // WP-WCN-KANBAN-01 Dilim 4 — both RULES about the task's/type's own state, not a race: the completion
+        // gate and the review-meeting gate, the same two the projection's disabled reasons already name.
+        'TASK_DELIVERABLE_REQUIRED',
+        'REVIEW_MEETING_REQUIRED',
         'TASK_COMMENT_TASK_CLOSED',
         // Both RULES about the task's state, not a race — see the map above.
         'TASK_ATTACHMENT_TASK_CLOSED',

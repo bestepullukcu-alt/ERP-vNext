@@ -44,6 +44,15 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// <summary>Label for parking a task in Waiting. Code and endpoint are both <c>inquire</c>.</summary>
     private const string ActionInquireKey = "WorkAggregation_Action_Inquire";
 
+    /// <summary>
+    /// BL-439 — the one act the person a waiting task is asking can take on it: answer. Code and endpoint are both
+    /// <c>answer</c>.
+    /// </summary>
+    private const string ActionAnswerKey = "WorkAggregation_Action_Answer";
+
+    /// <summary>BL-439 — the question item's title, "Soru · {title}": the task's own title inside a translated frame.</summary>
+    private const string InquiryTitleKey = "WorkAggregation_Title_Inquiry";
+
     /// <summary>Faz 3b — hand finished work to a reviewer. The code doubles as the URL segment.</summary>
     private const string ActionSubmitReviewKey = "WorkAggregation_Action_SubmitReview";
 
@@ -269,7 +278,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         TaskPermissions.Complete,   // complete
         TaskPermissions.Cancel,     // cancel
         TaskPermissions.Delete,     // administrative authority to cancel someone else's task
-        TaskPermissions.Assign      // reassign — moving work onto another person IS assigning it
+        TaskPermissions.Assign,     // reassign — moving work onto another person IS assigning it
+        TaskPermissions.Read        // answer (BL-439) — the addressee needs no key beyond reading the task
     ];
 
     public async Task<IReadOnlyList<WorkItemProjectionDto>> GetWorkItemsAsync(
@@ -341,6 +351,31 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * `Except` on the id set is what enforces that, so the DistinctBy below never has to choose.
              */
             var alreadyOnTheBoard = mine.Concat(pooled).Select(t => t.Id).ToHashSet();
+
+            /*
+             * BL-439 — THE FOURTH QUESTION: what is somebody else holding, waiting for MY answer.
+             *
+             * Its own item on the board, in the asked person's inbox — not the task. The task stays the holder's:
+             * the addressee gets the question, one action (answer) and nothing else.
+             *
+             * ⚠ PRECEDENCE, the same law as above, one rung further down:
+             *
+             *     hold it        → İşlerim / Gelen Kutusu   (mine)
+             *     may claim it   → Havuz                    (pooled)
+             *     are asked      → Gelen Kutusu, as a Soru  (this read)
+             *     opened it      → Başlattıklarım           (initiated)
+             *
+             * Asked outranks opened, and the common case is exactly the collision: a holder who needs information
+             * most often needs it from whoever asked for the work. With opened first, the requester would see the
+             * task sitting in their Outbox reading "waiting" and no question to answer — the defect this closes.
+             * One row per task, still: the Outbox row returns the moment the question is answered.
+             */
+            var asked = (await _tasks.ListWaitingOnUserAsync(actor.UserId, ct))
+                .Where(t => !alreadyOnTheBoard.Contains(t.Id) && TaskInquiryRules.IsAskedOf(t, actor.UserId))
+                .DistinctBy(t => t.Id)
+                .ToList();
+            alreadyOnTheBoard.UnionWith(asked.Select(t => t.Id));
+
             var initiated = (await _tasks.ListByCreatorAsync(actor.UserId, ct))
                 .Where(t => !alreadyOnTheBoard.Contains(t.Id))
                 .ToList();
@@ -351,6 +386,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 .Concat(initiated)
                 .DistinctBy(t => t.Id)
                 .ToList();
+
+            return [.. await ProjectAsync(tasks, initiatorOnly, actor, ct), .. await ProjectInquiriesAsync(asked, actor, ct)];
         }
 
         return await ProjectAsync(tasks, initiatorOnly, actor, ct);
@@ -380,6 +417,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     {
         ArgumentNullException.ThrowIfNull(task);
         ArgumentNullException.ThrowIfNull(actor);
+
+        // BL-439 — the addressee of a waiting task's question reads it as the QUESTION, exactly as their list
+        // shows it; decided from the same precedence the list applies (IsInquiryForAsync).
+        if (await IsInquiryForAsync(task, actor, ct))
+        {
+            return (await ProjectInquiriesAsync([task], actor, ct))[0];
+        }
 
         var initiatorOnly = await IsInitiatorOnlyAsync(task, actor, ct)
             ? new HashSet<Guid> { task.Id }
@@ -417,6 +461,141 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// BL-439 — the list's "are asked" rung for ONE task, restated as the conditions its reads filter on:
+    /// <list type="bullet">
+    /// <item>is ASKED — <c>ListWaitingOnUserAsync</c>, through <see cref="TaskInquiryRules.IsAskedOf"/>;</item>
+    /// <item>does not HOLD it — <c>ListByAssigneeAsync</c> outranks it;</item>
+    /// <item>is not OFFERED it — <c>ListUnclaimedByPositionsAsync</c> outranks it.</item>
+    /// </list>
+    /// </summary>
+    private async Task<bool> IsInquiryForAsync(TaskItem task, WorkItemActor actor, CancellationToken ct)
+    {
+        if (!TaskInquiryRules.IsAskedOf(task, actor.UserId) || task.AssigneeUserId == actor.UserId)
+        {
+            return false;
+        }
+
+        if (task.AssignmentTarget == TaskAssignmentTarget.PositionPool
+            && task.AssigneeUserId is null
+            && task.PoolPositionId is { } poolPositionId)
+        {
+            var positionIds = await ResolveActivePositionIdsAsync(actor.UserId, ct);
+            return !positionIds.Contains(poolPositionId);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// BL-439 — the QUESTION a waiting task is asking the reader, as its own inbox item (Oracle BPM "Request
+    /// Information", SAP Inbox "Clarification").
+    ///
+    /// <para><b>What it carries is the whole of what the addressee is given:</b> the task's title in a "Soru ·"
+    /// frame, the question in the holder's own words as the summary, who asked (the holder, as requester), the
+    /// deadline, and ONE action — <c>answer</c>. No checklist, no subtasks, no activity, no gates, no
+    /// business fields: being asked a question about a task is not being handed the task.</para>
+    ///
+    /// <para><b>Same id as the task</b>, on purpose: the answer is written through the one dispatch address, which
+    /// is keyed by the item id and resolves the task by it. The precedence in <see cref="GetWorkItemsAsync"/> is
+    /// what keeps that id to one row per board.</para>
+    ///
+    /// <para>Names resolved in ONE batched read, like every other projection here.</para>
+    /// </summary>
+    private async Task<IReadOnlyList<WorkItemProjectionDto>> ProjectInquiriesAsync(
+        IReadOnlyList<TaskItem> tasks,
+        WorkItemActor actor,
+        CancellationToken ct)
+    {
+        if (tasks.Count == 0)
+        {
+            return [];
+        }
+
+        var holders = tasks
+            .Select(t => t.AssigneeUserId)
+            .Where(id => id is not null && id != Guid.Empty)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+        var displayNames = await _displayNames.ResolveAsync(holders, ct);
+        var now = DateTimeOffset.UtcNow;
+
+        return tasks.Select(task => ProjectInquiry(task, actor, displayNames, now)).ToList();
+    }
+
+    private WorkItemProjectionDto ProjectInquiry(
+        TaskItem task,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames,
+        DateTimeOffset now)
+    {
+        /*
+         * Gated on READ, deliberately — no new permission key (the prompt's boundary, and the right one). The real
+         * rule is not a key at all: it is "this task is asking YOU", which AnswerInquiryHandler enforces on the
+         * write. A key here would be a second, weaker statement of that rule.
+         *
+         * requiresReason, because the answer IS text: the shell's reason dialog is the one input it already has
+         * for "say something before this goes through", and the server refuses an empty answer anyway.
+         */
+        var answer = Build("answer", ActionAnswerKey, actor.Has(TaskPermissions.Read), requiresReason: true);
+
+        return new WorkItemProjectionDto(
+            FixtureKind: WorkItemContract.FixtureKindWorkItem,
+            Id: task.Id.ToString(),
+            WorkIntent: WorkItemContract.IntentInquiry,
+            // Addressed to one named person, never offered to a pool.
+            AssignmentMode: "direct",
+            // Not owned and not admitted: nobody accepts a question, and the TASK's ownership is the holder's.
+            OwnershipState: WorkItemContract.NotApplicable,
+            AdmissionState: WorkItemContract.NotApplicable,
+            // A decision waiting on the reader — which is what puts it in the Inbox (tabFor, act-directly intents).
+            NormalizedStatus: WorkItemContract.StatusPending,
+            // Not the task, so it has no task lifecycle of its own (the contract's non-task rule).
+            TaskLifecycle: WorkItemContract.NotApplicable,
+            ExecutionState: WorkItemContract.NotApplicable,
+            TimerState: WorkItemContract.NotApplicable,
+            SystemState: WorkItemContract.SystemFresh,
+            ActionDepth: WorkItemContract.DepthInline,
+            // The task's own title inside a translated "Soru · {title}" frame — named token, never concatenated
+            // here, because the frame is a sentence and the sentence belongs to the reader's language.
+            Title: WorkItemLabelDto.Resource(
+                InquiryTitleKey, new Dictionary<string, string> { ["title"] = task.Title }),
+            NativeStatus: new WorkItemNativeStatusDto(
+                task.Lifecycle.ToString(),
+                WorkItemLabelDto.Resource(NativeStatusKeyPrefix + task.Lifecycle)),
+            Source: new WorkItemSourceDto(
+                ProviderCode: TaskProviderCode,
+                ProviderContractVersion: ProviderContractVersion,
+                ObjectType: "task",
+                ObjectId: task.Id.ToString(),
+                // The record page opens for the addressee while the question stands (TaskReadAccessPolicy's
+                // BL-439 leg), and closes to them the moment it is answered or withdrawn.
+                DeepLink: TaskLinks.Record(task.Id)),
+            LifecycleOwner: TaskProviderCode,
+            WorkItemCapabilities: [],
+            Actions: [answer],
+            Concurrency: new WorkItemConcurrencyDto("version", task.Version.ToString()),
+            // The QUESTION is not waiting — the task is. For the reader this is work to do now (Pending), and the
+            // contract forbids a waitingContext on anything that does not read as Waiting.
+            WaitingContext: null,
+            Escalation: null,
+            DueAt: task.DueAt,
+            PrimaryActionCode: "answer",
+            OverflowActionCodes: [],
+            // The reader is the one this decision belongs to …
+            Assignee: new WorkItemPersonDto(actor.UserId.ToString(), IsCurrentUser: true),
+            // … and the HOLDER asked it: only the holder can park a task (InquireTaskItemHandler).
+            Requester: Person(task.AssigneeUserId, actor, displayNames),
+            Priority: task.Priority.ToString(),
+            SlaState: _sla.Resolve(task.DueAt, now),
+            // The question, in the asker's own words — DISPLAY, never a resource key. Required to enter Waiting,
+            // so blank only for a task parked before that rule; omitted rather than sent empty.
+            Summary: string.IsNullOrWhiteSpace(task.WaitingReason)
+                ? null
+                : WorkItemLabelDto.Display(task.WaitingReason));
     }
 
     /// <summary>
@@ -1020,6 +1199,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
              * decides what is worth showing. (Same split `closedAt` gets: emitted as fact, drawn selectively.)
              */
             Returned: ToReturned(transitions),
+            /*
+             * BL-439 — THE QUESTION WAS ANSWERED: who, when, and what they said. Derived from the log, like
+             * `returned`, and only while it is still the latest word — a task parked again reads as waiting, not
+             * as answered. Not on finished work: it is a triage signal for the holder, and the activity feed keeps
+             * the answer for the record.
+             */
+            InquiryAnswer: terminal ? null : ToInquiryAnswer(task, transitions, actor, displayNames),
             /*
              * WHAT THE WORK IS. The form has collected these four since Phase 1 and none of them reached the
              * Task Center, so the detail page could say a task was fifteen days overdue without saying what it
@@ -1877,6 +2063,45 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     }
 
     /// <summary>
+    /// BL-439 — the latest ANSWER to a question this task was parked on, while it is still the latest word.
+    ///
+    /// <para>Null when the task is waiting right now (a new question is open, and the old answer is history), when
+    /// it was never answered, or when it was parked again after the last answer.</para>
+    /// </summary>
+    private static WorkItemInquiryAnswerDto? ToInquiryAnswer(
+        TaskItem task,
+        IReadOnlyList<TaskTransition>? transitions,
+        WorkItemActor actor,
+        IReadOnlyDictionary<Guid, string> displayNames)
+    {
+        if (task.Lifecycle == TaskLifecycle.Waiting || transitions is not { Count: > 0 })
+        {
+            return null;
+        }
+
+        var latestAnswer = transitions
+            .Where(transition => transition.Kind == TaskTransitionKind.InquiryAnswered)
+            .MaxBy(transition => transition.CreatedAt);
+        if (latestAnswer is null)
+        {
+            return null;
+        }
+
+        var latestWait = transitions
+            .Where(transition => transition.Kind == TaskTransitionKind.Waiting)
+            .MaxBy(transition => transition.CreatedAt);
+        if (latestWait is not null && latestWait.CreatedAt > latestAnswer.CreatedAt)
+        {
+            return null;
+        }
+
+        return new WorkItemInquiryAnswerDto(
+            latestAnswer.CreatedAt,
+            Person(latestAnswer.ActorUserId, actor, displayNames),
+            string.IsNullOrWhiteSpace(latestAnswer.Reason) ? null : WorkItemLabelDto.Display(latestAnswer.Reason));
+    }
+
+    /// <summary>
     /// The outcomes a type offers for ONE closure, as the picker's rows — or NULL when it offers none.
     ///
     /// <para>Null rather than an empty list, and the difference is load-bearing: the client reads absence as "this
@@ -2267,7 +2492,11 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         else if (task.AssignmentTarget == TaskAssignmentTarget.Person && openOrPlanned)
         {
             // The acceptance gate: an assignee decides whether to take the work on.
-            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update)));
+            // TargetStatus mirrors AcceptTaskItemHandler exactly (WP-WCN-KANBAN-01, CT decision 2026-09-17):
+            // Open promotes to InProgress; Planned is left untouched by the handler, so accepting a Planned task
+            // does not move its Kanban card — null, not a guess, since BuildActions already knows task.Lifecycle.
+            actions.Add(Build("accept", ActionAcceptKey, actor.Has(TaskPermissions.Update),
+                targetStatus: task.Lifecycle == TaskLifecycle.Open ? TaskLifecycleService.InProgress : null));
             primary = "accept";
         }
         else if (approvalPending)
@@ -2277,7 +2506,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // telling the user "waiting for approval" would point at an approver who was never asked.
             var approvalNeverStarted = task.WorkflowInstanceId is null;
             actions.Add(Disabled("start", ActionStartKey, TaskReasonCodes.ApprovalPending,
-                approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey));
+                approvalNeverStarted ? DisabledApprovalStartFailedKey : DisabledApprovalKey,
+                targetStatus: TaskLifecycleService.InProgress));
             primary = "start";
         }
         else if (task.Lifecycle is TaskLifecycle.Waiting)
@@ -2299,8 +2529,10 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             // MOD-0357 S9 (CT fix-up F1) — resume is NEVER held back by the review-meeting gate: holding the meeting
             // is part of the work. Only the decision actions below (submitReview/complete) wait for the minutes.
             actions.Add(approvalOutstanding
-                ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey)
-                : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update)));
+                ? Disabled("start", ActionResumeKey, TaskReasonCodes.ApprovalPending, DisabledApprovalKey,
+                    targetStatus: TaskLifecycleService.InProgress)
+                : Build("start", ActionResumeKey, actor.Has(TaskPermissions.Update),
+                    targetStatus: TaskLifecycleService.InProgress));
             primary = "start";
         }
         else
@@ -2309,7 +2541,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             {
                 // MOD-0357 S9 (CT fix-up F1) — start is NEVER held back by the review-meeting gate (see resume above);
                 // the server's → InProgress path asks no such question either.
-                actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update)));
+                actions.Add(Build("start", ActionStartKey, actor.Has(TaskPermissions.Update),
+                    targetStatus: TaskLifecycleService.InProgress));
                 primary = "start";
             }
 
@@ -2328,15 +2561,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // gate, then the checklist — each is its own reason, and only the first unmet one is shown.
                     actions.Add(approvalOutstanding
                         ? Disabled("submitReview", ActionSubmitReviewKey,
-                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
+                            targetStatus: TaskLifecycleService.Waiting)
                         : reviewMeetingBlocked
                             ? Disabled("submitReview", ActionSubmitReviewKey,
-                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                                targetStatus: TaskLifecycleService.Waiting)
                             : checklistBlocks
                                 ? Disabled("submitReview", ActionSubmitReviewKey,
-                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                    targetStatus: TaskLifecycleService.Waiting)
                                 : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                                    requiresConfirmation: true));
+                                    requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
                 }
                 else
@@ -2347,15 +2583,18 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // a hint about a real refusal, never the enforcement.
                     actions.Add(approvalOutstanding
                         ? Disabled("complete", ActionCompleteKey,
-                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey)
+                            TaskReasonCodes.ApprovalPending, DisabledApprovalCompleteKey,
+                            targetStatus: TaskLifecycleService.Done)
                         : reviewMeetingBlocked
                             ? Disabled("complete", ActionCompleteKey,
-                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                                TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                                targetStatus: TaskLifecycleService.Done)
                             : checklistBlocks
                                 ? Disabled("complete", ActionCompleteKey,
-                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                    TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                    targetStatus: TaskLifecycleService.Done)
                                 : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                                    requiresConfirmation: true));
+                                    requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
             }
@@ -2384,15 +2623,17 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 {
                     actions.Add(reviewMeetingBlocked
                         ? Disabled("submitReview", ActionSubmitReviewKey,
-                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                            targetStatus: TaskLifecycleService.Waiting)
                         : Build("submitReview", ActionSubmitReviewKey, actor.Has(TaskPermissions.Update),
-                            requiresConfirmation: true));
+                            requiresConfirmation: true, targetStatus: TaskLifecycleService.Waiting));
                     primary = "submitReview";
                 }
                 else if (reviewOutstanding)
                 {
                     actions.Add(Disabled("complete", ActionCompleteKey,
-                        TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey));
+                        TaskReasonCodes.ReviewPending, DisabledReviewCompleteKey,
+                        targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
                 else
@@ -2401,12 +2642,14 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                     // then the checklist, the same order the InProgress branch above uses.
                     actions.Add(reviewMeetingBlocked
                         ? Disabled("complete", ActionCompleteKey,
-                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey)
+                            TaskReasonCodes.ReviewMeetingRequired, DisabledReviewMeetingRequiredKey,
+                            targetStatus: TaskLifecycleService.Done)
                         : checklistBlocks
                             ? Disabled("complete", ActionCompleteKey,
-                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey)
+                                TaskReasonCodes.ChecklistIncomplete, DisabledChecklistKey,
+                                targetStatus: TaskLifecycleService.Done)
                             : Build("complete", ActionCompleteKey, actor.Has(TaskPermissions.Complete),
-                                requiresConfirmation: true));
+                                requiresConfirmation: true, targetStatus: TaskLifecycleService.Done));
                     primary = "complete";
                 }
             }
@@ -2439,7 +2682,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         if (!unclaimed && isHolder
             && task.Lifecycle is TaskLifecycle.Open or TaskLifecycle.Planned or TaskLifecycle.InProgress)
         {
-            actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true));
+            actions.Add(Build("inquire", ActionInquireKey, actor.Has(TaskPermissions.Update), requiresReason: true,
+                targetStatus: TaskLifecycleService.Waiting));
         }
 
         /*
@@ -2539,7 +2783,7 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
     /// </summary>
     private static WorkItemActionDto CancelAction(WorkItemActor actor)
         => Build("cancel", ActionCancelKey, actor.Has(TaskPermissions.Cancel),
-            requiresConfirmation: true, riskLevel: "destructive");
+            requiresConfirmation: true, riskLevel: "destructive", targetStatus: TaskLifecycleService.Cancelled);
 
     private static WorkItemActionDto Build(
         string code,
@@ -2547,7 +2791,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
         bool permitted,
         bool requiresConfirmation = false,
         string riskLevel = "normal",
-        bool requiresReason = false)
+        bool requiresReason = false,
+        string? targetStatus = null)
         => permitted
             ? new WorkItemActionDto(
                 Code: code,
@@ -2561,8 +2806,9 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
                 RequiresReason: requiresReason,
                 RequiresEvidence: false,
                 SupportsBulk: false,
-                RiskLevel: riskLevel)
-            : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey);
+                RiskLevel: riskLevel,
+                TargetStatus: targetStatus)
+            : Disabled(code, labelKey, WorkAggregationReasonCodes.PermissionDenied, DisabledPermissionKey, targetStatus);
 
     /// <summary>
     /// Turn an offered action into a disabled one, KEEPING its own label. The resume button says "Resume", not
@@ -2576,7 +2822,13 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             DisabledReason = WorkItemLabelDto.Resource(reasonKey)
         };
 
-    private static WorkItemActionDto Disabled(string code, string labelKey, string reasonCode, string reasonKey)
+    // WP-WCN-KANBAN-01 Dilim 3a — targetStatus travels even when the action is disabled: a disabled action is
+    // never a drop TARGET (the Kanban board only offers columns an ENABLED action reaches), but the board still
+    // needs to know which column WOULD have received it, to grey that column and show this disabledReason as
+    // its hint. Defaults to null so every other Disabled(...) call in this file (claim/release/plan/return/
+    // reassign never carry one) is unaffected.
+    private static WorkItemActionDto Disabled(
+        string code, string labelKey, string reasonCode, string reasonKey, string? targetStatus = null)
         => new(
             Code: code,
             Label: WorkItemLabelDto.Resource(labelKey),
@@ -2589,7 +2841,8 @@ public sealed class TaskWorkItemProvider : IWorkItemProvider
             RequiresReason: false,
             RequiresEvidence: false,
             SupportsBulk: false,
-            RiskLevel: "normal");
+            RiskLevel: "normal",
+            TargetStatus: targetStatus);
 
     private async Task<IReadOnlyList<Guid>> ResolveActivePositionIdsAsync(Guid userId, CancellationToken ct)
     {

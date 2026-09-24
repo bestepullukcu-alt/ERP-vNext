@@ -963,4 +963,23 @@
   <data name="Nav.Page.GRN" xml:space="preserve"><value>Mal Kabul</value></data>
   <data name="GrnUpdateNotSupported" xml:space="preserve"><value>GRN güncellemesi desteklenmez; kaydedilmiş bir mal kabul, düzenleme ile değil ters bir hareketle düzeltilir.</value></data>
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>Fatura güncelleme desteklenmez; düzeltme, düzenleme ile değil 3-yönlü eşleştirmeyi yeniden çalıştırarak veya istisnasını çözerek yapılır.</value></data>
+  <data name="Copied" xml:space="preserve"><value>Kopyalandı</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>Klavye kısayolları</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>Kapat</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>Bir alana yazarken ya da bir diyalog veya yan panel açıkken kısayollar çalışmaz.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>Bu listeyi göster</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>Boşluk</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>Her yerde</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>Görev Merkezi</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>Görev detayı</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>Sonraki kaydı seç</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>Önceki kaydı seç</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>Seçili kaydı aç</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>Odaktaki satırı aç</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>Seçili kaydı kabul et veya onayla</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>Seçili kaydı reddet veya iade et</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>Seçimi temizle</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Sekmeler arasında geç (odak bir sekmedeyken)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Görevi düzenle</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Görev listesine dön</value></data>
 </root>

@@ -61,6 +61,16 @@ public interface ITaskItemRepository
     Task<IReadOnlyList<TaskItem>> ListByCreatorAsync(Guid creatorUserId, CancellationToken ct = default);
 
     /// <summary>
+    /// BL-439 — tasks WAITING on this user: parked by their holder with <c>WaitingOnUserId</c> naming them.
+    ///
+    /// <para>The fourth question the Task Center asks, and the one that sends a question to the person it is
+    /// for. <see cref="ListByAssigneeAsync"/> finds what a user holds; this finds what somebody else is holding
+    /// and cannot move until this user answers. Waiting ONLY: the moment the question is answered or withdrawn,
+    /// <c>ClearWaiting</c> drops the id and the row stops matching — there is no second "hide it" step.</para>
+    /// </summary>
+    Task<IReadOnlyList<TaskItem>> ListWaitingOnUserAsync(Guid userId, CancellationToken ct = default);
+
+    /// <summary>
     /// Optimistic-concurrency update. Returns false when the expected version no longer matches — the caller
     /// turns that into a controlled 409 rather than silently overwriting (pack §13).
     /// </summary>

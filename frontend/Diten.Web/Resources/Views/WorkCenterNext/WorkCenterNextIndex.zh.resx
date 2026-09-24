@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>只读——状态在来源中更改；此处仅设置个人计划/置顶。</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>要执行哪个操作？</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>请选择一个操作。</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>处理中…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>已移至历史</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>拖放到此处：{0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>上个月</value>
   </data>
@@ -1469,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>申报表与总账之间发现 84,750 里拉差异。</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>第三季度预算修订评审会议</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>2026年7月28日 14:00–15:00 · Teams · 组织者：Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} 已将此任务提交给您审批</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>此任务已提交给您审批</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>审批：{objectType} {objectId}</value>
   </data>
@@ -2349,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>请先选择文件，再完成此任务。</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>添加证明文件</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} 个证明文件</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>问题</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>问题 · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>回答</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>将您的回答记入任务历史，并使任务恢复到之前的状态</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>所提问题</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>您的回答</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>请填写对方需要的信息…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>发送前请先填写回答。</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} 已回答</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} 向您提问：{1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>有人在等待您对此任务的回答。</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} 已回答：{1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>问题已回答</value>
+  </data>
 </root>

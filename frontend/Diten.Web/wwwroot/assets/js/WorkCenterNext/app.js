@@ -27,6 +27,10 @@
     };
     const seenIds = readSeenIds();
     let workCenterDt = null;
+    // WP-WCN-KANBAN-01 Dilim 3a — true for the same synchronous window a genuine drag's trailing click would
+    // land in (mouseup → onEnd → the browser's own click, all before the next macrotask). The row-click handler
+    // checks it so a drag that ends over the dragged card's own position does not also open its detail page.
+    let kanbanDragSuppressClick = false;
 
     if (!data) {
         return;
@@ -57,8 +61,8 @@
     const commentMentionState = new Map();
     const STATUS_KIND = { 'Pending': 'primary', 'In Progress': 'info', 'Waiting': 'warning', 'Done': 'success', 'Cancelled': 'secondary' };
     const STATUS_KEY = { 'Pending': 'StatusPending', 'In Progress': 'StatusInProgress', 'Waiting': 'StatusWaiting', 'Done': 'StatusDone', 'Cancelled': 'StatusCancelled' };
-    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite' };
-    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event' };
+    const TYPE_KEY = { approval: 'TypeApproval', task: 'TypeTask', review: 'TypeReview', issue: 'TypeIssue', exception: 'TypeException', meetingInvite: 'ChipMeetingInvite', inquiry: 'TypeInquiry' };
+    const TYPE_ICON_MAP = { approval: 'bx-check-shield', task: 'bx-task', review: 'bx-search-alt', issue: 'bx-error-circle', exception: 'bx-error-alt', meetingInvite: 'bx-calendar-event', inquiry: 'bx-question-mark' };
     const SIGNAL_ICON = { blocked: 'bx-lock-alt', 'sla-risk': 'bx-time-five', escalated: 'bx-up-arrow-alt',
         snoozed: 'bx-moon' };
     const MODE_KEY = { direct: 'ModeDirect', approval: 'ModeApproval', groupQueue: 'ModeGroupQueue', offered: 'ModeOffered' };
@@ -861,7 +865,10 @@
 
     const activeItems = () => state.items.filter((item) => {
         if (!inTab(item, state.tab)) { return false; }
-        if (SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board is not filtered by segment: its columns ARE the status
+        // axis SEGMENTS narrows (İşlerim's "Aktif" segment hides Bekletiliyor, which would silently empty the
+        // board's own Bekletiliyor column). The segment bar itself is hidden in this view — see buildSegments.
+        if (state.view !== 'kanban' && SEGMENTS[state.tab] && data.segmentFor(item) !== state.segment) { return false; }
         return passesFilters(item);
     });
 
@@ -1220,7 +1227,12 @@
             </li>`;
         };
         const allowedViews = TAB_VIEWS[state.tab] || TAB_VIEWS.islerim;
-        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><div class="dropdown d-none d-lg-block"><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button><div class="dropdown-menu dropdown-menu-end wcn-keyboard-menu"><span>${esc(t('KeyboardHint'))}</span></div></div></div>`;
+        /*
+         * WP-UI-SHORTCUTS-01 (BL-438) — the keyboard button opens the shared `?` list. It was a dropdown that printed
+         * `KeyboardHint` (four of the seven keys) and was hidden below `lg`; the list is now generated from what is
+         * registered, and the button shows at every width. `KeyboardHint` stays as its name and tooltip.
+         */
+        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-wcn-shortcuts aria-haspopup="dialog" aria-keyshortcuts="?" title="${esc(t('KeyboardHint'))}" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button></div>`;
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
                 <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
@@ -1234,6 +1246,9 @@
     // Segment bar = STATUS (only İşlerim). Aktif / Bekleyen / Planlı — a status
     // change moves the segment, never the tab (Fable's law).
     const buildSegments = () => {
+        // WP-WCN-KANBAN-01 Dilim 2 — the Kanban board does not apply the segment filter (see activeItems), so
+        // the chips that would narrow it are hidden rather than drawn and ignored.
+        if (state.view === 'kanban') { return ''; }
         const segs = SEGMENTS[state.tab];
         if (!segs) { return ''; }
         const btn = (seg) =>
@@ -1254,7 +1269,9 @@
         { key: 'review', labelKey: 'TypeReview', icon: TYPE_ICON_MAP.review },
         { key: 'issue', labelKey: 'TypeIssue', icon: TYPE_ICON_MAP.issue },
         { key: 'exception', labelKey: 'TypeException', icon: TYPE_ICON_MAP.exception },
-        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' }
+        { key: 'meetingInvite', labelKey: 'ChipMeetingInvite', icon: 'bx-calendar-event' },
+        // BL-439 — a question somebody else's task is asking the reader: a first decision (answer), like the rest.
+        { key: 'inquiry', labelKey: 'TypeInquiry', icon: TYPE_ICON_MAP.inquiry }
     ];
     const INBOX_RISK = ['sla-risk', 'escalated'];   // "Bloke" is post-acceptance → not here
 
@@ -1465,7 +1482,7 @@
             `<option value="${esc(m)}"${selectedModules.includes(m) ? ' selected' : ''}>${esc(m)}</option>`).join('');
         const wtSel = Array.isArray(draft.worktype) ? draft.worktype : (draft.worktype && draft.worktype !== 'all' ? [draft.worktype] : []);
         const wtLabel = (k) => k === 'meetingInvite' ? t('ChipMeetingInvite') : t(TYPE_KEY[k]);
-        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'issue', 'exception'].map((k) =>
+        const wtOpts = ['task', 'approval', 'review', 'meetingInvite', 'inquiry', 'issue', 'exception'].map((k) =>
                 `<option value="${k}"${wtSel.includes(k) ? ' selected' : ''}>${esc(wtLabel(k))}</option>`).join('');
         // İş türü duplicates the visible type chips → hidden in İşlerim (kept in Havuz/Geçmiş
         // where the chips curate differently). Atama modu is dead in İşlerim (everything is
@@ -1535,6 +1552,35 @@
         if (!signal) { return ''; }
         return signal.count > 1 ? tf('ReturnedCount', signal.count) : t('ReturnedLabel');
     };
+    /*
+     * ── THE ANSWERED SIGNAL (BL-439) ─────────────────────────────────────────────────────────────────────
+     *
+     * The other half of the waiting chip. Read through helpers for the reason `returnedSignal` is: `at` is the
+     * guard the contract requires, so a malformed block draws nothing rather than an empty chip.
+     *
+     * ⚠ `answeredBy` IS STILL A PERSON OBJECT HERE. toPresentation flattens assignee/requester to strings, but
+     * it leaves this block alone — so the name is read off `.displayName`, with the same "Me" / name-unavailable
+     * fallbacks every other person gets, never a GUID.
+     */
+    const inquiryAnsweredSignal = (item) =>
+        (item && item.inquiryAnswer && item.inquiryAnswer.at) ? item.inquiryAnswer : null;
+
+    const inquiryAnsweredText = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        return signal ? (data.resolveLabel(signal.answer) || '') : '';
+    };
+
+    const inquiryAnsweredName = (item) => {
+        const signal = inquiryAnsweredSignal(item);
+        if (!signal) { return ''; }
+        const person = signal.answeredBy || null;
+        return person?.displayName
+            || (person?.isCurrentUser ? t('PersonSelf') : t('PersonNameUnavailable'));
+    };
+
+    const inquiryAnsweredChipText = (item) =>
+        (inquiryAnsweredSignal(item) ? tf('InquiryAnsweredBy', inquiryAnsweredName(item)) : '');
+
     const sourceTitle = (item) => [item.sourceModuleId, item.sourceModuleName, item.sourceObjectType]
         .filter(Boolean).join(' · ');
 
@@ -1572,6 +1618,14 @@
          */
         returnedSignal(item) && !isTerminal(item)
             ? chip('warning', 'bx-undo', returnedChipText(item), returnedReasonText(item))
+            : '',
+        /*
+         * BL-439 — YOUR QUESTION WAS ANSWERED: "X cevapladı", with the answer itself as the tooltip — the same
+         * "chip clips, title carries the full sentence" rule the waiting and returned chips follow. The server
+         * sends it only while the answer is the latest word and never on finished work.
+         */
+        inquiryAnsweredSignal(item)
+            ? chip('success', 'bx-reply', inquiryAnsweredChipText(item), inquiryAnsweredText(item))
             : '',
         // Why the leading action cannot be used, ON the row rather than only in the button's tooltip. A blocked
         // item whose reason needs a hover reads as simply broken.
@@ -1650,6 +1704,21 @@
         const summary = item.itemType === 'meetingInvite'
             ? [item.sourceType, item.dueAt, item.requester].filter(Boolean).join(' · ')
             : item.summary;
+        /*
+         * BL-437 — WHY THIS IS HERE, AND WHERE IT COMES FROM. An approval row used to read "Onay: task-review
+         * 3f2c…" and nothing else; the owner could not tell which task had come back to them, or why. The
+         * provider now sends the sentence ("Ayşe bu görevi onayına gönderdi") and the task's own address, and the
+         * row says both where the summary would sit — an approval carries no summary of its own.
+         *
+         * An <a>, not a button: it NAVIGATES, exactly like the row's edit link, and the row's click handler
+         * already leaves anchors alone. No href → no link (the rule the source card learned the hard way).
+         */
+        const arrivalHref = item.arrivalReasonText ? sourceHref(item) : '';
+        const summaryHtml = item.arrivalReasonText
+            ? `${esc(item.arrivalReasonText)}${arrivalHref
+                ? ` · <a href="${esc(arrivalHref)}" data-wcn-arrival-link="${esc(item.id)}">${esc(t('DetailOpenSource'))}</a>`
+                : ''}`
+            : esc(summary);
         return `<div class="wcn-row${selected ? ' selected' : ''}${item.isUnread ? ' unread' : ''}" data-wcn-row="${item.id}" tabindex="0">
             <span class="wcn-row-accent wcn-row-accent-${SLA_KIND[item.slaState] || 'secondary'}" aria-hidden="true"></span>
             <div class="wcn-row-body">
@@ -1659,7 +1728,7 @@
                     ${onBehalfBadge}
                     ${inbox ? '' : `<span class="wcn-badge wcn-badge-${STATUS_KIND[displayStatus(item)]}">${esc(statusLabel(item))}</span>`}
                 </div>
-                ${compact ? '' : `<p class="wcn-row-summary">${esc(summary)}</p>`}
+                ${compact ? '' : `<p class="wcn-row-summary">${summaryHtml}</p>`}
                 <div class="wcn-row-chips">${rowChips(item)}</div>
             </div>
             <div class="wcn-row-actions">${editBtn}${unsnoozeBtn}${pinBtn}${actionCluster(item)}</div>
@@ -1694,6 +1763,8 @@
         // MOD-0357 S5c — same tone as accept/decline above, the codes just differ (acceptInvite/declineInvite).
         acceptInvite: 'bx-check', declineInvite: 'bx-x-circle',
         inquire: 'bx-question-mark', requestInfo: 'bx-question-mark',
+        // BL-439 — the other half of `inquire`: the addressee replies.
+        answer: 'bx-reply',
         reassign: 'bx-user-pin', plan: 'bx-calendar-plus', logTime: 'bx-time-five',
         scheduleReviewMeeting: 'bx-calendar-event',
         /*
@@ -2100,6 +2171,16 @@
     };
 
     const guidanceFor = (item) => {
+        /*
+         * BL-439 — a QUESTION addressed to the reader says who is asking and what, in one sentence, before
+         * anything else: it is the whole reason the page is open. `requester` is already the asker's name
+         * (toPresentation), and the question is the item's own summary.
+         */
+        if (item.itemType === 'inquiry') {
+            return item.summary
+                ? { kind: 'primary', text: tf('GuidanceInquiryAsked', item.requester || t('PersonNameUnavailable'), item.summary) }
+                : { kind: 'primary', key: 'GuidanceInquiryAskedNoText' };
+        }
         if (item.admissionState === 'pendingAcceptance') { return { kind: 'primary', key: 'GuidancePendingAcceptance' }; }
         if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
         if (item.gates?.approval?.status === 'pending') { return { kind: 'warning', key: 'GuidanceApprovalPending' }; }
@@ -2109,6 +2190,13 @@
             return waitingSentence(item)
                 ? { kind: 'warning', text: tf('GuidanceWaitingBecause', waitingSentence(item)) }
                 : { kind: 'warning', key: 'GuidanceWaiting' };
+        }
+        // BL-439 — the other half: the question this task was parked on came back answered.
+        if (inquiryAnsweredSignal(item)) {
+            const answerText = inquiryAnsweredText(item);
+            return answerText
+                ? { kind: 'success', text: tf('GuidanceInquiryAnswered', inquiryAnsweredName(item), answerText) }
+                : { kind: 'success', text: inquiryAnsweredChipText(item) };
         }
         return null;
     };
@@ -2157,6 +2245,7 @@
         plan: 'OutcomePlan',
         start: 'OutcomeStart',
         inquire: 'OutcomeInquire',
+        answer: 'OutcomeAnswer',
         return: 'OutcomeReturn',
         reassign: 'OutcomeReassign',
         complete: 'OutcomeComplete',
@@ -6292,38 +6381,68 @@
          * labelled with the current segment. Measured on İşlerim: a single "Aktif 30" column — a board that is
          * a list with extra furniture. A board whose shape changes with the tab is two boards under one name.
          *
-         * ⚠ THE SEGMENT FILTER STILL APPLIES; it just stops deciding the columns. `activeItems()` has already
-         * narrowed to "Aktif", and the board arranges THAT by stage.
+         * ⚠ THE SEGMENT FILTER DOES NOT APPLY HERE (WP-WCN-KANBAN-01 Dilim 2) — see `activeItems`. The board
+         * arranges the tab's WHOLE non-terminal set by stage; narrowing it by segment first would silently
+         * empty a real column (İşlerim's "Aktif" segment excludes Bekletiliyor).
          *
          * ⚠ FLOW ORDER, NOT ALPHABETICAL — Pending → In Progress → Waiting → Done → Cancelled is the order the
          * work moves in, and a board read left-to-right is the only reason to prefer it over a list.
          *
          * ⚠ AN EMPTY STAGE IS DRAWN; AN IMPOSSIBLE ONE IS NOT — and the difference was measured, not assumed.
-         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done and Cancelled
-         * CANNOT occur outside History and the other three cannot occur inside it. Drawing all five everywhere
-         * would put two or three permanently empty columns on every board — the same promise-of-a-population
-         * this session removed from the chips and the table's columns. So: a stage this tab can reach is drawn
-         * even at zero (the flow stays readable); a stage it can never reach is left out.
+         * `inTab` sorts terminal work into History and non-terminal work everywhere else, so Done/Cancelled
+         * CANNOT hold an item outside History and the other three cannot hold one inside it. Drawing all five
+         * everywhere would put permanently empty columns on every board — the same promise-of-a-population this
+         * session removed from the chips and the table's columns. So a stage this tab can reach is drawn even at
+         * zero; a stage it can never reach is left out — WITH ONE EXCEPTION, below.
+         *
+         * ⚠ İŞLERİM/BAŞLATTIKLARIM DRAW TWO THIN, CARDLESS DROP ZONES (WP-WCN-KANBAN-01 Dilim 2, owner decision
+         * 2026-09-16/17) — Tamamlandı and İptal never hold a card here (still true: `inTab` still excludes
+         * terminal work), but the column itself is now drawn, narrow and body-less, as the landing target Dilim
+         * 3's drag wires up ("Geçmiş'e taşındı" on drop). Havuz keeps today's shape exactly — no terminal columns
+         * at all — and History is untouched: its five/two columns, its cards, and `KanbanReadonly`'s note are
+         * still exactly what they were.
          */
         const FLOW = ['Pending', 'In Progress', 'Waiting', 'Done', 'Cancelled'];
         const TERMINAL_STATES = ['Done', 'Cancelled'];
-        const reachable = (st) => (state.tab === 'history'
+        const isHistory = state.tab === 'history';
+        const showsDropZones = state.tab === 'islerim' || state.tab === 'baslattiklarim';
+        const reachable = (st) => (isHistory
             ? TERMINAL_STATES.indexOf(st) >= 0
-            : TERMINAL_STATES.indexOf(st) < 0);
+            : TERMINAL_STATES.indexOf(st) < 0 || showsDropZones);
         const cols = FLOW.filter(reachable)
-            .map((st) => ({ label: t(STATUS_KEY[st]), items: items.filter((i) => i.status === st) }));
+            .map((st) => ({
+                status: st,
+                label: t(STATUS_KEY[st]),
+                items: items.filter((i) => i.status === st),
+                dropZone: showsDropZones && TERMINAL_STATES.indexOf(st) >= 0
+            }));
         // Every reachable stage empty means the board has nothing to arrange — the product's empty-state
-        // sentence, not five empty columns with a heading each.
+        // sentence, not a wall of empty columns and drop zones with a heading each.
         if (!cols.some((col) => col.items.length)) { return emptyState(); }
         const colHtml = cols.map((col) => {
+            if (col.dropZone) {
+                // No count badge: it would always read 0 (a real card never lands here before Dilim 3b exists),
+                // and a "0" beside Tamamlandı/İptal reads as a real, countable column rather than a target.
+                // The empty `.wcn-kcol-body` is WP-WCN-KANBAN-01 Dilim 3a: Sortable needs a list to bind and a
+                // region to accept a drop into, even though no card is ever rendered inside it.
+                // Dilim 5 — the idle hint ("Tamamlandı'ya bırak"), centered in the zone that is ALWAYS empty
+                // today (see the comment above: no card is ever rendered here before Dilim 3b's projection
+                // exists). One localized template with a `{0}` slot for the column's own already-translated
+                // label, the same `.replace('{0}', …)` convention `document-references.js` already uses — the
+                // sentence can be built in whatever order a language needs around the column name.
+                return `<div class="wcn-kcol wcn-kcol-dropzone" data-wcn-status="${esc(col.status)}">
+                    <header class="wcn-kcol-head"><span>${esc(col.label)}</span></header>
+                    <div class="wcn-kcol-body"><p class="wcn-kcol-drophint">${esc(t('KanbanDropHint').replace('{0}', col.label))}</p></div>
+                </div>`;
+            }
             const cards = col.items.slice().sort(bySla).map((item) => { state.visibleOrder.push(item.id); return kanbanCard(item); }).join('');
-            return `<div class="wcn-kcol">
+            return `<div class="wcn-kcol" data-wcn-status="${esc(col.status)}">
                 <header class="wcn-kcol-head"><span>${esc(col.label)}</span><span class="wcn-kcol-count">${col.items.length}</span></header>
                 <div class="wcn-kcol-body">${cards}</div>
             </div>`;
         }).join('');
         return `<div class="wcn-kanban">
-            <div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>
+            ${isHistory ? `<div class="wcn-viewnote"><i class="bx bx-info-circle"></i><span>${esc(t('KanbanReadonly'))}</span></div>` : ''}
             <div class="wcn-kboard">${colHtml}</div>
         </div>`;
     };
@@ -6489,8 +6608,9 @@
     };
 
 
-    // ── Kanban view (READ-ONLY, spec v3) — columns by status; WorkCenter doesn't
-    // own status so cards don't drag between columns. Personal plan/pin only. ───
+    // ── Kanban view — columns by status. A card is draggable when it has at least one ENABLED action whose
+    // targetStatus leads to a DIFFERENT column (see kanbanDragTargets below); dropping runs that action through
+    // performAction, the same address a button press reaches (WP-WCN-KANBAN-01 Dilim 3b, see bindKanbanDrag).
     const kanbanCard = (item) => {
         const prim = primaryAction(item);
         const quick = prim
@@ -6501,15 +6621,82 @@
         const quickSecondary = sec
             ? `<button type="button" class="wcn-quick btn btn-sm btn-label-${sec.kind}" data-wcn-action="${sec.key}" data-wcn-id="${item.id}">${esc(actionLabel(sec))}</button>`
             : '';
-        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}" data-wcn-row="${item.id}" tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
+        // WP-WCN-KANBAN-01 Dilim 3b — the SAME `state.submittingItemId` every other action-in-flight lock in
+        // this file already reads (submitRealTransition/applyAction set it, performAction's own guard refuses a
+        // second action on the same item while it is set). A processing card offers no handle: neither a second
+        // drag nor a second drop-triggered action can start on it before the first one resolves.
+        const processing = state.submittingItemId === item.id;
+        const draggable = !processing && kanbanDragTargets(item).length > 0;
+        /*
+         * WP-WCN-KANBAN-01 Dilim 4 — the person the demo card's "assigned" row becomes here, measured against
+         * what toPresentation ACTUALLY carries (mock-data.js personName): `item.assignee`/`item.requester` are
+         * already-resolved display-name strings, never person objects, and never avatar image URLs — this
+         * projection has no photo, so the circle is always initials, never an <img>. The assignee (who is
+         * DOING the work) is shown; the requester only stands in when nobody holds it yet (an unclaimed pool
+         * card). Comment/attachment COUNTS from the demo card are not drawn at all: the projection carries
+         * `attachments.items` (a list to render or count elsewhere) and a `checklist`/`subtasks` shape, but no
+         * standalone comment-count field — inventing one here would be drawing data that does not exist.
+         *
+         * CT fix — `item.assignee`/`item.requester` are NOT always a name: mock-data.js's personName() can leave
+         * the translated "name unavailable" LABEL in that string when the person exists but the server sent no
+         * displayName (today's real projection, with no user-directory seam). A truthy-string check drew that
+         * label as if it were someone's name. `assigneeNameKnown`/`requesterNameKnown` are recorded by
+         * toPresentation BEFORE it overwrites the person object with either the name or the label, so this reads
+         * that fact instead of pattern-matching the rendered text.
+         */
+        const personName = (item.assigneeNameKnown && item.assignee)
+            ? item.assignee
+            : (item.requesterNameKnown && item.requester) ? item.requester : '';
+        const personRow = personName
+            ? `<div class="wcn-kcard-person" title="${esc(personName)}">
+                <span class="diten-opt-avatar wcn-kcard-avatar" aria-hidden="true">${esc(personInitials(personName))}</span>
+                <span>${esc(personName)}</span>
+            </div>`
+            : '';
+        return `<div class="wcn-kcard${item.isUnread ? ' unread' : ''}${item.id === state.selectedId ? ' selected' : ''}${processing ? ' wcn-kcard-processing' : ''}" data-wcn-row="${item.id}"${draggable ? ' data-wcn-draggable="1"' : ''} tabindex="0" role="button" aria-label="${esc(tf('TableOpenRow', item.title))}">
             <div class="wcn-kcard-title">${esc(item.title)}</div>
             <div class="wcn-kcard-chips">
                 ${chip('module', 'bx-cube', item.sourceModule)}
                 ${chip(SLA_KIND[item.slaState], 'bx-time-five', slaLabel(item))}
                 ${priorityChip(item)}
             </div>
-            ${quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : ''}
+            ${processing
+                ? `<div class="wcn-kcard-processing-note" role="status"><span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>${esc(t('KanbanProcessing'))}</span></div>`
+                : (quick ? `<div class="wcn-kcard-actions">${quick}${quickSecondary}</div>` : '')}
+            ${personRow}
         </div>`;
+    };
+
+    /*
+     * The WIRE's normalizedStatus ("InProgress") is not the COLUMN's key ("In Progress", the one
+     * `item.status`/`data-wcn-status` actually use — see toPresentation's own `item.status =` line). Every
+     * targetStatus comparison in this file has to go through the SAME display form or "In Progress" would never
+     * match its own column and every card reaching it would read as permanently unreachable.
+     */
+    const kanbanColumnKey = (normalizedStatus) => (normalizedStatus === 'InProgress' ? 'In Progress' : normalizedStatus);
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a — the column keys this item's ENABLED actions can drag it to, own column
+     * excluded (dropping on the column you are already in is not a move). A DISABLED action's targetStatus is
+     * deliberately excluded here — see kanbanColumnHint, which reads it separately to explain a pale column,
+     * never to make it accept a drop.
+     */
+    const kanbanDragTargets = (item) => (item.actions || [])
+        .filter((a) => a.enabled && a.targetStatus)
+        .map((a) => kanbanColumnKey(a.targetStatus))
+        .filter((status) => status !== item.status);
+
+    /*
+     * The hint text for a PALE column during a drag: this item's disabledReason for the one action (if there is
+     * exactly one) that targets it. Two or more actions targeting the same column with different reasons would
+     * be ambiguous to summarize in one line, so nothing is shown rather than picking one arbitrarily; zero
+     * actions targeting it means the column is simply unreachable from here, not blocked, so nothing is shown
+     * either.
+     */
+    const kanbanColumnHint = (item, columnStatus) => {
+        const matches = (item.actions || []).filter((a) => a.targetStatus && kanbanColumnKey(a.targetStatus) === columnStatus);
+        if (matches.length !== 1 || matches[0].enabled) { return null; }
+        return matches[0].disabledReason || null;
     };
 
 
@@ -6904,6 +7091,7 @@
         setupTimerTick();
         mountPanelSelect2();
         if (state.view === 'table') { mountWorkCenterDataTable(renderedItems); }
+        if (state.view === 'kanban') { bindKanbanDrag(root); }
         restoreFocus(snap);
         syncUrl();
     };
@@ -7186,6 +7374,12 @@
          */
         inquire: ({ expectedVersion, reason, waitingOnUserId }) =>
             ({ expectedVersion, reason, waitingOnUserId: waitingOnUserId || undefined }),
+        /*
+         * BL-439 — the addressee's ANSWER, sent as `answer`, never as `reason`: the server's union payload has its
+         * own field for it (WorkItemActionPayloadDto.Answer), because an answer is neither an explanation of an
+         * act nor a note on one. The dialog collects it in the same textarea every reason uses.
+         */
+        answer: ({ expectedVersion, reason }) => ({ expectedVersion, answer: reason }),
         return: ({ expectedVersion, reason }) => ({ expectedVersion, reason }),
         // Plus the person being handed the work — see the picker in the reason dialog.
         reassign: ({ expectedVersion, reason, assigneeUserId }) => ({ expectedVersion, assigneeUserId, reason }),
@@ -7379,7 +7573,7 @@
             render();
             // The task's TITLE, never its id — a GUID means nothing to the person reading the toast.
             toast(tf('ToastActionApplied', label, item.title));
-            return;
+            return { outcome: 'done' };
         }
 
         /*
@@ -7398,7 +7592,7 @@
             await loadWorkItems();
             render();
             toast(t('ErrorConcurrencyRefreshed'), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode || 'TASK_CONCURRENCY_CONFLICT' };
         }
 
         if (global.TasksApi.isTransitionBlocked(result)) {
@@ -7407,11 +7601,12 @@
             await loadWorkItems();
             render();
             toast(global.TasksApi.failureMessage(result, overrides), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         render();
         toast(global.TasksApi.failureMessage(result, overrides), 'error');
+        return { outcome: 'refused', reasonCode: result.reasonCode };
     };
 
     /*
@@ -7790,6 +7985,179 @@
         });
     };
 
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3a/3b — sürükleme başlar, sütunlar izin verir ya da soluklaşır, ve bırakınca
+     * gerçek işlem çalışır (Dilim 3b): the drop resolves to the same `performAction` a button press would call
+     * — one candidate runs it directly, two or more open a picker — and its own outcome (done/refused/
+     * cancelled) is what decides what the reader sees next; nothing here re-implements that.
+     *
+     * İşlerim/Başlattıklarım only — Havuz and Geçmiş keep today's read-only board (CT decision 2026-09-17) — and
+     * never in the Team scope: a colleague's work is not this reader's to drag.
+     */
+    const bindKanbanDrag = (root) => {
+        if (!global.Sortable || !root || state.view !== 'kanban') { return; }
+        if (state.tab !== 'islerim' && state.tab !== 'baslattiklarim') { return; }
+        if (state.scope === 'team') { return; }
+        root.querySelectorAll('.wcn-kcol-body').forEach((list) => {
+            // The board is rebuilt on every render, so this is a fresh element each time; the flag stops a
+            // second Sortable binding to the SAME node if render is ever called twice without replacing it.
+            if (list.dataset.wcnSortable === '1') { return; }
+            list.dataset.wcnSortable = '1';
+            global.Sortable.create(list, {
+                group: 'wcn-kanban',
+                animation: 150,
+                forceFallback: true,
+                fallbackTolerance: 3,
+                // A card with nothing to drag it TO (no enabled action reaches another column) gets no handle
+                // and no drag cursor — `filter` excludes it from Sortable's own draggable set entirely.
+                draggable: '.wcn-kcard[data-wcn-draggable="1"]',
+                filter: '.wcn-kcard:not([data-wcn-draggable="1"])',
+                ghostClass: 'wcn-kcard-ghost',
+                // CT fix, WP-WCN-KANBAN-01 Dilim 4 correction round — `forceFallback` means Sortable repositions
+                // this clone on every mousemove; `.wcn-kcard`'s own `transition: all .12s ease` (the hover/
+                // select animation) was applying to it too, so the clone visibly trailed .12s behind the
+                // pointer. Naming our own class here (rather than leaning on Sortable's default
+                // `fallbackClass: 'sortable-fallback'`) keeps the CSS hook self-documenting and independent of
+                // the library's own defaults. See backbone-custom.css's `.wcn-kcard-dragging` rule.
+                fallbackClass: 'wcn-kcard-dragging',
+                // Dilim 5 — a bare list under one minimal card's worth of content used the library's own 5px
+                // default (measured: `emptyInsertThreshold: 5` in sortable.js), which made the empty drop
+                // zones (and any short column) hard to land a card in without hunting for that exact 5px band.
+                // 48 is `.wcn-kcol-body`'s own new `min-block-size` (4.5rem = 72px at the 16px root, ~48px at
+                // the smaller end of the page's actual root-font range) — the threshold now covers roughly the
+                // zone's own guaranteed empty height, not an arbitrary bigger number.
+                emptyInsertThreshold: 48,
+                onStart: (event) => {
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    if (!item) { return; }
+                    const allowed = new Set(kanbanDragTargets(item));
+                    root.querySelectorAll('.wcn-kcol[data-wcn-status]').forEach((col) => {
+                        const status = col.getAttribute('data-wcn-status');
+                        // The card's OWN column is never pale, whatever the allowed set says — dropping back
+                        // where it already is is not a move to refuse. (Sabotage-guarded: remove this line and
+                        // a card's own column greys itself out from under it.)
+                        if (status === item.status) { return; }
+                        if (allowed.has(status)) {
+                            // Dilim 5 — the column WAS only ever marked by elimination (not pale = allowed);
+                            // a reader had to check every other column to know one was a valid target. Now the
+                            // allowed column says so itself. (Sabotage-guarded: remove this line and no column
+                            // ever reads as a target, only as "not yet ruled out".)
+                            col.classList.add('wcn-kcol-target');
+                            return;
+                        }
+                        col.classList.add('wcn-kcol-pale');
+                        // A pale column whose ONE reason is a disabled action's own refusal explains itself —
+                        // the same localized sentence the button would have shown, read from the wire.
+                        const hint = kanbanColumnHint(item, status);
+                        if (hint) { col.querySelector('.wcn-kcol-head')?.setAttribute('title', hint); }
+                    });
+                },
+                onMove: (event) => {
+                    const col = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    return !!col && !col.classList.contains('wcn-kcol-pale');
+                },
+                onEnd: (event) => {
+                    // The trailing click a real drag's mouseup fires next must not reopen the card's detail
+                    // page — cleared on the next tick, well after that click would already have run.
+                    kanbanDragSuppressClick = true;
+                    global.setTimeout(() => { kanbanDragSuppressClick = false; }, 0);
+
+                    const item = itemById(event.item.getAttribute('data-wcn-row'));
+                    const targetCol = event.to && event.to.closest ? event.to.closest('.wcn-kcol[data-wcn-status]') : null;
+                    const targetStatus = targetCol ? targetCol.getAttribute('data-wcn-status') : null;
+
+                    /*
+                     * WP-WCN-KANBAN-01 Dilim 3b — NO OPTIMISTIC MOVE. The card is redrawn back into its own
+                     * column from the untouched projection BEFORE anything below runs — clearing every
+                     * wcn-kcol-pale class and title the drag added, exactly as Dilim 3a already did. Whatever
+                     * happens next (a run, a picker, nothing) starts from the server's own truth, never from
+                     * wherever Sortable's own DOM manipulation left the card mid-drag.
+                     */
+                    render();
+
+                    if (!item || !targetStatus || targetStatus === item.status) { return; }
+
+                    const candidates = (item.actions || [])
+                        .filter((a) => a.enabled && a.targetStatus && kanbanColumnKey(a.targetStatus) === targetStatus);
+                    // onMove already refuses a drop on a column with no allowed action — this is the defensive
+                    // twin for whatever reaches onEnd anyway (a fallback drag path with no onMove gate, a stale
+                    // pale class). Silent: the card is already back where it started.
+                    if (!candidates.length) { return; }
+
+                    if (candidates.length === 1) {
+                        runKanbanDrop(item, candidates[0]);
+                        return;
+                    }
+                    openKanbanActionPicker(item, candidates);
+                }
+            });
+        });
+    };
+
+    /*
+     * WP-WCN-KANBAN-01 Dilim 3b — the SAME address a button press reaches: `performAction(item, action.key)`.
+     * Its own outcome decides everything from here:
+     *   done     — submitRealTransition already re-read the projection and re-rendered; the only thing left is
+     *              the Kanban-specific sentence when the card left the active board for Geçmiş.
+     *   refused  — submitRealTransition already re-rendered (the card is back in its own column) and already
+     *              toasted the server's own localized reason (TasksApi.failureMessage) — nothing to add.
+     *   cancelled — a dialog the action opened (e.g. a reason box) was dismissed; silent, nothing to add.
+     * A REJECTED promise is not a modelled outcome — TasksApi's own fetch wrapper fails closed into `{ ok:
+     * false, reasonCode: 'UNAVAILABLE' }` rather than throwing, so a rejection here is an unexpected bug or a
+     * genuine network-level throw. Either way `state.submittingItemId` must not survive it — a card `render()`
+     * never got to clear would stay "processing" forever, undraggable, for a request that already died.
+     */
+    // The wire's own spelling (TaskLifecycleService: "Done"/"Cancelled"), not the column key — targetStatus on
+    // the action is never "In Progress"-with-a-space to begin with (see kanbanColumnKey).
+    const KANBAN_HISTORY_STATUSES = ['Done', 'Cancelled'];
+
+    const runKanbanDrop = (item, action) => {
+        performAction(item, action.key).then((result) => {
+            if (result && result.outcome === 'done' && KANBAN_HISTORY_STATUSES.includes(action.targetStatus)) {
+                toast(t('KanbanMovedToHistory'));
+            }
+        }).catch((error) => {
+            console.error('WorkCenterNext Kanban drop failed.', error);
+            state.submittingItemId = null;
+            state.submittingActionCode = null;
+            toast(t('ErrorTitle'), 'error');
+            render();
+        });
+    };
+
+    /*
+     * The picker for a column TWO OR MORE enabled actions lead to. Reuses `sharedConfirm`'s existing `select`
+     * input — the SAME shape `openMeetingScheduler`'s meeting-type step already draws — rather than inventing a
+     * new dialog kind for one more list of choices. Esc and an outside click are `sharedConfirm`'s own existing
+     * dismissal (no `onCancel` is passed, so a dismissal is the silent no-op Dilim 3b asks for; the card is
+     * already back in its own column from the `render()` `onEnd` ran before opening this).
+     */
+    const openKanbanActionPicker = (item, candidates) => {
+        if (!global.Swal) { return; }
+        const options = {};
+        candidates.forEach((a) => { options[a.code] = actionLabel(a); });
+        sharedConfirm({
+            title: t('KanbanActionPickerTitle'),
+            icon: 'question',
+            // ConfirmProceed ("Evet, uygula") — the product's own generic confirm button, already in all seven
+            // languages. `PlanConfirm` ("Tarihi Ayarla") was the wrong dialog's text, left over from copying
+            // openDatePicker's shape rather than its meaning.
+            confirmText: t('ConfirmProceed'),
+            input: {
+                type: 'select',
+                label: t('KanbanActionPickerTitle'),
+                options,
+                // Its own sentence, not the dialog's title repeated: the title asks the question, this says
+                // what an EMPTY answer is missing.
+                validate: (value) => (value ? null : t('KanbanActionPickerRequired'))
+            },
+            onConfirm: (code) => {
+                const chosen = candidates.find((a) => a.code === code);
+                if (chosen) { runKanbanDrop(item, chosen); }
+            }
+        });
+    };
+
     const completeSubtask = async (subtaskId) => {
         // The subtask is its own row in state when it is also assigned to me, and then it carries its own
         // concurrency token.
@@ -8061,9 +8429,8 @@
 
     const applyAction = (item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues) => {
         if (isDispatchableItem(item)) {
-            submitRealTransition(
+            return submitRealTransition(
                 item, action, reason, assigneeUserId, waitingOnUserId, outcomeCode, closureFieldValues);
-            return;
         }
 
         /*
@@ -8081,23 +8448,27 @@
         state.submittingItemId = item.id;
         state.submittingActionCode = action.code;
         render();
-        global.setTimeout(() => {
-            const outcome = applyTransition(item, action.key);
-            markSeen(item);
-            item.activity = item.activity || [];
-            // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
-            item.activity.push({
-                actor: data.currentUser.name,
-                kind: 'event',
-                eventKey: 'AuditActionStamp',
-                actionLabel: label,
-                atMs: data.referenceDate(item.provenance)
-            });
-            state.submittingItemId = null;
-            state.submittingActionCode = null;
-            render();
-            toastForOutcome(outcome, label, reason, item);
-        }, 350);
+        return new Promise((resolve) => {
+            global.setTimeout(() => {
+                const outcome = applyTransition(item, action.key);
+                markSeen(item);
+                item.activity = item.activity || [];
+                // atMs, not a pre-computed `ago` — ACTIVITY_RELATIVE_TIME_FORBIDDEN, same reasoning as applyPlan.
+                item.activity.push({
+                    actor: data.currentUser.name,
+                    kind: 'event',
+                    eventKey: 'AuditActionStamp',
+                    actionLabel: label,
+                    atMs: data.referenceDate(item.provenance)
+                });
+                state.submittingItemId = null;
+                state.submittingActionCode = null;
+                render();
+                toastForOutcome(outcome, label, reason, item);
+                // A showcase fixture has no engine to refuse it — the local mutation above always succeeds.
+                resolve({ outcome: 'done' });
+            }, 350);
+        });
     };
 
     // Plan / re-plan for a SHOWCASE item only — sets the PERSONAL planned date (spec v2 §4), which is distinct
@@ -8129,16 +8500,20 @@
             expectedVersion: Number(item.concurrency?.token ?? 0),
             plannedDate: dateStr
         });
-        await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
+        const ok = await afterPhase2Write(result, 'ToastPlanSaved', dateStr);
+        return ok ? { outcome: 'done' } : { outcome: 'refused', reasonCode: result.reasonCode };
     };
 
     const openDatePicker = (item, action) => {
         const label = actionLabel(action);
         const real = isDispatchableItem(item);
         if (!global.Swal) {
-            if (real) { submitPlan(item, item.dueAt || data.todayIso).catch(reportSwalFailure); return; }
+            if (real) {
+                return submitPlan(item, item.dueAt || data.todayIso)
+                    .catch((error) => { reportSwalFailure(error); return { outcome: 'refused' }; });
+            }
             applyPlan(item, item.dueAt || data.todayIso, label);
-            return;
+            return Promise.resolve({ outcome: 'done' });
         }
         /*
          * ── THROUGH THE SHARED COMPONENT (2026-08-24, A3) ────────────────────────────────────────────────
@@ -8152,6 +8527,10 @@
          * dialog already takes, flatpickr and all — see `openSnooze`.
          */
         const seed = item.plannedDate || item.dueAt;
+        // The stitch captures `resolve` rather than nesting the whole dialog inside `new Promise(...)` — the
+        // options object below keeps the SAME indentation sharedConfirm callers use everywhere else in this file.
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             subtext: outcomeLead(action),
@@ -8182,11 +8561,15 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (!value) { return; }
-                const applied = real ? submitPlan(item, value) : applyPlan(item, value, label);
-                if (applied && typeof applied.catch === 'function') { applied.catch(reportSwalFailure); }
-            }
+                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                const applied = real ? submitPlan(item, value) : Promise.resolve(applyPlan(item, value, label)).then(() => ({ outcome: 'done' }));
+                Promise.resolve(applied)
+                    .then(resolveOutcome)
+                    .catch((error) => { reportSwalFailure(error); resolveOutcome({ outcome: 'refused' }); });
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     // Swal's own promise chain runs well after the click that opened it, outside onClick's try/catch — so a
@@ -8469,12 +8852,13 @@
         if (!result.ok) {
             render();
             toast(global.MeetingsApi.failureMessage(result), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: result.reasonCode };
         }
 
         await loadWorkItems();
         render();
         toast(tf('ToastReviewMeeting', `${date} ${startTime}`));
+        return { outcome: 'done' };
     };
 
     // The date/time step, shared by both the fixture path and the real one — only what happens ON CONFIRM
@@ -8482,6 +8866,8 @@
     // literal `t(...)` call, which is what the l10n guard (wcn-dialog-seven-defects.test.js) scans app.js for.
     const openMeetingDateTimePicker = (item, action, label, subtextText, onWhenChosen) => {
         const seed = item.dueAt || data.todayIso;
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             // What booking it does and does NOT do — the due date is the question a reader actually has here.
@@ -8504,19 +8890,26 @@
                 validate: (value) => (value ? null : t('PlanDateLabel'))
             },
             onConfirm: (value) => {
-                if (value) { onWhenChosen(String(value).replace('T', ' ')); }
-            }
+                if (!value) { resolveOutcome({ outcome: 'cancelled' }); return; }
+                Promise.resolve(onWhenChosen(String(value).replace('T', ' ')))
+                    .then((resolved) => resolveOutcome(resolved || { outcome: 'done' }))
+                    .catch(() => resolveOutcome({ outcome: 'refused' }));
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     const openMeetingScheduler = async (item, action) => {
         const label = actionLabel(action);
 
         if (isFixtureShowcase(item)) {
-            if (!global.showConfirm) { applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label); return; }
-            openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
-                (whenStr) => applyReviewMeetingFixture(item, whenStr, label));
-            return;
+            if (!global.showConfirm) {
+                applyReviewMeetingFixture(item, `${item.dueAt || data.todayIso} 09:00`, label);
+                return { outcome: 'done' };
+            }
+            return openMeetingDateTimePicker(item, action, label, t('MeetingWhenSubtext'),
+                (whenStr) => { applyReviewMeetingFixture(item, whenStr, label); return { outcome: 'done' }; });
         }
 
         // A REAL task needs a REAL meeting type — the receiving side's own CreateMeetingRequest requires one
@@ -8524,16 +8917,18 @@
         const typesResult = await global.MeetingsApi.lookupTypes();
         if (!typesResult.ok) {
             toast(global.MeetingsApi.failureMessage(typesResult), 'error');
-            return;
+            return { outcome: 'refused', reasonCode: typesResult.reasonCode };
         }
         const types = Array.isArray(typesResult.data) ? typesResult.data : [];
         if (types.length === 0) {
             toast(t('MeetingNoTypesAvailable'), 'error');
-            return;
+            return { outcome: 'refused' };
         }
         const typeOptions = {};
         types.forEach((type) => { typeOptions[type.id] = type.name; });
 
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             subtext: esc(t('MeetingTypeSubtext')),
@@ -8546,17 +8941,21 @@
                 validate: (value) => (value ? null : t('MeetingTypeLabel'))
             },
             onConfirm: (meetingTypeId) => {
-                if (!meetingTypeId) { return; }
+                if (!meetingTypeId) { resolveOutcome({ outcome: 'cancelled' }); return; }
                 openMeetingDateTimePicker(item, action, label, t('MeetingScheduleSubtext'),
-                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr));
-            }
+                    (whenStr) => submitReviewMeeting(item, meetingTypeId, whenStr)).then(resolveOutcome);
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     // Log time — manual minutes entry into the timesheet (task only).
     const openLogTime = (item, action) => {
         const label = actionLabel(action);
-        if (!global.Swal) { return; }
+        if (!global.Swal) { return Promise.resolve({ outcome: 'cancelled' }); }
+        let resolveOutcome;
+        const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
         sharedConfirm({
             title: label,
             /*
@@ -8588,9 +8987,14 @@
                     item.activity.push({ actor: data.currentUser.name, kind: 'event', eventKey: 'AuditActionStamp', actionLabel: label, atMs: data.referenceDate(item.provenance) });
                     render();
                     toast(tf('ToastTimeLogged', formatMinutes(mins)));
+                    resolveOutcome({ outcome: 'done' });
+                } else {
+                    resolveOutcome({ outcome: 'cancelled' });
                 }
-            }
+            },
+            onCancel: () => resolveOutcome({ outcome: 'cancelled' })
         });
+        return outcome;
     };
 
     /*
@@ -9069,19 +9473,25 @@
      * pushed onto `state.notes` and nothing else. Its `?` icon — the defect the owner photographed — is gone
      * with it rather than repainted.
      */
+    // WP-WCN-KANBAN-01 Dilim 1 — the stitch. Every branch below resolves the same Promise<{ outcome, reasonCode? }>
+    // the caller awaits: 'done' (applied), 'cancelled' (the reader dismissed a dialog, no request sent) or
+    // 'refused' (the engine said no; reasonCode is its code when one exists). The button path is UNCHANGED —
+    // it never reads the resolved value, so every dialog, toast and re-render below fires exactly as before.
     const performAction = async (item, actionKey) => {
         const action = actionByKey(item, actionKey);
-        if (!item || !action || action.disabled || state.submittingItemId === item.id) { return; }
+        if (!item || !action || action.disabled || state.submittingItemId === item.id) {
+            return { outcome: 'cancelled' };
+        }
         // The engine now stores the personal plan date (POST .../plan), so the picker opens for a real task too —
         // openDatePicker itself decides whether to write to the engine or, for a showcase item, only locally.
-        if (action.input === 'date') { openDatePicker(item, action); return; }
-        if (action.input === 'meeting') { openMeetingScheduler(item, action); return; }
-        if (action.input === 'minutes') { openLogTime(item, action); return; }
+        if (action.input === 'date') { return openDatePicker(item, action); }
+        if (action.input === 'meeting') { return openMeetingScheduler(item, action); }
+        if (action.input === 'minutes') { return openLogTime(item, action); }
 
         // Reason-capturing action (reject/return/inquire/dispute/delegate/reassign):
         // a mandatory-rationale textarea, which also serves as the confirm step.
         if (action.reason) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
 
             /*
              * BL-043 — `reassign` also has to name the PERSON. The dialog used to ask only for a rationale, so
@@ -9108,11 +9518,16 @@
                 if (!people.length && needsAssignee) {
                     // Refusing beats opening a dialog that cannot be confirmed.
                     toast(t('ReassignNoAssignableUsers'), 'error');
-                    return;
+                    return { outcome: 'refused' };
                 }
             }
 
-            const options = people
+            // BL-439 — nobody waits on themselves: the holder is dropped from the "waiting on" list (the server
+            // refuses it too). The reassign picker is untouched — handing work on is a different question.
+            const offered = offersWaitingOn && item.assigneeId
+                ? people.filter((person) => personUserId(person) !== item.assigneeId)
+                : people;
+            const options = offered
                 .map((person) => `<option value="${esc(personUserId(person))}">${esc(person.displayName || personUserId(person))}</option>`)
                 .join('');
             const assigneeField = needsAssignee
@@ -9126,7 +9541,20 @@
              * "you have not chosen yet". An empty list simply draws no field: nobody to name is not an error
              * here, unlike the required case above.
              */
-            const waitingOnField = offersWaitingOn && people.length
+            /*
+             * BL-439 — the ANSWER dialog asks for an answer, not a reason, and shows the QUESTION it answers. The
+             * question is the item's own summary (the asker's sentence, already resolved by toPresentation); it is
+             * quoted above the textarea so the reader writes looking at what was asked rather than from memory.
+             * Every other reason-capturing action keeps its labels exactly as they were.
+             */
+            const isAnswer = action.code === 'answer';
+            const questionQuote = isAnswer && item.summary
+                ? `<p class="form-label d-block text-start mb-1">${esc(t('InquiryQuestionLabel'))}</p>`
+                  + `<blockquote class="wcn-dialog-lead text-start">${esc(item.summary)}</blockquote>`
+                : '';
+            const textLabel = isAnswer ? t('InquiryAnswerLabel') : t('ReasonLabel');
+
+            const waitingOnField = offersWaitingOn && offered.length
                 ? `<label class="form-label d-block text-start" for="wcnWaitingOn">${esc(t('WaitingOnLabel'))}</label>`
                   + `<select id="wcnWaitingOn" class="form-select">`
                   + `<option value="">${esc(t('WaitingOnNobody'))}</option>${options}</select>`
@@ -9137,7 +9565,7 @@
              * cannot go through `showConfirm` — but every reason it looked wrong was appearance, not structure,
              * and appearance is now something it can ask for by name.
              */
-            global.Swal.fire(Object.assign({
+            return global.Swal.fire(Object.assign({
                 /*
                  * ⚠ THE ICON RIDES THE TITLE HERE TOO (2026-08-24, option B). The shared confirm composes the
                  * two into one slot because the popup is a grid with one slot per row; a raw dialog that kept
@@ -9160,11 +9588,16 @@
                  * The CIRCLE and its colour are still `type`'s — `info`, untouched.
                  */
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
+                    + questionQuote
                     + assigneeField
                     + waitingOnField
-                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(t('ReasonLabel'))}</label>`
-                    + `<textarea id="wcnReasonText" class="form-control" rows="3" `
-                    + `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`,
+                    + `<label class="form-label d-block text-start" for="wcnReasonText">${esc(textLabel)}</label>`
+                    // The server's ceiling for an answer is a task description's (4000); saying so here means the
+                    // textarea stops the reader rather than a 400 after they have written it.
+                    + `<textarea id="wcnReasonText" class="form-control" rows="3"${isAnswer ? ' maxlength="4000"' : ''} `
+                    + (isAnswer
+                        ? `placeholder="${esc(t('InquiryAnswerPlaceholder'))}"></textarea>`
+                        : `placeholder="${esc(t('ReasonPlaceholder'))}"></textarea>`),
                 showCancelButton: true,
                 confirmButtonText: t('ReasonConfirm'),
                 cancelButtonText: t('DialogDismiss'),
@@ -9175,7 +9608,10 @@
                 },
                 preConfirm: () => {
                     const reason = String(document.getElementById('wcnReasonText')?.value || '').trim();
-                    if (!reason) { global.Swal.showValidationMessage(t('ReasonRequired')); return false; }
+                    if (!reason) {
+                        global.Swal.showValidationMessage(t(isAnswer ? 'InquiryAnswerRequired' : 'ReasonRequired'));
+                        return false;
+                    }
 
                     if (!needsAssignee) {
                         // Empty is a real answer here, so it is passed through untouched and NOT validated.
@@ -9190,10 +9626,10 @@
                 }
             }, dialogLook())).then((res) => {
                 if (res.isConfirmed && res.value) {
-                    applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
+                    return applyAction(item, action, res.value.reason, res.value.assigneeUserId, res.value.waitingOnUserId);
                 }
+                return { outcome: 'cancelled' };
             });
-            return;
         }
 
         /*
@@ -9230,7 +9666,7 @@
             && !!item.taskType?.requiresDeliverableOnCompletion
             && !existingAttachments.some((a) => a.kind === 'Deliverable');
         if (closureOutcomes.length || closureFields.length || canAttachOnComplete) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
 
             /*
              * THE SAME "required item still open" WARNING the plain confirm below gives complete — carried over
@@ -9298,7 +9734,7 @@
             // complete or not at all, and there is no later moment to hand it a list that was still in flight.
             const closureFieldOptions = closureFields.length ? await loadClosureFieldOptions(closureFields) : {};
 
-            global.Swal.fire(Object.assign({
+            return global.Swal.fire(Object.assign({
                 title: dialogIcon(action.destructive ? 'danger' : 'info', inboxActionIcon(action))
                     + '<span>' + esc(actionLabel(action)) + '</span>',
                 html: `<div class="${dialogDescriptionClass()}">${outcomeLead(action)}</div>`
@@ -9414,7 +9850,7 @@
                     return { outcomeCode, reason, closureFieldValues, attachment };
                 }
             }, dialogLook())).then(async (res) => {
-                if (!res.isConfirmed || !res.value) { return; }
+                if (!res.isConfirmed || !res.value) { return { outcome: 'cancelled' }; }
                 /*
                  * UPLOAD FIRST, WHILE THE TASK IS STILL OPEN — then, and only on success, transition. A failed
                  * upload must not complete the task: the reader asked for both, and completing anyway would
@@ -9424,20 +9860,19 @@
                  */
                 if (res.value.attachment) {
                     const uploaded = await uploadAttachment(item.id, res.value.attachment);
-                    if (!uploaded) { return; }
+                    if (!uploaded) { return { outcome: 'refused' }; }
                 }
-                applyAction(
+                return applyAction(
                     item, action, res.value.reason, undefined, undefined, res.value.outcomeCode,
                     res.value.closureFieldValues);
             });
-            return;
         }
 
         // High-consequence action (approve/sign-off/complete): explicit confirm so
         // an accidental click — or the `a` keyboard shortcut on a six-figure
         // approval — can't fire irreversibly (spec v2 §6, P1 fix).
         if (action.confirm) {
-            if (!global.Swal) { return; }
+            if (!global.Swal) { return { outcome: 'cancelled' }; }
             /*
              * The sentence no longer quotes the title: the badge below carries it, in the product's own framed
              * chip. Two places saying the same name is how one of them goes stale.
@@ -9462,6 +9897,8 @@
             const requiredWarning = stillOpen.length
                 ? `<div class="wcn-confirm-warning">${esc(tf('ConfirmRequiredOpen', stillOpen.length))}</div>`
                 : '';
+            let resolveOutcome;
+            const outcome = new Promise((resolve) => { resolveOutcome = resolve; });
             sharedConfirm({
                 title: actionLabel(action),
                 /*
@@ -9484,12 +9921,13 @@
                  * title, the rail button and this button all read the same string.
                  */
                 confirmText: tf('ConfirmProceedNamed', actionLabel(action).toLocaleLowerCase('tr')),
-                onConfirm: () => applyAction(item, action)
+                onConfirm: () => { resolveOutcome(applyAction(item, action)); },
+                onCancel: () => resolveOutcome({ outcome: 'cancelled' })
             });
-            return;
+            return outcome;
         }
 
-        applyAction(item, action);
+        return applyAction(item, action);
     };
 
     const executeTriggerAction = (trigger, action, reason) => {
@@ -9540,7 +9978,8 @@
 
 
     // ── Keyboard (spec §4: j/k move · a accept · r reject · Enter open · Esc) ──
-    const isTyping = (target) => target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+    // The shortcuts themselves are registered with the shared layer (registerShortcuts, below); the typing guard
+    // that used to live here is the layer's silence rule now (assets/js/shared/diten-shortcuts.js).
 
     const moveSelection = (delta) => {
         if (!state.visibleOrder.length) { return; }
@@ -9597,7 +10036,7 @@
 
     // ASYNC: posting a comment on Enter is awaited, so a failed post cannot swallow its own rejection and look
     // like a key that was never wired — the exact shape the subtask writer shipped broken in.
-    const onKeydown = async (event) => {
+    const onFieldKeydown = async (event) => {
         /*
          * ENTER ADDS THE SUBTASK — before the typing guard, because this fires INSIDE a text field.
          *
@@ -9709,55 +10148,103 @@
 
         if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
             if (state.search) { event.preventDefault(); state.search = ''; render(); }
-            return;
         }
-        if (isTyping(event.target) || event.metaKey || event.ctrlKey || event.altKey) { return; }
-        const key = event.key.toLowerCase();
-        /*
-         * Arrow / Home / End across a tab strip.
-         *
-         * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to the
-         * strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
-         * keyboard behaviour for free rather than a second copy of it, and the old global query would have
-         * walked between two strips as if they were one list the moment a page carried both.
-         */
-        const activeTab = event.target.closest && event.target.closest('[role="tab"]');
-        if (activeTab && (key === 'arrowleft' || key === 'arrowright' || key === 'home' || key === 'end')) {
-            const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
-            const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
-            let index = tabs.indexOf(activeTab);
-            index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
-                : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
-            event.preventDefault(); tabs[index].focus(); tabs[index].click(); return;
-        }
-        if (key === 'j') { event.preventDefault(); moveSelection(1); return; }
-        if (key === 'k') { event.preventDefault(); moveSelection(-1); return; }
-        if (key === 'escape') { state.selectedId = null; render(); return; }
+    };
 
+    /*
+     * ── THE PAGE'S SHORTCUTS, DECLARED TO THE SHARED LAYER (WP-UI-SHORTCUTS-01, BL-438) ───────────────────
+     *
+     * These keys used to be the tail of this page's own keydown handler (then `onKeydown`), behind its own copy of
+     * the typing/modifier guard. They are now registered with `DitenShortcuts`, which owns the one `document`
+     * listener, the silence rule (field, open modal/offcanvas/SweetAlert, Ctrl/Cmd/Alt) and the `?` list — so the
+     * list prints exactly what is bound.
+     *
+     * What `onFieldKeydown` keeps above is NOT a shortcut: Enter/@/Escape INSIDE a field and Enter/Space on a
+     * `role=button` are how those controls commit, and the layer is silent in fields by design.
+     *
+     * Each handler is the old branch, moved whole: same keys, same order of checks, same preventDefault calls.
+     */
+    const SHORTCUT_SCOPE = 'workcenter';
+    // A `role=button` field row answers Enter/Space itself (onFieldKeydown above); the shortcut must not also open.
+    const isFieldButton = (event) => !!(event.target.closest && event.target.closest('[data-wcn-action][role="button"]'));
+
+    const openShortcut = (event) => {
+        const key = event.key.toLowerCase();
+        if ((key === 'enter' || key === ' ') && isFieldButton(event)) { return false; }
         const focusedRow = event.target.closest && event.target.closest('[data-wcn-row]');
         if (focusedRow && !event.target.closest('button,input,a') && (key === 'enter' || key === ' ')) {
             event.preventDefault();
             state.selectedId = focusedRow.getAttribute('data-wcn-row');
             const focusedItem = itemById(state.selectedId);
             if (focusedItem) { markSeen(focusedItem); }
-            openDetailPage(state.selectedId); return;
+            openDetailPage(state.selectedId); return undefined;
         }
+        const item = itemById(state.selectedId);
+        if (!item || key === ' ') { return undefined; }
+        event.preventDefault();
+        openDetailPage(state.selectedId);
+        return undefined;
+    };
 
+    const roleShortcut = (role) => (event) => {
         const item = itemById(state.selectedId);
         if (!item) { return; }
-        if (key === 'enter' || key === 'o') {
-            event.preventDefault();
-            openDetailPage(state.selectedId);
+        const action = actionByRole(item, role);
+        if (action) { event.preventDefault(); performAction(item, action.key); }
+    };
+
+    const registerShortcuts = () => {
+        const layer = global.DitenShortcuts;
+        if (!layer) {
+            console.error('[WorkCenterNext] window.DitenShortcuts is unavailable — no keyboard shortcuts on this page. '
+                + 'The host view must include Views/Shared/_DitenShortcuts.cshtml before app.js.');
             return;
         }
-        if (key === 'a') { const a = actionByRole(item, 'accept'); if (a) { event.preventDefault(); performAction(item, a.key); } return; }
-        if (key === 'r') { const r = actionByRole(item, 'reject'); if (r) { event.preventDefault(); performAction(item, r.key); } return; }
+        layer.unregister(SHORTCUT_SCOPE);
+        layer.register(SHORTCUT_SCOPE, [
+            /*
+             * Arrow / Home / End across a tab strip.
+             *
+             * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to
+             * the strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
+             * keyboard behaviour for free rather than a second copy of it, and the old global query would have
+             * walked between two strips as if they were one list the moment a page carried both.
+             */
+            {
+                keys: ['ArrowLeft', 'ArrowRight', 'Home', 'End'],
+                actionKey: 'Wcn.Tabs',
+                when: (event) => !!(event.target.closest && event.target.closest('[role="tab"]')),
+                handler: (event) => {
+                    const key = event.key.toLowerCase();
+                    const activeTab = event.target.closest('[role="tab"]');
+                    const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
+                    const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
+                    let index = tabs.indexOf(activeTab);
+                    index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
+                        : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
+                    event.preventDefault(); tabs[index].focus(); tabs[index].click();
+                }
+            },
+            { keys: ['j'], actionKey: 'Wcn.Next', handler: (event) => { event.preventDefault(); moveSelection(1); } },
+            { keys: ['k'], actionKey: 'Wcn.Previous', handler: (event) => { event.preventDefault(); moveSelection(-1); } },
+            { keys: ['Enter', 'o'], actionKey: 'Wcn.Open', handler: openShortcut },
+            { keys: [' '], actionKey: 'Wcn.OpenFocused', handler: openShortcut },
+            { keys: ['a'], actionKey: 'Wcn.Accept', handler: roleShortcut('accept') },
+            { keys: ['r'], actionKey: 'Wcn.Reject', handler: roleShortcut('reject') },
+            { keys: ['Escape'], actionKey: 'Wcn.ClearSelection', handler: () => { state.selectedId = null; render(); } }
+        ], { titleKey: 'Shortcuts.Scope.WorkCenter' });
     };
 
     // ── Event delegation ──────────────────────────────────────────────────────
     const onClick = async (event) => {
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
+
+        // The toolbar's keyboard button — the same list `?` opens (WP-UI-SHORTCUTS-01).
+        if (event.target.closest('[data-wcn-shortcuts]')) {
+            if (global.DitenShortcuts) { global.DitenShortcuts.open(); }
+            return;
+        }
 
         const jumpEl = event.target.closest('[data-wcn-jump]');
         if (jumpEl) {
@@ -9904,7 +10391,14 @@
         const actionEl = event.target.closest('[data-wcn-action]');
         if (actionEl) {
             event.stopPropagation();
-            performAction(itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
+            /*
+             * WP-WCN-KANBAN-01 Dilim 1 — the click path calls performAction exactly as it always did; nothing
+             * here reads or awaits the resolved value, so the button's own behaviour is unchanged. The global is
+             * a TEST-ONLY observation seam (module has no exports): performAction's Promise<{outcome,...}> has no
+             * other exit from a DOM click, and tests await it after `.click()` to assert the branch it resolved.
+             */
+            global.__wcnLastActionOutcome = performAction(
+                itemById(actionEl.getAttribute('data-wcn-id')), actionEl.getAttribute('data-wcn-action'));
             return;
         }
 
@@ -10138,7 +10632,7 @@
         }
         /*
          * The quick-add BUTTON is gone: `data-wcn-subtask-add` now lives on the input itself and Enter submits
-         * (onKeydown). A click path is kept for anything that still carries the attribute on a button — the
+         * (onFieldKeydown). A click path is kept for anything that still carries the attribute on a button — the
          * subtask create panel does — so both surfaces reach the one write path.
          */
         const subAddEl = event.target.closest('button[data-wcn-subtask-add]');
@@ -10296,7 +10790,7 @@
         // it into the split-detail navigation, which would re-render and kill the
         // dropdown before Bootstrap can open it.
         const onControl = event.target.closest('button, a, [data-bs-toggle], .dropdown-menu, [data-wcn-check], .wcn-td-check');
-        if (rowEl && state.view !== 'table' && !onControl) {
+        if (rowEl && state.view !== 'table' && !onControl && !kanbanDragSuppressClick) {
             state.selectedId = rowEl.getAttribute('data-wcn-row');
             const it = itemById(state.selectedId);
             if (it) { markSeen(it); }
@@ -10620,12 +11114,15 @@
         document.addEventListener('click', onClickWrapped);
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
-        document.addEventListener('keydown', onKeydown);
+        // In-field commits only (Enter/@/Escape in a field, Enter/Space on a role=button) — not shortcuts.
+        document.addEventListener('keydown', onFieldKeydown);
+        registerShortcuts();
         global.__wcnTeardown = () => {
             document.removeEventListener('click', onClickWrapped);
             document.removeEventListener('change', onChange);
             document.removeEventListener('input', onInput);
-            document.removeEventListener('keydown', onKeydown);
+            document.removeEventListener('keydown', onFieldKeydown);
+            if (global.DitenShortcuts) { global.DitenShortcuts.unregister(SHORTCUT_SCOPE); }
             stopTimerTick();
         };
         // The quick-create offcanvas announces a new task instead of touching state directly, so this module

@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Lecture seule — le statut change dans la source ; ici, seulement plan/épingle personnels.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Quelle action exécuter ?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Choisissez une action.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Traitement en cours…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Déplacé vers l'historique</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Déposer ici : {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Mois précédent</value>
   </data>
@@ -1469,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>Un écart de 84 750 TRY a été détecté avec le grand livre.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Réunion de revue du budget T3</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 juillet 2026, 14:00–15:00 · Teams · Organisateur : Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} vous a transmis cette tâche pour approbation</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>Cette tâche vous a été transmise pour approbation</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approbation : {objectType} {objectId}</value>
   </data>
@@ -2349,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choisissez un fichier avant de terminer cette tâche.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Ajouter une preuve</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} fichier(s) de preuve</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Question</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Question · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Répondre</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Enregistre votre réponse dans l'historique de la tâche et la remet dans son état précédent</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Question posée</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Votre réponse</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Écrivez l'information demandée…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Rédigez une réponse avant d'envoyer.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} a répondu</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} vous demande : {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>Quelqu'un attend votre réponse sur cette tâche.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} a répondu : {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Question répondue</value>
+  </data>
 </root>

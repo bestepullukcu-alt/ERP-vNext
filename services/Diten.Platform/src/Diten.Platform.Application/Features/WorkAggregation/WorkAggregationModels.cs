@@ -108,6 +108,11 @@ public static class WorkItemContract
     // already spelled it this way for the trigger-only showcase this replaces — one name, not two.
     public const string IntentMeetingInvite = "meetingInvite";
 
+    // BL-439 — the QUESTION a waiting task is asking the reader, in their inbox with one action (answer). Its own
+    // intent rather than a `task`: the reader does not hold the work, and every task-shaped surface (lifecycle
+    // strip, checklist, closure) would offer them things they may not do.
+    public const string IntentInquiry = "inquiry";
+
     // assignmentMode
     public const string AssignmentApproval = "approval";
 
@@ -240,6 +245,10 @@ public sealed record WorkItemSourceDto(
 // One entry of the single authoritative actions[] array. Contract-conformant: unique code, localizable label,
 // explicit enabled + source; a disabled action carries disabledReasonCode + a localizable disabledReason.
 // No per-action concurrency token is ever emitted (the projection carries one concurrency token).
+// TargetStatus is a normalizedStatus string (see TaskLifecycleService: Pending|InProgress|Waiting|Done|Cancelled),
+// never a raw enum. Null means the action does not move the item to a new Kanban column — either because it
+// leaves the underlying lifecycle unchanged (e.g. claim), or because it changes who holds the work rather than
+// advancing it (release, return, reassign, plan — deliberately excluded, see WCN Kanban WP-WCN-KANBAN-01).
 public sealed record WorkItemActionDto(
     string Code,
     WorkItemLabelDto Label,
@@ -252,7 +261,8 @@ public sealed record WorkItemActionDto(
     bool RequiresReason,
     bool RequiresEvidence,
     bool SupportsBulk,
-    string RiskLevel);
+    string RiskLevel,
+    string? TargetStatus = null);
 
 /// <summary>
 /// waitingContext { type, waitingOn?, reason?, since?, expectedUntil? } — present iff normalizedStatus == Waiting.
@@ -668,7 +678,44 @@ public sealed record WorkItemProjectionDto(
     /// provider that says nothing about it compiles and serializes unchanged.
     /// </summary>
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    IReadOnlyList<string>? SecondaryActionCodes = null);
+    IReadOnlyList<string>? SecondaryActionCodes = null,
+    /// <summary>
+    /// BL-437 — WHY this item reached the reader, in one translated sentence ("Ayşe bu görevi onayına gönderdi").
+    ///
+    /// <para><b>Not <see cref="WaitingContext"/>.</b> That container answers why work is PARKED and the contract
+    /// ties it to <c>Waiting</c> both ways; an approval that has just arrived is <c>Pending</c>, and borrowing the
+    /// waiting container for it would be refused by the executable contract. <b>Not <see cref="Summary"/></b>
+    /// either: that is what the work IS, in the requester's own words — a sentence the system composes does not
+    /// belong in a field that means "what the person typed".</para>
+    ///
+    /// <para>A RESOURCE label with a named argument, so every language gets the whole sentence rather than
+    /// fragments joined in JavaScript. Optional and omitted when null: a provider that cannot say why stays
+    /// silent rather than inventing a reason.</para>
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? ArrivalReason = null,
+    /// <summary>
+    /// BL-439 — the question this task was parked on has been ANSWERED, and this is still the latest word on it.
+    /// Trailing, optional and omitted when null, like every field after the core: a provider with no questions
+    /// says nothing, and the executable contract validates it only when present.
+    /// </summary>
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemInquiryAnswerDto? InquiryAnswer = null);
+
+/// <summary>
+/// BL-439 — who answered a waiting task's question, when, and what they said. Derived from the transition log
+/// (<c>TaskTransitionKind.InquiryAnswered</c>), never stored on the task — the same rule
+/// <see cref="WorkItemReturnedDto"/> follows.
+/// </summary>
+/// <param name="At">When the answer landed.</param>
+/// <param name="AnsweredBy">Who answered. A person, never an id standing in for one.</param>
+/// <param name="Answer">Their own words — a DISPLAY label, never a resource key.</param>
+public sealed record WorkItemInquiryAnswerDto(
+    DateTimeOffset At,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemPersonDto? AnsweredBy,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    WorkItemLabelDto? Answer);
 
 /// <summary>
 /// requirement: notAllowed | optional | required (fixture-contract.js REVIEW_MEETING_REQUIREMENTS). MeetingId/

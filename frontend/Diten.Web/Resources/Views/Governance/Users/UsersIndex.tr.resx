@@ -48,4 +48,11 @@
   <data name="ChangeAccountKind" xml:space="preserve"><value>Türü değiştir</value></data>
   <data name="AccountKindChanged" xml:space="preserve"><value>Hesap türü güncellendi</value></data>
   <data name="AccountKindCreateHint" xml:space="preserve"><value>Boş bırakılırsa hesap onaylanmamış kalır.</value></data>
+  <data name="InviteLinkTitle" xml:space="preserve"><value>Davet bağlantısı (geliştirme)</value></data>
+  <data name="InviteLinkHint" xml:space="preserve"><value>Bu şifre belirleme bağlantısını kullanıcıya iletin. Yalnızca geliştirme ortamında görünür.</value></data>
+  <data name="StatusInvited" xml:space="preserve"><value>Davet edildi</value></data>
+  <data name="InvitationPendingHint" xml:space="preserve"><value>Davet bekliyor: kişi e-postadaki bağlantıyla şifresini belirlediğinde hesap kendiliğinden aktifleşir. O zamana kadar şifre sıfırlama yoktur; gerekirse daveti yeniden gönderin.</value></data>
+  <data name="ErrorUserEmailTaken" xml:space="preserve"><value>Bu e-posta adresiyle kayıtlı bir kullanıcı zaten var.</value></data>
+  <data name="ErrorUserInvitationPending" xml:space="preserve"><value>Bu kullanıcı daveti henüz kabul etmedi. Hesap, kişi şifresini belirlediğinde aktifleşir; gerekirse daveti yeniden gönderin.</value></data>
+  <data name="DeleteUserConfirmText" xml:space="preserve"><value>Kullanıcı silinir, rolleri kaldırılır; hesap geri getirilemez. Aynı e-posta ile yeni bir hesap açılabilir.</value></data>
 </root>

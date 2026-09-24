@@ -23,6 +23,8 @@
        surfaces from one bundle and must answer "may this user create?" the same way on each. UX only. *@
     <partial name="~/Views/Shared/_PermissionBootstrap.cshtml" />
     <partial name="_L10n" />
+    @* WP-UI-SHORTCUTS-01 (BL-438) — the shared keyboard-shortcut layer and its `?` list strings. *@
+    <partial name="~/Views/Shared/_DitenShortcuts.cshtml" />
     @* app.js performs the SAME writes here as on the list page — transitions, checklist ticks, subtask creation —
        and every one of them goes through TasksApi/TaskForm. Omitting these made each write throw on an undefined
        global inside an async click handler, which surfaces as nothing at all: no request, no toast, no warning.

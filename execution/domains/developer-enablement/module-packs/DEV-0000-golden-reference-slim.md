@@ -5,6 +5,8 @@ domain: developer-enablement
 service: Diten.DevEnablementService
 shell: tenant
 golden_reference: slim
+data_mode: client
+data_mode_max_rows: 200
 entity_base: EntityBase
 status: ready-for-dev
 owner: ai-orchestrator

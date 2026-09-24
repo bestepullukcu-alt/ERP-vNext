@@ -1075,6 +1075,21 @@
   <data name="KanbanReadonly" xml:space="preserve">
     <value>Read-only — status changes in the source; here you only set personal plan/pin.</value>
   </data>
+  <data name="KanbanActionPickerTitle" xml:space="preserve">
+    <value>Which action should run?</value>
+  </data>
+  <data name="KanbanActionPickerRequired" xml:space="preserve">
+    <value>Choose an action.</value>
+  </data>
+  <data name="KanbanProcessing" xml:space="preserve">
+    <value>Processing…</value>
+  </data>
+  <data name="KanbanMovedToHistory" xml:space="preserve">
+    <value>Moved to History</value>
+  </data>
+  <data name="KanbanDropHint" xml:space="preserve">
+    <value>Drop here: {0}</value>
+  </data>
   <data name="CalPrevMonth" xml:space="preserve">
     <value>Previous month</value>
   </data>
@@ -1469,6 +1484,12 @@
   <data name="InboxTitleExceptionVatMismatchSummary" xml:space="preserve"><value>A TRY 84,750 difference was found between the return and general ledger.</value></data>
   <data name="InboxTitleMeetingInvite" xml:space="preserve"><value>Q3 budget revision review meeting</value></data>
   <data name="InboxTitleMeetingInviteSummary" xml:space="preserve"><value>28 July 2026, 14:00–15:00 · Teams · Organizer: Deniz Koç</value></data>
+  <data name="WorkAggregation_ArrivalReason_SentForApproval" xml:space="preserve">
+    <value>{name} sent this task for your approval</value>
+  </data>
+  <data name="WorkAggregation_ArrivalReason_SentForApprovalUnnamed" xml:space="preserve">
+    <value>This task was sent for your approval</value>
+  </data>
   <data name="WorkAggregation_Title_Approval" xml:space="preserve">
     <value>Approval: {objectType} {objectId}</value>
   </data>
@@ -2349,4 +2370,43 @@
   <data name="CompleteAttachFileRequired" xml:space="preserve"><value>Choose a file before completing this task.</value></data>
   <data name="ChecklistAddEvidence" xml:space="preserve"><value>Add evidence</value></data>
   <data name="ChecklistEvidenceCount" xml:space="preserve"><value>{0} evidence file(s)</value></data>
+  <data name="TypeInquiry" xml:space="preserve">
+    <value>Question</value>
+  </data>
+  <data name="WorkAggregation_Title_Inquiry" xml:space="preserve">
+    <value>Question · {title}</value>
+  </data>
+  <data name="WorkAggregation_Action_Answer" xml:space="preserve">
+    <value>Answer</value>
+  </data>
+  <data name="OutcomeAnswer" xml:space="preserve">
+    <value>Records your answer in the task's history and returns the task to where it was</value>
+  </data>
+  <data name="InquiryQuestionLabel" xml:space="preserve">
+    <value>Question asked</value>
+  </data>
+  <data name="InquiryAnswerLabel" xml:space="preserve">
+    <value>Your answer</value>
+  </data>
+  <data name="InquiryAnswerPlaceholder" xml:space="preserve">
+    <value>Write the information they asked for…</value>
+  </data>
+  <data name="InquiryAnswerRequired" xml:space="preserve">
+    <value>Write an answer before sending.</value>
+  </data>
+  <data name="InquiryAnsweredBy" xml:space="preserve">
+    <value>{0} answered</value>
+  </data>
+  <data name="GuidanceInquiryAsked" xml:space="preserve">
+    <value>{0} is asking you: {1}</value>
+  </data>
+  <data name="GuidanceInquiryAskedNoText" xml:space="preserve">
+    <value>Somebody is waiting for your answer on this task.</value>
+  </data>
+  <data name="GuidanceInquiryAnswered" xml:space="preserve">
+    <value>{0} answered: {1}</value>
+  </data>
+  <data name="AuditEventInquiryAnswered" xml:space="preserve">
+    <value>Question answered</value>
+  </data>
 </root>

@@ -117,6 +117,8 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>Une date d’échéance est requise.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>La tâche attend la décision de l'approbateur.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>La tâche attend la réponse du relecteur.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>Vous devez joindre le fichier livrable avant de terminer cette tâche.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>Cette étape ne peut pas être clôturée tant que le procès-verbal de la réunion de revue liée n'est pas publié.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>Cette tâche ne peut pas être terminée dans cet état. Démarrez-la d'abord.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Seule la personne qui a demandé cette tâche peut l'annuler. Si vous ne voulez pas ce travail, renvoyez-le.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Indiquez ce que la tâche attend.</value></data>
@@ -238,4 +240,25 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>Cet élément nécessite une preuve avant de pouvoir être terminé.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>Ce fichier n'a pas pu être chargé. Vérifiez son type et sa taille, puis réessayez.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Les pièces jointes, preuve comprise, peuvent être ajoutées une fois la tâche créée.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Transférer</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Confier cette tâche à quelqu'un d'autre</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>Le nouveau responsable voit la tâche immédiatement. Le motif est conservé dans l'historique.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>Nouveau responsable</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Choisissez une personne</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Motif du transfert</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>p. ex. En congé jusqu'au 5 octobre ; Ayşe reprend l'audit.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Indiquez qui reprend la tâche.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Indiquez pourquoi la tâche change de mains.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>La tâche a été transférée.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>Il n'y a personne d'autre à qui confier cette tâche.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>Une affectation ne se modifie pas : elle se transfère, avec un motif conservé dans l'historique.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Rédigez une réponse avant d'envoyer.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>La réponse est trop longue. Limitez-la à 4000 caractères.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>Cette question ne vous attend plus : elle a reçu une réponse ou a été retirée. Actualisez la liste.</value>
+  </data>
 </root>

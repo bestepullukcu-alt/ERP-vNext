@@ -93,6 +93,20 @@ public static class NotificationTemplateSeed
             TaskMentioned("zh"),
             TaskMentioned("ar"),
             TaskMentioned("ru"),
+            TaskInquiryAsked("en"),
+            TaskInquiryAsked("tr"),
+            TaskInquiryAsked("fr"),
+            TaskInquiryAsked("es"),
+            TaskInquiryAsked("zh"),
+            TaskInquiryAsked("ar"),
+            TaskInquiryAsked("ru"),
+            TaskInquiryAnswered("en"),
+            TaskInquiryAnswered("tr"),
+            TaskInquiryAnswered("fr"),
+            TaskInquiryAnswered("es"),
+            TaskInquiryAnswered("zh"),
+            TaskInquiryAnswered("ar"),
+            TaskInquiryAnswered("ru"),
             TaskApprovalRequested("en"),
             TaskApprovalRequested("tr"),
             TaskApprovalRequested("fr"),
@@ -355,6 +369,52 @@ public static class NotificationTemplateSeed
         };
 
         return Create("platform.tasks.mentioned", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.inquiryasked</c> in seven languages (BL-439) — a task's holder parked it waiting on YOU.
+    ///
+    /// <para>The QUESTION TEXT is deliberately not a variable, for the reason the comment events give: it is the
+    /// holder's own sentence about work the reader may not otherwise see, and an e-mail cannot be recalled or
+    /// scoped. The reader opens the Task Center, where the read rule decides what they see.</para>
+    /// </summary>
+    private static NotificationTemplate TaskInquiryAsked(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("A task is waiting for your answer: {{TaskTitle}}", "<p>Somebody has a question for you about a task and cannot continue until you answer. The question is in your Task Center inbox.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "Somebody has a question for you about a task and cannot continue until you answer. The question is in your Task Center inbox. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("Bir görev cevabınızı bekliyor: {{TaskTitle}}", "<p>Bir görevle ilgili size bir soru soruldu; cevap gelene kadar iş ilerleyemiyor. Soru, Görev Merkezi'ndeki gelen kutunuzda.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Bir görevle ilgili size bir soru soruldu; cevap gelene kadar iş ilerleyemiyor. Soru, Görev Merkezi'ndeki gelen kutunuzda. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Une tâche attend votre réponse : {{TaskTitle}}", "<p>Quelqu'un vous pose une question sur une tâche et ne peut pas continuer sans votre réponse. La question se trouve dans la boîte de réception de votre Centre des tâches.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "Quelqu'un vous pose une question sur une tâche et ne peut pas continuer sans votre réponse. La question se trouve dans la boîte de réception de votre Centre des tâches. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Una tarea espera su respuesta: {{TaskTitle}}", "<p>Alguien le ha hecho una pregunta sobre una tarea y no puede continuar hasta que usted responda. La pregunta está en la bandeja de entrada de su Centro de tareas.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "Alguien le ha hecho una pregunta sobre una tarea y no puede continuar hasta que usted responda. La pregunta está en la bandeja de entrada de su Centro de tareas. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("有任务在等待您的回答：{{TaskTitle}}", "<p>有人就一项任务向您提问，在您回答之前工作无法继续。问题在您的任务中心收件箱中。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "有人就一项任务向您提问，在您回答之前工作无法继续。问题在您的任务中心收件箱中。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("مهمة بانتظار إجابتك: {{TaskTitle}}", "<p>لدى أحدهم سؤال لك بشأن مهمة ولا يمكنه المتابعة حتى تجيب. السؤال موجود في صندوق الوارد في مركز المهام.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "لدى أحدهم سؤال لك بشأن مهمة ولا يمكنه المتابعة حتى تجيب. السؤال موجود في صندوق الوارد في مركز المهام. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("Задача ждёт вашего ответа: {{TaskTitle}}", "<p>Вам задали вопрос по задаче, и работа не может продолжаться, пока вы не ответите. Вопрос находится во входящих вашего Центра задач.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Вам задали вопрос по задаче, и работа не может продолжаться, пока вы не ответите. Вопрос находится во входящих вашего Центра задач. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.inquiryasked", locale, subject, html, text, ["TaskTitle", "TaskId"]);
+    }
+
+    /// <summary>
+    /// <c>platform.tasks.inquiryanswered</c> in seven languages (BL-439) — the question your task was parked on
+    /// has been answered, and the task is back where it was. The ANSWER TEXT is not a variable, for the reason
+    /// <see cref="TaskInquiryAsked"/> gives: it is in the task's history, behind the read rule.
+    /// </summary>
+    private static NotificationTemplate TaskInquiryAnswered(string locale)
+    {
+        var (subject, html, text) = locale switch
+        {
+            "en" => ("Your question was answered: {{TaskTitle}}", "<p>The person your task was waiting on has answered. The answer is in the task's history, and the task is back where it was before you asked.</p><p><strong>Task:</strong> {{TaskTitle}}</p><p>Reference: {{TaskId}}</p>", "The person your task was waiting on has answered. The answer is in the task's history, and the task is back where it was before you asked. Task: {{TaskTitle}} — Reference: {{TaskId}}"),
+            "tr" => ("Sorunuz cevaplandı: {{TaskTitle}}", "<p>Görevinizin beklediği kişi cevap verdi. Cevap görevin geçmişinde; görev, siz sormadan önceki durumuna döndü.</p><p><strong>Görev:</strong> {{TaskTitle}}</p><p>Referans: {{TaskId}}</p>", "Görevinizin beklediği kişi cevap verdi. Cevap görevin geçmişinde; görev, siz sormadan önceki durumuna döndü. Görev: {{TaskTitle}} — Referans: {{TaskId}}"),
+            "fr" => ("Votre question a reçu une réponse : {{TaskTitle}}", "<p>La personne que votre tâche attendait a répondu. La réponse figure dans l'historique de la tâche, et la tâche est revenue à l'état où elle était avant votre question.</p><p><strong>Tâche:</strong> {{TaskTitle}}</p><p>Référence: {{TaskId}}</p>", "La personne que votre tâche attendait a répondu. La réponse figure dans l'historique de la tâche, et la tâche est revenue à l'état où elle était avant votre question. Tâche: {{TaskTitle}} — Référence: {{TaskId}}"),
+            "es" => ("Su pregunta ha sido respondida: {{TaskTitle}}", "<p>La persona a la que esperaba su tarea ha respondido. La respuesta está en el historial de la tarea, y la tarea ha vuelto al estado en que estaba antes de su pregunta.</p><p><strong>Tarea:</strong> {{TaskTitle}}</p><p>Referencia: {{TaskId}}</p>", "La persona a la que esperaba su tarea ha respondido. La respuesta está en el historial de la tarea, y la tarea ha vuelto al estado en que estaba antes de su pregunta. Tarea: {{TaskTitle}} — Referencia: {{TaskId}}"),
+            "zh" => ("您的问题已得到回答：{{TaskTitle}}", "<p>您的任务所等待的人已经回答。答案记录在任务的历史中，任务已恢复到您提问之前的状态。</p><p><strong>任务:</strong> {{TaskTitle}}</p><p>编号: {{TaskId}}</p>", "您的任务所等待的人已经回答。答案记录在任务的历史中，任务已恢复到您提问之前的状态。 任务: {{TaskTitle}} — 编号: {{TaskId}}"),
+            "ar" => ("تمت الإجابة عن سؤالك: {{TaskTitle}}", "<p>أجاب الشخص الذي كانت مهمتك بانتظاره. الإجابة موجودة في سجل المهمة، وعادت المهمة إلى حالتها قبل أن تسأل.</p><p><strong>المهمة:</strong> {{TaskTitle}}</p><p>المرجع: {{TaskId}}</p>", "أجاب الشخص الذي كانت مهمتك بانتظاره. الإجابة موجودة في سجل المهمة، وعادت المهمة إلى حالتها قبل أن تسأل. المهمة: {{TaskTitle}} — المرجع: {{TaskId}}"),
+            "ru" => ("На ваш вопрос ответили: {{TaskTitle}}", "<p>Человек, которого ждала ваша задача, ответил. Ответ сохранён в истории задачи, а задача вернулась в состояние, в котором была до вашего вопроса.</p><p><strong>Задача:</strong> {{TaskTitle}}</p><p>Ссылка: {{TaskId}}</p>", "Человек, которого ждала ваша задача, ответил. Ответ сохранён в истории задачи, а задача вернулась в состояние, в котором была до вашего вопроса. Задача: {{TaskTitle}} — Ссылка: {{TaskId}}"),
+            _ => throw new ArgumentOutOfRangeException(nameof(locale), locale, "Unsupported task template locale.")
+        };
+
+        return Create("platform.tasks.inquiryanswered", locale, subject, html, text, ["TaskTitle", "TaskId"]);
     }
 
     /// <summary>

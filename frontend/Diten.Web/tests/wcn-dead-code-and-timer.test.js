@@ -64,10 +64,17 @@ describe("the dead renders are gone, not just unwired", () => {
      * guard that matches a generic name across the whole tree reports another module's healthy code as a
      * leftover; it is checked inside WorkCenterNext instead, below.
      */
-    "runBulk", "runBulkWithProgress", "performBulk",
-    // Permanently empty once the code that fed them was deleted a round earlier.
-    "renderNotes", "renderAgenda"
+    "runBulk", "runBulkWithProgress", "performBulk"
   ];
+
+  /*
+   * Same guard, narrower field. `renderNotes` and `renderAgenda` were emptied here a round earlier, but the
+   * names are ordinary English: another module may legitimately ship its own. Measured 2026-09-21 — CRM's
+   * `VisitFrequencyPolicies/details.js` (merged from main) defines its own `renderNotes`, and the tree-wide
+   * scan reported that healthy code as OUR leftover. Same reasoning the list above already applies to
+   * `bulkBar`: a generic name is checked inside WorkCenterNext, a distinctive one across the tree.
+   */
+  const DELETED_IN_THIS_MODULE = ["renderNotes", "renderAgenda"];
 
   it("names none of them anywhere under wwwroot or Views", () => {
     const files = shipped();
@@ -78,6 +85,18 @@ describe("the dead renders are gone, not just unwired", () => {
         return f.indexOf("vendor") < 0 && new RegExp(`\\b${fn}\\b`).test(code(text));
       }).map((f) => path.relative(web(), f));
       expect(hits, `${fn} still has a caller or a definition`).toEqual([]);
+    });
+  });
+
+  it("names the generic ones nowhere inside WorkCenterNext", () => {
+    const mine = shipped().filter((f) => f.indexOf(path.join("WorkCenterNext")) >= 0);
+    expect(mine.length, "the WorkCenterNext file set went empty — the filter, not the module, is broken")
+      .toBeGreaterThan(1);
+    DELETED_IN_THIS_MODULE.forEach((fn) => {
+      const hits = mine
+        .filter((f) => new RegExp(`\\b${fn}\\b`).test(code(fs.readFileSync(f, "utf8"))))
+        .map((f) => path.relative(web(), f));
+      expect(hits, `${fn} still has a caller or a definition in WorkCenterNext`).toEqual([]);
     });
   });
 

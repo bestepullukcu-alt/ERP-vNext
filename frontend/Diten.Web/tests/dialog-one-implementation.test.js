@@ -76,7 +76,21 @@ const KNOWN_RAW = [
   "Meetings/minutes-editor.js",
   // MOD-0357 S7 K6 — "schedule follow-up" needs FOUR fields (title, meeting type, start, end), the same reason
   // task-from-meeting-dialog.js is listed above.
-  "Meetings/follow-up-dialog.js"
+  "Meetings/follow-up-dialog.js",
+  /*
+   * BL-435 (2026-09-21) — the initiative lifecycle prompt asks for up to FOUR fields (outcome, closure reason,
+   * benefit disposition, summary), so it cannot be a `showConfirm`. It was an offender until today for the
+   * other half of the rule as well: it hand-wrote the dialog's look. It now spreads
+   * `window.DitenDialogAppearance()` like every other raw dialog on this list.
+   */
+  "PPM/Initiatives/index.js",
+  /*
+   * MOD-0024 (2026-09-23) — handing a task on needs TWO fields, the new person and a mandatory reason, and the
+   * shared confirm takes one input by design. Listed rather than bent: `tasks-surface-contract.test.js` names
+   * the same file for the same reason and additionally proves it wears the published appearance, so "raw" here
+   * means "more fields than a confirmation", never "a dialog that looks like another product".
+   */
+  "Tasks/reassign.js"
 ];
 
 describe("one confirm implementation, product-wide", () => {

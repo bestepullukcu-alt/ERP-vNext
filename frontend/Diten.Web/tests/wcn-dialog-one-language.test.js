@@ -226,7 +226,9 @@ describe("every box carries a real example", () => {
     { dialog: "Planla", key: "DatePlaceholder", labelKey: "PlanDateLabel" },
     { dialog: "Toplantı zamanı", key: "DateTimePlaceholder", labelKey: "MeetingWhenLabel" },
     { dialog: "Süre gir", key: "LogTimePlaceholder", labelKey: "LogTimeLabel" },
-    { dialog: "Aksiyon onayı — gerekçe", key: "ReasonPlaceholder", labelKey: "ReasonLabel" }
+    { dialog: "Aksiyon onayı — gerekçe", key: "ReasonPlaceholder", labelKey: "ReasonLabel" },
+    // BL-439 — the answer box of "Cevapla": its own label and its own example, never the reason's.
+    { dialog: "Cevapla", key: "InquiryAnswerPlaceholder", labelKey: "InquiryAnswerLabel" }
   ];
 
   it("wires a placeholder into every text, date and number box", () => {
@@ -237,6 +239,7 @@ describe("every box carries a real example", () => {
     // The meeting FORM's two boxes went with the form itself (deleted); its strings stay in the resx for the
     // deferred feature and are checked by the l10n block below, not here.
     expect(APP).toContain(`placeholder="${"$"}{esc(t('ReasonPlaceholder'))}"`);
+    expect(APP).toContain(`placeholder="${"$"}{esc(t('InquiryAnswerPlaceholder'))}"`);
   });
 
   it("never repeats the field's own name back at the reader", () => {

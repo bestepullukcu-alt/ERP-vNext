@@ -69,10 +69,35 @@
             </section>`;
     };
 
+    /*
+     * WP-UI-SHORTCUTS-01 (BL-438) — this page's keys, declared to the shared layer. Each one PRESSES a link the
+     * header already shows (Razor, `data-task-edit` / `data-task-back`), so a key can never reach somewhere the
+     * reader could not click to; with the link absent the key does nothing. No new action is invented here.
+     */
+    const SHORTCUT_SCOPE = 'task-details';
+    const pressLink = (selector) => ({
+        when: () => !!document.querySelector(selector),
+        handler: (event) => { event.preventDefault(); document.querySelector(selector).click(); }
+    });
+    const registerShortcuts = () => {
+        const layer = global.DitenShortcuts;
+        if (!layer) {
+            console.error('[Tasks] window.DitenShortcuts is unavailable — no keyboard shortcuts on this page. '
+                + 'The host view must include Views/Shared/_DitenShortcuts.cshtml.');
+            return;
+        }
+        layer.unregister(SHORTCUT_SCOPE);
+        layer.register(SHORTCUT_SCOPE, [
+            Object.assign({ keys: ['e'], actionKey: 'Task.Edit' }, pressLink('[data-task-edit]')),
+            Object.assign({ keys: ['Escape'], actionKey: 'Task.Back' }, pressLink('[data-task-back]'))
+        ], { titleKey: 'Shortcuts.Scope.TaskDetails' });
+    };
+
     const boot = async () => {
         const host = document.getElementById('taskDetails');
         const taskId = host?.getAttribute('data-task-id');
         if (!host || !taskId) { return; }
+        registerShortcuts();
 
         const result = await global.TasksApi.get(taskId);
         // The host is now the Razor section (`.backbone-preview-section`), not a bare `.card-body`.

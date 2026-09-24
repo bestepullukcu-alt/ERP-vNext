@@ -117,6 +117,8 @@
   <data name="ErrorDueDateRequired" xml:space="preserve"><value>A due date is required.</value></data>
   <data name="ErrorApprovalPending" xml:space="preserve"><value>The task is waiting for the approver's decision.</value></data>
   <data name="ErrorReviewPending" xml:space="preserve"><value>The task is waiting for the reviewer to respond.</value></data>
+  <data name="ErrorDeliverableRequired" xml:space="preserve"><value>You must attach the deliverable file before completing this task.</value></data>
+  <data name="ErrorReviewMeetingRequired" xml:space="preserve"><value>This step cannot close until the linked review meeting's minutes are published.</value></data>
   <data name="ErrorTaskInvalidState" xml:space="preserve"><value>This task cannot be completed while it is in this state. Start it first.</value></data>
   <data name="ErrorCancelNotRequester" xml:space="preserve"><value>Only the person who requested this task can cancel it. If you do not want the work, return it instead.</value></data>
   <data name="ErrorWaitingReasonRequired" xml:space="preserve"><value>Say what the task is waiting for.</value></data>
@@ -238,4 +240,25 @@
   <data name="ErrorChecklistEvidenceRequired" xml:space="preserve"><value>This item requires evidence before it can be completed.</value></data>
   <data name="ErrorAttachmentInvalid" xml:space="preserve"><value>This file could not be uploaded. Check its type and size and try again.</value></data>
   <data name="ChecklistAttachmentsAfterSaveHint" xml:space="preserve"><value>Attachments, including evidence, can be added once the task is created.</value></data>
+  <data name="ReassignAction" xml:space="preserve"><value>Hand over</value></data>
+  <data name="ReassignTitle" xml:space="preserve"><value>Hand this task to someone else</value></data>
+  <data name="ReassignHint" xml:space="preserve"><value>The new owner sees the task immediately. The reason is kept with the task's history.</value></data>
+  <data name="ReassignAssigneeLabel" xml:space="preserve"><value>New owner</value></data>
+  <data name="ReassignAssigneePlaceholder" xml:space="preserve"><value>Choose a person</value></data>
+  <data name="ReassignReasonLabel" xml:space="preserve"><value>Reason for the handover</value></data>
+  <data name="ReassignReasonPlaceholder" xml:space="preserve"><value>e.g. On leave until 5 October; Ayşe is covering the audit.</value></data>
+  <data name="ReassignAssigneeRequired" xml:space="preserve"><value>Choose who takes the task over.</value></data>
+  <data name="ReassignReasonRequired" xml:space="preserve"><value>Write why the task is changing hands.</value></data>
+  <data name="ReassignDone" xml:space="preserve"><value>The task was handed over.</value></data>
+  <data name="ReassignNoPeople" xml:space="preserve"><value>There is nobody else this task can be handed to.</value></data>
+  <data name="AssignmentReadOnlyHint" xml:space="preserve"><value>An assignment is not edited — it is handed over, with a reason that stays in the task's history.</value></data>
+  <data name="ErrorInquiryAnswerRequired" xml:space="preserve">
+    <value>Write an answer before sending.</value>
+  </data>
+  <data name="ErrorInquiryAnswerTooLong" xml:space="preserve">
+    <value>The answer is too long. Keep it under 4000 characters.</value>
+  </data>
+  <data name="ErrorInquiryNotAddressee" xml:space="preserve">
+    <value>This question is no longer waiting on you — it was answered or withdrawn. Refresh the list.</value>
+  </data>
 </root>

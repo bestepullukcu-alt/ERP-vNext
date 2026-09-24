@@ -415,7 +415,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -435,7 +436,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "inquire",
@@ -455,7 +457,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",
@@ -475,7 +478,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "reassign",
@@ -495,7 +499,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "scheduleReviewMeeting",
@@ -515,7 +520,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -633,7 +639,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -650,7 +657,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "inquire",
@@ -667,7 +675,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",
@@ -684,7 +693,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "reassign",
@@ -704,7 +714,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "scheduleReviewMeeting",
@@ -724,7 +735,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -845,7 +857,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -865,7 +878,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "inquire",
@@ -885,7 +899,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",
@@ -905,7 +920,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "reassign",
@@ -925,7 +941,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "scheduleReviewMeeting",
@@ -945,7 +962,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -1061,7 +1079,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "InProgress"
       },
       {
         "code": "plan",
@@ -1078,7 +1097,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "inquire",
@@ -1095,7 +1115,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": "Waiting"
       },
       {
         "code": "return",
@@ -1112,7 +1133,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "reassign",
@@ -1132,7 +1154,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "scheduleReviewMeeting",
@@ -1149,7 +1172,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -1269,7 +1293,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "plan",
@@ -1289,7 +1314,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "cancel",
@@ -1306,7 +1332,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "destructive"
+        "riskLevel": "destructive",
+        "targetStatus": "Cancelled"
       },
       {
         "code": "scheduleReviewMeeting",
@@ -1326,7 +1353,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -1443,7 +1471,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "plan",
@@ -1460,7 +1489,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "cancel",
@@ -1477,7 +1507,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "destructive"
+        "riskLevel": "destructive",
+        "targetStatus": "Cancelled"
       },
       {
         "code": "scheduleReviewMeeting",
@@ -1497,7 +1528,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -1614,7 +1646,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "plan",
@@ -1634,7 +1667,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "cancel",
@@ -1651,7 +1685,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "destructive"
+        "riskLevel": "destructive",
+        "targetStatus": "Cancelled"
       },
       {
         "code": "scheduleReviewMeeting",
@@ -1671,7 +1706,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {
@@ -1786,7 +1822,8 @@
         "requiresReason": true,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "plan",
@@ -1803,7 +1840,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       },
       {
         "code": "cancel",
@@ -1820,7 +1858,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "destructive"
+        "riskLevel": "destructive",
+        "targetStatus": "Cancelled"
       },
       {
         "code": "scheduleReviewMeeting",
@@ -1837,7 +1876,8 @@
         "requiresReason": false,
         "requiresEvidence": false,
         "supportsBulk": false,
-        "riskLevel": "normal"
+        "riskLevel": "normal",
+        "targetStatus": null
       }
     ],
     "concurrency": {

@@ -34,6 +34,20 @@ public sealed class InvoiceMatchController : CustomBaseController
         _mediator = mediator;
     }
 
+    /// <summary>listInvoices — contract GET /api/invoice-match/invoices. Tenant+LE filtreli; opsiyonel supplierId + status
+    /// + cursor. Fatura register list yüzeyi (exception kuyruğundan bağımsız).</summary>
+    [HttpGet("invoices")]
+    [HasPermission("procurement.invoice-match.read")]
+    public async Task<IActionResult> ListInvoices(
+        [FromQuery] string? supplierId,
+        [FromQuery] InvoiceStatus? status,
+        [FromQuery] string? cursor,
+        CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new ListInvoicesQuery(supplierId, status, cursor), cancellationToken);
+        return CreateActionResultInstance(response);
+    }
+
     /// <summary>getInvoice — contract GET /api/invoice-match/invoices/{invoiceId}. Cross-tenant/LE → 404 NOT_FOUND.</summary>
     [HttpGet("invoices/{invoiceId}")]
     [HasPermission("procurement.invoice-match.read")]
