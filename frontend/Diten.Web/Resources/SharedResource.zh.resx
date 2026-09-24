@@ -898,4 +898,22 @@
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>不支持更新发票；请通过重新运行三方匹配或解决其异常来更正，而不是通过编辑。</value></data>
   <data name="Copied" xml:space="preserve"><value>已复制</value></data>
   <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>键盘快捷键</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>在字段中输入时，或对话框、侧边面板打开时，快捷键不会生效。</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>显示此列表</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>空格</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>全局</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>任务中心</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>任务详情</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>选择下一项</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>选择上一项</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>打开所选项</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>打开当前聚焦的行</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>接受或审批所选项</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>拒绝或退回所选项</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>清除选择</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>在选项卡之间切换（焦点位于选项卡上时）</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>编辑任务</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>返回任务列表</value></data>
 </root>

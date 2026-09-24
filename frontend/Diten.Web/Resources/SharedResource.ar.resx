@@ -898,4 +898,22 @@
   <data name="InvoiceUpdateNotSupported" xml:space="preserve"><value>تحديث الفاتورة غير مدعوم؛ صحّحها بإعادة تشغيل المطابقة الثلاثية أو بحل استثنائها، وليس عبر التعديل.</value></data>
   <data name="Copied" xml:space="preserve"><value>تم النسخ</value></data>
   <data name="Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Shortcuts.DialogTitle" xml:space="preserve"><value>اختصارات لوحة المفاتيح</value></data>
+  <data name="Shortcuts.Close" xml:space="preserve"><value>إغلاق</value></data>
+  <data name="Shortcuts.SilenceNote" xml:space="preserve"><value>لا تعمل الاختصارات أثناء الكتابة في حقل أو عند فتح مربع حوار أو لوحة جانبية.</value></data>
+  <data name="Shortcuts.ShowList" xml:space="preserve"><value>عرض هذه القائمة</value></data>
+  <data name="Shortcuts.Key.Space" xml:space="preserve"><value>مسافة</value></data>
+  <data name="Shortcuts.Scope.Global" xml:space="preserve"><value>في كل مكان</value></data>
+  <data name="Shortcuts.Scope.WorkCenter" xml:space="preserve"><value>مركز المهام</value></data>
+  <data name="Shortcuts.Scope.TaskDetails" xml:space="preserve"><value>تفاصيل المهمة</value></data>
+  <data name="Shortcuts.Wcn.Next" xml:space="preserve"><value>تحديد العنصر التالي</value></data>
+  <data name="Shortcuts.Wcn.Previous" xml:space="preserve"><value>تحديد العنصر السابق</value></data>
+  <data name="Shortcuts.Wcn.Open" xml:space="preserve"><value>فتح العنصر المحدد</value></data>
+  <data name="Shortcuts.Wcn.OpenFocused" xml:space="preserve"><value>فتح الصف الذي عليه التركيز</value></data>
+  <data name="Shortcuts.Wcn.Accept" xml:space="preserve"><value>قبول العنصر المحدد أو الموافقة عليه</value></data>
+  <data name="Shortcuts.Wcn.Reject" xml:space="preserve"><value>رفض العنصر المحدد أو إرجاعه</value></data>
+  <data name="Shortcuts.Wcn.ClearSelection" xml:space="preserve"><value>مسح التحديد</value></data>
+  <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>التنقل بين علامات التبويب (عند التركيز على علامة تبويب)</value></data>
+  <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>تعديل المهمة</value></data>
+  <data name="Shortcuts.Task.Back" xml:space="preserve"><value>العودة إلى قائمة المهام</value></data>
 </root>

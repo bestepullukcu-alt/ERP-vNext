@@ -1227,7 +1227,12 @@
             </li>`;
         };
         const allowedViews = TAB_VIEWS[state.tab] || TAB_VIEWS.islerim;
-        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><div class="dropdown d-none d-lg-block"><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-bs-toggle="dropdown" aria-expanded="false" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button><div class="dropdown-menu dropdown-menu-end wcn-keyboard-menu"><span>${esc(t('KeyboardHint'))}</span></div></div></div>`;
+        /*
+         * WP-UI-SHORTCUTS-01 (BL-438) — the keyboard button opens the shared `?` list. It was a dropdown that printed
+         * `KeyboardHint` (four of the seven keys) and was hidden below `lg`; the list is now generated from what is
+         * registered, and the button shows at every width. `KeyboardHint` stays as its name and tooltip.
+         */
+        const views = `<div class="d-flex align-items-center gap-2 ms-auto wcn-view-tools"><div class="btn-group btn-group-sm wcn-views" role="group" aria-label="${esc(t('ViewLabel'))}">${allowedViews.map((v) => viewBtn(v, VIEW_META[v], VIEW_KEY[v])).join('')}</div><button type="button" class="btn btn-icon btn-sm btn-label-secondary wcn-keyboard-help" data-wcn-shortcuts aria-haspopup="dialog" aria-keyshortcuts="?" title="${esc(t('KeyboardHint'))}" aria-label="${esc(t('KeyboardHint'))}"><i class="bx bx-bxs-keyboard"></i></button></div>`;
         return `<div class="card mb-3 wcn-tabcard">
             <div class="card-body p-3 d-flex align-items-center gap-3 flex-wrap">
                 <ul class="nav nav-pills gap-2 flex-wrap mb-0 wcn-tabs" role="tablist" aria-label="${esc(t('TabsLabel'))}">
@@ -9867,7 +9872,8 @@
 
 
     // ── Keyboard (spec §4: j/k move · a accept · r reject · Enter open · Esc) ──
-    const isTyping = (target) => target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName);
+    // The shortcuts themselves are registered with the shared layer (registerShortcuts, below); the typing guard
+    // that used to live here is the layer's silence rule now (assets/js/shared/diten-shortcuts.js).
 
     const moveSelection = (delta) => {
         if (!state.visibleOrder.length) { return; }
@@ -9924,7 +9930,7 @@
 
     // ASYNC: posting a comment on Enter is awaited, so a failed post cannot swallow its own rejection and look
     // like a key that was never wired — the exact shape the subtask writer shipped broken in.
-    const onKeydown = async (event) => {
+    const onFieldKeydown = async (event) => {
         /*
          * ENTER ADDS THE SUBTASK — before the typing guard, because this fires INSIDE a text field.
          *
@@ -10036,55 +10042,103 @@
 
         if (event.key === 'Escape' && event.target.matches && event.target.matches('[data-wcn-search]')) {
             if (state.search) { event.preventDefault(); state.search = ''; render(); }
-            return;
         }
-        if (isTyping(event.target) || event.metaKey || event.ctrlKey || event.altKey) { return; }
-        const key = event.key.toLowerCase();
-        /*
-         * Arrow / Home / End across a tab strip.
-         *
-         * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to the
-         * strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
-         * keyboard behaviour for free rather than a second copy of it, and the old global query would have
-         * walked between two strips as if they were one list the moment a page carried both.
-         */
-        const activeTab = event.target.closest && event.target.closest('[role="tab"]');
-        if (activeTab && (key === 'arrowleft' || key === 'arrowright' || key === 'home' || key === 'end')) {
-            const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
-            const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
-            let index = tabs.indexOf(activeTab);
-            index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
-                : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
-            event.preventDefault(); tabs[index].focus(); tabs[index].click(); return;
-        }
-        if (key === 'j') { event.preventDefault(); moveSelection(1); return; }
-        if (key === 'k') { event.preventDefault(); moveSelection(-1); return; }
-        if (key === 'escape') { state.selectedId = null; render(); return; }
+    };
 
+    /*
+     * ── THE PAGE'S SHORTCUTS, DECLARED TO THE SHARED LAYER (WP-UI-SHORTCUTS-01, BL-438) ───────────────────
+     *
+     * These keys used to be the tail of this page's own keydown handler (then `onKeydown`), behind its own copy of
+     * the typing/modifier guard. They are now registered with `DitenShortcuts`, which owns the one `document`
+     * listener, the silence rule (field, open modal/offcanvas/SweetAlert, Ctrl/Cmd/Alt) and the `?` list — so the
+     * list prints exactly what is bound.
+     *
+     * What `onFieldKeydown` keeps above is NOT a shortcut: Enter/@/Escape INSIDE a field and Enter/Space on a
+     * `role=button` are how those controls commit, and the layer is silent in fields by design.
+     *
+     * Each handler is the old branch, moved whole: same keys, same order of checks, same preventDefault calls.
+     */
+    const SHORTCUT_SCOPE = 'workcenter';
+    // A `role=button` field row answers Enter/Space itself (onFieldKeydown above); the shortcut must not also open.
+    const isFieldButton = (event) => !!(event.target.closest && event.target.closest('[data-wcn-action][role="button"]'));
+
+    const openShortcut = (event) => {
+        const key = event.key.toLowerCase();
+        if ((key === 'enter' || key === ' ') && isFieldButton(event)) { return false; }
         const focusedRow = event.target.closest && event.target.closest('[data-wcn-row]');
         if (focusedRow && !event.target.closest('button,input,a') && (key === 'enter' || key === ' ')) {
             event.preventDefault();
             state.selectedId = focusedRow.getAttribute('data-wcn-row');
             const focusedItem = itemById(state.selectedId);
             if (focusedItem) { markSeen(focusedItem); }
-            openDetailPage(state.selectedId); return;
+            openDetailPage(state.selectedId); return undefined;
         }
+        const item = itemById(state.selectedId);
+        if (!item || key === ' ') { return undefined; }
+        event.preventDefault();
+        openDetailPage(state.selectedId);
+        return undefined;
+    };
 
+    const roleShortcut = (role) => (event) => {
         const item = itemById(state.selectedId);
         if (!item) { return; }
-        if (key === 'enter' || key === 'o') {
-            event.preventDefault();
-            openDetailPage(state.selectedId);
+        const action = actionByRole(item, role);
+        if (action) { event.preventDefault(); performAction(item, action.key); }
+    };
+
+    const registerShortcuts = () => {
+        const layer = global.DitenShortcuts;
+        if (!layer) {
+            console.error('[WorkCenterNext] window.DitenShortcuts is unavailable — no keyboard shortcuts on this page. '
+                + 'The host view must include Views/Shared/_DitenShortcuts.cshtml before app.js.');
             return;
         }
-        if (key === 'a') { const a = actionByRole(item, 'accept'); if (a) { event.preventDefault(); performAction(item, a.key); } return; }
-        if (key === 'r') { const r = actionByRole(item, 'reject'); if (r) { event.preventDefault(); performAction(item, r.key); } return; }
+        layer.unregister(SHORTCUT_SCOPE);
+        layer.register(SHORTCUT_SCOPE, [
+            /*
+             * Arrow / Home / End across a tab strip.
+             *
+             * Widened from `[data-wcn-tab]` (the list page's ownership strip) to ANY `[role=tab]`, and scoped to
+             * the strip the focused tab actually lives in. Two reasons: the detail page's new strip gets the same
+             * keyboard behaviour for free rather than a second copy of it, and the old global query would have
+             * walked between two strips as if they were one list the moment a page carried both.
+             */
+            {
+                keys: ['ArrowLeft', 'ArrowRight', 'Home', 'End'],
+                actionKey: 'Wcn.Tabs',
+                when: (event) => !!(event.target.closest && event.target.closest('[role="tab"]')),
+                handler: (event) => {
+                    const key = event.key.toLowerCase();
+                    const activeTab = event.target.closest('[role="tab"]');
+                    const strip = activeTab.closest('[role="tablist"]') || document.getElementById('wcnApp');
+                    const tabs = Array.from(strip.querySelectorAll('[role="tab"]'));
+                    let index = tabs.indexOf(activeTab);
+                    index = key === 'home' ? 0 : key === 'end' ? tabs.length - 1
+                        : (index + (key === 'arrowright' ? 1 : -1) + tabs.length) % tabs.length;
+                    event.preventDefault(); tabs[index].focus(); tabs[index].click();
+                }
+            },
+            { keys: ['j'], actionKey: 'Wcn.Next', handler: (event) => { event.preventDefault(); moveSelection(1); } },
+            { keys: ['k'], actionKey: 'Wcn.Previous', handler: (event) => { event.preventDefault(); moveSelection(-1); } },
+            { keys: ['Enter', 'o'], actionKey: 'Wcn.Open', handler: openShortcut },
+            { keys: [' '], actionKey: 'Wcn.OpenFocused', handler: openShortcut },
+            { keys: ['a'], actionKey: 'Wcn.Accept', handler: roleShortcut('accept') },
+            { keys: ['r'], actionKey: 'Wcn.Reject', handler: roleShortcut('reject') },
+            { keys: ['Escape'], actionKey: 'Wcn.ClearSelection', handler: () => { state.selectedId = null; render(); } }
+        ], { titleKey: 'Shortcuts.Scope.WorkCenter' });
     };
 
     // ── Event delegation ──────────────────────────────────────────────────────
     const onClick = async (event) => {
         const root = event.target.closest('#wcnApp');
         if (!root && !event.target.closest('.wcn-bulkbar')) { /* still allow bulkbar inside app */ }
+
+        // The toolbar's keyboard button — the same list `?` opens (WP-UI-SHORTCUTS-01).
+        if (event.target.closest('[data-wcn-shortcuts]')) {
+            if (global.DitenShortcuts) { global.DitenShortcuts.open(); }
+            return;
+        }
 
         const jumpEl = event.target.closest('[data-wcn-jump]');
         if (jumpEl) {
@@ -10472,7 +10526,7 @@
         }
         /*
          * The quick-add BUTTON is gone: `data-wcn-subtask-add` now lives on the input itself and Enter submits
-         * (onKeydown). A click path is kept for anything that still carries the attribute on a button — the
+         * (onFieldKeydown). A click path is kept for anything that still carries the attribute on a button — the
          * subtask create panel does — so both surfaces reach the one write path.
          */
         const subAddEl = event.target.closest('button[data-wcn-subtask-add]');
@@ -10954,12 +11008,15 @@
         document.addEventListener('click', onClickWrapped);
         document.addEventListener('change', onChange);
         document.addEventListener('input', onInput);
-        document.addEventListener('keydown', onKeydown);
+        // In-field commits only (Enter/@/Escape in a field, Enter/Space on a role=button) — not shortcuts.
+        document.addEventListener('keydown', onFieldKeydown);
+        registerShortcuts();
         global.__wcnTeardown = () => {
             document.removeEventListener('click', onClickWrapped);
             document.removeEventListener('change', onChange);
             document.removeEventListener('input', onInput);
-            document.removeEventListener('keydown', onKeydown);
+            document.removeEventListener('keydown', onFieldKeydown);
+            if (global.DitenShortcuts) { global.DitenShortcuts.unregister(SHORTCUT_SCOPE); }
             stopTimerTick();
         };
         // The quick-create offcanvas announces a new task instead of touching state directly, so this module
