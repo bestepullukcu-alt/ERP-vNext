@@ -221,4 +221,5 @@
   <data name="BackEdgesToggle" xml:space="preserve"><value>显示回退箭头</value></data>
   <data name="MoveEarlier" xml:space="preserve"><value>前移</value></data>
   <data name="MoveLater" xml:space="preserve"><value>后移</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>该类型已在此分支中</value></data>
 </root>

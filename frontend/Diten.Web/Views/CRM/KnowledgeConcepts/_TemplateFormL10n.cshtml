@@ -16,7 +16,9 @@
         "TypePalette", "NodeCount", "BranchUsage", "NotOnSpine", "TypePaletteEmpty", "NodePickerSubjectFirst",
         // WP-CT-FE-3: type-lane diagram (middle panel).
         "Spine", "SpineStatusValid", "SpineStatusNeedsTwo", "SpineStatusFrozen", "DeleteBranch", "BackEdgesToggle",
-        "MoveEarlier", "MoveLater" };
+        "MoveEarlier", "MoveLater",
+        // WP-CT-FE-4: drag and drop (type-repeat guard warning).
+        "TypeAlreadyInBranch" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

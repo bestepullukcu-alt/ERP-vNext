@@ -221,4 +221,5 @@
   <data name="BackEdgesToggle" xml:space="preserve"><value>Show back arrows</value></data>
   <data name="MoveEarlier" xml:space="preserve"><value>Move earlier</value></data>
   <data name="MoveLater" xml:space="preserve"><value>Move later</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>This type is already in this branch</value></data>
 </root>

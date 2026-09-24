@@ -11,8 +11,9 @@
  * `.diten-checkitem` step rows + a compose-row (Concept Type + Min/Max + Add).
  *
  * WP-CT-FE-3: the middle panel renders every branch at once as a type-lane diagram (columns = spine types, rows =
- * branches, SVG branch-flow edges); the per-branch pager and the SortableJS step reorder are gone (drag returns in
- * FE-4). The model, the compose add-row, Min/Max editing and submit are unchanged.
+ * branches, SVG branch-flow edges); the per-branch pager and the SortableJS step reorder are gone. WP-CT-FE-4 adds
+ * custom HTML5 drag and drop on that diagram (palette type → branch, step move / re-order / cross-branch, type-repeat
+ * guard, draft only). The model, the compose add-row, Min/Max editing and submit are unchanged.
  */
 (function (window, document) {
     'use strict';
@@ -96,8 +97,9 @@
 
     // ─── WP-CT-FE-2: type palette (left panel) ────────────────────────────────────────────────────────────────────
     // Every type of the selected subject with: its node count (subject-scoped concept-nodes read), how many branches
-    // use it, and a "not on spine" badge when no branch uses it (the spine is derived from the branches). Rows carry
-    // draggable-ready hooks (js-palette-type / js-palette-handle) — drag behaviour is FE-4; a click is a no-op today.
+    // use it, and a "not on spine" badge when no branch uses it (the spine is derived from the branches). On a draft a
+    // live type row is draggable onto a branch lane (WP-CT-FE-4); an archived type is shown but not draggable (the
+    // compose picker does not offer it either).
     const nodeCountByType = {};
     let nodeCountsFor = null;      // subject id the counts belong to
     let nodeCountsReady = false;   // false → counts unknown (loading / failed): the cell shows "—", never a fake 0
@@ -148,8 +150,9 @@
             const countBadge = `<span class="badge bg-label-secondary">${esc(count == null ? '—' : fmt(L.NodeCount, count))}</span>`;
             const usageBadge = usage > 0 ? `<span class="badge bg-label-info">${esc(fmt(L.BranchUsage, usage))}</span>` : '';
             const spineBadge = spine.has(id) ? '' : `<span class="badge bg-label-warning">${esc(L.NotOnSpine || '')}</span>`;
-            return `<li class="diten-checkitem flex-wrap js-palette-type" data-ct="${esc(id)}" draggable="false">
-                    <span class="diten-checkitem-grip js-palette-handle flex-shrink-0 opacity-50" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>
+            const canDrag = !templateReadOnly && !t.isArchived;
+            return `<li class="diten-checkitem flex-wrap js-palette-type" data-ct="${esc(id)}" draggable="${canDrag}"${canDrag ? ' style="cursor:grab"' : ''}>
+                    <span class="diten-checkitem-grip js-palette-handle flex-shrink-0${canDrag ? '' : ' opacity-50'}" aria-hidden="true"><i class="bx bx-grid-vertical"></i></span>
                     ${swatch(t.color)}
                     <span class="diten-checkitem-text text-truncate" title="${esc(t.conceptTypeName)}">${esc(t.conceptTypeName)}</span>
                     <span class="d-flex flex-wrap gap-1 w-100 ps-4">${countBadge}${usageBadge}${spineBadge}</span>
@@ -189,7 +192,7 @@
                         <div><label class="form-label small mb-0">${esc(L.MaxSelection || 'Max')}</label><input type="number" min="1" max="9" step="1" class="form-control form-control-sm js-step-max" data-b="${bi}" data-s="${si}" value="${s.max == null || s.max === '' ? '' : esc(String(s.max))}"></div>
                     </div>
                 </div>`;
-        return `<div class="card border shadow-none js-step-card" data-b="${bi}" data-s="${si}" data-ct="${esc(String(s.conceptTypeId))}" style="grid-column:${col + 1};grid-row:1;z-index:1;align-self:start">
+        return `<div class="card border shadow-none js-step-card" data-b="${bi}" data-s="${si}" data-ct="${esc(String(s.conceptTypeId))}" draggable="${!ro}" style="grid-column:${col + 1};grid-row:1;z-index:1;align-self:start${ro ? '' : ';cursor:grab'}">
                 <div class="card-body p-2">
                     <div class="d-flex align-items-center gap-1 js-step-head" style="height:1.5rem">
                         <span class="badge bg-label-secondary rounded-pill flex-shrink-0">${si + 1}</span>
@@ -338,6 +341,61 @@
             </div>`;
         pinLaneChrome();
         drawAllEdges();
+    };
+
+    // ─── WP-CT-FE-4: drag and drop on the lane diagram (custom HTML5 DnD) ──────────────────────────────────────────
+    // SortableJS does not fit: a lane's DOM order is the steps order but a card's position is its type column, so an
+    // auto-sorted list would lie. The payload lives in module state (dataTransfer cannot be read during dragover):
+    //   palette row → { kind:'type', typeId }          step card → { kind:'step', bid, sid }
+    // Dropping on a card inserts BEFORE that step (its steps index, never its grid x); anywhere else in the lane appends.
+    // Draft only — a read-only template renders nothing draggable and every handler bails. The ←/→ buttons, compose,
+    // remove and branch ops stay as the non-drag path.
+    let dragPayload = null;
+    const clearDropTargets = () => document.querySelectorAll('#tplBranches .is-drop-target').forEach(el => el.classList.remove('is-drop-target'));
+    const ensureDropStyle = () => {
+        if (document.getElementById('tplDropTargetStyle')) return;
+        const st = document.createElement('style');
+        st.id = 'tplDropTargetStyle';
+        // Theme token (the primary purple), readable in light and dark.
+        st.textContent = '#tplBranches .js-lane-body.is-drop-target{outline:2px dashed var(--bs-primary);outline-offset:-2px;'
+            + 'background:rgba(var(--bs-primary-rgb),.06);border-radius:.375rem}';
+        document.head.appendChild(st);
+    };
+    // Returns true when the model changed. The type-repeat guard mirrors the backend (a type appears once per branch):
+    // a drop that would repeat a type does nothing and warns — except a step being re-ordered inside its own branch.
+    const moveTo = (targetBranch, insertIndex, payload) => {
+        if (templateReadOnly || !payload) return false;
+        const target = branches[targetBranch];
+        if (!target) return false;
+        const source = payload.kind === 'step' ? branches[payload.bid] : null;
+        const moving = source ? source.steps[payload.sid] : null;
+        const typeId = payload.kind === 'type' ? String(payload.typeId || '') : String(moving?.conceptTypeId || '');
+        if (!typeId || (payload.kind === 'step' && !moving)) return false;
+        const existing = target.steps.findIndex(s => String(s.conceptTypeId) === typeId);
+        const sameStep = payload.kind === 'step' && payload.bid === targetBranch && existing === payload.sid;
+        if (existing >= 0 && !sameStep) {
+            window.showToast?.(L.TypeAlreadyInBranch || '', 'warning');
+            return false;
+        }
+        const clamp = (i, max) => Math.min(Math.max(0, i), max);
+        if (payload.kind === 'type') {
+            target.steps.splice(clamp(insertIndex, target.steps.length), 0, { conceptTypeId: typeId, min: 1, max: 1 });
+        } else {
+            source.steps.splice(payload.sid, 1);
+            // Removing the step first shifts every later index of the same branch down by one.
+            const at = payload.bid === targetBranch && payload.sid < insertIndex ? insertIndex - 1 : insertIndex;
+            target.steps.splice(clamp(at, target.steps.length), 0, moving);
+        }
+        renderBranches();
+        return true;
+    };
+    const dropPoint = event => {
+        const lane = event.target.closest?.('#tplBranches .js-lane');
+        if (!lane) return null;
+        const bi = Number(lane.dataset.b);
+        const card = event.target.closest('.js-step-card');
+        const insertIndex = card && Number(card.dataset.b) === bi ? Number(card.dataset.s) : (branches[bi]?.steps.length ?? 0);
+        return { lane, bi, insertIndex };
     };
 
     // ─── submit ─────────────────────────────────────────────────────────────────
@@ -600,6 +658,48 @@
             drawAllEdges();
         });
         window.addEventListener('resize', () => { pinLaneChrome(); drawAllEdges(); });
+
+        // WP-CT-FE-4: drag sources (palette rows, step cards) + lane drop targets.
+        document.addEventListener('dragstart', event => {
+            dragPayload = null;
+            if (templateReadOnly) return;
+            const pal = event.target.closest?.('.js-palette-type[draggable="true"]');
+            const card = event.target.closest?.('#tplBranches .js-step-card[draggable="true"]');
+            // A card whose Min/Max editor is open (or holds focus) is being edited, not dragged.
+            if (card && (card.querySelector('.js-step-detail.show') || card.contains(document.activeElement) && document.activeElement.matches('input'))) {
+                event.preventDefault();
+                return;
+            }
+            if (pal) dragPayload = { kind: 'type', typeId: pal.dataset.ct };
+            else if (card) dragPayload = { kind: 'step', bid: Number(card.dataset.b), sid: Number(card.dataset.s) };
+            else return;
+            ensureDropStyle();
+            event.dataTransfer.effectAllowed = dragPayload.kind === 'type' ? 'copy' : 'move';
+            try { event.dataTransfer.setData('text/plain', JSON.stringify(dragPayload)); } catch { /* payload is in module state */ }
+        });
+        document.addEventListener('dragend', () => { dragPayload = null; clearDropTargets(); });
+        lanesHost?.addEventListener('dragover', event => {
+            if (!dragPayload || templateReadOnly) return;
+            const point = dropPoint(event);
+            if (!point) { clearDropTargets(); return; }
+            event.preventDefault();
+            event.dataTransfer.dropEffect = dragPayload.kind === 'type' ? 'copy' : 'move';
+            const body = point.lane.querySelector('.js-lane-body');
+            if (body && !body.classList.contains('is-drop-target')) { clearDropTargets(); body.classList.add('is-drop-target'); }
+        });
+        lanesHost?.addEventListener('dragleave', event => {
+            if (!event.relatedTarget || !lanesHost.contains(event.relatedTarget)) clearDropTargets();
+        });
+        lanesHost?.addEventListener('drop', event => {
+            if (!dragPayload || templateReadOnly) return;
+            const point = dropPoint(event);
+            if (!point) return;
+            event.preventDefault();
+            const payload = dragPayload;
+            dragPayload = null;
+            clearDropTargets();
+            moveTo(point.bi, point.insertIndex, payload);
+        });
 
         // Save (JS submit; the button is a form submit but we own the flow).
         const formEl = document.getElementById('conceptTemplateForm');

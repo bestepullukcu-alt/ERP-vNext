@@ -221,4 +221,5 @@
   <data name="BackEdgesToggle" xml:space="preserve"><value>Geri okları göster</value></data>
   <data name="MoveEarlier" xml:space="preserve"><value>Öne al</value></data>
   <data name="MoveLater" xml:space="preserve"><value>Sona al</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Bu tip bu dalda zaten var</value></data>
 </root>

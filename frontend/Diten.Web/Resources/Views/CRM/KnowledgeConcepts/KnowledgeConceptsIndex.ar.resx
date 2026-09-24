@@ -221,4 +221,5 @@
   <data name="BackEdgesToggle" xml:space="preserve"><value>إظهار أسهم الرجوع</value></data>
   <data name="MoveEarlier" xml:space="preserve"><value>نقل للأمام</value></data>
   <data name="MoveLater" xml:space="preserve"><value>نقل للخلف</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>هذا النوع موجود بالفعل في هذا الفرع</value></data>
 </root>
