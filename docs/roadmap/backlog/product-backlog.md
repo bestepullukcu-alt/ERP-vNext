@@ -6566,6 +6566,29 @@ başlasa da dönmez (canlı kanıt bekleniyor).
 
 ---
 
+### BL-454
+
+**E-posta bildirimleri: tasarım yok, gönderici Gmail hesabı — kurumsal şablon ve kurumsal gönderici**
+
+DURUM: AÇIK — sahip kararı 2026-09-24 ("Kullanıcılar sayfasından sonra bakalım") · SAHİP: CT (tasarım + gönderim prompt'u) · KAYIT: 2026-09-24
+
+**Sahibin gözlemi:** e-postalar "berbat gidiyor": düz metin, marka yok, başlık/altbilgi yok; dil kiracı ayarından (BL-445). Sunucu
+şu an bir Gmail hesabıyla gönderiyor (canlı SMTP ayarı); kurumsal hesap/adres olmalı.
+
+**İki iş:**
+1. **Tasarım:** tek e-posta düzeni (logo + kiracı adı başlık, gövde, eylem düğmesi, altbilgi: gönderen sistem, bildirim ayarı
+   bağlantısı, "bu e-postaya yanıt vermeyin"), tüm şablonlar bu düzene oturur (davet, parola, görev soru/cevap, onay, toplantı daveti
+   .ics ile); 7 dil; koyu/açık istemcilerde okunur; metin kopyası (plain) her zaman birlikte. SAP ve Oracle sistem e-postaları
+   markalı şablon + sabit sistem gönderici ile gider (Oracle: bildirim şablonları/BI Publisher; SAP: SAPconnect + şablon).
+2. **Gönderici:** Gmail kişisel/posta kutusu yerine kurumsal alan adından no-reply adresi (Google Workspace altyapısı var, bkz. toplantı
+   modülü kararı); SPF/DKIM/DMARC kaydı; ayar platform Bildirim Ayarları ekranından, kimlik bilgisi sır deposunda (kodda/appsettings'te
+   değil); gönderim başarısızlığı Bildirim Gönderimleri ekranında görünür (var). Kiracı başına gönderici adı (ör. "Diten Pharma ERP").
+
+**Ölçülecek (prompt'tan önce):** canlı SMTP ayarı nerede (platform Bildirim Ayarları mı, appsettings mi), hangi şablonlar var (7 dil
+tohumu), .ics ekli şablonların düzeni. Sıra: Kullanıcılar modülü testi bitince.
+
+---
+
 ### BL-393
 
 **Tek CI hattı (`phase1-gates`) 2026-08-30'dan beri main'de kırmızıydı — iki eski test kuralı yeni kodu bilmiyordu**
