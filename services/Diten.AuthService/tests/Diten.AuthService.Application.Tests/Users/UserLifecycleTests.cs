@@ -245,7 +245,13 @@ public sealed class UserLifecycleTests
     }
 
     private static SetUserActiveStatusCommandHandler StatusHandler(IUserRepository repo)
-        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+
+    /// <summary>The signed-in administrator is never the row under test here; self-deactivation has its own guard file.</summary>
+    private sealed class SomeoneElse : ICurrentUserAccessor
+    {
+        public Guid? UserId { get; } = Guid.NewGuid();
+    }
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo)
         => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(new NoAudit()), NullLogger<UpdateUserCommandHandler>.Instance);

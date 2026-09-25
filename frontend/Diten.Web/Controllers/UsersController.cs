@@ -176,7 +176,10 @@ public sealed class UsersController : Controller
                     failedLoginAttempts = model.FailedLoginAttempts,
                     mustChangePassword = model.MustChangePassword,
                     mfaStatus = model.MfaStatus,
-                    accountKind = model.AccountKind
+                    accountKind = model.AccountKind,
+                    // Finding 22: the DERIVED status (Invited · Inactive · Active) must reach the edit form, or it
+                    // falls back to IsActive and draws the activation switch for an invited account.
+                    status = model.Status
                 }
             });
         }

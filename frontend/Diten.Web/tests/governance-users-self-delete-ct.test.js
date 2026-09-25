@@ -11,7 +11,12 @@ const path = require("path");
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
 const source = fs.readFileSync(path.join(repoRoot, "frontend", "Diten.Web", "wwwroot", "assets", "js", "Governance", "Users", "index.js"), "utf8");
 
-describe("the signed-in user's own row offers no Delete (CT)", () => {
+describe("the signed-in user's own row offers no Delete and no Disable (CT)", () => {
+  it("the Disable action is pushed only for other people's rows", () => {
+    expect(source, "Disable is pushed without the own-row guard")
+      .toMatch(/if \(canUpdate\(\) && full\.isActive && !isCurrentUser\(full\)\) actions\.push\(adminAction\('disable'/);
+  });
+
   it("the Delete action is pushed only for other people's rows", () => {
     expect(source, "Delete is pushed without the own-row guard").toMatch(/if \(canDelete\(\) && !isCurrentUser\(full\)\) actions\.push\(\{ key: 'delete'/);
     expect((source.match(/actions\.push\(\{ key: 'delete'/g) || []).length, "a second, unguarded Delete push").toBe(1);

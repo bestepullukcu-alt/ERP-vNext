@@ -10,20 +10,31 @@ namespace Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 // Admin enable/disable, tenant-scoped. Disabling revokes refresh tokens so live sessions terminate.
 public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserActiveStatusCommand, Response<NoContent>>
 {
+    /// <summary>
+    /// YOU CANNOT SWITCH YOURSELF OFF — owner finding, control round 2026-09-24. Deactivation revokes every refresh
+    /// token of the account, so an administrator who deactivated their own account was signed out on the spot with no
+    /// way back in from that seat. Same shape as <see cref="DeleteUserCommandHandler.SelfDeleteCode"/>: refused with a
+    /// code the screen can translate, before anything is written. SAP (SU01) and Oracle Fusion refuse the same act.
+    /// </summary>
+    public const string SelfDeactivateCode = "USER_DEACTIVATE_SELF";
+
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
+    private readonly ICurrentUserAccessor _currentUser;
     private readonly ILogger<SetUserActiveStatusCommandHandler> _logger;
 
     public SetUserActiveStatusCommandHandler(
         IUserRepository userRepository,
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
+        ICurrentUserAccessor currentUser,
         ILogger<SetUserActiveStatusCommandHandler> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
+        _currentUser = currentUser;
         _logger = logger;
     }
 
@@ -31,6 +42,14 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     {
         var user = await _userRepository.GetByIdAndTenantAsync(request.Id, _tenantContext.TenantId, ct);
         if (user is null) return Response<NoContent>.Fail("User not found.", 404);
+
+        if (!request.IsActive && _currentUser.UserId == request.Id)
+        {
+            return Response<NoContent>.Fail(
+                "You cannot deactivate the account you are signed in with.",
+                [new ResponseError(SelfDeactivateCode)],
+                409);
+        }
 
         // WP-AUTH-INVITED-LIFECYCLE-01 — an invited account activates when its owner redeems the set-password link.
         // Activated by an administrator it would read "Active" and still be unable to sign in (placeholder hash).

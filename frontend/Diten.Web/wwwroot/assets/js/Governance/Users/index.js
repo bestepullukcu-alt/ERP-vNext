@@ -331,7 +331,8 @@ const UsersList = (function () {
         const rowJson = JSON.stringify(full).replace(/'/g, '&#39;');
         const actions = [{ key: 'quickView', className: 'js-quick-view me-1', icon: 'bx bx-show', attrs: { 'data-json': rowJson, 'title': L().QuickView } }];
         if (canUpdate()) actions.push({ key: 'edit', className: 'js-edit-item', icon: 'bx bx-edit', text: L().Edit, attrs: { 'data-json': rowJson } });
-        if (canUpdate() && full.isActive) actions.push(adminAction('disable', full, rowJson));
+        // Nor may you switch yourself off (owner, 2026-09-24): the row of the signed-in user offers no Disable either.
+        if (canUpdate() && full.isActive && !isCurrentUser(full)) actions.push(adminAction('disable', full, rowJson));
         // WP-AUTH-INVITED-LIFECYCLE-01 — never "Activate" an invited account (AuthService refuses it too): it
         // activates itself when the person redeems the link.
         if (canUpdate() && !full.isActive && userStatusOf(full) !== 'Invited') actions.push(adminAction('enable', full, rowJson));

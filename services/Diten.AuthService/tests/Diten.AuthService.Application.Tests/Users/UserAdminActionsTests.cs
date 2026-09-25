@@ -123,7 +123,14 @@ public sealed class UserAdminActionsTests
 
     // ── Builders ──
     private static SetUserActiveStatusCommandHandler StatusHandler(InMemoryUserRepository repo, FakeRefreshTokenRepository refreshTokens) =>
-        new(repo, refreshTokens, TenantContextFor(TenantA), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        new(repo, refreshTokens, TenantContextFor(TenantA), new SomeoneElse(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+
+    /// <summary>The signed-in administrator is never one of the rows these tests act on (the self-deactivation
+    /// refusal has its own file, <c>SetUserActiveStatusGuardTests</c>).</summary>
+    private sealed class SomeoneElse : ICurrentUserAccessor
+    {
+        public Guid? UserId { get; } = Guid.NewGuid();
+    }
 
     private static AdminResetPasswordCommandHandler ResetHandler(InMemoryUserRepository repo, FakeInvitationEmailService email, FakeRefreshTokenHasher hasher) =>
         new(repo, TenantContextFor(TenantA), new FakeTokenService(), hasher, email, new FakeHostEnvironment(isDevelopment: true), NullLogger<AdminResetPasswordCommandHandler>.Instance);

@@ -6489,14 +6489,15 @@ talep sahibi beklentiyi kaynak son tarihle ifade eder. Karar gelince BL-361 kura
 
 ### BL-450
 
-**Kullanıcı silme koruma kodları ekranda ham kod olarak görünüyor — 2 anahtar × 7 dil**
+**Kullanıcı silme / pasife alma koruma kodları ekranda ham kod olarak görünüyor — 3 anahtar × 7 dil**
 
 DURUM: AÇIK · SAHİP: l10n prompt (CT yazar) · BULAN: CT (Kullanıcılar testi, paket 5 kabulü) · KAYIT: 2026-09-24
 
 Auth `DeleteUserCommandHandler` iki reddi kodla döner: `USER_DELETE_SELF` (kendini silemezsin) ve `USER_DELETE_LAST_STEWARD`
-(son yöneticiyi silemezsin). Kullanıcılar ekranının hata köprüsünde (`Governance/Users/index.js` → `UsersIndex.*.resx`) bu iki
-kodun karşılığı yok → toast ham kodu basar. İş: köprüye iki anahtar + 7 resx'e metin; guard: kod ⇔ köprü ⇔ resx (Auth
-`UserLifecycleErrorCodeContractTests` kalıbı). Kural gereği metin işi l10n ajanına gider (Tenant = 7 dil).
+(son yöneticiyi silemezsin). 2026-09-25 eklendi: `SetUserActiveStatusCommandHandler` → `USER_DEACTIVATE_SELF` (kendini pasife
+alamazsın; bulgu 33). Kullanıcılar ekranının hata köprüsünde (`Governance/Users/index.js` → `UsersIndex.*.resx`) bu üç
+kodun karşılığı yok → toast İngilizce sunucu cümlesini basar. İş: köprüye üç anahtar + 7 resx'e metin; guard: kod ⇔ köprü ⇔ resx
+(Auth `UserLifecycleErrorCodeContractTests` kalıbı). Kural gereği metin işi l10n ajanına gider (Tenant = 7 dil).
 
 ---
 
