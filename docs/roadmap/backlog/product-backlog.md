@@ -6657,7 +6657,12 @@ deseni) → Platform Denetim Günlüğü'nde "Kimlik" kategorisi; (3) ekran: Pla
 
 **DevEnablement testleri hiçbir yerde koşmuyor — sln test projesini içermiyor, CI de servisi kapsamıyor**
 
-DURUM: AÇIK · SAHİP: CT (küçük) · BULAN: WP-UI-EXPORT-01 raporu (2026-09-25) · KAYIT: 2026-09-25
+DURUM: YARIM — sln tamam, CI karar bekliyor · SAHİP: CT (küçük) · BULAN: WP-UI-EXPORT-01 raporu (2026-09-25) · KAYIT: 2026-09-25
+
+**2026-09-25 CT:** test projesi sln'e eklendi (`dotnet test` sln ile artık testleri buluyor). CI yarısı ölçüldü: `run_phase1_gates.sh`
+HİÇBİR servis test projesini koşturmuyor (yalnız tenancy, architecture, Web.Tests); Auth/Platform/DevEnablement testleri EphemeralMongo
+ile kendi `mongod` ikilisini ister, runner'da yok. Bu BL-457'den büyük bir CI kararı: runner'a mongod (apt/brew) + phase1'e üç servis
+satırı. Sahip kararı bekliyor; o zamana kadar servis testleri yalnız yerelde koşuyor.
 
 `services/Diten.DevEnablementService/Diten.DevEnablementService.sln` içinde `Diten.DevEnablementService.Api.Tests` yok; `dotnet test`
 sln ile koşunca 0 test ölçüyor. `scripts/run_phase1_gates.sh` de DevEnablement'ı derlemiyor/test etmiyor. Bugün 91 test (Altın
