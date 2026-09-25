@@ -126,8 +126,26 @@ createList({ dataMode: 'server', ajax: { url: api + '/api/x' }, export: { mode: 
 | **Ortak kod** | `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ListExport` | Sözleşme sabitleri, sütun beyaz listesi, CSV/XLSX yazıcı, kültür çözümü. Referans uygulama: Golden Compact `/api/golden-reference-compact/export`; ilk ekran: Kullanıcılar `/api/users/export` |
 
 - `export.mode: 'server'` yalnız `dataMode: 'server'` ile kabul edilir; istemci modu listesi zaten tüm satırları tutar. Bilinmeyen mod ya da `url`'siz beyan fabrikada **hata fırlatır**.
-- **Bu pakette YOK:** PDF ve Yazdır istemci tarafında, yalnız yüklü sayfa (paket 2: kontrollü kopya) · ayrı dışa aktarma izin anahtarı (paket 3; bugün listeyi okuyan anahtar ya da modülün mevcut `*.export` anahtarı) · 50 000 üstü için arka plan işi (paket 4) · denetim kaydı (`IDataExportAuditWriter` bugün yalnız Platform'da).
+- **Bu pakette YOK:** PDF ve Yazdır istemci tarafında, yalnız yüklü sayfa (paket 2: kontrollü kopya — aşağıda, artık var) · ayrı dışa aktarma izin anahtarı (paket 3; bugün listeyi okuyan anahtar ya da modülün mevcut `*.export` anahtarı) · 50 000 üstü için arka plan işi (paket 4) · denetim kaydı (`IDataExportAuditWriter` bugün yalnız Platform'da).
 - Doğrulayıcı: `data_mode: server` olan sayfa `export: { mode: 'server', url }` beyan etmiyorsa **sapma** (`--format gaps` satırı); fabrikanın dışa aktarma dalı (sorguda `start/length/draw` yok) ayrıca ölçülür.
+
+#### Kontrollü kopya (BL-452 paket 2, WP-UI-EXPORT-02)
+
+PDF ve Yazdır çıktısı ekranı ve kaynağını söyler (GxP "uncontrolled when printed"; Veeva/MasterControl her çıktıya oluşturan, tarih,
+kaynak ve kontrolsüz kopya damgası basar). Tek yerde: `dt-defaults.js` → `runControlledCopy`; **hiçbir sayfa index.js'i bunun için değişmez.**
+
+| | Sözleşme | Not |
+|---|---|---|
+| **Başlık bloğu** | ekran adı (sayfa başlığı, " - Di10" soneki atılır) · şirket (kiracının marka adı, `TenantBrand` → `[data-tenant-name]`) · **Filtreler** (uygulanan filtreler, denetimin kendi etiketi + seçeneğin metniyle: "Durum: Davet edildi") · **Arama** · **Sıralama** (sütun başlığı + yön) · **Satır sayısı** · **Oluşturan** (`CurrentUser.email`) · **Oluşturma zamanı** (istek kültürü, saat dilimi adıyla) | Tek veri nesnesi `buildControlledCopy` → hem pdfmake doc-definition hem yazdır DOM'u; iki çıktı farklı hikâye anlatamaz |
+| **Altbilgi** | "Bu çıktı kontrolsüz kopyadır — {tarih}" + "Sayfa x / y" | PDF: pdfmake `footer(currentPage, pageCount)`. Yazdır: CSS `@page` kenar kutuları (`counter(page)`/`counter(pages)`) + gövde sonunda bir kez. ⚠ Firefox/Safari `@page` kenar kutusunu desteklemez: orada sayfa x/y yok, kontrolsüz kopya satırı gövde sonunda |
+| **Satır kaynağı** | Sunucu modu + `export: { mode: 'server' }`: fabrika `exportUrl('csv')` ile **paket 1 uç noktasını** ister (görünen sütunlar, filtre, arama, sıralama; `start/length` yok), RFC 4180 ayrıştırır (BOM, tırnaklı virgül, `""`, hücre içi satır sonu) → **eşleşen tüm satırlar**. 413 → `ExportTooLarge` uyarısı, çıktı **üretilmez** (açılmış yazdır penceresi kapanır). Diğer tüm listeler: DataTables'ın elindeki satırlar, bugünkü `exportOptions` ile (görünen sütunlar, seçili satırlar) | CSV başlık satırı = sütun başlıkları, servisin istek kültüründe |
+| **Dil** | Tüm metinler SharedResource `ControlledCopy.*` + `Action`/`Print`/`PDF`/`Copy`, 7 dilde; `_LayoutTenantShell` `l10nBridge` → `window.L10n`. Sayfanın kendi `L10n` anahtarı kazanır; köprü yoksa (Platform kabuğu) İngilizce yedek | Guard: `tests/controlled-copy-l10n-bridge.test.js` (dt-defaults okuduğu ⇔ köprü ⇔ 7 resx) |
+| **zh / ar sınırı** | `window.CurrentLanguage` zh ya da ar ise **PDF düğmesi yazdır penceresini açar** ve tarayıcının yazdır diyaloğunu çağırır (kullanıcı "PDF olarak kaydet") | Neden: vendored pdfmake 0.2.15 yalnız Roboto taşır — ölçüldü 2026-09-25: Arapça 0/256, CJK 0/20 992 kod noktası (Latin-1+Ext-A 192/192, Kiril 255/256). Font **gömülmez** (paket boyutu); sunucu tarafı PDF paket 4'ün notu |
+| **Kopyala / CSV / Excel** | değişmez (paket 1) | |
+
+- Yazdır penceresi **tıklama anında** açılır (await'ten sonra açılan pencereyi tarayıcı engeller); stiller pencerenin kendi `<style>`'ında (FG-003: satır içi stil yok).
+- Doğrulayıcı: sunucu modu listede fabrika mekaniği "Server export PDF/print (BL-452 package 2)" — `controlledCopyRows` `exportUrl('csv')` + `parseCsv` kullanır ve tablo satırı okumaz, fabrika sağlayıcıyı yalnız `export` beyanında verir, `dt-defaults` PDF ve Yazdır girdileri ikisi de sağlayıcıyı tercih eder. Biri koparsa `N-1/N mechanics` + kırmızı satır.
+- Testler: `tests/list-controlled-copy-server-real-datatables.test.js` (Altın Compact, 37 satır CSV → doc-definition, 413, yazdır DOM'u, `ar`, gerçek pdfmake ile PDF'e basım) · `tests/list-controlled-copy-client-real-datatables.test.js` (Altın Slim, ağ isteği yok).
 
 ## Dokunma protokolü — eski bir liste ekranına dokunan herkes için
 
