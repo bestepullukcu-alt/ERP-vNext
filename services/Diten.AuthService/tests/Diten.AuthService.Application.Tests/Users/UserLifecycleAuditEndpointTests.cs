@@ -198,6 +198,9 @@ public sealed class UserLifecycleAuditEndpointTests : IClassFixture<PlatformEdge
         Assert.Equal(_tenantId, body.GetProperty("targetTenantId").GetGuid());
         Assert.Equal(_actorId, body.GetProperty("actorId").GetGuid());
         Assert.Equal(3, body.GetProperty("actorType").GetInt32()); // TenantUser
+        // The PERSON, from the token's given/family name — not Platform's internal caller ("system"). Owner, 2026-09-25.
+        Assert.False(string.IsNullOrWhiteSpace(body.GetProperty("actorDisplayName").GetString()), "the forwarded row names its actor");
+        Assert.NotEqual("system", body.GetProperty("actorDisplayName").GetString(), StringComparer.OrdinalIgnoreCase);
         Assert.Equal("Diten.AuthService", body.GetProperty("sourceService").GetString());
         Assert.False(body.GetProperty("isPlatformGlobal").GetBoolean());
     }

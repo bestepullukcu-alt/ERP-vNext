@@ -81,6 +81,9 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
             ActorType = actorType,
             ActorId = actorId,
             ActorEmail = user?.FindFirst(ClaimTypes.Email)?.Value ?? user?.FindFirst("email")?.Value,
+            // Owner, 2026-09-25: without it Platform names the INTERNAL caller ("system" → "s***m") as the actor on every
+            // forwarded row. The token carries the person's given/family name (TokenService); Platform masks it.
+            ActorDisplayName = ActorDisplayName(user),
             TargetTenantId = auditEvent.TenantId,
             Category = CategoryIdentityAccess,
             EntityType = auditEvent.EntityType,
@@ -139,6 +142,17 @@ public sealed class PlatformAuditForwarder : IPlatformAuditForwarder
         };
 
         return (actorType, actorId);
+    }
+
+    private static string? ActorDisplayName(ClaimsPrincipal? user)
+    {
+        if (user is null) return null;
+        var given = user.FindFirst(ClaimTypes.GivenName)?.Value ?? user.FindFirst("given_name")?.Value;
+        var family = user.FindFirst(ClaimTypes.Surname)?.Value ?? user.FindFirst("family_name")?.Value;
+        var full = string.Join(' ', new[] { given, family }.Where(part => !string.IsNullOrWhiteSpace(part)));
+        if (!string.IsNullOrWhiteSpace(full)) return full;
+        var name = user.FindFirst(ClaimTypes.Name)?.Value ?? user.FindFirst("name")?.Value;
+        return string.IsNullOrWhiteSpace(name) ? null : name;
     }
 
     private static Guid? ReadGuid(string? value) =>
