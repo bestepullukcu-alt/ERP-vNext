@@ -3,6 +3,9 @@ using System.Text;
 using System.Text.Json;
 using ClosedXML.Excel;
 using Diten.AuthService.Application.Features.Users.Models;
+using Diten.AuthService.Application.Common;
+using Diten.AuthService.Application.Common.Interfaces;
+using Diten.AuthService.Application.Features.Users.Handlers.QueryHandlers;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Domain.Entities;
 using MongoDB.Driver;
@@ -287,5 +290,65 @@ public sealed partial class UserListQueryTests
         Assert.Equal(12, result.Data!.FilteredTotal);
         Assert.Empty(result.Data.Items);
         Assert.Equal(0, log.Count(c => c.Collection == "userRoles"));
+    }
+
+    // ── CT acceptance (2026-09-25): the cap is a "no" BEFORE the read, and never a truncated file ──────────
+
+    [Fact]
+    public async Task A_refused_export_reads_no_user_document_the_count_alone_says_no()
+    {
+        var tenantId = await TenantWithUsersAsync(12);
+        var (database, log) = CountingDatabase();
+
+        var result = await HandlerOn(database, tenantId).Handle(new GetAllUsersQuery(List: new UserListRequest(), ExportRowCap: 10), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Empty(result.Data!.Items);
+        Assert.Equal(12, result.Data.FilteredTotal);
+        Assert.Equal(1, log.Count(c => c.Collection == "users")); // the count — not a capped read thrown away afterwards
+    }
+
+    [Fact]
+    public async Task Rows_that_arrive_between_the_count_and_the_read_are_refused_not_cut_off_the_file()
+    {
+        // The reader is asked for cap + 1 rows: the count said 10, eleven came back → the file is refused, nothing is dressed.
+        var tenantId = Guid.NewGuid();
+        var reader = new RacingReader(countSays: 10, rowsReturned: 11, tenantId);
+        var tenant = new FixedTenant(tenantId);
+
+        var result = await new GetAllUsersQueryHandler(reader, tenant).Handle(new GetAllUsersQuery(List: new UserListRequest(), ExportRowCap: 10), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.Empty(result.Data!.Items);
+        Assert.Equal(11, result.Data.FilteredTotal);
+        Assert.Equal(11, reader.CriteriaSeen!.Take);       // cap + 1, so the extra row is visible
+        Assert.Equal(10, reader.CriteriaSeen.RefuseAbove); // and the reader may stop after the count
+    }
+
+    private sealed class RacingReader(int countSays, int rowsReturned, Guid tenantId) : IUserListReader
+    {
+        public UserListCriteria? CriteriaSeen { get; private set; }
+
+        public Task<UserListPage> SearchAsync(Guid tenant, UserListCriteria criteria, CancellationToken ct)
+        {
+            CriteriaSeen = criteria;
+            var rows = Enumerable.Range(0, rowsReturned).Select(i => new User($"r{i}@race.test", "hash:x", "Race", $"{i}", tenantId)).ToList();
+            return Task.FromResult(new UserListPage(rows, countSays));
+        }
+
+        public Task<UserListSummary> GetSummaryAsync(Guid tenant, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsHoldingAnyRoleAsync(Guid tenant, IReadOnlyCollection<Guid> roleIds, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<Guid, IReadOnlyList<string>>> GetRoleNamesForUsersAsync(Guid tenant, IReadOnlyCollection<Guid> userIds, CancellationToken ct)
+            => throw new NotSupportedException("a refused export dresses no row, so it asks for no roles");
+    }
+
+    private sealed class FixedTenant(Guid tenantId) : ITenantContext
+    {
+        public Guid TenantId => tenantId;
+        public bool IsResolved => true;
+        public bool IsPlatformContext => false;
+        public Guid? TargetTenantId => null;
+        public void SetTenant(Guid id) => throw new NotSupportedException();
+        public void SetPlatformContext(Guid targetTenantId) => throw new NotSupportedException();
     }
 }

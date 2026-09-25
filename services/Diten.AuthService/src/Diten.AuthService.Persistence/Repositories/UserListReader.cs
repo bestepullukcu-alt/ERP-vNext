@@ -83,6 +83,13 @@ public sealed class UserListReader : IUserListReader
         var filter = BuildFilter(tenantId, criteria);
         var filteredTotal = await _users.CountDocumentsAsync(filter, cancellationToken: ct);
 
+        // BL-452 export: the count already exceeds the cap → the caller refuses the file (413). Reading up to 50 000 full
+        // documents first would be memory spent on a "no".
+        if (criteria.RefuseAbove is { } refuseAbove && filteredTotal > refuseAbove)
+        {
+            return new UserListPage([], filteredTotal);
+        }
+
         if (criteria.Sort.Key == UserListSortKey.Natural)
         {
             // The legacy page/pageSize call keeps the collection's own order.

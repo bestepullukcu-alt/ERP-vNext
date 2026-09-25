@@ -863,7 +863,9 @@ window.DitenDataTable = (function () {
         document.body.appendChild(link);
         link.click();
         link.remove();
-        setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+        // Revoked a minute later, not on the next tick: Firefox and Safari can drop a large download whose blob URL is
+        // revoked before the save has begun.
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
     }
 
     function normalizeExportSpec(spec, dataMode) {

@@ -49,9 +49,12 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
         var page = await _reader.SearchAsync(tenantId, criteria, ct);
 
         // BL-452 — more matches than the export may carry: the caller refuses the file (413), so the rows are not dressed.
-        if (request.ExportRowCap is { } cap && page.FilteredTotal > cap)
+        // Two ways to know: the count said so (the reader then read nothing), or the read — asked for cap + 1 rows — brought
+        // back more than the cap because rows arrived between the count and the read. Either way: never a truncated file.
+        if (request.ExportRowCap is { } cap && (page.FilteredTotal > cap || page.Items.Count > cap))
         {
-            return Response<UserListResult>.Success(new UserListResult([], page.FilteredTotal, page.FilteredTotal, null));
+            var matched = Math.Max(page.FilteredTotal, page.Items.Count);
+            return Response<UserListResult>.Success(new UserListResult([], matched, matched, null));
         }
 
         // ONE query for the roles of the whole page — the loop that used to ask per user is gone.

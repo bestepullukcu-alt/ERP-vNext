@@ -72,7 +72,11 @@ public static class UserListRules
     {
         // Mongo reads Limit(0) as "no limit": a zero cap would silently lift the ceiling it exists to enforce.
         ArgumentOutOfRangeException.ThrowIfLessThan(rowCap, 1);
-        return TryBuildFrom(request, 0, rowCap, out criteria, out failure);
+        // Take = cap + 1: a row inserted between the count and the read shows up as "more than the cap" instead of being
+        // silently cut off the file. RefuseAbove: the reader stops after the count when the count already exceeds the cap.
+        if (!TryBuildFrom(request, 0, rowCap + 1, out criteria, out failure)) return false;
+        criteria = criteria with { RefuseAbove = rowCap };
+        return true;
     }
 
     private static bool TryBuildFrom(UserListRequest request, int skip, int take, out UserListCriteria criteria, out Response<UserListResult>? failure)

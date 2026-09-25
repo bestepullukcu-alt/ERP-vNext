@@ -6533,6 +6533,15 @@ kural + doğrulayıcı sapması. Pakette bilerek yok: PDF/Yazdır kontrollü kop
 arka plan işi (paket 4), denetim kaydı (Platform dışındaki servislerde yazıcı yok; kalite kaydı listeleri Platform'da). Bulunan:
 BL-457 (DevEnablement testleri sln/CI dışında).
 
+**CT kabul incelemesi (bağımsız ajan + CT, 2026-09-25):** kiracı süzgeci jetondan, izin listeyle aynı, beyaz liste yalnız ekran
+sütunları, 7 dil tam, fabrika kapalı-varsayılan — doğrulandı. **Düzeltildi (kabulde):** 413 reddi sayımdan sonra 50 000 tam belgeyi
+belleğe çekip atıyordu ve sayım ile okuma arasında gelen satır dosyayı sessizce kesebiliyordu → okuyucu sayım kapı aşınca hiç okumuyor
+(`RefuseAbove`), okuma cap+1 satır istiyor, fazlası ret (Auth + Golden aynı şekil; testler: "reads no user document", yarış testi,
+Golden depo testi). Blob URL'si bir dakika sonra serbest (Firefox/Safari büyük indirmeyi düşürebiliyordu). Kural: XLSX'te önek yok,
+metin hücre. **Nota alındı (bu pakette değil):** Golden `records.export` anahtarı `records.read`'e bağlı değil (eski davranış; paket 3
+izin tasarımında çözülür) · XLSX 50 000 × 8 hücre stil maliyeti ölçülmedi (paket 4 eşiği) · 401'de tablo yenileniyor, dışa aktarma
+yeniden denenmiyor · başında boşluk/LF olan formül hücresi korunmuyor (düşük risk).
+
 **Bugün:** liste ekranlarında tarayıcı tarafı düğmeler (Yazdır/CSV/Excel/PDF/Kopyala, `dt-defaults.js`); sunucu modunda yalnız
 ekrandaki sayfa çıkıyor; denetim kaydı ve yetki ayrımı yok. Doğru yapılmış iki örnek: İş Raporu (sunucu tarafı, ekranla aynı sorgu,
 kiracı denetim kaydı `IDataExportAuditWriter`, BL-346/347) ve CRM Kişiler (XLSX şablon = dışa aktarma şeması, geri yüklenebilir,

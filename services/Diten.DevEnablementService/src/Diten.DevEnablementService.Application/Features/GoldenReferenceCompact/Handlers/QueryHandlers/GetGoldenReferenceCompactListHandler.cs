@@ -26,7 +26,7 @@ public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGo
             throw new ArgumentOutOfRangeException(nameof(request), request.ExportRowCap, "ExportRowCap must be at least 1.");
         var criteria = new GoldenReferenceCompactListCriteria(
             Start: request.ExportRowCap is null ? request.Start ?? 0 : 0,
-            Length: request.ExportRowCap ?? request.Length,
+            Length: request.ExportRowCap is { } rowCap ? rowCap + 1 : request.Length, // cap + 1: a late row is seen, not cut off
             Search: request.Search,
             SortField: sortField,
             Descending: string.Equals(request.OrderDir, "desc", StringComparison.OrdinalIgnoreCase),
@@ -36,7 +36,8 @@ public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGo
             ReferenceTypes: Clean(request.ReferenceType),
             Categories: Clean(request.Category),
             Owners: Clean(request.Owner),
-            Priority: request.Priority);
+            Priority: request.Priority,
+            RefuseAbove: request.ExportRowCap);
 
         var page = await _repository.QueryAsync(criteria, cancellationToken);
         var items = page.Items.Select(x => new GoldenReferenceCompactListItemDto(

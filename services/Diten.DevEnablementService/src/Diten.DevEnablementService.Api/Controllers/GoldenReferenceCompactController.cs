@@ -143,7 +143,8 @@ public sealed class GoldenReferenceCompactController : CustomBaseController
         if (!response.IsSuccessful)
             return CreateActionResultInstance(response);
 
-        var matched = response.Data!.FilteredTotal;
+        // Either the count exceeded the cap (nothing was read) or the read — asked for cap + 1 — brought more than the cap.
+        var matched = Math.Max(response.Data!.FilteredTotal, response.Data.Items.Count);
         if (matched > ListExportContract.MaxRows)
             return ExportRefusal(StatusCodes.Status413PayloadTooLarge,
                 $"{matched} records match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.", ListExportContract.TooLargeCode);
