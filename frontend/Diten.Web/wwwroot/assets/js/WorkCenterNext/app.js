@@ -2225,12 +2225,12 @@
         if (item.admissionState === 'pendingClaim') { return { kind: 'primary', key: 'GuidancePendingClaim' }; }
         if (item.gates?.approval?.status === 'pending') { return { kind: 'warning', key: 'GuidanceApprovalPending' }; }
         if (item.gates?.review?.status === 'pending') { return { kind: 'warning', key: 'GuidanceReviewPending' }; }
-        if (item.lifecycle === 'Waiting') {
-            // The holder's own sentence when they gave one — nothing here is invented on their behalf.
-            return waitingSentence(item)
-                ? { kind: 'warning', text: tf('GuidanceWaitingBecause', waitingSentence(item)) }
-                : { kind: 'warning', key: 'GuidanceWaiting' };
-        }
+        /*
+         * BL-444 (owner, 2026-09-25) — NO banner for a paused task. The lifecycle strip directly below already says
+         * "paused now: {who} — {why}" and the waiting note repeats the sentence in the notes block; a third copy in the
+         * guidance banner (and a fourth in the resolver's notice) made the page say the same thing four times. Two
+         * surfaces stay: the strip (state) and the note (row chip). The GuidanceWaiting* strings are kept in the resx.
+         */
         // BL-439 — the other half: the question this task was parked on came back answered.
         if (inquiryAnsweredSignal(item)) {
             const answerText = inquiryAnsweredText(item);
@@ -5026,7 +5026,10 @@
         const snoozeNote = isSnoozed(item)
             ? `<div class="wcn-parked wcn-parked-snooze" role="note"><i class="bx bx-moon"></i><span>${esc(tf('SnoozedUntil', item.snoozedUntil))}</span></div>`
             : '';
-        const notices = surface.notices.map((notice) =>
+        // BL-444 — when the holder's own sentence (person and/or reason) is on the page, the resolver's generic
+        // "waiting for external input / approval / review" notice is the same fact a third time and is not drawn.
+        // Without a sentence it is the only line naming the wait, so it stays.
+        const notices = surface.notices.filter((notice) => !(waitingText && notice.code === 'waiting')).map((notice) =>
             `<div class="wcn-parked wcn-parked-info" role="note"><i class="bx bx-info-circle"></i><span>${esc(t(notice.labelKey))}</span></div>`
         ).join('');
         /*

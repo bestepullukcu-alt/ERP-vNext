@@ -1238,7 +1238,7 @@ describe("the guidance banner says what the task needs from the reader", () => {
     expect(bannerText()).toBe("GuidancePendingClaim");
   });
 
-  it("names the holder's own reason when the task is paused with one", async () => {
+  it("draws no banner when the task is paused with a reason — the strip carries it (BL-444)", async () => {
     await bootDetailPage(projectionItem({
       normalizedStatus: "Waiting",
       taskLifecycle: "Waiting",
@@ -1251,11 +1251,12 @@ describe("the guidance banner says what the task needs from the reader", () => {
         expectedUntil: null
       }
     }));
-    // The "...because X" wording, not the bare one — the reason is the whole point when there is one.
-    expect(bannerText()).toBe("GuidanceWaitingBecause");
+    // BL-444: no banner — the lifecycle strip says "paused now: … because X"; the banner was the same sentence again.
+    expect(bannerText()).toBeNull();
+    expect(app().querySelector(".wcn-step-paused")).not.toBeNull();
   });
 
-  it("falls back to the bare wording when the pause carries no reason", async () => {
+  it("draws no banner when the pause carries no reason either (BL-444)", async () => {
     await bootDetailPage(projectionItem({
       normalizedStatus: "Waiting",
       taskLifecycle: "Waiting",
@@ -1268,7 +1269,9 @@ describe("the guidance banner says what the task needs from the reader", () => {
         expectedUntil: null
       }
     }));
-    expect(bannerText()).toBe("GuidanceWaiting");
+    // BL-444: the bare wording moved with it — the strip's "paused now" is the one line for this state.
+    expect(bannerText()).toBeNull();
+    expect(app().querySelector(".wcn-step-paused")).not.toBeNull();
   });
 
   // A banner for every state would be noise; a banner that guesses would be a lie. Silence is the correct output.
@@ -1971,5 +1974,41 @@ describe("a closed task's actions on the detail page (BL-038)", () => {
     await bootDetailPage(projectionItem());
 
     expect(app().querySelectorAll("[data-wcn-action]").length).toBeGreaterThan(0);
+  });
+});
+
+/*
+ * BL-444 (owner, 2026-09-25) — THE SAME WAIT, SAID TWICE, NOT FOUR TIMES. A paused task used to print the holder's
+ * sentence in the guidance banner, the lifecycle strip, the resolver's notice and the waiting note. Two surfaces stay
+ * (strip + note); the banner and the generic notice go — unless nothing else on the page can name the wait.
+ */
+describe("BL-444 — a paused task says its wait twice, not four times", () => {
+  const paused = (extra) => projectionItem({
+    normalizedStatus: "Waiting",
+    taskLifecycle: "Waiting",
+    executionState: "paused",
+    waitingContext: {
+      type: "externalInformation",
+      waitingOn: { id: "cccccccc-cccc-cccc-cccc-cccccccccccc", isCurrentUser: false },
+      reason: { kind: "display", text: "Tedarikçi belgesi bekleniyor", locale: "tr" },
+      since: "2026-07-25T09:00:00+00:00",
+      expectedUntil: null,
+      ...extra
+    }
+  });
+
+  it("with a person and a reason: the strip and the waiting note carry the sentence; no banner, no generic notice", async () => {
+    await bootDetailPage(paused());
+    expect(app().querySelector(".wcn-guidance"), "no guidance banner").toBeNull();
+    expect(app().querySelector(".wcn-step-paused"), "the lifecycle strip says it").not.toBeNull();
+    expect(app().querySelector(".wcn-parked-waiting"), "the waiting note says it").not.toBeNull();
+    expect(app().textContent, "the resolver's generic notice is not a third copy").not.toContain("NoticeWaitingExternal");
+  });
+
+  it("with neither a person nor a reason: the generic notice is the one line naming the wait, so it stays", async () => {
+    await bootDetailPage(paused({ waitingOn: null, reason: null }));
+    expect(app().querySelector(".wcn-guidance")).toBeNull();
+    expect(app().querySelector(".wcn-parked-waiting"), "no sentence, no waiting note").toBeNull();
+    expect(app().textContent).toContain("NoticeWaitingExternal");
   });
 });

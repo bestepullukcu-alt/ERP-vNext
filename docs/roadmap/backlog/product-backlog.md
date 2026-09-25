@@ -6362,14 +6362,19 @@ select2 seçeneğine mousedown+click → diyalog açık kalmalı, değer seçilm
 
 **Bekleyen görevin detay sayfasında aynı bekleme cümlesi dört kutuda tekrar ediyor**
 
-DURUM: AÇIK · SAHİP: SAHİPSİZ · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
+DURUM: KAPANDI (CT, 2026-09-25; sahip canlı bakacak) · SAHİP: CT · BULAN: CT canlı tur (BL-439) · KAYIT: 2026-09-24
 
 Ölçüldü: görev Waiting'e alınınca WCN detayında üst üste dört kutu: "Şu an duraklatıldı: Ayşe Korkmaz bekleniyor — …",
 "Bu görev duraklatıldı: Ayşe Korkmaz bekleniyor — …", "Bu görev başkasından gelecek bilgiyi bekliyor.", "Ayşe Korkmaz
 bekleniyor — …" (resx: `…duraklatıldı: {0}` ×2, `NoticeWaitingExternal`, `{0} bekleniyor — {1}`). Bilgi aynı, dört kaynak
 (durum şeridi rehberi + BL-437/439 rehberi + bekleme notu + bekleme çipi). Tek cümle + çip yeter; hangisinin kalacağı UX kararı.
 
-**Sahip kararı bekliyor (2026-09-24, kontrol turu sonrasına ertelendi).** CT önerisi: üstteki durum şeridi ("Şu an duraklatıldı: …") ve satır çipi
+**Sahip onayladı (2026-09-24), CT uyguladı (2026-09-25):** duraklatılmış görevde rehber kutusu çizilmiyor; çözümleyicinin genel
+"başkasından bilgi / onay / inceleme bekleniyor" notu yalnız sayfada kişi/neden cümlesi yokken çiziliyor (o zaman tek satır o).
+Kalan iki yüzey: yaşam döngüsü şeridi + bekleme notu. Metinler resx'te duruyor. Guard: `workcenter-next-detail-page.test.js` BL-444
+describe'ı (2 test; sabotaj: süzgeç kaldırılınca ve rehber geri gelince kırmızı).
+
+CT önerisi (uygulanan): üstteki durum şeridi ("Şu an duraklatıldı: …") ve satır çipi
 ("X bekleniyor — …") kalır; "Bu görev duraklatıldı: …" rehber kutusu ve "Bu görev başkasından gelecek bilgiyi bekliyor." notu kalkar.
 İş küçük (WCN app.js, metin silinmez, yalnız çizim), CT yapar.
 
