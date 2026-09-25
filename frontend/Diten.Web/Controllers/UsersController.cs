@@ -364,15 +364,22 @@ public sealed class UsersController : Controller
      * the first stable code from the Response envelope's errorCodes, so index.js can show the sentence in the
      * reader's language (USER_EMAIL_TAKEN, USER_INVITATION_PENDING, …). Text-only failures carry errorCode = null.
      */
+    // BL-459 — errorParams: the code's own string params (e.g. USER_QUOTA_EXCEEDED { max, current }); null when none.
     private async Task<IActionResult> GatewayFailureAsync(HttpResponseMessage response)
-        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response) });
+        => Json(new { success = false, errors = await ExtractGatewayErrorsAsync(response), errorCode = await ExtractGatewayErrorCodeAsync(response), errorParams = await ExtractGatewayErrorParamsAsync(response) });
 
     private static async Task<string?> ExtractGatewayErrorCodeAsync(HttpResponseMessage response)
+        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Code;
+
+    private static async Task<Dictionary<string, string>?> ExtractGatewayErrorParamsAsync(HttpResponseMessage response)
+        => (await ExtractGatewayErrorCodeWithParamsAsync(response)).Params;
+
+    private static async Task<(string? Code, Dictionary<string, string>? Params)> ExtractGatewayErrorCodeWithParamsAsync(HttpResponseMessage response)
     {
         try
         {
             var raw = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(raw)) return null;
+            if (string.IsNullOrWhiteSpace(raw)) return (null, null);
             using var doc = JsonDocument.Parse(raw);
             if (doc.RootElement.ValueKind == JsonValueKind.Object
                 && doc.RootElement.TryGetProperty("errorCodes", out var codes)
@@ -385,13 +392,21 @@ public sealed class UsersController : Controller
                         && code.ValueKind == JsonValueKind.String
                         && !string.IsNullOrWhiteSpace(code.GetString()))
                     {
-                        return code.GetString();
+                        Dictionary<string, string>? parameters = null;
+                        if (entry.TryGetProperty("params", out var ps) && ps.ValueKind == JsonValueKind.Object)
+                        {
+                            parameters = ps.EnumerateObject()
+                                .Where(p => p.Value.ValueKind == JsonValueKind.String)
+                                .ToDictionary(p => p.Name, p => p.Value.GetString()!, StringComparer.Ordinal);
+                        }
+
+                        return (code.GetString(), parameters is { Count: > 0 } ? parameters : null);
                     }
                 }
             }
         }
         catch { }
-        return null;
+        return (null, null);
     }
 
     private async Task<List<string>> ExtractGatewayErrorsAsync(HttpResponseMessage response)

@@ -22,6 +22,8 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly ITenantContext _tenantContext;
     private readonly ICurrentUserAccessor _currentUser;
+    private readonly IUserAuditRecorder _audit;
+    private readonly IUserQuotaClient _quota;
     private readonly ILogger<SetUserActiveStatusCommandHandler> _logger;
 
     public SetUserActiveStatusCommandHandler(
@@ -29,12 +31,16 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         IRefreshTokenRepository refreshTokenRepository,
         ITenantContext tenantContext,
         ICurrentUserAccessor currentUser,
+        IUserAuditRecorder audit,
+        IUserQuotaClient quota,
         ILogger<SetUserActiveStatusCommandHandler> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _tenantContext = tenantContext;
         _currentUser = currentUser;
+        _audit = audit;
+        _quota = quota;
         _logger = logger;
     }
 
@@ -58,6 +64,19 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
             return UserLifecycle.InvitationPendingRefusal<NoContent>();
         }
 
+        var wasActive = user.IsActive;
+
+        // BL-459 F1 — an Inactive account holds no seat (users.max counts Active + Invited), so switching one back on
+        // takes a seat and asks first; otherwise deactivate → add someone → reactivate would walk past the plan's limit.
+        if (request.IsActive && !wasActive)
+        {
+            var seat = await _quota.TryConsumeUserSeatAsync(_tenantContext.TenantId, $"user-activate:{user.Id:D}", ct);
+            if (seat.Outcome == UserQuotaOutcome.LimitExceeded)
+            {
+                return UserLifecycle.QuotaExceededRefusal<NoContent>(seat.Limit, seat.Current);
+            }
+        }
+
         if (request.IsActive)
         {
             user.Activate();
@@ -76,6 +95,15 @@ public sealed class SetUserActiveStatusCommandHandler : IRequestHandler<SetUserA
         }
 
         _logger.LogInformation("User active status changed. Id={Id} IsActive={IsActive}", user.Id, request.IsActive);
+
+        // BL-456 — only a real transition is an event; re-sending the current state writes no audit row.
+        if (wasActive != request.IsActive)
+        {
+            await _audit.RecordAsync(
+                request.IsActive ? UserAuditEvents.Activated : UserAuditEvents.Deactivated,
+                _tenantContext.TenantId, user.Id,
+                new Dictionary<string, object?> { ["previousIsActive"] = wasActive, ["isActive"] = request.IsActive }, ct);
+        }
         return Response<NoContent>.Success(204);
     }
 }

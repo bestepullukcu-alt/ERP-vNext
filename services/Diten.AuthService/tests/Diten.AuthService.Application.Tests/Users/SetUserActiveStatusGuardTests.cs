@@ -5,6 +5,7 @@ using Diten.AuthService.Application.Features.Users.Handlers.CommandHandlers;
 using Diten.AuthService.Domain.Entities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -79,7 +80,7 @@ public sealed class SetUserActiveStatusGuardTests
         var tenant = new FakeTenantContext();
         tenant.SetTenant(TenantA);
         return new SetUserActiveStatusCommandHandler(
-            users, tokens, tenant, new FakeCurrentUser(actor), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+            users, tokens, tenant, new FakeCurrentUser(actor), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
     }
 
     private sealed class FakeTenantContext : ITenantContext

@@ -8,6 +8,7 @@ using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Persistence.Seed;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -245,7 +246,7 @@ public sealed class UserLifecycleTests
     }
 
     private static SetUserActiveStatusCommandHandler StatusHandler(IUserRepository repo)
-        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
+        => new(repo, new NoRefreshTokens(), TenantContextFor(TenantA), new SomeoneElse(), UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<SetUserActiveStatusCommandHandler>.Instance);
 
     /// <summary>The signed-in administrator is never the row under test here; self-deactivation has its own guard file.</summary>
     private sealed class SomeoneElse : ICurrentUserAccessor
@@ -254,11 +255,14 @@ public sealed class UserLifecycleTests
     }
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(new NoAudit()), NullLogger<UpdateUserCommandHandler>.Instance);
+        => UpdateHandler(repo, new SomeoneElse(), new NoRefreshTokens());
+
+    private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, ICurrentUserAccessor actor, IRefreshTokenRepository tokens)
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(new NoAudit())), UserAuditForTests.None(), new RecordingUserQuotaClient(), actor, tokens, NullLogger<UpdateUserCommandHandler>.Instance);
 
     private static CreateUserCommandHandler CreateHandler(IUserRepository repo, FakeInvitationEmailService email)
         => new(repo, new FakePasswordHasher(), new FakePasswordPolicyService(), TenantContextFor(TenantA), new FakeTokenService(),
-            new FakeRefreshTokenHasher(), new FakeHostEnvironment(), email, NullLogger<CreateUserCommandHandler>.Instance);
+            new FakeRefreshTokenHasher(), new FakeHostEnvironment(), email, UserAuditForTests.None(), new RecordingUserQuotaClient(), NullLogger<CreateUserCommandHandler>.Instance);
 
     private static ITenantContext TenantContextFor(Guid tenantId)
     {
@@ -390,5 +394,79 @@ public sealed class UserLifecycleTests
         public string ApplicationName { get; set; } = "tests";
         public string ContentRootPath { get; set; } = "/";
         public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
+    }
+
+    // ── CT acceptance, WP-AUTH-PLATFORM-LINKS-01 (2026-09-25) ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task The_edit_form_cannot_switch_off_the_signed_in_account_either()
+    {
+        // Finding 33's second door: the kebab refuses (SetUserActiveStatusGuardTests); the form's Active switch must too.
+        var me = new User("me@acme.test", "hash:x", "Me", "Self", TenantA);
+        var repo = new InMemoryUserRepository([me]);
+        var tokens = new CountingRevokes();
+
+        var result = await UpdateHandler(repo, new Actor(me.Id), tokens)
+            .Handle(new UpdateUserCommand(me.Id, "Me", "Self", IsActive: false), CancellationToken.None);
+
+        Assert.Equal(409, result.StatusCode);
+        Assert.Equal(SetUserActiveStatusCommandHandler.SelfDeactivateCode, Assert.Single(result.ErrorCodes).Code);
+        Assert.True((await repo.GetByIdAndTenantAsync(me.Id, TenantA, CancellationToken.None))!.IsActive);
+        Assert.Equal(0, tokens.RevokeAllCount);
+    }
+
+    [Fact]
+    public async Task Switching_someone_off_through_the_edit_form_ends_their_sessions_like_the_kebab_does()
+    {
+        var other = new User("other@acme.test", "hash:x", "Ot", "Her", TenantA);
+        var repo = new InMemoryUserRepository([other]);
+        var tokens = new CountingRevokes();
+
+        var result = await UpdateHandler(repo, new Actor(Guid.NewGuid()), tokens)
+            .Handle(new UpdateUserCommand(other.Id, "Ot", "Her", IsActive: false), CancellationToken.None);
+
+        Assert.True(result.IsSuccessful);
+        Assert.False((await repo.GetByIdAndTenantAsync(other.Id, TenantA, CancellationToken.None))!.IsActive);
+        Assert.Equal(1, tokens.RevokeAllCount);
+    }
+
+    [Fact]
+    public async Task An_invitation_whose_email_fails_in_production_is_still_audited()
+    {
+        // Production re-throws an SMTP failure AFTER the user was written; the user exists, so its audit row must too.
+        var repo = new InMemoryUserRepository([]);
+        var local = new EventNames();
+        var handler = new CreateUserCommandHandler(repo, new FakePasswordHasher(), new FakePasswordPolicyService(), TenantContextFor(TenantA),
+            new FakeTokenService(), new FakeRefreshTokenHasher(), new FakeHostEnvironment(), new ThrowingInvitationEmail(),
+            UserAuditForTests.Over(local), new RecordingUserQuotaClient(), NullLogger<CreateUserCommandHandler>.Instance);
+
+        await Assert.ThrowsAnyAsync<Exception>(() => handler.Handle(new CreateUserCommand("smtp-down@acme.test", null, "Sm", "Tp"), CancellationToken.None));
+
+        Assert.NotNull(await repo.GetByEmailAndTenantAsync("smtp-down@acme.test", TenantA, CancellationToken.None));
+        Assert.Contains(UserAuditEvents.Invited, local.Names);
+    }
+
+    private sealed class Actor(Guid id) : ICurrentUserAccessor { public Guid? UserId => id; }
+
+    private sealed class CountingRevokes : IRefreshTokenRepository
+    {
+        public int RevokeAllCount { get; private set; }
+        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) { RevokeAllCount++; return Task.CompletedTask; }
+        public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+    }
+
+    private sealed class EventNames : IRbacAuditRecorder
+    {
+        public List<string> Names { get; } = [];
+        public Task RecordAsync(string eventName, Guid tenantId, object metadata, CancellationToken ct = default) { Names.Add(eventName); return Task.CompletedTask; }
+    }
+
+    private sealed class ThrowingInvitationEmail : ITenantUserInvitationEmailService
+    {
+        public string BuildTenantSetPasswordUrl(string email, string setupToken) => "http://localhost/set-password";
+        public Task SendTenantUserInvitationAsync(string email, string setupToken, CancellationToken ct) => throw new InvalidOperationException("SMTP down");
     }
 }

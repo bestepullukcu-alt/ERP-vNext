@@ -2,6 +2,7 @@ using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.DTOs;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
     private readonly IRefreshTokenHasher _refreshTokenHasher;
     private readonly ITenantUserInvitationEmailService _invitationEmailService;
     private readonly IHostEnvironment _environment;
+    private readonly IUserAuditRecorder _audit;
     private readonly ILogger<ResendUserInvitationCommandHandler> _logger;
 
     public ResendUserInvitationCommandHandler(
@@ -29,6 +31,7 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
         IRefreshTokenHasher refreshTokenHasher,
         ITenantUserInvitationEmailService invitationEmailService,
         IHostEnvironment environment,
+        IUserAuditRecorder audit,
         ILogger<ResendUserInvitationCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -37,6 +40,7 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
         _refreshTokenHasher = refreshTokenHasher;
         _invitationEmailService = invitationEmailService;
         _environment = environment;
+        _audit = audit;
         _logger = logger;
     }
 
@@ -66,6 +70,12 @@ public sealed class ResendUserInvitationCommandHandler : IRequestHandler<ResendU
         catch when (_environment.IsDevelopment())
         {
             // Dev without SMTP: swallow and rely on the logged link below.
+        }
+        finally
+        {
+            // BL-456 — the new token is already saved; the audit row must exist even when the e-mail throws (production re-throws).
+            await _audit.RecordAsync(UserAuditEvents.InvitationResent, _tenantContext.TenantId, user.Id,
+                new Dictionary<string, object?> { ["emailSent"] = emailSent }, ct);
         }
 
         _logger.LogInformation("Tenant user invitation re-sent. Id={Id} EmailSent={EmailSent}", user.Id, emailSent);

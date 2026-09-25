@@ -30,6 +30,8 @@ const UsersList = (function () {
     const canUpdate = () => can('auth.users.update');
     const isCurrentUser = (row) => { const me = window.CurrentUser || {}; const id = me.id ?? me.userId ?? me.Id ?? null; return !!id && String(row?.id) === String(id); };
     const canDelete = () => can('auth.users.delete');
+    // BL-452 package 3 — exporting is its own right (auth.users.export); without it the menu carries no file entry.
+    const canExport = () => can('auth.users.export');
     // Explicit-grant-only key (owner decision 2026-09-11): never in any default role.
     const canManageKind = () => can('auth.users.account-kind.manage');
 
@@ -231,10 +233,21 @@ const UsersList = (function () {
         setSelectValue(byId('userAccountKind'), currentKind === 'Unknown' ? '' : currentKind);
     };
     // A refusal tagged with a stable code (the proxy's `errorCode`) is shown in the reader's language.
-    const ERROR_CODE_KEYS = { USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending' };
+    const ERROR_CODE_KEYS = { USER_EMAIL_TAKEN: 'ErrorUserEmailTaken', USER_INVITATION_PENDING: 'ErrorUserInvitationPending', USER_QUOTA_EXCEEDED: 'ErrorUserQuotaExceeded' };
+    // BL-459 — a code whose params carry numbers adds a second, numbered sentence; without the numbers it is left out
+    // (never a raw "{max}" on the screen).
+    const ERROR_PARAM_KEYS = { USER_QUOTA_EXCEEDED: { key: 'ErrorUserQuotaUsage', params: ['current', 'max'] } };
     const localizedErrors = (json) => {
         const key = ERROR_CODE_KEYS[(json || {}).errorCode];
-        if (key && L()[key]) return [L()[key]];
+        if (key && L()[key]) {
+            const detail = ERROR_PARAM_KEYS[json.errorCode];
+            const values = json.errorParams || {};
+            if (detail && L()[detail.key] && detail.params.every(p => values[p] != null && values[p] !== '')) {
+                const numbered = detail.params.reduce((text, p) => text.split('{' + p + '}').join(String(values[p])), L()[detail.key]);
+                return [L()[key] + ' ' + numbered];
+            }
+            return [L()[key]];
+        }
         return (json && Array.isArray(json.errors) && json.errors.length) ? json.errors : [L().ErrorOccurred];
     };
     const submitForm = async (formData, isEdit, { editingId, headers }) => {
@@ -362,7 +375,7 @@ const UsersList = (function () {
             // quickView and edit are the factory's (quickView/form below); the rest are the screen's endpoints.
             actions: { onRowAction: Object.assign({ delete: deleteRow }, ...Object.keys(adminActions).map((key) => ({ [key]: runAdminAction(adminActions[key]) }))) },
             // No "+ Add" at all without auth.users.create (UAS-001: absent, not disabled).
-            toolbar: { addNewText: canCreate() ? L().AddNew : '', onAddNew: () => list.openCreate(), exportColumns: [1, 2, 3, 4, 5, 6], colvisColumns: [1, 2, 3, 4, 5, 6] },
+            toolbar: { addNewText: canCreate() ? L().AddNew : '', onAddNew: () => list.openCreate(), exportColumns: [1, 2, 3, 4, 5, 6], colvisColumns: [1, 2, 3, 4, 5, 6], exportPermitted: canExport() },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadRoleOptions },
             savedView: { moduleKey: 'Governance', pageKey: 'Users', saveViewColumnIndexes: [1, 2, 3, 4, 5, 6], defaultVisibleColumnIndexes: [1, 2, 3, 4, 5, 6], baseOrder: [[1, 'asc']] },
             quickView: { offcanvasId: 'offcanvasDetailsPreview', populate: populateDetailsOffcanvas },

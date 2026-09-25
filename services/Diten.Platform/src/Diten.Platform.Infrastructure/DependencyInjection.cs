@@ -215,6 +215,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthPermissionModulesClient, AuthPermissionModulesClient>();
         // MOD-0024 §K6.4 — display-name resolution for task assignees/requesters (best-effort S2S).
         services.AddScoped<IUserDisplayNameResolver, AuthUserDisplayNameClient>();
+        // BL-459 — the tenant users summary counts AuthService's users, not only Platform's AdminUsers list.
+        services.AddScoped<ITenantUserCountReader, AuthTenantUserCountClient>();
         services.AddScoped<IPlatformLookupCache, PlatformLookupMemoryCache>();
         services.AddScoped<IPlatformAdministratorProvisioningService, PlatformAdministratorProvisioningService>();
         services.AddScoped<IPlatformAdministratorInvitationEmailService, PlatformAdministratorInvitationEmailService>();

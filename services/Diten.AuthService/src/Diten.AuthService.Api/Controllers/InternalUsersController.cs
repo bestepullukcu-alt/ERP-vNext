@@ -43,16 +43,43 @@ public sealed class InternalUsersController : ControllerBase
 
     private readonly IInternalEventAuthService _internalEventAuthService;
     private readonly IUserRepository _userRepository;
+    private readonly IUserListReader _userListReader;
     private readonly ILogger<InternalUsersController> _logger;
 
     public InternalUsersController(
         IInternalEventAuthService internalEventAuthService,
         IUserRepository userRepository,
+        IUserListReader userListReader,
         ILogger<InternalUsersController> logger)
     {
         _internalEventAuthService = internalEventAuthService;
         _userRepository = userRepository;
+        _userListReader = userListReader;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// BL-459 — <c>GET internal/users/counts?tenantId={guid}</c> → <c>{ tenantId, total, active, invited, inactive }</c>:
+    /// how many live (not deleted) users the tenant has, by the lifecycle status the Users screen shows. Platform's
+    /// tenant users summary reads it (until now it counted only its own AdminUsers list).
+    /// <para>Numbers only — no id, no name, no address. The tenant is the query's own filter (the same one-expression
+    /// summary as the Users list, <c>UserListReader.GetSummaryAsync</c>), so another tenant's users are never counted.</para>
+    /// </summary>
+    [HttpGet("counts")]
+    public async Task<IActionResult> GetCounts([FromQuery] Guid tenantId, CancellationToken ct)
+    {
+        if (!_internalEventAuthService.IsAuthorized(Request.Headers[InternalApiKeyHeader].FirstOrDefault()))
+        {
+            return Unauthorized(new { message = "internal authentication failed" });
+        }
+
+        if (tenantId == Guid.Empty)
+        {
+            return BadRequest(new { message = "tenantId is required" });
+        }
+
+        var summary = await _userListReader.GetSummaryAsync(tenantId, ct);
+        return Ok(new InternalTenantUserCountsDto(tenantId, summary.Total, summary.Active, summary.Invited, summary.Passive));
     }
 
     /// <summary>
@@ -226,3 +253,6 @@ public sealed record InternalUserDisplayNameDto(Guid Id, string DisplayName);
 /// a caller that needs a label must not receive an address as a side effect of asking for one.
 /// </summary>
 public sealed record InternalUserContactDto(Guid Id, string DisplayName, string Email);
+
+/// <summary>BL-459 — a tenant's live users by lifecycle status. Counts only.</summary>
+public sealed record InternalTenantUserCountsDto(Guid TenantId, long Total, long Active, long Invited, long Inactive);
