@@ -222,4 +222,37 @@
   <data name="MoveEarlier" xml:space="preserve"><value>Öne al</value></data>
   <data name="MoveLater" xml:space="preserve"><value>Sona al</value></data>
   <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Bu tip bu dalda zaten var</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Bağlantılar</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>Uyumsuz</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Sürümler</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Girdiler</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Çıktılar</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} omurgada</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Düğümler</value></data>
+  <data name="Relationships" xml:space="preserve"><value>İlişkiler</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} toplam · {1} uyumsuz</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Bilgi yolları</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Yolculuklar</value></data>
+  <data name="Visits" xml:space="preserve"><value>Ziyaretler</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>Bu kayıtları zincir şablonuna bağlayan bir kaynak henüz yok.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Veri akışı</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Konu</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Kavram grafiği</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Zincir şablonu</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Bilgi yolu</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Yolculuk</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Ziyaret</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>Tip omurgada yok</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Sıra ters</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Eksik tipler</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>Dal {0}'e ekle</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Yok say</value></data>
+  <data name="Undo" xml:space="preserve"><value>Geri al</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} çözülmemiş</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>Çözülmemiş uyumsuz ilişki yok</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Yok sayılanlar ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Omurga dışı</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>Bu kod için henüz başka sürüm yok</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>Bu sürüm</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Son değiştiren</value></data>
 </root>

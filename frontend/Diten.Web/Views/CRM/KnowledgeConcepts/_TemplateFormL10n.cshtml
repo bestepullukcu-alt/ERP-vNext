@@ -18,7 +18,13 @@
         "Spine", "SpineStatusValid", "SpineStatusNeedsTwo", "SpineStatusFrozen", "DeleteBranch", "BackEdgesToggle",
         "MoveEarlier", "MoveLater",
         // WP-CT-FE-4: drag and drop (type-repeat guard warning).
-        "TypeAlreadyInBranch" };
+        "TypeAlreadyInBranch",
+        // WP-CT-FE-5: right panel (Connections / Non-conforming / Versions) + off-spine summary.
+        "TabConnections", "TabNonConforming", "TabVersions", "Inputs", "Outputs", "TypesOnSpine", "Nodes", "Relationships",
+        "RelationshipsSummary", "KnowledgePaths", "Journeys", "Visits", "OutputsNoSource", "DataFlow", "FlowSubject",
+        "FlowConceptGraph", "FlowChainTemplate", "FlowKnowledgePath", "FlowJourney", "FlowVisit", "ReasonNotOnSpine",
+        "ReasonWrongOrder", "MissingTypes", "AddToBranch", "Ignore", "Undo", "UnresolvedCount", "NonConformingEmpty",
+        "IgnoredSection", "OffSpineSummary", "VersionsEmpty", "ThisVersion", "UpdatedByLabel", "Loading" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

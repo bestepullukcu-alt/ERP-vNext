@@ -274,6 +274,18 @@ public sealed class KnowledgeConceptsController : Controller
     public Task<IActionResult> UpdateTemplate(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
 
+    // WP-CT-FE-5 — the editor's "Non-conforming" tab. Diagnostics is a READ over a supplied (possibly unsaved) spine
+    // (POST only because the spine travels in the body; nothing is written — WP-CT-BE-A). Resolutions record the
+    // "Yok say" set on a saved, non-published template (published → 409 from the service — WP-CT-BE-B); relationships
+    // are never touched (D8).
+    [HttpPost("api/concept-chain-templates/conformance-diagnostics")]
+    public Task<IActionResult> TemplateConformanceDiagnostics([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Post, "/api/crm/knowledge/concept-chain-templates/conformance-diagnostics", body, ReadPermission, ct, ReadFallback);
+
+    [HttpPut("api/concept-chain-templates/{templateId:guid}/conformance-resolutions")]
+    public Task<IActionResult> TemplateConformanceResolutions(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}/conformance-resolutions", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
+
     [HttpPost("api/concept-chain-templates/{templateId:guid}/archive")]
     public Task<IActionResult> ArchiveTemplate(Guid templateId, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Post, $"/api/crm/knowledge/concept-chain-templates/{templateId}/archive", null, TemplateManagePermission, ct, ManagePermission, ManageFallback);

@@ -222,4 +222,37 @@
   <data name="MoveEarlier" xml:space="preserve"><value>前移</value></data>
   <data name="MoveLater" xml:space="preserve"><value>后移</value></data>
   <data name="TypeAlreadyInBranch" xml:space="preserve"><value>该类型已在此分支中</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>连接</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>不符合</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>版本</value></data>
+  <data name="Inputs" xml:space="preserve"><value>输入</value></data>
+  <data name="Outputs" xml:space="preserve"><value>输出</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>主干上 {0} / {1}</value></data>
+  <data name="Nodes" xml:space="preserve"><value>节点</value></data>
+  <data name="Relationships" xml:space="preserve"><value>关系</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>共 {0} · {1} 不符合</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>知识路径</value></data>
+  <data name="Journeys" xml:space="preserve"><value>旅程</value></data>
+  <data name="Visits" xml:space="preserve"><value>拜访</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>目前尚无将这些记录关联到链模板的数据源。</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>数据流</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>主题</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>概念图</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>链模板</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>知识路径</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>旅程</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>拜访</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>类型不在主干上</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>顺序相反</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>缺少的类型</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>添加到分支 {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>忽略</value></data>
+  <data name="Undo" xml:space="preserve"><value>撤销</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} 个未解决</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>没有未解决的不符合关系</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>已忽略（{0}）</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>主干之外</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>此代码暂无其他版本</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>当前版本</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>最后修改人</value></data>
 </root>

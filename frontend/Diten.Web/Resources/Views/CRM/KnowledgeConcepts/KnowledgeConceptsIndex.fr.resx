@@ -222,4 +222,37 @@
   <data name="MoveEarlier" xml:space="preserve"><value>Avancer</value></data>
   <data name="MoveLater" xml:space="preserve"><value>Reculer</value></data>
   <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Ce type figure déjà dans cette branche</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Liens</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>Non conformes</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Entrées</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Sorties</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} dans l'ossature</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Nœuds</value></data>
+  <data name="Relationships" xml:space="preserve"><value>Relations</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} au total · {1} non conformes</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Parcours</value></data>
+  <data name="Visits" xml:space="preserve"><value>Visites</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>Aucune source ne relie encore ces enregistrements à un modèle de chaîne.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Flux de données</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Sujet</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Graphe de concepts</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Modèle de chaîne</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Parcours de connaissances</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Parcours</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Visite</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>Le type n'est pas dans l'ossature</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Ordre inversé</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Types manquants</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>Ajouter à la branche {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Ignorer</value></data>
+  <data name="Undo" xml:space="preserve"><value>Annuler</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} non résolus</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>Aucune relation non conforme non résolue</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Ignorées ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Hors ossature</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>Pas encore d'autre version pour ce code</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>Cette version</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Modifié par</value></data>
 </root>

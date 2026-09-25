@@ -299,7 +299,7 @@
         empty?.classList.toggle('d-none', total > 0);
         setVal('tplOrderedConceptTypes', spine.join(','));
         renderPalette();   // WP-CT-FE-2: branch usage / not-on-spine follow every structural change
-        if (total === 0) { host.innerHTML = ''; return; }
+        if (total === 0) { host.innerHTML = ''; scheduleDiagnostics(); renderSidePanel(); return; }
 
         const cols = Math.max(spine.length, 1);
         const colOf = new Map(spine.map((id, i) => [id, i]));
@@ -341,6 +341,8 @@
             </div>`;
         pinLaneChrome();
         drawAllEdges();
+        scheduleDiagnostics();   // WP-CT-FE-5: re-requests only when subject|spine changed
+        renderSidePanel();
     };
 
     // ─── WP-CT-FE-4: drag and drop on the lane diagram (custom HTML5 DnD) ──────────────────────────────────────────
@@ -398,6 +400,211 @@
         return { lane, bi, insertIndex };
     };
 
+    // ─── WP-CT-FE-5: right panel — Connections / Non-conforming / Versions ────────────────────────────────────────
+    // Non-conforming consumes the WP-CT-BE-A diagnostics (a READ over the live, possibly unsaved spine — the backend
+    // classifier is the single source; nothing is re-derived here) and the WP-CT-BE-B resolutions write ("Yok say").
+    // Conformance is never enforced (D8): a resolution only records the decision, no relationship is changed or deleted.
+    // Actions are draft-only. Outputs (knowledge paths / journeys / visits) have no reverse reference to a chain
+    // template today, so they show "—" — never an invented count.
+    let currentRow = null;           // the loaded template (null on create)
+    let ignoredIds = new Set();      // IgnoredNonConformingRelationshipIds (saved: persisted per click; new: Create payload)
+    let diag = null;                 // last diagnostics payload { items, total, conformingCount, orderCount, outCount }
+    let diagState = 'idle';          // idle | loading | ready | error
+    let diagKey = '';                // subject|spine the last request was for — re-request only when it changes
+    let diagTimer = null;
+    let diagSeq = 0;
+    let versions = null;             // same subject + chainCode templates, or null when not loaded
+    const dash = '<span class="text-muted">—</span>';
+    const fmtN = (template, ...args) => String(template || '').replace(/\{(\d)\}/g, (_, i) => String(args[Number(i)] ?? ''));
+    const typeNameOrDash = id => typeNameOnlyById[id] ? esc(typeNameOnlyById[id]) : '—';
+    const tabButton = () => document.getElementById('tplTabNonConformingBtn');
+    const nonConforming = () => (diag?.items || []).filter(i => i.result !== 'conforming');
+    const unresolved = () => nonConforming().filter(i => !ignoredIds.has(String(i.conceptRelationshipId)));
+
+    const scheduleDiagnostics = force => {
+        const subjectId = val('tplSubjectId');
+        const key = `${subjectId}|${spineFromBranches().join(',')}`;
+        if (!force && key === diagKey) return;
+        diagKey = key;
+        clearTimeout(diagTimer);
+        if (!subjectId) { diag = null; diagState = 'idle'; renderSidePanel(); return; }
+        diagState = 'loading';
+        renderSidePanel();
+        diagTimer = setTimeout(async () => {
+            const seq = ++diagSeq;
+            try {
+                const data = await envelope(await fetch(`${base}/concept-chain-templates/conformance-diagnostics`, {
+                    method: 'POST', credentials: 'same-origin', headers: jsonHeaders,
+                    body: JSON.stringify({ subjectId, orderedConceptTypeIds: spineFromBranches() })
+                }));
+                if (seq !== diagSeq) return;   // a newer spine won
+                diag = data; diagState = 'ready';
+            } catch {
+                if (seq !== diagSeq) return;
+                diag = null; diagState = 'error';
+            }
+            renderSidePanel();
+        }, 350);
+    };
+
+    // "Yok say" / "Geri al": a saved template writes the whole set through the resolve endpoint at once (published →
+    // 409, surfaced as the toast); a new template keeps it in memory and the Create payload carries it.
+    const setIgnored = async (relationshipId, on) => {
+        if (templateReadOnly || !relationshipId) return;
+        const next = new Set(ignoredIds);
+        if (on) next.add(relationshipId); else next.delete(relationshipId);
+        const id = val('templateFormId');
+        if (id) {
+            try {
+                await envelope(await fetch(`${base}/concept-chain-templates/${encodeURIComponent(id)}/conformance-resolutions`, {
+                    method: 'PUT', credentials: 'same-origin', headers: jsonHeaders,
+                    body: JSON.stringify({ ignoredRelationshipIds: Array.from(next) })
+                }));
+            } catch (e) {
+                window.showToast?.(e.message || L.ErrorState || '', 'error');
+                return;
+            }
+        }
+        ignoredIds = next;
+        renderSidePanel();
+    };
+
+    const kv = (label, value) => `<div class="d-flex justify-content-between gap-2 small py-1 border-bottom">
+            <span class="text-muted">${esc(label)}</span><span class="text-end text-heading">${value}</span></div>`;
+    const renderConnections = () => {
+        const host = document.getElementById('tplConnections');
+        if (!host) return;
+        const subjectId = val('tplSubjectId');
+        const subjectTypes = subjectId ? types.filter(t => String(t.subjectId) === String(subjectId) && !t.isArchived) : [];
+        const spine = new Set(spineFromBranches());
+        const onSpine = subjectTypes.filter(t => spine.has(String(t.conceptTypeId))).length;
+        const nodeTotal = nodeCountsReady ? Object.values(nodeCountByType).reduce((a, n) => a + n, 0) : null;
+        const rels = diagState === 'ready' && diag
+            ? esc(fmtN(L.RelationshipsSummary || '{0} · {1}', diag.total ?? (diag.items || []).length, unresolved().length))
+            : dash;
+        const forWhom = $ ? ($('#tplForWhom').val() || []) : [];
+        const forWhomText = forWhom.length
+            ? esc(audienceOptions.find(o => String(o.value) === String(forWhom[0]))?.text || '') + (forWhom.length > 1 ? ` <span class="badge bg-label-secondary">+${forWhom.length - 1}</span>` : '')
+            : dash;
+        const moderator = val('tplModeratorRoleType');
+        const flow = ['FlowSubject', 'FlowConceptGraph', 'FlowChainTemplate', 'FlowKnowledgePath', 'FlowJourney', 'FlowVisit']
+            .map(k => `<span class="badge ${k === 'FlowChainTemplate' ? 'bg-primary' : 'bg-label-secondary'}">${esc(L[k] || '')}</span>`)
+            .join('<i class="bx bx-chevron-right text-muted"></i>');
+        host.innerHTML = `
+            <h6 class="small text-uppercase text-muted fw-semibold mb-1">${esc(L.Inputs || '')}</h6>
+            ${kv(L.SubjectId || '', subjectLabelById[subjectId] ? esc(subjectLabelById[subjectId]) : dash)}
+            ${kv(L.TypePalette || '', subjectId ? esc(fmtN(L.TypesOnSpine || '{0} / {1}', onSpine, subjectTypes.length)) : dash)}
+            ${kv(L.Nodes || '', nodeTotal == null ? dash : esc(String(nodeTotal)))}
+            ${kv(L.Relationships || '', rels)}
+            ${kv(L.ForWhom || '', forWhomText)}
+            ${kv(L.Moderator || '', moderator ? esc(moderatorLabel(moderator)) : dash)}
+            <h6 class="small text-uppercase text-muted fw-semibold mt-3 mb-1">${esc(L.Outputs || '')}</h6>
+            ${kv(L.KnowledgePaths || '', dash)}
+            ${kv(L.Journeys || '', dash)}
+            ${kv(L.Visits || '', dash)}
+            <div class="form-text">${esc(L.OutputsNoSource || '')}</div>
+            <h6 class="small text-uppercase text-muted fw-semibold mt-3 mb-2">${esc(L.DataFlow || '')}</h6>
+            <div class="d-flex flex-wrap align-items-center gap-1">${flow}</div>`;
+    };
+
+    // "Add to branch" offers every branch that does not already hold the missing type (type-repeat rule); the add goes
+    // through the FE-4 moveTo, so it is exactly a palette drop: {min 1, max 1} at the end of that branch.
+    const addToBranchMenu = typeId => {
+        const targets = branches.map((b, bi) => ({ b, bi })).filter(x => !x.b.steps.some(s => String(s.conceptTypeId) === String(typeId)));
+        if (!targets.length || !typeOptionsFor(val('tplSubjectId')).some(o => String(o.value) === String(typeId))) return '';
+        return `<div class="dropdown d-inline-block">
+                <button type="button" class="btn btn-sm btn-label-primary dropdown-toggle py-0 px-2" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bx bx-plus me-1"></i>${typeNameOrDash(typeId)}
+                </button>
+                <ul class="dropdown-menu">${targets.map(x => `<li><button type="button" class="dropdown-item small js-nc-add" data-ct="${esc(String(typeId))}" data-b="${x.bi}">${esc(fmt(L.AddToBranch || '{0}', x.bi + 1))}${x.b.name ? ` · ${esc(x.b.name)}` : ''}</button></li>`).join('')}</ul>
+            </div>`;
+    };
+    const ncCard = (item, ignored) => {
+        const ro = templateReadOnly;
+        const isOut = item.result === 'out';
+        const reason = isOut ? L.ReasonNotOnSpine : L.ReasonWrongOrder;
+        const missing = isOut && (item.missingTypeIds || []).length
+            ? `<div class="small mt-1"><span class="text-muted">${esc(L.MissingTypes || '')}:</span> ${(item.missingTypeIds || []).map(typeNameOrDash).join(', ')}</div>`
+            : '';
+        const reversed = item.isReversed ? ` <i class="bx bx-transfer-alt text-muted" title="${esc(item.relationshipType)}"></i>` : '';
+        const actions = ro ? '' : ignored
+            ? `<button type="button" class="btn btn-sm btn-text-secondary py-0 px-2 js-nc-undo" data-rel="${esc(item.conceptRelationshipId)}"><i class="bx bx-undo me-1"></i>${esc(L.Undo || '')}</button>`
+            : `${isOut ? (item.missingTypeIds || []).map(addToBranchMenu).join(' ') : ''}
+               <button type="button" class="btn btn-sm btn-text-secondary py-0 px-2 js-nc-ignore" data-rel="${esc(item.conceptRelationshipId)}"><i class="bx bx-hide me-1"></i>${esc(L.Ignore || '')}</button>`;
+        return `<div class="border rounded p-2 mb-2${ignored ? ' opacity-75' : ''}">
+                <div class="small text-heading">
+                    <span class="fw-medium">${item.fromConceptNodeName ? esc(item.fromConceptNodeName) : '—'}</span>
+                    <span class="badge bg-label-info mx-1">${esc(item.relationshipType)}</span>${reversed}
+                    <span class="fw-medium">${item.toConceptNodeName ? esc(item.toConceptNodeName) : '—'}</span>
+                </div>
+                <div class="small mt-1"><span class="badge ${isOut ? 'bg-label-warning' : 'bg-label-danger'}">${esc(reason || '')}</span></div>
+                ${missing}
+                ${actions ? `<div class="d-flex flex-wrap gap-1 mt-2">${actions}</div>` : ''}
+            </div>`;
+    };
+    const renderNonConforming = () => {
+        const host = document.getElementById('tplNonConforming');
+        if (!host) return;
+        const open = unresolved();
+        const done = nonConforming().filter(i => ignoredIds.has(String(i.conceptRelationshipId)));
+        const badge = document.getElementById('tplNonConformingBadge');
+        if (badge) { badge.textContent = String(open.length); badge.classList.toggle('d-none', diagState !== 'ready' || open.length === 0); }
+        if (!val('tplSubjectId')) { host.innerHTML = `<div class="form-text">${esc(L.NodePickerSubjectFirst || '')}</div>`; return; }
+        if (diagState === 'error') { host.innerHTML = `<div class="text-danger small">${esc(L.ErrorState || '')}</div>`; return; }
+        if (diagState !== 'ready' && !diag) { host.innerHTML = `<div class="small text-muted"><span class="spinner-border spinner-border-sm me-2"></span>${esc(L.Loading || '')}</div>`; return; }
+        const loading = diagState === 'loading' ? '<span class="spinner-border spinner-border-sm text-muted ms-2"></span>' : '';
+        host.innerHTML = `
+            <div class="small text-muted mb-2">${esc(fmt(L.UnresolvedCount || '{0}', open.length))}${loading}</div>
+            ${open.length ? open.map(i => ncCard(i, false)).join('') : `<div class="small text-success mb-2"><i class="bx bx-check-circle me-1"></i>${esc(L.NonConformingEmpty || '')}</div>`}
+            ${done.length ? `<h6 class="small text-uppercase text-muted fw-semibold mt-3 mb-2">${esc(fmt(L.IgnoredSection || '{0}', done.length))}</h6>${done.map(i => ncCard(i, true)).join('')}` : ''}`;
+    };
+    // Off-spine summary under the diagram: the unresolved "out" relationships grouped by missing type.
+    const renderOffSpine = () => {
+        const host = document.getElementById('tplOffSpineSummary');
+        if (!host) return;
+        const counts = new Map();
+        unresolved().filter(i => i.result === 'out')
+            .forEach(i => (i.missingTypeIds || []).forEach(id => counts.set(String(id), (counts.get(String(id)) || 0) + 1)));
+        host.classList.toggle('d-none', counts.size === 0);
+        host.innerHTML = counts.size === 0 ? '' : `<button type="button" class="btn btn-sm btn-label-warning w-100 text-start js-offspine-open">
+                <i class="bx bx-error me-1"></i><span class="fw-medium">${esc(L.OffSpineSummary || '')}:</span>
+                ${Array.from(counts.entries()).map(([id, n]) => `${typeNameOrDash(id)} (${n})`).join(' · ')}
+            </button>`;
+    };
+    const loadVersions = async () => {
+        const subjectId = val('tplSubjectId');
+        const code = currentRow?.chainCode;
+        if (!subjectId || !code) { versions = null; renderVersions(); return; }
+        try {
+            const data = await getJson(`/concept-chain-templates?subjectId=${encodeURIComponent(subjectId)}&includeArchived=true`);
+            versions = (data?.items || []).filter(t => t.chainCode === code)
+                .sort((a, b) => new Date(b.createdAt || b.effectiveFrom) - new Date(a.createdAt || a.effectiveFrom));
+        } catch { versions = []; }
+        renderVersions();
+    };
+    const renderVersions = () => {
+        const host = document.getElementById('tplVersions');
+        if (!host) return;
+        if (!versions || !versions.length) { host.innerHTML = `<div class="form-text">${esc(L.VersionsEmpty || '')}</div>`; return; }
+        const day = v => v ? new Date(v).toLocaleDateString() : '';
+        host.innerHTML = `<ul class="list-unstyled mb-0">${versions.map(t => {
+            const self = currentRow && t.conceptChainTemplateId === currentRow.conceptChainTemplateId;
+            const tone = t.isArchived ? 'secondary' : t.status === 'published' ? 'success' : 'primary';
+            const spine = (t.orderedConceptTypes || []).map(typeNameOrDash).join(' → ');
+            const who = t.updatedBy || t.createdBy;
+            const title = self
+                ? `<span class="fw-semibold text-heading">${esc(t.chainVersion || '—')}</span> <span class="badge bg-label-primary">${esc(L.ThisVersion || '')}</span>`
+                : `<a class="fw-semibold" href="/CRM/KnowledgeConcepts/Templates/Edit/${encodeURIComponent(t.conceptChainTemplateId)}">${esc(t.chainVersion || '—')}</a>`;
+            return `<li class="border-start border-2 ps-3 pb-3 position-relative">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">${title}<span class="badge bg-label-${tone}">${esc(t.isArchived ? 'archived' : t.status)}</span></div>
+                    <div class="small text-muted">${esc(day(t.effectiveFrom))}${t.effectiveTo ? ` – ${esc(day(t.effectiveTo))}` : ''}</div>
+                    ${who ? `<div class="small text-muted">${esc(L.UpdatedByLabel || '')}: ${esc(who)}</div>` : ''}
+                    <div class="small mt-1">${spine || '—'}</div>
+                </li>`;
+        }).join('')}</ul>`;
+    };
+    const renderSidePanel = () => { renderConnections(); renderNonConforming(); renderOffSpine(); };
+
     // ─── submit ─────────────────────────────────────────────────────────────────
     const submit = async () => {
         const id = val('templateFormId');
@@ -436,7 +643,11 @@
             chainVersion: val('tplChainVersion') || null,
             effectiveTo: fromDateInput(val('tplEffectiveTo'))
         };
-        if (!id) { payload.subjectId = val('tplSubjectId'); payload.chainCode = val('tplChainCode'); }
+        if (!id) {
+            payload.subjectId = val('tplSubjectId'); payload.chainCode = val('tplChainCode');
+            // WP-CT-FE-5: a saved template persists "Yok say" per click; a new one (incl. a new version) sends it here.
+            payload.ignoredNonConformingRelationshipIds = Array.from(ignoredIds);
+        }
 
         await envelope(await fetch(id ? `${base}/concept-chain-templates/${id}` : `${base}/concept-chain-templates`, {
             method: id ? 'PUT' : 'POST', credentials: 'same-origin', headers: jsonHeaders, body: JSON.stringify(payload)
@@ -551,6 +762,9 @@
         }));
         if (!row && branches.length === 0) branches = [{ name: '', steps: [] }];
 
+        currentRow = row;
+        ignoredIds = new Set((row?.ignoredNonConformingRelationshipIds || []).map(String));
+
         const frozen = norm(row?.status) === 'published';
         templateReadOnly = frozen;
         document.getElementById('conceptTemplateFrozenNote')?.classList.toggle('d-none', !frozen);
@@ -572,6 +786,8 @@
         // WP-CT-FE-2: the palette renders at once (counts "—"), then again when the subject's node counts arrive.
         await loadNodeCounts(val('tplSubjectId'));
         renderPalette();
+        renderConnections();
+        void loadVersions();
     };
 
     // ─── event wiring ─────────────────────────────────────────────────────────────
@@ -585,7 +801,7 @@
         subj?.addEventListener('change', () => { if (!subj.disabled) onSubjectChange(); });
         if ($) $(subj).on('change', () => { if (!subj.disabled) onSubjectChange(); });
         // WP-CT-FE-2: a (create-mode) subject change re-reads that subject's node counts for the palette.
-        const onSubjectPalette = () => { if (subj.disabled) return; void loadNodeCounts(val('tplSubjectId')).then(renderPalette); };
+        const onSubjectPalette = () => { if (subj.disabled) return; void loadNodeCounts(val('tplSubjectId')).then(() => { renderPalette(); renderConnections(); }); };
         subj?.addEventListener('change', onSubjectPalette);
         if ($) $(subj).on('change', onSubjectPalette);
 
@@ -658,6 +874,27 @@
             drawAllEdges();
         });
         window.addEventListener('resize', () => { pinLaneChrome(); drawAllEdges(); });
+
+        // WP-CT-FE-5: right-panel actions (draft only — the handlers bail on a read-only template).
+        document.addEventListener('click', event => {
+            const add = event.target.closest('.js-nc-add');
+            if (add) { event.preventDefault(); const bi = Number(add.dataset.b); moveTo(bi, branches[bi]?.steps.length ?? 0, { kind: 'type', typeId: add.dataset.ct }); return; }
+            const ign = event.target.closest('.js-nc-ignore');
+            if (ign) { event.preventDefault(); void setIgnored(ign.dataset.rel, true); return; }
+            const undo = event.target.closest('.js-nc-undo');
+            if (undo) { event.preventDefault(); void setIgnored(undo.dataset.rel, false); return; }
+            if (event.target.closest('.js-offspine-open')) {
+                event.preventDefault();
+                const btn = tabButton();
+                if (btn && window.bootstrap?.Tab) window.bootstrap.Tab.getOrCreateInstance(btn).show();
+                document.getElementById('tplSidePanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+        ['tplForWhom', 'tplModeratorRoleType'].forEach(id => {
+            const el = document.getElementById(id);
+            el?.addEventListener('change', renderConnections);
+            if ($ && el) $(el).on('change', renderConnections);
+        });
 
         // WP-CT-FE-4: drag sources (palette rows, step cards) + lane drop targets.
         document.addEventListener('dragstart', event => {

@@ -222,4 +222,37 @@
   <data name="MoveEarlier" xml:space="preserve"><value>Mover antes</value></data>
   <data name="MoveLater" xml:space="preserve"><value>Mover después</value></data>
   <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Este tipo ya está en esta rama</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Conexiones</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>No conformes</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Versiones</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Entradas</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Salidas</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} en la columna</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Nodos</value></data>
+  <data name="Relationships" xml:space="preserve"><value>Relaciones</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} en total · {1} no conformes</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Rutas de conocimiento</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Recorridos</value></data>
+  <data name="Visits" xml:space="preserve"><value>Visitas</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>Aún no hay una fuente que vincule estos registros con una plantilla de cadena.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Flujo de datos</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Tema</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Grafo de conceptos</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Plantilla de cadena</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Ruta de conocimiento</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Recorrido</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Visita</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>El tipo no está en la columna</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Orden invertido</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Tipos faltantes</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>Añadir a la rama {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Ignorar</value></data>
+  <data name="Undo" xml:space="preserve"><value>Deshacer</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} sin resolver</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>No hay relaciones no conformes sin resolver</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Ignoradas ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Fuera de la columna</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>Aún no hay otras versiones de este código</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>Esta versión</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Modificado por</value></data>
 </root>

@@ -222,4 +222,37 @@
   <data name="MoveEarlier" xml:space="preserve"><value>نقل للأمام</value></data>
   <data name="MoveLater" xml:space="preserve"><value>نقل للخلف</value></data>
   <data name="TypeAlreadyInBranch" xml:space="preserve"><value>هذا النوع موجود بالفعل في هذا الفرع</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>الروابط</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>غير مطابق</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>الإصدارات</value></data>
+  <data name="Inputs" xml:space="preserve"><value>المدخلات</value></data>
+  <data name="Outputs" xml:space="preserve"><value>المخرجات</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} في العمود الفقري</value></data>
+  <data name="Nodes" xml:space="preserve"><value>العُقد</value></data>
+  <data name="Relationships" xml:space="preserve"><value>العلاقات</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} إجمالًا · {1} غير مطابق</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>مسارات المعرفة</value></data>
+  <data name="Journeys" xml:space="preserve"><value>الرحلات</value></data>
+  <data name="Visits" xml:space="preserve"><value>الزيارات</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>لا يوجد مصدر يربط هذه السجلات بقالب السلسلة بعد.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>تدفق البيانات</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>مخطط المفاهيم</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>قالب السلسلة</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>مسار المعرفة</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>الرحلة</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>الزيارة</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>النوع ليس في العمود الفقري</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>الترتيب معكوس</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>الأنواع الناقصة</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>إضافة إلى الفرع {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="Undo" xml:space="preserve"><value>تراجع</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} غير محلول</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>لا توجد علاقات غير مطابقة غير محلولة</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>المتجاهَلة ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>خارج العمود الفقري</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>لا توجد إصدارات أخرى لهذا الرمز بعد</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>هذا الإصدار</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>آخر تعديل بواسطة</value></data>
 </root>
