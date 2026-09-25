@@ -149,6 +149,9 @@ public static class DataSeeder
             Console.WriteLine("Seeding tenant-97c5 CRM eligibility (WP-SCMM-11-follow-API) grants...");
             await SeedTenant97c5CrmEligibilityGrantAsync(database);
 
+            Console.WriteLine("Seeding tenant-97c5 CRM planned-visit (WP-MOB-B03) grants...");
+            await SeedTenant97c5CrmPlannedVisitGrantAsync(database);
+
             Console.WriteLine("Seeding tenant-97c5 workflow operator grant...");
             await SeedTenant97c5WorkflowGrantAsync(database);
 
@@ -505,6 +508,13 @@ public static class DataSeeder
             new("crm", "eligibility", "read", "CRM Eligibility Read", "Permission to view SCMM eligibility policies", moduleOverride: "crm-content-composition"),
             new("crm", "eligibility", "manage", "CRM Eligibility Manage", "Permission to create/update/archive SCMM eligibility policies", moduleOverride: "crm-content-composition"),
             new("crm", "eligibility", "evaluate", "CRM Eligibility Evaluate", "Permission to evaluate a context against an SCMM eligibility policy", moduleOverride: "crm-content-composition"),
+
+            // WP-MOB-B03 (MOD-0155 FU01 F-RBAC) — PlannedVisit canonical keys. Tenant-scoped (module code
+            // "crm-planned-visit" ∉ PlatformAdminModules → Scope=Tenant). They replace the DEV-ONLY crm.territory.*
+            // fallback PlannedVisitsController ran on. confirm is a SEPARATE key from manage (author-vs-confirmer SoD).
+            new("crm", "planned-visit", "read", "CRM Planned Visit Read", "Permission to view CRM planned visits and the planned-visit contract", moduleOverride: "crm-planned-visit"),
+            new("crm", "planned-visit", "manage", "CRM Planned Visit Manage", "Permission to create/update/cancel/archive CRM planned visits", moduleOverride: "crm-planned-visit"),
+            new("crm", "planned-visit", "confirm", "CRM Planned Visit Confirm", "Permission to confirm CRM planned visits (separate from manage for SoD)", moduleOverride: "crm-planned-visit"),
 
             new("mod0251", "employee", "search", "Search Employees", "Permission to search MOD-0251 employee registry records"),
             new("mod0251", "employee", "view", "View Employee", "Permission to view MOD-0251 employee records"),
@@ -1591,6 +1601,54 @@ public static class DataSeeder
         }
 
         Console.WriteLine($"Granted {granted} missing crm.eligibility.* permission(s) to tenant-97c5 Admin role.");
+    }
+
+    // WP-MOB-B03 — grant crm.planned-visit.read/manage/confirm to the tenant-97c5 Admin role: the SAME role that today
+    // holds the DEV-ONLY crm.territory.* fallback PlannedVisitsController ran on, so switching the controller to the
+    // canonical keys causes NO access regression. Idempotent, explicit key allowlist, GUID-safe
+    // (RolePermission.SystemGrant). Same shape as the eligibility grant.
+    private static async Task SeedTenant97c5CrmPlannedVisitGrantAsync(IMongoDatabase database)
+    {
+        var roleCol = database.GetCollection<Role>("roles");
+        var permCol = database.GetCollection<Permission>("permissions");
+        var rpCol = database.GetCollection<RolePermission>("rolePermissions");
+
+        var adminRole = await roleCol
+            .Find(r => r.TenantId == Tenant97c5Id && r.Name == DefaultRolePermissionTemplate.AdminRole && !r.IsDeleted)
+            .FirstOrDefaultAsync();
+        if (adminRole is null)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM planned-visit grant: Admin role not found.");
+            return;
+        }
+
+        var keys = new[] { "crm.planned-visit.read", "crm.planned-visit.manage", "crm.planned-visit.confirm" };
+        var perms = await permCol.Find(p => !p.IsDeleted && keys.Contains(p.Key)).ToListAsync();
+        if (perms.Count == 0)
+        {
+            Console.WriteLine("Skipped tenant-97c5 CRM planned-visit grant: no crm.planned-visit.* permissions in catalog.");
+            return;
+        }
+
+        var granted = 0;
+        foreach (var permission in perms)
+        {
+            var exists = await rpCol.Find(rp =>
+                    rp.TenantId == Tenant97c5Id
+                    && rp.RoleId == adminRole.Id
+                    && rp.PermissionId == permission.Id
+                    && !rp.IsDeleted)
+                .AnyAsync();
+            if (exists)
+            {
+                continue;
+            }
+
+            await rpCol.InsertOneAsync(RolePermission.SystemGrant(adminRole.Id, permission.Id, Tenant97c5Id, SystemUser));
+            granted++;
+        }
+
+        Console.WriteLine($"Granted {granted} missing crm.planned-visit.* permission(s) to tenant-97c5 Admin role.");
     }
 
     // MOD-0290-FU02-RBAC — grant the Brand/Product master permissions to the tenant-97c5 operator so the

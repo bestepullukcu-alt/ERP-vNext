@@ -54,6 +54,24 @@ crm.knowledge.path.read,0
 crm.knowledge.read,0
 crm.knowledge.subject.manage,0
 crm.knowledge.subject.read,0
+# WP-MOB-B03 — 3 planned-visit keys, stated Tenant (0): moduleOverride "crm-planned-visit" is not in
+# PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25).
+crm.planned-visit.confirm,0
+crm.planned-visit.manage,0
+crm.planned-visit.read,0
+# SCMM-12-API / SCMM-14 / SCMM-11-follow-API — 10 content-composition keys, stated Tenant (0): moduleOverride
+# "crm-content-composition" is not in PlatformAdminModules; live diten_auth_v3 Scope=0 (verified 2026-09-25). These
+# were seeded without a baseline row, so Baseline_covers_every_seeded_permission_and_nothing_else was already red.
+crm.claim.approve,0
+crm.claim.manage,0
+crm.claim.read,0
+crm.content-scope.manage,0
+crm.content-scope.read,0
+crm.content-set.manage,0
+crm.content-set.read,0
+crm.eligibility.evaluate,0
+crm.eligibility.manage,0
+crm.eligibility.read,0
 crm.territory.model.manage,0
 crm.territory.model.read,0
 crm.territory.node.manage,0
