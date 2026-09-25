@@ -60,6 +60,25 @@ public static class UserListRules
             return false;
         }
 
+        return TryBuildFrom(request, request.Start, request.Length, out criteria, out failure);
+    }
+
+    /// <summary>
+    /// BL-452 — the export of the SAME list: the same search, order and filters, validated by the same rules with the same
+    /// <c>USERS_LIST_*</c> codes, but from the first row and up to <paramref name="rowCap"/> rows. The request's
+    /// <c>Start</c>/<c>Length</c> are never read here: the file is every matching row, not the page on screen.
+    /// </summary>
+    public static bool TryBuildExport(UserListRequest request, int rowCap, out UserListCriteria criteria, out Response<UserListResult>? failure)
+    {
+        // Mongo reads Limit(0) as "no limit": a zero cap would silently lift the ceiling it exists to enforce.
+        ArgumentOutOfRangeException.ThrowIfLessThan(rowCap, 1);
+        return TryBuildFrom(request, 0, rowCap, out criteria, out failure);
+    }
+
+    private static bool TryBuildFrom(UserListRequest request, int skip, int take, out UserListCriteria criteria, out Response<UserListResult>? failure)
+    {
+        criteria = default!;
+
         var key = UserListSortKey.CreatedAt;
         var descending = true;
         if (!string.IsNullOrWhiteSpace(request.OrderBy))
@@ -116,7 +135,7 @@ public static class UserListRules
         if (search is { Length: > MaxSearchLength }) search = search[..MaxSearchLength];
 
         criteria = new UserListCriteria(
-            request.Start, request.Length, string.IsNullOrEmpty(search) ? null : search,
+            skip, take, string.IsNullOrEmpty(search) ? null : search,
             new UserListSort(key, descending), statuses, kinds, RestrictToUserIds: null);
         failure = null;
         return true;

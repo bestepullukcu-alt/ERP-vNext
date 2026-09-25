@@ -922,4 +922,8 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>التنقل بين علامات التبويب (عند التركيز على علامة تبويب)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>تعديل المهمة</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>العودة إلى قائمة المهام</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>عدد الصفوف المراد تصديرها كبير جدًا (أكثر من 50,000). ضيّق عامل التصفية ثم حاول مرة أخرى.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
 </root>

@@ -922,4 +922,8 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Переход между вкладками (когда вкладка в фокусе)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Изменить задачу</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Вернуться к списку задач</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Слишком много строк для экспорта (более 50 000). Сузьте фильтр и повторите попытку.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
 </root>

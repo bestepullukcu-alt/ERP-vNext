@@ -110,7 +110,10 @@ builder.Services.AddCors(options =>
             .WithOrigins("http://localhost:5001", "http://localhost:5011")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials());
+            .AllowCredentials()
+            // BL-452: the list export's file name travels in Content-Disposition; a cross-origin fetch (Web :5001 →
+            // gateway :5000 in development) can read only the response headers CORS exposes.
+            .WithExposedHeaders("Content-Disposition"));
 });
 
 var app = builder.Build();

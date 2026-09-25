@@ -982,4 +982,8 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Sekmeler arasında geç (odak bir sekmedeyken)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Görevi düzenle</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Görev listesine dön</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Dışa aktarılacak satır sayısı çok fazla (50.000'den fazla). Süzgeci daraltıp yeniden deneyin.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
 </root>

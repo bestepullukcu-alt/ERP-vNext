@@ -182,6 +182,14 @@ describe("behaviour: what the page hands the factory", () => {
     expect(roles.orderable).toBe(false);
   });
 
+  test("BL-452: CSV/Excel are the service's export of the whole filtered list, not the page in hand", async () => {
+    const { options } = await run(ALL);
+    expect(options.export).toEqual({ mode: "server", url: "http://gw/api/users/export", fileName: "users" });
+    // The export's column keys are the list DTO's names — the ones AuthService's export whitelist declares.
+    const exportKeys = options.toolbar.exportColumns.map((i) => options.config.columns[i].data);
+    expect(exportKeys).toEqual(["email", "firstName", "lastName", "roles", "accountKind", "status"]);
+  });
+
   test("the four KPI cards are written from data.summary — not counted from the page of rows", async () => {
     const { options } = await run(ALL);
     expect(typeof options.onResponse, "the page hands the factory no onResponse: the cards stay 0").toBe("function");
