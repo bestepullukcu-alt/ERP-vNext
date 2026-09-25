@@ -6785,6 +6785,37 @@ Oracle'da periyodik iş şablonu iş tipini taşır. İş: şablona isteğe bağ
 yolu tipi göreve yazar, şablon formunda tip seçici (7 dil). Başlık şablonunda yer tutucu yok (metin olduğu gibi kopyalanıyor) — "{ay}"
 gibi dönem etiketi istenirse aynı işe eklenir.
 
+
+### BL-465
+
+**Görev yöneticisi kimseye iş atayamıyor: atama kapsamı yalnız kendi şirketi / astları; açık kapsam verme ekranı yok**
+
+DURUM: AÇIK — KARAR BEKLİYOR · SAHİP: CT (Roller turu ile) · BULAN: canlı kurulum (sahip, 2026-09-25) · KAYIT: 2026-09-25
+
+Ölçüm (canlı, ditenteknoloji.com): sahibin hesabıyla "Yinelenen Görev Kuralı Ekle" ekranında kişi ve pozisyon seçicileri boş;
+`/Tasks/api/assignable-people` → `people: []`, `excluded: { total: 7, outOfScope: 7 }`; `assignable-positions` → `[]`. Kural BL-057
+(`TaskAssignmentScopeResolver`): aday (1) aynı tüzel kişilikte, (2) raporlama zincirinde altımda ya da (3) bana açıkça verilmiş birim/
+pozisyon kapsamında ise atanabilir; kapsam atayanın AKTİF pozisyonundan türetilir (`OrgDataScopeResolver`). Sahibin hesabının
+organizasyonda aktif pozisyonu yok → kimse kapsamda değil. (3) numaralı "açık kapsam" için ekran yok. Sonuç: merkezi görev yöneticisi
+(tekrarlayan kural, şablon kuran kişi) kimseye iş atayamıyor. Oracle'da görev/İK yöneticilerine "View All" güvenlik profili, SAP'de
+yapısal yetkide geniş kapsam verilir. Öneri: açıkça verilen, denetlenen kiracı geneli atama izni (`platform.tasks.assign-any`, SuperAdmin
+şablonunda değil, elle verilir) ya da (3) için kapsam verme ekranı. GDPR/KVKK sınırı (Polonya–Türkiye) nedeniyle varsayılan değil,
+açık izin.
+
+---
+
+### BL-466
+
+**Yinelenen kural "ayın ilk pazartesisi" gibi gün kalıbını desteklemiyor**
+
+DURUM: AÇIK · SAHİP: CT · BULAN: canlı kurulum (sahip isteği, 2026-09-25) · KAYIT: 2026-09-25
+
+Ölçüm: `TaskRecurrenceFrequency` = Günlük/Haftalık/Aylık/Çeyreklik/Yıllık + aralık; aylık kural başlangıç gününe bağlı
+(`TaskRecurrenceSchedule.OccurrenceAt` → `AddMonths`). "Ayın ilk pazartesisi", "ayın son iş günü" gibi n'inci gün kalıbı yok (iCalendar
+RRULE `BYDAY=1MO`). Geçici yol: ayın 1'inde üret, vade 7 gün (ilk pazartesi her zaman 1–7 arasındadır). SAP PM ve Oracle zamanlayıcıları
+n'inci hafta içi günü kalıbını destekler. İş: kurala isteğe bağlı "ayın n'inci {gün}" ve "ayın son iş günü" (çalışma takvimiyle), form
++ zamanlama + testler (7 dil).
+
 ---
 
 ### BL-393
