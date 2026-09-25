@@ -6545,7 +6545,8 @@ yeniden denenmiyor · başında boşluk/LF olan formül hücresi korunmuyor (dü
 **Paket 2 kabul edildi (WP-UI-EXPORT-02, c3de1c02c → merge 0f7c17d0a, 2026-09-25):** PDF ve Yazdır tek kontrollü-kopya nesnesinden
 (ekran, şirket, filtre, arama, sıralama, satır, oluşturan, zaman; altbilgi "kontrolsüz kopya" + sayfa x/y); sunucu modunda satırlar
 paket 1'in CSV ucundan; zh/ar'da PDF yazdır penceresine (pdfmake yalnız Roboto: Arapça 0/256, CJK 0/20 992 ölçüldü). CT kabul
-düzeltmesi: Content-Type text/html olan 200 dosya sayılmaz (giriş yönlendirmesi). **Nota alınan:** `createList` kullanmayan eski
+düzeltmesi: Content-Type text/html olan 200 dosya sayılmaz (giriş yönlendirmesi). **Canlı: sahip A–D ok (2026-09-25)** — Yazdır bloğu,
+PDF = ekran (Soyad gizli, Davet edildi süzgeci), İşlem menüsü Türkçe, Arapça'da yazdır yolu. **Nota alınan:** `createList` kullanmayan eski
 sayfalarda (≈150, `exportButtons` çağıranlar) Yazdır/PDF hâlâ ekrandaki sayfayı basar ve başlık "Satır: 10 / Filtre: yok" der —
 altın geçişi (BL-440) tamamlandıkça kapanır, ayrı iş açılmadı · Chrome'da kontrolsüz kopya satırı iki kez (kenar kutusu + gövde sonu
 yedeği), Firefox/Safari'de sayfa x/y yok · zaman dilimi tarayıcının, adıyla yazılıyor · CSV dışa aktarma sürerken PDF tıklaması
