@@ -6542,6 +6542,13 @@ metin hücre. **Nota alındı (bu pakette değil):** Golden `records.export` ana
 izin tasarımında çözülür) · XLSX 50 000 × 8 hücre stil maliyeti ölçülmedi (paket 4 eşiği) · 401'de tablo yenileniyor, dışa aktarma
 yeniden denenmiyor · başında boşluk/LF olan formül hücresi korunmuyor (düşük risk).
 
+**2026-09-25 — Paket 2 hazır, CT kabulü bekliyor** (WP-UI-EXPORT-02, `feat/ui-export-pdf`, commit CT'de): PDF + Yazdır =
+kontrollü kopya (başlık bloğu: ekran, şirket, filtre, arama, sıralama, satır, oluşturan, saat dilimli tarih; altbilgi: kontrolsüz kopya +
+sayfa x/y), sunucu modunda satırlar paket 1'in CSV'sinden (`exportUrl('csv')`), 7 dil, kural + doğrulayıcı mekaniği. **Paket 4'e not
+(sunucu tarafı PDF):** vendored pdfmake yalnız Roboto (Arapça 0/256, CJK 0/20 992) → zh/ar'da PDF düğmesi tarayıcı yazdırmasına
+düşüyor; gerçek zh/ar PDF'i ve 50 000 satırlık PDF (tarayıcı belleği) sunucuda üretilmeli. Firefox/Safari'de yazdırmada sayfa x/y
+yok (`@page` kenar kutusu desteklenmiyor).
+
 **Bugün:** liste ekranlarında tarayıcı tarafı düğmeler (Yazdır/CSV/Excel/PDF/Kopyala, `dt-defaults.js`); sunucu modunda yalnız
 ekrandaki sayfa çıkıyor; denetim kaydı ve yetki ayrımı yok. Doğru yapılmış iki örnek: İş Raporu (sunucu tarafı, ekranla aynı sorgu,
 kiracı denetim kaydı `IDataExportAuditWriter`, BL-346/347) ve CRM Kişiler (XLSX şablon = dışa aktarma şeması, geri yüklenebilir,

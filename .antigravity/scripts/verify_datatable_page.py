@@ -433,6 +433,7 @@ def resolve_list_shell(root: Path, data_table_path: Path, data_table_html: str) 
 
 LIST_FACTORY_CALL = re.compile(r"DitenDataTable\.createList\(")
 LIST_FACTORY_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "diten-datatable.js"
+DT_DEFAULTS_RELATIVE = Path("frontend") / "Diten.Web" / "wwwroot" / "assets" / "js" / "dt-defaults.js"
 
 
 def strip_js_comments(text: str) -> str:
@@ -534,6 +535,22 @@ def resolve_list_factory(root: Path, index_js: Path, js_text: str, page_data_mod
         mechanics.append((
             "Server export (BL-452): CSV/Excel ask export.url for every row — visible columns, filters, search, order; never start/length",
             export_branch,
+            ""))
+        # BL-452 package 2 — the CONTROLLED COPY: on a server-export list PDF and print take their rows from the SAME
+        # request as the CSV button (exportUrl('csv'), parsed), never from the page DataTables holds. Three production
+        # sources must agree: the factory's row provider asks exportUrl('csv'), the factory hands that provider to the
+        # toolbar only when the list declares a server export, and dt-defaults' PDF and print entries both prefer it.
+        defaults_path = root / DT_DEFAULTS_RELATIVE
+        defaults = strip_js_comments(read_text(defaults_path)) if defaults_path.exists() else ""
+        cc_rows = re.search(r"async function controlledCopyRows\(\) \{([\s\S]*?)\n        \}", factory)
+        cc_branch = bool(cc_rows) and "exportUrl('csv')" in cc_rows.group(1) and "parseCsv(" in cc_rows.group(1) \
+            and not re.search(r"exportData\(|dt\.rows\(|\.data\(\)", cc_rows.group(1)) \
+            and bool(re.search(r"rows: exportSpec \? function \(\) \{ return handle\.controlledCopyRows\(\); \}", factory)) \
+            and len(re.findall(r"runControlledCopy\('(?:pdf|print)', dt, exportOptions, controlledCopy\)", defaults)) == 2 \
+            and "typeof source.rows === 'function' ? await source.rows() : dt.buttons.exportData(exportOptions)" in defaults
+        mechanics.append((
+            "Server export PDF/print (BL-452 package 2): controlled-copy rows from exportUrl('csv') — every matching row, never the page",
+            cc_branch,
             ""))
         if not hook_client_only:
             checks.append(Check("List factory keeps its filter hook client-only", False,

@@ -868,6 +868,38 @@ window.DitenDataTable = (function () {
         setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
     }
 
+    // RFC 4180, as the service writes it (BL-452 package 1: UTF-8 BOM, `,`, quoted fields, "" for a quote, CRLF or LF,
+    // a line break INSIDE a quoted field). Returns rows of strings; the trailing line break makes no empty row.
+    function parseCsv(text) {
+        var src = String(text || '');
+        if (src.charCodeAt(0) === 0xFEFF) src = src.slice(1);
+        var rows = [];
+        var row = [];
+        var field = '';
+        var quoted = false;
+        for (var i = 0; i < src.length; i++) {
+            var ch = src[i];
+            if (quoted) {
+                if (ch === '"') {
+                    if (src[i + 1] === '"') { field += '"'; i++; } else { quoted = false; }
+                } else {
+                    field += ch;
+                }
+            } else if (ch === '"') {
+                quoted = true;
+            } else if (ch === ',') {
+                row.push(field); field = '';
+            } else if (ch === '\r' || ch === '\n') {
+                if (ch === '\r' && src[i + 1] === '\n') i++;
+                row.push(field); rows.push(row); row = []; field = '';
+            } else {
+                field += ch;
+            }
+        }
+        if (field !== '' || row.length) { row.push(field); rows.push(row); }
+        return rows;
+    }
+
     function normalizeExportSpec(spec, dataMode) {
         if (spec === undefined || spec === null) return null;
         if (spec.mode !== 'server') {
@@ -915,7 +947,8 @@ window.DitenDataTable = (function () {
      *   onResponse(json) — server mode: called with every list envelope (the page's summary/KPI source);
      *                      the last one is also on handle.lastResponse.
      *   export:    { mode: 'server', url, fileName } — server mode only (BL-452): CSV/Excel ask `url` for EVERY matching row
-     *              with the visible columns, the applied filters, search and order. Left out = the browser-side buttons.
+     *              with the visible columns, the applied filters, search and order; PDF/print take their rows from the
+     *              same url's CSV (package 2). Left out = the browser-side buttons, PDF/print from the rows on the table.
      *   toolbar:   { addNewText, addNewAttr, onAddNew, exportColumns, colvisColumns, extraButtons },
      *   filters:   { hostId, collapseId, applyBtn, resetBtn, fields: [{ id, key, kind, matches(row, value) }], loadOptions() },
      *   savedView: { moduleKey, pageKey, saveViewColumnIndexes, defaultVisibleColumnIndexes, baseOrder },
@@ -1053,7 +1086,11 @@ window.DitenDataTable = (function () {
                 {
                     exportColumns: toolbar.exportColumns,
                     colvisColumns: toolbar.colvisColumns,
-                    serverExport: exportSpec ? function (format) { return handle.exportToServer(format); } : undefined
+                    serverExport: exportSpec ? function (format) { return handle.exportToServer(format); } : undefined,
+                    controlledCopy: {
+                        rows: exportSpec ? function () { return handle.controlledCopyRows(); } : undefined,
+                        meta: function (api) { return { filters: describeAppliedFilters(), search: (api || dt)?.search?.() }; }
+                    }
                 }
             ),
             initComplete: function (settings, json) {
@@ -1194,20 +1231,32 @@ window.DitenDataTable = (function () {
             return exportSpec.url + (exportSpec.url.indexOf('?') === -1 ? '?' : '&') + query;
         }
 
+        // One request, one set of answers: the file download and the controlled copy both go through here. Returns the
+        // response when it is a file, null when the reader has already been told why not (401/403/413/other).
+        async function fetchExport(url) {
+            var headers = Object.assign({}, getAuthHeaders());
+            // The file's headers are written in the reader's language: the service reads the request culture.
+            if (window.CurrentLanguage) headers['Accept-Language'] = window.CurrentLanguage;
+            var response = await fetch(url, { method: 'GET', credentials: 'include', headers: headers });
+            handle.lastExport = { url: url, status: response.status };
+            if (response.status === 401) { window.DtDefaults.handleUnauthorized?.(); return null; }
+            if (response.status === 413) { window.showToast?.('ExportTooLarge', 'warning'); return null; }
+            if (response.status === 403) { window.showToast?.('AccessDenied', 'error'); return null; }
+            if (!response.ok) { window.showToast?.('ErrorOccurred', 'error'); return null; }
+            // CT acceptance (2026-09-25): a 200 that is an HTML page — a login redirect fetch followed — is not a file. It is
+            // neither saved as .csv nor parsed into rows for a printout.
+            var contentType = String(response.headers?.get?.('Content-Type') || '').toLowerCase();
+            if (contentType.indexOf('text/html') !== -1) { window.showToast?.('ErrorOccurred', 'error'); return null; }
+            return response;
+        }
+
         async function exportToServer(format) {
             if (!exportSpec || exportBusy) return null;
             exportBusy = true;
             var url = exportUrl(format);
             try {
-                var headers = Object.assign({}, getAuthHeaders());
-                // The file's headers are written in the reader's language: the service reads the request culture.
-                if (window.CurrentLanguage) headers['Accept-Language'] = window.CurrentLanguage;
-                var response = await fetch(url, { method: 'GET', credentials: 'include', headers: headers });
-                handle.lastExport = { url: url, status: response.status };
-                if (response.status === 401) { window.DtDefaults.handleUnauthorized?.(); return handle.lastExport; }
-                if (response.status === 413) { window.showToast?.('ExportTooLarge', 'warning'); return handle.lastExport; }
-                if (response.status === 403) { window.showToast?.('AccessDenied', 'error'); return handle.lastExport; }
-                if (!response.ok) { window.showToast?.('ErrorOccurred', 'error'); return handle.lastExport; }
+                var response = await fetchExport(url);
+                if (!response) return handle.lastExport;
                 var fileName = exportFileName(response, exportSpec.fileName || savedViewSpec.pageKey || tableEl.id || 'export', format);
                 saveBlob(await response.blob(), fileName);
                 handle.lastExport.fileName = fileName;
@@ -1222,6 +1271,40 @@ window.DitenDataTable = (function () {
             }
         }
 
+        // BL-452 package 2: PDF and print of a server-export list are the SAME rows as the CSV — the service's CSV for
+        // the list as the reader sees it (exportUrl('csv'): visible columns, filters, search, order; no start/length),
+        // parsed, never the page DataTables holds. null = refused (413 → ExportTooLarge) and already said.
+        async function controlledCopyRows() {
+            if (exportBusy) return null;
+            exportBusy = true;
+            var url = exportUrl('csv');
+            try {
+                var response = await fetchExport(url);
+                if (!response) return null;
+                var rows = parseCsv(await response.text());
+                return { header: rows[0] || [], body: rows.slice(1) };
+            } finally {
+                exportBusy = false;
+            }
+        }
+
+        // The APPLIED filters in the reader's words: the control's own label ("Durum") and the chosen options' text
+        // ("Davet edildi") — what the filter bar shows, not the wire values.
+        function describeAppliedFilters() {
+            return fields.map(function (field) {
+                var values = field.kind === 'multi' ? normalizeArray(appliedFilters[field.key]) : [normalizeScalar(appliedFilters[field.key])].filter(Boolean);
+                if (!values.length) return null;
+                var el = document.getElementById(field.id);
+                var labelEl = el?.id ? document.querySelector('label[for="' + el.id + '"]') : null;
+                var label = normalizeScalar(el?.getAttribute?.('data-placeholder') || el?.getAttribute?.('aria-label') || labelEl?.textContent || field.key);
+                var texts = values.map(function (value) {
+                    var option = el?.options ? Array.prototype.find.call(el.options, function (o) { return o.value === value; }) : null;
+                    return normalizeScalar(option?.textContent) || value;
+                });
+                return { label: label, values: texts };
+            }).filter(Boolean);
+        }
+
         Object.assign(handle, {
             dt: dt,
             tableEl: tableEl,
@@ -1229,6 +1312,7 @@ window.DitenDataTable = (function () {
             exportMode: exportSpec ? 'server' : 'client',
             exportUrl: function (format) { return exportSpec ? exportUrl(format) : null; },
             exportToServer: exportToServer,
+            controlledCopyRows: controlledCopyRows,
             lastExport: null,
             get appliedFilters() { return appliedFilters; },
             dataMode: options.dataMode,
@@ -1319,6 +1403,7 @@ window.DitenDataTable = (function () {
         unwrapResponseData: unwrapResponseData,
         toServerQuery: toServerQuery,
         toExportQuery: toExportQuery,
+        parseCsv: parseCsv,
         toDataTablesResponse: toDataTablesResponse,
         updateBulkBar: updateBulkBar
     };
