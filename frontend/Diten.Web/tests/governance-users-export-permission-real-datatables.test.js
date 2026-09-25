@@ -96,10 +96,11 @@ const menu = (dt) => ({
 });
 
 describe("the Users Action menu follows auth.users.export", () => {
-  test("a reader WITHOUT the export key sees no Print, CSV, Excel or PDF — Copy stays", async () => {
+  test("a reader WITHOUT the export key gets no Action menu at all — no Print, CSV, Excel, PDF, not even Copy (owner, 2026-09-25)", async () => {
     const handle = await mountUsers(["auth.users.read"]);
 
-    expect(menu(handle.dt)).toEqual({ print: 0, csv: 0, excel: 0, pdf: 0, copy: 1 });
+    expect(menu(handle.dt)).toEqual({ print: 0, csv: 0, excel: 0, pdf: 0, copy: 0 });
+    expect(document.querySelector(".dt-export-collection-btn"), "the Action button itself is not drawn").toBeNull();
     handle.dt.destroy();
   });
 

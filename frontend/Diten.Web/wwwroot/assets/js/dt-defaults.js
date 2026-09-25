@@ -1092,8 +1092,9 @@ window.DtDefaults = (function () {
         /*
          * BL-452 (standard 1) — the file is a right of its own: a page passing `exportPermitted: false` (the reader lacks
          * its {module}.export key) gets no Print / CSV / Excel / PDF entry at all — not a disabled one, not one that
-         * answers 403. Copy stays (it puts the rows the reader already sees on the clipboard, nothing leaves the screen).
-         * Omitted = permitted: every page that never heard of this keeps the menu it had.
+         * answers 403 — and no Copy either (owner, 2026-09-25: Copy puts the table's rows on the clipboard, which is the data
+         * leaving the screen just like a CSV). With nothing left in it, the Action button itself is not drawn (unless the page
+         * adds its own module items to that menu). Omitted = permitted: every page that never heard of this keeps its menu.
          */
         var exportPermitted = options.exportPermitted !== false;
 
@@ -1117,7 +1118,7 @@ window.DtDefaults = (function () {
                     action: function (e, dt) { return runControlledCopy('pdf', dt, exportOptions, controlledCopy); }
                 },
                 { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: exportOptions }
-            ].filter(function (b) { return exportPermitted || b.extend === 'copy'; })
+            ].filter(function () { return exportPermitted; })
         };
 
         // Module-supplied entries for the Action dropdown (e.g. MOD-0150 Contacts template download / server-side
@@ -1128,7 +1129,7 @@ window.DtDefaults = (function () {
             : [];
         var importBtn = extraButtons && extraButtons.importBtn;
 
-        if (moduleItems.length || importBtn) {
+        if ((moduleItems.length || importBtn) && exportBtn.buttons.length) {
             exportBtn.buttons.push({ text: '<hr class="my-0">', className: 'dropdown-item p-0 pe-none bg-transparent border-0', action: function() {} });
         }
 
@@ -1170,7 +1171,8 @@ window.DtDefaults = (function () {
             ]
         };
 
-        var group1 = [exportBtn];
+        // BL-452 — an Action menu with no entry is not drawn (a reader without the export right, no module items).
+        var group1 = exportBtn.buttons.length ? [exportBtn] : [];
         var group2 = [];
         
         if (!options.skipColVis) {
@@ -1180,9 +1182,7 @@ window.DtDefaults = (function () {
         if (extraButtons && extraButtons.filterBtn) group2.push(extraButtons.filterBtn);
         if (extraButtons && extraButtons.saveFilterBtn) group2.push(extraButtons.saveFilterBtn);
 
-        var features = [
-            { buttons: group1 }
-        ];
+        var features = group1.length ? [{ buttons: group1 }] : [];
 
         // Only emit the secondary group when it actually has buttons. An empty group (e.g. a
         // table with skipColVis and no filter/save button, like Admin Users) would otherwise

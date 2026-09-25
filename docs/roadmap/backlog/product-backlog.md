@@ -6752,6 +6752,23 @@ satırlar aynı listede iş olaylarının arasına giriyor: sahip her detaya bak
 ikinci sayfaya kaydı ("eskiler kayboluyor"). İş: liste varsayılanında meta-denetim satırları gizli + "Okuma kayıtlarını göster" süzgeci
 (SAP SM20'de okuma denetimi ayrı süzülür; Veeva'da "audit trail views" ayrı rapor). Kayıt yazılmaya devam eder; yalnız görünüm.
 
+
+### BL-463
+
+**Yetki değişikliği kullanıcıya bir sonraki girişte ulaşıyor — geri almada 120 dakikaya kadar gecikme**
+
+DURUM: AÇIK · SAHİP: CT (Roller turu) · BULAN: sahip canlı test (2026-09-25) · KAYIT: 2026-09-25
+
+Ölçüm: izinler erişim jetonunun içinde (TokenService `permission` iddiaları); Web sayfası izinleri o jetondan okur
+(`_PermissionBootstrap` → `IPermissionSnapshot`). Jeton ömrü 120 dk (`AccessTokenExpirationMinutes`), yenileme 7 gün. Sonuç: rolüne
+izin eklenen kullanıcı çıkıp girene (ya da jeton yenilenene) kadar yeni izni görmez; sahip Ayşe'ye dışa aktarma verdiğinde menü ancak
+yeniden girişte geldi. Verme yönünde bu sektörde normal (SAP SU01/PFCG: değişiklik bir sonraki oturumda; Oracle Fusion: yeni oturumda).
+**Geri alma yönünde risk:** bir yetki kaldırıldığında sunucu tarafı `[HasPermission]` da aynı jetona baktığı için kullanıcı 120 dk'ya
+kadar işlemi yapmaya devam edebilir. İş (Roller turu, MOD-0018-FU13 "izin önbelleği geçersizleştirme" paketiyle birlikte ölçülecek):
+(a) Rol İzinleri / Rol Atama ekranında "değişiklik kullanıcının bir sonraki girişinde geçerli olur" notu (7 dil), (b) izin KALDIRMA ve
+rol geri alma anında etkilenen kullanıcıların yenileme jetonları iptal + erişim jetonu ömrü kısaltma (ör. 15 dk) ya da jetona izin
+sürümü damgası ve sunucuda sürüm kontrolü. Karar Roller turunda Blueprint + SAP + Oracle karşılaştırmasıyla.
+
 ---
 
 ### BL-393
