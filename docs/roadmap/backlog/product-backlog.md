@@ -6739,6 +6739,19 @@ zorunlu (form + komut doğrulaması, 2 dil), bitiş geçince erişim kapanır (z
 sayfasında "elle / plan / bitiş" görünür. Kullanıcı sınırı elle verilen modülden etkilenmez (kota planın). SAP/Oracle: trial
 entitlement her zaman süreli ve gerekçeli.
 
+
+### BL-462
+
+**Denetim Günlüğü kendi okunmasını ana listede gösteriyor — iş olayları sayfadan kayıyor**
+
+DURUM: AÇIK · SAHİP: CT (platform turu) · BULAN: sahip canlı test (2026-09-25) · KAYIT: 2026-09-25
+
+Platform, denetim listesini açmayı ve bir kaydın detayına bakmayı da denetliyor (DataPrivacy, `IsMetaAudit=true`,
+`PlatformAudit.GetAuditEventListQuery/GetAuditEventByIdQuery`; dev'de ~970 satır). Doğru bir kural (kim neyi okudu, KVKK/GxP), ama bu
+satırlar aynı listede iş olaylarının arasına giriyor: sahip her detaya baktığında yeni bir "Execute" satırı eklendi ve kullanıcı olayları
+ikinci sayfaya kaydı ("eskiler kayboluyor"). İş: liste varsayılanında meta-denetim satırları gizli + "Okuma kayıtlarını göster" süzgeci
+(SAP SM20'de okuma denetimi ayrı süzülür; Veeva'da "audit trail views" ayrı rapor). Kayıt yazılmaya devam eder; yalnız görünüm.
+
 ---
 
 ### BL-393
