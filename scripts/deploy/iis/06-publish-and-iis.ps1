@@ -196,6 +196,17 @@ function Write-SiteConfig($s, [string]$dir) {
     }
     $anc.AppendChild($envNode) | Out-Null
 
+    # IIS WebDAV modulu (sunucuda eski sistemden kurulu) PUT/DELETE isteklerini uygulamaya ulasmadan 405 ile reddeder.
+    # Her vNext sitesinde modulu ve handler'ini kaldir; sunucu genelindeki WebDAV'a dokunulmaz.
+    $wsAll = $x.SelectSingleNode("//system.webServer")
+    foreach ($pair in @(@("modules", "WebDAVModule"), @("handlers", "WebDAV"))) {
+        $sec = $wsAll.SelectSingleNode($pair[0])
+        if (-not $sec) { $sec = $x.CreateElement($pair[0]); $wsAll.PrependChild($sec) | Out-Null }
+        if (-not $sec.SelectSingleNode("remove[@name='" + $pair[1] + "']")) {
+            $rm = $x.CreateElement("remove"); $rm.SetAttribute("name", $pair[1]); $sec.PrependChild($rm) | Out-Null
+        }
+    }
+
     if ($s.Key -eq "web") {
         $ws = $x.SelectSingleNode("//system.webServer")
         $old = $ws.SelectSingleNode("rewrite"); if ($old) { $ws.RemoveChild($old) | Out-Null }
