@@ -6645,7 +6645,7 @@ süzgeciyle, 7 dilde ad; kısayol katmanı (BL-438) ile ortak kayıt. Karar geli
 
 **Kullanıcı yaşam döngüsü denetlenmiyor — ekleme/silme/davet/parola sıfırlama hiçbir denetim günlüğüne yazılmıyor**
 
-DURUM: AÇIK · SAHİP: CT (Auth/Platform) · BULAN: sahip (platform kontrolü P1: "en son kayıt bu mu?") · KAYIT: 2026-09-24
+DURUM: KOD TAMAM (WP-AUTH-PLATFORM-LINKS-01, merge a8406b353, 2026-09-25) — sahip canlı kontrolü bekliyor · önceki: AÇIK · SAHİP: CT (Auth/Platform) · BULAN: sahip (platform kontrolü P1: "en son kayıt bu mu?") · KAYIT: 2026-09-24
 
 Ölçüldü: `CreateUserCommandHandler` ve `DeleteUserCommandHandler` ne `IRbacAuditRecorder` ne `IAuditableCommand` çağırıyor;
 Auth'un kendi günlüğü (`AuthAuditLog`) yalnız kayıt (Register), hesap türü (SetAccountKind) ve RBAC olaylarını (rol/izin/atama)
@@ -6681,7 +6681,7 @@ olmalı; Auth'un kalıbı). Kabul: CI günlüğünde DevEnablement test sayısı
 
 **Access Governance sayfalarının eylemleri katalogda yok — izin eşitlemesi Kullanıcılar/Roller'i yönetmiyor**
 
-DURUM: AÇIK · SAHİP: CT (Roller turunda, BL-452 paket 3 ile) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
+DURUM: KOD TAMAM (merge a8406b353, 2026-09-25) — sahip canlı kontrolü bekliyor · önceki: AÇIK · SAHİP: CT (Roller turunda, BL-452 paket 3 ile) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
 
 `AccessGovernanceManifestProvider.cs:37` USERS sayfasını eylemsiz (`[]`) beyan ediyor; 388 eylem tanımının 0'ı ACCESS-GOVERNANCE'ın.
 Katalog→Auth eşitlemesi bu yüzden yalnız `auth.users.read` ve `auth.users.assign-role`'ü biliyor; create/update/delete/
@@ -6701,7 +6701,7 @@ ResendUserInvitation, UpdateUser (alan değişiklikleri); Platform'a köprü iç
 
 **Plan kullanıcı kotası (`UsersMax`) kiracı yöneticisinin kullanıcı eklemesinde uygulanmıyor; kiracı kullanıcı özeti yanlış sayıyor**
 
-DURUM: AÇIK · SAHİP: prompt (Auth + Platform) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
+DURUM: KOD TAMAM (merge a8406b353, 2026-09-25) — canlı kota testi platform turunda planlı yeni kiracıyla (dev test kiracısı plansız) · önceki: AÇIK · SAHİP: prompt (Auth + Platform) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
 
 `QuotaKeys.UsersMax` yalnız Platform'un yönetici davetinde tüketiliyor (`InviteTenantAdminUserCommandHandler.cs:76`); Auth'ta kota
 kodu yok → kiracı yöneticisi sınırsız kullanıcı ekleyebilir, abonelik planı boşa düşer. `GetTenantUsersSummaryQueryHandler.cs:34`
