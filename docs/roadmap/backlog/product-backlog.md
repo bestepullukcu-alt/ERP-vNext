@@ -6724,6 +6724,21 @@ ham e-posta saklıyor (`AuthAuditService.cs:18`). Platform'un tek redaksiyonu ke
 çelişmemesi için denetim izinin kendisi kalır, kimlik anonimleşir. Kabul: silinen kullanıcı 30 gün sonra aranamaz, günlük satırları
 kimlikle bağlı kalır.
 
+
+### BL-461
+
+**Elle verilen modül yetkilendirmesinde bitiş tarihi ve gerekçe zorunlu olsun**
+
+DURUM: AÇIK · SAHİP: CT (platform turu, küçük) · BULAN: sahip sorusu + CT ölçümü · KAYIT: 2026-09-25
+
+Ölçüm: kiracı erişimi her modül için `HasAccessAsync` ile (temel modül ya da yetkilendirme); plansız kiracı giriş yapar, yalnız temel
+modülleri görür. Plan dışı elle yetkilendirme tasarımda var: `TenantModuleEntitlement` kaydı `Source` (plan/elle), `IsEnabled`,
+`ExpiryDateUtc`, `Reason` taşır ve denetim günlüğüne düşer. Boşluk: plan değişince elle verilenler kendiliğinden kalkmaz; bitiş
+tarihi girilmezse kalıcı olur ve kimse neden verildiğini bilmez. İş: kiracı yönetiminde elle yetkilendirmede bitiş tarihi + gerekçe
+zorunlu (form + komut doğrulaması, 2 dil), bitiş geçince erişim kapanır (zaten `ExpiryDateUtc` okunuyor mu ölçülecek), kiracı
+sayfasında "elle / plan / bitiş" görünür. Kullanıcı sınırı elle verilen modülden etkilenmez (kota planın). SAP/Oracle: trial
+entitlement her zaman süreli ve gerekçeli.
+
 ---
 
 ### BL-393
