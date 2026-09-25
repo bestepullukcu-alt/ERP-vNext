@@ -6649,6 +6649,54 @@ Compact sunucu listesi + dışa aktarma sözleşmesi) yalnız csproj yoluyla ell
 test projesini sln'e ekle, phase1 kapısına DevEnablement Api.Tests satırı ekle (mongod gerektiren sınıflar CI'da atlanabilir
 olmalı; Auth'un kalıbı). Kabul: CI günlüğünde DevEnablement test sayısı > 0.
 
+
+### BL-458
+
+**Access Governance sayfalarının eylemleri katalogda yok — izin eşitlemesi Kullanıcılar/Roller'i yönetmiyor**
+
+DURUM: AÇIK · SAHİP: CT (Roller turunda, BL-452 paket 3 ile) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
+
+`AccessGovernanceManifestProvider.cs:37` USERS sayfasını eylemsiz (`[]`) beyan ediyor; 388 eylem tanımının 0'ı ACCESS-GOVERNANCE'ın.
+Katalog→Auth eşitlemesi bu yüzden yalnız `auth.users.read` ve `auth.users.assign-role`'ü biliyor; create/update/delete/
+account-kind.manage/lookup Auth tohumunda (`DataSeeder.cs:393-405`). Rol İzinleri ekranı Auth tohumunu gösteriyor, katalog değil.
+İş: USERS/ROLES/ROLE_PERMISSIONS/USER_ROLES sayfalarına eylemleri (create, update, delete, account-kind.manage, export=paket 3,
+assign-role, assign-permission) manifestte beyan et; eşitleme tohumlu anahtarları korur (`ICatalogPermissionSyncService.cs:23`).
+Tasarım notu: Auth manifestini Platform kendi içinde beyan ediyor (öz-kayıt değil); MDM/DevEnablement HTTP ile gönderiyor — bu
+karar değiştirilmeyecekse belgelenir. Kabul: katalogda eylemler görünür, Auth'ta aynı anahtarlar, guard: manifest ⇔ tohum eşitliği.
+
+
+**Kapsam (2026-09-25 ölçümü):** yazmayan işleyiciler CreateUser, DeleteUser, SetUserActiveStatus, AdminResetPassword,
+ResendUserInvitation, UpdateUser (alan değişiklikleri); Platform'a köprü için kalıp MDM `PlatformAuditForwarder.cs` →
+`InternalAuditController`. Bkz. Kullanıcılar kaydı "Platform bağlantıları" tablosu.
+---
+
+### BL-459
+
+**Plan kullanıcı kotası (`UsersMax`) kiracı yöneticisinin kullanıcı eklemesinde uygulanmıyor; kiracı kullanıcı özeti yanlış sayıyor**
+
+DURUM: AÇIK · SAHİP: prompt (Auth + Platform) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
+
+`QuotaKeys.UsersMax` yalnız Platform'un yönetici davetinde tüketiliyor (`InviteTenantAdminUserCommandHandler.cs:76`); Auth'ta kota
+kodu yok → kiracı yöneticisi sınırsız kullanıcı ekleyebilir, abonelik planı boşa düşer. `GetTenantUsersSummaryQueryHandler.cs:34`
+yalnız Platform `tenant.AdminUsers`'ı sayıyor, Auth kullanıcılarını değil → platform kiracı sayfasındaki sayı yanlış. İş: Auth
+CreateUser (davet dahil) Platform'dan kota okur ve aşımda kodlu ret (`USER_QUOTA_EXCEEDED`, 7 dil); özet Auth'tan sayar. SAP/Oracle:
+lisans sayımı her zaman merkezi ve sert.
+
+---
+
+### BL-460
+
+**KVKK: kullanıcı silme kişisel veriyi bırakıyor; silme/anonimleştirme yolu yok**
+
+DURUM: AÇIK · SAHİP: prompt (Auth, Platform ile) · BULAN: CT platform bağlantıları tablosu · KAYIT: 2026-09-25
+
+Silme yalnız `IsDeleted` (`UserRepository.cs:161-163`): e-posta, ad, soyad Mongo'da kalıyor; `auth.login.empty_roles` günlük satırı
+ham e-posta saklıyor (`AuthAuditService.cs:18`). Platform'un tek redaksiyonu kendi `audit_events`'indeki aktör alanları
+(`redact-actor`); Auth'a hiç ulaşmıyor. İş: (a) silinen kullanıcı için saklama süresi + anonimleştirme (e-posta → hash, ad → boş),
+(b) Platform veri-gizliliği talebi Auth'a köprü, (c) günlük meta verisinde ham e-posta yerine kullanıcı kimliği. GxP/ISO 27001 ile
+çelişmemesi için denetim izinin kendisi kalır, kimlik anonimleşir. Kabul: silinen kullanıcı 30 gün sonra aranamaz, günlük satırları
+kimlikle bağlı kalır.
+
 ---
 
 ### BL-393
