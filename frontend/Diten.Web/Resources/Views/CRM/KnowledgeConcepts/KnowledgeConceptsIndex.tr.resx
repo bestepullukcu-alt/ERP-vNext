@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>Bu kod için henüz başka sürüm yok</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>Bu sürüm</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>Son değiştiren</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Yayınla ve dondur</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Yayınla ve dondur</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Donacak omurga</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>Yayınlandıktan sonra omurga, dallar, moderatör, hedef kitle ve çözümler donar. Bağlı çıktılar yeni sürüme geçer; değişiklik için yeni sürüm gerekir.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Yayın koşulları</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Omurgada en az 2 farklı tip</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Her dalda en az 2 adım</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>En az 1 hedef kitle</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Eksik: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} çözülmemiş uyumsuz ilişki var — yayını engellemez.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Bu sürüm yayında ve salt-okunur; omurga dondu. Değişiklik için yeni sürüm oluşturun.</value></data>
 </root>

@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>لا توجد إصدارات أخرى لهذا الرمز بعد</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>هذا الإصدار</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>آخر تعديل بواسطة</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>نشر وتجميد</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>نشر وتجميد</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>العمود الفقري الذي سيُجمَّد</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>بعد النشر يتم تجميد العمود الفقري والفروع والمشرف والجمهور والقرارات. تنتقل المخرجات المرتبطة إلى إصدار جديد؛ وتتطلب التغييرات إصدارًا جديدًا.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>شروط النشر</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>نوعان مختلفان على الأقل في العمود الفقري</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>خطوتان على الأقل في كل فرع</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>جمهور مستهدف واحد على الأقل</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>قصيرة جدًا: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>توجد {0} علاقات غير مطابقة غير محلولة — لا يمنع ذلك النشر.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>هذا الإصدار منشور وللقراءة فقط؛ تم تجميد عموده الفقري. أنشئ إصدارًا جديدًا لإجراء تغييرات.</value></data>
 </root>

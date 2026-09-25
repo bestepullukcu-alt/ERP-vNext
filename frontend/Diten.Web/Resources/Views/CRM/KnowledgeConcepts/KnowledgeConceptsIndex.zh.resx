@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>此代码暂无其他版本</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>当前版本</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>最后修改人</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>发布并冻结</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>发布并冻结</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>将被冻结的主干</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>发布后，主干、分支、主持人、受众和处理结果将被冻结。关联的输出转入新版本；如需修改须创建新版本。</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>发布条件</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>主干上至少有 2 种不同类型</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>每个分支至少 2 个步骤</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>至少 1 个目标受众</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>步骤不足：{0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>有 {0} 个未解决的不符合关系 — 不会阻止发布。</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>此版本已发布且只读；主干已冻结。如需修改，请创建新版本。</value></data>
 </root>

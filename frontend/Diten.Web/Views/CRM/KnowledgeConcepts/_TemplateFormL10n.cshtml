@@ -24,7 +24,10 @@
         "RelationshipsSummary", "KnowledgePaths", "Journeys", "Visits", "OutputsNoSource", "DataFlow", "FlowSubject",
         "FlowConceptGraph", "FlowChainTemplate", "FlowKnowledgePath", "FlowJourney", "FlowVisit", "ReasonNotOnSpine",
         "ReasonWrongOrder", "MissingTypes", "AddToBranch", "Ignore", "Undo", "UnresolvedCount", "NonConformingEmpty",
-        "IgnoredSection", "OffSpineSummary", "VersionsEmpty", "ThisVersion", "UpdatedByLabel", "Loading" };
+        "IgnoredSection", "OffSpineSummary", "VersionsEmpty", "ThisVersion", "UpdatedByLabel", "Loading",
+        // WP-CT-FE-6: publish confirm dialog checks + read-only band (NewVersion / BranchLabel already listed).
+        "PublishBlockMinTypes", "PublishBlockBranchSteps", "PublishBlockAudience", "PublishBranchesShort",
+        "PublishWarnUnresolved", "ReadOnlyBandText" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

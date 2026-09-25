@@ -605,6 +605,68 @@
     };
     const renderSidePanel = () => { renderConnections(); renderNonConforming(); renderOffSpine(); };
 
+    // ─── WP-CT-FE-6: publish confirm dialog + read-only band ──────────────────────────────────────────────────────
+    // The dialog is a client-side MIRROR of the WP-CT-BE-B publish guards — the service still enforces them (a 400 is
+    // shown like any save error). Blocking: spine ≥ 2 types · every non-empty branch ≥ 2 steps (empty branches are not
+    // sent) · ≥ 1 audience. Non-blocking: unresolved non-conforming relationships (D8 — never enforced). Confirm =
+    // status "published" + the existing save; any save with status "published" is routed through this dialog, so the
+    // status dropdown and the button share one gate.
+    let publishConfirmed = false;
+    const publishChecks = () => {
+        const short = branches.map((b, i) => ({ b, i })).filter(x => x.b.steps.length > 0 && x.b.steps.length < 2);
+        const filled = branches.filter(b => b.steps.length > 0).length;
+        const forWhom = $ ? ($('#tplForWhom').val() || []) : [];
+        return [
+            { ok: spineFromBranches().length >= 2, label: L.PublishBlockMinTypes },
+            {
+                ok: filled > 0 && short.length === 0, label: L.PublishBlockBranchSteps,
+                detail: short.length ? fmtN(L.PublishBranchesShort || '{0}', short.map(x => `${L.BranchLabel || 'Branch'} ${x.i + 1}`).join(', ')) : ''
+            },
+            { ok: forWhom.length >= 1, label: L.PublishBlockAudience }
+        ];
+    };
+    const openPublishDialog = () => {
+        const el = document.getElementById('tplPublishModal');
+        if (!el || templateReadOnly) return;
+        const spine = spineFromBranches();
+        document.getElementById('tplPublishSpine').innerHTML = spine.length
+            ? spine.map(id => `<span class="badge bg-label-primary">${typeNameOrDash(id)}</span>`).join('<i class="bx bx-chevron-right text-muted"></i>')
+            : dash;
+        const checks = publishChecks();
+        document.getElementById('tplPublishChecks').innerHTML = checks.map(c => `<li class="d-flex align-items-start gap-2 small mb-1">
+                <i class="bx ${c.ok ? 'bx-check-circle text-success' : 'bx-x-circle text-danger'} fs-5"></i>
+                <span class="${c.ok ? '' : 'text-danger fw-medium'}">${esc(c.label || '')}${c.detail ? `<span class="d-block text-muted fw-normal">${esc(c.detail)}</span>` : ''}</span>
+            </li>`).join('');
+        const open = diagState === 'ready' ? unresolved().length : 0;
+        const warn = document.getElementById('tplPublishWarn');
+        if (warn) { warn.textContent = open ? fmtN(L.PublishWarnUnresolved || '{0}', open) : ''; warn.classList.toggle('d-none', !open); }
+        document.getElementById('btnTplPublishConfirm').disabled = checks.some(c => !c.ok);
+        window.bootstrap?.Modal.getOrCreateInstance(el).show();
+    };
+    const confirmPublish = () => {
+        if (templateReadOnly || publishChecks().some(c => !c.ok)) return;
+        setVal('tplStatus', 'published'); if ($) $('#tplStatus').trigger('change.select2');
+        const el = document.getElementById('tplPublishModal');
+        if (el) window.bootstrap?.Modal.getOrCreateInstance(el).hide();
+        publishConfirmed = true;
+        document.getElementById('conceptTemplateForm')?.requestSubmit();
+    };
+    // Published → the band says so and offers "New version" (the existing startNewVersion); the older frozen note is
+    // superseded by the band, and the publish button disappears.
+    const renderReadOnlyBand = () => {
+        const band = document.getElementById('tplReadOnlyBand');
+        if (band) {
+            band.classList.toggle('d-none', !templateReadOnly);
+            band.innerHTML = templateReadOnly ? `<div class="alert alert-secondary d-flex align-items-center gap-3 flex-wrap mb-0" role="status">
+                    <i class="bx bx-lock-alt fs-3"></i>
+                    <span class="flex-grow-1">${esc(L.ReadOnlyBandText || '')}</span>
+                    <button type="button" class="btn btn-sm btn-primary js-band-new-version"><i class="bx bx-git-branch me-1"></i>${esc(L.NewVersion || '')}</button>
+                </div>` : '';
+        }
+        if (templateReadOnly) document.getElementById('conceptTemplateFrozenNote')?.classList.add('d-none');
+        document.getElementById('btnTplPublish')?.classList.toggle('d-none', templateReadOnly);
+    };
+
     // ─── submit ─────────────────────────────────────────────────────────────────
     const submit = async () => {
         const id = val('templateFormId');
@@ -679,6 +741,7 @@
         document.getElementById('btnSaveConceptTemplate')?.classList.remove('d-none');
         setIdentityDisabled(false);
         document.getElementById('btnTplAddBranch')?.removeAttribute('disabled');
+        renderReadOnlyBand();   // WP-CT-FE-6: the new draft drops the band and gets the publish button back
         renderBranches();
     };
 
@@ -773,6 +836,7 @@
         document.getElementById('btnTplAddBranch').disabled = frozen;
         // SCMM-10-MOD-C (D-f): a published template's Moderator/ForWhom freeze with the rest (edit → new version).
         setIdentityDisabled(frozen);
+        renderReadOnlyBand();   // WP-CT-FE-6
 
         // Subject + code are stable across versions (update contract carries neither); the code hint hides on edit.
         document.getElementById('tplSubjectId').disabled = !!row;
@@ -875,6 +939,20 @@
         });
         window.addEventListener('resize', () => { pinLaneChrome(); drawAllEdges(); });
 
+        // WP-CT-FE-6: publish button (validates the form first) / confirm / band "New version".
+        document.getElementById('btnTplPublish')?.addEventListener('click', event => {
+            event.preventDefault();
+            const form = document.getElementById('conceptTemplateForm');
+            if (form && !form.checkValidity()) { form.reportValidity(); return; }
+            openPublishDialog();
+        });
+        document.getElementById('btnTplPublishConfirm')?.addEventListener('click', event => { event.preventDefault(); confirmPublish(); });
+        document.addEventListener('click', event => {
+            if (!event.target.closest('.js-band-new-version')) return;
+            event.preventDefault();
+            startNewVersion();
+        });
+
         // WP-CT-FE-5: right-panel actions (draft only — the handlers bail on a read-only template).
         document.addEventListener('click', event => {
             const add = event.target.closest('.js-nc-add');
@@ -943,6 +1021,10 @@
         formEl?.addEventListener('submit', async event => {
             event.preventDefault();
             if (!formEl.checkValidity()) { formEl.reportValidity(); return; }
+            // WP-CT-FE-6: every save that publishes goes through the confirm dialog first (button or status dropdown).
+            const confirmed = publishConfirmed;
+            publishConfirmed = false;
+            if (val('tplStatus') === 'published' && !confirmed) { openPublishDialog(); return; }
             try { await submit(); }
             catch (err) { if (!err?.handled) showAlert(err.message || L.ErrorState); }
         });

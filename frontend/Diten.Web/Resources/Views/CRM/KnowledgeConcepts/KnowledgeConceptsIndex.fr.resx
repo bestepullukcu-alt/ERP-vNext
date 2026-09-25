@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>Pas encore d'autre version pour ce code</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>Cette version</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>Modifié par</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Publier et figer</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Publier et figer</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Ossature qui sera figée</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>Une fois publiés, l'ossature, les branches, le modérateur, l'audience et les résolutions sont figés. Les sorties liées passent à une nouvelle version ; toute modification exige une nouvelle version.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Conditions de publication</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Au moins 2 types différents dans l'ossature</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Au moins 2 étapes dans chaque branche</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>Au moins 1 audience cible</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Trop courtes : {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} relations non conformes non résolues — cela n'empêche pas la publication.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Cette version est publiée et en lecture seule ; son ossature est figée. Créez une nouvelle version pour la modifier.</value></data>
 </root>

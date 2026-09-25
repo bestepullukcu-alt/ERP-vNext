@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>Aún no hay otras versiones de este código</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>Esta versión</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>Modificado por</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Publicar y congelar</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Publicar y congelar</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Columna que se congelará</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>Una vez publicada, la columna, las ramas, el moderador, la audiencia y las resoluciones quedan congelados. Las salidas vinculadas pasan a una nueva versión; los cambios requieren una nueva versión.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Condiciones de publicación</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Al menos 2 tipos distintos en la columna</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Al menos 2 pasos en cada rama</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>Al menos 1 audiencia objetivo</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Demasiado cortas: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} relaciones no conformes sin resolver — no impide la publicación.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Esta versión está publicada y es de solo lectura; su columna está congelada. Cree una nueva versión para hacer cambios.</value></data>
 </root>

@@ -255,4 +255,15 @@
   <data name="VersionsEmpty" xml:space="preserve"><value>Других версий этого кода пока нет</value></data>
   <data name="ThisVersion" xml:space="preserve"><value>Эта версия</value></data>
   <data name="UpdatedByLabel" xml:space="preserve"><value>Изменил</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Опубликовать и заморозить</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Опубликовать и заморозить</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Каркас, который будет заморожен</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>После публикации каркас, ветви, модератор, аудитория и решения замораживаются. Связанные выходы переходят в новую версию; для изменений нужна новая версия.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Условия публикации</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Не менее 2 разных типов в каркасе</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Не менее 2 шагов в каждой ветви</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>Не менее 1 целевой аудитории</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Слишком короткие: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>Нерешённых несоответствий: {0} — публикации это не мешает.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Эта версия опубликована и доступна только для чтения; каркас заморожен. Для изменений создайте новую версию.</value></data>
 </root>

@@ -21,7 +21,7 @@
     @* WP-CT-FE-2 (mockup v2 Ekran 2): 3 columns — left = identity + type palette, middle = the branch builder (FE-3
        diagram will replace it), right = side-panel placeholder (FE-5 tabs) + reference fields. Stacks below lg. Every
        input id is unchanged, so template-form.js load/submit/spine derivation is untouched. *@
-    @* FE-6 reserves this strip for the published / read-only band. *@
+    @* WP-CT-FE-6: read-only band (published template) — filled by template-form.js with "New version". *@
     <div id="tplReadOnlyBand" class="d-none mb-3"></div>
 
     <div class="row g-4">
@@ -144,8 +144,38 @@
                             <input type="date" id="tplEffectiveTo" class="form-control" />
                         </div>
                     </div>
+                    @* WP-CT-FE-6: the primary publish path — opens the confirm dialog (hidden on a read-only template). *@
+                    <button type="button" id="btnTplPublish" class="btn btn-label-primary w-100 mt-4">
+                        <i class="bx bx-lock-alt me-1"></i>@Localizer["PublishDialogTitle"]
+                    </button>
                 </div>
             </section>
         </div>
     </div>
 </form>
+
+@* WP-CT-FE-6: publish confirm dialog. A client-side MIRROR of the WP-CT-BE-B publish guards (the service still enforces
+   them): blocking checks disable the confirm button; unresolved non-conforming relationships only warn (D8). Confirm =
+   status "published" + the existing save. *@
+<div class="modal fade" id="tplPublishModal" tabindex="-1" aria-labelledby="tplPublishModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tplPublishModalTitle"><i class="bx bx-lock-alt me-1"></i>@Localizer["PublishDialogTitle"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="@Localizer["Cancel"]"></button>
+            </div>
+            <div class="modal-body">
+                <div class="small text-muted mb-1">@Localizer["PublishFrozenSpine"]</div>
+                <div id="tplPublishSpine" class="d-flex flex-wrap align-items-center gap-1 mb-3"></div>
+                <div class="small mb-3">@Localizer["PublishEffect"]</div>
+                <h6 class="small text-uppercase text-muted fw-semibold mb-2">@Localizer["PublishChecks"]</h6>
+                <ul id="tplPublishChecks" class="list-unstyled mb-3"></ul>
+                <div id="tplPublishWarn" class="alert alert-warning py-2 small mb-0 d-none" role="status"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-label-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="btnTplPublishConfirm"><i class="bx bx-lock-alt me-1"></i>@Localizer["PublishConfirm"]</button>
+            </div>
+        </div>
+    </div>
+</div>
