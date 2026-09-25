@@ -6527,6 +6527,12 @@ BL-449 (talep sahibinde "Planla") ile birlikte karar. Sonra iki prompt: (2a) mot
 
 DURUM: KARAR VERİLDİ (sahip, 2026-09-24) — YÜRÜYECEK (4 prompt) · SAHİP: CT · KAYIT: 2026-09-24
 
+**2026-09-25 — Paket 1 birleştirildi** (WP-UI-EXPORT-01, bd9d4cc6f, merge 24c078de0 `chore/ct-round-2`): ortak yapı taşı
+`Diten.BuildingBlocks.ListExport`; Auth `GET api/users/export` + Altın Compact `/export`; fabrika `export: { mode: 'server', url }`;
+kural + doğrulayıcı sapması. Pakette bilerek yok: PDF/Yazdır kontrollü kopya (paket 2), ayrı dışa aktarma izni (paket 3), eşik üstü
+arka plan işi (paket 4), denetim kaydı (Platform dışındaki servislerde yazıcı yok; kalite kaydı listeleri Platform'da). Bulunan:
+BL-457 (DevEnablement testleri sln/CI dışında).
+
 **Bugün:** liste ekranlarında tarayıcı tarafı düğmeler (Yazdır/CSV/Excel/PDF/Kopyala, `dt-defaults.js`); sunucu modunda yalnız
 ekrandaki sayfa çıkıyor; denetim kaydı ve yetki ayrımı yok. Doğru yapılmış iki örnek: İş Raporu (sunucu tarafı, ekranla aynı sorgu,
 kiracı denetim kaydı `IDataExportAuditWriter`, BL-346/347) ve CRM Kişiler (XLSX şablon = dışa aktarma şeması, geri yüklenebilir,
@@ -6620,6 +6626,19 @@ kaydının görüntülenmesi/maskelenmesi olayı — kullanıcı eklemeyle ilgis
 kalıbıyla `authAuditLogs` (kim, kime, önce/sonra, korelasyon); (2) Auth → Platform merkezi denetime S2S iletim (MDM `Faz 2`
 deseni) → Platform Denetim Günlüğü'nde "Kimlik" kategorisi; (3) ekran: Platform Denetim Günlüğü kiracıyı adıyla göstersin
 (bugün GUID), kategori/kiracı filtresi; Auth günlüğü için ayrı ekran gerekmez. Gerileme riski düşük (eklemeli).
+
+
+### BL-457
+
+**DevEnablement testleri hiçbir yerde koşmuyor — sln test projesini içermiyor, CI de servisi kapsamıyor**
+
+DURUM: AÇIK · SAHİP: CT (küçük) · BULAN: WP-UI-EXPORT-01 raporu (2026-09-25) · KAYIT: 2026-09-25
+
+`services/Diten.DevEnablementService/Diten.DevEnablementService.sln` içinde `Diten.DevEnablementService.Api.Tests` yok; `dotnet test`
+sln ile koşunca 0 test ölçüyor. `scripts/run_phase1_gates.sh` de DevEnablement'ı derlemiyor/test etmiyor. Bugün 91 test (Altın
+Compact sunucu listesi + dışa aktarma sözleşmesi) yalnız csproj yoluyla elle koşuluyor; kimse koşmazsa kırmızı görünmez. İş:
+test projesini sln'e ekle, phase1 kapısına DevEnablement Api.Tests satırı ekle (mongod gerektiren sınıflar CI'da atlanabilir
+olmalı; Auth'un kalıbı). Kabul: CI günlüğünde DevEnablement test sayısı > 0.
 
 ---
 
