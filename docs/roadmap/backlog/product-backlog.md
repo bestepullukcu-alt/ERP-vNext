@@ -6769,6 +6769,22 @@ kadar işlemi yapmaya devam edebilir. İş (Roller turu, MOD-0018-FU13 "izin ön
 rol geri alma anında etkilenen kullanıcıların yenileme jetonları iptal + erişim jetonu ömrü kısaltma (ör. 15 dk) ya da jetona izin
 sürümü damgası ve sunucuda sürüm kontrolü. Karar Roller turunda Blueprint + SAP + Oracle karşılaştırmasıyla.
 
+
+### BL-464
+
+**Görev şablonu görev tipi taşımıyor — tekrarlayan kuraldan üreyen görev tipsiz doğuyor**
+
+DURUM: AÇIK — KARAR BEKLİYOR · SAHİP: CT (karar sonrası prompt) · BULAN: CT ölçümü (sahip sorusu: canlıda tekrarlayan görev) · KAYIT: 2026-09-25
+
+Ölçüm: `TaskTemplate` alanları Kod, Ad, Başlık/Açıklama şablonu, Öncelik, varsayılan atama, Vade (gün), Kontrol listesi, Şirket,
+varsayılan alan değerleri — `TaskTypeId` yok; `CreateTaskFromTemplateRequest` da tip almıyor. Tekrarlayan kural şablondan görev
+üretir (`GenerateDueRecurringTasksHandler` → `CreateTaskItemFromTemplateCommand`), dolayısıyla üreyen görevin tipi yok: tipin
+kapanış alanları ve sonuç kodları (QA tohumundaki 31 tip, Kural 4 v2) bu görevlerde çıkmaz. "Aylık registrasyon planı kontrolü"
+gibi kanıt isteyen kontroller için sonuç alanı gerekiyorsa şablona tip bağlanmalı. SAP PM bakım planı görev listesine/tipe bağlıdır;
+Oracle'da periyodik iş şablonu iş tipini taşır. İş: şablona isteğe bağlı `TaskTypeId` (tipin şirket/aktiflik kuralıyla), from-template
+yolu tipi göreve yazar, şablon formunda tip seçici (7 dil). Başlık şablonunda yer tutucu yok (metin olduğu gibi kopyalanıyor) — "{ay}"
+gibi dönem etiketi istenirse aynı işe eklenir.
+
 ---
 
 ### BL-393
