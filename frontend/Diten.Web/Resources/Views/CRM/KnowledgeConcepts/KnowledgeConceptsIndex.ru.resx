@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>Слишком короткие: {0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>Нерешённых несоответствий: {0} — публикации это не мешает.</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>Эта версия опубликована и доступна только для чтения; каркас заморожен. Для изменений создайте новую версию.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Ветвь</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>Шагов: {0}</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Перетащите сюда тип понятия</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Добавить тип</value></data>
 </root>

@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>步骤不足：{0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>有 {0} 个未解决的不符合关系 — 不会阻止发布。</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>此版本已发布且只读；主干已冻结。如需修改，请创建新版本。</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>分支</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} 个步骤</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>将概念类型拖到此处</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>添加类型</value></data>
 </root>

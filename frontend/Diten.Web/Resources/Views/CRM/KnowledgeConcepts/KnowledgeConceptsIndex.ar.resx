@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>قصيرة جدًا: {0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>توجد {0} علاقات غير مطابقة غير محلولة — لا يمنع ذلك النشر.</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>هذا الإصدار منشور وللقراءة فقط؛ تم تجميد عموده الفقري. أنشئ إصدارًا جديدًا لإجراء تغييرات.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>الفرع</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} خطوات</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>اسحب نوع مفهوم إلى هنا</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>إضافة نوع</value></data>
 </root>

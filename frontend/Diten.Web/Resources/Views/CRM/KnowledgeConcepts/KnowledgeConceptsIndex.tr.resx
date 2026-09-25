@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>Eksik: {0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} çözülmemiş uyumsuz ilişki var — yayını engellemez.</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>Bu sürüm yayında ve salt-okunur; omurga dondu. Değişiklik için yeni sürüm oluşturun.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Dal</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} adım</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Kavram tipi sürükleyin</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Tip ekle</value></data>
 </root>

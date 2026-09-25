@@ -219,6 +219,11 @@
                     <button type="button" class="btn btn-label-primary btn-sm js-branch-add-step" data-b="${bi}"><i class="bx bx-plus me-1"></i>${esc(L.AddToSequence || '')}</button>
                 </div>
             </div>`;
+    // WP-CT-FE-3-REFINE: DAL A/B/C… for the lane header (index 26+ falls back to the 1-based number).
+    const branchLetter = bi => (bi < 26 ? String.fromCharCode(65 + bi) : String(bi + 1));
+    // The compact "+ add type" row (compose) is collapsed by default; which lanes have it open survives re-renders, so
+    // adding several types in a row does not close it after every add.
+    const openCompose = new Set();
     const gridStyle = cols => `display:grid;grid-template-columns:repeat(${cols},${LANE_COL}px);column-gap:${LANE_GAP}px;padding-left:${LANE_PAD}px;padding-right:${LANE_PAD}px;width:${LANE_PAD * 2 + cols * LANE_COL + (cols - 1) * LANE_GAP}px`;
     const spineStatus = spine => {
         if (templateReadOnly) return `<span class="badge bg-label-secondary"><i class="bx bx-lock-alt me-1"></i>${esc(L.SpineStatusFrozen || '')}</span>`;
@@ -311,19 +316,30 @@
             const lastIndex = b.steps.length - 1;
             const opts = typeOptionsFor(subjectId).filter(o => !b.steps.some(s => String(s.conceptTypeId) === String(o.value)));
             const cards = b.steps.map((s, si) => stepCard(bi, si, s, colOf.get(String(s.conceptTypeId)) ?? 0, lastIndex, ro)).join('');
-            const emptyLane = `<div class="small text-muted align-self-center" style="grid-column:1 / -1">${esc(L.BranchStepsEmpty || '')}</div>`;
+            // WP-CT-FE-3-REFINE: an empty draft lane is a drag dropzone (the FE-4 lane drop target, made visible); a
+            // read-only one keeps the plain "no steps" text.
+            const emptyLane = ro
+                ? `<div class="small text-muted align-self-center" style="grid-column:1 / -1">${esc(L.BranchStepsEmpty || '')}</div>`
+                : `<div class="js-lane-dropzone rounded text-muted small d-flex align-items-center justify-content-center gap-2 align-self-center" style="grid-column:1 / -1;min-height:3.25rem;border:2px dashed var(--bs-border-color)">
+                        <i class="bx bx-move"></i>${esc(L.DragTypeHerePlaceholder || '')}
+                   </div>`;
+            const composeId = `tplCompose-${bi}`;
+            const composeOpen = openCompose.has(bi);
+            // WP-CT-FE-3-REFINE lane header (mockup "DAL A · Ana akış · 2 adım"): a fixed DAL-X label, the branch name as a
+            // light inline field (same js-branch-name input → same model handler), the step count and delete.
             return `<div class="border-top pt-2 pb-2 js-lane" data-b="${bi}">
                     <div class="js-lane-sticky d-flex align-items-center gap-2 mb-1 px-2" style="position:sticky;left:0">
-                        <span class="badge bg-primary rounded-pill flex-shrink-0">${bi + 1}</span>
-                        <input type="text" class="form-control form-control-sm js-branch-name flex-grow-1" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''}>
-                        <span class="badge bg-label-secondary flex-shrink-0">${b.steps.length} ${esc(L.Steps || '')}</span>
-                        <button type="button" class="btn btn-icon btn-text-danger js-branch-remove flex-shrink-0" data-b="${bi}" title="${esc(L.DeleteBranch || '')}" aria-label="${esc(L.DeleteBranch || '')}" ${ro || total <= 1 ? 'disabled' : ''}><i class="icon-base bx bx-trash icon-sm"></i></button>
+                        <span class="badge bg-label-primary text-uppercase fw-semibold flex-shrink-0">${esc(L.BranchLabelPrefix || 'Branch')} ${esc(branchLetter(bi))}</span>
+                        <input type="text" class="form-control form-control-sm border-0 bg-transparent shadow-none px-1 fw-medium text-heading js-branch-name flex-grow-1" data-b="${bi}" value="${esc(b.name || '')}" placeholder="${esc(L.BranchNamePlaceholder || '')}" aria-label="${esc(L.BranchNamePlaceholder || '')}" ${ro ? 'disabled' : ''}>
+                        <span class="small text-muted text-nowrap flex-shrink-0">${esc(fmtN(L.StepCountLabel || '{0}', b.steps.length))}</span>
+                        ${ro ? '' : `<button type="button" class="btn btn-sm btn-text-primary text-nowrap flex-shrink-0 js-compose-toggle" data-b="${bi}" data-bs-toggle="collapse" data-bs-target="#${composeId}" aria-controls="${composeId}" aria-expanded="${composeOpen}"><i class="bx bx-plus me-1"></i>${esc(L.AddTypeCompact || '')}</button>`}
+                        <button type="button" class="btn btn-icon btn-sm btn-text-danger js-branch-remove flex-shrink-0" data-b="${bi}" title="${esc(L.DeleteBranch || '')}" aria-label="${esc(L.DeleteBranch || '')}" ${ro || total <= 1 ? 'disabled' : ''}><i class="icon-base bx bx-trash icon-sm"></i></button>
                     </div>
                     <div class="js-lane-body position-relative" data-b="${bi}" style="${gridStyle(cols)};padding-top:1.75rem;min-height:4.5rem">
                         <svg class="js-lane-edges position-absolute top-0 start-0" style="pointer-events:none;z-index:0;color:var(--bs-secondary-color)" aria-hidden="true"></svg>
                         ${cards || emptyLane}
                     </div>
-                    ${ro ? '' : `<div class="js-lane-sticky px-2 mt-1" style="position:sticky;left:0">${addStepRow(bi, opts)}</div>`}
+                    ${ro ? '' : `<div class="js-lane-sticky px-2" style="position:sticky;left:0"><div class="collapse js-compose${composeOpen ? ' show' : ''}" id="${composeId}" data-b="${bi}"><div class="pt-1">${addStepRow(bi, opts)}</div></div></div>`}
                 </div>`;
         }).join('');
 
@@ -875,7 +891,7 @@
             if (event.target.closest('#btnTplNewVersion')) { event.preventDefault(); startNewVersion(); return; }
             const br = event.target.closest('.js-branch-remove');
             // WP-CT-FE-3: "Delete branch" keeps at least one branch.
-            if (br) { event.preventDefault(); if (templateReadOnly || branches.length <= 1) return; branches.splice(Number(br.dataset.b), 1); renderBranches(); return; }
+            if (br) { event.preventDefault(); if (templateReadOnly || branches.length <= 1) return; branches.splice(Number(br.dataset.b), 1); openCompose.clear(); renderBranches(); return; }
             const addStep = event.target.closest('.js-branch-add-step');
             if (addStep) {
                 event.preventDefault(); if (templateReadOnly) return;
@@ -932,6 +948,18 @@
         const lanesHost = document.getElementById('tplBranches');
         lanesHost?.addEventListener('shown.bs.collapse', drawAllEdges);
         lanesHost?.addEventListener('hidden.bs.collapse', drawAllEdges);
+        // WP-CT-FE-3-REFINE: remember which lanes have the compact compose open; opening it moves keyboard focus to
+        // the type picker (the non-drag path).
+        lanesHost?.addEventListener('shown.bs.collapse', event => {
+            const box = event.target.closest?.('.js-compose');
+            if (!box || box !== event.target) return;
+            openCompose.add(Number(box.dataset.b));
+            box.querySelector('.js-branch-type-picker')?.focus();
+        });
+        lanesHost?.addEventListener('hidden.bs.collapse', event => {
+            const box = event.target.closest?.('.js-compose');
+            if (box && box === event.target) openCompose.delete(Number(box.dataset.b));
+        });
         lanesHost?.addEventListener('change', event => {
             if (!event.target.classList?.contains('js-back-edges-toggle')) return;
             showBackEdges = !!event.target.checked;

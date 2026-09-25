@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>Demasiado cortas: {0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} relaciones no conformes sin resolver — no impide la publicación.</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>Esta versión está publicada y es de solo lectura; su columna está congelada. Cree una nueva versión para hacer cambios.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Rama</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} pasos</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Arrastre aquí un tipo de concepto</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Añadir tipo</value></data>
 </root>

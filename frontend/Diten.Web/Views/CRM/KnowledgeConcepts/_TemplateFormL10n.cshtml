@@ -27,7 +27,9 @@
         "IgnoredSection", "OffSpineSummary", "VersionsEmpty", "ThisVersion", "UpdatedByLabel", "Loading",
         // WP-CT-FE-6: publish confirm dialog checks + read-only band (NewVersion / BranchLabel already listed).
         "PublishBlockMinTypes", "PublishBlockBranchSteps", "PublishBlockAudience", "PublishBranchesShort",
-        "PublishWarnUnresolved", "ReadOnlyBandText" };
+        "PublishWarnUnresolved", "ReadOnlyBandText",
+        // WP-CT-FE-3-REFINE: lane header (DAL-X) + empty-branch dropzone + compact add-type.
+        "BranchLabelPrefix", "StepCountLabel", "DragTypeHerePlaceholder", "AddTypeCompact" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);
 }
 <script id="concept-template-l10n" type="application/json">@Html.Raw(JsonSerializer.Serialize(values))</script>

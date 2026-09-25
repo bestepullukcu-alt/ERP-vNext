@@ -266,4 +266,8 @@
   <data name="PublishBranchesShort" xml:space="preserve"><value>Too short: {0}</value></data>
   <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} unresolved non-conforming relationships — this does not block publishing.</value></data>
   <data name="ReadOnlyBandText" xml:space="preserve"><value>This version is published and read-only; its spine is frozen. Create a new version to make changes.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Branch</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} steps</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Drag a concept type here</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Add type</value></data>
 </root>
