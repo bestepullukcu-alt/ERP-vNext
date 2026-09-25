@@ -113,14 +113,27 @@ describe("RecurrenceRules form: assignable-people envelope (BL-350)", () => {
         expect(templateValues).toContain(TEMPLATE_ID);
     });
 
-    it("still re-applies a saved assignee once the people envelope is unwrapped (edit mode)", async () => {
-        // Mirrors what the Razor view does before select2/this script runs: the saved id is on the markup
-        // before the option for it exists yet.
-        document.querySelector("[data-recurrence-assignee]").innerHTML =
-            `<option value="${PERSON_ID}" selected></option>`;
+    it("re-applies a saved PERSON rule's assignee and template once the options exist (edit mode)", async () => {
+        // What _Form.cshtml REALLY renders on Edit (pinned by RecurrenceRuleEditKeepsSavedSelectionTests): the
+        // selects carry no option for the saved id — only data-selected. The old version of this test injected a
+        // <option selected> the view never produced, so it passed while live Edit came up empty (owner, 2026-09-25).
+        document.querySelector("[data-recurrence-assignee]").setAttribute("data-selected", PERSON_ID);
+        document.querySelector("[data-recurrence-template]").setAttribute("data-selected", TEMPLATE_ID);
 
         await boot();
 
         expect(document.querySelector("[data-recurrence-assignee]").value).toBe(PERSON_ID);
+        expect(document.querySelector("[data-recurrence-template]").value).toBe(TEMPLATE_ID);
+    });
+
+    it("re-applies a saved POOL rule's position once the options exist (edit mode)", async () => {
+        document.querySelector("[data-recurrence-target]").value = "PositionPool";
+        document.querySelector("[data-recurrence-position]").setAttribute("data-selected", POSITION_ID);
+
+        await boot();
+
+        expect(document.querySelector("[data-recurrence-position]").value).toBe(POSITION_ID);
+        // The other picker is cleared on purpose: a rule names a person OR a pool, never both.
+        expect(document.querySelector("[data-recurrence-assignee]").value).toBe("");
     });
 });

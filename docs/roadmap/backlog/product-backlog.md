@@ -6816,6 +6816,20 @@ RRULE `BYDAY=1MO`). Geçici yol: ayın 1'inde üret, vade 7 gün (ilk pazartesi 
 n'inci hafta içi günü kalıbını destekler. İş: kurala isteğe bağlı "ayın n'inci {gün}" ve "ayın son iş günü" (çalışma takvimiyle), form
 + zamanlama + testler (7 dil).
 
+
+### BL-467
+
+**Yinelenen kural listesi ve detay sayfası kişiyi/pozisyonu ve şablonu adıyla göstermiyor**
+
+DURUM: AÇIK · SAHİP: CT (küçük) · BULAN: sahip, canlı (2026-09-25) · KAYIT: 2026-09-25
+
+Canlıda Aliye'ye bağlı kural listede "Kime: Bir kişiye" olarak görünüyor; detay sayfası da yalnız atama türünü yazıyor, kişi/pozisyon
+ve şablon adı yok. Sahip "Aliye'yi nereden bağladın" diye sordu. (Aynı gün bulunan asıl risk — Düzenle formunun kayıtlı kişi/şablonu
+geri yüklememesi ve kaydetmenin atamayı silebilmesi — `_Form.cshtml` `data-selected` ile düzeltildi, render testi +
+`recurrence-rule-assignable-people-envelope` testi, sabotaj kırmızı.) İş: kural DTO'suna ad alanları (kişi görünen adı Auth
+`internal/users/display-names` ile, pozisyon ve şablon adı Platform'dan) ya da liste/detayda aynı arama; "Kime" sütunu "Aliye Celikel"
+/ "Havuz: Regulatory Affairs Officer" gösterir; detayda şablon adı. 7 dil etkisi yok (veri).
+
 ---
 
 ### BL-393

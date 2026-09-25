@@ -97,13 +97,16 @@
                             <label asp-for="AssigneeUserId" class="form-label fw-medium">@Localizer["Assignee"]</label>
                             @* Populated from /Tasks/api/assignable-people by form.js — the same lookup the task
                                form uses, so a rule cannot name somebody the task form could not. *@
-                            <select asp-for="AssigneeUserId" class="select2 form-select" data-recurrence-assignee></select>
+                            @* Owner, live 2026-09-25: the select renders with NO options (form.js fills them later), so the tag helper
+                               cannot mark the saved id and Edit came up empty — a save would have blanked the person.
+                               The saved id travels as data-selected; form.js re-applies it after the options exist. *@
+                            <select asp-for="AssigneeUserId" class="select2 form-select" data-recurrence-assignee data-selected="@Model.AssigneeUserId"></select>
                             <div class="form-text">@Localizer["AssigneeHint"]</div>
                             <span asp-validation-for="AssigneeUserId" class="text-danger small mt-1"></span>
                         </div>
                         <div class="col-12 d-none" data-recurrence-pool>
                             <label asp-for="PoolPositionId" class="form-label fw-medium">@Localizer["PoolPosition"]</label>
-                            <select asp-for="PoolPositionId" class="select2 form-select" data-recurrence-position></select>
+                            <select asp-for="PoolPositionId" class="select2 form-select" data-recurrence-position data-selected="@Model.PoolPositionId"></select>
                             <div class="form-text">@Localizer["PoolPositionHint"]</div>
                             <span asp-validation-for="PoolPositionId" class="text-danger small mt-1"></span>
                         </div>
@@ -141,7 +144,7 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label asp-for="TaskTemplateId" class="form-label fw-medium">@Localizer["TaskTemplate"]</label>
-                            <select asp-for="TaskTemplateId" class="select2 form-select" data-recurrence-template>
+                            <select asp-for="TaskTemplateId" class="select2 form-select" data-recurrence-template data-selected="@Model.TaskTemplateId">
                                 <option value="">@Localizer["TemplateNone"]</option>
                             </select>
                             <div class="form-text">@Localizer["TaskTemplateHint"]</div>
