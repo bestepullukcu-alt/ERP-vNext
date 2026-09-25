@@ -104,6 +104,31 @@ Doğrulayıcı üç beyanı karşılaştırır — pack `data_mode` (pack front 
 > SAP SmartTable (büyüyen liste, OData `$top/$skip`) ve Oracle JET (DataProvider `fetchByOffset`) sunucuyu varsayılan alır; küçük
 > value-help'ler istemcide kalır. Blueprint'te satır yok; kural budur.
 
+### Dışa aktarma — dosya = ekran (BL-452 paket 1, WP-UI-EXPORT-01)
+
+Sahip kararı (2026-09-24): dışa aktarılan dosya ekranda görüneni taşır — **görünen sütunlar** (sırasıyla), **uygulanan filtre + arama +
+sıralama**, **eşleşen TÜM satırlar**. Sunucu modunda DataTables yalnız ekrandaki sayfayı tutar; kendi CSV/Excel düğmesi o sayfayı
+"liste" diye yazar (Kullanıcılar: 10 satır). Bu yüzden sunucu modundaki her liste dışa aktarmayı **sunucuya** bırakır:
+
+```js
+createList({ dataMode: 'server', ajax: { url: api + '/api/x' }, export: { mode: 'server', url: api + '/api/x/export', fileName: 'x' }, … })
+```
+
+| | Sözleşme | Not |
+|---|---|---|
+| **Uç nokta** | `GET {liste}/export?format=csv\|xlsx&columns=a,b,…` + listenin **kendi** `search`/`orderBy`/`orderDir`/filtre anahtarları | Dışa aktarma **ayrı bir sorgu değil, listenin sorgusudur** (aynı handler, aynı doğrulama, aynı 400 kodları). `start`/`length`/`draw` **parametre değildir** — imzada yoktur, gelse de bağlanamaz |
+| **Sütunlar** | `columns=` = görünen sütunların liste DTO alan adları, ekran sırasıyla (virgüllü ya da tekrarlı) | Servis beyaz liste tutar (`ListExportColumnSet`); bilinmeyen anahtar → **400 `EXPORT_COLUMNS_INVALID`**. `columns` yok = tüm dışa aktarılabilir sütunlar |
+| **Satır sınırı** | en çok **50 000** | Fazlası → **413 `EXPORT_TOO_LARGE`** (kesilmiş dosya asla), arka plan işi paket 4'te |
+| **Dosya** | CSV: `text/csv; charset=utf-8`, **UTF-8 BOM**, `,` ayırıcı, RFC 4180 tırnak · XLSX: tüm hücreler **metin** (ClosedXML) | Formül gibi başlayan hücre (`= + - @` TAB CR) başına `'` alır (CSV enjeksiyonu); düz sayı (`-5`) dokunulmaz. Ad `{ekran}-{yyyyMMdd-HHmm}.{csv\|xlsx}` (UTC) |
+| **Dil** | Başlıklar ve durum/tür değerleri **istek kültüründe** (`Accept-Language`, 7 kiracı dili, yoksa İngilizce) | Servis resx'i ekranın resx'iyle **aynı kelimeler** — `tests/list-export-labels-match-screen.test.js` eşitliği tutar |
+| **Hata gövdesi** | `{ isSuccessful:false, statusCode, errors:[…], errorCodes:[{ code }] }` | Her serviste aynı şekil; fabrika 413 → `ExportTooLarge` uyarısı, 403 → `AccessDenied`, diğer → `ErrorOccurred` |
+| **Fabrika** | CSV/Excel → `fetch(export.url + sorgu, { credentials: 'include', X-Tenant-Id, Accept-Language })` → blob → kaydet | Sorgu tablonun **şu anki** durumundan kurulur (`toExportQuery`); `export` yoksa CSV/Excel DataTables'ın kendi düğmeleridir (istemci modu, 84 eski sayfa — değişmez) |
+| **Ortak kod** | `services/Diten.Building.Blocks/src/Diten.BuildingBlocks.ListExport` | Sözleşme sabitleri, sütun beyaz listesi, CSV/XLSX yazıcı, kültür çözümü. Referans uygulama: Golden Compact `/api/golden-reference-compact/export`; ilk ekran: Kullanıcılar `/api/users/export` |
+
+- `export.mode: 'server'` yalnız `dataMode: 'server'` ile kabul edilir; istemci modu listesi zaten tüm satırları tutar. Bilinmeyen mod ya da `url`'siz beyan fabrikada **hata fırlatır**.
+- **Bu pakette YOK:** PDF ve Yazdır istemci tarafında, yalnız yüklü sayfa (paket 2: kontrollü kopya) · ayrı dışa aktarma izin anahtarı (paket 3; bugün listeyi okuyan anahtar ya da modülün mevcut `*.export` anahtarı) · 50 000 üstü için arka plan işi (paket 4) · denetim kaydı (`IDataExportAuditWriter` bugün yalnız Platform'da).
+- Doğrulayıcı: `data_mode: server` olan sayfa `export: { mode: 'server', url }` beyan etmiyorsa **sapma** (`--format gaps` satırı); fabrikanın dışa aktarma dalı (sorguda `start/length/draw` yok) ayrıca ölçülür.
+
 ## Dokunma protokolü — eski bir liste ekranına dokunan herkes için
 
 Eski liste ekranları (bugün 132'si sapmış) **program olarak göç ettirilmez**; her biri ya modül test turunda ya da **bir görev ona dokunduğunda** düşer.

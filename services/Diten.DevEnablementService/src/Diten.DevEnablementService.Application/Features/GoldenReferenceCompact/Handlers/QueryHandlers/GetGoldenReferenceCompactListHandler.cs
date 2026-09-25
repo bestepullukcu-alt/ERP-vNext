@@ -20,9 +20,13 @@ public sealed class GetGoldenReferenceCompactListHandler : IRequestHandler<GetGo
         if (!GoldenReferenceCompactListSort.TryResolve(request.OrderBy, out var sortField))
             return Response<GoldenReferenceCompactListPageDto>.Fail($"'orderBy' '{request.OrderBy}' is not a sortable column.", 400);
 
+        // BL-452 export: the first row onwards, capped — never the page the caller may have been looking at. A cap below 1
+        // would read as "no paging" in the repository and lift the very ceiling it exists to enforce.
+        if (request.ExportRowCap is < 1)
+            throw new ArgumentOutOfRangeException(nameof(request), request.ExportRowCap, "ExportRowCap must be at least 1.");
         var criteria = new GoldenReferenceCompactListCriteria(
-            Start: request.Start ?? 0,
-            Length: request.Length,
+            Start: request.ExportRowCap is null ? request.Start ?? 0 : 0,
+            Length: request.ExportRowCap ?? request.Length,
             Search: request.Search,
             SortField: sortField,
             Descending: string.Equals(request.OrderDir, "desc", StringComparison.OrdinalIgnoreCase),

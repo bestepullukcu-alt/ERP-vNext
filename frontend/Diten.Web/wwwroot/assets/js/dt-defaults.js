@@ -802,6 +802,24 @@ window.DtDefaults = (function () {
 
         var exportOptions = buildExportOptions(exportColumns);
 
+        /*
+         * BL-452 package 1 — THE FILE IS THE SCREEN. On a server-mode list DataTables holds only the page on screen, so
+         * its own csv/excel buttons would write those 10 rows and call it the list. A list that declares a server export
+         * hands `options.serverExport(format)`: CSV and Excel then ask the service for every matching row (visible
+         * columns, applied filter, search and order) instead. Without it — every client-mode page, every page that never
+         * heard of this — the two buttons are exactly the DataTables buttons they always were. PDF, print and copy are
+         * untouched here (package 2).
+         */
+        var serverExport = typeof options.serverExport === 'function' ? options.serverExport : null;
+        var csvText = '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>';
+        var excelText = '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>';
+        var csvBtn = serverExport
+            ? { text: csvText, className: 'dropdown-item dt-server-export', attr: { 'data-export-format': 'csv' }, action: function () { serverExport('csv'); } }
+            : { extend: 'csv', text: csvText, className: 'dropdown-item', exportOptions: exportOptions };
+        var excelBtn = serverExport
+            ? { text: excelText, className: 'dropdown-item dt-server-export', attr: { 'data-export-format': 'xlsx' }, action: function () { serverExport('xlsx'); } }
+            : { extend: 'excel', text: excelText, className: 'dropdown-item', exportOptions: exportOptions };
+
         var exportBtn = {
             extend: 'collection',
             className: 'btn btn-label-secondary dropdown-toggle dt-export-collection-btn',
@@ -818,8 +836,8 @@ window.DtDefaults = (function () {
                         customizePrintWindow(win, document.title || 'Report');
                     }
                 },
-                { extend: 'csv', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-file me-2"></i>CSV</span>', className: 'dropdown-item', exportOptions: exportOptions },
-                { extend: 'excel', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-export me-2"></i>Excel</span>', className: 'dropdown-item', exportOptions: exportOptions },
+                csvBtn,
+                excelBtn,
                 { extend: 'pdf', text: '<span class="d-flex align-items-center"><i class="icon-base bx bxs-file-pdf me-2"></i>' + (l.PDF || 'PDF') + '</span>', className: 'dropdown-item', exportOptions: exportOptions },
                 { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: exportOptions }
             ]

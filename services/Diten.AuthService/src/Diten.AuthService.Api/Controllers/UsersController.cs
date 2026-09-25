@@ -1,4 +1,5 @@
 using Diten.AuthService.Api.Controllers.Common;
+using Diten.AuthService.Api.Export;
 using Diten.AuthService.Api.Models;
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.DTOs;
@@ -8,6 +9,7 @@ using Diten.AuthService.Application.Features.Users.Services;
 using Diten.AuthService.Application.Features.Users.Queries;
 using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Infrastructure.Authorization;
+using Diten.BuildingBlocks.ListExport;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -60,6 +62,64 @@ public sealed class UsersController : CustomBaseController
 
     private static readonly string[] ListParameters =
         ["start", "length", "search", "orderBy", "orderDir", "status", "roleId", "accountKind"];
+
+    /// <summary>
+    /// BL-452 package 1 — THE FILE IS THE SCREEN: <c>GET api/users/export?format=csv|xlsx&amp;columns=…</c> plus the list's own
+    /// search / orderBy / orderDir / status / roleId / accountKind. It runs the list's query (GetAllUsersQuery) with the
+    /// same validation and the same <c>USERS_LIST_*</c> codes, so the file cannot disagree with what the reader filtered.
+    /// <para>⚠ <c>start</c> and <c>length</c> are deliberately NOT parameters here: the file holds every matching row, not the
+    /// page on screen. A caller that sends them anyway gets them ignored — they cannot even bind.</para>
+    /// <para>Same key as reading the list (auth.users.read). A dedicated export key is package 3 of BL-452.</para>
+    /// </summary>
+    [HttpGet("export")]
+    [HasPermission("auth.users.read")]
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format = null,
+        [FromQuery] string[]? columns = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? orderBy = null,
+        [FromQuery] string? orderDir = null,
+        [FromQuery] string[]? status = null,
+        [FromQuery] Guid[]? roleId = null,
+        [FromQuery] string[]? accountKind = null,
+        CancellationToken ct = default)
+    {
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat))
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail("format must be 'csv' or 'xlsx'.",
+                [new ResponseError(ListExportContract.FormatInvalidCode)], 400));
+        }
+
+        if (!UserExportColumns.Set.TryResolve(columns, out var exportColumns, out var columnsError))
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail(columnsError!,
+                [new ResponseError(ListExportContract.ColumnsInvalidCode)], 400));
+        }
+
+        var list = new UserListRequest(Search: search, OrderBy: orderBy, OrderDir: orderDir, Status: status, RoleId: roleId, AccountKind: accountKind);
+        var result = await _mediator.Send(new GetAllUsersQuery(List: list, ExportRowCap: ListExportContract.MaxRows), ct);
+        if (!result.IsSuccessful)
+        {
+            return CreateActionResultInstance(result);
+        }
+
+        var matched = result.Data!.FilteredTotal;
+        if (matched > ListExportContract.MaxRows)
+        {
+            return CreateActionResultInstance(Response<UserListResult>.Fail(
+                $"{matched} users match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.",
+                [new ResponseError(ListExportContract.TooLargeCode, new Dictionary<string, string>
+                {
+                    ["max"] = ListExportContract.MaxRows.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    ["matched"] = matched.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                })], StatusCodes.Status413PayloadTooLarge));
+        }
+
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var content = ListExportWriter.Write(fileFormat, exportColumns, result.Data.Items, culture, UserExportColumns.Label("Title", culture));
+        return File(content, ListExportContract.ContentType(fileFormat),
+            ListExportContract.FileName(UserExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
+    }
 
     [HttpGet("{id:guid}")]
     [HasPermission("auth.users.read")]

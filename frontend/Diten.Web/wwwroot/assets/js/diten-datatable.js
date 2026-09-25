@@ -748,12 +748,12 @@ window.DitenDataTable = (function () {
     //
     // RESPONSE. The service envelope `{ …, data: { items, total, filteredTotal } }` becomes what DataTables reads:
     // `{ draw, recordsTotal: total, recordsFiltered: filteredTotal, data: items }`. `filteredTotal` > rows is paging.
-    function toServerQuery(dtRequest, fields, appliedFilters) {
-        var parts = [];
-        var add = function (key, value) { parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value)); };
-        var d = dtRequest || {};
-        add('start', Math.max(0, Number(d.start) || 0));
-        add('length', Number(d.length) > 0 ? Number(d.length) : 10);
+    function queryWriter(parts) {
+        return function (key, value) { parts.push(encodeURIComponent(key) + '=' + encodeURIComponent(value)); };
+    }
+
+    // search · orderBy · orderDir — what the reader typed and sorted. Shared by the page request and the export request.
+    function addSearchAndOrder(add, d) {
         var search = normalizeScalar(d.search && typeof d.search === 'object' ? d.search.value : d.search);
         if (search) add('search', search);
         var first = Array.isArray(d.order) ? d.order[0] : null;
@@ -763,7 +763,10 @@ window.DitenDataTable = (function () {
             add('orderBy', column.data);
             add('orderDir', String(first.dir).toLowerCase() === 'desc' ? 'desc' : 'asc');
         }
-        add('draw', Number(d.draw) || 0);
+    }
+
+    // The APPLIED filters by key: a multi filter repeated, a single one once, an empty one never.
+    function addFilters(add, fields, appliedFilters) {
         var filters = appliedFilters || {};
         (Array.isArray(fields) ? fields : []).forEach(function (field) {
             if (field.kind === 'multi') {
@@ -773,7 +776,108 @@ window.DitenDataTable = (function () {
                 if (single) add(field.key, single);
             }
         });
+    }
+
+    function toServerQuery(dtRequest, fields, appliedFilters) {
+        var parts = [];
+        var add = queryWriter(parts);
+        var d = dtRequest || {};
+        add('start', Math.max(0, Number(d.start) || 0));
+        add('length', Number(d.length) > 0 ? Number(d.length) : 10);
+        addSearchAndOrder(add, d);
+        add('draw', Number(d.draw) || 0);
+        addFilters(add, fields, appliedFilters);
         return parts.join('&');
+    }
+
+    // ── Server export: THE FILE IS THE SCREEN (BL-452 package 1) ─────────────────────────────────────────────
+    //
+    // `GET {export.url}?format=csv|xlsx&columns=a,b,…&search&orderBy&orderDir&{filters}` — the list's own search, order and
+    // applied filters, the VISIBLE columns in screen order, and deliberately NO start/length/draw: the service writes
+    // every matching row (up to 50 000; more is 413 EXPORT_TOO_LARGE), never the page DataTables happens to hold.
+    function toExportQuery(dtRequest, fields, appliedFilters, format, columnKeys) {
+        var parts = [];
+        var add = queryWriter(parts);
+        add('format', format === 'xlsx' ? 'xlsx' : 'csv');
+        var keys = Array.isArray(columnKeys) ? columnKeys.filter(Boolean) : [];
+        if (keys.length) add('columns', keys.join(','));
+        addSearchAndOrder(add, dtRequest || {});
+        addFilters(add, fields, appliedFilters);
+        return parts.join('&');
+    }
+
+    // DataTables 2 hands `order()` back AS IT WAS SET: `[[1, 'desc']]` from a header click, but a flat `[1, 'desc']` after
+    // `api.order([1, 'desc'])`, and `{ idx, dir }` objects are accepted too (measured with the vendored build: the flat form
+    // dropped orderBy from the export). Every shape becomes [{ column, dir }].
+    function orderEntries(order) {
+        if (!Array.isArray(order) || !order.length) return [];
+        var list = Array.isArray(order[0]) || (order[0] && typeof order[0] === 'object') ? order : [order];
+        return list.map(function (entry) {
+            if (Array.isArray(entry)) return { column: entry[0], dir: entry[1] };
+            return { column: entry?.idx ?? entry?.column, dir: entry?.dir };
+        }).filter(function (entry) { return Number.isInteger(Number(entry.column)) && entry.column !== null && entry.column !== undefined; });
+    }
+
+    // The table's CURRENT search and order in the shape of a DataTables request, read from the API (no request is made).
+    function exportRequestOf(api) {
+        var settings = api.settings()[0] || {};
+        return {
+            search: { value: api.search() },
+            order: orderEntries(api.order()),
+            columns: api.columns().indexes().toArray().map(function (i) {
+                return { data: api.column(i).dataSrc(), orderable: settings.aoColumns?.[i]?.bSortable !== false };
+            })
+        };
+    }
+
+    // The keys of the columns the reader SEES, in the order they see them — only among the page's exportable ones.
+    function visibleExportKeys(api, allowedKeys) {
+        var keys = [];
+        api.columns(':visible').indexes().toArray().forEach(function (i) {
+            var key = api.column(i).dataSrc();
+            if (typeof key === 'string' && allowedKeys.indexOf(key) !== -1 && keys.indexOf(key) === -1) keys.push(key);
+        });
+        return keys;
+    }
+
+    function exportFileName(response, fallbackStem, format) {
+        var header = response?.headers?.get?.('Content-Disposition') || '';
+        var star = /filename\*\s*=\s*UTF-8''([^;]+)/i.exec(header);
+        if (star) { try { return decodeURIComponent(star[1].trim()); } catch (e) { } }
+        var plain = /filename\s*=\s*"?([^";]+)"?/i.exec(header);
+        if (plain) return plain[1].trim();
+        var now = new Date();
+        var pad = function (n) { return String(n).padStart(2, '0'); };
+        var stamp = now.getUTCFullYear() + pad(now.getUTCMonth() + 1) + pad(now.getUTCDate()) + '-' + pad(now.getUTCHours()) + pad(now.getUTCMinutes());
+        return fallbackStem + '-' + stamp + '.' + (format === 'xlsx' ? 'xlsx' : 'csv');
+    }
+
+    // The bytes arrived through fetch (so the cookie and the tenant header travelled); the browser is handed a blob to save.
+    function saveBlob(blob, fileName) {
+        var url = URL.createObjectURL(blob);
+        var link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.rel = 'noopener';
+        link.classList.add('d-none');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+    }
+
+    function normalizeExportSpec(spec, dataMode) {
+        if (spec === undefined || spec === null) return null;
+        if (spec.mode !== 'server') {
+            throw new Error("DitenDataTable: export.mode must be 'server' (or leave `export` out for the browser-side buttons), got '" + spec.mode + "'.");
+        }
+        if (dataMode !== 'server') {
+            throw new Error("DitenDataTable: export.mode 'server' needs dataMode 'server' — a client-mode list already holds every row.");
+        }
+        if (typeof spec.url !== 'string' || !spec.url) {
+            throw new Error('DitenDataTable: export.url is required for a server export.');
+        }
+        return spec;
     }
 
     function toDataTablesResponse(json, draw) {
@@ -808,6 +912,8 @@ window.DitenDataTable = (function () {
      *   tableEl, dataMode ('client' | 'server'), ajax, bulk, actions, config (columns/columnDefs/…),
      *   onResponse(json) — server mode: called with every list envelope (the page's summary/KPI source);
      *                      the last one is also on handle.lastResponse.
+     *   export:    { mode: 'server', url, fileName } — server mode only (BL-452): CSV/Excel ask `url` for EVERY matching row
+     *              with the visible columns, the applied filters, search and order. Left out = the browser-side buttons.
      *   toolbar:   { addNewText, addNewAttr, onAddNew, exportColumns, colvisColumns, extraButtons },
      *   filters:   { hostId, collapseId, applyBtn, resetBtn, fields: [{ id, key, kind, matches(row, value) }], loadOptions() },
      *   savedView: { moduleKey, pageKey, saveViewColumnIndexes, defaultVisibleColumnIndexes, baseOrder },
@@ -819,6 +925,7 @@ window.DitenDataTable = (function () {
         if (!options?.tableEl) throw new Error('DitenDataTable.createList: tableEl is required.');
         assertDataMode(options.dataMode);
         if (!window.DtDefaults) throw new Error('DtDefaults is required before DitenDataTable.createList.');
+        var exportSpec = normalizeExportSpec(options.export, options.dataMode);
 
         var tableEl = options.tableEl;
         var filters = options.filters || {};
@@ -842,6 +949,7 @@ window.DitenDataTable = (function () {
         var handle = {};
         var isServer = options.dataMode === 'server';
         var lastDraw = 0;
+        var exportBusy = false;
 
         function filterCount() { return state.appliedFilterCount(appliedFilters); }
         function refreshVisual(api) { window.DtDefaults.updateVisualState(api || dt, filterCount()); }
@@ -923,6 +1031,13 @@ window.DitenDataTable = (function () {
         }, toolbar.extraButtons || {});
 
         var pageConfig = options.config || {};
+        // The columns a server export may name: the page's exportable columns, by their `data` key (a key survives a
+        // column reorder, an index does not). Nothing declared = every named data column except the row id.
+        var configColumns = Array.isArray(pageConfig.columns) ? pageConfig.columns : [];
+        var allowedExportKeys = (Array.isArray(toolbar.exportColumns) && toolbar.exportColumns.length
+            ? toolbar.exportColumns.map(function (i) { return configColumns[i]?.data; })
+            : configColumns.map(function (c) { return c?.data; }).filter(function (k) { return k !== 'id'; }))
+            .filter(function (k) { return typeof k === 'string' && k; });
         var pageInitComplete = pageConfig.initComplete;
         var pageDrawCallback = pageConfig.drawCallback;
         var config = Object.assign({}, pageConfig, {
@@ -933,7 +1048,11 @@ window.DitenDataTable = (function () {
                 toolbar.addNewText !== undefined ? toolbar.addNewText : l.AddNew,
                 toolbar.addNewAttr || {},
                 extraButtons,
-                { exportColumns: toolbar.exportColumns, colvisColumns: toolbar.colvisColumns }
+                {
+                    exportColumns: toolbar.exportColumns,
+                    colvisColumns: toolbar.colvisColumns,
+                    serverExport: exportSpec ? function (format) { return handle.exportToServer(format); } : undefined
+                }
             ),
             initComplete: function (settings, json) {
                 var api = this.api();
@@ -1067,10 +1186,48 @@ window.DitenDataTable = (function () {
             if (saveBtn) saveBtn.textContent = isEdit ? (l10n.Update || l10n.Save || '') : (l10n.Save || '');
         }
 
+        // BL-452: the export request of the list AS THE READER SEES IT NOW — visible columns, applied filters, search, order.
+        function exportUrl(format) {
+            var query = toExportQuery(exportRequestOf(dt), fields, appliedFilters, format, visibleExportKeys(dt, allowedExportKeys));
+            return exportSpec.url + (exportSpec.url.indexOf('?') === -1 ? '?' : '&') + query;
+        }
+
+        async function exportToServer(format) {
+            if (!exportSpec || exportBusy) return null;
+            exportBusy = true;
+            var url = exportUrl(format);
+            try {
+                var headers = Object.assign({}, getAuthHeaders());
+                // The file's headers are written in the reader's language: the service reads the request culture.
+                if (window.CurrentLanguage) headers['Accept-Language'] = window.CurrentLanguage;
+                var response = await fetch(url, { method: 'GET', credentials: 'include', headers: headers });
+                handle.lastExport = { url: url, status: response.status };
+                if (response.status === 401) { window.DtDefaults.handleUnauthorized?.(); return handle.lastExport; }
+                if (response.status === 413) { window.showToast?.('ExportTooLarge', 'warning'); return handle.lastExport; }
+                if (response.status === 403) { window.showToast?.('AccessDenied', 'error'); return handle.lastExport; }
+                if (!response.ok) { window.showToast?.('ErrorOccurred', 'error'); return handle.lastExport; }
+                var fileName = exportFileName(response, exportSpec.fileName || savedViewSpec.pageKey || tableEl.id || 'export', format);
+                saveBlob(await response.blob(), fileName);
+                handle.lastExport.fileName = fileName;
+                return handle.lastExport;
+            } catch (error) {
+                console.error('[' + (savedViewSpec.pageKey || tableEl.id) + ' Export] Failed.', error);
+                window.showToast?.('ErrorOccurred', 'error');
+                handle.lastExport = { url: url, status: 0 };
+                return handle.lastExport;
+            } finally {
+                exportBusy = false;
+            }
+        }
+
         Object.assign(handle, {
             dt: dt,
             tableEl: tableEl,
             state: state,
+            exportMode: exportSpec ? 'server' : 'client',
+            exportUrl: function (format) { return exportSpec ? exportUrl(format) : null; },
+            exportToServer: exportToServer,
+            lastExport: null,
             get appliedFilters() { return appliedFilters; },
             dataMode: options.dataMode,
             lastResponse: handle.lastResponse || null,
@@ -1159,6 +1316,7 @@ window.DitenDataTable = (function () {
         renderStatusBadge: renderStatusBadge,
         unwrapResponseData: unwrapResponseData,
         toServerQuery: toServerQuery,
+        toExportQuery: toExportQuery,
         toDataTablesResponse: toDataTablesResponse,
         updateBulkBar: updateBulkBar
     };

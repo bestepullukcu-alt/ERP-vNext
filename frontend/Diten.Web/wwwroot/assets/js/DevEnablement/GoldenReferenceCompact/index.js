@@ -109,6 +109,8 @@ const GoldenReferenceCompactList = (function () {
             dataMode: 'server',
             bulk: bulkOptions,
             ajax: { url: apiUrl + '/api/golden-reference-compact', type: 'GET', xhrFields: { withCredentials: true } },
+            // BL-452 (the reference): CSV/Excel = every matching row with the visible columns, filters, search and order.
+            export: { mode: 'server', url: apiUrl + '/api/golden-reference-compact/export', fileName: 'golden-reference-compact' },
             actions: { onRowAction: rowActionHandlers },
             toolbar: { addNewText: L().AddNew, addNewAttr: { href: '/GoldenReferenceCompact/Create' }, onAddNew: () => { window.location.href = '/GoldenReferenceCompact/Create'; }, exportColumns: [2, 3, 4, 5, 6, 7, 8, 9], colvisColumns: [2, 3, 4, 5, 6, 7, 8, 9] },
             filters: { hostId: 'inlineFilterHost', collapseId: 'inlineFilterCollapse', fields: filterFields, loadOptions: loadLookupOptions },

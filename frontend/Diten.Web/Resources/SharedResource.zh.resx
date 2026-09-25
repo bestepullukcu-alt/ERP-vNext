@@ -922,4 +922,8 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>在选项卡之间切换（焦点位于选项卡上时）</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>编辑任务</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>返回任务列表</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>要导出的行数过多（超过 50,000 行）。请缩小筛选范围后重试。</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
 </root>

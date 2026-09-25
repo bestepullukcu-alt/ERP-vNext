@@ -1,3 +1,5 @@
+using Diten.BuildingBlocks.ListExport;
+using Diten.DevEnablementService.Api.Export;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact.Commands;
 using Diten.DevEnablementService.Application.Features.GoldenReferenceCompact.Queries;
@@ -105,13 +107,63 @@ public sealed class GoldenReferenceCompactController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
-    // Golden Compact is the richer demo tenant module: beyond CRUD it showcases two extra gated capabilities.
-    // Export = the list payload behind the DataTable export toolbar button (records.export). Both reuse the list
-    // query (the client formats/aggregates) — real, enforced endpoints so the permissions auto-register (A1) and
-    // are not fabricated catalog entries.
+    /// <summary>
+    /// BL-452 package 1 — THE FILE IS THE SCREEN, the reference implementation of the list-export contract:
+    /// <c>GET api/golden-reference-compact/export?format=csv|xlsx&amp;columns=…</c> plus the list's own search / orderBy /
+    /// orderDir / filters. It sends the list's query (GetGoldenReferenceCompactListQuery) through the same validator, so a
+    /// bad parameter is the same 400 and the rows are the ones the reader filtered — all of them, up to 50 000.
+    /// <para>⚠ <c>start</c> and <c>length</c> are deliberately NOT parameters: the file is every matching row, not the page on
+    /// screen. Sent anyway, they cannot bind.</para>
+    /// <para>Until BL-452 this route answered the whole list as JSON (no caller in the repository; measured 2026-09-25). The
+    /// gate stays goldencompact.records.export — the self-registered key the manifest already declares.</para>
+    /// </summary>
     [HttpGet("export")]
     [HasPermission("goldencompact.records.export")]
-    public Task<IActionResult> Export(CancellationToken cancellationToken) => WholeList(cancellationToken);
+    public async Task<IActionResult> Export(
+        [FromQuery] string? format,
+        [FromQuery] string[]? columns,
+        [FromQuery] string? search,
+        [FromQuery] string? orderBy,
+        [FromQuery] string? orderDir,
+        [FromQuery] string[]? status,
+        [FromQuery] string[]? referenceType,
+        [FromQuery] string[]? category,
+        [FromQuery] string[]? owner,
+        [FromQuery] int? priority,
+        CancellationToken cancellationToken)
+    {
+        if (!ListExportContract.TryParseFormat(format, out var fileFormat))
+            return ExportRefusal(400, "format must be 'csv' or 'xlsx'.", ListExportContract.FormatInvalidCode);
+        if (!GoldenCompactExportColumns.Set.TryResolve(columns, out var exportColumns, out var columnsError))
+            return ExportRefusal(400, columnsError!, ListExportContract.ColumnsInvalidCode);
+
+        var response = await _mediator.Send(new GetGoldenReferenceCompactListQuery(
+            Search: search, OrderBy: orderBy, OrderDir: orderDir, Status: status, ReferenceType: referenceType,
+            Category: category, Owner: owner, Priority: priority, ExportRowCap: ListExportContract.MaxRows), cancellationToken);
+        if (!response.IsSuccessful)
+            return CreateActionResultInstance(response);
+
+        var matched = response.Data!.FilteredTotal;
+        if (matched > ListExportContract.MaxRows)
+            return ExportRefusal(StatusCodes.Status413PayloadTooLarge,
+                $"{matched} records match; an export carries at most {ListExportContract.MaxRows}. Narrow the filter.", ListExportContract.TooLargeCode);
+
+        var culture = ListExportContract.ResolveCulture(Request.Headers.AcceptLanguage.ToString());
+        var content = ListExportWriter.Write(fileFormat, exportColumns, response.Data.Items, culture, GoldenCompactExportColumns.Label("Title", culture));
+        return File(content, ListExportContract.ContentType(fileFormat),
+            ListExportContract.FileName(GoldenCompactExportColumns.Screen, DateTimeOffset.UtcNow, fileFormat));
+    }
+
+    // This service's envelope carries no machine codes; an export refusal speaks the same body as AuthService's
+    // (isSuccessful, statusCode, errors, errorCodes[{ code }]) so the list factory reads one shape from every service.
+    private ObjectResult ExportRefusal(int statusCode, string message, string code) => StatusCode(statusCode, new
+    {
+        data = (object?)null,
+        statusCode,
+        isSuccessful = false,
+        errors = new[] { message },
+        errorCodes = new[] { new { code } }
+    });
 
     // Reports summary = an aggregate read surface (reports.view). API-only for now (no frontend route yet), so it
     // is NOT a catalog page; the permission still exists system-wide via this gate.

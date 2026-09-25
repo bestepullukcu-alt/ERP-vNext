@@ -982,4 +982,8 @@
   <data name="Shortcuts.Wcn.Tabs" xml:space="preserve"><value>Move between tabs (on a focused tab)</value></data>
   <data name="Shortcuts.Task.Edit" xml:space="preserve"><value>Edit the task</value></data>
   <data name="Shortcuts.Task.Back" xml:space="preserve"><value>Back to the task list</value></data>
+  <data name="ExportTooLarge" xml:space="preserve">
+    <value>Too many rows to export (more than 50,000). Narrow the filter and try again.</value>
+    <comment>BL-452: server export refused with 413 EXPORT_TOO_LARGE (more than 50 000 matching rows).</comment>
+  </data>
 </root>

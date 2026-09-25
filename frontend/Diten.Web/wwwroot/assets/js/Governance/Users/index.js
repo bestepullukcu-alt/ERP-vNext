@@ -378,6 +378,8 @@ const UsersList = (function () {
             tableEl: dtTableEl,
             dataMode: 'server',
             ajax: { url: apiUrl + '/api/users', type: 'GET', xhrFields: { withCredentials: true } },
+            // BL-452: CSV/Excel = every user the filter matches (visible columns, search, order) — not the page on screen.
+            export: { mode: 'server', url: apiUrl + '/api/users/export', fileName: 'users' },
             onResponse: writeKpis,
             // quickView and edit are the factory's (quickView/form below); the rest are the screen's endpoints.
             actions: { onRowAction: Object.assign({ delete: deleteRow }, ...Object.keys(adminActions).map((key) => ({ [key]: runAdminAction(adminActions[key]) }))) },

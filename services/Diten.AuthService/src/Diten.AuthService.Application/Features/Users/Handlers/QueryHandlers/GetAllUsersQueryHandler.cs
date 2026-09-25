@@ -30,7 +30,10 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
         }
         else
         {
-            if (!UserListRules.TryBuild(request.List, out criteria, out var failure))
+            var built = request.ExportRowCap is { } rowCap
+                ? UserListRules.TryBuildExport(request.List, rowCap, out criteria, out var failure)
+                : UserListRules.TryBuild(request.List, out criteria, out failure);
+            if (!built)
             {
                 return failure!;
             }
@@ -45,6 +48,12 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
 
         var page = await _reader.SearchAsync(tenantId, criteria, ct);
 
+        // BL-452 — more matches than the export may carry: the caller refuses the file (413), so the rows are not dressed.
+        if (request.ExportRowCap is { } cap && page.FilteredTotal > cap)
+        {
+            return Response<UserListResult>.Success(new UserListResult([], page.FilteredTotal, page.FilteredTotal, null));
+        }
+
         // ONE query for the roles of the whole page — the loop that used to ask per user is gone.
         var roles = await _reader.GetRoleNamesForUsersAsync(tenantId, page.Items.Select(u => u.Id).ToList(), ct);
         var items = page.Items
@@ -54,9 +63,10 @@ public sealed class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, 
                 AccountKind: user.AccountKind.ToString(), Status: UserLifecycle.StatusOf(user)))
             .ToList();
 
-        if (request.List is null)
+        if (request.List is null || request.ExportRowCap is not null)
         {
             // Legacy: no filter, so what matched is the total. The summary was never part of this call.
+            // Export: the file has no header chips — the summary would be three queries for nothing.
             return Response<UserListResult>.Success(new UserListResult(items, page.FilteredTotal, page.FilteredTotal, null));
         }
 
