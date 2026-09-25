@@ -166,12 +166,22 @@ public sealed class InternalUsersControllerTests
         var controller = new InternalUsersController(
             new FakeInternalEventAuthService(authorized ? ApiKey : null),
             repository,
+            new UnusedListReader(),
             NullLogger<InternalUsersController>.Instance);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Headers[Header] = ApiKey;
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
         return controller;
+    }
+
+    /// <summary>BL-459 — the counts endpoint is proven over HTTP (TenantUserCountsEndpointTests); these tests never reach it.</summary>
+    private sealed class UnusedListReader : IUserListReader
+    {
+        public Task<Diten.AuthService.Application.Features.Users.Models.UserListPage> SearchAsync(Guid tenantId, Diten.AuthService.Application.Features.Users.Models.UserListCriteria criteria, CancellationToken ct) => throw new NotSupportedException();
+        public Task<Diten.AuthService.Application.Features.Users.Models.UserListSummary> GetSummaryAsync(Guid tenantId, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyCollection<Guid>> GetUserIdsHoldingAnyRoleAsync(Guid tenantId, IReadOnlyCollection<Guid> roleIds, CancellationToken ct) => throw new NotSupportedException();
+        public Task<IReadOnlyDictionary<Guid, IReadOnlyList<string>>> GetRoleNamesForUsersAsync(Guid tenantId, IReadOnlyCollection<Guid> userIds, CancellationToken ct) => throw new NotSupportedException();
     }
 
     /// <summary>Mirrors the real repository's tenant filter — the scoping under test lives in that argument.</summary>

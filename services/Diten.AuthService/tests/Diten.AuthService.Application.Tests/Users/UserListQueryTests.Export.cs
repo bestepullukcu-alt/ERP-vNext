@@ -196,6 +196,23 @@ public sealed partial class UserListQueryTests
         Assert.Equal(HttpStatusCode.Forbidden, reply.Status);
     }
 
+    // BL-452 package 3 — reading the screen and taking the file are two rights now.
+    [Fact]
+    public async Task Reading_without_the_export_permission_lists_but_gets_no_file()
+    {
+        var world = await ExportWorldAsync();
+
+        using var client = _host.Client(world.ReadOnlyToken);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("api/users?start=0&length=10&status=Active")).StatusCode);
+
+        var denied = await ExportAsync("status=Active", token: world.ReadOnlyToken);
+        Assert.Equal(HttpStatusCode.Forbidden, denied.Status);
+        Assert.Null(denied.FileName);
+
+        var allowed = await ExportAsync("status=Active", token: world.Token); // read + export
+        Assert.Equal(HttpStatusCode.OK, allowed.Status);
+    }
+
     [Theory]
     [InlineData("orderBy=passwordHash", "USERS_LIST_ORDER_BY_INVALID")]
     [InlineData("orderBy=email&orderDir=up", "USERS_LIST_ORDER_DIR_INVALID")]
@@ -243,7 +260,7 @@ public sealed partial class UserListQueryTests
 
         using var scope = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.CreateScope(_host.Factory.Services);
         var tokens = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetRequiredService<Diten.AuthService.Application.Common.Interfaces.ITokenService>(scope.ServiceProvider);
-        var token = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.read"], expiresInMinutes: 60);
+        var token = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.read", "auth.users.export"], expiresInMinutes: 60);
 
         var tooMany = await ExportAsync("columns=email", token: token);
         Assert.Equal((HttpStatusCode)413, tooMany.Status);

@@ -69,10 +69,11 @@ public sealed class UsersController : CustomBaseController
     /// same validation and the same <c>USERS_LIST_*</c> codes, so the file cannot disagree with what the reader filtered.
     /// <para>⚠ <c>start</c> and <c>length</c> are deliberately NOT parameters here: the file holds every matching row, not the
     /// page on screen. A caller that sends them anyway gets them ignored — they cannot even bind.</para>
-    /// <para>Same key as reading the list (auth.users.read). A dedicated export key is package 3 of BL-452.</para>
+    /// <para>Its own key, <c>auth.users.export</c> (BL-452 package 3): exporting is a right separate from reading the screen.</para>
     /// </summary>
     [HttpGet("export")]
-    [HasPermission("auth.users.read")]
+    // BL-452 package 3 — exporting is its own right, separate from reading the screen (SAP/Oracle: a download is a role grant).
+    [HasPermission("auth.users.export")]
     public async Task<IActionResult> Export(
         [FromQuery] string? format = null,
         [FromQuery] string[]? columns = null,

@@ -9,6 +9,7 @@ using Diten.AuthService.Domain.Authorization;
 using Diten.AuthService.Domain.Entities;
 using Diten.AuthService.Domain.Enums;
 using Microsoft.Extensions.Logging.Abstractions;
+using Diten.AuthService.Application.Tests.Testing;
 
 namespace Diten.AuthService.Application.Tests.Users;
 
@@ -432,10 +433,21 @@ public sealed class AccountKindTests
     // ── wiring ──
 
     private static SetAccountKindCommandHandler SetHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<SetAccountKindCommandHandler>.Instance);
+        => new(repo, TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), NullLogger<SetAccountKindCommandHandler>.Instance);
 
     private static UpdateUserCommandHandler UpdateHandler(IUserRepository repo, CapturingAudit audit)
-        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(audit), NullLogger<UpdateUserCommandHandler>.Instance);
+        => new(repo, new NoRolesRepository(), TenantContextFor(TenantA), new AccountKindWriter(UserAuditForTests.Over(audit)), UserAuditForTests.None(), new RecordingUserQuotaClient(), new AnotherActor(), new NoRevokes(), NullLogger<UpdateUserCommandHandler>.Instance);
+
+    private sealed class AnotherActor : ICurrentUserAccessor { public Guid? UserId { get; } = Guid.NewGuid(); }
+
+    private sealed class NoRevokes : IRefreshTokenRepository
+    {
+        public Task<RefreshToken?> GetByTokenAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task CreateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task UpdateAsync(RefreshToken refreshToken, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAsync(string token, CancellationToken ct) => throw new NotSupportedException();
+        public Task RevokeAllByUserAsync(Guid userId, Guid tenantId, CancellationToken ct) => Task.CompletedTask;
+    }
 
     private static CreateUserCommandHandler CreateHandler(InMemoryUserRepository repo, FakeInvitationEmailService email)
         => new(
@@ -447,6 +459,8 @@ public sealed class AccountKindTests
             new FakeRefreshTokenHasher(),
             new FakeHostEnvironment(),
             email,
+            UserAuditForTests.None(),
+            new RecordingUserQuotaClient(),
             NullLogger<CreateUserCommandHandler>.Instance);
 
     private static ITenantContext TenantContextFor(Guid tenantId)

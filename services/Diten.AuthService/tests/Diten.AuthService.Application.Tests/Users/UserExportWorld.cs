@@ -35,6 +35,8 @@ internal sealed class UserExportWorld
     public string Token { get; private init; } = string.Empty;
     public string ForeignToken { get; private init; } = string.Empty;
     public string NoPermissionToken { get; private init; } = string.Empty;
+    /// <summary>BL-452 package 3 — reads the list, may not export it: the export answers 403.</summary>
+    public string ReadOnlyToken { get; private init; } = string.Empty;
 
     private static async Task<UserExportWorld> BuildAsync(AccountKindAcceptance.AuthTestHost host)
     {
@@ -95,9 +97,10 @@ internal sealed class UserExportWorld
         {
             TenantId = tenantId,
             ForeignTenantId = foreignTenantId,
-            Token = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.read"], expiresInMinutes: 60),
-            ForeignToken = tokens.GenerateAccessToken(foreignActor, ["export-reader"], ["auth.users.read"], expiresInMinutes: 60),
-            NoPermissionToken = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.create"], expiresInMinutes: 60)
+            Token = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.read", "auth.users.export"], expiresInMinutes: 60),
+            ForeignToken = tokens.GenerateAccessToken(foreignActor, ["export-reader"], ["auth.users.read", "auth.users.export"], expiresInMinutes: 60),
+            NoPermissionToken = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.create"], expiresInMinutes: 60),
+            ReadOnlyToken = tokens.GenerateAccessToken(actor, ["export-reader"], ["auth.users.read"], expiresInMinutes: 60)
         };
     }
 }

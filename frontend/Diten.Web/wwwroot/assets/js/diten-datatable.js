@@ -949,7 +949,7 @@ window.DitenDataTable = (function () {
      *   export:    { mode: 'server', url, fileName } — server mode only (BL-452): CSV/Excel ask `url` for EVERY matching row
      *              with the visible columns, the applied filters, search and order; PDF/print take their rows from the
      *              same url's CSV (package 2). Left out = the browser-side buttons, PDF/print from the rows on the table.
-     *   toolbar:   { addNewText, addNewAttr, onAddNew, exportColumns, colvisColumns, extraButtons },
+     *   toolbar:   { addNewText, addNewAttr, onAddNew, exportColumns, colvisColumns, extraButtons, exportPermitted },
      *   filters:   { hostId, collapseId, applyBtn, resetBtn, fields: [{ id, key, kind, matches(row, value) }], loadOptions() },
      *   savedView: { moduleKey, pageKey, saveViewColumnIndexes, defaultVisibleColumnIndexes, baseOrder },
      *   quickView: { offcanvasId, populate(row), actionKey ('quickView') },
@@ -1086,6 +1086,8 @@ window.DitenDataTable = (function () {
                 {
                     exportColumns: toolbar.exportColumns,
                     colvisColumns: toolbar.colvisColumns,
+                    // BL-452 standard 1 — false = the reader may not export: no file entries in the menu (Copy stays).
+                    exportPermitted: toolbar.exportPermitted,
                     serverExport: exportSpec ? function (format) { return handle.exportToServer(format); } : undefined,
                     controlledCopy: {
                         rows: exportSpec ? function () { return handle.controlledCopyRows(); } : undefined,

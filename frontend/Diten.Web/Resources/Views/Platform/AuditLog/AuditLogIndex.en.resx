@@ -187,4 +187,16 @@
   <data name="Common.DtInfoFiltered" xml:space="preserve"><value>filtered from _MAX_ records</value></data>
   <data name="AuditLog.DenyOnlyBadge" xml:space="preserve"><value>Deny-only</value></data>
   <data name="AuditLog.DenyOnlyNotice" xml:space="preserve"><value>This log records denied (deny) access decisions only. Allowed accesses are not logged by policy (deny-only baseline).</value></data>
+  <!-- BL-456 — AuthService user-lifecycle events (RequestType), shown in the Operation column and the detail title. -->
+  <data name="AuditLog.Event.user_invited" xml:space="preserve"><value>User invited</value></data>
+  <data name="AuditLog.Event.user_created" xml:space="preserve"><value>User created</value></data>
+  <data name="AuditLog.Event.user_deleted" xml:space="preserve"><value>User deleted</value></data>
+  <data name="AuditLog.Event.user_deactivated" xml:space="preserve"><value>User deactivated</value></data>
+  <data name="AuditLog.Event.user_activated" xml:space="preserve"><value>User activated</value></data>
+  <data name="AuditLog.Event.user_password_reset_by_admin" xml:space="preserve"><value>Password reset by administrator</value></data>
+  <data name="AuditLog.Event.user_invitation_resent" xml:space="preserve"><value>Invitation resent</value></data>
+  <data name="AuditLog.Event.user_updated" xml:space="preserve"><value>User updated</value></data>
+  <data name="AuditLog.Event.user_role_assigned" xml:space="preserve"><value>Role assigned to user</value></data>
+  <data name="AuditLog.Event.user_role_removed" xml:space="preserve"><value>Role removed from user</value></data>
+  <data name="AuditLog.Event.user_account_kind_changed" xml:space="preserve"><value>Account kind changed</value></data>
 </root>

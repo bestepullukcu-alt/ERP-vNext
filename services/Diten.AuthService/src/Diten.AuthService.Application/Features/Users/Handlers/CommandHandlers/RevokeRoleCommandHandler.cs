@@ -1,6 +1,7 @@
 using Diten.AuthService.Application.Common;
 using Diten.AuthService.Application.Common.Interfaces;
 using Diten.AuthService.Application.Features.Users.Commands;
+using Diten.AuthService.Application.Features.Users.Services;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IRoleAssignmentVersionService _versionService;
     private readonly ITenantContext _tenantContext;
-    private readonly IRbacAuditRecorder _rbacAudit;
+    private readonly IUserAuditRecorder _userAudit;
     private readonly ILogger<RevokeRoleCommandHandler> _logger;
 
     public RevokeRoleCommandHandler(
@@ -22,7 +23,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         IRefreshTokenRepository refreshTokenRepository,
         IRoleAssignmentVersionService versionService,
         ITenantContext tenantContext,
-        IRbacAuditRecorder rbacAudit,
+        IUserAuditRecorder userAudit,
         ILogger<RevokeRoleCommandHandler> logger)
     {
         _roleRepository = roleRepository;
@@ -30,7 +31,7 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         _refreshTokenRepository = refreshTokenRepository;
         _versionService = versionService;
         _tenantContext = tenantContext;
-        _rbacAudit = rbacAudit;
+        _userAudit = userAudit;
         _logger = logger;
     }
 
@@ -53,8 +54,9 @@ public sealed class RevokeRoleCommandHandler : IRequestHandler<RevokeRoleCommand
         await _refreshTokenRepository.RevokeAllByUserAsync(request.UserId, _tenantContext.TenantId, ct);
 
         // FEAT-AUDIT-RBAC — a role was removed from a user (roleName best-effort; role may be a stale id).
-        await _rbacAudit.RecordAsync("user_role_removed", _tenantContext.TenantId,
-            new { targetUserId = request.UserId, roleId = request.RoleId, roleName = role?.Name }, ct);
+        // BL-456 — the same row as before, now through the user audit recorder so it also reaches Platform's log.
+        await _userAudit.RecordAsync(UserAuditEvents.RoleRemoved, _tenantContext.TenantId, request.UserId,
+            new Dictionary<string, object?> { ["roleId"] = request.RoleId, ["roleName"] = role?.Name }, ct);
 
         return Response<NoContent>.Success(204);
     }

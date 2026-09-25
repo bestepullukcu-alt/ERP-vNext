@@ -1089,6 +1089,14 @@ window.DtDefaults = (function () {
             ? { text: excelText, className: 'dropdown-item dt-server-export', attr: { 'data-export-format': 'xlsx' }, action: function () { serverExport('xlsx'); } }
             : { extend: 'excel', text: excelText, className: 'dropdown-item', exportOptions: exportOptions };
 
+        /*
+         * BL-452 (standard 1) — the file is a right of its own: a page passing `exportPermitted: false` (the reader lacks
+         * its {module}.export key) gets no Print / CSV / Excel / PDF entry at all — not a disabled one, not one that
+         * answers 403. Copy stays (it puts the rows the reader already sees on the clipboard, nothing leaves the screen).
+         * Omitted = permitted: every page that never heard of this keeps the menu it had.
+         */
+        var exportPermitted = options.exportPermitted !== false;
+
         var exportBtn = {
             extend: 'collection',
             className: 'btn btn-label-secondary dropdown-toggle dt-export-collection-btn',
@@ -1109,7 +1117,7 @@ window.DtDefaults = (function () {
                     action: function (e, dt) { return runControlledCopy('pdf', dt, exportOptions, controlledCopy); }
                 },
                 { extend: 'copy', text: '<span class="d-flex align-items-center"><i class="icon-base bx bx-copy me-2"></i>' + (l.Copy || 'Copy') + '</span>', className: 'dropdown-item', exportOptions: exportOptions }
-            ]
+            ].filter(function (b) { return exportPermitted || b.extend === 'copy'; })
         };
 
         // Module-supplied entries for the Action dropdown (e.g. MOD-0150 Contacts template download / server-side
