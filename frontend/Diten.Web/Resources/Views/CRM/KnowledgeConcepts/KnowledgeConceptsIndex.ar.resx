@@ -11,14 +11,14 @@
   <data name="ConceptNodeCode" xml:space="preserve"><value>Node Code</value></data>
   <data name="ConceptNodeName" xml:space="preserve"><value>Node Name</value></data>
   <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
-  <data name="SubjectId" xml:space="preserve"><value>Subject</value></data>
-  <data name="Status" xml:space="preserve"><value>Status</value></data>
+  <data name="SubjectId" xml:space="preserve"><value>الموضوع</value></data>
+  <data name="Status" xml:space="preserve"><value>الحالة</value></data>
   <data name="ExternalRefType" xml:space="preserve"><value>External Ref Type</value></data>
   <data name="ExternalRefId" xml:space="preserve"><value>External Ref Id</value></data>
-  <data name="Description" xml:space="preserve"><value>Description</value></data>
+  <data name="Description" xml:space="preserve"><value>الوصف</value></data>
   <data name="MetadataJson" xml:space="preserve"><value>Metadata (JSON)</value></data>
-  <data name="EffectiveFrom" xml:space="preserve"><value>Effective From</value></data>
-  <data name="EffectiveTo" xml:space="preserve"><value>Effective To</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>ساري من</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>ساري حتى</value></data>
   <data name="Archived" xml:space="preserve"><value>Archived</value></data>
   <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
   <data name="Actions" xml:space="preserve"><value>Actions</value></data>
@@ -31,14 +31,14 @@
   <data name="ConceptContractUnavailable" xml:space="preserve"><value>Concept graph capability contract is unavailable. Actions are disabled.</value></data>
   <data name="IdentitySection" xml:space="preserve"><value>Identity and Classification</value></data>
   <data name="ReferenceSection" xml:space="preserve"><value>Effective Window and Reference</value></data>
-  <data name="SelectOption" xml:space="preserve"><value>Select...</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>اختر...</value></data>
   <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
   <data name="Save" xml:space="preserve"><value>Save</value></data>
   <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
   <data name="Active" xml:space="preserve"><value>Active</value></data>
   <data name="Passive" xml:space="preserve"><value>Passive</value></data>
   <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
-  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="Edit" xml:space="preserve"><value>تعديل</value></data>
   <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
   <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
   <data name="View" xml:space="preserve"><value>View</value></data>
@@ -57,11 +57,11 @@
   <data name="Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
   <data name="EmptyState" xml:space="preserve"><value>No concept nodes yet.</value></data>
-  <data name="ErrorState" xml:space="preserve"><value>Something went wrong.</value></data>
-  <data name="Loading" xml:space="preserve"><value>Loading...</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>حدث خطأ ما.</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل...</value></data>
   <data name="RecordArchived" xml:space="preserve"><value>Record archived.</value></data>
-  <data name="RecordCreated" xml:space="preserve"><value>Record created.</value></data>
-  <data name="RecordUpdated" xml:space="preserve"><value>Record updated.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>تم إنشاء السجل.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>تم تحديث السجل.</value></data>
   <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>The Global Product picker is unavailable right now.</value></data>
   <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>The MDM Global Product service is not reachable; the picker is disabled.</value></data>
   <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>You lack the mdm.global-products.read permission, so the Global Product picker is disabled.</value></data>
@@ -74,7 +74,7 @@
   <data name="TemplatesTab" xml:space="preserve"><value>Chain Templates</value></data>
   <data name="GraphPreviewTab" xml:space="preserve"><value>Graph Preview</value></data>
   <data name="RecordSaved" xml:space="preserve"><value>View saved.</value></data>
-  <data name="ImmutableAfterCreate" xml:space="preserve"><value>Fixed at creation; it cannot be changed later.</value></data>
+  <data name="ImmutableAfterCreate" xml:space="preserve"><value>يُحدَّد عند الإنشاء؛ ولا يمكن تغييره لاحقًا.</value></data>
   <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>This record is archived and read-only.</value></data>
   <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
   <data name="ConceptTypeCode" xml:space="preserve"><value>Type Code</value></data>
@@ -103,23 +103,23 @@
   <data name="ArchiveConnection" xml:space="preserve"><value>Archive Connection</value></data>
   <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Archive this connection? This is a soft lifecycle action; it stays readable.</value></data>
   <data name="ConnectionsEmptyState" xml:space="preserve"><value>No connections yet.</value></data>
-  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Pick a subject first; the node lists are scoped to it.</value></data>
+  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>اختر موضوعًا أولًا؛ تقتصر قوائم العُقد عليه.</value></data>
   <data name="PriorityNote" xml:space="preserve"><value>Lower value wins; ties break on the connection code.</value></data>
-  <data name="ChainCode" xml:space="preserve"><value>Chain Code</value></data>
-  <data name="ChainName" xml:space="preserve"><value>Chain Name</value></data>
-  <data name="ChainVersion" xml:space="preserve"><value>Chain Version</value></data>
+  <data name="ChainCode" xml:space="preserve"><value>رمز السلسلة</value></data>
+  <data name="ChainName" xml:space="preserve"><value>اسم السلسلة</value></data>
+  <data name="ChainVersion" xml:space="preserve"><value>إصدار السلسلة</value></data>
   <data name="OrderedConceptTypes" xml:space="preserve"><value>Expected Type Sequence</value></data>
   <data name="SequenceLength" xml:space="preserve"><value>Steps</value></data>
-  <data name="AddToSequence" xml:space="preserve"><value>Add step</value></data>
-  <data name="RemoveStep" xml:space="preserve"><value>Remove step</value></data>
-  <data name="MoveUp" xml:space="preserve"><value>Move up</value></data>
-  <data name="MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="AddToSequence" xml:space="preserve"><value>إضافة خطوة</value></data>
+  <data name="RemoveStep" xml:space="preserve"><value>إزالة الخطوة</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>نقل لأعلى</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>نقل لأسفل</value></data>
   <data name="SequenceEmpty" xml:space="preserve"><value>No step added yet.</value></data>
-  <data name="SequenceMinTwo" xml:space="preserve"><value>The sequence needs at least two concept types.</value></data>
+  <data name="SequenceMinTwo" xml:space="preserve"><value>يحتاج العمود الفقري إلى نوعَي مفهوم على الأقل.</value></data>
   <data name="SequenceDuplicateType" xml:space="preserve"><value>A concept type may appear only once in the sequence.</value></data>
-  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>A published chain freezes its sequence; a change needs a new version.</value></data>
-  <data name="CreateTemplate" xml:space="preserve"><value>Create Chain Template</value></data>
-  <data name="EditTemplate" xml:space="preserve"><value>Edit Chain Template</value></data>
+  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>السلسلة المنشورة تُجمّد عمودها الفقري؛ ويتطلب أي تغيير إصدارًا جديدًا.</value></data>
+  <data name="CreateTemplate" xml:space="preserve"><value>إنشاء قالب سلسلة</value></data>
+  <data name="EditTemplate" xml:space="preserve"><value>تعديل قالب السلسلة</value></data>
   <data name="TemplateDetails" xml:space="preserve"><value>Chain Template Details</value></data>
   <data name="ArchiveTemplate" xml:space="preserve"><value>Archive Chain Template</value></data>
   <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Archive this chain template? This is a soft lifecycle action; it stays readable.</value></data>
