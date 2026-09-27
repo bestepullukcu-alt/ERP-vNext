@@ -522,6 +522,48 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
+    // ─── WP-CT-FE-9: chain template quick view, aligned with the editor ────────
+    // Local helpers (this module never imports template-form.js): DAL A/B/C… (26+ → number), the ×N / ×min–max chip.
+    const pvBranchLetter = bi => (bi < 26 ? String.fromCharCode(65 + bi) : String(bi + 1));
+    const pvFmt = (template, ...args) => String(template || '').replace(/\{(\d)\}/g, (_, i) => String(args[Number(i)] ?? ''));
+    const pvChipLabel = s => {
+        const min = s.minSelection ?? 1;
+        const max = s.maxSelection ?? null;
+        return max === min ? `×${min}` : `×${min}–${max == null ? '∞' : max}`;
+    };
+    // The unresolved non-conforming count: the BE-A diagnostics over the template's spine (a READ — the backend
+    // classifier is the single source) minus its stored "Yok say" resolutions. Read-only: no ignore / undo / PUT here.
+    // A newer preview (another row) wins: a late answer for an older row is dropped (sequence + row id).
+    let pvDiagSeq = 0;
+    const fillTemplateNonConforming = async row => {
+        const host = document.getElementById('pv-tpl-nonconforming');
+        const section = document.getElementById('pv-tpl-nonconforming-section');
+        if (!host) return;
+        section?.classList.remove('d-none');
+        const seq = ++pvDiagSeq;
+        const rowId = row.conceptChainTemplateId;
+        const spine = Array.isArray(row.orderedConceptTypes) ? row.orderedConceptTypes : [];
+        if (!row.subjectId || spine.length < 2) { host.innerHTML = '<span class="text-muted">—</span>'; return; }
+        host.innerHTML = `<span class="text-muted small"><span class="spinner-border spinner-border-sm me-2"></span>${esc(L.Loading || '')}</span>`;
+        try {
+            const data = await envelope(await fetch(`${base}/concept-chain-templates/conformance-diagnostics`, {
+                method: 'POST', credentials: 'same-origin', headers: jsonHeaders,
+                body: JSON.stringify({ subjectId: row.subjectId, orderedConceptTypeIds: spine })
+            }));
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            const ignored = new Set((row.ignoredNonConformingRelationshipIds || []).map(String));
+            const open = (data?.items || []).filter(i => i.result !== 'conforming' && !ignored.has(String(i.conceptRelationshipId))).length;
+            host.innerHTML = open > 0
+                ? `<span class="badge bg-label-warning">${esc(pvFmt(L.UnresolvedCount || '{0}', open))}</span>`
+                : `<span class="badge bg-label-success"><i class="bx bx-check me-1"></i>${esc(L.NonConformingEmpty || '')}</span>`;
+        } catch (error) {
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            // A user without the diagnostics permission gets the whole section hidden rather than an error.
+            if (error?.status === 403) { section?.classList.add('d-none'); return; }
+            host.innerHTML = `<span class="text-muted small">${esc(L.ErrorState || '')}</span>`;
+        }
+    };
+
     // ─── Columns ─────────────────────────────────────────────────────────────
     const statusBadge = v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' || v === 'published' ? 'success' : 'primary'));
     const archivedBadge = v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success');
@@ -1167,20 +1209,27 @@
                     ? ids.map(id => `<span class="badge bg-label-secondary me-1">${esc(labelAudience(id))}</span>`).join('')
                     : `<span class="text-muted">—</span>`;
             }
-            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality.
+            // SCMM-10 (③) — branch structure (read-only). WP-CT-FE-9: same language as the editor — "DAL A · name ·
+            // N adım" header and the ×N / ×min–max chip per step.
             const brHost = document.getElementById('pv-tpl-branches');
             if (brHost) {
                 const list = Array.isArray(row.branches) ? row.branches : [];
-                brHost.innerHTML = list.length ? list.map(b => {
-                    const steps = (b.steps || []).map(s => {
-                        const card = `${s.minSelection ?? 1}–${s.maxSelection == null ? '∞' : s.maxSelection}`;
-                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})</span></li>`;
-                    }).join('');
+                brHost.innerHTML = list.length ? list.map((b, bi) => {
+                    const stepList = b.steps || [];
+                    const steps = stepList.map(s =>
+                        `<li class="list-group-item d-flex align-items-center gap-2"><span class="fw-medium me-auto">${esc(labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(pvChipLabel(s))}</span></li>`
+                    ).join('');
                     return `<div class="card border shadow-none"><div class="card-body p-3">
-                        <div class="fw-medium mb-2">${esc(b.branchName || b.branchCode || '')}</div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-label-primary text-uppercase fw-semibold flex-shrink-0">${esc(L.BranchLabelPrefix || 'Branch')} ${esc(pvBranchLetter(bi))}</span>
+                            <span class="fw-medium text-truncate flex-grow-1">${esc(b.branchName || b.branchCode || '')}</span>
+                            <span class="small text-muted text-nowrap">${esc(pvFmt(L.StepCountLabel || '{0}', stepList.length))}</span>
+                        </div>
                         <ol class="list-group list-group-numbered mb-0">${steps}</ol></div></div>`;
                 }).join('') : `<span class="text-muted">—</span>`;
             }
+            // WP-CT-FE-9 — unresolved non-conforming count, filled async (the synchronous fill never waits for it).
+            void fillTemplateNonConforming(row);
             setText('pv-tpl-description', row.description);
             setText('pv-tpl-from', stamp(row.effectiveFrom));
             setText('pv-tpl-to', row.effectiveTo ? stamp(row.effectiveTo) : '');
