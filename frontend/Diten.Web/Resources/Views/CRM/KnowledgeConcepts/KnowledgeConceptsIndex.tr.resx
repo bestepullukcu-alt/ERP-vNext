@@ -270,4 +270,7 @@
   <data name="StepCountLabel" xml:space="preserve"><value>{0} adım</value></data>
   <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Kavram tipi sürükleyin</value></data>
   <data name="AddTypeCompact" xml:space="preserve"><value>Tip ekle</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Yayında</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
 </root>

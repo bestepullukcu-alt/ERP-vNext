@@ -270,4 +270,7 @@
   <data name="StepCountLabel" xml:space="preserve"><value>{0} steps</value></data>
   <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Drag a concept type here</value></data>
   <data name="AddTypeCompact" xml:space="preserve"><value>Add type</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Published</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>Archived</value></data>
 </root>

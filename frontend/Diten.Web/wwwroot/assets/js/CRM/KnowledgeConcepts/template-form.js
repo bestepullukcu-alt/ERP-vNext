@@ -60,6 +60,10 @@
 
     // A stored value no longer offered (an archived subject, a retired status) is kept so the form never silently
     // drops it; its label falls back to a resolver, then to the raw value.
+    // WP-CT-FE-10 (#7a): chain status DISPLAY label (7 languages); the code stays the value. Unknown codes show as is.
+    const CHAIN_STATUS_KEYS = { draft: 'ChainStatusDraft', published: 'ChainStatusPublished', archived: 'ChainStatusArchived' };
+    const chainStatusLabel = code => L[CHAIN_STATUS_KEYS[norm(code)]] || norm(code);
+
     const fillSelect = (id, options, withEmpty, current, currentLabel) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -598,6 +602,25 @@
         } catch { versions = []; }
         renderVersions();
     };
+    // WP-CT-FE-10 (#4): UpdatedBy/CreatedBy hold the actor's user id. Resolve it to a display name through the
+    // read-only users/{id} proxy — one request per id, cached (a failed / 403 / empty answer caches '' too). Until a
+    // name is known, or if none can be, the "last changed by" line is simply not rendered: a raw GUID is never shown.
+    const actorNames = new Map();   // id → name | '' (unresolvable) | Promise (in flight)
+    const isGuid = v => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(norm(v));
+    const actorName = id => {
+        const key = norm(id);
+        if (!key) return '';
+        if (!isGuid(key)) return key;                 // already a name (e.g. a system actor label)
+        const known = actorNames.get(key);
+        if (typeof known === 'string') return known;
+        if (!known) {
+            actorNames.set(key, getJson(`/users/${encodeURIComponent(key)}`)
+                .then(d => norm(d?.displayName))
+                .catch(() => '')
+                .then(name => { actorNames.set(key, name); if (name) renderVersions(); }));
+        }
+        return '';
+    };
     const renderVersions = () => {
         const host = document.getElementById('tplVersions');
         if (!host) return;
@@ -607,12 +630,12 @@
             const self = currentRow && t.conceptChainTemplateId === currentRow.conceptChainTemplateId;
             const tone = t.isArchived ? 'secondary' : t.status === 'published' ? 'success' : 'primary';
             const spine = (t.orderedConceptTypes || []).map(typeNameOrDash).join(' → ');
-            const who = t.updatedBy || t.createdBy;
+            const who = actorName(t.updatedBy || t.createdBy);
             const title = self
                 ? `<span class="fw-semibold text-heading">${esc(t.chainVersion || '—')}</span> <span class="badge bg-label-primary">${esc(L.ThisVersion || '')}</span>`
                 : `<a class="fw-semibold" href="/CRM/KnowledgeConcepts/Templates/Edit/${encodeURIComponent(t.conceptChainTemplateId)}">${esc(t.chainVersion || '—')}</a>`;
             return `<li class="border-start border-2 ps-3 pb-3 position-relative">
-                    <div class="d-flex align-items-center gap-2 flex-wrap">${title}<span class="badge bg-label-${tone}">${esc(t.isArchived ? 'archived' : t.status)}</span></div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">${title}<span class="badge bg-label-${tone}">${esc(chainStatusLabel(t.isArchived ? 'archived' : t.status))}</span></div>
                     <div class="small text-muted">${esc(day(t.effectiveFrom))}${t.effectiveTo ? ` – ${esc(day(t.effectiveTo))}` : ''}</div>
                     ${who ? `<div class="small text-muted">${esc(L.UpdatedByLabel || '')}: ${esc(who)}</div>` : ''}
                     <div class="small mt-1">${spine || '—'}</div>
@@ -734,8 +757,11 @@
         window.location.href = '/CRM/KnowledgeConcepts';
     };
 
+    // WP-CT-FE-10 (#6): name, description, version, status and the effective window freeze with the rest; Subject and
+    // Chain Code keep their own rule (locked on edit, the code reopens for a new version).
     const setIdentityDisabled = disabled => {
-        ['tplModeratorRoleType', 'tplForWhom'].forEach(id => {
+        ['tplModeratorRoleType', 'tplForWhom', 'tplChainName', 'tplDescription', 'tplChainVersion', 'tplStatus',
+            'tplEffectiveFrom', 'tplEffectiveTo'].forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
             el.disabled = !!disabled;
@@ -797,7 +823,7 @@
         const subjectOptions = (subs?.items || []).filter(s => !s.isArchived).map(s => ({ value: s.subjectId, text: subjectLabelById[s.subjectId] }));
         // "archived" is a lifecycle action, never a status the editor sets (a save carrying it is a backend 400).
         const statuses = (contract?.vocabularies?.chainStatuses || ['draft', 'review', 'approved', 'published', 'inactive', 'archived'])
-            .filter(v => v !== 'archived').map(v => ({ value: v, text: v }));
+            .filter(v => v !== 'archived').map(v => ({ value: v, text: chainStatusLabel(v) }));
         return { subjectOptions, statuses };
     };
 
@@ -813,7 +839,7 @@
         const row = editId ? await getJson(`/concept-chain-templates/${editId}`).catch(() => null) : null;
         if (editId && !row) { showAlert(L.ErrorState); document.getElementById('btnSaveConceptTemplate')?.setAttribute('disabled', 'disabled'); return; }
         fillSelect('tplSubjectId', refs.subjectOptions, true, row?.subjectId, subjectLabelById[row?.subjectId]);
-        fillSelect('tplStatus', refs.statuses, false, row?.status, row?.status);
+        fillSelect('tplStatus', refs.statuses, false, row?.status, chainStatusLabel(row?.status));
         // SCMM-10-MOD-C: Moderator (single, blank = unspecified) + ForWhom (audience-profile multi).
         fillSelect('tplModeratorRoleType', moderatorOptions, true, row?.moderatorRoleType, moderatorLabel(row?.moderatorRoleType));
         fillForWhom(row?.forWhomAudienceProfileIds);
@@ -909,6 +935,10 @@
                     max: maxRaw === '' ? null : Math.max(1, Number(maxRaw))
                 });
                 renderBranches();
+                // WP-CT-FE-10 (#5): the re-render replaced the compose row — put focus back on this lane's type picker.
+                const nextPicker = document.querySelector(`.js-branch-type-picker[data-b="${bi}"]`);
+                if ($ && nextPicker && $(nextPicker).hasClass('select2-hidden-accessible')) $(nextPicker).select2('focus');
+                else nextPicker?.focus();
                 return;
             }
             const mv = event.target.closest('.js-step-move');

@@ -28,6 +28,8 @@
         // WP-CT-FE-6: publish confirm dialog checks + read-only band (NewVersion / BranchLabel already listed).
         "PublishBlockMinTypes", "PublishBlockBranchSteps", "PublishBlockAudience", "PublishBranchesShort",
         "PublishWarnUnresolved", "ReadOnlyBandText",
+        // WP-CT-FE-10: chain status display labels (status picker text, Versions timeline).
+        "ChainStatusDraft", "ChainStatusPublished", "ChainStatusArchived",
         // WP-CT-FE-3-REFINE: lane header (DAL-X) + empty-branch dropzone + compact add-type.
         "BranchLabelPrefix", "StepCountLabel", "DragTypeHerePlaceholder", "AddTypeCompact" };
     var values = keys.ToDictionary(x => x, x => Localizer[x].Value);

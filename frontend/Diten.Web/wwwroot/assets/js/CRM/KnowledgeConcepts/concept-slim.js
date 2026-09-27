@@ -607,7 +607,14 @@
         const more = rest > 0 ? ` <span class="badge bg-label-secondary">${names.length ? '+' : ''}${rest}</span>` : '';
         return `<span title="${esc(names.join(', '))}">${first}${more}</span>`;
     };
-    const versionLabel = v => norm(v) ? `v${norm(v)}` : '';
+    // WP-CT-FE-10 (#3): the editor already writes "v1"/"v2" — keep a leading v/V as is, add one only when missing.
+    const versionLabel = v => { const x = norm(v); return !x ? '' : (/^v/i.test(x) ? x : `v${x}`); };
+    const versionBare = v => norm(v).replace(/^v/i, '');   // for "v{0}" templates (PublishedSiblingHint)
+    // WP-CT-FE-10 (#7a): chain status DISPLAY label (7 languages); the raw code stays the value / filter / sort key and
+    // an unknown code (review, approved, inactive…) is shown as is.
+    const CHAIN_STATUS_KEYS = { draft: 'ChainStatusDraft', published: 'ChainStatusPublished', archived: 'ChainStatusArchived' };
+    const chainStatusLabel = code => L[CHAIN_STATUS_KEYS[norm(code)]] || norm(code);
+    const chainStatusBadge = code => badge(chainStatusLabel(code), code === 'archived' ? 'secondary' : (code === 'published' ? 'success' : 'primary'));
     const isEffectiveNow = r => {
         const now = Date.now();
         const from = r.effectiveFrom ? new Date(r.effectiveFrom).getTime() : -Infinity;
@@ -628,11 +635,11 @@
     const statusVersionCell = row => {
         const status = norm(row.status);
         const ver = versionLabel(row.chainVersion);
-        let html = `${statusBadge(status)}${ver ? ` <span class="text-muted small ms-1">${esc(ver)}</span>` : ''}`;
+        let html = `${chainStatusBadge(status)}${ver ? ` <span class="text-muted small ms-1">${esc(ver)}</span>` : ''}`;
         if (status !== 'published' && !row.isArchived) {
             const sib = publishedSibling(row);
             if (sib && norm(sib.chainVersion)) {
-                const hint = (L.PublishedSiblingHint || 'v{0}').replace('{0}', norm(sib.chainVersion));
+                const hint = (L.PublishedSiblingHint || 'v{0}').replace('{0}', versionBare(sib.chainVersion));
                 html += `<div class="small text-success text-nowrap"><i class="bx bx-check-circle me-1"></i>${esc(hint)}</div>`;
             }
         }
@@ -1192,11 +1199,11 @@
             setText('pv-tpl-name', row.chainName);
             setText('pv-tpl-subject', labelSubject(row.subjectId));
             setText('pv-tpl-version', row.chainVersion);
-            setBadge('pv-tpl-status', row.status, row.status === 'published' ? 'success' : 'secondary');
+            setBadge('pv-tpl-status', chainStatusLabel(row.status), row.status === 'published' ? 'success' : 'secondary');
             const seq = document.getElementById('pv-tpl-sequence');
             if (seq) {
                 seq.innerHTML = (row.orderedConceptTypes || [])
-                    .map(id => `<li class="list-group-item">${esc(labelType(id))}</li>`).join('')
+                    .map(id => `<li class="list-group-item">${esc(typeNameMap[id] || labelType(id))}</li>`).join('')
                     || `<li class="list-group-item text-muted">${esc(L.SequenceEmpty || '')}</li>`;
             }
             document.getElementById('pv-tpl-frozen')?.classList.toggle('d-none', norm(row.status) !== 'published');
@@ -1217,7 +1224,7 @@
                 brHost.innerHTML = list.length ? list.map((b, bi) => {
                     const stepList = b.steps || [];
                     const steps = stepList.map(s =>
-                        `<li class="list-group-item d-flex align-items-center gap-2"><span class="fw-medium me-auto">${esc(labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(pvChipLabel(s))}</span></li>`
+                        `<li class="list-group-item d-flex align-items-center gap-2"><span class="fw-medium me-auto">${esc(typeNameMap[s.conceptTypeId] || labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(pvChipLabel(s))}</span></li>`
                     ).join('');
                     return `<div class="card border shadow-none"><div class="card-body p-3">
                         <div class="d-flex align-items-center gap-2 mb-2">

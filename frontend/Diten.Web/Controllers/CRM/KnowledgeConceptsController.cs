@@ -258,6 +258,31 @@ public sealed class KnowledgeConceptsController : Controller
     // user who can open the template form can populate the moderator dropdown. Mirrors KnowledgeController.ReferenceValues
     // (that proxy lives under CRM/Knowledge; the template page is CRM/KnowledgeConcepts, so it needs its own same-base
     // allowlist entry).
+    // WP-CT-FE-10 (#4) — actor display name for the chain template "Versions" timeline (UpdatedBy/CreatedBy hold a user
+    // id). Read-only: AuthService /api/users/{id} (itself gated by auth.users.read on the caller's token), same lookup as
+    // the ConsentPreferences audit names. Only a display name ("First Last", else the email) leaves this proxy — never
+    // the full user record. Any failure (403 / 404 / empty) returns 404 so the page simply hides the line.
+    [HttpGet("api/users/{userId:guid}")]
+    public async Task<IActionResult> UserDisplayName(Guid userId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/users/{userId}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return NotFound();
+        try
+        {
+            var user = (await response.Content.ReadFromJsonAsync<ConceptGatewayResponse<ActorNameDto>>(_json, ct))?.Data;
+            var name = $"{user?.FirstName} {user?.LastName}".Trim();
+            var display = string.IsNullOrWhiteSpace(name) ? user?.Email : name;
+            return string.IsNullOrWhiteSpace(display) ? NotFound() : Ok(new { data = new { displayName = display } });
+        }
+        catch (JsonException)
+        {
+            return NotFound();
+        }
+    }
+
+    private sealed record ActorNameDto(string? FirstName, string? LastName, string? Email);
+
     [HttpGet("api/reference-data/{setCode}/values")]
     public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
     {

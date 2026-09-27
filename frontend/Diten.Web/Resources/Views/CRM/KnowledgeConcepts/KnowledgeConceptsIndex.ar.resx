@@ -270,4 +270,7 @@
   <data name="StepCountLabel" xml:space="preserve"><value>{0} خطوات</value></data>
   <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>اسحب نوع مفهوم إلى هنا</value></data>
   <data name="AddTypeCompact" xml:space="preserve"><value>إضافة نوع</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>مسودة</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>منشور</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>مؤرشف</value></data>
 </root>

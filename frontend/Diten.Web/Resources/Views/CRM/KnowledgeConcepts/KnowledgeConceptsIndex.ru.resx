@@ -270,4 +270,7 @@
   <data name="StepCountLabel" xml:space="preserve"><value>Шагов: {0}</value></data>
   <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Перетащите сюда тип понятия</value></data>
   <data name="AddTypeCompact" xml:space="preserve"><value>Добавить тип</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Черновик</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Опубликован</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>В архиве</value></data>
 </root>
