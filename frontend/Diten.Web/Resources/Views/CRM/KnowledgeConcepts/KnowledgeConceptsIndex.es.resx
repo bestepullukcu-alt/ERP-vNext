@@ -4,157 +4,157 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
-  <data name="ConceptsMenu" xml:space="preserve"><value>Concepts</value></data>
-  <data name="ConceptsTitle" xml:space="preserve"><value>Concept Graph</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Configure the subject concept graph: types, nodes, connections and chain templates.</value></data>
-  <data name="SubjectMeaningNote" xml:space="preserve"><value>Here 'Subject' means the knowledge domain (Pharma / QMS / Language) - not the legacy 'Subject Type'.</value></data>
-  <data name="ConceptNodeCode" xml:space="preserve"><value>Node Code</value></data>
-  <data name="ConceptNodeName" xml:space="preserve"><value>Node Name</value></data>
-  <data name="ConceptTypeId" xml:space="preserve"><value>Concept Type</value></data>
+  <data name="ConceptsMenu" xml:space="preserve"><value>Conceptos</value></data>
+  <data name="ConceptsTitle" xml:space="preserve"><value>Grafo de conceptos</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Configure el grafo de conceptos del tema: tipos, nodos, conexiones y plantillas de cadena.</value></data>
+  <data name="SubjectMeaningNote" xml:space="preserve"><value>Aquí «Tema» significa el dominio de conocimiento (Pharma / QMS / Idioma), no el antiguo «Tipo de tema».</value></data>
+  <data name="ConceptNodeCode" xml:space="preserve"><value>Código del nodo</value></data>
+  <data name="ConceptNodeName" xml:space="preserve"><value>Nombre del nodo</value></data>
+  <data name="ConceptTypeId" xml:space="preserve"><value>Tipo de concepto</value></data>
   <data name="SubjectId" xml:space="preserve"><value>Tema</value></data>
   <data name="Status" xml:space="preserve"><value>Estado</value></data>
-  <data name="ExternalRefType" xml:space="preserve"><value>External Ref Type</value></data>
-  <data name="ExternalRefId" xml:space="preserve"><value>External Ref Id</value></data>
+  <data name="ExternalRefType" xml:space="preserve"><value>Tipo de referencia externa</value></data>
+  <data name="ExternalRefId" xml:space="preserve"><value>Identificador de referencia externa</value></data>
   <data name="Description" xml:space="preserve"><value>Descripción</value></data>
-  <data name="MetadataJson" xml:space="preserve"><value>Metadata (JSON)</value></data>
+  <data name="MetadataJson" xml:space="preserve"><value>Metadatos (JSON)</value></data>
   <data name="EffectiveFrom" xml:space="preserve"><value>Vigente desde</value></data>
   <data name="EffectiveTo" xml:space="preserve"><value>Vigente hasta</value></data>
-  <data name="Archived" xml:space="preserve"><value>Archived</value></data>
-  <data name="UpdatedAt" xml:space="preserve"><value>Updated At</value></data>
-  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
-  <data name="CreateNode" xml:space="preserve"><value>Create Node</value></data>
-  <data name="EditNode" xml:space="preserve"><value>Edit Node</value></data>
-  <data name="NodeDetails" xml:space="preserve"><value>Node Details</value></data>
-  <data name="ArchiveNode" xml:space="preserve"><value>Archive Node</value></data>
-  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>Archive this concept node? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>This concept node is archived and read-only.</value></data>
-  <data name="ConceptContractUnavailable" xml:space="preserve"><value>Concept graph capability contract is unavailable. Actions are disabled.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Identity and Classification</value></data>
-  <data name="ReferenceSection" xml:space="preserve"><value>Effective Window and Reference</value></data>
+  <data name="Archived" xml:space="preserve"><value>Archivado</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Actualizado</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Crear nodo</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Editar nodo</value></data>
+  <data name="NodeDetails" xml:space="preserve"><value>Detalles del nodo</value></data>
+  <data name="ArchiveNode" xml:space="preserve"><value>Archivar nodo</value></data>
+  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>¿Archivar este nodo de concepto? Es una acción de ciclo de vida suave; sigue siendo legible.</value></data>
+  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>Este nodo de concepto está archivado y es de solo lectura.</value></data>
+  <data name="ConceptContractUnavailable" xml:space="preserve"><value>El contrato de capacidades del grafo de conceptos no está disponible. Las acciones están deshabilitadas.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Identidad y clasificación</value></data>
+  <data name="ReferenceSection" xml:space="preserve"><value>Periodo de vigencia y referencia</value></data>
   <data name="SelectOption" xml:space="preserve"><value>Seleccionar...</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="Save" xml:space="preserve"><value>Save</value></data>
-  <data name="IncludeArchived" xml:space="preserve"><value>Include archived</value></data>
-  <data name="Active" xml:space="preserve"><value>Active</value></data>
-  <data name="Passive" xml:space="preserve"><value>Passive</value></data>
-  <data name="Unknown" xml:space="preserve"><value>Unknown</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Incluir archivados</value></data>
+  <data name="Active" xml:space="preserve"><value>Activo</value></data>
+  <data name="Passive" xml:space="preserve"><value>Inactivo</value></data>
+  <data name="Unknown" xml:space="preserve"><value>Desconocido</value></data>
   <data name="Edit" xml:space="preserve"><value>Editar</value></data>
-  <data name="ViewDetails" xml:space="preserve"><value>View details</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Quick view</value></data>
-  <data name="View" xml:space="preserve"><value>View</value></data>
-  <data name="BulkDelete" xml:space="preserve"><value>Bulk delete</value></data>
-  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Delete the selected rows?</value></data>
-  <data name="AreYouSure" xml:space="preserve"><value>Are you sure?</value></data>
-  <data name="Search" xml:space="preserve"><value>Search</value></data>
-  <data name="Export" xml:space="preserve"><value>Export</value></data>
-  <data name="Import" xml:space="preserve"><value>Import</value></data>
-  <data name="Filter" xml:space="preserve"><value>Filter</value></data>
-  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
-  <data name="Reset" xml:space="preserve"><value>Reset</value></data>
-  <data name="ShowAll" xml:space="preserve"><value>All</value></data>
-  <data name="SaveView" xml:space="preserve"><value>Save view</value></data>
-  <data name="ColumnVisibility" xml:space="preserve"><value>Columns</value></data>
-  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Ver detalles</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Vista rápida</value></data>
+  <data name="View" xml:space="preserve"><value>Ver</value></data>
+  <data name="BulkDelete" xml:space="preserve"><value>Eliminación masiva</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>¿Eliminar las filas seleccionadas?</value></data>
+  <data name="AreYouSure" xml:space="preserve"><value>¿Está seguro?</value></data>
+  <data name="Search" xml:space="preserve"><value>Buscar</value></data>
+  <data name="Export" xml:space="preserve"><value>Exportar</value></data>
+  <data name="Import" xml:space="preserve"><value>Importar</value></data>
+  <data name="Filter" xml:space="preserve"><value>Filtrar</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Restablecer</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Todos</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Guardar vista</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Columnas</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
   <data name="No" xml:space="preserve"><value>No</value></data>
-  <data name="EmptyState" xml:space="preserve"><value>No concept nodes yet.</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Aún no hay nodos de concepto.</value></data>
   <data name="ErrorState" xml:space="preserve"><value>Algo salió mal.</value></data>
   <data name="Loading" xml:space="preserve"><value>Cargando...</value></data>
-  <data name="RecordArchived" xml:space="preserve"><value>Record archived.</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Registro archivado.</value></data>
   <data name="RecordCreated" xml:space="preserve"><value>Registro creado.</value></data>
   <data name="RecordUpdated" xml:space="preserve"><value>Registro actualizado.</value></data>
-  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>The Global Product picker is unavailable right now.</value></data>
-  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>The MDM Global Product service is not reachable; the picker is disabled.</value></data>
-  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>You lack the mdm.global-products.read permission, so the Global Product picker is disabled.</value></data>
-  <data name="ValidationRequired" xml:space="preserve"><value>This field is required.</value></data>
-  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Effective To cannot be earlier than Effective From.</value></data>
-  <data name="AddRow" xml:space="preserve"><value>Add</value></data>
-  <data name="TypesTab" xml:space="preserve"><value>Concept Types</value></data>
-  <data name="NodesTab" xml:space="preserve"><value>Concept Nodes</value></data>
-  <data name="ConnectionsTab" xml:space="preserve"><value>Connections</value></data>
-  <data name="TemplatesTab" xml:space="preserve"><value>Chain Templates</value></data>
-  <data name="GraphPreviewTab" xml:space="preserve"><value>Graph Preview</value></data>
-  <data name="RecordSaved" xml:space="preserve"><value>View saved.</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>El selector de producto global no está disponible en este momento.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>El servicio de producto global de MDM no está accesible; el selector está deshabilitado.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>No tiene el permiso mdm.global-products.read, por lo que el selector de producto global está deshabilitado.</value></data>
+  <data name="ValidationRequired" xml:space="preserve"><value>Este campo es obligatorio.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>La fecha de fin de vigencia no puede ser anterior a la de inicio.</value></data>
+  <data name="AddRow" xml:space="preserve"><value>Añadir</value></data>
+  <data name="TypesTab" xml:space="preserve"><value>Tipos de concepto</value></data>
+  <data name="NodesTab" xml:space="preserve"><value>Nodos de concepto</value></data>
+  <data name="ConnectionsTab" xml:space="preserve"><value>Conexiones</value></data>
+  <data name="TemplatesTab" xml:space="preserve"><value>Plantillas de cadena</value></data>
+  <data name="GraphPreviewTab" xml:space="preserve"><value>Vista previa del grafo</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Vista guardada.</value></data>
   <data name="ImmutableAfterCreate" xml:space="preserve"><value>Se fija al crear; no se puede cambiar después.</value></data>
-  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>This record is archived and read-only.</value></data>
-  <data name="SortOrder" xml:space="preserve"><value>Sort Order</value></data>
-  <data name="ConceptTypeCode" xml:space="preserve"><value>Type Code</value></data>
-  <data name="ConceptTypeName" xml:space="preserve"><value>Type Name</value></data>
-  <data name="CreateType" xml:space="preserve"><value>Create Type</value></data>
-  <data name="EditType" xml:space="preserve"><value>Edit Type</value></data>
-  <data name="TypeDetails" xml:space="preserve"><value>Concept Type Details</value></data>
-  <data name="ArchiveType" xml:space="preserve"><value>Archive Type</value></data>
-  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>Archive this concept type? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="TypesEmptyState" xml:space="preserve"><value>No concept types yet.</value></data>
-  <data name="TypeSortOrderNote" xml:space="preserve"><value>Management order only - this is not the chain sequence (that lives on the chain template).</value></data>
-  <data name="RelationshipCode" xml:space="preserve"><value>Connection Code</value></data>
-  <data name="RelationshipName" xml:space="preserve"><value>Connection Name</value></data>
-  <data name="RelationshipType" xml:space="preserve"><value>Relationship Type</value></data>
-  <data name="FromConceptNode" xml:space="preserve"><value>From Node</value></data>
-  <data name="ToConceptNode" xml:space="preserve"><value>To Node</value></data>
-  <data name="Direction" xml:space="preserve"><value>Direction</value></data>
-  <data name="Priority" xml:space="preserve"><value>Priority</value></data>
-  <data name="Conformance" xml:space="preserve"><value>Template Conformance</value></data>
-  <data name="Conforming" xml:space="preserve"><value>Conforming</value></data>
-  <data name="NonConforming" xml:space="preserve"><value>Non-conforming</value></data>
-  <data name="NonConformingNote" xml:space="preserve"><value>This connection does not match any chain template sequence. It is kept and stays visible - it is a diagnostic, not a rejection.</value></data>
-  <data name="CreateConnection" xml:space="preserve"><value>Create Connection</value></data>
-  <data name="EditConnection" xml:space="preserve"><value>Edit Connection</value></data>
-  <data name="ConnectionDetails" xml:space="preserve"><value>Connection Details</value></data>
-  <data name="ArchiveConnection" xml:space="preserve"><value>Archive Connection</value></data>
-  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Archive this connection? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="ConnectionsEmptyState" xml:space="preserve"><value>No connections yet.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Este registro está archivado y es de solo lectura.</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Orden</value></data>
+  <data name="ConceptTypeCode" xml:space="preserve"><value>Código del tipo</value></data>
+  <data name="ConceptTypeName" xml:space="preserve"><value>Nombre del tipo</value></data>
+  <data name="CreateType" xml:space="preserve"><value>Crear tipo</value></data>
+  <data name="EditType" xml:space="preserve"><value>Editar tipo</value></data>
+  <data name="TypeDetails" xml:space="preserve"><value>Detalles del tipo de concepto</value></data>
+  <data name="ArchiveType" xml:space="preserve"><value>Archivar tipo</value></data>
+  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>¿Archivar este tipo de concepto? Es una acción de ciclo de vida suave; sigue siendo legible.</value></data>
+  <data name="TypesEmptyState" xml:space="preserve"><value>Aún no hay tipos de concepto.</value></data>
+  <data name="TypeSortOrderNote" xml:space="preserve"><value>Solo orden de gestión: no es la secuencia de la cadena (esa se define en la plantilla de cadena).</value></data>
+  <data name="RelationshipCode" xml:space="preserve"><value>Código de la conexión</value></data>
+  <data name="RelationshipName" xml:space="preserve"><value>Nombre de la conexión</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>Tipo de relación</value></data>
+  <data name="FromConceptNode" xml:space="preserve"><value>Nodo de origen</value></data>
+  <data name="ToConceptNode" xml:space="preserve"><value>Nodo de destino</value></data>
+  <data name="Direction" xml:space="preserve"><value>Dirección</value></data>
+  <data name="Priority" xml:space="preserve"><value>Prioridad</value></data>
+  <data name="Conformance" xml:space="preserve"><value>Conformidad con la plantilla</value></data>
+  <data name="Conforming" xml:space="preserve"><value>Conforme</value></data>
+  <data name="NonConforming" xml:space="preserve"><value>No conforme</value></data>
+  <data name="NonConformingNote" xml:space="preserve"><value>Esta conexión no coincide con ninguna secuencia de plantilla de cadena. Se conserva y sigue visible: es un diagnóstico, no un rechazo.</value></data>
+  <data name="CreateConnection" xml:space="preserve"><value>Crear conexión</value></data>
+  <data name="EditConnection" xml:space="preserve"><value>Editar conexión</value></data>
+  <data name="ConnectionDetails" xml:space="preserve"><value>Detalles de la conexión</value></data>
+  <data name="ArchiveConnection" xml:space="preserve"><value>Archivar conexión</value></data>
+  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>¿Archivar esta conexión? Es una acción de ciclo de vida suave; sigue siendo legible.</value></data>
+  <data name="ConnectionsEmptyState" xml:space="preserve"><value>Aún no hay conexiones.</value></data>
   <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Elija primero un tema; las listas de nodos se limitan a él.</value></data>
-  <data name="PriorityNote" xml:space="preserve"><value>Lower value wins; ties break on the connection code.</value></data>
+  <data name="PriorityNote" xml:space="preserve"><value>Gana el valor más bajo; en caso de empate decide el código de la conexión.</value></data>
   <data name="ChainCode" xml:space="preserve"><value>Código de la cadena</value></data>
   <data name="ChainName" xml:space="preserve"><value>Nombre de la cadena</value></data>
   <data name="ChainVersion" xml:space="preserve"><value>Versión de la cadena</value></data>
-  <data name="OrderedConceptTypes" xml:space="preserve"><value>Expected Type Sequence</value></data>
-  <data name="SequenceLength" xml:space="preserve"><value>Steps</value></data>
+  <data name="OrderedConceptTypes" xml:space="preserve"><value>Secuencia de tipos esperada</value></data>
+  <data name="SequenceLength" xml:space="preserve"><value>Pasos</value></data>
   <data name="AddToSequence" xml:space="preserve"><value>Añadir paso</value></data>
   <data name="RemoveStep" xml:space="preserve"><value>Quitar paso</value></data>
   <data name="MoveUp" xml:space="preserve"><value>Subir</value></data>
   <data name="MoveDown" xml:space="preserve"><value>Bajar</value></data>
-  <data name="SequenceEmpty" xml:space="preserve"><value>No step added yet.</value></data>
+  <data name="SequenceEmpty" xml:space="preserve"><value>Aún no se ha añadido ningún paso.</value></data>
   <data name="SequenceMinTwo" xml:space="preserve"><value>La columna necesita al menos dos tipos de concepto.</value></data>
-  <data name="SequenceDuplicateType" xml:space="preserve"><value>A concept type may appear only once in the sequence.</value></data>
+  <data name="SequenceDuplicateType" xml:space="preserve"><value>Un tipo de concepto solo puede aparecer una vez en la secuencia.</value></data>
   <data name="PublishedSequenceFrozen" xml:space="preserve"><value>Una cadena publicada congela su columna; un cambio requiere una nueva versión.</value></data>
   <data name="CreateTemplate" xml:space="preserve"><value>Crear plantilla de cadena</value></data>
   <data name="EditTemplate" xml:space="preserve"><value>Editar plantilla de cadena</value></data>
-  <data name="TemplateDetails" xml:space="preserve"><value>Chain Template Details</value></data>
-  <data name="ArchiveTemplate" xml:space="preserve"><value>Archive Chain Template</value></data>
-  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Archive this chain template? This is a soft lifecycle action; it stays readable.</value></data>
-  <data name="TemplatesEmptyState" xml:space="preserve"><value>No chain templates yet.</value></data>
-  <data name="GraphScope" xml:space="preserve"><value>Scope</value></data>
-  <data name="GraphScopeSubject" xml:space="preserve"><value>Whole subject</value></data>
-  <data name="GraphScopeNode" xml:space="preserve"><value>Around a node (1 hop)</value></data>
-  <data name="GraphScopeContent" xml:space="preserve"><value>From a content (2 layers)</value></data>
-  <data name="GraphNodeAnchor" xml:space="preserve"><value>Anchor Node</value></data>
-  <data name="GraphContentAnchor" xml:space="preserve"><value>Anchor Content</value></data>
-  <data name="GraphEffectiveAt" xml:space="preserve"><value>Effective At</value></data>
-  <data name="GraphLoad" xml:space="preserve"><value>Show graph</value></data>
-  <data name="GraphNodesSection" xml:space="preserve"><value>Nodes</value></data>
-  <data name="GraphEdgesSection" xml:space="preserve"><value>Connections</value></data>
-  <data name="GraphTemplatesSection" xml:space="preserve"><value>Chain Templates</value></data>
-  <data name="GraphNodeCount" xml:space="preserve"><value>node(s)</value></data>
-  <data name="GraphEdgeCount" xml:space="preserve"><value>connection(s)</value></data>
-  <data name="GraphTemplateCount" xml:space="preserve"><value>template(s)</value></data>
-  <data name="GraphEmpty" xml:space="preserve"><value>No graph data for this scope. Nothing is inferred - an empty graph is shown as empty.</value></data>
-  <data name="GraphPickScope" xml:space="preserve"><value>Pick a scope and press Show graph.</value></data>
-  <data name="GraphContentNoLinks" xml:space="preserve"><value>This content is not linked to any concept node yet.</value></data>
-  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Fixed depth: exactly 1 hop around the anchor node. There is no depth setting - deeper traversal is an engine and is out of scope for this module.</value></data>
-  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Fixed depth: exactly 2 edge layers (content to its nodes, then those nodes' 1-hop neighbours). There is no depth setting.</value></data>
-  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Adjacency read for the whole subject: the node list, the connection list and the chain templates. No traversal, no scoring, no recommendation.</value></data>
-  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Read-only view. Nothing on this tab creates, changes or archives a record.</value></data>
-  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Deterministic order: Priority first, then connection code.</value></data>
-  <data name="GraphUngroupedType" xml:space="preserve"><value>Unclassified</value></data>
-  <data name="GraphOpenNode" xml:space="preserve"><value>Focus this node</value></data>
-  <data name="GraphSelfContained" xml:space="preserve"><value>This node has no connection in the current scope.</value></data>
-  <data name="GlobalProduct" xml:space="preserve"><value>Global Product</value></data>
-  <data name="GlobalProductPick" xml:space="preserve"><value>Search a global product...</value></data>
-  <data name="GlobalProductHint" xml:space="preserve"><value>Reference only - the MDM master is read, never changed or copied.</value></data>
-  <data name="GlobalProductSearching" xml:space="preserve"><value>Searching...</value></data>
-  <data name="GlobalProductNoResults" xml:space="preserve"><value>No global product matched.</value></data>
-  <data name="ExternalRefIdHint" xml:space="preserve"><value>Free-text identifier in the referenced system.</value></data>
+  <data name="TemplateDetails" xml:space="preserve"><value>Detalles de la plantilla de cadena</value></data>
+  <data name="ArchiveTemplate" xml:space="preserve"><value>Archivar plantilla de cadena</value></data>
+  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>¿Archivar esta plantilla de cadena? Es una acción de ciclo de vida suave; sigue siendo legible.</value></data>
+  <data name="TemplatesEmptyState" xml:space="preserve"><value>Aún no hay plantillas de cadena.</value></data>
+  <data name="GraphScope" xml:space="preserve"><value>Alcance</value></data>
+  <data name="GraphScopeSubject" xml:space="preserve"><value>Tema completo</value></data>
+  <data name="GraphScopeNode" xml:space="preserve"><value>Alrededor de un nodo (1 salto)</value></data>
+  <data name="GraphScopeContent" xml:space="preserve"><value>Desde un contenido (2 niveles)</value></data>
+  <data name="GraphNodeAnchor" xml:space="preserve"><value>Nodo de anclaje</value></data>
+  <data name="GraphContentAnchor" xml:space="preserve"><value>Contenido de anclaje</value></data>
+  <data name="GraphEffectiveAt" xml:space="preserve"><value>Vigente el</value></data>
+  <data name="GraphLoad" xml:space="preserve"><value>Mostrar grafo</value></data>
+  <data name="GraphNodesSection" xml:space="preserve"><value>Nodos</value></data>
+  <data name="GraphEdgesSection" xml:space="preserve"><value>Conexiones</value></data>
+  <data name="GraphTemplatesSection" xml:space="preserve"><value>Plantillas de cadena</value></data>
+  <data name="GraphNodeCount" xml:space="preserve"><value>nodo(s)</value></data>
+  <data name="GraphEdgeCount" xml:space="preserve"><value>conexión(es)</value></data>
+  <data name="GraphTemplateCount" xml:space="preserve"><value>plantilla(s)</value></data>
+  <data name="GraphEmpty" xml:space="preserve"><value>No hay datos de grafo para este alcance. No se infiere nada: un grafo vacío se muestra vacío.</value></data>
+  <data name="GraphPickScope" xml:space="preserve"><value>Elija un alcance y pulse Mostrar grafo.</value></data>
+  <data name="GraphContentNoLinks" xml:space="preserve"><value>Este contenido aún no está vinculado a ningún nodo de concepto.</value></data>
+  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Profundidad fija: exactamente 1 salto alrededor del nodo de anclaje. No hay ajuste de profundidad; un recorrido más profundo es un motor y queda fuera del alcance de este módulo.</value></data>
+  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Profundidad fija: exactamente 2 niveles de aristas (del contenido a sus nodos y luego los vecinos a 1 salto de esos nodos). No hay ajuste de profundidad.</value></data>
+  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Lectura de adyacencia de todo el tema: la lista de nodos, la lista de conexiones y las plantillas de cadena. Sin recorrido, sin puntuación, sin recomendación.</value></data>
+  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Vista de solo lectura. Nada en esta pestaña crea, modifica ni archiva un registro.</value></data>
+  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Orden determinista: primero la prioridad y luego el código de la conexión.</value></data>
+  <data name="GraphUngroupedType" xml:space="preserve"><value>Sin clasificar</value></data>
+  <data name="GraphOpenNode" xml:space="preserve"><value>Centrarse en este nodo</value></data>
+  <data name="GraphSelfContained" xml:space="preserve"><value>Este nodo no tiene conexiones en el alcance actual.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Producto global</value></data>
+  <data name="GlobalProductPick" xml:space="preserve"><value>Buscar un producto global...</value></data>
+  <data name="GlobalProductHint" xml:space="preserve"><value>Solo referencia: el maestro de MDM se lee, nunca se modifica ni se copia.</value></data>
+  <data name="GlobalProductSearching" xml:space="preserve"><value>Buscando...</value></data>
+  <data name="GlobalProductNoResults" xml:space="preserve"><value>Ningún producto global coincide.</value></data>
+  <data name="ExternalRefIdHint" xml:space="preserve"><value>Identificador de texto libre en el sistema referenciado.</value></data>
   <data name="Color" xml:space="preserve"><value>Color</value></data>
   <data name="IsGroup" xml:space="preserve"><value>Tipo de grupo</value></data>
   <data name="IsList" xml:space="preserve"><value>Tipo de lista</value></data>
