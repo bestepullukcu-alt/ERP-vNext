@@ -702,7 +702,24 @@ window.DtDefaults = (function () {
     };
 
     function buildExportOptions(columns) {
-        return $.extend(true, {}, commonExportOptionsBase, { columns: columns });
+        var allowed = Array.isArray(columns) ? columns.slice() : [];
+        return $.extend(true, {}, commonExportOptionsBase, { columns: exportableColumns(allowed) });
+    }
+
+    /*
+     * K16 (Kullanıcılar testi, 2026-09-23): a column the reader HID still came out in CSV/Excel/PDF/print, because
+     * the export was a fixed index list. The file must be what the screen shows: the page's allowed columns AND
+     * only those currently visible. DataTables detaches a hidden column's header cell from the document, so a
+     * header node that is not connected is a hidden column — no API round-trip, and no dependence on CSS
+     * visibility (a table inside a collapsed tab would otherwise export nothing). A call with no node (older
+     * Buttons builds, unit harnesses) falls back to the index rule alone.
+     */
+    function exportableColumns(allowed) {
+        return function (idx, data, node) {
+            if (allowed.length && allowed.indexOf(idx) < 0) return false;
+            if (node && typeof node.isConnected === 'boolean') return node.isConnected;
+            return true;
+        };
     }
 
     function customizePrintWindow(win, titleText) {
