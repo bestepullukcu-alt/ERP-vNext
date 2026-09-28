@@ -547,6 +547,14 @@ public static class DependencyInjection
             // against a stored binary and silently returns nothing: the new-field class-map trap).
             map.GetMemberMap(c => c.ContentSetId).SetSerializer(stringGuid);
         });
+        // WP-CL-BE-6 — embedded claim references. ClaimId / CountryVersionId take the string-Guid convention (the
+        // new-field class-map trap: a binary-stored id never matches a string filter). A pre-BE-6 document has no
+        // ClaimRefs element and reads back with the empty-list default.
+        Map<KnowledgeContentClaimRef>(map =>
+        {
+            map.GetMemberMap(r => r.ClaimId).SetSerializer(stringGuid);
+            map.GetMemberMap(r => r.CountryVersionId).SetSerializer(new NullableSerializer<Guid>(stringGuid));
+        });
         Map<Subject>(map => map.GetMemberMap(s => s.ParentSubjectId)
             .SetSerializer(new NullableSerializer<Guid>(stringGuid)));
         Map<Topic>(map =>
@@ -1555,6 +1563,10 @@ public static class DependencyInjection
             knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
                 Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending(c => c.ContentSetId),
                 new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_set" }));
+            // WP-CL-BE-6 — claim usage read ("where is this claim used?") by claim code.
+            knowledgeContents.Indexes.CreateOne(new CreateIndexModel<KnowledgeContent>(
+                Builders<KnowledgeContent>.IndexKeys.Ascending(c => c.TenantId).Ascending("ClaimRefs.ClaimCode"),
+                new CreateIndexOptions { Name = "ix_knowledge_contents_tenant_claim_code" }));
 
             var knowledgeSubjects = database.GetCollection<Subject>(SubjectRepository.CollectionName);
             knowledgeSubjects.Indexes.CreateOne(new CreateIndexModel<Subject>(
