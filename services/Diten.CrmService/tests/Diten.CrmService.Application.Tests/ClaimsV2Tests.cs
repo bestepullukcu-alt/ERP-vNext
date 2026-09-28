@@ -69,7 +69,8 @@ public sealed class ClaimsV2Tests
         public CreateClaimHandler Create()
             => new(Ctx(), Actor(), Claims, Audit, Refs, Refs, Products, Audiences);
         public UpdateClaimHandler Update() => new(Ctx(), Actor(), Claims, Audit, Refs, Products, Audiences);
-        public ApproveClaimHandler Approve() => new(Ctx(), Actor(), Claims, Audit, Versions);
+        // WP-CL-BE-4 — approval only through the workflow outcome applier (see ClaimWorkflowTestSupport).
+        public WorkflowApproveClaimShim Approve() => new(Ctx(), Claims, Versions, Audit);
         public GetClaimHandler Get() => new(Ctx(), Claims, Versions);
         public ListClaimsHandler List() => new(Ctx(), Claims, Versions);
         public CreateClaimNewVersionHandler NewVersion() => new(Ctx(), Actor(), Claims, Audit);
@@ -80,7 +81,9 @@ public sealed class ClaimsV2Tests
         public UpdateClaimCountryVersionHandler UpdateVersion()
             => new(Ctx(), Actor(), Claims, Versions, Refs, Refs, Audiences, Audit);
         public CreateClaimCountryNewVersionHandler NewCountryVersion() => new(Ctx(), Actor(), Claims, Versions, Audit);
-        public ApproveClaimCountryVersionHandler ApproveVersion() => new(Ctx(), Actor(), Claims, Versions, Refs, Audit);
+        public WorkflowApproveCountryVersionShim ApproveVersion() => new(Ctx(), Claims, Versions, Audit);
+        public SubmitClaimCountryVersionReviewHandler SubmitVersion(IClaimWorkflowClient client)
+            => new(Ctx(), Actor(), Claims, Versions, client, Refs, null, Audit);
         public ArchiveClaimCountryVersionHandler ArchiveVersion() => new(Ctx(), Actor(), Versions, Audit);
         public GetClaimCountryVersionHandler GetVersion() => new(Ctx(), Versions, Settings);
         public ListClaimCountryVersionsHandler ListVersions() => new(Ctx(), Claims, Versions, Settings);
@@ -384,14 +387,18 @@ public sealed class ClaimsV2Tests
     // ============================================================ approval, lock, new versions
 
     [Fact]
-    public async Task Temporary_approve_needs_every_country_language_and_inactivates_previous()
+    public async Task Submit_needs_every_country_language_and_approval_inactivates_previous()
     {
         var fx = new Fixture(TenantA);
         var id = await fx.SeedCore("CL-TA");
 
+        // WP-CL-BE-4 — the "every content language" rule moved from the removed direct approve to submit-review.
         var partial = await fx.OpenVersion(id, "UZ", new[] { new ClaimLocalizedTextInput("uz", "matn") });
-        var incomplete = await fx.ApproveVersion().Handle(new ApproveClaimCountryVersionCommand(partial.Data), default);
-        Assert.Equal(ClaimErrorCodes.LanguagesIncomplete, Code(incomplete));
+        var client = new FakeClaimWorkflowClient();
+        var incomplete = await fx.SubmitVersion(client).Handle(
+            new SubmitClaimCountryVersionReviewCommand(partial.Data), default);
+        Assert.Equal(ClaimErrorCodes.LanguagesIncomplete, incomplete.Errors![0]);
+        Assert.Empty(client.Starts); // refused before MOD-0023 is asked
 
         await fx.UpdateVersion().Handle(new UpdateClaimCountryVersionCommand(partial.Data, Texts("UZ"), null,
             "verbatim", null, null, DateTimeOffset.UtcNow.Date), default);

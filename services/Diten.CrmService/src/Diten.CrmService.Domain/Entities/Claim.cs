@@ -92,6 +92,10 @@ public sealed class Claim : EntityBase
     /// never removed; a reopen stamps it.</summary>
     public List<ClaimCountryClosure> CountryClosures { get; set; } = new();
 
+    /// <summary>WP-CL-BE-4 — MOD-0023 approval rounds of THIS record (newest last). At most one open round; approval is
+    /// only ever the outcome of a round. A pre-v2 document simply has none.</summary>
+    public List<ClaimReviewRound> ReviewRounds { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -194,4 +198,9 @@ public static class ClaimReasonCodes
     public const string CountryVersionApproved = "claim_country_version_approved";
     public const string CountryVersionArchived = "claim_country_version_archived";
     public const string CountryVersionsReviewRequired = "claim_country_versions_review_required";
+
+    // WP-CL-BE-4 — approval rounds (ids, round number and outcome only; never wording).
+    public const string ReviewSubmitted = "claim_review_submitted";
+    public const string ReviewWithdrawn = "claim_review_withdrawn";
+    public const string ReviewOutcomeApplied = "claim_review_outcome_applied";
 }

@@ -12,7 +12,7 @@ namespace Diten.CrmService.Domain.Entities;
 /// <para>
 /// Country and language lists are NEVER stored in code: the country axis is the <c>COUNTRY_CODES</c> reference set and
 /// the allowed languages the <c>country-content-languages</c> set's <c>Languages</c> attribute. An approved version is
-/// locked; a change is a new country version. <see cref="ReviewRounds"/> stays empty until WP-CL-BE-4 (workflow).
+/// locked; a change is a new country version. <see cref="ReviewRounds"/> records its MOD-0023 approval rounds (WP-CL-BE-4).
 /// </para>
 /// </summary>
 public sealed class ClaimCountryVersion : EntityBase
@@ -55,7 +55,7 @@ public sealed class ClaimCountryVersion : EntityBase
     /// <summary>The approved / review-required version this one was opened from.</summary>
     public Guid? SupersedesVersionId { get; set; }
 
-    /// <summary>Approval rounds — filled by WP-CL-BE-4 (workflow). Always empty in this slice.</summary>
+    /// <summary>MOD-0023 approval rounds of this version (WP-CL-BE-4), newest last; at most one open.</summary>
     public List<ClaimReviewRound> ReviewRounds { get; set; } = new();
 
     public string? CreatedBy { get; set; }
@@ -86,6 +86,28 @@ public sealed class ClaimReviewRound
     public Guid WorkflowInstanceId { get; set; }
     public DateTimeOffset SubmittedAt { get; set; }
     public string? SubmittedBy { get; set; }
+
+    /// <summary><see cref="ClaimReviewOutcomes"/>; null while the round is open.</summary>
     public string? Outcome { get; set; }
     public DateTimeOffset? ClosedAt { get; set; }
+
+    // WP-CL-BE-4 — 1-based round number (also part of the workflow idempotency key), the MOD-0023 template the round
+    // ran on, who closed it (principal id from the workflow; null for a system timeout) and the closing reason code.
+    public int RoundNo { get; set; }
+    public string? TemplateCode { get; set; }
+    public string? CompletedBy { get; set; }
+    public string? ReasonCode { get; set; }
+
+    public bool IsOpen() => Outcome is null && ClosedAt is null;
+}
+
+/// <summary>WP-CL-BE-4 — how a review round closed (the MOD-0023 completion outcomes).</summary>
+public static class ClaimReviewOutcomes
+{
+    public const string Approved = "approved";
+    public const string Rejected = "rejected";
+    public const string Cancelled = "cancelled";
+    public const string TimedOut = "timed-out";
+
+    public static bool IsValid(string? value) => value is Approved or Rejected or Cancelled or TimedOut;
 }

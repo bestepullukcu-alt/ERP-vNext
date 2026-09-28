@@ -12,13 +12,16 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
     private readonly ITenantContext _tenant;
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository? _countryVersions;
+    private readonly ClaimReviewReconciler? _reconciler;
 
     public ListClaimsHandler(
-        ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null)
+        ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
+        ClaimReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<ClaimListDto>> Handle(ListClaimsQuery request, CancellationToken cancellationToken)
@@ -28,7 +31,22 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
             return Response<ClaimListDto>.Fail("Tenant context is required.", 400);
         }
 
-        IEnumerable<Claim> rows = await _claims.ListAsync(tenantId, cancellationToken);
+        var allClaims = await _claims.ListAsync(tenantId, cancellationToken);
+        var allVersions = _countryVersions is null
+            ? (IReadOnlyList<ClaimCountryVersion>)Array.Empty<ClaimCountryVersion>()
+            : await _countryVersions.ListAsync(tenantId, cancellationToken);
+
+        // WP-CL-BE-4 — reconcile-on-read: overdue open rounds are re-checked against MOD-0023; reload when any closed.
+        if (await ClaimReadReconcile.RunAsync(_reconciler, tenantId, allClaims, allVersions, cancellationToken))
+        {
+            allClaims = await _claims.ListAsync(tenantId, cancellationToken);
+            if (_countryVersions is not null)
+            {
+                allVersions = await _countryVersions.ListAsync(tenantId, cancellationToken);
+            }
+        }
+
+        IEnumerable<Claim> rows = allClaims;
 
         if (!string.IsNullOrWhiteSpace(request.Status))
         {
@@ -55,11 +73,9 @@ public sealed class ListClaimsHandler : IRequestHandler<ListClaimsQuery, Respons
         }
 
         // WP-CL-BE-1 — list-row country summary (one tenant read, grouped in memory).
-        var versionsByCode = _countryVersions is null
-            ? new Dictionary<string, List<ClaimCountryVersion>>(StringComparer.Ordinal)
-            : (await _countryVersions.ListAsync(tenantId, cancellationToken))
-                .GroupBy(v => v.ClaimCode, StringComparer.Ordinal)
-                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
+        var versionsByCode = allVersions
+            .GroupBy(v => v.ClaimCode, StringComparer.Ordinal)
+            .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal);
 
         var items = rows.Select(c => ClaimMapper.ToDto(c, ClaimLines.Summary(c,
                 versionsByCode.TryGetValue(c.ClaimCode, out var list) ? list : new List<ClaimCountryVersion>())))
@@ -74,12 +90,16 @@ public sealed class GetClaimHandler : IRequestHandler<GetClaimQuery, Response<Cl
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository? _countryVersions;
 
+    private readonly ClaimReviewReconciler? _reconciler;
+
     public GetClaimHandler(
-        ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null)
+        ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository? countryVersions = null,
+        ClaimReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<ClaimDto>> Handle(GetClaimQuery request, CancellationToken cancellationToken)
@@ -98,6 +118,17 @@ public sealed class GetClaimHandler : IRequestHandler<GetClaimQuery, Response<Cl
         var versions = _countryVersions is null
             ? Array.Empty<ClaimCountryVersion>()
             : await _countryVersions.ListByClaimCodeAsync(tenantId, entity.ClaimCode, cancellationToken);
+
+        // WP-CL-BE-4 — reconcile-on-read (the claim and its code's country versions).
+        if (await ClaimReadReconcile.RunAsync(_reconciler, tenantId, [entity], versions, cancellationToken))
+        {
+            entity = await _claims.GetByIdAsync(tenantId, request.ClaimId, cancellationToken) ?? entity;
+            if (_countryVersions is not null)
+            {
+                versions = await _countryVersions.ListByClaimCodeAsync(tenantId, entity.ClaimCode, cancellationToken);
+            }
+        }
+
         return Response<ClaimDto>.Success(ClaimMapper.ToDto(entity, ClaimLines.Summary(entity, versions)));
     }
 }
@@ -112,15 +143,17 @@ public sealed class ListClaimCountryVersionsHandler
     private readonly IClaimRepository _claims;
     private readonly IClaimCountryVersionRepository _countryVersions;
     private readonly IClaimCoverageSettings? _settings;
+    private readonly ClaimReviewReconciler? _reconciler;
 
     public ListClaimCountryVersionsHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository countryVersions,
-        IClaimCoverageSettings? settings = null)
+        IClaimCoverageSettings? settings = null, ClaimReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
         _settings = settings;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<IReadOnlyList<ClaimCountryVersionDto>>> Handle(
@@ -137,8 +170,13 @@ public sealed class ListClaimCountryVersionsHandler
             return Response<IReadOnlyList<ClaimCountryVersionDto>>.Fail("Claim not found.", 404);
         }
 
-        IEnumerable<ClaimCountryVersion> rows =
-            await _countryVersions.ListByClaimCodeAsync(tenantId, claim.ClaimCode, cancellationToken);
+        var loaded = await _countryVersions.ListByClaimCodeAsync(tenantId, claim.ClaimCode, cancellationToken);
+        if (await ClaimReadReconcile.RunAsync(_reconciler, tenantId, [claim], loaded, cancellationToken))
+        {
+            loaded = await _countryVersions.ListByClaimCodeAsync(tenantId, claim.ClaimCode, cancellationToken);
+        }
+
+        IEnumerable<ClaimCountryVersion> rows = loaded;
         if (!string.IsNullOrWhiteSpace(request.CountryCode))
         {
             var country = ClaimV2Checks.NormalizeCountry(request.CountryCode);
@@ -166,12 +204,16 @@ public sealed class GetClaimCountryVersionHandler
     private readonly IClaimCountryVersionRepository _countryVersions;
     private readonly IClaimCoverageSettings? _settings;
 
+    private readonly ClaimReviewReconciler? _reconciler;
+
     public GetClaimCountryVersionHandler(
-        ITenantContext tenant, IClaimCountryVersionRepository countryVersions, IClaimCoverageSettings? settings = null)
+        ITenantContext tenant, IClaimCountryVersionRepository countryVersions, IClaimCoverageSettings? settings = null,
+        ClaimReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _countryVersions = countryVersions;
         _settings = settings;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<ClaimCountryVersionDto>> Handle(
@@ -186,6 +228,11 @@ public sealed class GetClaimCountryVersionHandler
         if (version is null)
         {
             return Response<ClaimCountryVersionDto>.Fail("Country version not found.", 404);
+        }
+
+        if (await ClaimReadReconcile.RunAsync(_reconciler, tenantId, [], [version], cancellationToken))
+        {
+            version = await _countryVersions.GetByIdAsync(tenantId, request.CountryVersionId, cancellationToken) ?? version;
         }
 
         var window = _settings?.ExpiringWindowDays ?? ClaimCoverageDefaults.ExpiringWindowDays;
@@ -206,16 +253,19 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
     private readonly IClaimCountryVersionRepository _countryVersions;
     private readonly IReferenceDataCatalogReader? _catalog;
     private readonly IClaimCoverageSettings? _settings;
+    private readonly ClaimReviewReconciler? _reconciler;
 
     public GetClaimCoverageHandler(
         ITenantContext tenant, IClaimRepository claims, IClaimCountryVersionRepository countryVersions,
-        IReferenceDataCatalogReader? catalog = null, IClaimCoverageSettings? settings = null)
+        IReferenceDataCatalogReader? catalog = null, IClaimCoverageSettings? settings = null,
+        ClaimReviewReconciler? reconciler = null)
     {
         _tenant = tenant;
         _claims = claims;
         _countryVersions = countryVersions;
         _catalog = catalog;
         _settings = settings;
+        _reconciler = reconciler;
     }
 
     public async Task<Response<ClaimCoverageDto>> Handle(GetClaimCoverageQuery request, CancellationToken cancellationToken)
@@ -223,6 +273,14 @@ public sealed class GetClaimCoverageHandler : IRequestHandler<GetClaimCoverageQu
         if (_tenant.TenantId is not { } tenantId)
         {
             return Response<ClaimCoverageDto>.Fail("Tenant context is required.", 400);
+        }
+
+        // WP-CL-BE-4 — reconcile-on-read before the matrix is built (the reads below see the result).
+        if (_reconciler is not null)
+        {
+            await ClaimReadReconcile.RunAsync(_reconciler, tenantId,
+                await _claims.ListAsync(tenantId, cancellationToken),
+                await _countryVersions.ListAsync(tenantId, cancellationToken), cancellationToken);
         }
 
         if (!string.IsNullOrWhiteSpace(request.Kind) && !ClaimKinds.IsValid(request.Kind))

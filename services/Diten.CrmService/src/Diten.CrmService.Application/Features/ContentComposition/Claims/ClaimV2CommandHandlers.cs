@@ -43,6 +43,11 @@ public sealed class CreateClaimNewVersionHandler : IRequestHandler<CreateClaimNe
             return Response<Guid>.Fail("Claim not found.", 404);
         }
 
+        if (source.Status == ClaimStatuses.InReview)
+        {
+            return ClaimReviewRules.InReviewLocked<Guid>();
+        }
+
         if (!source.IsApproved() || source.IsArchived())
         {
             return new ClaimFailure(ClaimErrorCodes.InvalidState,
@@ -600,6 +605,11 @@ public sealed class UpdateClaimCountryVersionHandler
             return Response<bool>.Fail("Country version not found.", 404);
         }
 
+        if (version.Status == ClaimStatuses.InReview)
+        {
+            return ClaimReviewRules.InReviewLocked<bool>();
+        }
+
         if (version.Status != ClaimStatuses.Draft || version.IsArchived())
         {
             return new ClaimFailure(ClaimErrorCodes.VersionLocked,
@@ -673,6 +683,11 @@ public sealed class CreateClaimCountryNewVersionHandler
             return Response<Guid>.Fail("Country version not found.", 404);
         }
 
+        if (source.Status == ClaimStatuses.InReview)
+        {
+            return ClaimReviewRules.InReviewLocked<Guid>();
+        }
+
         if (source.IsArchived() || source.Status is not (ClaimStatuses.Approved or ClaimStatuses.ReviewRequired))
         {
             return new ClaimFailure(ClaimErrorCodes.InvalidState,
@@ -723,114 +738,6 @@ public sealed class CreateClaimCountryNewVersionHandler
     }
 }
 
-/// <summary>
-/// TEMPORARY: replaced by WP-CL-BE-4 (workflow). Direct approval of a country version: every content language of the
-/// country needs a text, the bound core record must still be approved (core kind), and the previously approved /
-/// review-required version of the same claim code × country becomes <c>inactive</c>.
-/// </summary>
-public sealed class ApproveClaimCountryVersionHandler
-    : IRequestHandler<ApproveClaimCountryVersionCommand, Response<bool>>
-{
-    private readonly ITenantContext _tenant;
-    private readonly IActorContext _actor;
-    private readonly IClaimRepository _claims;
-    private readonly IClaimCountryVersionRepository _countryVersions;
-    private readonly IReferenceMetadataReader? _metadata;
-    private readonly IContentCompositionAuditPublisher? _audit;
-
-    public ApproveClaimCountryVersionHandler(
-        ITenantContext tenant, IActorContext actor, IClaimRepository claims,
-        IClaimCountryVersionRepository countryVersions, IReferenceMetadataReader? metadata = null,
-        IContentCompositionAuditPublisher? audit = null)
-    {
-        _tenant = tenant;
-        _actor = actor;
-        _claims = claims;
-        _countryVersions = countryVersions;
-        _metadata = metadata;
-        _audit = audit;
-    }
-
-    public async Task<Response<bool>> Handle(ApproveClaimCountryVersionCommand request, CancellationToken cancellationToken)
-    {
-        // TEMPORARY: replaced by WP-CL-BE-4 (workflow)
-        if (_tenant.TenantId is not { } tenantId)
-        {
-            return Response<bool>.Fail("Tenant context is required.", 400);
-        }
-
-        var version = await _countryVersions.GetByIdAsync(tenantId, request.CountryVersionId, cancellationToken);
-        if (version is null)
-        {
-            return Response<bool>.Fail("Country version not found.", 404);
-        }
-
-        if (version.Status == ClaimStatuses.Approved)
-        {
-            return Response<bool>.Success(true); // idempotent
-        }
-
-        if (version.IsArchived() || !version.IsOpen())
-        {
-            return new ClaimFailure(ClaimErrorCodes.InvalidState,
-                $"A {version.Status} country version cannot be approved.", 409).To<bool>();
-        }
-
-        var claim = await _claims.GetByIdAsync(tenantId, version.ClaimId, cancellationToken);
-        if (claim is null)
-        {
-            return Response<bool>.Fail("Bound claim not found.", 404);
-        }
-
-        if (!claim.IsLocal() && !claim.IsApproved())
-        {
-            return new ClaimFailure(ClaimErrorCodes.CoreNotApproved,
-                $"The bound core version {version.BoundCoreVersion} is no longer approved.", 409).To<bool>();
-        }
-
-        var (languages, languageFailure) =
-            await ClaimV2Checks.GetCountryLanguagesAsync(_metadata, version.CountryCode, cancellationToken);
-        if (languageFailure is not null)
-        {
-            return languageFailure.To<bool>();
-        }
-
-        var missing = languages.Where(l => version.Texts.All(t => t.LanguageCode != l)).ToList();
-        if (missing.Count > 0)
-        {
-            return new ClaimFailure(ClaimErrorCodes.LanguagesIncomplete,
-                $"Every content language of '{version.CountryCode}' needs a text; missing: {string.Join(", ", missing)}.")
-                .To<bool>();
-        }
-
-        var now = DateTimeOffset.UtcNow;
-        foreach (var previous in await _countryVersions.ListByClaimCodeAsync(tenantId, version.ClaimCode, cancellationToken))
-        {
-            if (previous.Id == version.Id || previous.IsArchived()
-                || !string.Equals(previous.CountryCode, version.CountryCode, StringComparison.OrdinalIgnoreCase)
-                || previous.Status is not (ClaimStatuses.Approved or ClaimStatuses.ReviewRequired))
-            {
-                continue;
-            }
-
-            previous.Status = ClaimStatuses.Inactive;
-            previous.UpdatedAt = now;
-            previous.UpdatedBy = _actor.ActorName;
-            await _countryVersions.UpdateAsync(previous, cancellationToken);
-        }
-
-        version.Status = ClaimStatuses.Approved;
-        version.ApprovedAt = now;
-        version.ApprovedBy = _actor.ActorName;
-        version.UpdatedAt = now;
-        version.UpdatedBy = _actor.ActorName;
-        await _countryVersions.UpdateAsync(version, cancellationToken);
-        await ClaimCountryVersionAudit.PublishAsync(_audit, ClaimReasonCodes.CountryVersionApproved, tenantId, version,
-            cancellationToken);
-        return Response<bool>.Success(true);
-    }
-}
-
 public sealed class ArchiveClaimCountryVersionHandler
     : IRequestHandler<ArchiveClaimCountryVersionCommand, Response<bool>>
 {
@@ -865,6 +772,11 @@ public sealed class ArchiveClaimCountryVersionHandler
         if (version.IsArchived())
         {
             return Response<bool>.Success(true); // idempotent
+        }
+
+        if (version.Status == ClaimStatuses.InReview)
+        {
+            return ClaimReviewRules.InReviewLocked<bool>();
         }
 
         var now = DateTimeOffset.UtcNow;

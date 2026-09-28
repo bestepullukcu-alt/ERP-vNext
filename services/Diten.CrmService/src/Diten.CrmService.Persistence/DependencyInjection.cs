@@ -137,6 +137,8 @@ public static class DependencyInjection
         services.AddScoped<IClaimRepository, ClaimRepository>();
         // WP-CL-BE-1 (claims v2) — claim country versions.
         services.AddScoped<IClaimCountryVersionRepository, ClaimCountryVersionRepository>();
+        // WP-CL-BE-4 — consumed-event inbox (claim workflow outcome consumer).
+        services.AddScoped<ICrmEventInboxRepository, CrmEventInboxRepository>();
         // SCMM-14 (CAND-CAP-0011) — reusable content scope + content-set assembly draft masters.
         services.AddScoped<IContentScopeRepository, ContentScopeRepository>();
         services.AddScoped<IContentSetRepository, ContentSetRepository>();

@@ -12,7 +12,7 @@ public sealed record ClaimApplicabilityInput(
     Guid? EligibilityPolicyId = null);
 
 /// <summary>SCMM-12 (CAND-CAP-0011) claim write surface. <c>TenantId</c> server-resolved. No delete — closing is
-/// <see cref="ArchiveClaimCommand"/>. Approval is the dedicated <see cref="ApproveClaimCommand"/> (draft → approved);
+/// <see cref="ArchiveClaimCommand"/>. Approval is the outcome of a MOD-0023 workflow round (WP-CL-BE-4, draft → in-review → approved);
 /// an approved claim freezes its governed body (change ⇒ new version). <c>EvidenceRefs</c> are opaque (MOD-0031
 /// resolution deferred); <c>ComponentRefs</c> are by-id KnowledgeContent references (D02c reuse, provenance only).
 /// <para>WP-CL-BE-1 (claims v2) — the trailing members are optional. When <c>Kind</c> is given (a v2 client) the MDM
@@ -61,11 +61,6 @@ public sealed record UpdateClaimCommand(
     Guid? ResponsibleOrgUnitId = null,
     string? TextLanguageCode = null) : IRequest<Response<bool>>;
 
-/// <summary>Approves a draft claim (draft → approved). Claim approval is NOT assembly approval (that is SCMM-15/17).
-/// WP-CL-BE-1: the previously approved record of the same ClaimCode becomes <c>inactive</c> and that code's approved
-/// country versions become <c>review-required</c>.</summary>
-public sealed record ApproveClaimCommand(Guid ClaimId) : IRequest<Response<bool>>;
-
 public sealed record ArchiveClaimCommand(Guid ClaimId) : IRequest<Response<bool>>;
 
 // ---------------------------------------------------------------- WP-CL-BE-1 (claims v2)
@@ -111,7 +106,19 @@ public sealed record UpdateClaimCountryVersionCommand(
 /// latest approved core.</summary>
 public sealed record CreateClaimCountryNewVersionCommand(Guid CountryVersionId) : IRequest<Response<Guid>>;
 
-/// <summary>TEMPORARY direct approval of a country version — replaced by WP-CL-BE-4 (workflow).</summary>
-public sealed record ApproveClaimCountryVersionCommand(Guid CountryVersionId) : IRequest<Response<bool>>;
-
 public sealed record ArchiveClaimCountryVersionCommand(Guid CountryVersionId) : IRequest<Response<bool>>;
+
+// ---------------------------------------------------------------- WP-CL-BE-4 (approval via MOD-0023 workflow)
+// Approval is ONLY the outcome of a MOD-0023 workflow round (ClaimReviewOutcomeApplier). There is no direct approve.
+
+/// <summary>Sends a DRAFT core/local claim to its MOD-0023 approval workflow, as the calling user (SoD).</summary>
+public sealed record SubmitClaimReviewCommand(Guid ClaimId) : IRequest<Response<ClaimReviewRoundDto>>;
+
+/// <summary>Sends a DRAFT country version to the country's MOD-0023 approval workflow, as the calling user.</summary>
+public sealed record SubmitClaimCountryVersionReviewCommand(Guid CountryVersionId) : IRequest<Response<ClaimReviewRoundDto>>;
+
+/// <summary>Withdraws an in-review claim (cancels the open workflow task); the record returns to draft.</summary>
+public sealed record WithdrawClaimReviewCommand(Guid ClaimId) : IRequest<Response<ClaimReviewRoundDto>>;
+
+/// <summary>Withdraws an in-review country version; the version returns to draft.</summary>
+public sealed record WithdrawClaimCountryVersionReviewCommand(Guid CountryVersionId) : IRequest<Response<ClaimReviewRoundDto>>;

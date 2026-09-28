@@ -35,7 +35,8 @@ public sealed class ClaimTests
 
         public CreateClaimHandler Create() => new(Tenant(TenantId), new NullActorContext(), Claims, Audit);
         public UpdateClaimHandler Update() => new(Tenant(TenantId), new NullActorContext(), Claims, Audit);
-        public ApproveClaimHandler Approve() => new(Tenant(TenantId), new NullActorContext(), Claims, Audit);
+        // WP-CL-BE-4 — approval only through the workflow outcome applier (see ClaimWorkflowTestSupport).
+        public WorkflowApproveClaimShim Approve() => new(Tenant(TenantId), Claims, new EmptyCountryVersionRepo(), Audit);
         public ArchiveClaimHandler Archive() => new(Tenant(TenantId), new NullActorContext(), Claims, Audit);
         public GetClaimHandler Get() => new(Tenant(TenantId), Claims);
 

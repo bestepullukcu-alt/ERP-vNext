@@ -63,10 +63,12 @@ public sealed class ClaimsController : CustomBaseController
                 request.TextLanguageCode),
             cancellationToken));
 
+    // WP-CL-BE-4 — approval is ONLY the outcome of a MOD-0023 workflow round (submit-review). The route stays so an old
+    // client gets an explicit answer instead of a 404.
     [HttpPost("api/crm/content-composition/claims/{claimId:guid}/approve")]
     [HasPermission(Perms.Approve)]
-    public async Task<IActionResult> Approve(Guid claimId, CancellationToken cancellationToken)
-        => CreateActionResultInstance(await _mediator.Send(new ApproveClaimCommand(claimId), cancellationToken));
+    public IActionResult Approve(Guid claimId)
+        => CreateActionResultInstance(ClaimReviewRules.ApprovalViaWorkflowOnly<bool>());
 
     [HttpPost("api/crm/content-composition/claims/{claimId:guid}/archive")]
     [HasPermission(Perms.Manage)]
@@ -153,12 +155,46 @@ public sealed class ClaimsController : CustomBaseController
         => CreateActionResultInstance(await _mediator.Send(
             new CreateClaimCountryNewVersionCommand(countryVersionId), cancellationToken));
 
-    // TEMPORARY: replaced by WP-CL-BE-4 (workflow)
+    // WP-CL-BE-4 — see Approve: a country version is approved only through its MOD-0023 workflow round.
     [HttpPost("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/approve")]
     [HasPermission(Perms.Approve)]
-    public async Task<IActionResult> ApproveCountryVersion(Guid countryVersionId, CancellationToken cancellationToken)
+    public IActionResult ApproveCountryVersion(Guid countryVersionId)
+        => CreateActionResultInstance(ClaimReviewRules.ApprovalViaWorkflowOnly<bool>());
+
+    // ---- WP-CL-BE-4 — approval rounds (MOD-0023). Submit/withdraw run with the CALLER's token (SoD).
+
+    [HttpPost("api/crm/content-composition/claims/{claimId:guid}/submit-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> SubmitReview(Guid claimId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new SubmitClaimReviewCommand(claimId), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/{claimId:guid}/withdraw-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> WithdrawReview(Guid claimId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new WithdrawClaimReviewCommand(claimId), cancellationToken));
+
+    [HttpGet("api/crm/content-composition/claims/{claimId:guid}/review-history")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> ReviewHistory(Guid claimId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(new GetClaimReviewHistoryQuery(claimId), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/submit-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> SubmitCountryVersionReview(Guid countryVersionId, CancellationToken cancellationToken)
         => CreateActionResultInstance(await _mediator.Send(
-            new ApproveClaimCountryVersionCommand(countryVersionId), cancellationToken));
+            new SubmitClaimCountryVersionReviewCommand(countryVersionId), cancellationToken));
+
+    [HttpPost("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/withdraw-review")]
+    [HasPermission(Perms.Manage)]
+    public async Task<IActionResult> WithdrawCountryVersionReview(Guid countryVersionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new WithdrawClaimCountryVersionReviewCommand(countryVersionId), cancellationToken));
+
+    [HttpGet("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/review-history")]
+    [HasPermission(Perms.Read)]
+    public async Task<IActionResult> CountryVersionReviewHistory(Guid countryVersionId, CancellationToken cancellationToken)
+        => CreateActionResultInstance(await _mediator.Send(
+            new GetClaimCountryVersionReviewHistoryQuery(countryVersionId), cancellationToken));
 
     [HttpPost("api/crm/content-composition/claims/country-versions/{countryVersionId:guid}/archive")]
     [HasPermission(Perms.Manage)]

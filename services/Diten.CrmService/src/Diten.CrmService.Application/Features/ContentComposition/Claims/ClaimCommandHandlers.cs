@@ -289,10 +289,10 @@ public sealed class UpdateClaimHandler : IRequestHandler<UpdateClaimCommand, Res
         }
 
         // WP-CL-BE-1 — a record under review is locked until the review closes (WP-CL-BE-4 workflow).
+        // WP-CL-BE-4 — a record under review is locked until its workflow round closes.
         if (entity.Status == ClaimStatuses.InReview)
         {
-            return new ClaimFailure(ClaimErrorCodes.InvalidState,
-                "A claim under review cannot be updated.", 409).To<bool>();
+            return ClaimReviewRules.InReviewLocked<bool>();
         }
 
         if (string.IsNullOrWhiteSpace(request.ClaimName))
@@ -418,123 +418,6 @@ public sealed class UpdateClaimHandler : IRequestHandler<UpdateClaimCommand, Res
     }
 }
 
-public sealed class ApproveClaimHandler : IRequestHandler<ApproveClaimCommand, Response<bool>>
-{
-    private readonly ITenantContext _tenant;
-    private readonly IActorContext _actor;
-    private readonly IClaimRepository _claims;
-    private readonly IContentCompositionAuditPublisher? _audit;
-
-    private readonly IClaimCountryVersionRepository? _countryVersions;
-
-    public ApproveClaimHandler(
-        ITenantContext tenant, IActorContext actor, IClaimRepository claims,
-        IContentCompositionAuditPublisher? audit = null,
-        IClaimCountryVersionRepository? countryVersions = null)
-    {
-        _tenant = tenant;
-        _actor = actor;
-        _claims = claims;
-        _audit = audit;
-        _countryVersions = countryVersions;
-    }
-
-    public async Task<Response<bool>> Handle(ApproveClaimCommand request, CancellationToken cancellationToken)
-    {
-        ArgumentNullException.ThrowIfNull(request);
-
-        if (_tenant.TenantId is not { } tenantId)
-        {
-            return Response<bool>.Fail("Tenant context is required.", 400);
-        }
-
-        var entity = await _claims.GetByIdAsync(tenantId, request.ClaimId, cancellationToken);
-        if (entity is null)
-        {
-            return Response<bool>.Fail("Claim not found.", 404);
-        }
-
-        if (entity.IsArchived())
-        {
-            return Response<bool>.Fail("An archived claim cannot be approved.", 409);
-        }
-
-        if (entity.IsApproved())
-        {
-            return Response<bool>.Success(true); // idempotent — claim approval is not assembly approval
-        }
-
-        var now = DateTimeOffset.UtcNow;
-        entity.Status = ClaimStatuses.Approved;
-        entity.ApprovedAt = now;
-        entity.ApprovedBy = _actor.ActorName;
-        entity.UpdatedAt = now;
-        entity.UpdatedBy = _actor.ActorName;
-
-        await _claims.UpdateAsync(entity, cancellationToken);
-        if (_audit is not null)
-        {
-            await _audit.PublishAsync(ClaimReasonCodes.Approved, tenantId,
-                ContentCompositionAuditEntities.Claim, entity.Id, entity.Version, entity.ClaimCode, cancellationToken);
-        }
-
-        await PropagateAsync(tenantId, entity, now, cancellationToken);
-        return Response<bool>.Success(true);
-    }
-
-    /// <summary>
-    /// WP-CL-BE-1 — core approval propagation (here on the direct approve; WP-CL-BE-4 moves it to the workflow
-    /// outcome): every OTHER approved record of the ClaimCode becomes <c>inactive</c>; when one was superseded, the
-    /// code's approved country versions bound to an older core become <c>review-required</c> (ApprovedAt kept — the
-    /// usability decision is the content side's).
-    /// </summary>
-    private async Task PropagateAsync(Guid tenantId, Claim approved, DateTimeOffset now, CancellationToken ct)
-    {
-        var superseded = 0;
-        foreach (var other in await _claims.ListByCodeAsync(tenantId, approved.ClaimCode, ct))
-        {
-            if (other.Id == approved.Id || !other.IsApproved() || other.IsArchived())
-            {
-                continue;
-            }
-
-            other.Status = ClaimStatuses.Inactive;
-            other.UpdatedAt = now;
-            other.UpdatedBy = _actor.ActorName;
-            await _claims.UpdateAsync(other, ct);
-            superseded++;
-        }
-
-        if ((superseded == 0 && approved.SupersedesClaimId is null) || _countryVersions is null)
-        {
-            return;
-        }
-
-        var flagged = 0;
-        foreach (var version in await _countryVersions.ListByClaimCodeAsync(tenantId, approved.ClaimCode, ct))
-        {
-            if (version.Status != ClaimStatuses.Approved || version.IsArchived()
-                || string.Equals(version.BoundCoreVersion, approved.ClaimVersion, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
-            version.Status = ClaimStatuses.ReviewRequired;
-            version.UpdatedAt = now;
-            version.UpdatedBy = _actor.ActorName;
-            await _countryVersions.UpdateAsync(version, ct);
-            flagged++;
-        }
-
-        if (flagged > 0 && _audit is not null)
-        {
-            await _audit.PublishAsync(ClaimReasonCodes.CountryVersionsReviewRequired, tenantId,
-                ContentCompositionAuditEntities.Claim, approved.Id, approved.Version,
-                $"{approved.ClaimCode}|count={flagged}", ct);
-        }
-    }
-}
-
 public sealed class ArchiveClaimHandler : IRequestHandler<ArchiveClaimCommand, Response<bool>>
 {
     private readonly ITenantContext _tenant;
@@ -570,6 +453,11 @@ public sealed class ArchiveClaimHandler : IRequestHandler<ArchiveClaimCommand, R
         if (entity.IsArchived())
         {
             return Response<bool>.Success(true); // idempotent
+        }
+
+        if (entity.Status == ClaimStatuses.InReview)
+        {
+            return ClaimReviewRules.InReviewLocked<bool>();
         }
 
         var now = DateTimeOffset.UtcNow;

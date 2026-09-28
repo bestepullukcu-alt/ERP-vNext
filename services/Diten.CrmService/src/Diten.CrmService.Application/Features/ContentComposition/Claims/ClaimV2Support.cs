@@ -37,6 +37,17 @@ public static class ClaimErrorCodes
     public const string InvalidState = "invalid_state";
     public const string InvalidValidity = "invalid_validity";
     public const string Required = "required";
+
+    // WP-CL-BE-4 — approval via MOD-0023 workflow.
+    public const string InvalidStatus = "invalid_status";
+    public const string InReviewLocked = "in_review_locked";
+    public const string ApprovalViaWorkflowOnly = "approval_via_workflow_only";
+    public const string ApprovalTemplateMissing = "approval_template_missing";
+    public const string ApprovalForbidden = "approval_forbidden";
+    public const string WorkflowUnavailable = "workflow_unavailable";
+    public const string WorkflowRequestRejected = "workflow_request_rejected";
+    public const string NoOpenReview = "no_open_review";
+    public const string WithdrawNotPossible = "withdraw_not_possible";
 }
 
 /// <summary>WP-CL-BE-1 — the MOD-0048 reference sets the claims v2 rules read. Only the set CODES live here; the values
