@@ -188,6 +188,9 @@ public static class DependencyInjection
             Features.DocumentManagementControlledCopy.Services.ControlledCopyWithdrawalPortAdapter>();
         // MOD-0029-FU14 — external document register / monitoring / impact assessment orchestration.
         services.AddScoped<Features.DocumentManagementExternalDocuments.Services.ExternalDocumentRegisterService>();
+        // MOD-0031 slice 1 — the evidence-linking read gate over the existing MOD-0029 access evaluator (read-only).
+        services.AddScoped<Features.EvidenceLinking.Services.IEvidenceDocumentAccessGate,
+            Features.EvidenceLinking.Services.EvidenceDocumentAccessGate>();
         // MOD-0029-FU15 — retention schedule, litigation hold and disposition (no purge engine; evaluation is opt-in).
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentRetentionTriggerDateResolver>();
         services.AddScoped<Features.DocumentManagementRetention.Services.DocumentLegalHoldEvaluator>();
