@@ -105,6 +105,19 @@ public sealed class WorkflowDefinitionsController : CustomBaseController
         return CreateActionResultInstance(response);
     }
 
+    // WP-CL-BE-3 — batch status read for cross-service reconciliation (≤100 ids; comma-separated or repeated).
+    [HttpGet("instances/by-objects")]
+    [HasPermission(WorkflowPermissions.InstancesView)]
+    public async Task<IActionResult> GetInstancesByObjects(
+        [FromQuery] string? objectType,
+        [FromQuery] string[]? objectIds,
+        CancellationToken ct)
+    {
+        var response = await _mediator.Send(
+            new GetWorkflowInstancesByObjectsQuery(objectType, objectIds, CorrelationId), ct);
+        return CreateActionResultInstance(response);
+    }
+
     [HttpGet("tasks")]
     [HasPermission(WorkflowPermissions.InstancesView)]
     public async Task<IActionResult> GetTasks(CancellationToken ct)

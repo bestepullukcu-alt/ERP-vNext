@@ -336,6 +336,10 @@ public static class DependencyInjection
         // approval provider as an IEnumerable, so another module adds its own line here and nothing else.
         services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
             Features.Tasks.Providers.TaskApprovalSourceResolver>();
+        // WP-CL-BE-3 — the starter's display-context snapshot for objects owned by ANOTHER service (CRM claims). A
+        // fallback: the provider never lets it answer for a type an owner above claims.
+        services.AddScoped<Features.WorkAggregation.Services.IApprovalSourceResolver,
+            Features.WorkAggregation.Services.SnapshotApprovalSourceResolver>();
         /*
          * MOD-0357 S1 — the one bridge collection's read side. `IRecordLinkService` is used both here (through
          * TaskWorkItemProvider's `relatedRecords` projection) and by MOD-0357's own future "linked records"

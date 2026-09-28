@@ -80,6 +80,92 @@
   - SoD (gönderen onaylayamaz) aynen çalışıyor.
 - **Diff:** yalnız `services/Diten.Platform/**` (+ bu WP dosyasına §Tüketici rehberi). CRM, Auth, Web ve gateway diff'i YOK.
 
+## Tüketici rehberi (servisler arası kullanım — CL-BE-4 için)
+
+> Durum: WP-CL-BE-3 ile uygulandı (dal `wp/cl-be-3`). Aşağıdaki sözleşmeler Platform kodundan alınmıştır.
+
+### 1. Başlatma (CRM → Platform)
+- **Uç:** `POST /api/v1/workflow/instances` (gateway `/api/v1/workflow/{everything}` → 5057). İzin: `platform.workflow.instances.start`.
+- **Token:** CRM, **kullanıcının kendi JWT'sini** (`Authorization`) ve `X-Tenant-Id` başlığını iletir. Servis hesabı token'ı kullanılmaz.
+  - Sebep: Platform `StartedBy` alanını çağıranın kimliğinden yazar. SoD ("gönderen kendi akışını onaylayamaz") bu alana bakar. Servis token'ı ile başlatılırsa SoD sessizce etkisiz kalır.
+- **Gövde örneği:**
+```json
+{
+  "templateCode": "CLAIM-CORE-APPROVAL",
+  "objectType": "crm.claim",
+  "objectId": "5f2c…-claim-record-id",
+  "objectRef": "crm|crm.claim|5f2c…",
+  "candidatePrincipalIds": ["position:9a1e…"],
+  "reasonCode": "SUBMITTED",
+  "idempotencyKey": "crm.claim:5f2c…:submit:1",
+  "commentRequired": false,
+  "evidenceRequired": false,
+  "dueAt": null,
+  "displayContext": {
+    "title": "İddia onayı · CL-0042 v2.0",
+    "subtitle": "Ürün X · TR · Medikal",
+    "sourceModule": "crm",
+    "deepLinkUrl": "/Crm/Claims/Detail/5f2c…",
+    "chips": ["TR", "v2.0"]
+  }
+}
+```
+- **DisplayContext kuralları:** tümü opsiyonel.
+  - `title` ≤200, `subtitle` ≤300, `sourceModule` ≤64, `chips` ≤5 (her biri ≤32).
+  - `deepLinkUrl` ≤500 ve **yalnız uygulama içi göreli yol** ("/" ile başlar). `https://…`, `//host`, `javascript:` ya da `:` içeren her değer 400 (`VALIDATION_FAILED`) döner.
+  - Başlatmada instance'a snapshot yazılır, sonra değişmez.
+- **WorkCenterNext'te görünüm:** başlık = `title`, alt satır (`summary`) = `subtitle`, etiketler (`tags`) = `chips`, bağlantı = `deepLinkUrl`.
+  - **Öncelik:** nesne tipinin sahibi olan bir çözümleyici varsa (bugün yalnız MOD-0024 Tasks) her zaman o kazanır. Snapshot, sahibi olmayan tipler (CRM) içindir. Hiçbiri yoksa genel başlık kalır.
+- **Adaylar:** `position:{id}` adayı yalnız şu koşulda onaylayıcı olur:
+  - Pozisyon `Active` olmalı; arşivli, silinmiş, Draft, Frozen ya da Closed olmamalı.
+  - Atama şu an aktif olmalı: iptal edilmemiş, silinmemiş ve geçerlilik penceresi içinde (`EffectiveTo` hariç).
+  - Atama tipi Primary / Secondary / Acting / Delegated olabilir.
+  - Hiç aday kalmazsa başlatma 400 `WORKFLOW_ASSIGNMENT_CANDIDATES_REQUIRED` döner.
+
+### 2. Tamamlanma olayı (Platform → CRM)
+- **Ad:** `platform.workflow.instance.completed.v1` (sürüm 1). Adlandırma kuralı sürüm ekini zorunlu kıldığı için ad `.v1` ile biter.
+- **Ne zaman:** instance terminal duruma geçtiğinde (onay-final / ret / iptal / zaman aşımı). Olay, geçişle **aynı Platform transaction'ında** outbox'a yazılır; biri olmadan diğeri commit edilmez.
+- **Kaç kez:** instance başına **tek olay**. `EventId` instance id'sinden türetilir (deterministik), outbox ikinci kaydı reddeder.
+- **Payload örneği:**
+```json
+{
+  "eventId": "…deterministik…",
+  "occurredAtUtc": "2026-10-02T09:14:00Z",
+  "tenantId": "97c5…",
+  "correlationId": "…",
+  "workflowInstanceId": "b3e1…",
+  "templateCode": "CLAIM-CORE-APPROVAL",
+  "templateVersionId": "0d7a…",
+  "objectType": "crm.claim",
+  "objectId": "5f2c…",
+  "objectRef": "crm|crm.claim|5f2c…",
+  "outcome": "approved",
+  "completedAt": "2026-10-02T09:14:00Z",
+  "completedBy": "<onaylayan principal id | zaman aşımında null>",
+  "finalStageCode": "stage-2",
+  "finalStepCode": "step-1",
+  "reasonCode": "APPROVED"
+}
+```
+- `outcome` değerleri: `approved` · `rejected` · `cancelled` · `timed-out`.
+- Yorum, kanıt metni ve isim **yok**.
+- **Tüketici:** idempotent olmalı (`eventId` ya da `workflowInstanceId` ile tekrar kontrolü). Transport dev'de RabbitMQ.
+- ⚠ Olay tipi `Diten.Platform.Application` içinde tanımlı (bu WP'nin diff kapsamı `services/Diten.Platform/**`). CRM tüketicisi (CL-BE-4) payload'ı JSON sözleşmesi olarak okur. Ortak `Diten.Platform.Contracts` projesine taşımak ayrı karardır.
+- ⚠ **Transaction gereksinimi:** terminal geçiş artık Platform transaction'ı ister. Transaction desteklemeyen (standalone) bir MongoDB'de onay/ret/iptal **503 `WORKFLOW_TRANSACTION_UNAVAILABLE`** döner ve hiçbir şey yazılmaz. Eskiden olaysız yazıyordu. Dev fleet `rs0` replika setinde çalışır.
+
+### 3. Uzlaştırma (kaçan olay için)
+- **Uç:** `GET /api/v1/workflow/instances/by-objects?objectType=crm.claim&objectIds=id1,id2,…` (en çok 100 id; virgüllü ya da tekrarlı parametre). İzin: `platform.workflow.instances.view`.
+- **Yanıt:** nesne başına, en yenisi önce:
+```json
+[{ "objectId": "id1", "instances": [
+   { "workflowInstanceId": "…", "status": "Completed", "outcome": "approved",
+     "currentStageCode": "stage-2", "currentStepCode": "step-1",
+     "startedAt": "…", "completedAt": "…" } ] },
+ { "objectId": "id2", "instances": [] }]
+```
+- Kiracı izolasyonu uygulanır: başka kiracının instance'ı boş liste olarak görünür. 100'den fazla id → 400 `WORKFLOW_BATCH_LIMIT_EXCEEDED`.
+- **Önerilen kullanım:** CRM, `in-review` durumundaki kayıtları periyodik olarak bu uçla sorgular. Terminal `outcome` görüp olayı almamışsa aynı işlemi uygular.
+
 ---
 
 ## §36.1 Agent Prompt (paste-ready) — DISPATCH: owner
@@ -102,3 +188,16 @@ KORU/YAPMA: MOD-0023 uçları/sözleşmeleri geriye uyumlu; Tasks/WorkCenterNext
 DOĞRULA (E2): cd C:\tmp\cl-be-3; dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests -c Release --nologo → 0 kırmızı; dotnet test services/Diten.Platform/tests/Diten.Platform.Eventing.Tests -c Release --nologo → 0 kırmızı; yeni testler: DisplayContext kalıcı+resolver, göreli olmayan link 400, Tasks önceliği, 4 terminal geçişte tam 1 olay, cancelled/frozen/closed aday değil + secondary/acting aday, toplu okuma sınır+izolasyon, SoD aynen; git diff yalnız services/Diten.Platform/** + WP dosyası. Commit ("feat(platform): WP-CL-BE-3 — workflow display context, completion event, candidate fix, batch read (MOD-0023)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: terminal geçiş + outbox aynı transaction'a alınamıyorsa mevcut SupportsTransactionsAsync+telafi desenine uy+raporla; olay adı sözleşmeye uymuyorsa en yakın uyumlu ad+raporla; pozisyon repo tenant filtresi vermiyorsa DUR.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: b8681333 · Agent: PASS-with-note (App 4980/173 = taban 4954/173 + 26; Eventing 65/0/3; 4 sabotaj/8 kırmızı) · CT: worktree C:\tmp\cl-be-3 → App 4980/173, Eventing 65/0/3
+```
+- ✅ **Kapsam:** 28 dosya, +1803/−24. Değişiklikler: `services/Diten.Platform/**` + bu WP (§Tüketici rehberi). CRM, Auth, Web ve ocelot diff YOK. Yeni izin anahtarı YOK.
+- ✅ **Kırmızı küme = BE-2 koşusuyla birebir aynı** (TRX karşılaştırması: 173 = 173, fark 0). Hepsi ortam kaynaklı Mongo testi.
+- ✅ **Tamamlanma olayı:** onay-final / ret / iptal / zaman aşımı → görev + instance + geçiş kaydı + `platform.workflow.instance.completed.v1` **tek transaction** (`IPlatformTransactionExecutor`). EventId instance'tan deterministik, yani instance başına tek olay. Ara adımda ve eskalasyonda olay yok.
+- ✅ **Aday düzeltmesi:** pozisyon id ile dar sorgu; kanonik `TenantOrganizationMapper.IsActiveNow` (iptal, silinmiş, süresi dolmuş hariç); pozisyon `Active` + arşivsiz olmalı.
+- ✅ **DisplayContext:** göreli link zorunlu. Sahip resolver (Tasks) önceliği kayıt sırasından bağımsız.
+- ⚠ **Davranış değişikliği (kabul):** transaction desteklemeyen Mongo'da onay/ret/iptal artık **503** döner, yazmaz (eskiden olaysız yazıyordu). Dev `rs0` replika seti, sorun yok. **Canlı/üretim ortamının replika set olması şart** → go-live kontrol listesine.
+- ⚠ **EffectiveTo sınırı:** atamanın bitiş anı artık aktif sayılmıyor (org modülü kuralıyla hizalandı).
+- ℹ Olay tipi `Platform.Application` içinde. CRM tüketicisi (BE-4) JSON sözleşmesiyle okuyacak; `Platform.Contracts`'a taşıma ayrı karar. **CRM kullanıcı token'ını iletmeli**, yoksa SoD çalışmaz (rehberde yazıyor).
