@@ -57,6 +57,41 @@ public sealed class Claim : EntityBase
     public DateTimeOffset? ApprovedAt { get; set; }
     public string? ApprovedBy { get; set; }
 
+    // ---- WP-CL-BE-1 (claims v2) — every member below is OPTIONAL: a pre-v2 document carries none of them and reads
+    // back with these defaults (Kind = core, empty lists, nulls). Once set, product / audiences / text language are part
+    // of the governed body that approval freezes.
+
+    /// <summary><see cref="ClaimKinds"/> — <c>core</c> (global, localised through country versions) or <c>local</c>
+    /// (lives only in <see cref="LocalCountryCode"/>). Immutable after create.</summary>
+    public string Kind { get; set; } = ClaimKinds.Core;
+
+    /// <summary>Only for <c>local</c>: the single country the claim lives in (a <c>COUNTRY_CODES</c> value).</summary>
+    public string? LocalCountryCode { get; set; }
+
+    /// <summary>MDM global product the claim is about (proven to exist, fail-closed, on write).</summary>
+    public Guid? ProductId { get; set; }
+
+    /// <summary>Display snapshot only — MDM stays the source of truth for the product code / name.</summary>
+    public string? ProductDisplay { get; set; }
+
+    /// <summary>MOD-0162 AudienceProfile ids the claim addresses. A country version may only narrow this set.</summary>
+    public List<Guid> AudienceProfileIds { get; set; } = new();
+
+    /// <summary>Informational owner org unit (not validated here; the org-unit picker is FE).</summary>
+    public Guid? ResponsibleOrgUnitId { get; set; }
+
+    /// <summary>Language of <see cref="ClaimText"/> — <c>en</c> by default for core; one of the country's content
+    /// languages for local.</summary>
+    public string? TextLanguageCode { get; set; }
+
+    /// <summary>The approved record this version was opened from (<c>POST claims/{id}/new-version</c>).</summary>
+    public Guid? SupersedesClaimId { get; set; }
+
+    /// <summary>Append-only history of claim × country closures ("will not be opened" + reason). Logically per
+    /// <see cref="ClaimCode"/>: mirrored onto every live record of the code and carried into a new version. An entry is
+    /// never removed; a reopen stamps it.</summary>
+    public List<ClaimCountryClosure> CountryClosures { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -66,6 +101,39 @@ public sealed class Claim : EntityBase
 
     public bool IsApproved()
         => string.Equals(Status, ClaimStatuses.Approved, StringComparison.OrdinalIgnoreCase);
+
+    public bool IsLocal()
+        => string.Equals(Kind, ClaimKinds.Local, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The currently effective (not reopened) closure for <paramref name="countryCode"/>, if any.</summary>
+    public ClaimCountryClosure? ActiveClosureFor(string countryCode)
+        => CountryClosures.LastOrDefault(c =>
+            c.ReopenedAt is null && string.Equals(c.CountryCode, countryCode, StringComparison.OrdinalIgnoreCase));
+}
+
+/// <summary>WP-CL-BE-1 — one claim × country closure ("will not be opened"). Single-choice reason from the
+/// <c>claim-country-closure-reason</c> reference set. Append-only: a reopen stamps the entry, never deletes it.</summary>
+public sealed class ClaimCountryClosure
+{
+    public string CountryCode { get; set; } = string.Empty;
+    public string ReasonCode { get; set; } = string.Empty;
+    public string? ClosedBy { get; set; }
+    public DateTimeOffset ClosedAt { get; set; }
+    public string? ReopenedBy { get; set; }
+    public DateTimeOffset? ReopenedAt { get; set; }
+    public string? ReopenNote { get; set; }
+}
+
+/// <summary>WP-CL-BE-1 — claim kind.</summary>
+public static class ClaimKinds
+{
+    public const string Core = "core";
+    public const string Local = "local";
+
+    public static readonly IReadOnlyList<string> All = new[] { Core, Local };
+
+    public static bool IsValid(string? value)
+        => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
 }
 
 /// <summary>
@@ -91,7 +159,14 @@ public static class ClaimStatuses
     public const string Inactive = "inactive";
     public const string Archived = "archived";
 
-    public static readonly IReadOnlyList<string> All = new[] { Draft, Approved, Inactive, Archived };
+    /// <summary>WP-CL-BE-1 — under approval. Set by the WP-CL-BE-4 workflow; nothing sets it in this slice.</summary>
+    public const string InReview = "in-review";
+
+    /// <summary>WP-CL-BE-1 — an approved country version whose core got a newer approved version.</summary>
+    public const string ReviewRequired = "review-required";
+
+    public static readonly IReadOnlyList<string> All =
+        new[] { Draft, Approved, Inactive, Archived, InReview, ReviewRequired };
 
     public static bool IsValid(string? value)
         => !string.IsNullOrWhiteSpace(value) && All.Contains(value.Trim().ToLowerInvariant());
@@ -109,4 +184,14 @@ public static class ClaimReasonCodes
     public const string Archived = "claim_archived";
     public const string DuplicateCode = "claim_duplicate_code";
     public const string ApprovedFrozen = "claim_approved_frozen";
+
+    // WP-CL-BE-1 audit events (PII-safe: id / code / country only, never wording).
+    public const string NewVersionCreated = "claim_new_version_created";
+    public const string CountryClosed = "claim_country_closed";
+    public const string CountryReopened = "claim_country_reopened";
+    public const string CountryVersionCreated = "claim_country_version_created";
+    public const string CountryVersionUpdated = "claim_country_version_updated";
+    public const string CountryVersionApproved = "claim_country_version_approved";
+    public const string CountryVersionArchived = "claim_country_version_archived";
+    public const string CountryVersionsReviewRequired = "claim_country_versions_review_required";
 }

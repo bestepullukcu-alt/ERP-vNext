@@ -12,6 +12,8 @@ public sealed record ClaimApplicabilityRequest(
     IReadOnlyList<string>? AudienceRefs = null,
     Guid? EligibilityPolicyId = null);
 
+// WP-CL-BE-1 (claims v2) — the trailing members of the create / update bodies are optional additions; a pre-v2 body
+// binds exactly as before.
 public sealed record CreateClaimRequest(
     string ClaimCode,
     string ClaimName,
@@ -24,7 +26,14 @@ public sealed record CreateClaimRequest(
     IReadOnlyList<Guid>? ComponentRefs = null,
     string? ClaimVersion = null,
     string? Status = null,
-    DateTimeOffset? EffectiveTo = null);
+    DateTimeOffset? EffectiveTo = null,
+    string? Kind = null,
+    string? LocalCountryCode = null,
+    Guid? ProductId = null,
+    string? ProductDisplay = null,
+    IReadOnlyList<Guid>? AudienceProfileIds = null,
+    Guid? ResponsibleOrgUnitId = null,
+    string? TextLanguageCode = null);
 
 public sealed record UpdateClaimRequest(
     string ClaimName,
@@ -37,4 +46,38 @@ public sealed record UpdateClaimRequest(
     IReadOnlyList<Guid>? ComponentRefs = null,
     string? ClaimVersion = null,
     string? Status = null,
-    DateTimeOffset? EffectiveTo = null);
+    DateTimeOffset? EffectiveTo = null,
+    Guid? ProductId = null,
+    string? ProductDisplay = null,
+    IReadOnlyList<Guid>? AudienceProfileIds = null,
+    Guid? ResponsibleOrgUnitId = null,
+    string? TextLanguageCode = null);
+
+/// <summary>WP-CL-BE-1 — close a claim × country cell with a single-choice reason (claim-country-closure-reason).</summary>
+public sealed record CloseClaimCountryRequest(string CountryCode, string ReasonCode);
+
+/// <summary>WP-CL-BE-1 — reopen a closed claim × country cell.</summary>
+public sealed record ReopenClaimCountryRequest(string? Note = null);
+
+public sealed record ClaimLocalizedTextRequest(string LanguageCode, string Text);
+
+/// <summary>WP-CL-BE-1 — open a claim country version.</summary>
+public sealed record CreateClaimCountryVersionRequest(
+    string CountryCode,
+    IReadOnlyList<ClaimLocalizedTextRequest>? Texts,
+    DateTimeOffset ValidFrom,
+    IReadOnlyList<ClaimLocalizedTextRequest>? Qualifiers = null,
+    string? AdaptationTypeCode = null,
+    string? AdaptationReason = null,
+    IReadOnlyList<Guid>? AudienceProfileIds = null,
+    DateTimeOffset? ValidTo = null);
+
+/// <summary>WP-CL-BE-1 — full replace of a draft claim country version.</summary>
+public sealed record UpdateClaimCountryVersionRequest(
+    IReadOnlyList<ClaimLocalizedTextRequest>? Texts,
+    DateTimeOffset ValidFrom,
+    IReadOnlyList<ClaimLocalizedTextRequest>? Qualifiers = null,
+    string? AdaptationTypeCode = null,
+    string? AdaptationReason = null,
+    IReadOnlyList<Guid>? AudienceProfileIds = null,
+    DateTimeOffset? ValidTo = null);

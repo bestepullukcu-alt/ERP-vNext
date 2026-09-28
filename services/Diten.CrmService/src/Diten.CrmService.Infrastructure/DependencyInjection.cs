@@ -141,6 +141,11 @@ public static class DependencyInjection
             Application.Features.RouteOptimization.IRouteOptimizationDefaultsProvider,
             RouteOptimization.ConfigurationRouteOptimizationDefaultsProvider>();
 
+        // WP-CL-BE-1 (claims v2) — the coverage matrix "expiring" window (Crm:Claims:ExpiringWindowDays, default 60).
+        services.AddSingleton<
+            Application.Features.ContentComposition.Claims.IClaimCoverageSettings,
+            ContentComposition.ConfigurationClaimCoverageSettings>();
+
         // WP-SEG-DETAILS6 — S2S display-name reader onto AuthService's internal/users/display-names endpoint. It resolves
         // the segment timeline's CreatedBy/ActivatedBy/UpdatedBy provenance ids to display names in ONE bulk call, using
         // the shared internal API key (a direct call: the internal endpoints are NOT behind the Gateway JWT surface).
