@@ -73,3 +73,15 @@ KORU/YAPMA: diğer doğrulama, SoD, aday çözümü, tamamlanma olayı, DisplayC
 DOĞRULA (E2): cd C:\tmp\cl-be-3a; dotnet test services/Diten.Platform/tests/Diten.Platform.Application.Tests -c Release --nologo → yeni kırmızı yok (taban 173 ortam kırmızısı, TRX ile karşılaştır); dotnet test services/Diten.Platform/tests/Diten.Platform.Eventing.Tests -c Release --nologo → 65/0/3; Platform API build 0 hata; yeni testler: şablon adaylı+istek boş başlıyor, ikisi de boş 400, istek adaylı eski davranış, geçmiş sırası+yorumlar+404+403; ≥2 sabotaj kanıtı; git diff yalnız services/Diten.Platform/** + BE-3 rehber notu. Commit ("fix(platform): WP-CL-BE-3a — start with template candidates (empty request list) + instance history with comments (MOD-0023)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: Tasks boş aday listesine güvenen bir yolla başlatıyorsa ve kaldırılan kural onu etkiliyorsa DUR+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: 47b8cbeb · Agent: PASS (App 5020/173 taban-eşit, Eventing 65/0/3, 4 sabotaj) · CT: worktree C:\tmp\cl-be-3a → App 5018/175 (+2 Mongo flake, tekrar koşuda 7/7 yeşil) · Eventing 65/0/3
+```
+- ✅ **Kapsam:** 10 dosya. `services/Diten.Platform/**` + BE-3 rehber notu. CRM, Auth, Web, gateway diff YOK. Yeni izin anahtarı YOK.
+- ✅ **Doğrulayıcı:** yalnız `CandidatePrincipalIds.NotEmpty()` kaldırıldı; öğe başı kurallar duruyor.
+- ✅ **Değiştirilen 3 mevcut test zayıflamadı (CT okudu):**
+  - Tasks sahte mediator'a handler'ın 400 `WorkflowAssignmentCandidatesRequired` reddi eklendi. Tasks'ın boş-aday yolu canlıda da aynı sonucu veriyor (şablonlarında aday yok); DUR tetiklenmedi.
+  - Yeniden adlandırılan test **gerçek handler'ın** 400 reddini doğruluyor, ayrıca doğrulayıcının artık geçtiğini de kontrol ediyor.
+- ✅ **Kırmızı küme:** CT koşusunda 175. Fark 2 test: `MeetingFollowUpMongoTests` ve `NotificationDispatchPermanentFailureMongoTests`, ikisi de paylaşılan mongod dalgalanması; **tekrar koşuda 7/7 yeşil**. Yeni kalıcı kırmızı yok.
+- ✅ **Geçmiş ucu:** `GET api/v1/workflow/instances/{id}/history`. SequenceNo sırası, yorum ve gerekçe dahil. actorDisplay mevcut `IUserDisplayNameResolver` ile. Motorun iç `next_step:` işareti yorum olarak dışarı sızmıyor.
