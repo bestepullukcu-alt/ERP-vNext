@@ -51,4 +51,16 @@ public sealed class PositionRepository : TenantRepository<Position>, IPositionRe
             .Set(x => x.UpdatedAt, now);
         await Collection.UpdateOneAsync(filter, update, cancellationToken: ct);
     }
+
+    // WP-CL-BE-3 — these positions only (tenant + non-deleted from the base execution filter).
+    public async Task<IReadOnlyList<Position>> GetByIdsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default)
+    {
+        if (ids.Count == 0)
+        {
+            return [];
+        }
+
+        var filter = Builders<Position>.Filter.And(ExecutionFilter, Builders<Position>.Filter.In(x => x.Id, ids));
+        return await Collection.Find(filter).ToListAsync(ct);
+    }
 }

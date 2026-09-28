@@ -38,5 +38,25 @@ public sealed class StartWorkflowInstanceValidator : AbstractValidator<StartWork
         RuleFor(x => x.Request.IdempotencyKey)
             .MaximumLength(128)
             .When(x => x.Request.IdempotencyKey is not null);
+
+        // WP-CL-BE-3 — optional display context (display only; the link must stay inside the app).
+        When(x => x.Request.DisplayContext is not null, () =>
+        {
+            RuleFor(x => x.Request.DisplayContext!.Title).MaximumLength(WorkflowDisplayContext.MaxTitle);
+            RuleFor(x => x.Request.DisplayContext!.Subtitle).MaximumLength(WorkflowDisplayContext.MaxSubtitle);
+            RuleFor(x => x.Request.DisplayContext!.SourceModule).MaximumLength(WorkflowDisplayContext.MaxSourceModule);
+            RuleFor(x => x.Request.DisplayContext!.DeepLinkUrl)
+                .MaximumLength(WorkflowDisplayContext.MaxDeepLinkUrl)
+                .Must(url => string.IsNullOrWhiteSpace(url) || WorkflowDisplayContext.IsRelativePath(url.Trim()))
+                .WithMessage("DisplayContext.DeepLinkUrl must be an app-relative path starting with '/' "
+                    + "(absolute, protocol-relative and scheme links are not allowed).");
+            RuleFor(x => x.Request.DisplayContext!.Chips)
+                .Must(chips => chips is null || chips.Count <= WorkflowDisplayContext.MaxChips)
+                .WithMessage($"DisplayContext.Chips can hold at most {WorkflowDisplayContext.MaxChips} labels.");
+            RuleForEach(x => x.Request.DisplayContext!.Chips)
+                .NotEmpty()
+                .MaximumLength(WorkflowDisplayContext.MaxChip)
+                .When(x => x.Request.DisplayContext!.Chips is not null);
+        });
     }
 }
