@@ -168,3 +168,24 @@ KORU/YAPMA: mevcut Claim uçları/DTO geriye uyumlu (yalnız ekleme), mevcut İd
 DOĞRULA (E2): cd C:\tmp\cl-be-1; dotnet test services/Diten.CrmService/tests/Diten.CrmService.Application.Tests -c Release --nologo → 0 kırmızı (taban 1935/0/5 + yeni); dotnet test frontend/Diten.Web.Tests -c Release --nologo → 229/0; yeni testler WP Acceptance listesindeki gibi; git diff yalnız services/Diten.CrmService/**. Commit ("feat(crm): WP-CL-BE-1 — claims v2 model (core/local, country versions, country closures, coverage matrix)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: MDM ürün okuyucusu yeniden kullanılamıyorsa ürün doğrulamasını ATLAMA, DUR+raporla; IReferenceMetadataReader global set attribute'unu okuyamıyorsa DUR+raporla; eski ClaimVersion ayrıştırılamazsa "2.0" varsay+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: b3672c9c · Agent: PASS (CRM 1974/0/5, Web 229/0, 4 sabotaj kanıtı) · CT: ACCEPTED E2 · worktree C:\tmp\cl-be-1 → CRM 1974/0/5 · Web 229/0
+```
+- ✅ **Kapsam:** 19 dosya, +3284/−31, **yalnız `services/Diten.CrmService/**`**. ContentSetClaim, Platform, Auth, Web, gateway diff YOK.
+- ✅ **Hata kodları:** sabitler `ClaimV2Support.cs`'te (core_not_approved, country_closed, country_version_exists, country_has_version, not_applicable, reference_set_missing, audience_not_narrowing).
+- ✅ **BRD:** set kodları `COUNTRY_CODES` / `country-content-languages` / `claim-country-closure-reason` / `claim-adaptation-type` koda gömülü DEĞİL (yalnız set adları sabit). Set yoksa fail-closed 400.
+- ✅ **Class-map (Guid tuzağı):**
+  - `ClaimCountryVersion`: ClaimId, SupersedesVersionId, AudienceProfileIds, ReviewRound.WorkflowInstanceId → stringGuid.
+  - `Claim`: ProductId, AudienceProfileIds, ResponsibleOrgUnitId, SupersedesClaimId → stringGuid.
+  - İndeksler tenant-first.
+- ✅ **Geçici onay** `TEMPORARY: replaced by WP-CL-BE-4` işaretli (controller + komut + handler).
+- ✅ **Gateway:** mevcut `/api/crm/content-composition/{everything}` kapsıyor, değişiklik yok.
+- ➕ **Agent kararları (kabul):**
+  - Kapatmalar ClaimCode düzeyinde: yeni çekirdek sürüme kopyalanıyor.
+  - Ülke sürümü uçları `claims/country-versions/{id}` altında.
+  - Geçici onayda bağlı çekirdek onaylı değilse `core_not_approved`.
+  - Liste `countrySummary`'si BRD'ye gitmiyor (tam görünüm matriste).
+- ⚠ **Canlı:** CL-REF-1 birleşip Platform restart olmadan ülke sürümü / kapatma / matris uçları `reference_set_missing` döner. Bu beklenen davranış.
+- ⚠ **BE-4 notu:** Çekirdek onayındaki yayılım şimdilik doğrudan onay ucunda; BE-4'te workflow sonucuna taşınacak.
