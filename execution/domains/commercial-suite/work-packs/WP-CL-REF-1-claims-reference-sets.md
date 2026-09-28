@@ -90,3 +90,18 @@ Commit: d8a9b4ac · Agent: PASS-with-note (App 4960/173 = taban 4954/173 + 6; 2 
 - ✅ Test, yükleyicinin kendi ayrıştırma ve öznitelik doğrulamasını kullanıyor; kod çakışmasını ve `RequiredSetCodes`'u da kontrol ediyor.
 - ⚠ **Dosya yolu:** yükleyici `Path.GetFullPath(CatalogPath)` ile **çalışma dizinine göre** çözüyor (`CatalogLoadWorker.cs:120-132`). Fleet Platform'u proje klasöründen çalıştırırsa kaynak `Seed/` okunur. csproj'da `document-management-qms.json` ve `legal-entity-reference.json` için `CopyToOutputDirectory` var, yeni dosya için yok. **Takip:** publish paketi için csproj'a `Content Update … crm-claims-reference.json CopyToOutputDirectory=PreserveNewest` satırı eklenmeli (tek satır, BE-4 ya da ayrı küçük iş). Canlı kontrolde açılış günlüğünde `file=crm-claims-reference.json` görülmezse sebep budur.
 - ⏳ **Canlı kontrol listesi** (agent raporundaki 4 adım): açılış günlüğü `sets_inserted=4`, Mongo Published + değer sayıları 6/3/3/5 + `Languages`, published-values ucu (global scope_key'siz / tenant scope_key'li 200 + ters 400'ler), `COUNTRY_CODES` değişmedi. **Birleştirme + fleet restart sonrası CT yapar.**
+
+### §37-E4 Canlı kontrol (2026-09-28, fleet restart sonrası, CT salt-okuma) → **PASS**
+- ✅ Mongo `diten_personalization_dev`: 4 set **Published** (set Status 1, sürüm Status 1).
+  - country-content-languages **global** 6 değer, `Languages` dolu (TR tr, BY ru,be, UZ uz,ru, TM tk,ru, GE ka, AZ az).
+  - claim-country-closure-reason **tenant** 3 değer.
+  - claim-adaptation-type **tenant** 3 değer.
+  - evidence-type **global** 5 değer.
+  - `COUNTRY_CODES` değişmedi (6 değer). csproj kopyalama notu canlıyı etkilemedi; fleet dosyayı kaynaktan okudu.
+- ✅ Gateway (oturumsuz): `/api/v1/evidence/links`, `/api/v1/evidence/document-options`, `/api/v1/workflow/instances/by-objects`, `/api/crm/content-composition/claims/coverage` → **401**. Route var, yetki kontrolü var. Evidence altında bilinmeyen alt yol Platform'dan 404 problem gövdesi döndü; bu, route'un Platform'a ulaştığını gösteriyor.
+- ✅ Koleksiyon ve indeksler:
+  - `evidence_links`: tenant_object, tenant_document, tenant_document_version, **ux_…_active_dedup**.
+  - `claim_country_versions`: tenant_code_country_status, tenant_claim.
+- ✅ İzinler: `platform.evidence.links.read/manage` kaydoldu. Kapsam **PlatformAdmin** (beklenen; Faz 4'te script ile verilecek).
+- ℹ Platform `/health` 503: `business_reference_data_provider` = **Verified GSKU operational pilot** (MOD-0290) kontrolü. Bu değişiklikle ilgisi yok (`BusinessReferenceDataProviderReadinessHealthCheck.cs`, bu dalda dokunulmadı). MongoDB, RabbitMQ ve MassTransit sağlıklı.
+- ⏳ Kimlik doğrulamalı işlevsel smoke (ülke sürümü aç/kapat/matris, kanıt bağla, workflow başlat) → BE-4/5 E4 ve FE paketleriyle.
