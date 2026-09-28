@@ -106,11 +106,19 @@ public sealed class GetKnowledgeContentHandler
 {
     private readonly ITenantContext _tenant;
     private readonly IKnowledgeContentRepository _repository;
+    private readonly IClaimRepository? _claims;
+    private readonly IClaimCountryVersionRepository? _claimVersions;
 
-    public GetKnowledgeContentHandler(ITenantContext tenant, IKnowledgeContentRepository repository)
+    public GetKnowledgeContentHandler(
+        ITenantContext tenant,
+        IKnowledgeContentRepository repository,
+        IClaimRepository? claims = null,
+        IClaimCountryVersionRepository? claimVersions = null)
     {
         _tenant = tenant;
         _repository = repository;
+        _claims = claims;
+        _claimVersions = claimVersions;
     }
 
     public async Task<Response<KnowledgeContentDto>> Handle(
@@ -122,8 +130,22 @@ public sealed class GetKnowledgeContentHandler
         }
 
         var content = await _repository.GetByIdAsync(tenantId, request.ContentId, cancellationToken);
-        return content is null
-            ? Response<KnowledgeContentDto>.Fail("Knowledge content not found.", 404)
-            : Response<KnowledgeContentDto>.Success(KnowledgeMapper.ToDto(content));
+        if (content is null)
+        {
+            return Response<KnowledgeContentDto>.Fail("Knowledge content not found.", 404);
+        }
+
+        var dto = KnowledgeMapper.ToDto(content);
+        if (content.ClaimRefs.Count > 0)
+        {
+            // WP-CL-BE-6 — each ref with the CURRENT status of its claim record / country version (FE badge input).
+            dto = dto with
+            {
+                ClaimRefs = await KnowledgeContentClaimLinks.EnrichAsync(
+                    content.ClaimRefs, tenantId, _claims, _claimVersions, cancellationToken)
+            };
+        }
+
+        return Response<KnowledgeContentDto>.Success(dto);
     }
 }

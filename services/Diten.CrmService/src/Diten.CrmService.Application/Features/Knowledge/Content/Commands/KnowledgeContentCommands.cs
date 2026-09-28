@@ -32,7 +32,8 @@ public sealed record CreateKnowledgeContentCommand(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     IReadOnlyList<string>? Tags = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null) : IRequest<Response<Guid>>;
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null) : IRequest<Response<Guid>>;
 
 /// <summary>Full replace of the mutable fields of content. <c>ContentCode</c> is immutable (rename goes through
 /// <c>ContentTitle</c>). Archived content cannot be updated.</summary>
@@ -60,7 +61,10 @@ public sealed record UpdateKnowledgeContentCommand(
     DateTimeOffset? EffectiveTo = null,
     string? Source = null,
     IReadOnlyList<string>? Tags = null,
-    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null) : IRequest<Response<bool>>;
+    IReadOnlyList<KnowledgeExternalReferenceInput>? ExternalReferences = null,
+    // WP-CL-BE-6: null keeps the stored claim refs (an older client that never sends them wipes nothing); an empty
+    // list clears them.
+    IReadOnlyList<KnowledgeContentClaimRefInput>? ClaimRefs = null) : IRequest<Response<bool>>;
 
 /// <summary>Archives content (ArchivedAt/By stamped, status → archived). Still readable; accepts no update afterwards.</summary>
 public sealed record ArchiveKnowledgeContentCommand(Guid ContentId) : IRequest<Response<bool>>;

@@ -63,7 +63,7 @@ public sealed class KnowledgeContentsController : CustomBaseController
                 request.TopicId, request.AudienceProfileId, request.ConceptNodeId, request.BrandId, request.ProductId,
                 request.CampaignId, request.SegmentId, request.Summary, request.ContentBodyRef, request.ContentAssetRef,
                 request.FileRef, request.Url, request.EffectiveTo, request.Source, request.Tags,
-                request.ExternalReferences),
+                request.ExternalReferences, request.ClaimRefs),
             cancellationToken));
 
     [HttpPut("api/crm/knowledge/contents/{contentId:guid}")]
@@ -77,7 +77,7 @@ public sealed class KnowledgeContentsController : CustomBaseController
                 request.AudienceProfileId, request.ConceptNodeId, request.BrandId, request.ProductId,
                 request.CampaignId, request.SegmentId, request.Summary, request.ContentBodyRef, request.ContentAssetRef,
                 request.FileRef, request.Url, request.EffectiveTo, request.Source, request.Tags,
-                request.ExternalReferences),
+                request.ExternalReferences, request.ClaimRefs),
             cancellationToken));
 
     [HttpPost("api/crm/knowledge/contents/{contentId:guid}/archive")]

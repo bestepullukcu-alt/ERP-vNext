@@ -108,6 +108,13 @@ public sealed class KnowledgeContent : EntityBase
     /// translation assessment").</summary>
     public string TranslationStatus { get; set; } = ContentTranslationStatuses.Current;
 
+    // ---- WP-CL-BE-6 (claims v2, D4) — the claims this content uses --------------------------------------------------
+    /// <summary>Claims this content uses (at most <see cref="KnowledgeContentClaimRef.MaxPerContent"/>). A
+    /// country-specific content binds a claim COUNTRY VERSION; a global/core content binds the core claim only. A
+    /// pre-BE-6 document lacks the field and reads back empty — and an empty list means "no claim gate", exactly the
+    /// old behaviour.</summary>
+    public List<KnowledgeContentClaimRef> ClaimRefs { get; set; } = new();
+
     public string? CreatedBy { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTimeOffset? ArchivedAt { get; set; }
@@ -159,6 +166,41 @@ public sealed class KnowledgeExternalReference
     public string? ExternalName { get; set; }
     public DateTimeOffset? ImportedAt { get; set; }
     public bool IsPrimary { get; set; }
+}
+
+/// <summary>
+/// WP-CL-BE-6 — one claim a <see cref="KnowledgeContent"/> uses. <see cref="ClaimCode"/> is the logical claim (stable
+/// across versions; the usage read keys on it), <see cref="ClaimId"/> the claim RECORD bound at save time. When
+/// <see cref="CountryVersionId"/> is set the content is country-specific and binds that
+/// <see cref="ClaimCountryVersion"/> (<see cref="CountryCode"/> is then that version's country); when it is empty the
+/// content is global and binds the core claim. A reference only — no claim wording is copied here.
+/// </summary>
+public sealed class KnowledgeContentClaimRef
+{
+    public const int MaxPerContent = 20;
+
+    public string ClaimCode { get; set; } = string.Empty;
+    public Guid ClaimId { get; set; }
+    public Guid? CountryVersionId { get; set; }
+
+    /// <summary>A <c>COUNTRY_CODES</c> value (upper case); set exactly when <see cref="CountryVersionId"/> is.</summary>
+    public string? CountryCode { get; set; }
+}
+
+/// <summary>WP-CL-BE-6 — coded failures of the content ↔ claim link (rendered as the <c>[code, message]</c> error pair,
+/// like the claims v2 surface).</summary>
+public static class KnowledgeContentClaimErrors
+{
+    public const string ClaimRefsTooMany = "claim_refs_too_many";
+    public const string ClaimRefInvalid = "claim_ref_invalid";
+    public const string ClaimRefDuplicate = "claim_ref_duplicate";
+    public const string ClaimNotFound = "claim_not_found";
+    public const string ClaimRefMismatch = "claim_ref_mismatch";
+    public const string CountryVersionNotFound = "claim_country_version_not_found";
+    public const string ClaimProductMismatch = "claim_product_mismatch";
+    public const string ClaimNotApproved = "claim_not_approved";
+    public const string ClaimLanguageMismatch = "claim_language_mismatch";
+    public const string DependencyUnavailable = "dependency_unavailable";
 }
 
 /// <summary>What kind of content this is. In-domain (structural) vocabulary — validated here rather than through MOD-0048,
@@ -271,6 +313,9 @@ public static class KnowledgeReasonCodes
     public const string ContentVariantCreated = "knowledge_content_variant_created";
     public const string ContentTranslationAssessmentOpened = "knowledge_content_translation_assessment_opened";
     public const string ContentTranslationAssessed = "knowledge_content_translation_assessed";
+
+    // WP-CL-BE-6 — the content's claim references changed (ids and counts only, never wording).
+    public const string ContentClaimRefsChanged = "knowledge_content_claim_refs_changed";
 
     public const string SubjectCreated = "knowledge_subject_created";
     public const string SubjectUpdated = "knowledge_subject_updated";
