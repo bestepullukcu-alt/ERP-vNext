@@ -132,3 +132,28 @@ KORU/YAPMA: DocMgmt yazımı/olay ekleme YOK; MOD-0031 mevcut uç/kural/erişim 
 DOĞRULA (E2): CRM tests → 0 kırmızı (taban 2040/0/5 + yeni); Platform Application tests → yeni kalıcı kırmızı yok (taban 173 ortam kırmızısı, TRX karşılaştır, Mongo dalgalanmasını tekrar koşuyla ayır); Web 229/0; CRM+Platform API build 0 hata; yeni testler WP Acceptance listesindeki gibi + ≥3 sabotaj; git diff yalnız services/Diten.CrmService/** + services/Diten.Platform/** (EvidenceLinking okuma ekleri). Commit ("feat(crm): WP-CL-BE-5 — claim evidence via MOD-0031 (link/inherit/lock, ≥1 evidence to submit, read-time supersede/suspend → review-required, expiring flag)" + son satır Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>). §22 TÜRKÇE. K13.
 Durma: DocMgmt'te güncel yürürlükteki sürüm/askı için tek güvenilir okuma yoksa documentState=unknown + isSuperseded=false + raporla (tahmin etme); yeni sürüm kopyası MOD-0031 409 tekrar kuralına takılırsa DUR+raporla.
 ```
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (E2)**
+```
+Commit: 0baafa75 · Agent: PASS (CRM 2085/0/5, Platform 5035/174 taban-eşit + Mongo dalgalanması, Evidence 42/0, Web 229/0, 6 sabotaj)
+CT: ana dal birleştirildi (çakışmasız) → CRM+Platform API build 0 hata · CRM 2085/0/5 (ilk koşuda 1 dalgalanma, 2 tekrar koşuda 0) · Platform Evidence+Workflow 217/0 · Web 229/0
+```
+- ✅ **Kapsam:** 26 dosya. `services/Diten.CrmService/**` + Platform'da yalnız kanıt dosyaları (EvidenceLinksController, EvidenceLink repo, DI, EvidenceLinking/**). DocMgmt yazımı YOK.
+- ✅ **Durum çözücü** (`EvidenceDocumentStateResolver`, CT okudu):
+  - Master register `LifecycleStatus` + `ControlledDocument.CurrentVersionId` + sabit sürümün `VersionStatus=Superseded` kullanılıyor.
+  - UnderRevision → eski sürüm geçerli.
+  - Superseded / Retired / ObsoleteCopy → retired.
+  - Register satırı yoksa → `unknown` + superseded değil (tahmin yok).
+  - Harici belge: SourceStatus / ExternalDocumentStatus / SourceSupersededDate.
+- ✅ **Kurallar:**
+  - ObjectRef'i CRM dolduruyor.
+  - `evidence_locked`; başka kaydın bağı → 404.
+  - `evidence_required`; kanıt servisi kapalıysa **503 `evidence_unavailable`** (kural sessizce geçilmiyor).
+  - Yeni sürümde kopya.
+  - Okumada review-required (idempotent, ApprovedAt korunur).
+  - `EvidenceExpiring`.
+- ➕ **Agent kararları (kabul):**
+  - Çekirdek kanıtı değişince onu miras alan onaylı ülke sürümü de review-required olur. Sebep ülke sürümünün kendi etkin kümesinin değişmesi; BE-1 yayılımı çalışmıyor.
+  - Review-required çekirdekten yeni sürüm açılabiliyor.
+  - Yeni onayda eski review-required kayıt pasife alınıyor.
+- ✅ **Yetki:** `platform.evidence.links.*` 97c5 Admin rolüne CFG-1 ile verildi. Kullanıcıların yeniden girişi gerekli.
