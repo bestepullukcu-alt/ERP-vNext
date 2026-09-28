@@ -1,0 +1,68 @@
+{
+  "catalog_version": "2026.09.28-crm-claims-reference",
+  "module": "BusinessReferenceData",
+  "note": "WP-CL-REF-1 (Claims v2, CAND-CAP-0011 / MOD-0031): country content languages for claim country versions, the single-choice claim x country closure reason, the country adaptation type and the evidence type. The country axis itself is the existing global COUNTRY_CODES set (not declared here).",
+  "sets": [
+    {
+      "set_code": "country-content-languages",
+      "set_name": "Country Content Languages",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Per country (value codes = COUNTRY_CODES), the ISO 639-1 languages in which governed content such as claim country versions must be written. Languages is a comma-separated list; the first entry is the default.",
+      "attribute_definitions": [
+        {
+          "attribute_code": "Languages",
+          "display_name": "Content languages (comma-separated ISO 639-1)",
+          "data_type": "string",
+          "is_required": true
+        }
+      ],
+      "values": [
+        { "value_code": "TR", "display_name": "Turkey", "description": "Turkish.", "is_active": true, "sort_order": 10, "attributes": { "Languages": "tr" } },
+        { "value_code": "BY", "display_name": "Belarus", "description": "Russian and Belarusian.", "is_active": true, "sort_order": 20, "attributes": { "Languages": "ru,be" } },
+        { "value_code": "UZ", "display_name": "Uzbekistan", "description": "Uzbek and Russian.", "is_active": true, "sort_order": 30, "attributes": { "Languages": "uz,ru" } },
+        { "value_code": "TM", "display_name": "Turkmenistan", "description": "Turkmen and Russian.", "is_active": true, "sort_order": 40, "attributes": { "Languages": "tk,ru" } },
+        { "value_code": "GE", "display_name": "Georgia", "description": "Georgian.", "is_active": true, "sort_order": 50, "attributes": { "Languages": "ka" } },
+        { "value_code": "AZ", "display_name": "Azerbaijan", "description": "Azerbaijani.", "is_active": true, "sort_order": 60, "attributes": { "Languages": "az" } }
+      ]
+    },
+    {
+      "set_code": "claim-country-closure-reason",
+      "set_name": "Claim Country Closure Reason",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "Single-choice reason why a claim will not be opened in a country (claim x country cell closed). Reversible; the closure history is kept on the claim.",
+      "values": [
+        { "value_code": "no-license", "display_name": "No marketing authorisation", "description": "The product has no marketing authorisation in the country.", "is_active": true, "sort_order": 10 },
+        { "value_code": "regulation-disallows", "display_name": "Local regulation does not allow", "description": "Local regulation does not allow this claim.", "is_active": true, "sort_order": 20 },
+        { "value_code": "business-decision", "display_name": "Business decision", "description": "The claim is not used in the country by business decision.", "is_active": true, "sort_order": 30 }
+      ]
+    },
+    {
+      "set_code": "claim-adaptation-type",
+      "set_name": "Claim Adaptation Type",
+      "scope_type": "tenant",
+      "status": "Active",
+      "description": "How a claim country version relates to its core claim. Every type other than verbatim requires a written reason.",
+      "values": [
+        { "value_code": "verbatim", "display_name": "Verbatim translation", "description": "Faithful translation of the core claim.", "is_active": true, "sort_order": 10 },
+        { "value_code": "narrowed", "display_name": "Narrowed", "description": "Scope or audience narrowed compared with the core claim.", "is_active": true, "sort_order": 20 },
+        { "value_code": "softened", "display_name": "Softened", "description": "Wording softened compared with the core claim.", "is_active": true, "sort_order": 30 }
+      ]
+    },
+    {
+      "set_code": "evidence-type",
+      "set_name": "Evidence Type",
+      "scope_type": "global",
+      "status": "Active",
+      "description": "Kind of evidence a governed object is linked to (MOD-0031 evidence linking). Platform wide.",
+      "values": [
+        { "value_code": "smpc-pil", "display_name": "SmPC / PIL", "description": "Summary of product characteristics or patient information leaflet.", "is_active": true, "sort_order": 10 },
+        { "value_code": "clinical-study", "display_name": "Clinical study", "description": "Clinical study report or publication.", "is_active": true, "sort_order": 20 },
+        { "value_code": "literature", "display_name": "Literature", "description": "Published scientific literature.", "is_active": true, "sort_order": 30 },
+        { "value_code": "internal-data", "display_name": "Internal data", "description": "Internal data on file.", "is_active": true, "sort_order": 40 },
+        { "value_code": "regulatory-letter", "display_name": "Regulatory letter", "description": "Letter or decision from a regulatory authority.", "is_active": true, "sort_order": 50 }
+      ]
+    }
+  ]
+}
