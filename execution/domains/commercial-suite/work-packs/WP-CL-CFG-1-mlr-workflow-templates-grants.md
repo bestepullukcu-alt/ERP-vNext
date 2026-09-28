@@ -182,3 +182,20 @@ Sonrasında `rolePermissions` içinde `CreatedBy: manual-grant-claims-v2-rbac` s
 - Konsol hatası yok. Ağda 4xx/5xx yok.
 - DUR koşullarının hiçbiri tetiklenmedi.
 - Instance başlatılmadı, iddia oluşturulmadı. RBAC'a, mevcut şablonlara, pozisyonlara ve atamalara yazılmadı. Uygulama kodu değişmedi.
+
+## §37 CT bağımsız doğrulama (2026-09-28) → **ACCEPTED (canlı)**
+```
+Commit: d62ba56a · CT: canlı DB salt-okuma (diten_personalization_dev + diten_auth_v3)
+```
+- ✅ **7 şablon (97c5):**
+  - Şablonlar: CLAIM-CORE-MLR + CLAIM-LOCAL-MLR-TR / BY / UZ / TM / GE / AZ.
+  - Şablon Status 2, sürüm 1 **Published + IsImmutable**.
+  - Adımlar `medical → legal → regulatory`, her adımda **2 aday**, `sla.dueInMinutes 4320`.
+  - `requestedObjectType`: çekirdek `crm.claim`, yerel `crm.claim-country-version`.
+- ✅ **Grant uygulandı** (kullanıcı onayıyla, script `--apply`). Marker `manual-grant-claims-v2-rbac` **3 satır**, hepsi 97c5 **Admin** rolünde: `platform.evidence.links.read/manage`, `platform.document-management.external-documents.view`.
+  - `_id`, TenantId, RoleId, PermissionId → **subtype 4**.
+  - CreatedAt dizi, AssignedAt DateTime (yerel dokümanlarla aynı).
+  - IsDeleted false.
+- ✅ **Kapsam:** yalnız `scripts/rbac/grant_claims_v2_rbac_97c5.py` + bu WP. Uygulama kodu diff YOK.
+- ⏳ **Kullanıcı:** Admin User ve sema pullukcu **çıkış yapıp tekrar girmeli** (yetkiler JWT'ye giriş sırasında yazılıyor).
+- **Rollback:** `db.rolePermissions.deleteMany({CreatedBy:"manual-grant-claims-v2-rbac"})`.
