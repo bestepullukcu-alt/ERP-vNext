@@ -258,6 +258,31 @@ public sealed class KnowledgeConceptsController : Controller
     // user who can open the template form can populate the moderator dropdown. Mirrors KnowledgeController.ReferenceValues
     // (that proxy lives under CRM/Knowledge; the template page is CRM/KnowledgeConcepts, so it needs its own same-base
     // allowlist entry).
+    // WP-CT-FE-10 (#4) — actor display name for the chain template "Versions" timeline (UpdatedBy/CreatedBy hold a user
+    // id). Read-only: AuthService /api/users/{id} (itself gated by auth.users.read on the caller's token), same lookup as
+    // the ConsentPreferences audit names. Only a display name ("First Last", else the email) leaves this proxy — never
+    // the full user record. Any failure (403 / 404 / empty) returns 404 so the page simply hides the line.
+    [HttpGet("api/users/{userId:guid}")]
+    public async Task<IActionResult> UserDisplayName(Guid userId, CancellationToken ct)
+    {
+        if (RequireJson(ReadPermission, ReadFallback) is { } denied) return denied;
+        var response = await SendGatewayAsync(HttpMethod.Get, $"/api/users/{userId}", null, ct);
+        if (response is null || !response.IsSuccessStatusCode) return NotFound();
+        try
+        {
+            var user = (await response.Content.ReadFromJsonAsync<ConceptGatewayResponse<ActorNameDto>>(_json, ct))?.Data;
+            var name = $"{user?.FirstName} {user?.LastName}".Trim();
+            var display = string.IsNullOrWhiteSpace(name) ? user?.Email : name;
+            return string.IsNullOrWhiteSpace(display) ? NotFound() : Ok(new { data = new { displayName = display } });
+        }
+        catch (JsonException)
+        {
+            return NotFound();
+        }
+    }
+
+    private sealed record ActorNameDto(string? FirstName, string? LastName, string? Email);
+
     [HttpGet("api/reference-data/{setCode}/values")]
     public Task<IActionResult> ReferenceValues(string setCode, CancellationToken ct)
     {
@@ -273,6 +298,18 @@ public sealed class KnowledgeConceptsController : Controller
     [HttpPut("api/concept-chain-templates/{templateId:guid}")]
     public Task<IActionResult> UpdateTemplate(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
         ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
+
+    // WP-CT-FE-5 — the editor's "Non-conforming" tab. Diagnostics is a READ over a supplied (possibly unsaved) spine
+    // (POST only because the spine travels in the body; nothing is written — WP-CT-BE-A). Resolutions record the
+    // "Yok say" set on a saved, non-published template (published → 409 from the service — WP-CT-BE-B); relationships
+    // are never touched (D8).
+    [HttpPost("api/concept-chain-templates/conformance-diagnostics")]
+    public Task<IActionResult> TemplateConformanceDiagnostics([FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Post, "/api/crm/knowledge/concept-chain-templates/conformance-diagnostics", body, ReadPermission, ct, ReadFallback);
+
+    [HttpPut("api/concept-chain-templates/{templateId:guid}/conformance-resolutions")]
+    public Task<IActionResult> TemplateConformanceResolutions(Guid templateId, [FromBody] JsonElement body, CancellationToken ct) =>
+        ProxyJsonAsync(HttpMethod.Put, $"/api/crm/knowledge/concept-chain-templates/{templateId}/conformance-resolutions", body, TemplateManagePermission, ct, ManagePermission, ManageFallback);
 
     [HttpPost("api/concept-chain-templates/{templateId:guid}/archive")]
     public Task<IActionResult> ArchiveTemplate(Guid templateId, CancellationToken ct) =>

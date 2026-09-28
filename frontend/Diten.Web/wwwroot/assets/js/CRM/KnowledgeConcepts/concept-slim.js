@@ -200,14 +200,20 @@
         },
         'concept-chain-templates': {
             tableId: 'dt-concept-chain-templates', hostId: 'templatesFilterHost', collapseId: 'templatesFilterCollapse',
-            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplates',
+            // WP-CT-FE-1: new column layout → new pageKey, so a view saved against the old indexes can never hide or
+            // reorder the wrong columns (colVis is index-keyed).
+            skeletonId: 'templates-skeleton-loader', pageKey: 'KnowledgeConceptChainTemplatesV2',
             idField: 'conceptChainTemplateId', nameField: 'chainName',
             createText: () => L.CreateTemplate, editText: () => L.EditTemplate,
             archiveText: () => L.ArchiveTemplate, archiveConfirm: () => L.ArchiveTemplateConfirm,
             emptyText: () => L.TemplatesEmptyState,
             // No canvasId: the Chain Template create/edit is the Golden Compact page (SCMM-10-UI-refine), not an
             // offcanvas — this tab keeps only the list + read-only quick view and navigates to that page.
-            totalColumns: 13, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], order: [[11, 'desc']],
+            // WP-CT-FE-1 (mockup v2 Ekran 1): 1 Subject · 2 Name · 3 Code · 4 Spine · 5 Branches · 6 Moderator ·
+            // 7 ForWhom · 8 Status+version; 9–13 (length / effective window / archived / updated) stay reachable via
+            // colVis but are hidden in the factory state.
+            totalColumns: 15, managedColumns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], order: [[13, 'desc']],
+            hiddenColumns: [9, 10, 11, 12, 13],
             archivedId: 'filterTemplatesArchived',
             filterFields: {
                 subjectId: { id: 'filterTemplatesSubjectId', multi: true, field: 'subjectId', options: () => subjectOptions },
@@ -396,7 +402,11 @@
         SPECS[kind].managedColumns.forEach(ci => { try { r[ci] = !!api.column(ci).visible(); } catch (e) { /* stale index */ } });
         return r;
     };
-    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => { a[ci] = true; return a; }, {});
+    // A spec may keep detail columns hidden in its factory state (still toggleable through colVis).
+    const defaultColVis = kind => SPECS[kind].managedColumns.reduce((a, ci) => {
+        a[ci] = !(SPECS[kind].hiddenColumns || []).includes(ci);
+        return a;
+    }, {});
     const captureColOrder = (kind, api) => {
         try {
             const o = api?.colReorder?.order?.();
@@ -426,8 +436,8 @@
         columnOrder: Array.isArray(v?.columnOrder) ? v.columnOrder : naturalOrder(kind),
         order: Array.isArray(v?.order) ? v.order : SPECS[kind].order
     });
-    // Reset is the FACTORY state (empty filters, no search, all managed columns visible, natural column order,
-    // the default sort) — deliberately not "back to the saved view".
+    // Reset is the FACTORY state (empty filters, no search, the managed columns' default visibility, natural column
+    // order, the default sort) — deliberately not "back to the saved view".
     const resetBaseline = kind => ({
         filters: emptyFilters(kind), search: '', colVis: defaultColVis(kind),
         columnOrder: naturalOrder(kind), order: SPECS[kind].order
@@ -512,6 +522,48 @@
         return window.DitenDataTable?.renderActions ? window.DitenDataTable.renderActions(items) : '';
     };
 
+    // ─── WP-CT-FE-9: chain template quick view, aligned with the editor ────────
+    // Local helpers (this module never imports template-form.js): DAL A/B/C… (26+ → number), the ×N / ×min–max chip.
+    const pvBranchLetter = bi => (bi < 26 ? String.fromCharCode(65 + bi) : String(bi + 1));
+    const pvFmt = (template, ...args) => String(template || '').replace(/\{(\d)\}/g, (_, i) => String(args[Number(i)] ?? ''));
+    const pvChipLabel = s => {
+        const min = s.minSelection ?? 1;
+        const max = s.maxSelection ?? null;
+        return max === min ? `×${min}` : `×${min}–${max == null ? '∞' : max}`;
+    };
+    // The unresolved non-conforming count: the BE-A diagnostics over the template's spine (a READ — the backend
+    // classifier is the single source) minus its stored "Yok say" resolutions. Read-only: no ignore / undo / PUT here.
+    // A newer preview (another row) wins: a late answer for an older row is dropped (sequence + row id).
+    let pvDiagSeq = 0;
+    const fillTemplateNonConforming = async row => {
+        const host = document.getElementById('pv-tpl-nonconforming');
+        const section = document.getElementById('pv-tpl-nonconforming-section');
+        if (!host) return;
+        section?.classList.remove('d-none');
+        const seq = ++pvDiagSeq;
+        const rowId = row.conceptChainTemplateId;
+        const spine = Array.isArray(row.orderedConceptTypes) ? row.orderedConceptTypes : [];
+        if (!row.subjectId || spine.length < 2) { host.innerHTML = '<span class="text-muted">—</span>'; return; }
+        host.innerHTML = `<span class="text-muted small"><span class="spinner-border spinner-border-sm me-2"></span>${esc(L.Loading || '')}</span>`;
+        try {
+            const data = await envelope(await fetch(`${base}/concept-chain-templates/conformance-diagnostics`, {
+                method: 'POST', credentials: 'same-origin', headers: jsonHeaders,
+                body: JSON.stringify({ subjectId: row.subjectId, orderedConceptTypeIds: spine })
+            }));
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            const ignored = new Set((row.ignoredNonConformingRelationshipIds || []).map(String));
+            const open = (data?.items || []).filter(i => i.result !== 'conforming' && !ignored.has(String(i.conceptRelationshipId))).length;
+            host.innerHTML = open > 0
+                ? `<span class="badge bg-label-warning">${esc(pvFmt(L.UnresolvedCount || '{0}', open))}</span>`
+                : `<span class="badge bg-label-success"><i class="bx bx-check me-1"></i>${esc(L.NonConformingEmpty || '')}</span>`;
+        } catch (error) {
+            if (seq !== pvDiagSeq || previewRef?.id !== rowId) return;
+            // A user without the diagnostics permission gets the whole section hidden rather than an error.
+            if (error?.status === 403) { section?.classList.add('d-none'); return; }
+            host.innerHTML = `<span class="text-muted small">${esc(L.ErrorState || '')}</span>`;
+        }
+    };
+
     // ─── Columns ─────────────────────────────────────────────────────────────
     const statusBadge = v => badge(v, v === 'archived' ? 'secondary' : (v === 'active' || v === 'published' ? 'success' : 'primary'));
     const archivedBadge = v => badge(v ? L.Yes : L.No, v ? 'warning' : 'success');
@@ -529,16 +581,74 @@
     const conformanceBadge = v => v
         ? `<span class="badge bg-label-success">${esc(L.Conforming || 'Conforming')}</span>`
         : `<span class="badge bg-label-warning" title="${esc(L.NonConformingNote || '')}">${esc(L.NonConforming || 'Non-conforming')}</span>`;
-    const sequenceCell = (ids, row) => {
+    // ─── WP-CT-FE-1: enriched Chain Template list cells ──────────────────────
+    // Every reference resolves to a NAME or falls back to "—" — a raw id never reaches the cell.
+    const dash = '<span class="text-muted">—</span>';
+    const subjectCell = id => subjectMap[id] ? `<span class="text-muted">${esc(subjectMap[id])}</span>` : dash;
+    // Spine = the ordered TYPE names, joined with arrows. An unresolved type shows "—" in its slot.
+    const spineCell = ids => {
         const list = Array.isArray(ids) ? ids : [];
-        if (!list.length) return '<span class="text-muted">—</span>';
-        // SCMM-10 (③): a multi-branch template shows a branch-count badge before the spine (no extra column).
-        const branchCount = Array.isArray(row?.branches) ? row.branches.length : 0;
-        const branchBadge = branchCount > 1
-            ? `<span class="badge bg-label-info me-2"><i class="bx bx-git-branch me-1"></i>${branchCount} ${esc(L.BranchCountLabel || '')}</span>`
-            : '';
-        return `<span>${branchBadge}${list.map(id => esc(labelType(id))).join(' <i class="bx bx-chevron-right"></i> ')}</span>`;
+        if (!list.length) return dash;
+        return `<span>${list.map(id => typeNameMap[id] ? esc(typeNameMap[id]) : '—').join(' <i class="bx bx-right-arrow-alt text-muted"></i> ')}</span>`;
     };
+    // The branch count is its own column now (was a badge inside the sequence cell). A legacy flat template reads
+    // back as one branch (read-time migration), so this is ≥ 1 for any saved template.
+    const branchCountOf = row => Array.isArray(row?.branches) ? row.branches.length : 0;
+    const branchCell = row => `<span class="badge bg-label-info"><i class="bx bx-git-branch me-1"></i>${branchCountOf(row)}</span>`;
+    const moderatorCell = code => norm(code) ? esc(labelModerator(norm(code))) : dash;
+    // For-whom: the first resolved audience name, then a "+N" badge; the title lists every resolved name. Unresolved
+    // ids are counted but never printed.
+    const forWhomCell = ids => {
+        const list = Array.isArray(ids) ? ids : [];
+        if (!list.length) return dash;
+        const names = list.map(id => audienceMap[id]).filter(Boolean);
+        const first = names.length ? `<span>${esc(names[0])}</span>` : '';
+        const rest = list.length - (names.length ? 1 : 0);
+        const more = rest > 0 ? ` <span class="badge bg-label-secondary">${names.length ? '+' : ''}${rest}</span>` : '';
+        return `<span title="${esc(names.join(', '))}">${first}${more}</span>`;
+    };
+    // WP-CT-FE-10 (#3): the editor already writes "v1"/"v2" — keep a leading v/V as is, add one only when missing.
+    const versionLabel = v => { const x = norm(v); return !x ? '' : (/^v/i.test(x) ? x : `v${x}`); };
+    const versionBare = v => norm(v).replace(/^v/i, '');   // for "v{0}" templates (PublishedSiblingHint)
+    // WP-CT-FE-10 (#7a): chain status DISPLAY label (7 languages); the raw code stays the value / filter / sort key and
+    // an unknown code (review, approved, inactive…) is shown as is.
+    const CHAIN_STATUS_KEYS = { draft: 'ChainStatusDraft', published: 'ChainStatusPublished', archived: 'ChainStatusArchived' };
+    const chainStatusLabel = code => L[CHAIN_STATUS_KEYS[norm(code)]] || norm(code);
+    const chainStatusBadge = code => badge(chainStatusLabel(code), code === 'archived' ? 'secondary' : (code === 'published' ? 'success' : 'primary'));
+    const isEffectiveNow = r => {
+        const now = Date.now();
+        const from = r.effectiveFrom ? new Date(r.effectiveFrom).getTime() : -Infinity;
+        const to = r.effectiveTo ? new Date(r.effectiveTo).getTime() : Infinity;
+        return from <= now && now <= to;
+    };
+    // A non-published row's published sibling: same subject + chainCode, published, not archived. Every row of the tab
+    // is loaded client-side (no server paging), so the lookup is complete. Prefer the one effective now, else the
+    // highest version.
+    const publishedSibling = row => {
+        const siblings = state['concept-chain-templates'].rows.filter(r =>
+            r !== row && !r.isArchived && norm(r.status) === 'published'
+            && r.chainCode === row.chainCode && r.subjectId === row.subjectId);
+        if (!siblings.length) return null;
+        return siblings.find(isEffectiveNow)
+            || siblings.slice().sort((a, b) => norm(b.chainVersion).localeCompare(norm(a.chainVersion), undefined, { numeric: true }))[0];
+    };
+    const statusVersionCell = row => {
+        const status = norm(row.status);
+        const ver = versionLabel(row.chainVersion);
+        let html = `${chainStatusBadge(status)}${ver ? ` <span class="text-muted small ms-1">${esc(ver)}</span>` : ''}`;
+        if (status !== 'published' && !row.isArchived) {
+            const sib = publishedSibling(row);
+            if (sib && norm(sib.chainVersion)) {
+                const hint = (L.PublishedSiblingHint || 'v{0}').replace('{0}', versionBare(sib.chainVersion));
+                html += `<div class="small text-success text-nowrap"><i class="bx bx-check-circle me-1"></i>${esc(hint)}</div>`;
+            }
+        }
+        return html;
+    };
+    // Row → the existing Compact editor route (an archived row is view-only: plain name, no link).
+    const chainNameCell = (v, row) => row.isArchived
+        ? nameCell(v)
+        : `<a href="${esc(templateEditUrl(row.conceptChainTemplateId))}" class="fw-medium text-heading">${esc(v)}</a>`;
 
     const columnsFor = kind => {
         const ctrl = { data: null, defaultContent: '' };
@@ -584,23 +694,31 @@
             ]
         };
 
+        // WP-CT-FE-1 (mockup v2 Ekran 1). Display renders resolve names; sort / filter / export read plain text so
+        // search matches what the user sees and sorting stays stable.
+        const plain = (display, text) => (v, t, row) => t === 'display' ? display(v, row) : text(v, row);
+        const joinNames = (ids, map, sep) => (Array.isArray(ids) ? ids : []).map(id => map[id] || '').filter(Boolean).join(sep);
         return {
-            columns: [ctrl, { data:'chainCode' }, { data:'chainName' }, { data:'subjectId' },
-                { data:'orderedConceptTypes' }, { data:'orderedConceptTypes' }, { data:'chainVersion' },
-                { data:'status' }, { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' },
-                { data:'updatedAt' }, act],
+            columns: [ctrl, { data:'subjectId' }, { data:'chainName' }, { data:'chainCode' },
+                { data:'orderedConceptTypes' }, { data:'branches' }, { data:'moderatorRoleType' },
+                { data:'forWhomAudienceProfileIds' }, { data:'status' }, { data:'orderedConceptTypes' },
+                { data:'effectiveFrom' }, { data:'effectiveTo' }, { data:'isArchived' }, { data:'updatedAt' }, act],
             columnDefs: [
                 { targets:0, className:'control', orderable:false, render:() => '' },
-                { targets:2, render:v => nameCell(v) },
-                { targets:3, render:v => refCell(v, labelSubject) },
-                { targets:4, orderable:false, render:(v, t, row) => sequenceCell(v, row) },
-                { targets:5, render:v => esc(String((v || []).length)) },
-                { targets:6, render:v => muted(v) },
-                { targets:7, render:v => statusBadge(v) },
-                { targets:[8, 9], render:v => dtStamp(v) },
-                { targets:10, render:v => archivedBadge(v) },
-                { targets:11, render:v => stamp(v) },
-                actionDef(12)
+                { targets:1, render:plain(v => subjectCell(v), v => subjectMap[v] || '') },
+                { targets:2, render:plain((v, row) => chainNameCell(v, row), v => norm(v)) },
+                { targets:3, render:v => muted(v) },
+                { targets:4, orderable:false, render:plain(v => spineCell(v), v => joinNames(v, typeNameMap, ' → ')) },
+                { targets:5, className:'text-center', render:plain((v, row) => branchCell(row), (v, row) => branchCountOf(row)) },
+                { targets:6, render:plain(v => moderatorCell(v), v => norm(v) ? labelModerator(norm(v)) : '') },
+                { targets:7, render:plain(v => forWhomCell(v), v => joinNames(v, audienceMap, ', ')) },
+                { targets:8, render:plain((v, row) => statusVersionCell(row), (v, row) => `${norm(v)} ${versionLabel(row.chainVersion)}`.trim()) },
+                { targets:9, render:v => esc(String((v || []).length)) },
+                { targets:[10, 11], render:v => dtStamp(v) },
+                { targets:12, render:v => archivedBadge(v) },
+                { targets:13, render:v => stamp(v) },
+                { targets:[9, 10, 11, 12, 13], visible:false },
+                actionDef(14)
             ]
         };
     };
@@ -1081,11 +1199,11 @@
             setText('pv-tpl-name', row.chainName);
             setText('pv-tpl-subject', labelSubject(row.subjectId));
             setText('pv-tpl-version', row.chainVersion);
-            setBadge('pv-tpl-status', row.status, row.status === 'published' ? 'success' : 'secondary');
+            setBadge('pv-tpl-status', chainStatusLabel(row.status), row.status === 'published' ? 'success' : 'secondary');
             const seq = document.getElementById('pv-tpl-sequence');
             if (seq) {
                 seq.innerHTML = (row.orderedConceptTypes || [])
-                    .map(id => `<li class="list-group-item">${esc(labelType(id))}</li>`).join('')
+                    .map(id => `<li class="list-group-item">${esc(typeNameMap[id] || labelType(id))}</li>`).join('')
                     || `<li class="list-group-item text-muted">${esc(L.SequenceEmpty || '')}</li>`;
             }
             document.getElementById('pv-tpl-frozen')?.classList.toggle('d-none', norm(row.status) !== 'published');
@@ -1098,20 +1216,27 @@
                     ? ids.map(id => `<span class="badge bg-label-secondary me-1">${esc(labelAudience(id))}</span>`).join('')
                     : `<span class="text-muted">—</span>`;
             }
-            // SCMM-10 (③) — branch structure (read-only): each branch's steps with cardinality.
+            // SCMM-10 (③) — branch structure (read-only). WP-CT-FE-9: same language as the editor — "DAL A · name ·
+            // N adım" header and the ×N / ×min–max chip per step.
             const brHost = document.getElementById('pv-tpl-branches');
             if (brHost) {
                 const list = Array.isArray(row.branches) ? row.branches : [];
-                brHost.innerHTML = list.length ? list.map(b => {
-                    const steps = (b.steps || []).map(s => {
-                        const card = `${s.minSelection ?? 1}–${s.maxSelection == null ? '∞' : s.maxSelection}`;
-                        return `<li class="list-group-item"><span class="fw-medium">${esc(labelType(s.conceptTypeId))}</span> <span class="text-muted small">(${esc(card)})</span></li>`;
-                    }).join('');
+                brHost.innerHTML = list.length ? list.map((b, bi) => {
+                    const stepList = b.steps || [];
+                    const steps = stepList.map(s =>
+                        `<li class="list-group-item d-flex align-items-center gap-2"><span class="fw-medium me-auto">${esc(typeNameMap[s.conceptTypeId] || labelType(s.conceptTypeId))}</span><span class="badge bg-label-secondary">${esc(pvChipLabel(s))}</span></li>`
+                    ).join('');
                     return `<div class="card border shadow-none"><div class="card-body p-3">
-                        <div class="fw-medium mb-2">${esc(b.branchName || b.branchCode || '')}</div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-label-primary text-uppercase fw-semibold flex-shrink-0">${esc(L.BranchLabelPrefix || 'Branch')} ${esc(pvBranchLetter(bi))}</span>
+                            <span class="fw-medium text-truncate flex-grow-1">${esc(b.branchName || b.branchCode || '')}</span>
+                            <span class="small text-muted text-nowrap">${esc(pvFmt(L.StepCountLabel || '{0}', stepList.length))}</span>
+                        </div>
                         <ol class="list-group list-group-numbered mb-0">${steps}</ol></div></div>`;
                 }).join('') : `<span class="text-muted">—</span>`;
             }
+            // WP-CT-FE-9 — unresolved non-conforming count, filled async (the synchronous fill never waits for it).
+            void fillTemplateNonConforming(row);
             setText('pv-tpl-description', row.description);
             setText('pv-tpl-from', stamp(row.effectiveFrom));
             setText('pv-tpl-to', row.effectiveTo ? stamp(row.effectiveTo) : '');

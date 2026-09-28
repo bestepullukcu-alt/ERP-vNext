@@ -204,4 +204,73 @@
   <data name="Steps" xml:space="preserve"><value>steps</value></data>
   <data name="AddStep" xml:space="preserve"><value>New step</value></data>
   <data name="Details" xml:space="preserve"><value>Details</value></data>
+  <data name="Spine" xml:space="preserve"><value>Spine</value></data>
+  <data name="BranchCount" xml:space="preserve"><value>Branches</value></data>
+  <data name="StatusVersion" xml:space="preserve"><value>Status / version</value></data>
+  <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} published</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>Types</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} nodes</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>in {0} branches</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>not on spine</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>This subject has no concept types yet.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>Connections, non-conforming and versions — coming soon</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Valid</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>At least 2 types required</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Delete branch</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Show back arrows</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Move earlier</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Move later</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>This type is already in this branch</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Connections</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>Non-conforming</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Versions</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Inputs</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Outputs</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} on spine</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Nodes</value></data>
+  <data name="Relationships" xml:space="preserve"><value>Relationships</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} total · {1} non-conforming</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Knowledge paths</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Journeys</value></data>
+  <data name="Visits" xml:space="preserve"><value>Visits</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>No source links these records to a chain template yet.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Data flow</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Subject</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Concept graph</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Chain template</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Knowledge path</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Journey</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Visit</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>Type is not on the spine</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Order is reversed</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Missing types</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>Add to branch {0}</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Ignore</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} unresolved</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>No unresolved non-conforming relationships</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Ignored ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Off the spine</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>No other versions of this code yet</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>This version</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Last changed by</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Publish and freeze</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Publish and freeze</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Spine to be frozen</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>Once published, the spine, branches, moderator, audience and resolutions are frozen. Linked outputs move to a new version; changes require a new version.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Publish checks</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>At least 2 different types on the spine</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>At least 2 steps in every branch</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>At least 1 target audience</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Too short: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} unresolved non-conforming relationships — this does not block publishing.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>This version is published and read-only; its spine is frozen. Create a new version to make changes.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Branch</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} steps</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Drag a concept type here</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Add type</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Draft</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Published</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>Archived</value></data>
 </root>

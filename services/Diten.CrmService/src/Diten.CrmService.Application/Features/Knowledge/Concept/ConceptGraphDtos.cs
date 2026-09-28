@@ -89,7 +89,8 @@ public sealed record ConceptChainBranchDto(
 
 /// <summary>MOD-0162 FU03 read model for a chain template. <c>OrderedConceptTypes</c> is the frozen (once published)
 /// spine sequence of ConceptType ids. <c>Branches</c> is the SCMM-10 (③) rich structure — always present on read: a
-/// legacy flat template is migrated read-time to a single branch. <c>ChainVersion</c> is the business version.</summary>
+/// legacy flat template is migrated read-time to a single branch. <c>ChainVersion</c> is the business version.
+/// <c>IgnoredNonConformingRelationshipIds</c> (WP-CT-BE-B) are the "Yok say" resolutions (empty on legacy rows).</summary>
 public sealed record ConceptChainTemplateDto(
     Guid ConceptChainTemplateId,
     Guid SubjectId,
@@ -110,7 +111,8 @@ public sealed record ConceptChainTemplateDto(
     string? UpdatedBy,
     DateTimeOffset? ArchivedAt,
     string? ArchivedBy,
-    bool IsArchived);
+    bool IsArchived,
+    IReadOnlyList<Guid> IgnoredNonConformingRelationshipIds);
 
 public sealed record ConceptChainTemplateListDto(IReadOnlyList<ConceptChainTemplateDto> Items, int Total);
 

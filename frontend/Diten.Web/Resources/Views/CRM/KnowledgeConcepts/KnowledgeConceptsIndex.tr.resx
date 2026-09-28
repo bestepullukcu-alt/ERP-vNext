@@ -5,156 +5,156 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="ConceptsMenu" xml:space="preserve"><value>Kavramlar</value></data>
-  <data name="ConceptsTitle" xml:space="preserve"><value>Kavram Grafigi</value></data>
-  <data name="PageDescription" xml:space="preserve"><value>Konu kavram grafigini yapilandirin: tipler, dugumler, baglantilar ve zincir sablonlari.</value></data>
-  <data name="SubjectMeaningNote" xml:space="preserve"><value>Burada 'Konu', bilgi alani demektir (Pharma / QMS / Dil) - eski 'Konu Tipi' degil.</value></data>
-  <data name="ConceptNodeCode" xml:space="preserve"><value>Dugum Kodu</value></data>
-  <data name="ConceptNodeName" xml:space="preserve"><value>Dugum Adi</value></data>
+  <data name="ConceptsTitle" xml:space="preserve"><value>Kavram Grafiği</value></data>
+  <data name="PageDescription" xml:space="preserve"><value>Konu kavram grafiğini yapılandırın: tipler, düğümler, bağlantılar ve zincir şablonları.</value></data>
+  <data name="SubjectMeaningNote" xml:space="preserve"><value>Burada 'Konu', bilgi alanı demektir (Pharma / QMS / Dil) - eski 'Konu Tipi' değil.</value></data>
+  <data name="ConceptNodeCode" xml:space="preserve"><value>Düğüm Kodu</value></data>
+  <data name="ConceptNodeName" xml:space="preserve"><value>Düğüm Adı</value></data>
   <data name="ConceptTypeId" xml:space="preserve"><value>Kavram Tipi</value></data>
   <data name="SubjectId" xml:space="preserve"><value>Konu</value></data>
   <data name="Status" xml:space="preserve"><value>Durum</value></data>
-  <data name="ExternalRefType" xml:space="preserve"><value>Dis Referans Tipi</value></data>
-  <data name="ExternalRefId" xml:space="preserve"><value>Dis Referans Kimligi</value></data>
-  <data name="Description" xml:space="preserve"><value>Aciklama</value></data>
+  <data name="ExternalRefType" xml:space="preserve"><value>Dış Referans Tipi</value></data>
+  <data name="ExternalRefId" xml:space="preserve"><value>Dış Referans Kimliği</value></data>
+  <data name="Description" xml:space="preserve"><value>Açıklama</value></data>
   <data name="MetadataJson" xml:space="preserve"><value>Meta Veri (JSON)</value></data>
-  <data name="EffectiveFrom" xml:space="preserve"><value>Gecerlilik Baslangici</value></data>
-  <data name="EffectiveTo" xml:space="preserve"><value>Gecerlilik Bitisi</value></data>
-  <data name="Archived" xml:space="preserve"><value>Arsivli</value></data>
-  <data name="UpdatedAt" xml:space="preserve"><value>Guncellenme</value></data>
-  <data name="Actions" xml:space="preserve"><value>Islemler</value></data>
-  <data name="CreateNode" xml:space="preserve"><value>Dugum Olustur</value></data>
-  <data name="EditNode" xml:space="preserve"><value>Dugumu Duzenle</value></data>
-  <data name="NodeDetails" xml:space="preserve"><value>Dugum Detayi</value></data>
-  <data name="ArchiveNode" xml:space="preserve"><value>Dugumu Arsivle</value></data>
-  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>Bu kavram dugumu arsivlensin mi? Yumusak yasam dongusu islemidir; okunur kalir.</value></data>
-  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>Bu kavram dugumu arsivli ve salt okunur.</value></data>
-  <data name="ConceptContractUnavailable" xml:space="preserve"><value>Kavram grafigi yetenek sozlesmesi kullanilamiyor. Islemler devre disi.</value></data>
-  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Siniflandirma</value></data>
-  <data name="ReferenceSection" xml:space="preserve"><value>Gecerlilik Penceresi ve Referans</value></data>
-  <data name="SelectOption" xml:space="preserve"><value>Seciniz...</value></data>
-  <data name="Cancel" xml:space="preserve"><value>Iptal</value></data>
+  <data name="EffectiveFrom" xml:space="preserve"><value>Geçerlilik Başlangıcı</value></data>
+  <data name="EffectiveTo" xml:space="preserve"><value>Geçerlilik Bitişi</value></data>
+  <data name="Archived" xml:space="preserve"><value>Arşivli</value></data>
+  <data name="UpdatedAt" xml:space="preserve"><value>Güncellenme</value></data>
+  <data name="Actions" xml:space="preserve"><value>İşlemler</value></data>
+  <data name="CreateNode" xml:space="preserve"><value>Düğüm Oluştur</value></data>
+  <data name="EditNode" xml:space="preserve"><value>Düğümü Düzenle</value></data>
+  <data name="NodeDetails" xml:space="preserve"><value>Düğüm Detayı</value></data>
+  <data name="ArchiveNode" xml:space="preserve"><value>Düğümü Arşivle</value></data>
+  <data name="ArchiveNodeConfirm" xml:space="preserve"><value>Bu kavram düğümü arşivlensin mi? Yumuşak yaşam döngüsü işlemidir; okunur kalır.</value></data>
+  <data name="ArchivedNodeReadOnly" xml:space="preserve"><value>Bu kavram düğümü arşivli ve salt okunur.</value></data>
+  <data name="ConceptContractUnavailable" xml:space="preserve"><value>Kavram grafiği yetenek sözleşmesi kullanılamıyor. İşlemler devre dışı.</value></data>
+  <data name="IdentitySection" xml:space="preserve"><value>Kimlik ve Sınıflandırma</value></data>
+  <data name="ReferenceSection" xml:space="preserve"><value>Geçerlilik Penceresi ve Referans</value></data>
+  <data name="SelectOption" xml:space="preserve"><value>Seçiniz...</value></data>
+  <data name="Cancel" xml:space="preserve"><value>İptal</value></data>
   <data name="Save" xml:space="preserve"><value>Kaydet</value></data>
-  <data name="IncludeArchived" xml:space="preserve"><value>Arsivlileri dahil et</value></data>
+  <data name="IncludeArchived" xml:space="preserve"><value>Arşivlileri dahil et</value></data>
   <data name="Active" xml:space="preserve"><value>Aktif</value></data>
   <data name="Passive" xml:space="preserve"><value>Pasif</value></data>
   <data name="Unknown" xml:space="preserve"><value>Bilinmiyor</value></data>
-  <data name="Edit" xml:space="preserve"><value>Duzenle</value></data>
-  <data name="ViewDetails" xml:space="preserve"><value>Detaylari gor</value></data>
-  <data name="QuickView" xml:space="preserve"><value>Hizli gorunum</value></data>
-  <data name="View" xml:space="preserve"><value>Goruntule</value></data>
+  <data name="Edit" xml:space="preserve"><value>Düzenle</value></data>
+  <data name="ViewDetails" xml:space="preserve"><value>Detayları gör</value></data>
+  <data name="QuickView" xml:space="preserve"><value>Hızlı görünüm</value></data>
+  <data name="View" xml:space="preserve"><value>Görüntüle</value></data>
   <data name="BulkDelete" xml:space="preserve"><value>Toplu sil</value></data>
-  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Secili satirlar silinsin mi?</value></data>
+  <data name="BulkDeleteConfirm" xml:space="preserve"><value>Seçili satırlar silinsin mi?</value></data>
   <data name="AreYouSure" xml:space="preserve"><value>Emin misiniz?</value></data>
   <data name="Search" xml:space="preserve"><value>Ara</value></data>
-  <data name="Export" xml:space="preserve"><value>Disa aktar</value></data>
-  <data name="Import" xml:space="preserve"><value>Ice aktar</value></data>
+  <data name="Export" xml:space="preserve"><value>Dışa aktar</value></data>
+  <data name="Import" xml:space="preserve"><value>İçe aktar</value></data>
   <data name="Filter" xml:space="preserve"><value>Filtrele</value></data>
   <data name="Apply" xml:space="preserve"><value>Uygula</value></data>
-  <data name="Reset" xml:space="preserve"><value>Sifirla</value></data>
-  <data name="ShowAll" xml:space="preserve"><value>Tumu</value></data>
-  <data name="SaveView" xml:space="preserve"><value>Gorunumu kaydet</value></data>
-  <data name="ColumnVisibility" xml:space="preserve"><value>Sutunlar</value></data>
+  <data name="Reset" xml:space="preserve"><value>Sıfırla</value></data>
+  <data name="ShowAll" xml:space="preserve"><value>Tümü</value></data>
+  <data name="SaveView" xml:space="preserve"><value>Görünümü kaydet</value></data>
+  <data name="ColumnVisibility" xml:space="preserve"><value>Sütunlar</value></data>
   <data name="Yes" xml:space="preserve"><value>Evet</value></data>
-  <data name="No" xml:space="preserve"><value>Hayir</value></data>
-  <data name="EmptyState" xml:space="preserve"><value>Henuz kavram dugumu yok.</value></data>
-  <data name="ErrorState" xml:space="preserve"><value>Bir seyler ters gitti.</value></data>
-  <data name="Loading" xml:space="preserve"><value>Yukleniyor...</value></data>
-  <data name="RecordArchived" xml:space="preserve"><value>Kayit arsivlendi.</value></data>
-  <data name="RecordCreated" xml:space="preserve"><value>Kayit olusturuldu.</value></data>
-  <data name="RecordUpdated" xml:space="preserve"><value>Kayit guncellendi.</value></data>
-  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Global Urun secici su anda kullanilamiyor.</value></data>
-  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>MDM Global Urun servisine ulasilamiyor; secici devre disi.</value></data>
-  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>mdm.global-products.read izniniz yok, bu yuzden Global Urun secici devre disi.</value></data>
+  <data name="No" xml:space="preserve"><value>Hayır</value></data>
+  <data name="EmptyState" xml:space="preserve"><value>Henüz kavram düğümü yok.</value></data>
+  <data name="ErrorState" xml:space="preserve"><value>Bir şeyler ters gitti.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Yükleniyor...</value></data>
+  <data name="RecordArchived" xml:space="preserve"><value>Kayıt arşivlendi.</value></data>
+  <data name="RecordCreated" xml:space="preserve"><value>Kayıt oluşturuldu.</value></data>
+  <data name="RecordUpdated" xml:space="preserve"><value>Kayıt güncellendi.</value></data>
+  <data name="GlobalProductPickerUnavailable" xml:space="preserve"><value>Global Ürün seçici şu anda kullanılamıyor.</value></data>
+  <data name="GlobalProductEndpointMissing" xml:space="preserve"><value>MDM Global Ürün servisine ulaşılamıyor; seçici devre dışı.</value></data>
+  <data name="GlobalProductPermissionMissing" xml:space="preserve"><value>mdm.global-products.read izniniz yok, bu yüzden Global Ürün seçici devre dışı.</value></data>
   <data name="ValidationRequired" xml:space="preserve"><value>Bu alan zorunludur.</value></data>
-  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Gecerlilik Bitisi, baslangictan once olamaz.</value></data>
+  <data name="EffectiveToBeforeFrom" xml:space="preserve"><value>Geçerlilik Bitişi, başlangıçtan önce olamaz.</value></data>
   <data name="AddRow" xml:space="preserve"><value>Ekle</value></data>
   <data name="TypesTab" xml:space="preserve"><value>Kavram Tipleri</value></data>
-  <data name="NodesTab" xml:space="preserve"><value>Kavram Dugumleri</value></data>
-  <data name="ConnectionsTab" xml:space="preserve"><value>Baglantilar</value></data>
-  <data name="TemplatesTab" xml:space="preserve"><value>Zincir Sablonlari</value></data>
-  <data name="GraphPreviewTab" xml:space="preserve"><value>Grafik Onizleme</value></data>
-  <data name="RecordSaved" xml:space="preserve"><value>Gorunum kaydedildi.</value></data>
-  <data name="ImmutableAfterCreate" xml:space="preserve"><value>Olusturmada sabitlenir; sonradan degistirilemez.</value></data>
-  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Bu kayit arsivlenmis ve salt okunur.</value></data>
-  <data name="SortOrder" xml:space="preserve"><value>Siralama</value></data>
+  <data name="NodesTab" xml:space="preserve"><value>Kavram Düğümleri</value></data>
+  <data name="ConnectionsTab" xml:space="preserve"><value>Bağlantılar</value></data>
+  <data name="TemplatesTab" xml:space="preserve"><value>Zincir Şablonları</value></data>
+  <data name="GraphPreviewTab" xml:space="preserve"><value>Grafik Önizleme</value></data>
+  <data name="RecordSaved" xml:space="preserve"><value>Görünüm kaydedildi.</value></data>
+  <data name="ImmutableAfterCreate" xml:space="preserve"><value>Oluşturmada sabitlenir; sonradan değiştirilemez.</value></data>
+  <data name="ArchivedRecordReadOnly" xml:space="preserve"><value>Bu kayıt arşivlenmiş ve salt okunur.</value></data>
+  <data name="SortOrder" xml:space="preserve"><value>Sıralama</value></data>
   <data name="ConceptTypeCode" xml:space="preserve"><value>Tip Kodu</value></data>
-  <data name="ConceptTypeName" xml:space="preserve"><value>Tip Adi</value></data>
-  <data name="CreateType" xml:space="preserve"><value>Tip Olustur</value></data>
-  <data name="EditType" xml:space="preserve"><value>Tipi Duzenle</value></data>
-  <data name="TypeDetails" xml:space="preserve"><value>Kavram Tipi Detayi</value></data>
-  <data name="ArchiveType" xml:space="preserve"><value>Tipi Arsivle</value></data>
-  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>Bu kavram tipi arsivlensin mi? Bu yumusak bir yasam dongusu islemidir; kayit okunur kalir.</value></data>
-  <data name="TypesEmptyState" xml:space="preserve"><value>Henuz kavram tipi yok.</value></data>
-  <data name="TypeSortOrderNote" xml:space="preserve"><value>Yalnizca yonetim sirasi - zincir sirasi degildir (o zincir sablonunda tutulur).</value></data>
-  <data name="RelationshipCode" xml:space="preserve"><value>Baglanti Kodu</value></data>
-  <data name="RelationshipName" xml:space="preserve"><value>Baglanti Adi</value></data>
-  <data name="RelationshipType" xml:space="preserve"><value>Iliski Tipi</value></data>
-  <data name="FromConceptNode" xml:space="preserve"><value>Kaynak Dugum</value></data>
-  <data name="ToConceptNode" xml:space="preserve"><value>Hedef Dugum</value></data>
-  <data name="Direction" xml:space="preserve"><value>Yon</value></data>
-  <data name="Priority" xml:space="preserve"><value>Oncelik</value></data>
-  <data name="Conformance" xml:space="preserve"><value>Sablon Uygunlugu</value></data>
+  <data name="ConceptTypeName" xml:space="preserve"><value>Tip Adı</value></data>
+  <data name="CreateType" xml:space="preserve"><value>Tip Oluştur</value></data>
+  <data name="EditType" xml:space="preserve"><value>Tipi Düzenle</value></data>
+  <data name="TypeDetails" xml:space="preserve"><value>Kavram Tipi Detayı</value></data>
+  <data name="ArchiveType" xml:space="preserve"><value>Tipi Arşivle</value></data>
+  <data name="ArchiveTypeConfirm" xml:space="preserve"><value>Bu kavram tipi arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; kayıt okunur kalır.</value></data>
+  <data name="TypesEmptyState" xml:space="preserve"><value>Henüz kavram tipi yok.</value></data>
+  <data name="TypeSortOrderNote" xml:space="preserve"><value>Yalnızca yönetim sırası - zincir sırası değildir (o zincir şablonunda tutulur).</value></data>
+  <data name="RelationshipCode" xml:space="preserve"><value>Bağlantı Kodu</value></data>
+  <data name="RelationshipName" xml:space="preserve"><value>Bağlantı Adı</value></data>
+  <data name="RelationshipType" xml:space="preserve"><value>İlişki Tipi</value></data>
+  <data name="FromConceptNode" xml:space="preserve"><value>Kaynak Düğüm</value></data>
+  <data name="ToConceptNode" xml:space="preserve"><value>Hedef Düğüm</value></data>
+  <data name="Direction" xml:space="preserve"><value>Yön</value></data>
+  <data name="Priority" xml:space="preserve"><value>Öncelik</value></data>
+  <data name="Conformance" xml:space="preserve"><value>Şablon Uygunluğu</value></data>
   <data name="Conforming" xml:space="preserve"><value>Uygun</value></data>
-  <data name="NonConforming" xml:space="preserve"><value>Uygun degil</value></data>
-  <data name="NonConformingNote" xml:space="preserve"><value>Bu baglanti hicbir zincir sablonu sirasina uymuyor. Kayit tutulur ve gorunur kalir - bu bir tani bilgisidir, ret degil.</value></data>
-  <data name="CreateConnection" xml:space="preserve"><value>Baglanti Olustur</value></data>
-  <data name="EditConnection" xml:space="preserve"><value>Baglantiyi Duzenle</value></data>
-  <data name="ConnectionDetails" xml:space="preserve"><value>Baglanti Detayi</value></data>
-  <data name="ArchiveConnection" xml:space="preserve"><value>Baglantiyi Arsivle</value></data>
-  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Bu baglanti arsivlensin mi? Bu yumusak bir yasam dongusu islemidir; kayit okunur kalir.</value></data>
-  <data name="ConnectionsEmptyState" xml:space="preserve"><value>Henuz baglanti yok.</value></data>
-  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Once bir konu secin; dugum listeleri o konuya gore daraltilir.</value></data>
-  <data name="PriorityNote" xml:space="preserve"><value>Kucuk deger once gelir; esitlikte baglanti kodu sirasi kullanilir.</value></data>
+  <data name="NonConforming" xml:space="preserve"><value>Uygun değil</value></data>
+  <data name="NonConformingNote" xml:space="preserve"><value>Bu bağlantı hiçbir zincir şablonu sırasına uymuyor. Kayıt tutulur ve görünür kalır - bu bir tanı bilgisidir, ret değil.</value></data>
+  <data name="CreateConnection" xml:space="preserve"><value>Bağlantı Oluştur</value></data>
+  <data name="EditConnection" xml:space="preserve"><value>Bağlantıyı Düzenle</value></data>
+  <data name="ConnectionDetails" xml:space="preserve"><value>Bağlantı Detayı</value></data>
+  <data name="ArchiveConnection" xml:space="preserve"><value>Bağlantıyı Arşivle</value></data>
+  <data name="ArchiveConnectionConfirm" xml:space="preserve"><value>Bu bağlantı arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; kayıt okunur kalır.</value></data>
+  <data name="ConnectionsEmptyState" xml:space="preserve"><value>Henüz bağlantı yok.</value></data>
+  <data name="NodePickerSubjectFirst" xml:space="preserve"><value>Önce bir konu seçin; düğüm listeleri o konuya göre daraltılır.</value></data>
+  <data name="PriorityNote" xml:space="preserve"><value>Küçük değer önce gelir; eşitlikte bağlantı kodu sırası kullanılır.</value></data>
   <data name="ChainCode" xml:space="preserve"><value>Zincir Kodu</value></data>
-  <data name="ChainName" xml:space="preserve"><value>Zincir Adi</value></data>
-  <data name="ChainVersion" xml:space="preserve"><value>Zincir Surumu</value></data>
-  <data name="OrderedConceptTypes" xml:space="preserve"><value>Beklenen Tip Sirasi</value></data>
-  <data name="SequenceLength" xml:space="preserve"><value>Adim</value></data>
-  <data name="AddToSequence" xml:space="preserve"><value>Adim ekle</value></data>
-  <data name="RemoveStep" xml:space="preserve"><value>Adimi kaldir</value></data>
-  <data name="MoveUp" xml:space="preserve"><value>Yukari tasi</value></data>
-  <data name="MoveDown" xml:space="preserve"><value>Asagi tasi</value></data>
-  <data name="SequenceEmpty" xml:space="preserve"><value>Henuz adim eklenmedi.</value></data>
-  <data name="SequenceMinTwo" xml:space="preserve"><value>Sira en az iki kavram tipi icermelidir.</value></data>
-  <data name="SequenceDuplicateType" xml:space="preserve"><value>Bir kavram tipi sirada yalnizca bir kez yer alabilir.</value></data>
-  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>Yayinlanmis zincirin sirasi dondurulur; degisiklik yeni surum gerektirir.</value></data>
-  <data name="CreateTemplate" xml:space="preserve"><value>Zincir Sablonu Olustur</value></data>
-  <data name="EditTemplate" xml:space="preserve"><value>Zincir Sablonunu Duzenle</value></data>
-  <data name="TemplateDetails" xml:space="preserve"><value>Zincir Sablonu Detayi</value></data>
-  <data name="ArchiveTemplate" xml:space="preserve"><value>Zincir Sablonunu Arsivle</value></data>
-  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Bu zincir sablonu arsivlensin mi? Bu yumusak bir yasam dongusu islemidir; kayit okunur kalir.</value></data>
-  <data name="TemplatesEmptyState" xml:space="preserve"><value>Henuz zincir sablonu yok.</value></data>
+  <data name="ChainName" xml:space="preserve"><value>Zincir Adı</value></data>
+  <data name="ChainVersion" xml:space="preserve"><value>Zincir Sürümü</value></data>
+  <data name="OrderedConceptTypes" xml:space="preserve"><value>Beklenen Tip Sırası</value></data>
+  <data name="SequenceLength" xml:space="preserve"><value>Adım</value></data>
+  <data name="AddToSequence" xml:space="preserve"><value>Adım ekle</value></data>
+  <data name="RemoveStep" xml:space="preserve"><value>Adımı kaldır</value></data>
+  <data name="MoveUp" xml:space="preserve"><value>Yukarı taşı</value></data>
+  <data name="MoveDown" xml:space="preserve"><value>Aşağı taşı</value></data>
+  <data name="SequenceEmpty" xml:space="preserve"><value>Henüz adım eklenmedi.</value></data>
+  <data name="SequenceMinTwo" xml:space="preserve"><value>Sıra en az iki kavram tipi içermelidir.</value></data>
+  <data name="SequenceDuplicateType" xml:space="preserve"><value>Bir kavram tipi sırada yalnızca bir kez yer alabilir.</value></data>
+  <data name="PublishedSequenceFrozen" xml:space="preserve"><value>Yayınlanmış zincirin sırası dondurulur; değişiklik yeni sürüm gerektirir.</value></data>
+  <data name="CreateTemplate" xml:space="preserve"><value>Zincir Şablonu Oluştur</value></data>
+  <data name="EditTemplate" xml:space="preserve"><value>Zincir Şablonunu Düzenle</value></data>
+  <data name="TemplateDetails" xml:space="preserve"><value>Zincir Şablonu Detayı</value></data>
+  <data name="ArchiveTemplate" xml:space="preserve"><value>Zincir Şablonunu Arşivle</value></data>
+  <data name="ArchiveTemplateConfirm" xml:space="preserve"><value>Bu zincir şablonu arşivlensin mi? Bu yumuşak bir yaşam döngüsü işlemidir; kayıt okunur kalır.</value></data>
+  <data name="TemplatesEmptyState" xml:space="preserve"><value>Henüz zincir şablonu yok.</value></data>
   <data name="GraphScope" xml:space="preserve"><value>Kapsam</value></data>
-  <data name="GraphScopeSubject" xml:space="preserve"><value>Tum konu</value></data>
-  <data name="GraphScopeNode" xml:space="preserve"><value>Bir dugumun cevresi (1 hop)</value></data>
-  <data name="GraphScopeContent" xml:space="preserve"><value>Bir icerikten (2 katman)</value></data>
-  <data name="GraphNodeAnchor" xml:space="preserve"><value>Cikis Dugumu</value></data>
-  <data name="GraphContentAnchor" xml:space="preserve"><value>Cikis Icerigi</value></data>
-  <data name="GraphEffectiveAt" xml:space="preserve"><value>Gecerlilik Tarihi</value></data>
-  <data name="GraphLoad" xml:space="preserve"><value>Grafigi goster</value></data>
-  <data name="GraphNodesSection" xml:space="preserve"><value>Dugumler</value></data>
-  <data name="GraphEdgesSection" xml:space="preserve"><value>Baglantilar</value></data>
-  <data name="GraphTemplatesSection" xml:space="preserve"><value>Zincir Sablonlari</value></data>
-  <data name="GraphNodeCount" xml:space="preserve"><value>dugum</value></data>
-  <data name="GraphEdgeCount" xml:space="preserve"><value>baglanti</value></data>
-  <data name="GraphTemplateCount" xml:space="preserve"><value>sablon</value></data>
-  <data name="GraphEmpty" xml:space="preserve"><value>Bu kapsamda grafik verisi yok. Hicbir sey uydurulmaz - bos grafik bos gosterilir.</value></data>
-  <data name="GraphPickScope" xml:space="preserve"><value>Bir kapsam secip Grafigi goster'e basin.</value></data>
-  <data name="GraphContentNoLinks" xml:space="preserve"><value>Bu icerik henuz hicbir kavram dugumune bagli degil.</value></data>
-  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Sabit derinlik: cikis dugumunun cevresinde tam 1 hop. Derinlik ayari YOKTUR - daha derin gezinme bir motordur ve bu modulun kapsami disindadir.</value></data>
-  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Sabit derinlik: tam 2 kenar katmani (icerikten dugumlerine, sonra o dugumlerin 1-hop komsulari). Derinlik ayari yoktur.</value></data>
-  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Tum konu icin komsuluk okumasi: dugum listesi, baglanti listesi ve zincir sablonlari. Gezinme, skorlama veya oneri yok.</value></data>
-  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Salt okunur gorunum. Bu sekmedeki hicbir sey kayit olusturmaz, degistirmez veya arsivlemez.</value></data>
-  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Deterministik sira: once Oncelik, sonra baglanti kodu.</value></data>
-  <data name="GraphUngroupedType" xml:space="preserve"><value>Siniflandirilmamis</value></data>
-  <data name="GraphOpenNode" xml:space="preserve"><value>Bu dugume odaklan</value></data>
-  <data name="GraphSelfContained" xml:space="preserve"><value>Bu dugumun mevcut kapsamda baglantisi yok.</value></data>
-  <data name="GlobalProduct" xml:space="preserve"><value>Global Urun</value></data>
-  <data name="GlobalProductPick" xml:space="preserve"><value>Global urun ara...</value></data>
-  <data name="GlobalProductHint" xml:space="preserve"><value>Yalnizca referans - MDM master okunur, degistirilmez veya kopyalanmaz.</value></data>
-  <data name="GlobalProductSearching" xml:space="preserve"><value>Araniyor...</value></data>
-  <data name="GlobalProductNoResults" xml:space="preserve"><value>Eslesen global urun yok.</value></data>
-  <data name="ExternalRefIdHint" xml:space="preserve"><value>Referans verilen sistemdeki serbest metin tanimlayici.</value></data>
+  <data name="GraphScopeSubject" xml:space="preserve"><value>Tüm konu</value></data>
+  <data name="GraphScopeNode" xml:space="preserve"><value>Bir düğümün çevresi (1 hop)</value></data>
+  <data name="GraphScopeContent" xml:space="preserve"><value>Bir içerikten (2 katman)</value></data>
+  <data name="GraphNodeAnchor" xml:space="preserve"><value>Çıkış Düğümü</value></data>
+  <data name="GraphContentAnchor" xml:space="preserve"><value>Çıkış İçeriği</value></data>
+  <data name="GraphEffectiveAt" xml:space="preserve"><value>Geçerlilik Tarihi</value></data>
+  <data name="GraphLoad" xml:space="preserve"><value>Grafiği göster</value></data>
+  <data name="GraphNodesSection" xml:space="preserve"><value>Düğümler</value></data>
+  <data name="GraphEdgesSection" xml:space="preserve"><value>Bağlantılar</value></data>
+  <data name="GraphTemplatesSection" xml:space="preserve"><value>Zincir Şablonları</value></data>
+  <data name="GraphNodeCount" xml:space="preserve"><value>düğüm</value></data>
+  <data name="GraphEdgeCount" xml:space="preserve"><value>bağlantı</value></data>
+  <data name="GraphTemplateCount" xml:space="preserve"><value>şablon</value></data>
+  <data name="GraphEmpty" xml:space="preserve"><value>Bu kapsamda grafik verisi yok. Hiçbir şey uydurulmaz - boş grafik boş gösterilir.</value></data>
+  <data name="GraphPickScope" xml:space="preserve"><value>Bir kapsam seçip Grafiği göster'e basın.</value></data>
+  <data name="GraphContentNoLinks" xml:space="preserve"><value>Bu içerik henüz hiçbir kavram düğümüne bağlı değil.</value></data>
+  <data name="GraphDepthNoticeNode" xml:space="preserve"><value>Sabit derinlik: çıkış düğümünün çevresinde tam 1 hop. Derinlik ayarı YOKTUR - daha derin gezinme bir motordur ve bu modülün kapsamı dışındadır.</value></data>
+  <data name="GraphDepthNoticeContent" xml:space="preserve"><value>Sabit derinlik: tam 2 kenar katmanı (içerikten düğümlerine, sonra o düğümlerin 1-hop komşuları). Derinlik ayarı yoktur.</value></data>
+  <data name="GraphDepthNoticeSubject" xml:space="preserve"><value>Tüm konu için komşuluk okuması: düğüm listesi, bağlantı listesi ve zincir şablonları. Gezinme, skorlama veya öneri yok.</value></data>
+  <data name="GraphReadOnlyNotice" xml:space="preserve"><value>Salt okunur görünüm. Bu sekmedeki hiçbir şey kayıt oluşturmaz, değiştirmez veya arşivlemez.</value></data>
+  <data name="GraphEdgeOrderNote" xml:space="preserve"><value>Deterministik sıra: önce Öncelik, sonra bağlantı kodu.</value></data>
+  <data name="GraphUngroupedType" xml:space="preserve"><value>Sınıflandırılmamış</value></data>
+  <data name="GraphOpenNode" xml:space="preserve"><value>Bu düğüme odaklan</value></data>
+  <data name="GraphSelfContained" xml:space="preserve"><value>Bu düğümün mevcut kapsamda bağlantısı yok.</value></data>
+  <data name="GlobalProduct" xml:space="preserve"><value>Global Ürün</value></data>
+  <data name="GlobalProductPick" xml:space="preserve"><value>Global ürün ara...</value></data>
+  <data name="GlobalProductHint" xml:space="preserve"><value>Yalnızca referans - MDM master okunur, değiştirilmez veya kopyalanmaz.</value></data>
+  <data name="GlobalProductSearching" xml:space="preserve"><value>Aranıyor...</value></data>
+  <data name="GlobalProductNoResults" xml:space="preserve"><value>Eşleşen global ürün yok.</value></data>
+  <data name="ExternalRefIdHint" xml:space="preserve"><value>Referans verilen sistemdeki serbest metin tanımlayıcı.</value></data>
   <data name="Color" xml:space="preserve"><value>Renk</value></data>
   <data name="IsGroup" xml:space="preserve"><value>Grup Tipi</value></data>
   <data name="IsList" xml:space="preserve"><value>Liste Tipi</value></data>
@@ -204,4 +204,73 @@
   <data name="Steps" xml:space="preserve"><value>adım</value></data>
   <data name="AddStep" xml:space="preserve"><value>Yeni adım</value></data>
   <data name="Details" xml:space="preserve"><value>Detaylar</value></data>
+  <data name="Spine" xml:space="preserve"><value>Omurga</value></data>
+  <data name="BranchCount" xml:space="preserve"><value>Dal</value></data>
+  <data name="StatusVersion" xml:space="preserve"><value>Durum / sürüm</value></data>
+  <data name="PublishedSiblingHint" xml:space="preserve"><value>v{0} yayında</value></data>
+  <data name="TypePalette" xml:space="preserve"><value>Tipler</value></data>
+  <data name="NodeCount" xml:space="preserve"><value>{0} düğüm</value></data>
+  <data name="BranchUsage" xml:space="preserve"><value>{0} dalda</value></data>
+  <data name="NotOnSpine" xml:space="preserve"><value>omurgada yok</value></data>
+  <data name="TypePaletteEmpty" xml:space="preserve"><value>Bu konunun henüz kavram tipi yok.</value></data>
+  <data name="SidePanelComingSoon" xml:space="preserve"><value>Bağlantılar, uyumsuzlar ve sürümler — yakında</value></data>
+  <data name="SpineStatusValid" xml:space="preserve"><value>Geçerli</value></data>
+  <data name="SpineStatusNeedsTwo" xml:space="preserve"><value>En az 2 tip gerekli</value></data>
+  <data name="SpineStatusFrozen" xml:space="preserve"><value>Donmuş</value></data>
+  <data name="DeleteBranch" xml:space="preserve"><value>Dalı sil</value></data>
+  <data name="BackEdgesToggle" xml:space="preserve"><value>Geri okları göster</value></data>
+  <data name="MoveEarlier" xml:space="preserve"><value>Öne al</value></data>
+  <data name="MoveLater" xml:space="preserve"><value>Sonraya al</value></data>
+  <data name="TypeAlreadyInBranch" xml:space="preserve"><value>Bu tip bu dalda zaten var</value></data>
+  <data name="TabConnections" xml:space="preserve"><value>Bağlantılar</value></data>
+  <data name="TabNonConforming" xml:space="preserve"><value>Uyumsuz</value></data>
+  <data name="TabVersions" xml:space="preserve"><value>Sürümler</value></data>
+  <data name="Inputs" xml:space="preserve"><value>Girdiler</value></data>
+  <data name="Outputs" xml:space="preserve"><value>Çıktılar</value></data>
+  <data name="TypesOnSpine" xml:space="preserve"><value>{0} / {1} omurgada</value></data>
+  <data name="Nodes" xml:space="preserve"><value>Düğümler</value></data>
+  <data name="Relationships" xml:space="preserve"><value>İlişkiler</value></data>
+  <data name="RelationshipsSummary" xml:space="preserve"><value>{0} toplam · {1} uyumsuz</value></data>
+  <data name="KnowledgePaths" xml:space="preserve"><value>Bilgi yolları</value></data>
+  <data name="Journeys" xml:space="preserve"><value>Yolculuklar</value></data>
+  <data name="Visits" xml:space="preserve"><value>Ziyaretler</value></data>
+  <data name="OutputsNoSource" xml:space="preserve"><value>Bu kayıtları zincir şablonuna bağlayan bir kaynak henüz yok.</value></data>
+  <data name="DataFlow" xml:space="preserve"><value>Veri akışı</value></data>
+  <data name="FlowSubject" xml:space="preserve"><value>Konu</value></data>
+  <data name="FlowConceptGraph" xml:space="preserve"><value>Kavram grafiği</value></data>
+  <data name="FlowChainTemplate" xml:space="preserve"><value>Zincir şablonu</value></data>
+  <data name="FlowKnowledgePath" xml:space="preserve"><value>Bilgi yolu</value></data>
+  <data name="FlowJourney" xml:space="preserve"><value>Yolculuk</value></data>
+  <data name="FlowVisit" xml:space="preserve"><value>Ziyaret</value></data>
+  <data name="ReasonNotOnSpine" xml:space="preserve"><value>Tip omurgada yok</value></data>
+  <data name="ReasonWrongOrder" xml:space="preserve"><value>Sıra ters</value></data>
+  <data name="MissingTypes" xml:space="preserve"><value>Eksik tipler</value></data>
+  <data name="AddToBranch" xml:space="preserve"><value>{0}. dala ekle</value></data>
+  <data name="Ignore" xml:space="preserve"><value>Yok say</value></data>
+  <data name="Undo" xml:space="preserve"><value>Geri al</value></data>
+  <data name="UnresolvedCount" xml:space="preserve"><value>{0} çözülmemiş</value></data>
+  <data name="NonConformingEmpty" xml:space="preserve"><value>Çözülmemiş uyumsuz ilişki yok</value></data>
+  <data name="IgnoredSection" xml:space="preserve"><value>Yok sayılanlar ({0})</value></data>
+  <data name="OffSpineSummary" xml:space="preserve"><value>Omurga dışı</value></data>
+  <data name="VersionsEmpty" xml:space="preserve"><value>Bu kod için henüz başka sürüm yok</value></data>
+  <data name="ThisVersion" xml:space="preserve"><value>Bu sürüm</value></data>
+  <data name="UpdatedByLabel" xml:space="preserve"><value>Son değiştiren</value></data>
+  <data name="PublishDialogTitle" xml:space="preserve"><value>Yayınla ve dondur</value></data>
+  <data name="PublishConfirm" xml:space="preserve"><value>Yayınla ve dondur</value></data>
+  <data name="PublishFrozenSpine" xml:space="preserve"><value>Donacak omurga</value></data>
+  <data name="PublishEffect" xml:space="preserve"><value>Yayınlandıktan sonra omurga, dallar, moderatör, hedef kitle ve çözümler donar. Bağlı çıktılar yeni sürüme geçer; değişiklik için yeni sürüm gerekir.</value></data>
+  <data name="PublishChecks" xml:space="preserve"><value>Yayın koşulları</value></data>
+  <data name="PublishBlockMinTypes" xml:space="preserve"><value>Omurgada en az 2 farklı tip</value></data>
+  <data name="PublishBlockBranchSteps" xml:space="preserve"><value>Her dalda en az 2 adım</value></data>
+  <data name="PublishBlockAudience" xml:space="preserve"><value>En az 1 hedef kitle</value></data>
+  <data name="PublishBranchesShort" xml:space="preserve"><value>Eksik: {0}</value></data>
+  <data name="PublishWarnUnresolved" xml:space="preserve"><value>{0} çözülmemiş uyumsuz ilişki var — yayını engellemez.</value></data>
+  <data name="ReadOnlyBandText" xml:space="preserve"><value>Bu sürüm yayında ve salt-okunur; omurga dondu. Değişiklik için yeni sürüm oluşturun.</value></data>
+  <data name="BranchLabelPrefix" xml:space="preserve"><value>Dal</value></data>
+  <data name="StepCountLabel" xml:space="preserve"><value>{0} adım</value></data>
+  <data name="DragTypeHerePlaceholder" xml:space="preserve"><value>Kavram tipi sürükleyin</value></data>
+  <data name="AddTypeCompact" xml:space="preserve"><value>Tip ekle</value></data>
+  <data name="ChainStatusDraft" xml:space="preserve"><value>Taslak</value></data>
+  <data name="ChainStatusPublished" xml:space="preserve"><value>Yayında</value></data>
+  <data name="ChainStatusArchived" xml:space="preserve"><value>Arşivlendi</value></data>
 </root>
